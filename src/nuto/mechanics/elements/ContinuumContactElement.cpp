@@ -371,12 +371,12 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
         // New parameter value (check in which element)
         // for the FindSpan function degree = 0, since no multiple knots at the beginning and end
-        if(mKnots[1].rows() == 0)
+        if     (mKnots.size() == 1)
         {
             parameterMinMaster(0) +=  increment(0);
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(parameterMinMaster(0), 0, mKnots[0]);
         }
-        else
+        else if(mKnots.size() == 2)
         {
             parameterMinMaster += increment;
             indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(parameterMinMaster(0), 0, mKnots[0]);
@@ -567,14 +567,14 @@ template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum, Eigen::VectorXd &rCoordinatesIPSlave, Eigen::VectorXd &rParamsIPSlave) const
 {
     Eigen::VectorXd naturalSurfaceIpCoordinates;
-    if(mKnots[1].rows() == 0)
+    if(mKnots.size() == 1)
     {
         double ipCoordinate;
         this->GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
         naturalSurfaceIpCoordinates.resize(1);
         naturalSurfaceIpCoordinates(0) = ipCoordinate;
     }
-    else if (mKnots[1].rows() > 0)
+    else if (mKnots.size() == 2)
     {
         double ipCoordinates[2];
         this->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);

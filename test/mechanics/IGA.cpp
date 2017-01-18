@@ -70,8 +70,8 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
     /** create IGA structure **/
 
     // create IGA curve
-    int degree = 3;
-    int numPoints = 10;
+    int degree = 2;
+    int numPoints = 3;
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,1);
     for(int i = 0; i < numPoints; i++)
     {
@@ -91,9 +91,12 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    int groupNodesIGAlayer    = myStructure->GroupCreate("Nodes");
-    int groupElementsIGAlayer = myStructure->GroupCreate("Elements");
-    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1D");
+    int groupNodesIGA    = myStructure->GroupCreate("Nodes");
+    int groupElementsIGA = myStructure->GroupCreate("Elements");
+
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
+
+
 
 //    int num = 100;
 //    NuTo::FullVector<double, Eigen::Dynamic> parameters(num);
@@ -149,6 +152,237 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
 
     return myStructure;
 }
+
+NuTo::Structure* buildStructure1DConstraintsElements(double& DisplacementCorrect, int refinements)
+{
+    /** paramaters **/
+    double  YoungsModulus = 20000.;
+    double  Area = 100.0*0.1;
+    double  Length = 1000.0;
+    double  Force = 1.;
+
+    DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
+
+    /** Structure 1D **/
+    NuTo::Structure* myStructure = new NuTo::Structure(1);
+
+#ifdef _OPENMP
+    int numThreads = 1;
+    myStructure->SetNumProcessors(numThreads);
+#endif
+
+    /** create section **/
+    int Section = myStructure->SectionCreate("Truss");
+    myStructure->SectionSetArea(Section, Area);
+
+    /** create material law **/
+    int Material = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
+    myStructure->ConstitutiveLawSetParameterDouble(Material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+
+    /** create IGA structure **/
+
+    // create IGA curve
+    int degree = 2;
+    int numPoints = 3;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,1);
+    for(int i = 0; i < numPoints; i++)
+    {
+        points(i,0) = i*(Length/2)/(numPoints-1);
+    }
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv;
+
+    NuTo::NURBSCurve curve(degree, points, AInv);
+
+    for(int i = 0; i < refinements; i++)
+    {
+        curve.DuplicateKnots();
+    }
+
+    // create second IGA curve
+    for(int i = 0; i < numPoints; i++)
+    {
+        points(i,0) = (Length/2) + i*(Length/2)/(numPoints-1) ;
+    }
+
+    NuTo::NURBSCurve curve2(degree, points, AInv);
+
+    for(int i = 0; i < refinements; i++)
+    {
+        curve.DuplicateKnots();
+    }
+
+
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesIGA    = myStructure->GroupCreate("Nodes");
+    int groupElementsIGA = myStructure->GroupCreate("Elements");
+
+    int groupNodesIGA2    = myStructure->GroupCreate("Nodes");
+    int groupElementsIGA2 = myStructure->GroupCreate("Elements");
+
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
+    curve2.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA2, groupNodesIGA2, "IGA1D");
+
+    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupNodesIGA);
+    NuTo::FullVector<int, Eigen::Dynamic> members2 = myStructure->GroupGetMemberIds(groupNodesIGA2);
+
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates;
+    myStructure->NodeGroupGetCoordinates(groupNodesIGA, coordinates);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates2;
+    myStructure->NodeGroupGetCoordinates(groupNodesIGA2, coordinates2);
+
+    std::cout << members << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << coordinates << std::endl;
+    std::cout << "==============================" << std::endl;
+    std::cout << members2 << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << coordinates2 << std::endl;
+
+    int countDBC = 0;
+    myStructure->ConstraintLinearEquationCreate (countDBC, members(members.rows()-1), NuTo::Node::eDof::DISPLACEMENTS, 0,  1., 0.);
+    myStructure->ConstraintLinearEquationAddTerm(countDBC, members2(0), NuTo::Node::eDof::DISPLACEMENTS, 0, -1.);
+
+    myStructure->ElementTotalSetSection(Section);
+    myStructure->ElementTotalSetConstitutiveLaw(Material);
+
+    /** set boundary conditions and loads **/
+    NuTo::FullVector<double,Eigen::Dynamic> direction(1);
+    direction(0) = 1;
+    // first node is fixed
+    myStructure->ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    myStructure->SetNumLoadCases(1);
+    myStructure->LoadCreateNodeForce(0, members2(members2.rows()-1), direction, Force);
+
+    /** start analysis **/
+
+    myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeInfo(10);
+    myStructure->NodeBuildGlobalDofs();
+
+    return myStructure;
+}
+
+NuTo::Structure* buildStructure1DConstraintsWithoutElements(const std::string &resultDir, const std::string &name, double& DisplacementCorrect)
+{
+    /** paramaters **/
+    double  YoungsModulus = 20000.;
+    double  Area = 100.0*0.1;
+    double  Length = 1000.0;
+    double  Force = 1.;
+
+    DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
+
+    /** Structure 1D **/
+    NuTo::Structure* myStructure = new NuTo::Structure(1);
+
+#ifdef _OPENMP
+    int numThreads = 1;
+    myStructure->SetNumProcessors(numThreads);
+#endif
+
+    /** create section **/
+    int Section = myStructure->SectionCreate("Truss");
+    myStructure->SectionSetArea(Section, Area);
+
+    /** create material law **/
+    int Material = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
+    myStructure->ConstitutiveLawSetParameterDouble(Material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+
+    /** create IGA structure **/
+
+    // create IGA curve
+    int degree = 2;
+    int numPoints = 3;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,1);
+    for(int i = 0; i < numPoints; i++)
+    {
+        points(i,0) = i*Length/(numPoints-1);
+    }
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv;
+
+    NuTo::NURBSCurve curve(degree, points, AInv);
+
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesIGA    = myStructure->GroupCreate("Nodes");
+    int groupElementsIGA = myStructure->GroupCreate("Elements");
+
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
+
+    /** set boundary conditions and loads **/
+    NuTo::FullVector<double,Eigen::Dynamic> direction(1);
+    direction(0) = 1;
+    // first node is fixed
+    int countDBC = 0;
+    countDBC = myStructure->ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    countDBC++;
+    myStructure->SetNumLoadCases(1);
+
+    NuTo::FullVector<double, Eigen::Dynamic> coordinatesPoint(1);
+    coordinatesPoint(0) = points(numPoints-1, 0);
+    int idAdditionalNode = myStructure->NodeCreateDOFs(setOfDOFS, coordinatesPoint);
+
+    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupNodesIGA);
+
+    myStructure->ConstraintLinearEquationCreate (countDBC, members(members.rows()-1), NuTo::Node::eDof::DISPLACEMENTS, 0,  1., 0.);
+    myStructure->ConstraintLinearEquationAddTerm(countDBC, idAdditionalNode, NuTo::Node::eDof::DISPLACEMENTS, 0, -1.);
+    countDBC++;
+
+    myStructure->LoadCreateNodeForce(0, idAdditionalNode, direction, Force);
+
+
+    myStructure->ElementTotalSetSection(Section);
+    myStructure->ElementTotalSetConstitutiveLaw(Material);
+
+
+    /** start analysis **/
+
+    myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeBuildGlobalDofs();
+
+    myStructure->SolveGlobalSystemStaticElastic();
+
+    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+
+    std::cout << "====================================\n";
+
+    int node1 = idAdditionalNode;
+    int node2 = numPoints - 1;
+
+    double node1DispX = myStructure->NodeGetNodePtr(node1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+    double node2DispX = myStructure->NodeGetNodePtr(node2)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+
+    if(fabs(node1DispX - node2DispX) > 1.e-18)
+        std::cout << "X: " << fabs(node1DispX - node2DispX) << std::endl;
+    std::cout << "====================================\n";
+
+#ifdef ENABLE_VISUALIZE
+    int visualizationGroup = myStructure->GroupGetElementsTotal();
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+
+    myStructure->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
+    myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
+#endif
+
+    if (fabs(nodeDisp - DisplacementCorrect)/fabs(DisplacementCorrect) > 1.e-6)
+    {
+        throw NuTo::Exception("[IGA] : displacement is not correct");
+    }
+
+
+    return myStructure;
+}
+
 
 
 /*  ||>*----*----*----*----*
@@ -364,7 +598,7 @@ Eigen::Vector2d exact_plate_hole_upper(Eigen::VectorXd pt)
 }
 
 
-NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int refine, int BC)
+NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, const std::string &name, int refine, int BC, bool constraint)
 {
     NuTo::Structure* myStructure = new NuTo::Structure(2);
 
@@ -553,6 +787,25 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     myStructure->NodeGroupGetMembers(groupNodesLower, rMembers);
 
     int countDBC = 0;
+
+    NuTo::FullVector<int, Eigen::Dynamic> membersCorner;
+    myStructure->NodeGroupGetMembers(groupNodesCorner, membersCorner);
+    std::cout << "Node Members group Corner: \n" << membersCorner << std::endl;
+
+    if(constraint)
+    {
+//        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates;
+//        myStructure->NodeGroupGetCoordinates(groupNodesCorner, coordinates);
+
+        std::cout << "Constraint\n";
+        for(int dof = 0; dof < 1; dof++)
+        {
+            myStructure->ConstraintLinearEquationCreate (countDBC, membersCorner(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
+            myStructure->ConstraintLinearEquationAddTerm(countDBC, membersCorner(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
+            countDBC++;
+        }
+    }
+
     NuTo::FullVector<double,Eigen::Dynamic> direction(2);
     direction << 0 ,1;
     for(int i = 0; i < rMembers.rows(); i++)
@@ -588,19 +841,36 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     countDBC++;
 
-    myStructure->NodeGroupGetMembers(groupNodesCorner, rMembers);
-    std::cout << "Node Members group Corner: \n" << rMembers << std::endl;
-    for(int dof = 0; dof < 1; dof++)
-    {
-        myStructure->ConstraintLinearEquationCreate (countDBC, rMembers(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
-        myStructure->ConstraintLinearEquationAddTerm(countDBC, rMembers(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
-        countDBC++;
-    }
-
     myStructure->CalculateMaximumIndependentSets();
     myStructure->NodeBuildGlobalDofs();
+    myStructure->SolveGlobalSystemStaticElastic();
 
-    myStructure->NodeInfo(10);
+#ifdef ENABLE_VISUALIZE
+    int visualizationGroup = myStructure->GroupGetElementsTotal();
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+
+    myStructure->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
+    myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
+#endif
+
+
+    std::cout << constraint << "====================================\n";
+    if(membersCorner.rows() > 2) throw NuTo::Exception("[IGA] : there have to be 2 corner nodes!");
+
+    int node1 = membersCorner(0);
+    int node2 = membersCorner(1);
+
+    double node1DispX = myStructure->NodeGetNodePtr(node1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+    double node1DispY = myStructure->NodeGetNodePtr(node2)->Get(NuTo::Node::eDof::DISPLACEMENTS)[1];
+
+    double node2DispX = myStructure->NodeGetNodePtr(node2)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+    double node2DispY = myStructure->NodeGetNodePtr(node2)->Get(NuTo::Node::eDof::DISPLACEMENTS)[1];
+
+    if(fabs(node1DispX - node2DispX) > 1.e-18 || fabs(node1DispY - node2DispY) > 1.e-18)
+        std::cout << "X: " << fabs(node1DispX - node2DispX) << ", Y: " << fabs(node1DispY - node2DispY) << std::endl;
+    std::cout << "====================================\n";
 
     return myStructure;
 }
@@ -901,8 +1171,13 @@ int main()
     double solution = 0.;
 
     // 1D constant stress
-    myStructure = buildStructure1D(solution, 1);
-    solve(myStructure, solution, resultDir, "Line1", true);
+//    myStructure = buildStructure1D(solution, 0);
+//    solve(myStructure, solution, resultDir, "Line1", true);
+
+    myStructure = buildStructure1DConstraintsElements(solution, 0);
+    solve(myStructure, solution, resultDir, "LineConstr1", true);
+
+    myStructure = buildStructure1DConstraintsWithoutElements(resultDir, "LineConstrWithoutElements1", solution);
 
     // 2D constant stress
     myStructure = constantStress(solution, 1, resultDir);
@@ -913,8 +1188,8 @@ int main()
 //    myStructure = buildPlateWithHole2DNeumann(resultDir, 0, 0);
 //    solve(myStructure, solution, resultDir, "Hole0", false);
 
-//    myStructure = buildPlateWithHole2DNeumann(resultDir, 3, 0);
-//    solve(myStructure, solution, resultDir, "Hole3", false);
+//    myStructure = buildPlateWithHole2DNeumann(resultDir, "Hole3", 3, 0, false);
+//    myStructure = buildPlateWithHole2DNeumann(resultDir, "Hole3Constr", 3, 0, true);
 
 //    std::string path = "./";
 

@@ -511,7 +511,11 @@ void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSl
     std::cout << "Number of iterations: " << numIter << std::endl;
 }
 
-Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCurve::buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes, const std::string &rInterpolation) const
+Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCurve::buildIGAStructure(NuTo::Structure &rStructure,
+                                                                                                       const std::set<NuTo::Node::eDof> &rSetOfDOFS,
+                                                                                                       int rGroupElements,
+                                                                                                       int rGroupNodes,
+                                                                                                       const std::string &rInterpolation) const
 {
     Eigen::VectorXi nodeIDs(GetNumControlPoints());
 
@@ -524,6 +528,7 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCu
 //        std::cout << "Node (id, coord): " <<  id << ", " << GetControlPoint(i).transpose() << std::endl;
     }
 
+//    std::cout << "nodeIDs: " << nodeIDs.transpose() << std::endl;
 
     Eigen::VectorXi degree(1);
     degree << mDegree;
@@ -533,13 +538,16 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCu
     vecKnots.push_back(GetKnotVector());
     for(auto &it : rSetOfDOFS) rStructure.InterpolationTypeAdd(rNewInterpolation, it, NuTo::Interpolation::eTypeOrder::SPLINE, degree, vecKnots, mWeights);
 
-    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elements(1, GetNumIGAElements());
+    int numElements = GetNumIGAElements();
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elements(1, numElements);
     Eigen::VectorXi elementIncidence(mDegree + 1);
-    for(int element = 0; element < GetNumIGAElements(); element++)
+    for(int element = 0; element < numElements; element++)
     {
         elementIncidence = GetElementControlPointIDsGlobal(element, nodeIDs);
 //        std::cout << "elementIncidence: " <<  elementIncidence.transpose() << std::endl;
-        int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(element), GetElementKnotIDs(element));
+        Eigen::MatrixXd knots = GetElementKnots(element);
+        Eigen::VectorXi knotIds = GetElementKnotIDs(element);
+        int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, knots, knotIds);
         rStructure.GroupAddElement(rGroupElements, id);
         elements(0, element) = std::pair<int, int>(id, -1);
     }

@@ -39,16 +39,22 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
-//    {
-//        (void)rInput;
-//        (void)rOutput;
-//        return eError::NOT_IMPLEMENTED;
-//    }
+    eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) override;
 
     //! @brief returns the enum (type of the element)
     //! @return enum
     NuTo::Element::eElementType GetEnumType() const override;
+
+    NuTo::ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
+
+    void FillConstitutiveOutputMapMatrix(ConstitutiveOutputMap &rConstitutiveOutput,
+                                         BlockFullMatrix<double> &rMatrix) const;
+    void FillConstitutiveOutputMapVector(ConstitutiveOutputMap &rConstitutiveOutput,
+                                         BlockFullVector<double> &rVector) const;
+
+    void CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const;
+
+    void CalculateGlobalColumnDofs(BlockFullVector<int> &rGlobalDofMapping) const;
 
     //! @brief Calculates the the jacobian of the mapping between the refernce element and parametric space (knots)
     //! @param rKnots ... knots of the element

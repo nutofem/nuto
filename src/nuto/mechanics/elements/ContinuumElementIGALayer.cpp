@@ -51,38 +51,9 @@ NuTo::ContinuumElementIGALayer<TDim>::ContinuumElementIGALayer(const NuTo::Struc
 ////! @param rInput ... constitutive input map for the constitutive law
 ////! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
 template<int TDim>
-NuTo::eError NuTo::ContinuumElementIGALayer<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
+NuTo::eError NuTo::ContinuumElementIGALayer<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
-    // So far the Layer element is used for contact element containing a list of slave and master elements
-    for (auto dof : this->mStructure->GetDofStatus().GetActiveDofTypes())
-    {
-        if (not (this->mInterpolationType->IsDof(dof)) && dof != Node::eDof::DISPLACEMENTS)
-        {
-//            rGlobalRowDofs[dof].Resize(0);
-            continue;
-        }
-
-        const InterpolationBase& interpolationType = this->GetInterpolationType()->Get(dof);
-        const int numNodes = interpolationType.GetNumNodes();
-
-        FullVector<int, Eigen::Dynamic> dofWiseGlobalRowDofs;
-
-        int numSlaveDofs = interpolationType.GetNumDofs();
-        dofWiseGlobalRowDofs.setZero(numSlaveDofs);
-
-        unsigned int numDofsPerType = this->GetNode(interpolationType.GetNodeIndex(0))->GetNum(dof);
-
-        for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-        {
-            const NodeBase* nodePtr = this->GetNode(interpolationType.GetNodeIndex(iNodeDof));
-
-            for (unsigned iDof = 0; iDof < numDofsPerType; ++iDof)
-            {
-                dofWiseGlobalRowDofs[numDofsPerType * iNodeDof + iDof] = nodePtr->GetDof(dof, iDof);
-            }
-        }
-    }
-
+    GetConstitutiveOutputMap(rElementOutput);
     return eError::SUCCESSFUL;
 }
 
@@ -91,6 +62,118 @@ NuTo::Element::eElementType NuTo::ContinuumElementIGALayer<TDim>::GetEnumType() 
 {
     return Element::eElementType::CONTINUUMELEMENTIGA;
 }
+
+template<int TDim>
+NuTo::ConstitutiveOutputMap NuTo::ContinuumElementIGALayer<TDim>::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
+{
+    ConstitutiveOutputMap constitutiveOutput;
+
+    for (auto it : rElementOutput)
+    {
+        switch (it.first)
+        {
+        case Element::eOutput::INTERNAL_GRADIENT:
+            FillConstitutiveOutputMapVector(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+            break;
+        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+            FillConstitutiveOutputMapMatrix(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            break;
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapMatrix(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            break;
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapVector(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+            break;
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapMatrix(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            break;
+        case Element::eOutput::UPDATE_STATIC_DATA:
+            constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+            break;
+        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+            constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+            break;
+        case Element::eOutput::IP_DATA:
+//            this->FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
+            break;
+        case Element::eOutput::GLOBAL_ROW_DOF:
+            CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
+            break;
+        case Element::eOutput::GLOBAL_COLUMN_DOF:
+            CalculateGlobalColumnDofs(it.second->GetBlockFullVectorInt());
+            break;
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "element  output not implemented.");
+        }
+    }
+    return constitutiveOutput;
+}
+
+template <int TDim>
+void NuTo::ContinuumElementIGALayer<TDim>::FillConstitutiveOutputMapMatrix(ConstitutiveOutputMap &rConstitutiveOutput,
+                                                                           BlockFullMatrix<double> &rMatrix) const
+{
+    (void) rConstitutiveOutput;
+    auto activeDofs = this->mInterpolationType->GetActiveDofs();
+    if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "IGA layer is only implemented for displacements.");
+    rMatrix(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS).Resize(0, 0);
+}
+
+template <int TDim>
+void NuTo::ContinuumElementIGALayer<TDim>::FillConstitutiveOutputMapVector(ConstitutiveOutputMap &rConstitutiveOutput,
+                                                                           BlockFullVector<double> &rVector) const
+{
+    (void) rConstitutiveOutput;
+    auto activeDofs = this->mInterpolationType->GetActiveDofs();
+    if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "IGA layer is only implemented for displacements.");
+    rVector[Node::eDof::DISPLACEMENTS].Resize(0);
+}
+
+template<int TDim>
+void NuTo::ContinuumElementIGALayer<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const
+{
+    // So far the Layer element is used for contact element containing a list of slave and master elements
+    for (auto dof : this->mStructure->GetDofStatus().GetActiveDofTypes())
+    {
+//        if (not (this->mInterpolationType->IsDof(dof)) /*&& dof != Node::eDof::DISPLACEMENTS*/)
+//        {
+            rGlobalRowDofs[dof].Resize(0);
+//            continue;
+//        }
+
+//        const InterpolationBase& interpolationType = this->GetInterpolationType()->Get(dof);
+//        const int numNodes = interpolationType.GetNumNodes();
+
+//        FullVector<int, Eigen::Dynamic> dofWiseGlobalRowDofs;
+
+//        int numSlaveDofs = interpolationType.GetNumDofs();
+//        dofWiseGlobalRowDofs.setZero(numSlaveDofs);
+
+//        unsigned int numDofsPerType = this->GetNode(interpolationType.GetNodeIndex(0))->GetNum(dof);
+
+//        for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
+//        {
+//            const NodeBase* nodePtr = this->GetNode(interpolationType.GetNodeIndex(iNodeDof));
+
+//            for (unsigned iDof = 0; iDof < numDofsPerType; ++iDof)
+//            {
+//                dofWiseGlobalRowDofs[numDofsPerType * iNodeDof + iDof] = nodePtr->GetDof(dof, iDof);
+//            }
+//        }
+    }
+}
+template<int TDim>
+void NuTo::ContinuumElementIGALayer<TDim>::CalculateGlobalColumnDofs(BlockFullVector<int> &rGlobalDofMapping) const
+{
+    if (this->GetNumNonlocalElements() == 0)
+        CalculateGlobalRowDofs(rGlobalDofMapping);
+    else
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for nonlocal elements.");
+}
+
+
 
 template<int TDim>
 Eigen::MatrixXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const

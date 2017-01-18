@@ -239,9 +239,7 @@ void SetDBC(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMas
 //    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesRight, direction, 0.0);
 
     countDBC++;
-
 }
-
 
 void SetDBCPatchTest(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMaster, int &countDBC)
 {
@@ -338,6 +336,139 @@ void SetDBCPatchTest(NuTo::Structure &myStructure, int groupNodesSlave, int grou
 
     countDBC++;
 }
+
+void SetDBCPatchTestRigidIGA(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMaster, int &countDBC)
+{
+    Eigen::Vector2d direction(0,0);
+    double xMin(0.), xMax(0.);
+    double yMin(0.), yMax(0.);
+    auto LambdaNodes = [&](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+        {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            bool xR = false;
+            bool yR = false;
+
+            if (x >= xMin - Tol && x <= xMax + Tol) xR = true;
+            if (y >= yMin - Tol && y <= yMax + Tol) yR = true;
+
+            if (xR == true && yR == true) return true;
+        }
+        return false;
+    };
+
+    // ===> master bottom <=== //
+    xMin = 0.; xMax = std::numeric_limits<double>::infinity();
+    yMin = yMax = 0.;
+    int groupNodesMasterLower = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesMasterLower, groupNodesMaster, LambdaNodes);
+    direction << 0.,1.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesMasterLower, direction, 0.0);
+    direction << 1.,0.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesMasterLower, direction, 0.0);
+
+//    NuTo::FullVector<int,Eigen::Dynamic> rMembersMasterBottom;
+//    myStructure.NodeGroupGetMembers(groupNodesMasterLower, rMembersMasterBottom);
+//    direction << 1.,0.;
+//    countDBC = myStructure.ConstraintLinearSetDisplacementNode(rMembersMasterBottom(0), direction, 0.0);
+
+    // ===> initial values <=== //
+    NuTo::FullVector<double,Eigen::Dynamic>  dispVec(2);
+    dispVec(0) =   0.;
+    dispVec(1) = -0.000001;
+    myStructure.NodeGroupSetDisplacements(groupNodesSlave, 0, dispVec);
+
+    // ===> slave left <=== //
+    xMin = 1.; xMax = 1.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesLeft, groupNodesSlave, LambdaNodes);
+    direction << 1, 0;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesLeft, direction, 0.0);
+
+    // ===> slave bottom <=== //
+//    xMin = 1.; xMax = 2.;
+//    yMin = 0.; yMax = 0.;
+//    int groupNodesSlaveBottom = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure.GroupAddNodeFunction(groupNodesSlaveBottom, groupNodesSlave, LambdaNodes);
+//    direction << 0, 1;
+//    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesSlaveBottom, direction, 0.0);
+
+//    NuTo::FullVector<int,Eigen::Dynamic> rMembersSlaveBottom;
+//    myStructure.NodeGroupGetMembers(groupNodesSlaveBottom, rMembersSlaveBottom);
+//    direction << 1.,0;
+//    countDBC = myStructure.ConstraintLinearSetDisplacementNode(rMembersSlaveBottom(0), direction, 0.0);
+
+    // ===> PATCH TEST BOUNDARY <=== //
+    double Stress = 10.;
+    myStructure.SetNumLoadCases(1);
+    // ===> slave top <=== //
+    xMin = 1.; xMax = 2.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesSlaveUpper = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesSlaveUpper, LambdaNodes);
+    int groupElementsSlaveUpper = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsSlaveUpper, groupNodesSlaveUpper, false);
+    myStructure.LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, Stress);
+
+    countDBC++;
+}
+
+void SetDBCPatchTestIGA_L_RigidIGA_L(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMaster, int &countDBC)
+{
+    Eigen::Vector2d direction(0,0);
+    double xMin(0.), xMax(0.);
+    double yMin(0.), yMax(0.);
+    auto LambdaNodes = [&](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+        {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            bool xR = false;
+            bool yR = false;
+
+            if (x >= xMin - Tol && x <= xMax + Tol) xR = true;
+            if (y >= yMin - Tol && y <= yMax + Tol) yR = true;
+
+            if (xR == true && yR == true) return true;
+        }
+        return false;
+    };
+
+    // ===> master bottom <=== //
+    xMin = 0.; xMax = std::numeric_limits<double>::infinity();
+    yMin = yMax = 0.;
+    int groupNodesMasterLower = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesMasterLower, groupNodesMaster, LambdaNodes);
+    direction << 0.,1.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesMasterLower, direction, 0.0);
+    direction << 1.,0.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesMasterLower, direction, 0.0);
+
+    // ===> slave left <=== //
+    xMin = 1.; xMax = 1.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesLeft, groupNodesSlave, LambdaNodes);
+    direction << 1, 0;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesLeft, direction, 0.0);
+
+    // ===> slave top <=== //
+    xMin = 1.; xMax = 2.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesSlaveTop = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesSlaveTop, groupNodesSlave, LambdaNodes);
+    direction << 0, 1;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesSlaveTop, direction, -1.e-3);
+
+    countDBC++;
+}
+
 
 
 void AddIGALayer(NuTo::Structure *myStructure,
@@ -804,6 +935,722 @@ void ContactTest(const std::string &resultDir,
 #endif
 }
 
+void ContactTestRigidIGA(const std::string &resultDir,
+                         NuTo::Interpolation::eTypeOrder rElementTypeIdent,
+                         int rNumNodesPerElementInOneDir,
+                         NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                         int rDegree,
+                         double rPenalty,
+                         NuTo::eIntegrationType rIntegrationType,
+                         int rContactAlgo,
+                         int numElXSlave, int numElYSlave)
+{
+    NuTo::Structure myStructure(2);
+    myStructure.SetNumTimeDerivatives(0);
+
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure.SetNumProcessors(numThreads);
+#endif
+
+    /////////////////////////////////////////////////////////////////////
+    // ====> create SLAVE mesh from gmsh (smth. impacting a rectangle) //
+    /////////////////////////////////////////////////////////////////////
+
+    double startySlave = 0.0;
+
+    std::set<NuTo::Node::eDof> setOfDOFSSlave;
+    setOfDOFSSlave.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFSSlave.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesSlave = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
+                                numElXSlave, numElYSlave, 1., 1., 1., 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
+
+    myStructure.NodeInfo(10);
+
+    // ===> build contact elements slave elements
+    auto LambdaGetSlaveNodesLower = [startySlave](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+        {
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            if ((y >= 0. - Tol && y <= 0. + Tol))
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetSlaveNodesLower
+
+    int groupNodesSlaveLower = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesSlaveLower, groupNodesSlave, LambdaGetSlaveNodesLower);
+
+    int groupElementsSlaveLower = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
+
+    //////////////////////////////
+    // ====> create MASTER mesh //
+    //////////////////////////////
+    // create IGA curve
+    int numPoints = 10;
+    double Length = 3.;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,2);
+    for(int i = 0; i < numPoints; i++)
+    {
+        points(i,0) = i*Length/(numPoints-1);
+        points(i,1) = 0.;
+    }
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv;
+    NuTo::NURBSCurve curve(rDegree, points, AInv);
+    for(int i = 0; i < 1; i++) curve.DuplicateKnots();
+
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesIGA    = myStructure.GroupCreate("Nodes");
+    int groupElementsIGA = myStructure.GroupCreate("Elements");
+
+    Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER");
+
+    int countDBC;
+//    SetDBC(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+//    SetDBCPatchTest(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+    SetDBCPatchTestRigidIGA(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+
+    ///////////////////
+    // ===> material //
+    ///////////////////
+
+    double Thickness = 1.;
+    int section = myStructure.SectionCreate("PLANE_STRESS");
+    myStructure.SectionSetThickness(section, Thickness);
+
+    double E = 1.e5;
+    double nue = 0.3;
+    double rho = 0.;
+
+    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+    myStructure.ElementTotalSetSection(section);
+    myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
+
+    ////////////////////////////
+    // ===> CONTACT ELEMENTS  //
+    ////////////////////////////
+
+    int constitutiveLawPC = myStructure.ConstitutiveLawCreate("Contact_Constitutive_Law");
+    std::function<double(double)> constitutiveContactLaw  =
+    [rPenalty](double rGap) -> double
+    {
+        if(rGap<0)
+            return rPenalty*rGap;
+        else
+            return 0.;
+    };
+
+    std::function<double(double)> constitutiveContactLawDerivative =
+    [rPenalty](double rGap) -> double
+    {
+        if(rGap<=0)
+            return rPenalty;
+        else
+            return 0.;
+    };
+
+    myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLaw);
+    myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivative);
+
+    myStructure.NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower, groupNodesSlaveLower, elementsMaster, rIntegrationType, rContactAlgo, constitutiveLawPC);
+
+    ///////////////////
+    // ===> Solution //
+    ///////////////////
+    //set result directory
+    if (boost::filesystem::exists(resultDir))
+    {
+        if (boost::filesystem::is_directory(resultDir))
+        {
+            boost::filesystem::remove_all(resultDir);
+        }
+    }
+
+    // create result directory
+    boost::filesystem::create_directory(resultDir);
+
+    myStructure.CalculateMaximumIndependentSets();
+    myStructure.NodeBuildGlobalDofs();
+
+    NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
+    double timeStep = 1.;
+    double simulationTime = 1.;
+
+    myIntegrationScheme.SetResultDirectory(resultDir, true);
+
+    std::vector<int> IPIdsSlave;
+    std::vector<int> IPIdsMaster;
+
+    switch(rIntegrationType)
+    {
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(11);
+        IPIdsMaster.push_back(10);
+        IPIdsMaster.push_back(9);
+        IPIdsMaster.push_back(8);
+        IPIdsMaster.push_back(7);
+        IPIdsMaster.push_back(6);
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        IPIdsSlave.push_back(6);
+        IPIdsSlave.push_back(7);
+        IPIdsSlave.push_back(8);
+        IPIdsSlave.push_back(9);
+        IPIdsSlave.push_back(10);
+        IPIdsSlave.push_back(11);
+        break;
+    }
+    default:
+        throw NuTo::MechanicsException("[NuTo::Test::Contact] No Integration Type Defined.");
+    }
+
+     // create boundary elements for visualizing the results slave
+    int slaveContactElementsGroupId = myStructure.BoundaryElementsCreate(groupElementsSlaveLower, groupNodesSlaveLower, NULL);
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersSlaveContactBoundaryVisualize;
+    myStructure.ElementGroupGetMembers(slaveContactElementsGroupId, rMembersSlaveContactBoundaryVisualize);
+    for(int i = 0; i < rMembersSlaveContactBoundaryVisualize.rows(); i++)
+    {
+        NuTo::ElementBase* elementPtr = myStructure.ElementGetElementPtr(rMembersSlaveContactBoundaryVisualize(i));
+        NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
+        elementPtr->SetIntegrationType(myStructure.GetPtrIntegrationType(rIntegrationType), ipDataType);
+    }
+
+    myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+
+    myIntegrationScheme.SetMinTimeStepPlot(1.);
+    myIntegrationScheme.SetLastTimePlot(0.);
+
+    myIntegrationScheme.SetToleranceForce(1.e-10);
+    myIntegrationScheme.SetMaxNumIterations(50);
+    myIntegrationScheme.SetTimeStep(timeStep);
+    myIntegrationScheme.SetPerformLineSearch(false);
+    myIntegrationScheme.Solve(simulationTime);
+
+#ifdef ENABLE_VISUALIZE
+    int visualizationGroup = groupElementsSlave;
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    myStructure.ElementGroupExportVtkDataFile(visualizationGroup, resultDir+"/Elements.vtu", true);
+
+    myStructure.AddVisualizationComponent(groupElementsIGA, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.ElementGroupExportVtkDataFile(groupElementsIGA, resultDir+"/ElementsLayer.vtu", true);
+#endif
+}
+
+void ContactTestRigidIGAL_IGAL(const std::string &resultDir,
+                               NuTo::Interpolation::eTypeOrder rElementTypeIdent,
+                               int rNumNodesPerElementInOneDir,
+                               NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                               int rDegree,
+                               double rPenalty,
+                               NuTo::eIntegrationType rIntegrationType,
+                               int rContactAlgo,
+                               int numElXSlave, int numElYSlave)
+{
+    NuTo::Structure myStructure(2);
+    myStructure.SetNumTimeDerivatives(0);
+
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure.SetNumProcessors(numThreads);
+#endif
+
+    /////////////////////////////////////////////////////////////////////
+    // ====> create SLAVE mesh from gmsh (smth. impacting a rectangle) //
+    /////////////////////////////////////////////////////////////////////
+
+    double startySlave = 0.0;
+
+    std::set<NuTo::Node::eDof> setOfDOFSSlave;
+    setOfDOFSSlave.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFSSlave.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesSlave = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
+                                numElXSlave, numElYSlave, 1., 1., 1., 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
+
+    // ===> build contact elements slave elements
+    auto LambdaGetSlaveNodesLower = [startySlave](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+        {
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            if ((y >= 0. - Tol && y <= 0. + Tol))
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetSlaveNodesLower
+
+    int groupNodesSlaveLower = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesSlaveLower, groupNodesSlave, LambdaGetSlaveNodesLower);
+
+    int groupElementsSlaveLower = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
+
+
+    int groupNodesIGAlayer = myStructure.GroupCreate("Nodes");
+    int groupElementsIGAlayer  = myStructure.GroupCreate("Elements");
+    Eigen::MatrixXd A;
+    int countDBC = 0;
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsSlave;
+    AddIGALayer(&myStructure,
+                LambdaGetSlaveNodesLower,
+                groupNodesSlaveLower,
+                rDegree,
+                A,
+                groupElementsIGAlayer,
+                groupNodesIGAlayer,
+                elementsSlave,
+                countDBC);
+
+    //////////////////////////////
+    // ====> create MASTER mesh //
+    //////////////////////////////
+    // create IGA curve
+    int numPoints = 10;
+    double Length = 3.;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,2);
+    for(int i = 0; i < numPoints; i++)
+    {
+        points(i,0) = i*Length/(numPoints-1);
+        points(i,1) = 0.;
+    }
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv;
+    NuTo::NURBSCurve curve(rDegree, points, AInv);
+    for(int i = 0; i < 1; i++) curve.DuplicateKnots();
+
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    int groupNodesIGA    = myStructure.GroupCreate("Nodes");
+    int groupElementsIGA = myStructure.GroupCreate("Elements");
+
+    Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER");
+
+//    SetDBC(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+//    SetDBCPatchTest(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+    SetDBCPatchTestIGA_L_RigidIGA_L(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
+
+    ///////////////////
+    // ===> material //
+    ///////////////////
+
+    double Thickness = 1.;
+    int section = myStructure.SectionCreate("PLANE_STRESS");
+    myStructure.SectionSetThickness(section, Thickness);
+
+    double E = 1.e5;
+    double nue = 0.3;
+    double rho = 0.;
+
+    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+    myStructure.ElementTotalSetSection(section);
+    myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
+
+    ////////////////////////////
+    // ===> CONTACT ELEMENTS  //
+    ////////////////////////////
+
+    int constitutiveLawPC = myStructure.ConstitutiveLawCreate("Contact_Constitutive_Law");
+    std::function<double(double)> constitutiveContactLaw  =
+    [rPenalty](double rGap) -> double
+    {
+        if(rGap<0)
+            return rPenalty*rGap;
+        else
+            return 0.;
+    };
+
+    std::function<double(double)> constitutiveContactLawDerivative =
+    [rPenalty](double rGap) -> double
+    {
+        if(rGap<=0)
+            return rPenalty;
+        else
+            return 0.;
+    };
+
+    myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLaw);
+    myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivative);
+
+    myStructure.NuTo::Structure::ContactElementsCreate<1,1>(groupElementsIGAlayer, groupNodesIGAlayer, elementsMaster, rIntegrationType, rContactAlgo, constitutiveLawPC);
+
+    ///////////////////
+    // ===> Solution //
+    ///////////////////
+    //set result directory
+    if (boost::filesystem::exists(resultDir))
+    {
+        if (boost::filesystem::is_directory(resultDir))
+        {
+            boost::filesystem::remove_all(resultDir);
+        }
+    }
+
+    // create result directory
+    boost::filesystem::create_directory(resultDir);
+
+    myStructure.CalculateMaximumIndependentSets();
+    myStructure.NodeBuildGlobalDofs();
+
+    NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
+    double timeStep = 1.;
+    double simulationTime = 1.;
+
+    myIntegrationScheme.SetResultDirectory(resultDir, true);
+
+    std::vector<int> IPIdsSlave;
+    std::vector<int> IPIdsMaster;
+
+    switch(rIntegrationType)
+    {
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(11);
+        IPIdsMaster.push_back(10);
+        IPIdsMaster.push_back(9);
+        IPIdsMaster.push_back(8);
+        IPIdsMaster.push_back(7);
+        IPIdsMaster.push_back(6);
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        IPIdsSlave.push_back(6);
+        IPIdsSlave.push_back(7);
+        IPIdsSlave.push_back(8);
+        IPIdsSlave.push_back(9);
+        IPIdsSlave.push_back(10);
+        IPIdsSlave.push_back(11);
+        break;
+    }
+    default:
+        throw NuTo::MechanicsException("[NuTo::Test::Contact] No Integration Type Defined.");
+    }
+
+     // create boundary elements for visualizing the results slave
+    int slaveContactElementsGroupId = myStructure.BoundaryElementsCreate(groupElementsSlaveLower, groupNodesSlaveLower, NULL);
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersSlaveContactBoundaryVisualize;
+    myStructure.ElementGroupGetMembers(slaveContactElementsGroupId, rMembersSlaveContactBoundaryVisualize);
+    for(int i = 0; i < rMembersSlaveContactBoundaryVisualize.rows(); i++)
+    {
+        NuTo::ElementBase* elementPtr = myStructure.ElementGetElementPtr(rMembersSlaveContactBoundaryVisualize(i));
+        NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
+        elementPtr->SetIntegrationType(myStructure.GetPtrIntegrationType(rIntegrationType), ipDataType);
+    }
+
+    myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+
+    myIntegrationScheme.SetMinTimeStepPlot(1.);
+    myIntegrationScheme.SetLastTimePlot(0.);
+
+    myIntegrationScheme.SetToleranceForce(11.6);
+    myIntegrationScheme.SetMaxNumIterations(50);
+    myIntegrationScheme.SetTimeStep(timeStep);
+    myIntegrationScheme.SetPerformLineSearch(false);
+    myIntegrationScheme.Solve(simulationTime);
+
+#ifdef ENABLE_VISUALIZE
+    int visualizationGroup = groupElementsSlave;
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    myStructure.ElementGroupExportVtkDataFile(visualizationGroup, resultDir+"/Elements.vtu", true);
+
+    myStructure.AddVisualizationComponent(groupElementsIGA, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.ElementGroupExportVtkDataFile(groupElementsIGA, resultDir+"/ElementsLayer.vtu", true);
+#endif
+}
+
+
 int main()
 {
     std::string resultDir = "";
@@ -818,18 +1665,40 @@ int main()
     nodeCoordinates(1) = 1;
     nodeCoordinates(2) = 2;
 
-    int factor = 10;
-    int contactAlgorithm = 1;
-
-    resultDir = "./ResultsStaticElementElementLobatto2";
+    int factor = 3;
+    int contactAlgorithm = 0;
+    resultDir = "./ResultsStaticElementElementRigid";
     degree = 2;
+
+    ContactTestRigidIGAL_IGAL(resultDir,
+                              NuTo::Interpolation::eTypeOrder::LOBATTO2,
+                              3,
+                              nodeCoordinates,
+                              degree,
+                              1.e9,
+                              NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip, contactAlgorithm, 1*factor, 1*factor);
+
+    return 0;
+
+    ContactTestRigidIGA(resultDir,
+                        NuTo::Interpolation::eTypeOrder::LOBATTO2,
+                        3,
+                        nodeCoordinates,
+                        degree,
+                        1.e9,
+                        NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip, contactAlgorithm, 1*factor, 1*factor);
+
+    return 0;
+
+    resultDir = "./ResultsStaticElementElement";
+
     ContactTest(resultDir,
                 NuTo::Interpolation::eTypeOrder::LOBATTO2,
                 3,
                 nodeCoordinates,
                 degree,
                 1.e9,
-                NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 1*factor, 1*factor, 3*factor, 1*factor);
+                NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip, contactAlgorithm, 1*factor, 1*factor, 3*factor, 1*factor);
 
     return 0;
 
