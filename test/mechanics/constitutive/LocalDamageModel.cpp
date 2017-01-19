@@ -68,7 +68,7 @@ void EvaluateLocalDamageModelModel(NuTo::EngineeringStrain<TDim> rStrain, NuTo::
     }
 }
 
-BOOST_AUTO_TEST_CASE(check_d_stress_d_strain)
+BOOST_AUTO_TEST_CASE(check_d_stress_d_strain2D)
 {
     constexpr double youngsModulus          = 4e4;
     constexpr double poissonsRatio          = 0.2;
@@ -119,3 +119,52 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain)
 }
 
 
+BOOST_AUTO_TEST_CASE(check_d_stress_d_strain3D)
+{
+    constexpr double youngsModulus          = 4e4;
+    constexpr double poissonsRatio          = 0.2;
+    constexpr double tensileStrength        = 3;
+    constexpr double compressiveStrength    = 30;
+    constexpr double fractureEnergy         = 0.01;
+
+
+    NuTo::LocalDamageModel localDamageModel;
+    localDamageModel.SetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS,       youngsModulus);
+    localDamageModel.SetParameterDouble(eConstitutiveParameter::POISSONS_RATIO,       poissonsRatio);
+    localDamageModel.SetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH,     tensileStrength);
+    localDamageModel.SetParameterDouble(eConstitutiveParameter::COMPRESSIVE_STRENGTH, compressiveStrength);
+    localDamageModel.SetParameterDouble(eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy);
+
+    double kappa_0 = tensileStrength / youngsModulus;
+    double kappa = kappa_0/3.;
+    EvaluateLocalDamageModelModel<3>({    0.,     0.,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 1.e-5,     0.,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({-1.e-5,     0.,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 1.e-5,  1.e-5,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 2.e-5,  1.e-5,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 2.e-5, -1.e-5,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({     0,      0,  2.e-5, 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 1.e-5,  1.e-5,  2.e-5, 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({ 1.e-5, -2.e-5,  2.e-5, 0., 0., 0.}, localDamageModel , kappa);
+
+    // some test in damaged loading
+    kappa = 2*kappa_0;
+    double eps = 1.e-7; // small load increment = damaged loading
+    EvaluateLocalDamageModelModel<3>({kappa+eps,   0.,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,      eps,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,       0.,    eps, 0., 0., 0.}, localDamageModel , kappa);
+
+    EvaluateLocalDamageModelModel<3>({kappa+eps, +eps,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,      eps,    eps, 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa+eps,   0.,    eps, 0., 0., 0.}, localDamageModel , kappa);
+
+
+    // decrement = elastic unloading
+    EvaluateLocalDamageModelModel<3>({kappa-eps,   0.,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,     -eps,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,       0.,   -eps, 0., 0., 0.}, localDamageModel , kappa);
+
+    EvaluateLocalDamageModelModel<3>({kappa-eps, -eps,     0., 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa,     -eps,   -eps, 0., 0., 0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<3>({kappa-eps,   0.,   -eps, 0., 0., 0.}, localDamageModel , kappa);
+}

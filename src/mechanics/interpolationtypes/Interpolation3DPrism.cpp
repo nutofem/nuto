@@ -85,23 +85,23 @@ int NuTo::Interpolation3DPrism::CalculateNumNodes() const
 Eigen::VectorXd NuTo::Interpolation3DPrism::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
-    double alpha = rNaturalSurfaceCoordinates(0);
-    double beta = rNaturalSurfaceCoordinates(1);
+    double alpha = rNaturalSurfaceCoordinates[0];
+    double beta = rNaturalSurfaceCoordinates[1];
 
     switch (rSurface)
     {
     case 0:
         return Eigen::Vector3d( beta,alpha,  -1.);
     case 1:
-        return Eigen::Vector3d(alpha,  -1., beta);
+        return Eigen::Vector3d(alpha, beta, 1.);
     case 2:
-        return Eigen::Vector3d(  -1., beta,alpha);
+        return Eigen::Vector3d(0.5 + 0.5 * alpha, 0, beta);
     case 3:
-        return Eigen::Vector3d(alpha, beta,   1.);
+        return Eigen::Vector3d(0, 0.5 + 0.5*beta,   alpha);
     case 4:
-        return Eigen::Vector3d( beta,   1.,alpha);
+        return Eigen::Vector3d(0.5 + 0.5*beta, 0.5 - 0.5*beta, alpha);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -112,24 +112,25 @@ Eigen::MatrixXd NuTo::Interpolation3DPrism::CalculateDerivativeNaturalSurfaceCoo
     switch (rSurface)
     {
     case 0:
-        dXidAlpha(0, 1) = 1.;
         dXidAlpha(1, 0) = 1.;
+        dXidAlpha(0, 1) = 1.;
         break;
     case 1:
         dXidAlpha(0, 0) = 1.;
-        dXidAlpha(2, 1) = 1.;
+        dXidAlpha(1, 1) = 1.;
         break;
     case 2:
-        dXidAlpha(1, 1) = 1.;
-        dXidAlpha(2, 0) = 1.;
+        dXidAlpha(0, 0) = 0.5;
+        dXidAlpha(2, 1) = 1.;
         break;
     case 3:
-        dXidAlpha(0, 0) = 1.;
-        dXidAlpha(1, 1) = 1.;
+        dXidAlpha(2, 0) = 1.;
+        dXidAlpha(1, 1) = 0.5;
         break;
     case 4:
-        dXidAlpha(0, 1) = 1.;
         dXidAlpha(2, 0) = 1.;
+        dXidAlpha(0, 1) = 0.5;
+        dXidAlpha(1, 1) =-0.5;
         break;
 
     default:
@@ -140,17 +141,43 @@ Eigen::MatrixXd NuTo::Interpolation3DPrism::CalculateDerivativeNaturalSurfaceCoo
 
 std::vector<Eigen::VectorXd> NuTo::Interpolation3DPrism::GetSurfaceEdgesCoordinates(int rSurface) const
 {
-    int numNodes = 4;
-    // returns exactly three nodes, (-1,-1).T; (1,-1).T; (1,1).T and (-1,1).T
-    Eigen::Matrix<double, 2, 4> alpha = Eigen::Matrix<double, 2, 4>::Zero(); // row1 = alpha, row2 = beta
-
-    alpha << -1.,  1.,  1., -1.,
-             -1., -1.,  1.,  1.;
-    std::vector<Eigen::VectorXd> surfaceEdgeCoordinates(numNodes);
-    for (int i = 0; i < numNodes; ++i)
+    std::vector<Eigen::VectorXd> surfaceEdgeCoordinates;
+    switch (rSurface)
     {
-        Eigen::VectorXd naturalSurfaceCoordinate = alpha.col(i);
-        surfaceEdgeCoordinates[i] = CalculateNaturalSurfaceCoordinates(naturalSurfaceCoordinate, rSurface);
+    case 0:
+        surfaceEdgeCoordinates.resize(3);
+        surfaceEdgeCoordinates[0] = Eigen::Vector3d(0,0,-1);
+        surfaceEdgeCoordinates[1] = Eigen::Vector3d(1,0,-1);
+        surfaceEdgeCoordinates[2] = Eigen::Vector3d(0,1,-1);
+        return surfaceEdgeCoordinates;
+    case 1:
+        surfaceEdgeCoordinates.resize(3);
+        surfaceEdgeCoordinates[0] = Eigen::Vector3d(0,0, 1);
+        surfaceEdgeCoordinates[1] = Eigen::Vector3d(1,0, 1);
+        surfaceEdgeCoordinates[2] = Eigen::Vector3d(0,1, 1);
+        return surfaceEdgeCoordinates;
+    case 2:
+        surfaceEdgeCoordinates.resize(4);
+        surfaceEdgeCoordinates[0] = Eigen::Vector3d(0, 0,-1);
+        surfaceEdgeCoordinates[1] = Eigen::Vector3d(1, 0,-1);
+        surfaceEdgeCoordinates[2] = Eigen::Vector3d(1, 0, 1);
+        surfaceEdgeCoordinates[3] = Eigen::Vector3d(0, 0, 1);
+        return surfaceEdgeCoordinates;
+    case 3:
+        surfaceEdgeCoordinates.resize(4);
+        surfaceEdgeCoordinates[0] = Eigen::Vector3d(0, 0,-1);
+        surfaceEdgeCoordinates[1] = Eigen::Vector3d(0, 1,-1);
+        surfaceEdgeCoordinates[2] = Eigen::Vector3d(0, 1, 1);
+        surfaceEdgeCoordinates[3] = Eigen::Vector3d(0, 0, 1);
+        return surfaceEdgeCoordinates;
+    case 4:
+        surfaceEdgeCoordinates.resize(4);
+        surfaceEdgeCoordinates[0] = Eigen::Vector3d(0, 1,-1);
+        surfaceEdgeCoordinates[1] = Eigen::Vector3d(1, 0,-1);
+        surfaceEdgeCoordinates[2] = Eigen::Vector3d(1, 0, 1);
+        surfaceEdgeCoordinates[3] = Eigen::Vector3d(0, 1, 1);
+        return surfaceEdgeCoordinates;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
     }
-    return surfaceEdgeCoordinates;
 }

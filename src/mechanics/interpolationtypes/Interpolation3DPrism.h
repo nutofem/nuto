@@ -60,7 +60,7 @@ public:
         return 5;
     }
 
-    //! @brief returns the natural coordinates of the nodes that span the surface
+    //! @brief returns the natural coordinates of the nodes that span the surface (3D natural coordinates)
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
     std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;

@@ -434,6 +434,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         timeStep *= 0.5;
                         if (timeStep < mMinTimeStep) {
 
+#ifdef HAVE_ARPACK
                             hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
                             const BlockSparseMatrix& evMatrix = hessian0.JJ;
 
@@ -444,7 +445,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                             std::cout << "EV smallest: " << evs.first << std::endl;
                             std::cout << "EV largest:  " << evl.first << std::endl;
                             std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
-
+#endif // HAVE_ARPACK
                             mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
                             throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                         }

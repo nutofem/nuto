@@ -288,6 +288,74 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDi
     std::cout << "[SurfaceLoad::HydrostaticPressureBrick3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
+void HydrostaticPressurePrism3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+{
+    NuTo::Structure myStructure(3);
+    myStructure.SetShowTime(false);
+
+    Eigen::MatrixXd nodeCoords(3,6), nodeCoordsRot(3,6);
+
+    nodeCoords <<
+        0,3,0,0,3,0,
+        0,0,4,0,0,4,
+        0,0,0,5,5,5;
+
+    Eigen::Matrix3d rotationMatrix(
+        Eigen::AngleAxisd( M_PI/3., Eigen::Vector3d::UnitX())
+            * Eigen::AngleAxisd(-M_PI/5., Eigen::Vector3d::UnitY())
+            * Eigen::AngleAxisd( M_PI/7., Eigen::Vector3d::UnitZ()));
+
+    nodeCoordsRot = rotationMatrix * nodeCoords;
+
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+
+    std::vector<int> surfaces(5);
+
+    surfaces[0] = myStructure.GroupCreate("Nodes");
+    myStructure.GroupAddNode(surfaces[0], nodeIds[0]);
+    myStructure.GroupAddNode(surfaces[0], nodeIds[1]);
+    myStructure.GroupAddNode(surfaces[0], nodeIds[2]);
+
+    surfaces[1] = myStructure.GroupCreate("Nodes");
+    myStructure.GroupAddNode(surfaces[1], nodeIds[3]);
+    myStructure.GroupAddNode(surfaces[1], nodeIds[4]);
+    myStructure.GroupAddNode(surfaces[1], nodeIds[5]);
+
+    surfaces[2] = myStructure.GroupCreate("Nodes");
+    myStructure.GroupAddNode(surfaces[2], nodeIds[1]);
+    myStructure.GroupAddNode(surfaces[2], nodeIds[2]);
+    myStructure.GroupAddNode(surfaces[2], nodeIds[5]);
+    myStructure.GroupAddNode(surfaces[2], nodeIds[4]);
+
+    surfaces[3] = myStructure.GroupCreate("Nodes");
+    myStructure.GroupAddNode(surfaces[3], nodeIds[0]);
+    myStructure.GroupAddNode(surfaces[3], nodeIds[2]);
+    myStructure.GroupAddNode(surfaces[3], nodeIds[5]);
+    myStructure.GroupAddNode(surfaces[3], nodeIds[3]);
+
+    surfaces[4] = myStructure.GroupCreate("Nodes");
+    myStructure.GroupAddNode(surfaces[4], nodeIds[1]);
+    myStructure.GroupAddNode(surfaces[4], nodeIds[0]);
+    myStructure.GroupAddNode(surfaces[4], nodeIds[3]);
+    myStructure.GroupAddNode(surfaces[4], nodeIds[4]);
+
+    myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::eShapeType::PRISM3D);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
+
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
+
+    for (int surface : surfaces)
+        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, surface, pressure);
+
+
+    CheckHydrostaticPressure(myStructure);
+    std::cout << "[SurfaceLoad::HydrostaticPressurePrism3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
+}
+
 void CheckSurfaceLoad(NuTo::Structure& rStructure, const Eigen::VectorXd& rLoad, double rSurfaceArea)
 {
     auto extLoadVector = rStructure.BuildGlobalExternalLoadVector(0).J[NuTo::Node::eDof::DISPLACEMENTS];
@@ -578,7 +646,6 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     std::cout << "[SurfaceLoad::SurfaceLoadBrick3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
-
 int main()
 {
 
@@ -601,6 +668,9 @@ int main()
 
         HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+
+        HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
         HydrostaticPressureBrick3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         HydrostaticPressureBrick3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

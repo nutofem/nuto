@@ -62,13 +62,11 @@ public:
                           Data& rStaticData);
 
 
-    bool Evaluate2D(NuTo::ConstitutivePlaneState planeState, double rCurrentKappa,
-            const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
     //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Kappa value calculated from history data.
+    template <int TDim>
     double GetCurrentStaticData(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
 
     //! @brief Calculates the error of the extrapolation.
