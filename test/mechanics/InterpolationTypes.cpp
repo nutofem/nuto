@@ -38,6 +38,18 @@
 
 const bool PRINTRESULT = true;
 
+//! @brief checks if the shape functions sum up to 1 (at all integration points)
+void CheckPartitionOfUnity(const NuTo::InterpolationType &rIT, const NuTo::Node::eDof &dofType)
+{
+    for (int iIP = 0; iIP < rIT.GetCurrentIntegrationType().GetNumIntegrationPoints(); ++iIP)
+    {
+        Eigen::VectorXd ip = rIT.GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
+        if (abs(rIT.Get(dofType).CalculateShapeFunctions(ip).sum() - 1.) > 1.e-6)
+            throw NuTo::MechanicsException("[CheckPartitionOfUnity] shape functions at integration point "
+                                               + std::to_string(iIP) + " do not sum up to 1.");
+    }
+}
+
 //! @brief checks wheather B = dN/dxi around node 0
 void CheckDerivatives(NuTo::InterpolationType& rIT)
 {
@@ -85,6 +97,7 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
         throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] Wrong node number");
     }
 
+
     int numNodes = rIT.GetNumNodes();
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
@@ -119,6 +132,8 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
         }
     }
     std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;
+
+    CheckPartitionOfUnity(rIT, dofType);
     CheckDerivatives(rIT);
 }
 
@@ -156,8 +171,8 @@ void CheckTruss()
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-        CheckShapeFunctionsAndNodePositions(myIT, 3);
         myIT.UpdateIntegrationType(myIntegrationType);
+        CheckShapeFunctionsAndNodePositions(myIT, 3);
         myIT.PrintNodeCoordinates();
         myIT.PrintNodeIndices();
         CheckNodeIndexing (myIT);
@@ -167,8 +182,8 @@ void CheckTruss()
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
-        CheckShapeFunctionsAndNodePositions(myIT, 4);
         myIT.UpdateIntegrationType(myIntegrationType);
+        CheckShapeFunctionsAndNodePositions(myIT, 4);
         myIT.PrintNodeCoordinates();
         myIT.PrintNodeIndices();
         CheckNodeIndexing (myIT);
