@@ -669,8 +669,8 @@ int main()
         HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
-        HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        //HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        //HydrostaticPressurePrism3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
         HydrostaticPressureBrick3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         HydrostaticPressureBrick3D(         NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
