@@ -15,38 +15,14 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-//! @brief creates a new interpolation type, calls the enum method
-//! @param rShape ... element shape "TRUSS", "TRIANGLE", "QUAD", "TET", "BRICK", etc.
-//! @return ... interpolation type id
 int NuTo::Structure::InterpolationTypeCreate(const std::string& rShape)
 {
-    Interpolation::eShapeType shapeType = Interpolation::ShapeTypeToEnum(rShape);
-
-    //find unused integer id
-    int interpolationTypeNumber = mInterpolationTypeMap.size();
-    boost::ptr_map<int,InterpolationType>::iterator it = mInterpolationTypeMap.find(interpolationTypeNumber);
-    while (it!=mInterpolationTypeMap.end())
-    {
-        interpolationTypeNumber++;
-        it = mInterpolationTypeMap.find(interpolationTypeNumber);
-    }
-
-    this->InterpolationTypeCreate(interpolationTypeNumber, shapeType);
-    return interpolationTypeNumber;
+    return InterpolationTypeCreate(Interpolation::ShapeTypeToEnum(rShape));
 }
 
 int NuTo::Structure::InterpolationTypeCreate(NuTo::Interpolation::eShapeType rShape)
 {
-
-    //find unused integer id
-    int interpolationTypeNumber = mInterpolationTypeMap.size();
-    boost::ptr_map<int,InterpolationType>::iterator it = mInterpolationTypeMap.find(interpolationTypeNumber);
-    while (it!=mInterpolationTypeMap.end())
-    {
-        interpolationTypeNumber++;
-        it = mInterpolationTypeMap.find(interpolationTypeNumber);
-    }
-
+    int interpolationTypeNumber = GetUnusedId(mInterpolationTypeMap);
     this->InterpolationTypeCreate(interpolationTypeNumber, rShape);
     return interpolationTypeNumber;
 }
@@ -64,12 +40,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 
 void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType)
 {
-    auto iterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    if (iterator == mInterpolationTypeMap.end())
-        throw MechanicsException("[NuTo::Structure::InterpolationTypeSetIntegrationType] InterpolationType with ID"
-                + std::to_string(iterator->first) + " does not exist.");
-
-    InterpolationType* interpolationType = iterator->second;
+    InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
     interpolationType->UpdateIntegrationType(*rIntegrationType);
 
     // update all elements
@@ -92,24 +63,11 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 }
 
 
-
-//! @brief prints the info to the interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
 void NuTo::Structure::InterpolationTypeInfo(int rInterpolationTypeId) const
 {
-    boost::ptr_map<int,InterpolationType>::const_iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    // check if identifier exists
-    if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeSetIsConstitutiveInput] Interpolation type does not exist.");
-
-
-    mLogger << itIterator->second->Info();
+    mLogger << InterpolationTypeGet(rInterpolationTypeId)->Info();
 }
 
-//! @brief creates a new interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rShape ... element shape "1DTRUSS", "2DTRIANGLE", "2DQUAD", "3DTET", "3DBRICK", etc.
-//! @return ... index in the mInterpolationType map
 void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::Interpolation::eShapeType rShape)
 {
     // check if constitutive law identifier exists
@@ -120,19 +78,11 @@ void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::In
 
 }
 
-//! @brief adds a dof to a interpolation type, calls the enum method
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder)
 {
     InterpolationTypeAdd(rInterpolationTypeId,Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
 }
 
-//! @brief adds a dof to IGA interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
                                            NuTo::Node::eDof rDofType,
                                            NuTo::Interpolation::eTypeOrder rTypeOrder,
@@ -140,12 +90,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
                                            const std::vector<Eigen::VectorXd> &rKnots,
                                            const Eigen::MatrixXd &rWeights)
 {
-    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    // check if identifier exists
-    if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAdd] Interpolation type does not exist.");
-
-    InterpolationType* interpolationType = itIterator->second;
+    InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots, rWeights);
 
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
@@ -175,18 +120,9 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     SetShowTime(showTime);
 }
 
-//! @brief adds a dof to a interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
-    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    // check if identifier exists
-    if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAdd] Interpolation type does not exist.");
-
-    InterpolationType* interpolationType = itIterator->second;
+    InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder);
 
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
@@ -214,4 +150,22 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     GroupDelete(elementGroupId);
     UpdateDofStatus();
     SetShowTime(showTime);
+}
+
+NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterpolationTypeId)
+{
+    auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+    return itIterator->second;
+}
+
+const NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterpolationTypeId) const
+{
+    auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+    return itIterator->second;
 }

@@ -307,15 +307,21 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     std::vector<int> elementIndices = elementGroup->GetMemberIds();
     int numElements = elementIndices.size();
 
-//    const InterpolationType* interpolationType = this->ElementGetElementPtr(elementIndices.at(0,0))->GetInterpolationType();
+//    const InterpolationType& interpolationType = this->ElementGetElementPtr(elementIndices[0])->GetInterpolationType();
 
     std::vector<ElementBase*> elements(numElements);
     for (int iElement = 0; iElement < numElements; ++iElement)
     {
         int elementId = elementIndices[iElement];
         elements[iElement] = &(mElementMap.at(elementId));
-//        if (interpolationType != elements[iElement]->GetInterpolationType())
+//        if (&interpolationType != &elements[iElement]->GetInterpolationType())
 //            throw MechanicsException(__PRETTY_FUNCTION__, "All elements must have the same interpolation type.");
+        /*
+         * TODO: Check if the interpolation **order** of the same DOF type is equal for all elements.
+         * The test above fails if you try to match QUAD EQUIDISTANT2 with TRIANGLE EQUIDISTANT2. Which is not correct.
+         *
+         *
+         */
     }
 
 
@@ -494,13 +500,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 // create node manually
                 NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
 
-                int id(mNodeMap.size());
-                boost::ptr_map<int, NodeBase>::iterator it = mNodeMap.find(id);
-                while (it != mNodeMap.end())
-                {
-                    id++;
-                    it = mNodeMap.find(id);
-                }
+                int id = GetUnusedId(mNodeMap);
                 mNodeMap.insert(id, newNode);
 
                 // set the node pointer for all suitable elements

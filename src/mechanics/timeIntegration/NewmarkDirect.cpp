@@ -29,7 +29,7 @@
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "math/SparseMatrix.h"
-#include "math/SparseMatrixCSR.h"
+#include "math/SparseMatrixCSRVector2General.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -438,10 +438,10 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                             hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
                             const BlockSparseMatrix& evMatrix = hessian0.JJ;
 
-                            std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = evMatrix.ExportToCSR();
+                            auto matrixForSolver = evMatrix.ExportToCSRVector2General();
                             EigenSolverArpack m;
-                            auto evs = m.GetSmallest(*matrixForSolver);
-                            auto evl = m.GetLargest(*matrixForSolver);
+                            auto evs = m.GetSmallest(matrixForSolver);
+                            auto evl = m.GetLargest(matrixForSolver);
                             std::cout << "EV smallest: " << evs.first << std::endl;
                             std::cout << "EV largest:  " << evl.first << std::endl;
                             std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;

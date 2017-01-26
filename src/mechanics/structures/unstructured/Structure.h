@@ -501,6 +501,17 @@ public:
                               const std::vector<Eigen::VectorXd> &rKnots,
                               const Eigen::MatrixXd &rWeights);
 
+    //! @brief returns the interpolation type for a given interpolation type id
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @return InterpolationType ptr
+    InterpolationType* InterpolationTypeGet(int rInterpolationTypeId);
+
+    //! @brief returns the interpolation type for a given interpolation type id
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @return InterpolationType ptr
+    const InterpolationType* InterpolationTypeGet(int rInterpolationTypeId) const;
+
+
 #endif //SWIG
 
     //***********************************************************

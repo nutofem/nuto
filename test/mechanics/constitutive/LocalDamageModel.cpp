@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain3D)
 
     // some test in damaged loading
     kappa = 2*kappa_0;
-    double eps = 1.e-7; // small load increment = damaged loading
+    double eps = 1.e-6; // small load increment = damaged loading
     EvaluateLocalDamageModelModel<3>({kappa+eps,   0.,     0., 0., 0., 0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<3>({kappa,      eps,     0., 0., 0., 0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<3>({kappa,       0.,    eps, 0., 0., 0.}, localDamageModel , kappa);

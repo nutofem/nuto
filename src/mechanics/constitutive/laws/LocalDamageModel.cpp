@@ -517,7 +517,7 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate<3>(
             tangentElastic(4, 4) = C44;
             tangentElastic(5, 5) = C44;
 
-            tangent = (1 - omega) * tangentElastic - dDamageDKappa * (effectiveStress * dLocalEqStrainDStrain.transpose());
+            tangent = (1 - omega) * tangentElastic - effectiveStress * dDamageDKappa * dLocalEqStrainDStrain.transpose();
             break;
         }
 

@@ -50,6 +50,8 @@ if(ENABLE_C++_TESTS)
         ConstraintsNodeToElementMatrixMesh3d
         ConstraintsNodeToElementFiberMesh3d
         TwoElements
+        CSDAMesh
+        MeshCompanionGmsh
         )
         execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
     endforeach()
@@ -86,6 +88,7 @@ if(ENABLE_C++_TESTS)
         ThermoMechanics2D
         TrussIn2D
         TrussIn3D
+        MeshCompanion
         )
 
         add_executable(${test} ${test}.cpp)

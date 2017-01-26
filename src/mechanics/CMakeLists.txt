@@ -168,6 +168,12 @@ set(NuToMechanicsLoads_SOURCES
     loads/LoadSurfacePressureFunction2D.cpp
     )
 
+set(NuToMechanicsMesh_SOURCES
+    mesh/MeshCompanion.cpp
+    mesh/ImportFromGmsh.cpp
+    mesh/ConvertToInterpolationType.cpp
+    )
+
 set(NuToMechanicsNodes_SOURCES
     nodes/NodeBase.cpp
     nodes/NodeDof.cpp
@@ -259,6 +265,7 @@ set(NuToMechanics_SOURCES
     ${NuToMechanicsInterpolationtypes_SOURCE}
     ${NuToMechanicsIGA_SOURCE}
     ${NuToMechanicsLoads_SOURCES}
+    ${NuToMechanicsMesh_SOURCES}
     ${NuToMechanicsNodes_SOURCES}
     ${NuToMechanicsSection_SOURCES}
     ${NuToMechanicsStructures_SOURCES}
