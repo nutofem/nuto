@@ -78,6 +78,8 @@ if(ENABLE_C++_TESTS)
         InterpolationTypes
         IPData
         LobattoIntegration
+        MeshCompanion
+        MisesPlasticity
         MultipleConstitutiveLaws
         NewmarkPlane2D4N
         ParallelAssembly
@@ -88,7 +90,6 @@ if(ENABLE_C++_TESTS)
         ThermoMechanics2D
         TrussIn2D
         TrussIn3D
-        MeshCompanion
         )
 
         add_executable(${test} ${test}.cpp)
@@ -102,22 +103,22 @@ if(ENABLE_C++_TESTS)
         add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
-    if(NOT DEFINED ENV{TRAVIS})
-        foreach(test
-            MisesPlasticity
-            )
-
-            add_executable(${test} ${test}.cpp)
-            target_link_libraries(${test} NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-            if(ENABLE_VISUALIZE)
-                target_link_libraries(${test} NuToVisualize)
-            endif()
-            if(MUMPS_FOUND)
-                target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-            endif()
-            add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
-        endforeach()
-    endif()
+#    if(NOT DEFINED ENV{TRAVIS})
+#        foreach(test
+#
+#            )
+#
+#            add_executable(${test} ${test}.cpp)
+#            target_link_libraries(${test} NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+#            if(ENABLE_VISUALIZE)
+#                target_link_libraries(${test} NuToVisualize)
+#            endif()
+#            if(MUMPS_FOUND)
+#                target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+#            endif()
+#            add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+#        endforeach()
+#    endif()
 
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)

@@ -534,6 +534,13 @@ public:
 
 
 #ifndef SWIG
+
+    //! @brief creates a node
+    //! @param rDOFs
+    //! @param rCoordinates coordinates of the node
+    //! @return node pointer
+    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
+
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
@@ -592,6 +599,8 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
+
+
 protected:
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... standard constructor just for the serialization routine
@@ -645,11 +654,6 @@ protected:
 
 protected:
 
-    //! @brief creates a node
-    //! @param rDOFs
-    //! @param rCoordinates coordinates of the node
-    //! @return node pointer
-    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief determines the dimensionality of a dof type
     //! @param rDof ... specific dof type
