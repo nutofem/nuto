@@ -1,5 +1,3 @@
-// $Id: RungeKuttaBase.cpp 575 2011-09-20 18:05:35Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -16,7 +14,6 @@
 # endif
 
 #include "math/SparseMatrixCSRVector2.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
@@ -68,7 +65,7 @@ void NuTo::RungeKuttaBase::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
+void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -230,9 +227,6 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
         throw;
     }
-
-    return NuTo::eError::SUCCESSFUL;
-
 }
 
 

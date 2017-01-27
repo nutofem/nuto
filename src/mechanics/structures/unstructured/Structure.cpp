@@ -21,7 +21,6 @@
 
 #include "mechanics/structures/unstructured/Structure.h"
 
-#include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
@@ -515,7 +514,6 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
             iteratorOutput.second->SetZero();
         }
 
-        eError errorGlobal = eError::SUCCESSFUL;
 #ifdef _OPENMP
         if (mNumProcessors!=0)
         {
@@ -599,19 +597,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 #endif
 
             // calculate element contribution
-            //bool symmetryFlag = false;
-            eError error = elementPtr->Evaluate(rInput, elementOutputMap);
-
-            if (error != eError::SUCCESSFUL)
-            {
-                if (errorGlobal == eError::SUCCESSFUL)
-                {
-                    errorGlobal = error;
-                } else if (errorGlobal != error)
-                {
-                    throw MechanicsException(__PRETTY_FUNCTION__, "elements have returned multiple different error codes, can't handle that.");
-                }
-            }
+            elementPtr->Evaluate(rInput, elementOutputMap);
 
             const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
             const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();

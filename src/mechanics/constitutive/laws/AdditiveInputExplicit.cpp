@@ -1,5 +1,4 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"

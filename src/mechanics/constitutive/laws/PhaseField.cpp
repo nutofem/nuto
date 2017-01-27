@@ -18,7 +18,6 @@
 #include "mechanics/constitutive/laws/PhaseField.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/structures/StructureBase.h"
@@ -555,14 +554,14 @@ namespace NuTo
 {
 
 template<>
-NuTo::eError NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+void NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 template<>
-NuTo::eError NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+void NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     const auto& planeState =
@@ -603,11 +602,10 @@ NuTo::eError NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitu
 
     // update history variables
     rStaticData.SetData(energyDensity);
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+void NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
@@ -678,7 +676,7 @@ double NuTo::PhaseField::GetParameterDouble(Constitutive::eConstitutiveParameter
 
 void NuTo::PhaseField::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-        throw MechanicsException(__PRETTY_FUNCTION__,"Function must not be used");
+    throw MechanicsException(__PRETTY_FUNCTION__,"Function must not be used");
 }
 
 NuTo::Constitutive::eConstitutiveType NuTo::PhaseField::GetType() const

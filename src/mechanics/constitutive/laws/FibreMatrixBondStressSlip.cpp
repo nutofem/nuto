@@ -1,7 +1,6 @@
 #include "mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementBase.h"
@@ -150,17 +149,16 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
 namespace NuTo // template specialization in same namespace as definition
 {
 template<>
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<1>(
+void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& staticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<2>(
+void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& rStaticData)
@@ -421,11 +419,10 @@ NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<2>(
     if (performUpdateAtEnd)
         rStaticData.SetData(slipLastConverged);
 
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<3>(
+void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& staticData)

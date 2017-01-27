@@ -90,28 +90,28 @@ protected:
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.template Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, mData);
+        mLaw.template Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.template Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, mData);
+        mLaw.template Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.template Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, mData);
+        mLaw.template Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
 private:

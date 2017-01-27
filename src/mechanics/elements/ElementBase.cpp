@@ -81,7 +81,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
 #endif // ENABLE_SERIALIZATION
 
 
-NuTo::eError NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
+void NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
 {
     ConstitutiveInputMap input;
     input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
@@ -230,7 +230,7 @@ double NuTo::ElementBase::GetIntegrationPointWeight(unsigned int rIP) const
 }
 
 template<int TDim>
-NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(
+void NuTo::ElementBase::EvaluateConstitutiveLaw(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         NuTo::ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP)
 {
@@ -241,14 +241,12 @@ NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(
         for (auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr) //check nullptr because of static data
                 itOutput.second->SetIsCalculated(false);
-        eError error = ipConstitutiveLaw.Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput);
+        ipConstitutiveLaw.Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput);
 
         for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
                 throw MechanicsException(__PRETTY_FUNCTION__,
                         "Output "+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
-
-        return error;
     }
     catch (NuTo::MechanicsException& e)
     {
@@ -257,11 +255,11 @@ NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(
     }
 }
 
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
+template void NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
         NuTo::ConstitutiveOutputMap&, unsigned int);
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap&,
+template void NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap&,
         NuTo::ConstitutiveOutputMap&, unsigned int);
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
+template void NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
         NuTo::ConstitutiveOutputMap&, unsigned int);
 
 

@@ -34,7 +34,6 @@ class StructureBase;
 class VisualizeComponentBase;
 class VisualizeComponent;
 class ElementOutputBase;
-enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumElementIGA;
@@ -225,21 +224,21 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    virtual eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
+    virtual void Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
 
     //! @brief Evaluate the constitutive law attached to an integration point.
     //! @param rConstitutiveInput Input map of the constitutive law.
     //! @param rConstitutiveOuput Output map of the constitutive law.
     //! @param IP The current integration point.
     template<int TDim>
-    eError EvaluateConstitutiveLaw(
+    void EvaluateConstitutiveLaw(
             const ConstitutiveInputMap& rConstitutiveInput,
             ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP);
 
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
+    void Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
@@ -248,9 +247,6 @@ public:
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
     void GetIntegratedStrain(Eigen::MatrixXd& rStress);
-
-    //! @brief Update the static data of an element
-    //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     Eigen::VectorXd ExtractNodeValues(Node::eDof rDofType) const
     {

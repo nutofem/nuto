@@ -42,7 +42,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
     template<int TDim>
-    NuTo::eError Evaluate(
+    void Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput);
 

@@ -692,11 +692,11 @@ public:
     void ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData);
 
     //! @brief updates the history data of a all elements
-    NuTo::eError ElementTotalUpdateStaticData();
+    void ElementTotalUpdateStaticData();
 
     //! @brief updates the temprory static data of a all elements
     //! its is a const function, since only mutuable data (instead of const) is updated (kind of temporary data)
-    NuTo::eError ElementTotalUpdateTmpStaticData();
+    void ElementTotalUpdateTmpStaticData();
 
     //! @brief For each integration point, shift the constitutive static data one step into the past.
     void ElementTotalShiftStaticDataToPast();

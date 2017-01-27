@@ -1,6 +1,5 @@
 #include "LinearDampingEngineeringStress.h"
 
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -134,7 +133,7 @@ void NuTo::LinearDampingEngineeringStress::SetParameterDouble(Constitutive::eCon
 
 
 template <int TDim>
-NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate(
+void NuTo::LinearDampingEngineeringStress::Evaluate(
         const ConstitutiveInputMap &rConstitutiveInput,
         const ConstitutiveOutputMap &rConstitutiveOutput)
 {
@@ -181,12 +180,11 @@ NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate(
         itOutput.second->SetIsCalculated(true);
     }
 
-    return eError::SUCCESSFUL;
 }
 
-template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::LinearDampingEngineeringStress::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
                                                                         const ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::LinearDampingEngineeringStress::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
                                                                         const ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::LinearDampingEngineeringStress::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
                                                                         const ConstitutiveOutputMap &rConstitutiveOutput);

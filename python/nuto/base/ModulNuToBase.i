@@ -3,7 +3,6 @@
 %feature("autodoc","1");
 %{
 /* Put headers and other declarations here to be added in the wrapper files */
-#include "base/ErrorEnum.h"
 #include "base/Exception.h"
 #include "base/NuToObject.h"
 #include <string>
@@ -44,5 +43,3 @@ class exception
     }
 }
 %include "base/NuToObject.h"
-%include "base/ErrorEnum.h"
-

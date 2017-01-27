@@ -1,5 +1,4 @@
 #include <typeinfo>
-#include "base/ErrorEnum.h"
 
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/nodes/NodeBase.h"
@@ -41,7 +40,7 @@ NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStruc
 {}
 
 template<int TDim>
-NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+void NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
     if (mSection == nullptr)
         throw MechanicsException(__PRETTY_FUNCTION__, "no section allocated for element.");
@@ -61,12 +60,9 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
-        if (error != eError::SUCCESSFUL)
-            return error;
+        EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
     }
-    return eError::SUCCESSFUL;
 }
 
 template<int TDim>

@@ -112,12 +112,11 @@ IPConstitutiveLawBase *IPAdditiveOutput::GetSublawIP(ConstitutiveBase *rCLPtr)
 
 
 template<int TDim>
-NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
+void IPAdditiveOutput::AdditiveOutputEvaluate(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput)
 {
     using namespace Constitutive;
-    eError error = eError::SUCCESSFUL;
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     for (auto& output : rConstitutiveOutput)
@@ -135,7 +134,7 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
                 singleOutput[output.first] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(output.first);
             }
 
-            error = sublaw.Evaluate<TDim>(rConstitutiveInput, singleOutput);
+            sublaw.Evaluate<TDim>(rConstitutiveInput, singleOutput);
 
             for (const auto& output : singleOutput)
             {
@@ -225,18 +224,17 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
         e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive output.");
         throw;
     }
-    return error;
 }
 
 
 
 
-template NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate<1>(
+template void IPAdditiveOutput::AdditiveOutputEvaluate<1>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate<2>(
+template void IPAdditiveOutput::AdditiveOutputEvaluate<2>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate<3>(
+template void IPAdditiveOutput::AdditiveOutputEvaluate<3>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);

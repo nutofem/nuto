@@ -10,7 +10,6 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 
@@ -92,7 +91,7 @@ bool HeatConduction::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof
 }
 
 template <int TDim>
-eError HeatConduction::Evaluate(
+void HeatConduction::Evaluate(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
@@ -159,7 +158,6 @@ eError HeatConduction::Evaluate(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return eError::SUCCESSFUL;
 }
 
 bool HeatConduction::CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const
@@ -258,9 +256,9 @@ void HeatConduction::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mRho);
 }
 
-template eError HeatConduction::Evaluate<1>(
+template void HeatConduction::Evaluate<1>(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template eError HeatConduction::Evaluate<2>(
+template void HeatConduction::Evaluate<2>(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template eError HeatConduction::Evaluate<3>(
+template void HeatConduction::Evaluate<3>(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);

@@ -43,7 +43,7 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                           const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... get type of constitutive relationship

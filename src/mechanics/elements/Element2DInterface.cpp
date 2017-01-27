@@ -1,8 +1,3 @@
-
-#include "base/ErrorEnum.h"
-
-
-
 #include "mechanics/elements/Element2DInterface.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -104,7 +99,7 @@ NuTo::ConstitutiveInputMap NuTo::Element2DInterface::GetConstitutiveInputMap(con
     return constitutiveInputMap;
 }
 
-NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput)
+void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput)
 {
 
     if (mSection == nullptr)
@@ -164,18 +159,15 @@ NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInp
 
         try
         {
-            eError error = EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, theIP);
-            if (error != eError::SUCCESSFUL)
-                return error;
-        } catch (NuTo::MechanicsException& e)
+            EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, theIP);
+        } 
+        catch (NuTo::MechanicsException& e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
             throw;
         }
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveOutput);
     }
-    return eError::SUCCESSFUL;
-
 }
 
 NuTo::Element::eElementType NuTo::Element2DInterface::GetEnumType() const

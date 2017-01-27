@@ -1,7 +1,3 @@
-#include "base/ErrorEnum.h"
-
-
-
 #include "mechanics/elements/ContinuumElementIGA.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"

@@ -24,12 +24,12 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData Pointer to the history data.
     template<int TDim>
-    eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                     const ConstitutiveOutputMap& rConstitutiveOutput,
                     Data& rStaticData)
     {
         auto kappaAndTangent = GetCurrentStaticData<TDim>(rStaticData, rConstitutiveInput, rConstitutiveOutput);
-        return GradientDamageEngineeringStress::EvaluateWithKappa<TDim>(
+        GradientDamageEngineeringStress::EvaluateWithKappa<TDim>(
             rConstitutiveInput, rConstitutiveOutput,
             kappaAndTangent.first, kappaAndTangent.second);
     }

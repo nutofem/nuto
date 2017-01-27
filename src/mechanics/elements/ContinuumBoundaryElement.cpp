@@ -4,7 +4,6 @@
  *  Created on: 5 Mar 2016
  *      Author: vhirtham
  */
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/elements/ContinuumBoundaryElement.h"
@@ -38,7 +37,7 @@ NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumEl
 {}
 
 template <int TDim>
-NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+void NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
     EvaluateDataContinuumBoundary<TDim> data;
     ExtractAllNecessaryDofValues(data);
@@ -54,14 +53,9 @@ NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveIn
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
-        if (error != eError::SUCCESSFUL)
-            return error;
-
+        EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
     }
-    return eError::SUCCESSFUL;
 }
 
 template <int TDim>

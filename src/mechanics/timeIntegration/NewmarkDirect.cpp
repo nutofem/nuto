@@ -12,7 +12,6 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "math/EigenSolverArpack.h"
 #include "base/CallbackInterface.h"
-#include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeBase.h"
@@ -49,7 +48,7 @@ void NuTo::NewmarkDirect::Info()const
     NewmarkBase::Info();
 }
 
-NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
+void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -419,9 +418,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                             timeStep = mMaxTimeStep;
                     }
 
-                    if (mCallback && mCallback->Exit(*mStructure))
-                        return NuTo::eError::SUCCESSFUL;
-
+                    if (mCallback && mCallback->Exit(*mStructure)) return;
                 }
                 else
                 {
@@ -463,8 +460,6 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
         throw;
     }
-    return NuTo::eError::SUCCESSFUL;
-
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file

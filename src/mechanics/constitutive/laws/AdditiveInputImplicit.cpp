@@ -1,5 +1,4 @@
 #include "AdditiveInputImplicit.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
@@ -41,11 +40,11 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
 }
 
 
-template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<1>(
+template void NuTo::AdditiveInputImplicit::Evaluate<1>(
     const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 
-template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<2>(
+template void NuTo::AdditiveInputImplicit::Evaluate<2>(
     const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 
-template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<3>(
+template void NuTo::AdditiveInputImplicit::Evaluate<3>(
     const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);

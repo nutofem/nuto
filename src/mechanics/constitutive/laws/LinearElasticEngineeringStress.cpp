@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -14,7 +12,6 @@
 
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 
@@ -108,7 +105,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
 namespace NuTo // template specialization in same namespace as definition
 {
 template<>
-NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<1>(
+void NuTo::LinearElasticEngineeringStress::Evaluate<1>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput)
 {
@@ -166,12 +163,11 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<1>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    //update history variables but for linear elastic, there is nothing to do
-    return eError::SUCCESSFUL;
 }
 
+
 template<>
-NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<2>(
+void NuTo::LinearElasticEngineeringStress::Evaluate<2>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput)
 {
@@ -285,12 +281,11 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<2>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    //update history variables but for linear elastic, there is nothing to do
-    return eError::SUCCESSFUL;
 }
 
+
 template<>
-NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<3>(
+void NuTo::LinearElasticEngineeringStress::Evaluate<3>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput)
 {
@@ -371,10 +366,6 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<3>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-
-    //update history variables but for linear elastic, there is nothing to do
-
-    return eError::SUCCESSFUL;
 }
 
 } // namespace NuTo
@@ -406,9 +397,6 @@ bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputable(NuTo::N
 }
 
 
-
-
-
 bool NuTo::LinearElasticEngineeringStress::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
@@ -428,7 +416,6 @@ bool NuTo::LinearElasticEngineeringStress::CheckHaveParameter(NuTo::Constitutive
 }
 
 
-
 double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
@@ -443,7 +430,6 @@ double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constituti
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
-
 
 
 void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
@@ -464,9 +450,6 @@ void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
-
-
-
 
 
 bool NuTo::LinearElasticEngineeringStress::CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const
@@ -490,12 +473,10 @@ bool NuTo::LinearElasticEngineeringStress::CheckOutputTypeCompatibility(NuTo::Co
 }
 
 
-
 NuTo::Constitutive::eConstitutiveType NuTo::LinearElasticEngineeringStress::GetType() const
 {
     return NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS;
 }
-
 
 
 bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
@@ -522,13 +503,9 @@ void NuTo::LinearElasticEngineeringStress::Info(unsigned short rVerboseLevel, Lo
 }
 
 
-
 void NuTo::LinearElasticEngineeringStress::CheckParameters() const
 {
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, mE);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, mNu);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, mRho);
 }
-
-
-

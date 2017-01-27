@@ -1,5 +1,3 @@
-// $Id: TimeIntegrationBase.h 593 2012-02-03 23:50:23Z unger3 $
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -51,7 +49,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    virtual NuTo::eError Solve(double rTimeDelta)=0;
+    virtual void Solve(double rTimeDelta)=0;
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     void ResetForNextLoad();

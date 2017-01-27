@@ -9,7 +9,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <iostream>
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 
 #include "mechanics/structures/StructureBase.h"
@@ -107,7 +106,7 @@ namespace NuTo
 {
 
 template<>
-NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& rStaticData)
@@ -116,7 +115,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(
 }
 
 template<>
-NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& rStaticData)
@@ -183,10 +182,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(
     }
     else
     {
-        eError errorReturnMapping = ReturnMapping2D(rStaticData.GetData(), engineeringStrain,
-                                                    engineeringStressPtr, tangent, newStaticDataPtr);
-        if (errorReturnMapping != eError::SUCCESSFUL)
-            return errorReturnMapping;
+        ReturnMapping2D(rStaticData.GetData(), engineeringStrain, engineeringStressPtr, tangent, newStaticDataPtr);
     }
 
     for (auto& itOutput : rConstitutiveOutput)
@@ -240,14 +236,10 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-
-    //update history variables but for linear elastic, there is nothing to do
-
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<3>(
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<3>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     Data& rStaticData)
@@ -316,10 +308,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<3>(
     }
     else
     {
-        eError errorReturnMapping = ReturnMapping3D(rStaticData.GetData(), engineeringStrain,
-                                                    engineeringStress, tangent, newStaticDataPtr);
-        if (errorReturnMapping != eError::SUCCESSFUL)
-            return errorReturnMapping;
+        ReturnMapping3D(rStaticData.GetData(), engineeringStrain, engineeringStress, tangent, newStaticDataPtr);
     }
 
     for (auto& itOutput : rConstitutiveOutput)
@@ -360,10 +349,6 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<3>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-
-    //update history variables but for linear elastic, there is nothing to do
-
-    return eError::SUCCESSFUL;
 }
 
 } // namespace NuTo
@@ -384,7 +369,7 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputable(Node:
 }
 
 
-NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
+void NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
         StaticData::DataMisesPlasticity<3>& oldStaticData,
         const EngineeringStrain<2>& rEngineeringStrain,
         ConstitutiveIOBase* rNewStress,
@@ -405,8 +390,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
     EngineeringStress<3> newStress3D;
     ConstitutiveMatrix<6,6> newTangent3D;
 
-    NuTo::eError error = ReturnMapping3D(oldStaticData, engineeringStrain3D, &newStress3D, &newTangent3D,
-            rNewStaticData);
+    ReturnMapping3D(oldStaticData, engineeringStrain3D, &newStress3D, &newTangent3D, rNewStaticData);
 
 
     if (rNewStress)
@@ -431,13 +415,9 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
         (*rNewTangent)(2,1) = newTangent3D(3,1);
         (*rNewTangent)(2,2) = newTangent3D(3,3);
     }
-
-
-
-    return error;
 }
 
-NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
+void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         StaticData::DataMisesPlasticity<3>& oldStaticData,
         const EngineeringStrain<3>& rEngineeringStrain,
         ConstitutiveIOBase* rNewStress,
@@ -570,7 +550,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         }
 
         // static data is unchanged
-        return eError::SUCCESSFUL;
+        return;
     }
 
     //plastic loading
@@ -605,7 +585,7 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         std::cout << "back stress" << back_stress[0] << " " << back_stress[1] << " " << back_stress[2] << " " << back_stress[3] << " " << back_stress[4] << " " << back_stress[5] << " " <<"\n";
         std::cout << "[NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D] No convergence after 100 steps, check the source code." << "\n";
 
-        return eError::NO_CONVERGENCE;
+        throw NuTo::Constitutive::DidNotConverge();
 
     }
 
@@ -707,8 +687,6 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         (*rNewTangent)(4,5) =   (*rNewTangent)(5,4);
         (*rNewTangent)(5,5) =   (	 0.5*factor 		 +factor2*df_dsigma[5]*df_dsigma[5]);
     }
-
-    return eError::SUCCESSFUL;
 }
 
 

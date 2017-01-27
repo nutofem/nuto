@@ -1,4 +1,3 @@
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
@@ -18,7 +17,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::ThermalStrains:
 
 
 template <int TDim>
-NuTo::eError ThermalStrains::Evaluate(
+void ThermalStrains::Evaluate(
         const ConstitutiveInputMap &rConstitutiveInput,
         const ConstitutiveOutputMap &rConstitutiveOutput)
 {
@@ -85,7 +84,6 @@ NuTo::eError ThermalStrains::Evaluate(
             continue;
         }
     }
-    return NuTo::eError::SUCCESSFUL;
 }
 
 bool ThermalStrains::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
@@ -162,9 +160,9 @@ void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double,
     mNonlinearExpansionFunction = ExpansionFunction;
 }
 
-template NuTo::eError ThermalStrains::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
+template void ThermalStrains::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
                                                   const ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError ThermalStrains::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
+template void ThermalStrains::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
                                                   const ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError ThermalStrains::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
+template void ThermalStrains::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
                                                   const ConstitutiveOutputMap &rConstitutiveOutput);

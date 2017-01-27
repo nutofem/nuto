@@ -14,8 +14,8 @@
 #include <vector>
 #include <memory>
 
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
+#include <stdexcept>
 
 namespace NuTo
 {
@@ -23,7 +23,6 @@ class InterpolationType;
 class ElementBase;
 class InterpolationType;
 class Logger;
-enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
 
 namespace Element
@@ -37,6 +36,13 @@ namespace Constitutive
     enum class eConstitutiveType;
     enum class eInput;
     enum class eOutput;
+
+class DidNotConverge : public std::runtime_error
+{
+public:
+    DidNotConverge() : std::runtime_error("Constitutive law did not converge") {}
+};
+
 }// namespace Constitutive
 
 namespace Node
@@ -181,5 +187,6 @@ protected:
     bool mParametersValid;
 
 };
+
 
 }

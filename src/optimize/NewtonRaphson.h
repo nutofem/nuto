@@ -67,14 +67,14 @@ public:
 
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
-    NuTo::eError Solve(Eigen::VectorXd &rUnknown);
+    void Solve(Eigen::VectorXd &rUnknown);
 
     //! @brief ... the routine performs line search correction of the Newton step
     void LineSearch(Eigen::VectorXd &rXold, const double rFold, Eigen::VectorXd &rG, Eigen::VectorXd &rP,
     		Eigen::VectorXd &rX, double &rF, const double rStpmax, bool &rCheck, Eigen::VectorXd &rFvec) const;
 
     //! @brief ... the routine performs Newton-Raphson integration
-    NuTo::eError NewtonRaphsonIterator(Eigen::VectorXd &x, bool &check) const;
+    void NewtonRaphsonIterator(Eigen::VectorXd &x, bool &check) const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines
     //! @return    class name

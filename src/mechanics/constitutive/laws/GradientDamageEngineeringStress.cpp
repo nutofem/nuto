@@ -14,7 +14,6 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
 
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementBase.h"
@@ -142,7 +141,7 @@ double NuTo::GradientDamageEngineeringStress::EvaluateStaticData(
 namespace NuTo // template specialization in same namespace as definition
 {
 template<>
-NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
+void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     StaticDataType rKappa, double rKappaTangent)
@@ -251,11 +250,10 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
 //                            + " could not be calculated, check the allocated material law and the section behavior.");
 //        }
     }
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
+void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     StaticDataType rKappa, double rKappaTangent)
@@ -415,11 +413,10 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
+void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
     StaticDataType rKappa, double rKappaTangent)
@@ -556,8 +553,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
 //                            + " could not be calculated, check the allocated material law and the section behavior.");
 //        }
     }
-
-    return eError::SUCCESSFUL;
 }
 
 } // namespace NuTo
@@ -900,18 +895,18 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
 }
 
 
-template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+template void NuTo::GradientDamageEngineeringStress::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                                          const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
                                                                          NuTo::GradientDamageEngineeringStress::Data& rStaticData);
-template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+template void NuTo::GradientDamageEngineeringStress::Evaluate<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                                          const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
                                                                          NuTo::GradientDamageEngineeringStress::Data& rStaticData);
-template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+template void NuTo::GradientDamageEngineeringStress::Evaluate<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                                          const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
                                                                          NuTo::GradientDamageEngineeringStress::Data& rStaticData);
 
 template<int TDim>
-NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+void NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                              const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
                                                              NuTo::GradientDamageEngineeringStress::Data& rStaticData)
 {
@@ -919,7 +914,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::Constit
     double kappa = EvaluateStaticData<TDim>(rConstitutiveInput, rConstitutiveOutput, rStaticData);
     double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
     double kappaTangent = kappa == nonlocalEqStrain ? 1.0 : 0.0; // = 1 true, 0 false. perfect tangent.
-    return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
+    EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
 }
 
 void NuTo::GradientDamageEngineeringStress::SetExtrapolation(NuTo::ImplExCallback *rCallback)

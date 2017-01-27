@@ -41,7 +41,7 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+    void Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
 
     //! @brief returns the enum (type of the element)

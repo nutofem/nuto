@@ -28,7 +28,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    virtual NuTo::eError Solve(double rTimeDelta) override;
+    virtual void Solve(double rTimeDelta) override;
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     bool HasCriticalTimeStep() const override {

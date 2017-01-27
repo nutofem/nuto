@@ -13,8 +13,6 @@
 namespace NuTo
 {
 
-enum class eError;
-
 //! @author Kindrachuk
 //! @date December 2015
 //! @brief ... standard abstract class for all solvers of nonlinear systems of equations
@@ -33,7 +31,7 @@ public:
 
     //! @brief perform solving
     //! @param rUnknown ... unknown vector
-    virtual NuTo::eError Solve(Eigen::VectorXd &rUnknown)=0;
+    virtual void Solve(Eigen::VectorXd &rUnknown)=0;
 
     //! @brief sets the pointer to the residual function
     //! @param rParam ... parameters necessary to evaluate the residual

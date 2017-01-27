@@ -44,14 +44,14 @@ public:
     virtual ConstitutiveBase& GetConstitutiveLaw() const = 0;
 
     template <int TDim>
-    NuTo::eError Evaluate(
+    void Evaluate(
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
     {
         static_assert(TDim == 1 or TDim == 2 or TDim == 3, "TDim == 1 or TDim == 2 or TDim == 3 !");
-        if (TDim == 1) return Evaluate1D(rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 2) return Evaluate2D(rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 3) return Evaluate3D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 1) Evaluate1D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 2) Evaluate2D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 3) Evaluate3D(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief allocates rNum additional static data
@@ -88,11 +88,11 @@ public:
     virtual void NuToSerializeLoad(SerializeStreamIn&) {/* no members to serialize */};
 
 protected:
-    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
-    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
-    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
     //! @brief Searches for a specific IP constitutive law and returns it (Additive laws only)

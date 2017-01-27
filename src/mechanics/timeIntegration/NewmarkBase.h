@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -24,7 +22,7 @@ public:
     //! @brief constructor
     NewmarkBase(StructureBase* rStructure);
 
-    virtual NuTo::eError Solve(double rTimeDelta)=0;
+    virtual void Solve(double rTimeDelta)=0;
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {

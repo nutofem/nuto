@@ -39,7 +39,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData Pointer to the history data.
     template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                           const ConstitutiveOutputMap& rConstitutiveOutput,
                           Data& rStaticData);
 
@@ -57,7 +57,7 @@ public:
     //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
     //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
     //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
-    NuTo::eError ReturnMapping2D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
+    void ReturnMapping2D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
             const EngineeringStrain<2>& rEngineeringStrain,
             ConstitutiveIOBase* rNewStress,
             ConstitutiveIOBase* rNewTangent,
@@ -68,7 +68,7 @@ public:
     //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
     //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
     //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
-    NuTo::eError ReturnMapping3D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
+    void ReturnMapping3D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
     		const EngineeringStrain<3>& rEngineeringStrain,
     		ConstitutiveIOBase* rNewStress,
     		ConstitutiveIOBase* rNewTangent,

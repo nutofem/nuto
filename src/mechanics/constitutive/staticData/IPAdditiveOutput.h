@@ -65,7 +65,7 @@ public:
 
 protected:
     template<int TDim>
-    eError AdditiveOutputEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void AdditiveOutputEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
@@ -73,28 +73,28 @@ protected:
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveOutputEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveOutputEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveOutputEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveOutputEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveOutputEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveOutputEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
     }
 
 protected:

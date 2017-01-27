@@ -1,7 +1,6 @@
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "base/ErrorEnum.h"
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementBase.h"
@@ -152,7 +151,7 @@ namespace NuTo
 {
 
 template<>
-NuTo::eError NuTo::LocalDamageModel::Evaluate<1>(
+void NuTo::LocalDamageModel::Evaluate<1>(
     const ConstitutiveInputMap &rConstitutiveInput,
     const ConstitutiveOutputMap &rConstitutiveOutput,
     Data &rStaticData)
@@ -288,11 +287,10 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate<1>(
     // update history variables
     if (performUpdateAtEnd)
         rStaticData.GetData() = kappa;
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::LocalDamageModel::Evaluate<2>(
+void NuTo::LocalDamageModel::Evaluate<2>(
     const ConstitutiveInputMap &rConstitutiveInput,
     const ConstitutiveOutputMap &rConstitutiveOutput,
     Data &rStaticData)
@@ -419,11 +417,10 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate<2>(
     // update history variables
     if (performUpdateAtEnd)
         rStaticData.GetData() = kappa;
-    return eError::SUCCESSFUL;
 }
 
 template<>
-NuTo::eError NuTo::LocalDamageModel::Evaluate<3>(
+void NuTo::LocalDamageModel::Evaluate<3>(
     const ConstitutiveInputMap &rConstitutiveInput,
     const ConstitutiveOutputMap &rConstitutiveOutput,
     Data &rStaticData)
@@ -554,7 +551,6 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate<3>(
     // update history variables
     if (performUpdateAtEnd)
         rStaticData.GetData() = kappa;
-    return eError::SUCCESSFUL;
 }
 
 } // namespace NuTo

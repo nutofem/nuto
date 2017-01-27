@@ -52,35 +52,35 @@ public:
 
 protected:
     template<int TDim>
-    eError AdditiveInputImplicitEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void AdditiveInputImplicitEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveInputImplicitEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveInputImplicitEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveInputImplicitEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveInputImplicitEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
-    eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return AdditiveInputImplicitEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
+        AdditiveInputImplicitEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
     }
 
 private:

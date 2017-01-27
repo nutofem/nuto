@@ -540,63 +540,38 @@ void IPAdditiveInputImplicit::CreateLocalInAndOutputMaps(const NuTo::Constitutiv
 }
 
 
-
-
 template<int TDim>
-NuTo::eError IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate(
+void IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput)
 {
     static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
-    NuTo::eError error = NuTo::eError::SUCCESSFUL;
-//    const constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
-
 
     std::vector<ConstitutiveInputMap>  localInputMapVec(mSublawIPs.size());
     std::vector<ConstitutiveOutputMap> localOutputMapVec(mSublawIPs.size());
 
     // Get local inputs and outputs
-    CreateLocalInAndOutputMaps<TDim>(rConstitutiveInput,
-                                     rConstitutiveOutput,
-                                     localInputMapVec,
-                                     localOutputMapVec);
-
-
-
+    CreateLocalInAndOutputMaps<TDim>(
+            rConstitutiveInput, rConstitutiveOutput, localInputMapVec, localOutputMapVec);
 
     // evaluate sublaws
     for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
     {
-        eError error = mSublawIPs[i].Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i]);
-        if(error!=eError::SUCCESSFUL)
-            throw Exception(__PRETTY_FUNCTION__,
-                            "One or more attached constitutive laws return error codes. Can't handle this");
+        mSublawIPs[i].Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i]);
     }
 
-
     // calculate global outputs
-    CalculateGlobalOutputs<TDim>(rConstitutiveInput,
-                                 rConstitutiveOutput,
-                                 localInputMapVec,
-                                 localOutputMapVec);
-
-
-
-    return error;
+    CalculateGlobalOutputs<TDim>(
+            rConstitutiveInput, rConstitutiveOutput, localInputMapVec, localOutputMapVec);
 }
 
 
-
-
-
-
-
-template NuTo::eError IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<1>(
+template void IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<1>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<2>(
+template void IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<2>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<3>(
+template void IPAdditiveInputImplicit::AdditiveInputImplicitEvaluate<3>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);

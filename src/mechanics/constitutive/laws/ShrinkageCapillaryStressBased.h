@@ -44,8 +44,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs

@@ -84,11 +84,10 @@ void IPAdditiveInputExplicit::NuToSerializeLoad(SerializeStreamIn& rStream)
 
 
 template<int TDim>
-NuTo::eError IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate(
+void IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    NuTo::eError error = NuTo::eError::SUCCESSFUL;
     // Copy inputs for main law, because they might be modified by the sublaws and these modifications will be
     // passed above the borders of this law.
     NuTo::ConstitutiveInputMap mainLawInputMap = rConstitutiveInput;
@@ -103,20 +102,14 @@ NuTo::eError IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate(
 
         mSublawIPs[i].Evaluate<TDim>(rConstitutiveInput, sublawOutputMapVec[i]);
 
-        if(error != NuTo::eError::SUCCESSFUL)
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                    "Attached constitutive law returned an error code. Can't handle this");
-
         // Apply outputs to the main laws input and the global outputs
         ApplySublawOutputs<TDim>(mainLawInputMap, rConstitutiveOutput, sublawOutputMapVec[i]);
     }
 
-    error = mMainLawIP->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput);
+    mMainLawIP->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput);
 
     // calculate derivatives that depend on outputs from the main law and the sublaws
     CalculateDerivatives<TDim>(rConstitutiveOutput, sublawOutputMapVec);
-
-    return error;
 }
 
 
@@ -206,12 +199,12 @@ void IPAdditiveInputExplicit::ApplySublawOutputs(const ConstitutiveInputMap& rMa
 }
 
 
-template NuTo::eError IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<1>(
+template void IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<1>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<2>(
+template void IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<2>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
-template NuTo::eError IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<3>(
+template void IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate<3>(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);

@@ -1,21 +1,14 @@
 #pragma once
 
-
-
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
-
 namespace NuTo
 {
-
-
 namespace Constitutive
 {
     enum class eDamageLawType;
-
 }// namespace Constitutive
-
 
 class ImplExCallback;
 class Logger;
@@ -51,7 +44,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData Pointer to the history data.
     template<int TDim>
-    eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                     const ConstitutiveOutputMap& rConstitutiveOutput,
                     Data& rStaticData);
 
@@ -142,7 +135,7 @@ protected:
     //! @param rKappa new static data
     //! @param rKappaTangent new dKappa_dNonlocalEqStrain
     template<int TDim>
-    eError EvaluateWithKappa(const ConstitutiveInputMap& rConstitutiveInput,
+    void EvaluateWithKappa(const ConstitutiveInputMap& rConstitutiveInput,
                              const ConstitutiveOutputMap& rConstitutiveOutput,
                              StaticDataType rKappa, double rKappaTangent);
 

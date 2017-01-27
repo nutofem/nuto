@@ -1,5 +1,3 @@
-// $Id: VelocityVerlet.cpp 575 2011-09-20 18:05:35Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -25,7 +23,6 @@
 #include "mechanics/timeIntegration/VelocityVerlet.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
-#include "base/ErrorEnum.h"
 #include "base/Timer.h"
 
 //! @brief constructor
@@ -75,7 +72,7 @@ void NuTo::VelocityVerlet::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
+void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -219,8 +216,6 @@ NuTo::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
         mStructure->GetLogger()<< "[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
-    return NuTo::eError::SUCCESSFUL;
-
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file

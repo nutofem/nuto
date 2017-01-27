@@ -1,5 +1,3 @@
-// $Id: NystroemBase.cpp 575 2011-09-20 18:05:35Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,7 +13,6 @@
 #include <omp.h>
 # endif
 
-#include "base/ErrorEnum.h"
 #include "math/SparseDirectSolverMUMPS.h"
 
 #include "math/SparseMatrixCSRVector2.h"
@@ -72,7 +69,7 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::eError NuTo::NystroemBase::Solve(double rTimeDelta)
+void NuTo::NystroemBase::Solve(double rTimeDelta)
 {
 	NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 #ifdef SHOW_TIME
@@ -286,8 +283,6 @@ NuTo::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         mStructure->GetLogger()<< "[NuTo::NystroemBase::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
-    return NuTo::eError::SUCCESSFUL;
-
 }
 
 

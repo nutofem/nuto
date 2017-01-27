@@ -8,7 +8,6 @@
 #include "base/CallbackInterface.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/timeIntegration/ImplicitExplicitBase.h"
-#include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -28,7 +27,7 @@ NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure) : Ti
 NuTo::ImplicitExplicitBase::~ImplicitExplicitBase()
 {}
 
-NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
+void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -182,8 +181,7 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
             } // end for mStepActiveDofs
 
 
-            if (mCallback && mCallback->Exit(*mStructure))
-                return eError::SUCCESSFUL;
+            if (mCallback && mCallback->Exit(*mStructure)) return;
 
             bool acceptSolution = true;
 
@@ -247,7 +245,6 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         e.AddMessage(__PRETTY_FUNCTION__, " ERROR performing IMPL-EX.");
         throw;
     }
-    return NuTo::eError::SUCCESSFUL;
 }
 
 double NuTo::ImplicitExplicitBase::CalculateCriticalTimeStep() const

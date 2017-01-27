@@ -1,4 +1,3 @@
-// $Id$
 %module NuToMath
 %feature("autodoc","1");
 %{

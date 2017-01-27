@@ -57,9 +57,9 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData static data.
     template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput,
-                          Data& rStaticData);
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                  const ConstitutiveOutputMap& rConstitutiveOutput,
+                  Data& rStaticData);
 
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.

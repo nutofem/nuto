@@ -1,5 +1,3 @@
-#include "base/ErrorEnum.h"
-
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/elements/ContinuumContactElement.h"

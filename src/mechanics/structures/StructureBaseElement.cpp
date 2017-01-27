@@ -1,12 +1,9 @@
-// $Id$
-
 #include <eigen3/Eigen/Eigenvalues>
 
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 
-#include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
@@ -653,19 +650,17 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
 
 }
 
-NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
+void NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
-        eError error = this->ElementTotalUpdateTmpStaticData();
-        if (error!=eError::SUCCESSFUL) return error;
+        this->ElementTotalUpdateTmpStaticData();
     }
 
 	std::vector<ElementBase*> elementVector;
 	GetElementsTotal(elementVector);
-    eError errorGlobal (eError::SUCCESSFUL);
     int exception(0);
     std::string exceptionStringTotal;
 
@@ -682,14 +677,7 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 	{
 		try
 		{
-            eError error = elementVector[countElement]->Evaluate(elementOutput);
-            if (error!=eError::SUCCESSFUL)
-            {
-                if (errorGlobal==eError::SUCCESSFUL)
-            		errorGlobal = error;
-            	else if (errorGlobal!=error)
-            		throw MechanicsException(__PRETTY_FUNCTION__, "Elements have returned multiple different error codes, can't handle that.");
-            }
+            elementVector[countElement]->Evaluate(elementOutput);
 		}
 		catch(NuTo::Exception& e)
 		{
@@ -713,14 +701,10 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     {
 	    throw MechanicsException(exceptionStringTotal);
     }
-    return errorGlobal;
 }
 
-NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
+void NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
-    eError errorGlobal (eError::SUCCESSFUL);
-
-    //std::cout << "do we really have tmp static data " << mHaveTmpStaticData << std::endl;
     if (mHaveTmpStaticData)
 	{
 		std::vector<ElementBase*> elementVector;
@@ -742,14 +726,7 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 		{
 			try
 			{
-				eError error = elementVector[countElement]->Evaluate(elementOutput);
-                if (error!=eError::SUCCESSFUL)
-				{
-                    if (errorGlobal==eError::SUCCESSFUL)
-						errorGlobal = error;
-					else if (errorGlobal!=error)
-						throw MechanicsException(__PRETTY_FUNCTION__, "Elements have returned multiple different error codes, can't handle that.");
-				}
+				elementVector[countElement]->Evaluate(elementOutput);
 			}
 			catch(NuTo::Exception& e)
 			{
@@ -776,7 +753,6 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 	}
 	//std::cout << "NuTo::StructureBase::ElementTotalUpdateTmpStaticData " << mUpdateTmpStaticDataRequired << "\n";
 	mUpdateTmpStaticDataRequired = false;
-    return errorGlobal;
 }
 
 void NuTo::StructureBase::ElementTotalShiftStaticDataToPast()
@@ -1094,8 +1070,6 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    eError errorGlobal (eError::SUCCESSFUL);
-
     int exception(0);
     std::string exceptionStringTotal;
 
@@ -1123,19 +1097,7 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 		{
 			try
 			{
-				eError error = rElementVector[countElement]->Evaluate(elementOutput);
-                if (error!=eError::SUCCESSFUL)
-#ifdef _OPENMP
-#pragma omp critical
-				{
-                    if (errorGlobal==eError::SUCCESSFUL)
-						errorGlobal = error;
-					else if (errorGlobal!=error)
-						throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] multiple elements have returned different error codes, can't handle that.");
-				}
-#else //_OPENMP
-				errorGlobal = error;
-#endif //_OPENMP
+				rElementVector[countElement]->Evaluate(elementOutput);
 
                 auto lumpedMass = elementOutput.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble().Export();
                 auto stiffness = elementOutput.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble().Export();
@@ -1185,13 +1147,7 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
     {
 	    throw MechanicsException(exceptionStringTotal);
     }
-    if (errorGlobal!=eError::SUCCESSFUL)
-    {
-	    throw MechanicsException(__PRETTY_FUNCTION__, "Error calculating critical time step.");
-    }
-
     return maxGlobalEigenValue;
-
 }
 
 double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)

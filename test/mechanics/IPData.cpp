@@ -9,7 +9,6 @@
 #include "mechanics/elements/IPData.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"

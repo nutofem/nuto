@@ -1,6 +1,5 @@
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -14,7 +13,7 @@
 #include <limits>
 
 template <int TDim>
-NuTo::eError NuTo::MoistureTransport::Evaluate(
+void NuTo::MoistureTransport::Evaluate(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
         Data& rStaticData)
@@ -429,7 +428,6 @@ NuTo::eError NuTo::MoistureTransport::Evaluate(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return NuTo::eError::SUCCESSFUL;
 }
 
 

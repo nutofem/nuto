@@ -1,7 +1,5 @@
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 
-
-#include "base/ErrorEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -123,7 +121,7 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate(
+void NuTo::ShrinkageCapillaryStrainBased::Evaluate(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput, 
         const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
@@ -240,12 +238,11 @@ NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate(
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return eError::SUCCESSFUL;
 }
 
-template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::ShrinkageCapillaryStrainBased::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
                                                                        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::ShrinkageCapillaryStrainBased::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
                                                                        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
-template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+template void NuTo::ShrinkageCapillaryStrainBased::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
                                                                        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
