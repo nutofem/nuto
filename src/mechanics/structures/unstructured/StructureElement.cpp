@@ -389,7 +389,7 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId,
         auto column = rNodeNumbers.col(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
         for (int i : incidence) std::cout << i << std::endl;
-        int newElementId = ElementCreate(rInterpolationTypeId, incidence);
+            int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }
 
@@ -473,161 +473,152 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                         break;
                     }
                 }
+                if (not elementSurfaceNodesMatchBoundaryNodes)
+                    continue;
 
-                if (elementSurfaceNodesMatchBoundaryNodes)
+                int surfaceId = iSurface;
+
+                int elementId = GetUnusedId(mElementMap);
+
+                ElementBase* boundaryElement = nullptr;
+                ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
+
+                eIntegrationType integrationType = eIntegrationType::NotSet;
+
+                switch (elementPtr->GetEnumType())
                 {
-                    int surfaceId = iSurface;
-
-                    //find unused integer id
-                    int elementId = mElementMap.size();
-                    boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementId);
-                    while (it != mElementMap.end())
+                case Element::eElementType::CONTINUUMELEMENT:
+                    switch (elementPtr->GetLocalDimension())
                     {
-                        elementId++;
-                        it = mElementMap.find(elementId);
+                    case 1:
+                    {
+                        if(rControlNode == nullptr)
+                        {
+                            boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
+                        }
+                        integrationType = eIntegrationType::IntegrationType0DBoundary;
+                        break;
                     }
-
-
-                    ElementBase* boundaryElement = nullptr;
-                    ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
-
-                    eIntegrationType integrationType = eIntegrationType::NotSet;
-
-                    switch (elementPtr->GetEnumType())
+                    case 2:
                     {
-                    case Element::eElementType::CONTINUUMELEMENT:
-                        switch (elementPtr->GetLocalDimension())
+                        if(rControlNode == nullptr)
                         {
-                        case 1:
-                        {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
-                            }
-                            integrationType = eIntegrationType::IntegrationType0DBoundary;
-                            break;
+                            boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
                         }
-                        case 2:
+                        else
                         {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
-                            }
-                            // check for 2D types
-                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
-                            {
-                            case eIntegrationType::IntegrationType2D3NGauss1Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss3Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss4Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss6Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss9Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss12Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto9Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto16Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto25Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
-                                break;
-
-                                default:
-                                    break;
-                            }
-
-
-                            break;
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
                         }
-                        case 3:
+                        // check for 2D types
+                        switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
                         {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
-                            }
+                        case eIntegrationType::IntegrationType2D3NGauss1Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss3Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss4Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss6Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss9Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss12Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
+                            break;
 
-                            // check for 3D types
-                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
-                            {
-                            case eIntegrationType::IntegrationType3D4NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto9Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
+                            break;
 
-                            case eIntegrationType::IntegrationType3D4NGauss4Ip:
-                                integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto16Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
+                            break;
 
-                            case eIntegrationType::IntegrationType3D8NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto25Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
+                            break;
 
                             default:
-                                    break;
-                            }
-
-                            break;
+                                break;
                         }
-                        default:
-                            throw MechanicsException(__PRETTY_FUNCTION__,"Boundary element for Continuum element with dimension "+
-                                                     std::to_string(elementPtr->GetLocalDimension()) + "not implemented");
-                        }
-                        break;
 
-
-                    default:
 
                         break;
                     }
+                    case 3:
+                    {
+                        if(rControlNode == nullptr)
+                        {
+                            boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
+                        }
 
-                    mElementMap.insert(elementId, boundaryElement);
-                    newBoundaryElementIds.push_back(elementId);
+                        // check for 3D types
+                        switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                        {
+                        case eIntegrationType::IntegrationType3D4NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
+                            break;
 
-                    if (integrationType == eIntegrationType::NotSet)
-                        throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
+                        case eIntegrationType::IntegrationType3D4NGauss4Ip:
+                            integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
+                            break;
 
-                    boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
-                    boundaryElement->SetConstitutiveLaw(constitutiveLaw);
+                        case eIntegrationType::IntegrationType3D8NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                            break;
+
+                        default:
+                                break;
+                        }
+
+                        break;
+                    }
+                    default:
+                        throw MechanicsException(__PRETTY_FUNCTION__,"Boundary element for Continuum element with dimension "+
+                                                 std::to_string(elementPtr->GetLocalDimension()) + "not implemented");
+                    }
+                    break;
+
+
+                default:
+
+                    break;
                 }
+
+                mElementMap.insert(elementId, boundaryElement);
+                newBoundaryElementIds.push_back(elementId);
+
+                if (integrationType == eIntegrationType::NotSet)
+                    throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
+
+                boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
+                boundaryElement->SetConstitutiveLaw(constitutiveLaw);
             }
 
         } catch (NuTo::MechanicsException &e)

@@ -172,6 +172,7 @@ set(NuToMechanicsMesh_SOURCES
     mesh/MeshCompanion.cpp
     mesh/ImportFromGmsh.cpp
     mesh/ConvertToInterpolationType.cpp
+    mesh/ElementPrismCreate.cpp
     )
 
 set(NuToMechanicsNodes_SOURCES

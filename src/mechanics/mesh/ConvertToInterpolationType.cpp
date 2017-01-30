@@ -1,4 +1,4 @@
-#include <mechanics/nodes/NodeEnum.h>
+#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/mesh/MeshCompanion.h"
 #include "mechanics/structures/unstructured/Structure.h"
 
@@ -7,8 +7,6 @@
 #include "base/Timer.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
-#include <map>
-
 
 double GetSmallestElementSize(NuTo::Structure& rS, int rGroupNumberElements)
 {
