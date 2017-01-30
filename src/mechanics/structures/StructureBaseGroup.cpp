@@ -455,6 +455,15 @@ void NuTo::StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rEleme
     }
 }
 
+
+int NuTo::StructureBase::GroupCreateNodeGroupFromElements(int rElementGroupId)
+{
+    int n = GroupCreate(NuTo::eGroupId::Nodes);
+    GroupAddNodesFromElements(n, rElementGroupId);
+    return n;
+}
+
+
 int NuTo::StructureBase::GroupUnion(int rIdentGroup1, int rIdentGroup2)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

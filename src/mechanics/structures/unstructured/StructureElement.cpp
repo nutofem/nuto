@@ -28,6 +28,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupEnum.h"
 
+#include "mechanics/mesh/MeshCompanion.h"
+
 #include <eigen3/Eigen/Dense>
 
 //! @brief returns the number of nodes
@@ -154,376 +156,24 @@ void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationT
 
 void NuTo::Structure::ElementTotalConvertToInterpolationType()
 {
-    // create a group with all elements
-#ifdef SHOW_TIME
-    bool showTime = mShowTime;
-    mShowTime = false;
-#endif
-
-    // create element group containing the new elements
-    int groupNumber = GroupCreate("Elements");
-    GroupBase* group = mGroupMap.find(groupNumber)->second;
-
-    for (boost::ptr_map<int, ElementBase>::iterator itElement = mElementMap.begin(); itElement != mElementMap.end(); ++itElement)
-    {
-        int elementId = itElement->first;
-        ElementBase* elementPtr = itElement->second;
-        group->AddMember(elementId, elementPtr);
-    }
-#ifdef SHOW_TIME
-    mShowTime = showTime;
-#endif
-
-    // convert elements
-    ElementConvertToInterpolationType(groupNumber);
-
-    // delete load from map
-    mGroupMap.erase(groupNumber);
+    MeshCompanion::ElementTotalConvertToInterpolationType(*this);
 }
 
-//! @brief changes the node structure to match the interpolation type
-//! @remark The node merge distance is the smallest element length divided by 1000.
-//! @remark The mesh size is the median element length divided by 2.
-//! @param rGroupNumberElements group for elements (coordinates only) to be converted
 void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements)
 {
-    // determine the element sizes and calculate the mesh size and the merge distance using these values.
-
-    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
-    if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
-
-    if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
-
-    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
-    assert(elementGroup != 0);
-
-    std::vector<int> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.size();
-
-    // calculate and store the 'size' of each element
-    // = volume in 3D
-    // = area in 2D
-    // = length in 1D
-    Eigen::VectorXd elementSize(numElements);
-
-    for (int iElement = 0; iElement < numElements; ++iElement)
-    {
-        int elementId = elementIndices[iElement];
-        ElementBase* element = &(mElementMap.at(elementId));
-        Eigen::VectorXd sizeForEachIntegrationPoint = element->GetIntegrationPointVolume();
-
-        elementSize[iElement] = sizeForEachIntegrationPoint.sum();
-    }
-
-    std::sort(elementSize.data(), elementSize.data() + numElements, std::less<double>()); // sort in accending order
-
-    double sizeMin = elementSize(0);
-    double sizeMed = elementSize(numElements / 2);
-
-    double lengthMin = std::pow(sizeMin, 1. / mDimension);
-    double lengthMed = std::pow(sizeMed, 1. / mDimension);
-
-    double mergeDist = lengthMin / 1000.;
-    double meshSize = lengthMed / 2.;
-
-    if (mVerboseLevel > 0)
-    {
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] total size:            " << elementSize.sum() << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] min. element size:     " << sizeMin << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] median element size:   " << sizeMed << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] ====================== " << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] min. element length:   " << lengthMin << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] median element length: " << lengthMed << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] ====================== " << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] merge distance:        " << mergeDist << std::endl;
-        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] mesh size:             " << meshSize << std::endl;
-    }
-
-    ElementConvertToInterpolationType(rGroupNumberElements, mergeDist, meshSize);
-
+    MeshCompanion::ElementConvertToInterpolationType(*this, rGroupNumberElements);
 }
 
-//! @brief changes the node structure to match the interpolation type for all elements
-//! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
-//! @param rMeshSize approximate size of the elements
 void NuTo::Structure::ElementTotalConvertToInterpolationType(double rNodeDistanceMerge, double rMeshSize)
 {
-#ifdef SHOW_TIME
-    bool showTime = mShowTime;
-    mShowTime = false;
-#endif
-
-    // create element group containing the new elements
-    int groupNumber = GroupCreate("Elements");
-    GroupBase* group = mGroupMap.find(groupNumber)->second;
-
-    for (boost::ptr_map<int, ElementBase>::iterator itElement = mElementMap.begin(); itElement != mElementMap.end(); ++itElement)
-    {
-        int elementId = itElement->first;
-        ElementBase* elementPtr = itElement->second;
-        group->AddMember(elementId, elementPtr);
-    }
-#ifdef SHOW_TIME
-    mShowTime = showTime;
-#endif
-
-    // convert elements
-    ElementConvertToInterpolationType(groupNumber, rNodeDistanceMerge, rMeshSize);
-
-    // delete load from map
-    mGroupMap.erase(groupNumber);
+    (void)rMeshSize; // unsused
+    MeshCompanion::ElementTotalConvertToInterpolationType(*this, rNodeDistanceMerge);
 }
 
-//! @brief changes the node structure to match the interpolation type
-//! @param rGroupNumberElements group for elements (coordinates only) to be converted
-//! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
-//! @param rMeshSize approximate size of the elements
 void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements, double rNodeDistanceMerge, double rMeshSize)
 {
-// Summary:
-// 1) check stuff, calculate dimensions and number of bounding boxes, suitable for 1D/2D/3D
-// 2) Create a TmpNode for each node in each element and store it in the bounding box
-// 3) In each bounding box: check for TmpNodes with the same global coordinates
-// 4) "Unite" these nodes by creating a new Node with the appropriate dofs
-//   4.1) Node already exists: Exchange its pointer in all elements containing it (keep the original node numbering!!!)
-//   4.2) new Node: Resize the elements Node storage and add it to all elements containing it
-// 5) Profit!
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    // checks
-
-    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
-    if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
-
-    if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
-
-    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
-    assert(elementGroup != 0);
-
-    std::vector<int> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.size();
-
-//    const InterpolationType* interpolationType = this->ElementGetElementPtr(elementIndices.at(0,0))->GetInterpolationType();
-
-    std::vector<ElementBase*> elements(numElements);
-    for (int iElement = 0; iElement < numElements; ++iElement)
-    {
-        int elementId = elementIndices[iElement];
-        elements[iElement] = &(mElementMap.at(elementId));
-//        if (interpolationType != elements[iElement]->GetInterpolationType())
-//            throw MechanicsException(__PRETTY_FUNCTION__, "All elements must have the same interpolation type.");
-    }
-
-
-
-
-    // getting rid of the two biggest bottlenecks
-    // 1) always looping trough all elements when exchanging the node pointer
-    //    instead of just the ones containing the node
-    //    --> build a map: key-node; value list of elements containing the key;
-    // 2) finding the node id
-    //    --> build a reversed node map, NodeBase* --> NodeId
-    std::map<NodeBase*, std::vector<ElementBase*>> nodeToElement;
-    std::map<const NodeBase*, int> nodeToId;
-
-    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        nodeToId[it->second] = it->first;
-    }
-
-
-    // find the bounding box corners = max/min x,y,z coordinates, initialize with random node coordinates
-    Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);
-    Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);
-
-    for (ElementBase* element : elements)
-    {
-        // loop through nodes with coordinates
-        for (int iNode = 0; iNode < element->GetNumNodes(Node::eDof::COORDINATES); ++iNode)
-        {
-            NodeBase* node = element->GetNode(iNode, Node::eDof::COORDINATES);
-            Eigen::VectorXd nodeCoordinates = node->Get(Node::eDof::COORDINATES);
-            assert(nodeCoordinates.rows() == mDimension);
-            boundingBoxMax = boundingBoxMax.cwiseMax(nodeCoordinates);
-            boundingBoxMin = boundingBoxMin.cwiseMin(nodeCoordinates);
-
-            nodeToElement[node].push_back(element);
-        }
-    }
-
-
-    Eigen::Vector3i numBoxes = Eigen::Vector3i::Ones(); // initialize as 3D array with at least one box per dimension
-    Eigen::VectorXd deltaBox(mDimension);
-    for (int iDim = 0; iDim < mDimension; ++iDim)
-    {
-        // sligtly move the boundingBoxMin
-        boundingBoxMin[iDim] -= rNodeDistanceMerge;
-        numBoxes[iDim] = (boundingBoxMax[iDim] - boundingBoxMin[iDim]) / rMeshSize + 1;
-        deltaBox[iDim] = (boundingBoxMax[iDim] - boundingBoxMin[iDim] + rNodeDistanceMerge) / numBoxes[iDim]; // small offset to fit coordinates at boundingBoxMax in the last box
-        if (deltaBox[iDim] < rNodeDistanceMerge)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The merge distance is larger than the mesh size, that should not happen.");
-    }
-
-    if (mVerboseLevel > 0)
-    {
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] bounding box: from  " << boundingBoxMin.transpose() << " to " << boundingBoxMax.transpose() << "\n";
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] number of boxes: " << numBoxes.transpose() << "\n";
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] distance  of boxes: " << deltaBox.transpose() << "\n";
-    }
-
-    if ((boundingBoxMax - boundingBoxMin).minCoeff() <= 0)
-        // The group has at least one element and this element has no spacial size.
-        throw MechanicsException(__PRETTY_FUNCTION__, "Bounding box with zero length. Your element definition might be messed up.");
-
-    double nodeDistanceMerge2 = rNodeDistanceMerge * rNodeDistanceMerge;
-
-    // data structure for storing temporary node informations
-    struct TmpNode
-    {
-        TmpNode(const Eigen::VectorXd& rCoords, ElementBase* rElement, int rElementNodeId, double rDist) :
-                coords(rCoords), elementNodeId(rElementNodeId), mDist(rDist)
-        {
-            element = rElement;
-        }
-
-        const Eigen::VectorXd coords;   // global coordinates, either 1D, 2D or 3D
-        ElementBase* element;           // single element connected to this node
-        const int elementNodeId;        // local node id within that element
-        const double mDist;             // merge distance squared
-
-        bool operator==(const TmpNode& rOther) const
-        {
-            return (coords - rOther.coords).dot(coords - rOther.coords) < mDist;
-        }
-    };
-
-    // Use 1D storage for the bounding boxes. Each bounding box contains a vector of TmpNodes
-    std::vector<std::vector<TmpNode>> boxes(numBoxes.prod());
-
-    for (ElementBase* element : elements)
-    {
-        const InterpolationType& interpolationType = element->GetInterpolationType();
-
-        for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
-        {
-
-            Eigen::VectorXd naturalNodeCoordinates = interpolationType.GetNaturalNodeCoordinates(iNode);
-            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, Node::eDof::COORDINATES);
-
-            Eigen::Vector3i boxIndex3D = Eigen::Vector3i::Zero(); // default access is the first box
-            for (int iDim = 0; iDim < mDimension; ++iDim)
-                boxIndex3D[iDim] = std::floor((globalNodeCoordinates(iDim,0) - boundingBoxMin(iDim,0)) / deltaBox(iDim,0));
-
-            // 3D-index --> 1D-index mapping
-            int boxIndex1D = boxIndex3D[0] + boxIndex3D[1] * numBoxes[0] + boxIndex3D[2] * numBoxes[0] * numBoxes[1];
-            assert(boxIndex1D < (int )boxes.size());
-
-            boxes[boxIndex1D].push_back(TmpNode(globalNodeCoordinates, element, iNode, nodeDistanceMerge2));
-        }
-    }
-
-    int numEmptyBoxes = 0; // for statistics only
-    int maxBoxSize = -1;   // for statistics only
-    int sumBoxSize = 0;    // for statistics only
-
-    for (std::vector<TmpNode>& box : boxes)
-    {
-        int boxSize = box.size();
-        maxBoxSize = std::max(maxBoxSize, boxSize);
-        sumBoxSize += boxSize;
-        if (boxSize == 0)
-            numEmptyBoxes++;
-
-        std::vector<std::vector<TmpNode>> sameNodes; // multiple TmpNodes with the same global coordinates == the same nodes
-        for (TmpNode& node : box)
-        {
-            unsigned int sameNodeIndex = sameNodes.size();
-            for (unsigned int iUniqueNode = 0; iUniqueNode < sameNodes.size(); ++iUniqueNode)
-                if (sameNodes[iUniqueNode][0] == node)
-                {
-                    sameNodeIndex = iUniqueNode;
-                    break;
-                }
-
-            if (sameNodeIndex == sameNodes.size())
-            {
-                // no match with existing nodes --> create new vector
-                sameNodes.push_back(std::vector<TmpNode>());
-            }
-            sameNodes[sameNodeIndex].push_back(node);
-        }
-
-        for (std::vector<TmpNode>& singleSameNode : sameNodes)
-        {
-            TmpNode& tmpNode = singleSameNode[0]; // the first one always exists
-
-            // check if all same nodes (= nodes with the same global coordinates) have the same dofs
-            std::set<Node::eDof> nodeDofs;
-            for (TmpNode& singleUniqueNode : singleSameNode)
-            {
-                auto nodeDofsOther = singleUniqueNode.element->GetInterpolationType().GetNodeDofs(singleUniqueNode.elementNodeId);
-                for (auto dof : nodeDofsOther)
-                    nodeDofs.insert(dof);
-            }
-
-            Eigen::VectorXd nodeCoordinates(tmpNode.coords);
-
-            if (nodeDofs.find(Node::eDof::COORDINATES) != nodeDofs.end())
-            {
-
-                // If the node is a coordinate node, it should already be in the elements mNodes, check that:
-                NodeBase* oldNode = singleSameNode[0].element->GetNode(singleSameNode[0].elementNodeId);
-                assert(oldNode != nullptr);
-#ifndef NDEBUG
-                for (TmpNode& singleUniqueNode : singleSameNode)
-                    assert(singleUniqueNode.element->GetNode(singleUniqueNode.elementNodeId) == oldNode);
-#endif
-                NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
-
-                // exchange the pointer in all elements, all groups, all constraints etc
-                int oldNodeIndex = nodeToId[oldNode];
-                std::vector<ElementBase*> elementsToChange = nodeToElement[oldNode];
-                NodeExchangePtr(oldNodeIndex, oldNode, newNode, elementsToChange); // from now on, newNode is nullPtr
-
-            } else
-            {
-                // create node manually
-                NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
-
-                int id(mNodeMap.size());
-                boost::ptr_map<int, NodeBase>::iterator it = mNodeMap.find(id);
-                while (it != mNodeMap.end())
-                {
-                    id++;
-                    it = mNodeMap.find(id);
-                }
-                mNodeMap.insert(id, newNode);
-
-                // set the node pointer for all suitable elements
-                for (TmpNode& singleUniqueNode : singleSameNode)
-                {
-                    ElementBase* theElement = singleUniqueNode.element;
-                    int theNodeIndex = singleUniqueNode.elementNodeId;
-                    theElement->ResizeNodes(theElement->GetInterpolationType().GetNumNodes());
-
-                    theElement->SetNode(theNodeIndex, newNode);
-                }
-            }
-
-        }
-    }
-
-    if (mVerboseLevel > 0)
-    {
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] Maximum box entries: " << maxBoxSize << "\n";
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] number of boxes:     " << numBoxes.prod() << "\n";
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] Average box entries: " << static_cast<double>(sumBoxSize) / numBoxes.prod() << "\n";
-        mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] Empty boxes:         " << static_cast<double>(numEmptyBoxes) / numBoxes.prod() * 100 << "%" << "\n";
-    }
+    (void)rMeshSize; // unsused
+    MeshCompanion::ElementConvertToInterpolationType(*this, rGroupNumberElements, rNodeDistanceMerge);
 }
 
 
@@ -739,7 +389,7 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId,
         auto column = rNodeNumbers.col(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
         for (int i : incidence) std::cout << i << std::endl;
-        int newElementId = ElementCreate(rInterpolationTypeId, incidence);
+            int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }
 
@@ -823,161 +473,152 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                         break;
                     }
                 }
+                if (not elementSurfaceNodesMatchBoundaryNodes)
+                    continue;
 
-                if (elementSurfaceNodesMatchBoundaryNodes)
+                int surfaceId = iSurface;
+
+                int elementId = GetUnusedId(mElementMap);
+
+                ElementBase* boundaryElement = nullptr;
+                ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
+
+                eIntegrationType integrationType = eIntegrationType::NotSet;
+
+                switch (elementPtr->GetEnumType())
                 {
-                    int surfaceId = iSurface;
-
-                    //find unused integer id
-                    int elementId = mElementMap.size();
-                    boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementId);
-                    while (it != mElementMap.end())
+                case Element::eElementType::CONTINUUMELEMENT:
+                    switch (elementPtr->GetLocalDimension())
                     {
-                        elementId++;
-                        it = mElementMap.find(elementId);
+                    case 1:
+                    {
+                        if(rControlNode == nullptr)
+                        {
+                            boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
+                        }
+                        integrationType = eIntegrationType::IntegrationType0DBoundary;
+                        break;
                     }
-
-
-                    ElementBase* boundaryElement = nullptr;
-                    ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
-
-                    eIntegrationType integrationType = eIntegrationType::NotSet;
-
-                    switch (elementPtr->GetEnumType())
+                    case 2:
                     {
-                    case Element::eElementType::CONTINUUMELEMENT:
-                        switch (elementPtr->GetLocalDimension())
+                        if(rControlNode == nullptr)
                         {
-                        case 1:
-                        {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
-                            }
-                            integrationType = eIntegrationType::IntegrationType0DBoundary;
-                            break;
+                            boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
                         }
-                        case 2:
+                        else
                         {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
-                            }
-                            // check for 2D types
-                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
-                            {
-                            case eIntegrationType::IntegrationType2D3NGauss1Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss3Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss4Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss6Ip:
-                            case eIntegrationType::IntegrationType2D4NGauss9Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
-                                break;
-                            case eIntegrationType::IntegrationType2D3NGauss12Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto9Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto16Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType2D4NLobatto25Ip:
-                                integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
-                                break;
-
-                                default:
-                                    break;
-                            }
-
-
-                            break;
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
                         }
-                        case 3:
+                        // check for 2D types
+                        switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
                         {
-                            if(rControlNode == nullptr)
-                            {
-                                boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
-                            }
-                            else
-                            {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
-                            }
+                        case eIntegrationType::IntegrationType2D3NGauss1Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss3Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss4Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss6Ip:
+                        case eIntegrationType::IntegrationType2D4NGauss9Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
+                            break;
+                        case eIntegrationType::IntegrationType2D3NGauss12Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
+                            break;
 
-                            // check for 3D types
-                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
-                            {
-                            case eIntegrationType::IntegrationType3D4NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto9Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
+                            break;
 
-                            case eIntegrationType::IntegrationType3D4NGauss4Ip:
-                                integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto16Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
+                            break;
 
-                            case eIntegrationType::IntegrationType3D8NGauss1Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
-                                break;
-
-                            case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
-                                break;
+                        case eIntegrationType::IntegrationType2D4NLobatto25Ip:
+                            integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
+                            break;
 
                             default:
-                                    break;
-                            }
-
-                            break;
+                                break;
                         }
-                        default:
-                            throw MechanicsException(__PRETTY_FUNCTION__,"Boundary element for Continuum element with dimension "+
-                                                     std::to_string(elementPtr->GetLocalDimension()) + "not implemented");
-                        }
-                        break;
 
-
-                    default:
 
                         break;
                     }
+                    case 3:
+                    {
+                        if(rControlNode == nullptr)
+                        {
+                            boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
+                        }
 
-                    mElementMap.insert(elementId, boundaryElement);
-                    newBoundaryElementIds.push_back(elementId);
+                        // check for 3D types
+                        switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                        {
+                        case eIntegrationType::IntegrationType3D4NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
+                            break;
 
-                    if (integrationType == eIntegrationType::NotSet)
-                        throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
+                        case eIntegrationType::IntegrationType3D4NGauss4Ip:
+                            integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
+                            break;
 
-                    boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
-                    boundaryElement->SetConstitutiveLaw(constitutiveLaw);
+                        case eIntegrationType::IntegrationType3D8NGauss1Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                            break;
+
+                        case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+                            integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                            break;
+
+                        default:
+                                break;
+                        }
+
+                        break;
+                    }
+                    default:
+                        throw MechanicsException(__PRETTY_FUNCTION__,"Boundary element for Continuum element with dimension "+
+                                                 std::to_string(elementPtr->GetLocalDimension()) + "not implemented");
+                    }
+                    break;
+
+
+                default:
+
+                    break;
                 }
+
+                mElementMap.insert(elementId, boundaryElement);
+                newBoundaryElementIds.push_back(elementId);
+
+                if (integrationType == eIntegrationType::NotSet)
+                    throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
+
+                boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
+                boundaryElement->SetConstitutiveLaw(constitutiveLaw);
             }
 
         } catch (NuTo::MechanicsException &e)

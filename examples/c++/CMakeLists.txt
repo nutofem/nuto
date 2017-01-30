@@ -7,12 +7,20 @@
 # - ImportGmsh
 # - Truss1DMultiphase
 
-# copy mesh
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/HeatedPlate.msh ${CMAKE_CURRENT_BINARY_DIR}/HeatedPlate.msh COPYONLY)
+# copy meshes
+foreach(mesh
+        HeatedPlate
+        CSDAMesh
+        )
+    execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
+endforeach()
+
+
 
 # generate tests
 foreach(test
     TestOperators
+    CSDAPrism3D
     SparseDirectSolverMUMPS
     VisualizeTruss1D2N
     Brick8N

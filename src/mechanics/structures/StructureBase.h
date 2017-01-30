@@ -1491,6 +1491,12 @@ public:
     //! @param rElementGroupId id for the element group
     void GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId);
 
+
+    //! @brief ... Adds all the nodes from the group-rElementGroupId to a new group
+    //! @param rElementGroupId id for the element group
+    //! @return rNodeGroupId id for the node group
+    int GroupCreateNodeGroupFromElements(int rElementGroupId);
+
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
     //! @param rIdentGroup identifier for the group
     //! @param rCenter center of the selection circle

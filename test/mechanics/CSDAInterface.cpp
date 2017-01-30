@@ -7,16 +7,22 @@
 
 #include <cmath>
 #include <boost/filesystem/operations.hpp>
+#include <mechanics/interpolationtypes/InterpolationType.h>
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/elements/ElementBase.h"
+#include "mechanics/elements/ContinuumElement.h"
+
+#include "mechanics/mesh/MeshCompanion.h"
 
 /*               3   2
  *   /|          /  /           \
@@ -264,41 +270,113 @@ void CSDA2D()
     newmark.Solve(1);
 }
 
-void CSDA3D()
+
+
+void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
 {
-
-    /*
-     *
-     *
-     *
-     *
-     *
-     *
-     *
-     *
-     */
-
-
-    constexpr double thickness2 = 0.1;
+    constexpr double thickness = .1;
     constexpr double lx = 10;
     constexpr double ly = 2;
     constexpr double lz = 5;
 
     NuTo::Structure s(3);
 
-    s.NodeCreate(0, Eigen::Vector3d({0, 0, 0}));
-    s.NodeCreate(1, Eigen::Vector3d({lx - thickness2,-ly, 0}));
-    s.NodeCreate(2, Eigen::Vector3d({lx - thickness2, ly, 0}));
-    s.NodeCreate(3, Eigen::Vector3d({lx - thickness2, 0, lz}));
+    int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
+    s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, rCoordinateInterpolation);
 
-    s.NodeCreate(4, Eigen::Vector3d({lx + thickness2,-ly, 0}));
-    s.NodeCreate(5, Eigen::Vector3d({lx + thickness2, ly, 0}));
-    s.NodeCreate(6, Eigen::Vector3d({lx + thickness2, 0, lz}));
+    int gMatrix = s.GroupCreate(NuTo::eGroupId::Elements);
+    int gAggreg = s.GroupCreate(NuTo::eGroupId::Elements);
+
+    if (rCoordinateInterpolation == NuTo::Interpolation::eTypeOrder::EQUIDISTANT1)
+    {
+        s.NodeCreate(0, Eigen::Vector3d({-lx, 0, 0}));
+        s.NodeCreate(1, Eigen::Vector3d({0,-ly, 0}));
+        s.NodeCreate(2, Eigen::Vector3d({0, 0, 0}));
+        s.NodeCreate(3, Eigen::Vector3d({0, ly, 0}));
+        s.NodeCreate(4, Eigen::Vector3d({0, -ly/2., lz/2.}));
+        s.NodeCreate(5, Eigen::Vector3d({0, ly/2., lz/2.}));
+        s.NodeCreate(6, Eigen::Vector3d({0, 0, lz}));
+        s.NodeCreate(7, Eigen::Vector3d({lx, 0, 0}));
+
+        s.ElementCreate(1, it, {0, 1, 2, 4});
+        s.ElementCreate(2, it, {0, 2, 3, 5});
+        s.ElementCreate(3, it, {0, 4, 2, 5});
+        s.ElementCreate(4, it, {0, 4, 5, 6});
+        s.ElementCreate(5, it, {7, 1, 2, 4});
+        s.ElementCreate(6, it, {7, 2, 3, 5});
+        s.ElementCreate(7, it, {7, 4, 2, 5});
+        s.ElementCreate(8, it, {7, 4, 5, 6});
 
 
-    s.NodeCreate(7, Eigen::Vector3d({lx*2, 0, 0}));
+        s.GroupAddElement(gMatrix, 1);
+        s.GroupAddElement(gMatrix, 2);
+        s.GroupAddElement(gMatrix, 3);
+        s.GroupAddElement(gMatrix, 4);
+
+        s.GroupAddElement(gAggreg, 5);
+        s.GroupAddElement(gAggreg, 6);
+        s.GroupAddElement(gAggreg, 7);
+        s.GroupAddElement(gAggreg, 8);
+
+    }
+    else
+    {
+        Eigen::Vector3d(0.5, 0.0, 0.0);
+        Eigen::Vector3d(0.5, 0.5, 0.0);
+        Eigen::Vector3d(0.0, 0.5, 0.0);
+        Eigen::Vector3d(0.0, 0.0, 0.5);
+        Eigen::Vector3d(0.0, 0.5, 0.5);
+        Eigen::Vector3d(0.5, 0.0, 0.5);
 
 
+
+        s.NodeCreate(0, Eigen::Vector3d({0,   -ly/2, 0}));
+        s.NodeCreate(1, Eigen::Vector3d({lx,      0, 0}));
+        s.NodeCreate(2, Eigen::Vector3d({0,    ly/2, 0}));
+        s.NodeCreate(3, Eigen::Vector3d({0,       0, lz}));
+
+        s.NodeCreate(4, Eigen::Vector3d({lx/2.,-ly/4, 0}));
+        s.NodeCreate(5, Eigen::Vector3d({lx/2., ly/4, 0}));
+        s.NodeCreate(6, Eigen::Vector3d({0,        0, 0}));
+
+        s.NodeCreate(7, Eigen::Vector3d({0,    -ly/4, lz/2}));
+        s.NodeCreate(8, Eigen::Vector3d({0,     ly/4, lz/2}));
+        s.NodeCreate(9, Eigen::Vector3d({lx/2.,   0, lz/2}));
+
+
+        s.NodeCreate(10, Eigen::Vector3d({-lx,      0, 0}));
+        s.NodeCreate(11, Eigen::Vector3d({-lx/2.,-ly/4, 0}));
+        s.NodeCreate(12, Eigen::Vector3d({-lx/2., ly/4, 0}));
+        s.NodeCreate(13, Eigen::Vector3d({-lx/2.,   0, lz/2}));
+
+
+
+        s.ElementCreate(1, it, {0,  1, 2, 3,  4,  5, 6, 7, 8,  9});
+        s.ElementCreate(2, it, {0, 10, 2, 3, 11, 12, 6, 7, 8, 13});
+//            s.ElementCreate(2, it, {1, 2, 3, 7});
+
+        s.GroupAddElement(gMatrix, 1);
+        s.GroupAddElement(gAggreg, 2);
+    }
+    auto prism = NuTo::MeshCompanion::ElementPrismsCreate(s, gMatrix, gAggreg, thickness);
+
+    s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(prism.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+
+    s.ElementTotalConvertToInterpolationType();
+}
+
+
+
+void CSDA3D()
+{
+
+    NuTo::Structure s(3);
+
+    constexpr double thickness = .1;
+    constexpr double lx = 10;
+    constexpr double ly = 2;
+    constexpr double lz = 5;
 
     int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -308,63 +386,71 @@ void CSDA3D()
     s.InterpolationTypeAdd(it2, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     s.InterpolationTypeAdd(it2, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
+    s.NodeCreate(0, Eigen::Vector3d({-lx, 0, 0}));
+    s.NodeCreate(1, Eigen::Vector3d({-thickness/2,-ly, 0}));
+    s.NodeCreate(2, Eigen::Vector3d({-thickness/2, ly, 0}));
+    s.NodeCreate(3, Eigen::Vector3d({-thickness/2, 0, lz}));
+
+    s.NodeCreate(4, Eigen::Vector3d({thickness/2,-ly, 0}));
+    s.NodeCreate(5, Eigen::Vector3d({thickness/2, ly, 0}));
+    s.NodeCreate(6, Eigen::Vector3d({thickness/2, 0, lz}));
+
+    s.NodeCreate(7, Eigen::Vector3d({lx, 0, 0}));
+
     s.ElementCreate(0, it, {0, 1, 2, 3});
     s.ElementCreate(1, it, {4, 5, 6, 7});
+
     s.ElementCreate(2, it2, {1, 2, 3, 4, 5, 6});
 
 
     using namespace NuTo::Constitutive;
     int LIN = 0;
-    int CSDA = 1;
     s.ConstitutiveLawCreate(LIN, eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::YOUNGS_MODULUS,       20000.);
     s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::POISSONS_RATIO,       0.0);
 
+    int CSDA = 1;
     s.ConstitutiveLawCreate(CSDA, eConstitutiveType::LOCAL_DAMAGE_MODEL);
     constexpr double fractureEnergy         = 0.1;
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::YOUNGS_MODULUS,       20000.);
+    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::YOUNGS_MODULUS,       200.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO,       0.0);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / (thickness2*2.));
+    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / thickness);
     s.ConstitutiveLawSetDamageLaw(CSDA, eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+
 
     s.ElementSetConstitutiveLaw(0, LIN);
     s.ElementSetConstitutiveLaw(1, LIN);
-//    s.ElementSetConstitutiveLaw(2, LIN);
     s.ElementSetConstitutiveLaw(2, CSDA);
 
     int mySection = s.SectionCreate("Volume");
     s.ElementTotalSetSection(mySection);
     s.ElementTotalConvertToInterpolationType();
 
+    std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;
 
-    int nodeFixXYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({0, 0, 0}), 1.e-5);
+    s.ElementInfo(10);
+    s.NodeInfo(10);
+
+    int nodeFixXYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({-lx, 0, 0}), 1.e-5);
     s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitX(), 0);
     s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitY(), 0);
     s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitZ(), 0);
 
-    int nodeFixYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx*2, 0, 0}), 1.e-5);
+    int nodeFixYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx, 0, 0}), 1.e-5);
     s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitY(), 0);
     s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitZ(), 0);
 
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({lx, 0, lz}), 0, 2*thickness2);
+    s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, lz}), 0, 2*thickness);
 
     s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitY(), 0);
-
     int BC = s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitZ(), 0);
 
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
     std::cout << s.GetNumTotalDependentDofs() << std::endl;
-
-    double deltaD = .5;
-
-    Eigen::Matrix2d dispRHS;
-    dispRHS << 0, 0, 1, -deltaD;
-
-    s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
 
     NuTo::NewmarkDirect newmark(&s);
 
@@ -372,29 +458,27 @@ void CSDA3D()
     newmark.SetShowTime(false);
 
     newmark.SetTimeStep(0.1);
-    newmark.SetMinTimeStep(0.001);
+    newmark.SetMinTimeStep(1.e-12);
     newmark.SetMaxTimeStep(0.1);
-    newmark.SetToleranceForce(1e-6);
+    newmark.SetToleranceForce(1.e-06);
     newmark.SetAutomaticTimeStepping(true);
     newmark.SetPerformLineSearch(true);
-    newmark.SetMaxNumIterations(20);
+    newmark.SetMaxNumIterations(100);
 
     bool deleteDirectory = true;
     newmark.SetResultDirectory("./CSDA3D", deleteDirectory);
 
+    double deltaD = .5;
+    Eigen::Matrix2d dispRHS;
+    dispRHS << 0, 0, 1, -deltaD;
     newmark.AddTimeDependentConstraint(BC, dispRHS);
-
-//    newmark.AddResultNodeDisplacements("Displ", nodeBC);
-//    int groupNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
-//    s.GroupAddNode(groupNodeBC, nodeBC);
-//    newmark.AddResultGroupNodeForce("Force", groupNodeBC);
-
 
     newmark.Solve(1);
 }
 
 int main()
 {
+
     CSDA2D();
     CSDA3D();
 
