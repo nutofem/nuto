@@ -25,7 +25,7 @@ NuTo::eError ThermalStrains::Evaluate(
     const int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     double temperature = 0.0;
-    std::array<double, 2> strain;
+    std::array<double, 2> strain = {0.0, 0.0};
     try
     {
         temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
@@ -34,6 +34,7 @@ NuTo::eError ThermalStrains::Evaluate(
     catch(const std::bad_function_call& e)
     {
         strain[0] = mExpansionCoefficient * temperature;
+        strain[1] = mExpansionCoefficient;
     }
     catch(const std::out_of_range& e) {}
 
@@ -63,6 +64,7 @@ NuTo::eError ThermalStrains::Evaluate(
         {
             Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature =
                 static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
+            dStrainDTemperature.setZero();
             for(unsigned int i=0; i<TDim; ++i)
             {
                 //! \todo derivative is really positive, yet the strain itself

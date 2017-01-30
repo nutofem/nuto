@@ -163,6 +163,7 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
                     case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
                     case eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
                     case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
+                    case eOutput::NONLOCAL_RADIUS:
                         *static_cast<ConstitutiveScalar*>(rConstitutiveOutput.at(output.first).get()) +=
                             *static_cast<ConstitutiveScalar*>(singleOutput.at(output.first).get());
                         rConstitutiveOutput.at(output.first)->SetIsCalculated(true);

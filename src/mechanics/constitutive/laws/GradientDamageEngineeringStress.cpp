@@ -233,6 +233,15 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
                 break;
             }
 
+            case NuTo::Constitutive::eOutput::NONLOCAL_RADIUS:
+            {
+                ConstitutiveIOBase& radius = *itOutput.second;
+                radius.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+                radius[0] = mNonlocalRadius;
+                break;
+            }
+
             default:
                 continue;
         }
@@ -392,6 +401,15 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
                 damage[0] = omega;
                 break;
             }
+
+            case NuTo::Constitutive::eOutput::NONLOCAL_RADIUS:
+            {
+                ConstitutiveIOBase& radius = *itOutput.second;
+                radius.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+                radius[0] = mNonlocalRadius;
+                break;
+            }
             default:
                 continue;
         }
@@ -518,6 +536,15 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
                 damage.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
 
                 damage[0] = omega;
+                break;
+            }
+
+            case NuTo::Constitutive::eOutput::NONLOCAL_RADIUS:
+            {
+                ConstitutiveIOBase& radius = *itOutput.second;
+                radius.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+                radius[0] = mNonlocalRadius;
                 break;
             }
             default:

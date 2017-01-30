@@ -6,3 +6,5 @@ CMakeLists.txt.user
 .oclint
 compile_commands.json
 *build*
+.ackrc
+.ycm_extra_conf*

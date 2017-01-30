@@ -106,8 +106,11 @@ eError HeatConduction::Evaluate(
             inputData.mTemperatureGradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
         case Constitutive::eInput::TEMPERATURE_CHANGE:
-            inputData.mTemperatureChange = (*itInput.second)[0];
+        {
+            auto tempChange = *static_cast<ConstitutiveScalar*>(itInput.second.get());
+            inputData.mTemperatureChange = tempChange[0];
             break;
+        }
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
         case Constitutive::eInput::TIME_STEP:
             break;

@@ -224,6 +224,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
             break;
         case Node::eDof::NONLOCALEQSTRAIN:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_RADIUS];
             break;
         case Node::eDof::RELATIVEHUMIDITY:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B];
@@ -281,6 +282,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN];
                 break;
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_RADIUS];
                 break;
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT];
@@ -798,9 +800,12 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
         {
             const auto& N = *(rData.GetNMatrix(dofRow));
             const auto& B = rData.mB.at(dofRow);
-            const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
-            const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
-            const double c = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
+            const auto& nonlocalEqStrain =
+                *static_cast<ConstitutiveScalar*>(constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
+            const auto& localEqStrain =
+                *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
+            const double c =
+                (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_RADIUS).get()))[0];
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
                                       ( N.transpose() * (nonlocalEqStrain[0] - localEqStrain[0]) +
                                         B.transpose() * (c * B * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN)));
@@ -892,7 +897,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             {
                 const auto& N = *(rData.GetNMatrix(dofRow));
                 const auto& B = rData.mB.at(dofRow);
-                const double c = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
+                const auto& c =
+                    (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_RADIUS).get()))[0];
                 hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * N + c * B.transpose() * B);
                 break;
             }
