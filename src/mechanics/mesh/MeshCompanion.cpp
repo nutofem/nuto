@@ -11,3 +11,13 @@ std::vector<NuTo::ElementBase*> NuTo::MeshCompanion::GetElementVector(Structure&
 
     return elements;
 }
+
+std::map<const NuTo::NodeBase*, int> NuTo::MeshCompanion::GetNodeToIdMap(NuTo::Structure& rS)
+{
+    std::map<const NodeBase*, int> nodeToId;
+    int gAllNodes = rS.GroupGetNodesTotal();
+    for (int nodeId : rS.GroupGetMemberIds(gAllNodes))
+        nodeToId[rS.NodeGetNodePtr(nodeId)] = nodeId;
+    rS.GroupDelete(gAllNodes);
+    return nodeToId;
+}

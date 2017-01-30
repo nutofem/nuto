@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 
 namespace NuTo
@@ -9,6 +10,7 @@ namespace NuTo
 
 class Structure;
 class ElementBase;
+class NodeBase;
 
 namespace MeshCompanion
 {
@@ -42,7 +44,18 @@ void ElementTotalConvertToInterpolationType(Structure& rS, double rNodeDistanceM
 //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
 void ElementConvertToInterpolationType(Structure& rS, int rGroupNumberElements, double rNodeDistanceMerge);
 
+//! @brief builds a vector of all element pointers inside an element group
+//! @param rS almighty Structure
+//! @param rGroupNumberElements element group id
+//! @return vector of all element pointers inside an element group
 std::vector<ElementBase*> GetElementVector(Structure& rS, int rElementGroupId);
+
+
+//! @brief builds a mapping from node ptr to node id
+//! @param rS almighty Structure
+//! @return mapping from node ptr to node id
+std::map<const NuTo::NodeBase*, int> GetNodeToIdMap(Structure& rS);
+
 
 } // namespace MeshCompanion
 } // namespace NuTo
