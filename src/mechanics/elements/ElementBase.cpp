@@ -229,31 +229,25 @@ double NuTo::ElementBase::GetIntegrationPointWeight(unsigned int rIP) const
     return mIPData.GetIntegrationType().GetIntegrationPointWeight(rIP);
 }
 
+
 template<int TDim>
 void NuTo::ElementBase::EvaluateConstitutiveLaw(
         const NuTo::ConstitutiveInputMap& rConstitutiveInput,
         NuTo::ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP)
 {
-    try
-    {
-        Constitutive::IPConstitutiveLawBase& ipConstitutiveLaw = mIPData.GetIPConstitutiveLaw(IP);
+    Constitutive::IPConstitutiveLawBase& ipConstitutiveLaw = mIPData.GetIPConstitutiveLaw(IP);
 
-        for (auto& itOutput : rConstitutiveOutput)
-            if(itOutput.second!=nullptr) //check nullptr because of static data
-                itOutput.second->SetIsCalculated(false);
-        ipConstitutiveLaw.Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput);
+    for (auto& itOutput : rConstitutiveOutput)
+        if(itOutput.second!=nullptr) //check nullptr because of static data
+            itOutput.second->SetIsCalculated(false);
+    ipConstitutiveLaw.Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput);
 
-        for(auto& itOutput : rConstitutiveOutput)
-            if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                        "Output "+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-        throw;
-    }
+    for(auto& itOutput : rConstitutiveOutput)
+        if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                    "Output "+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
 }
+
 
 template void NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
         NuTo::ConstitutiveOutputMap&, unsigned int);
@@ -261,7 +255,6 @@ template void NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::Constitu
         NuTo::ConstitutiveOutputMap&, unsigned int);
 template void NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
         NuTo::ConstitutiveOutputMap&, unsigned int);
-
 
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const

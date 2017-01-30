@@ -24,7 +24,7 @@ void ThermalStrains::Evaluate(
     const int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     if (rConstitutiveOutput.size() == 1 and rConstitutiveOutput.count(Constitutive::eOutput::UPDATE_STATIC_DATA) == 1)
-        return eError::SUCCESSFUL;
+        return;
 
     double temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
 

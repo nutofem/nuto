@@ -52,414 +52,406 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
-    try
+    //renumber dofs and build constraint matrix
+    mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    CalculateStaticAndTimeDependentExternalLoad();
+
+
+    mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
+
+    if (mMaxTimeStep==0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
+
+    double curTime  = mTime;
+    double timeStep = mTimeStep;
+    mStructure->SetPrevTime(curTime);
+    mStructure->SetTime(curTime);
+
+    const DofStatus& dofStatus = mStructure->GetDofStatus();
+
+    /*---------------------------------*\
+    | Check number of calculation steps |
+    \*---------------------------------*/
+
+    if(mStepActiveDofs.empty())
     {
-        //renumber dofs and build constraint matrix
-        mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
-
-        CalculateStaticAndTimeDependentExternalLoad();
-
-
-        mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
-
-        if (mMaxTimeStep==0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
-
-        double curTime  = mTime;
-        double timeStep = mTimeStep;
-        mStructure->SetPrevTime(curTime);
-        mStructure->SetTime(curTime);
-
-        const DofStatus& dofStatus = mStructure->GetDofStatus();
-
-        /*---------------------------------*\
-        | Check number of calculation steps |
-        \*---------------------------------*/
-
-        if(mStepActiveDofs.empty())
+        mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
+    }
+    else
+    {
+        for(unsigned int i=0; i<mStepActiveDofs.size();++i)
         {
-            mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
+            if(mStepActiveDofs[i].empty())
+            {
+                throw MechanicsException(__PRETTY_FUNCTION__, "Calculation step " +std::to_string(i)+ " has no active DOFs.");
+            }
+        }
+    }
+
+
+
+    /*---------------------------------*\
+    |        Allocate Variables         |
+    \*---------------------------------*/
+
+    StructureOutputBlockMatrix  hessian0(dofStatus, true);
+    StructureOutputBlockMatrix  hessian1(dofStatus);
+    StructureOutputBlockMatrix  hessian2(dofStatus);
+
+    // Vectors
+    // -------
+
+    StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
+
+    StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector  dof_dt1(dofStatus, true); // e.g. velocity
+    StructureOutputBlockVector  dof_dt2(dofStatus, true); // e.g. accelerations
+
+    StructureOutputBlockVector  trial_dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector  trial_dof_dt1(dofStatus, true); // e.g. velocity
+    StructureOutputBlockVector  trial_dof_dt2(dofStatus, true); // e.g. accelerations
+
+    StructureOutputBlockVector  lastConverged_dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector  lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
+    StructureOutputBlockVector  lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
+
+
+    StructureOutputBlockVector  extForce(dofStatus, true);
+    StructureOutputBlockVector  intForce(dofStatus, true);
+    StructureOutputBlockVector  residual(dofStatus, true);
+
+    StructureOutputBlockVector  prevIntForce(dofStatus, true);
+    StructureOutputBlockVector  prevExtForce(dofStatus, true);
+    StructureOutputBlockVector  prevResidual(dofStatus, true);
+
+
+    // for constraints
+    // ---------------
+
+    BlockFullVector<double> residual_mod(dofStatus);
+    BlockFullVector<double> bRHS(dofStatus);
+    BlockFullVector<double> deltaBRHS(dofStatus);
+
+    const auto& cmat = mStructure->GetConstraintMatrix();
+
+    /*---------------------------------*\
+    |    Declare and fill Output Maps   |
+    \*---------------------------------*/
+
+    // Declare output maps
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
+
+    evaluate_InternalGradient                       [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+
+    evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::HESSIAN0] = &hessian0;
+    evaluate_Hessian0_Hessian1                      [eStructureOutput::HESSIAN0] = &hessian0;
+
+    if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
+    {
+        hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+        evaluate_InternalGradient_Hessian0Hessian1  [eStructureOutput::HESSIAN1] = &hessian1;
+        evaluate_Hessian0_Hessian1                  [eStructureOutput::HESSIAN1] = &hessian1;
+    }
+
+    if (mStructure->GetNumTimeDerivatives() >= 2)
+    {
+        hessian2.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+        if (mUseLumpedMass)
+        {
+            hessian2 = mStructure->BuildGlobalHessian2Lumped();
         }
         else
         {
-            for(unsigned int i=0; i<mStepActiveDofs.size();++i)
-            {
-                if(mStepActiveDofs[i].empty())
-                {
-                    throw MechanicsException(__PRETTY_FUNCTION__, "Calculation step " +std::to_string(i)+ " has no active DOFs.");
-                }
-            }
+            hessian2 = mStructure->BuildGlobalHessian2();
+        }
+        CalculateMuDampingMatrix(hessian1, hessian2);
+    }
+
+
+    /*---------------------------------*\
+    |    Declare and fill Input Map     |
+    \*---------------------------------*/
+
+    ConstitutiveInputMap inputMap;
+    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            eCalculateStaticData::EULER_BACKWARD);
+    double& inputTime = (*inputMap.emplace(Constitutive::eInput::TIME,std::make_unique<ConstitutiveScalar>()).first->second)[0];
+    inputTime = mTime;
+
+    ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+
+    UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+
+    // ******************************************************
+    mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
+    // ******************************************************
+
+    StructureOutputBlockVector initialExtForce = CalculateCurrentExternalLoad(curTime);  // put this in element evaluate soon!
+
+    // set first time derivative for temperature problem automatically
+    //for (const auto& activeDofs : mStepActiveDofs)
+    //{
+    //    auto temp_iterator = activeDofs.find(NuTo::Node::eDof::TEMPERATURE);
+    //    bool is_temperature = temp_iterator != activeDofs.end();
+    //    if (mStructure->GetNumTimeDerivatives() == 1 && is_temperature)
+    //    {
+    //        auto rhs = hessian0*lastConverged_dof_dt0 - initialExtForce;
+    //        lastConverged_dof_dt1.J = mStructure->SolveBlockSystem(hessian1.JJ, rhs.J);
+    //        mStructure->NodeMergeDofValues(1, lastConverged_dof_dt1);
+    //        mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
+    //    }
+    //}
+
+    residual = CalculateResidual(intForce, initialExtForce, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
+    residual.ApplyCMatrix(residual_mod, cmat);
+    if (mToleranceResidual < residual_mod.CalculateInfNorm())
+    {
+        mStructure->GetLogger() << residual_mod.CalculateInfNorm();
+        throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+    }
+
+    CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
+    PostProcess(residual);
+
+
+    // the minimal time step defined, which is equivalent to six cut-backs
+    if (mAutomaticTimeStepping)
+    {
+        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*std::pow(0.5,6.));
+    }
+
+    while (curTime < rTimeDelta)
+    {
+
+
+
+
+        //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //! LEAVE IT OR FIX IT IF YOU CAN:
+        //! If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop everything seems
+        //! to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed during the function call inside
+        //! the loop which leads to reads in already freed blocks of memory
+        //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        std::set<Node::eDof> currentDofSet = dofStatus.GetDofTypes();
+        for(const auto& dof : currentDofSet)
+        {
+            mStructure->DofTypeSetIsActive(dof,true);
         }
 
 
 
-        /*---------------------------------*\
-        |        Allocate Variables         |
-        \*---------------------------------*/
 
-        StructureOutputBlockMatrix  hessian0(dofStatus, true);
-        StructureOutputBlockMatrix  hessian1(dofStatus);
-        StructureOutputBlockMatrix  hessian2(dofStatus);
+        if (timeStep<mMinTimeStep)
+            throw MechanicsException(__PRETTY_FUNCTION__, "time step is smaller than minimum - no convergence is obtained.");
 
-        // Vectors
-        // -------
+        // calculate Delta_BRhs and Delta_ExtForce
+        bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+        prevExtForce = CalculateCurrentExternalLoad(curTime);
 
-        StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
+        curTime += timeStep;
+        inputTime = mTime + timeStep;
+        SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
+        mStructure->SetTime(curTime);
 
-        StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
-        StructureOutputBlockVector  dof_dt1(dofStatus, true); // e.g. velocity
-        StructureOutputBlockVector  dof_dt2(dofStatus, true); // e.g. accelerations
+        deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
-        StructureOutputBlockVector  trial_dof_dt0(dofStatus, true); // e.g. disp
-        StructureOutputBlockVector  trial_dof_dt1(dofStatus, true); // e.g. velocity
-        StructureOutputBlockVector  trial_dof_dt2(dofStatus, true); // e.g. accelerations
-
-        StructureOutputBlockVector  lastConverged_dof_dt0(dofStatus, true); // e.g. disp
-        StructureOutputBlockVector  lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
-        StructureOutputBlockVector  lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
-
-
-        StructureOutputBlockVector  extForce(dofStatus, true);
-        StructureOutputBlockVector  intForce(dofStatus, true);
-        StructureOutputBlockVector  residual(dofStatus, true);
-
-        StructureOutputBlockVector  prevIntForce(dofStatus, true);
-        StructureOutputBlockVector  prevExtForce(dofStatus, true);
-        StructureOutputBlockVector  prevResidual(dofStatus, true);
-
-
-        // for constraints
-        // ---------------
-
-        BlockFullVector<double> residual_mod(dofStatus);
-        BlockFullVector<double> bRHS(dofStatus);
-        BlockFullVector<double> deltaBRHS(dofStatus);
-
-        const auto& cmat = mStructure->GetConstraintMatrix();
-
-        /*---------------------------------*\
-        |    Declare and fill Output Maps   |
-        \*---------------------------------*/
-
-        // Declare output maps
-        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
-        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
-        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
-
-        evaluate_InternalGradient                       [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
-        evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
-
-        evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::HESSIAN0] = &hessian0;
-        evaluate_Hessian0_Hessian1                      [eStructureOutput::HESSIAN0] = &hessian0;
-
-        if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
+        unsigned int staggeredStepNumber = 0;    // at the moment needed to do the postprocessing after the last step and not after every step of a staggered solution.
+        for (const auto& activeDofs : mStepActiveDofs)
         {
-            hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
-            evaluate_InternalGradient_Hessian0Hessian1  [eStructureOutput::HESSIAN1] = &hessian1;
-            evaluate_Hessian0_Hessian1                  [eStructureOutput::HESSIAN1] = &hessian1;
-        }
 
-        if (mStructure->GetNumTimeDerivatives() >= 2)
-        {
-            hessian2.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
-            if (mUseLumpedMass)
+            ++staggeredStepNumber;
+            mStructure->DofTypeSetIsActive(activeDofs);
+
+
+            PrintInfoStagger();
+
+            // ******************************************************
+            mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
+            // ******************************************************
+
+            extForce = CalculateCurrentExternalLoad(curTime);
+
+            /*------------------------------------------------*\
+            |         Calculate Residual for trail state       |
+            \*------------------------------------------------*/
+            residual = prevExtForce - extForce;
+            CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+            residual.ApplyCMatrix(residual_mod, cmat);
+
+            mStructure->GetLogger() << "\n"<< "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
+
+            // ******************************************************
+            delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
+            delta_dof_dt0.K = deltaBRHS - cmat*delta_dof_dt0.J;
+            ++mIterationCount;
+            // ******************************************************
+
+            //calculate trial state
+            dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+            if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+            if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+
+
+            MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
+
+            // ******************************************************
+            mStructure->Evaluate(inputMap, evaluate_InternalGradient);
+            // ******************************************************
+
+            residual = CalculateResidual(intForce, extForce, hessian2, dof_dt1, dof_dt2);
+            residual.ApplyCMatrix(residual_mod, cmat);
+
+
+            BlockScalar normResidual = residual_mod.CalculateInfNorm();
+
+            int iteration = 0;
+            while(!(normResidual < mToleranceResidual) && iteration < mMaxNumIterations)
             {
-                hessian2 = mStructure->BuildGlobalHessian2Lumped();
-            }
-            else
-            {
-                hessian2 = mStructure->BuildGlobalHessian2();
-            }
-            CalculateMuDampingMatrix(hessian1, hessian2);
-        }
-
-
-        /*---------------------------------*\
-        |    Declare and fill Input Map     |
-        \*---------------------------------*/
-
-        ConstitutiveInputMap inputMap;
-        inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-                eCalculateStaticData::EULER_BACKWARD);
-        double& inputTime = (*inputMap.emplace(Constitutive::eInput::TIME,std::make_unique<ConstitutiveScalar>()).first->second)[0];
-        inputTime = mTime;
-
-        ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
-
-        UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
-
-        // ******************************************************
-        mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
-        // ******************************************************
-
-        StructureOutputBlockVector initialExtForce = CalculateCurrentExternalLoad(curTime);  // put this in element evaluate soon!
-
-        // set first time derivative for temperature problem automatically
-        //for (const auto& activeDofs : mStepActiveDofs)
-        //{
-        //    auto temp_iterator = activeDofs.find(NuTo::Node::eDof::TEMPERATURE);
-        //    bool is_temperature = temp_iterator != activeDofs.end();
-        //    if (mStructure->GetNumTimeDerivatives() == 1 && is_temperature)
-        //    {
-        //        auto rhs = hessian0*lastConverged_dof_dt0 - initialExtForce;
-        //        lastConverged_dof_dt1.J = mStructure->SolveBlockSystem(hessian1.JJ, rhs.J);
-        //        mStructure->NodeMergeDofValues(1, lastConverged_dof_dt1);
-        //        mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
-        //    }
-        //}
-
-        residual = CalculateResidual(intForce, initialExtForce, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
-        residual.ApplyCMatrix(residual_mod, cmat);
-        if (mToleranceResidual < residual_mod.CalculateInfNorm())
-        {
-            mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-            throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
-        }
-
-        CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
-        PostProcess(residual);
-
-
-        // the minimal time step defined, which is equivalent to six cut-backs
-        if (mAutomaticTimeStepping)
-        {
-            SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*std::pow(0.5,6.));
-        }
-
-        while (curTime < rTimeDelta)
-        {
-
-
-
-
-            //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //! LEAVE IT OR FIX IT IF YOU CAN:
-            //! If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop everything seems
-            //! to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed during the function call inside
-            //! the loop which leads to reads in already freed blocks of memory
-            //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            std::set<Node::eDof> currentDofSet = dofStatus.GetDofTypes();
-            for(const auto& dof : currentDofSet)
-            {
-                mStructure->DofTypeSetIsActive(dof,true);
-            }
-
-
-
-
-            if (timeStep<mMinTimeStep)
-                throw MechanicsException(__PRETTY_FUNCTION__, "time step is smaller than minimum - no convergence is obtained.");
-
-            // calculate Delta_BRhs and Delta_ExtForce
-            bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
-            prevExtForce = CalculateCurrentExternalLoad(curTime);
-
-            curTime += timeStep;
-            inputTime = mTime + timeStep;
-            SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
-            mStructure->SetTime(curTime);
-
-            deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
-
-            unsigned int staggeredStepNumber = 0;    // at the moment needed to do the postprocessing after the last step and not after every step of a staggered solution.
-            for (const auto& activeDofs : mStepActiveDofs)
-            {
-
-                ++staggeredStepNumber;
-                mStructure->DofTypeSetIsActive(activeDofs);
-
-
-                PrintInfoStagger();
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
                 // ******************************************************
 
-                extForce = CalculateCurrentExternalLoad(curTime);
+                if (mCheckCoefficientMatrix)    mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
 
-                /*------------------------------------------------*\
-                |         Calculate Residual for trail state       |
-                \*------------------------------------------------*/
-                residual = prevExtForce - extForce;
-                CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
-                residual.ApplyCMatrix(residual_mod, cmat);
-
-                mStructure->GetLogger() << "\n"<< "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
 
                 // ******************************************************
                 delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
-                delta_dof_dt0.K = deltaBRHS - cmat*delta_dof_dt0.J;
+                delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
                 ++mIterationCount;
                 // ******************************************************
 
-                //calculate trial state
-                dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
-                if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
-                if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
 
-
-                MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
-
-                // ******************************************************
-                mStructure->Evaluate(inputMap, evaluate_InternalGradient);
-                // ******************************************************
-
-                residual = CalculateResidual(intForce, extForce, hessian2, dof_dt1, dof_dt2);
-                residual.ApplyCMatrix(residual_mod, cmat);
-
-
-                BlockScalar normResidual = residual_mod.CalculateInfNorm();
-
-                int iteration = 0;
-                while(!(normResidual < mToleranceResidual) && iteration < mMaxNumIterations)
+                //perform a line search
+                double alpha = 1;
+                BlockScalar trialNormResidual(mStructure->GetDofStatus());
+                do
                 {
+                    //calculate line search trial state
+                    trial_dof_dt0 = dof_dt0 + delta_dof_dt0 * alpha;
+                    if (mStructure->GetNumTimeDerivatives() >= 1) trial_dof_dt1 = dof_dt1 + delta_dof_dt0 * (alpha*mGamma/(timeStep*mBeta));
+                    if (mStructure->GetNumTimeDerivatives() >= 2) trial_dof_dt2 = dof_dt2 + delta_dof_dt0 * (alpha/(timeStep*timeStep*mBeta));
+
+                    MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
 
                     // ******************************************************
-                    mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
+                    mStructure->Evaluate(inputMap, evaluate_InternalGradient);
                     // ******************************************************
 
-                    if (mCheckCoefficientMatrix)    mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
+                    residual = CalculateResidual(intForce, prevExtForce, hessian2, trial_dof_dt1, trial_dof_dt2);
+                    residual.ApplyCMatrix(residual_mod, cmat);
 
+                    trialNormResidual = residual_mod.CalculateInfNorm();
 
-                    // ******************************************************
-                    delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
-                    delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
-                    ++mIterationCount;
-                    // ******************************************************
+                    mStructure->GetLogger() << "[Linesearch a=" << std::to_string(alpha).substr(0, 6) << "] Trial residual: " << trialNormResidual <<  "\n";
 
+                    alpha*=0.5;
 
-                    //perform a line search
-                    double alpha = 1;
-                    BlockScalar trialNormResidual(mStructure->GetDofStatus());
-                    do
-                    {
-                        //calculate line search trial state
-                        trial_dof_dt0 = dof_dt0 + delta_dof_dt0 * alpha;
-                        if (mStructure->GetNumTimeDerivatives() >= 1) trial_dof_dt1 = dof_dt1 + delta_dof_dt0 * (alpha*mGamma/(timeStep*mBeta));
-                        if (mStructure->GetNumTimeDerivatives() >= 2) trial_dof_dt2 = dof_dt2 + delta_dof_dt0 * (alpha/(timeStep*timeStep*mBeta));
+                }
+                while(mPerformLineSearch && alpha > mMinLineSearchStep && trialNormResidual > (1. - alpha) * normResidual);
 
-                        MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
-
-                        // ******************************************************
-                        mStructure->Evaluate(inputMap, evaluate_InternalGradient);
-                        // ******************************************************
-
-                        residual = CalculateResidual(intForce, prevExtForce, hessian2, trial_dof_dt1, trial_dof_dt2);
-                        residual.ApplyCMatrix(residual_mod, cmat);
-
-                        trialNormResidual = residual_mod.CalculateInfNorm();
-
-                        mStructure->GetLogger() << "[Linesearch a=" << std::to_string(alpha).substr(0, 6) << "] Trial residual: " << trialNormResidual <<  "\n";
-
-                        alpha*=0.5;
-
-                    }
-                    while(mPerformLineSearch && alpha > mMinLineSearchStep && trialNormResidual > (1. - alpha) * normResidual);
-
-                    if (alpha > mMinLineSearchStep || !mPerformLineSearch)
-                    {
-                        //improvement is achieved, go to next Newton step
-                        dof_dt0 = trial_dof_dt0;
-                        if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = trial_dof_dt1;
-                        if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = trial_dof_dt2;
-                        normResidual = trialNormResidual;
-
-                        PrintInfoIteration(normResidual,iteration);
-                        iteration++;
-                    }
-                    else
-                    {
-                        //and leave
-                        iteration = mMaxNumIterations;
-                    }
-
-                } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
-
-                if (normResidual < mToleranceResidual)
+                if (alpha > mMinLineSearchStep || !mPerformLineSearch)
                 {
-                    //converged solution
-                    if(mVerboseLevel>2)  mStructure->GetLogger() << "\n *** UpdateStaticData *** from NewMarkDirect \n";
+                    //improvement is achieved, go to next Newton step
+                    dof_dt0 = trial_dof_dt0;
+                    if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = trial_dof_dt1;
+                    if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = trial_dof_dt2;
+                    normResidual = trialNormResidual;
 
-                    // Update static data
-                    mStructure->ElementTotalUpdateStaticData();
-
-                    //store converged step
-                    lastConverged_dof_dt0 = dof_dt0;
-                    if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt1 = dof_dt1;
-                    if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt2 = dof_dt2;
-
-                    prevResidual = residual;
-
-
-                    MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
-
-
-                    //update structure time
-                    mStructure->SetPrevTime(curTime);
-
-                    mTime+=timeStep;
-                    inputTime = mTime;
-
-                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
-                    mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";
-                    //perform Postprocessing
-                    if(staggeredStepNumber >= mStepActiveDofs.size())
-                    {
-                        CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
-                        PostProcess(prevResidual);
-                    }
-
-
-                    //eventually increase next time step
-                    if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)
-                    {
-                        timeStep*=1.5;
-                        if (timeStep>mMaxTimeStep)
-                            timeStep = mMaxTimeStep;
-                    }
-
-                    if (mCallback && mCallback->Exit(*mStructure)) return;
+                    PrintInfoIteration(normResidual,iteration);
+                    iteration++;
                 }
                 else
                 {
-                    mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
-                    //no convergence
-                    if (mAutomaticTimeStepping)
-                    {
-                        //no convergence, reduce the time step and start from scratch
-                        curTime -= timeStep;
-                        timeStep *= 0.5;
-                        if (timeStep < mMinTimeStep) {
+                    //and leave
+                    iteration = mMaxNumIterations;
+                }
+
+            } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+
+            if (normResidual < mToleranceResidual)
+            {
+                //converged solution
+                if(mVerboseLevel>2)  mStructure->GetLogger() << "\n *** UpdateStaticData *** from NewMarkDirect \n";
+
+                // Update static data
+                mStructure->ElementTotalUpdateStaticData();
+
+                //store converged step
+                lastConverged_dof_dt0 = dof_dt0;
+                if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt1 = dof_dt1;
+                if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt2 = dof_dt2;
+
+                prevResidual = residual;
+
+
+                MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
+
+
+                //update structure time
+                mStructure->SetPrevTime(curTime);
+
+                mTime+=timeStep;
+                inputTime = mTime;
+
+                mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
+                mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";
+                //perform Postprocessing
+                if(staggeredStepNumber >= mStepActiveDofs.size())
+                {
+                    CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
+                    PostProcess(prevResidual);
+                }
+
+
+                //eventually increase next time step
+                if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)
+                {
+                    timeStep*=1.5;
+                    if (timeStep>mMaxTimeStep)
+                        timeStep = mMaxTimeStep;
+                }
+
+                if (mCallback && mCallback->Exit(*mStructure)) return;
+            }
+            else
+            {
+                mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
+                //no convergence
+                if (mAutomaticTimeStepping)
+                {
+                    //no convergence, reduce the time step and start from scratch
+                    curTime -= timeStep;
+                    timeStep *= 0.5;
+                    if (timeStep < mMinTimeStep) {
 
 #ifdef HAVE_ARPACK
-                            hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
-                            const BlockSparseMatrix& evMatrix = hessian0.JJ;
+                        hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+                        const BlockSparseMatrix& evMatrix = hessian0.JJ;
 
-                            auto matrixForSolver = evMatrix.ExportToCSRVector2General();
-                            EigenSolverArpack m;
-                            auto evs = m.GetSmallest(matrixForSolver);
-                            auto evl = m.GetLargest(matrixForSolver);
-                            std::cout << "EV smallest: " << evs.first << std::endl;
-                            std::cout << "EV largest:  " << evl.first << std::endl;
-                            std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
+                        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = evMatrix.ExportToCSR();
+                        EigenSolverArpack m;
+                        auto evs = m.GetSmallest(*matrixForSolver);
+                        auto evl = m.GetLargest(*matrixForSolver);
+                        std::cout << "EV smallest: " << evs.first << std::endl;
+                        std::cout << "EV largest:  " << evl.first << std::endl;
+                        std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
 #endif // HAVE_ARPACK
-                            mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
-                            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
-                        }
+                        mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
+                        throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                     }
-                    else
-                    {
-                        throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
-                    }
-                } // if tolerance
-            } // active dof loop
-        } // while time steps
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
-        throw;
-    }
+                }
+                else
+                {
+                    throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
+                }
+            } // if tolerance
+        } // active dof loop
+    } // while time steps
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
