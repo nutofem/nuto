@@ -28,13 +28,12 @@ void NuTo::ResultGroupNodeDof::CalculateAndAddValues(const NuTo::StructureBase& 
 	{
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
-	Eigen::MatrixXd values(1,this->GetNumData(rStructure));
-	CalculateValues(rStructure,rResidual_j,rResidual_k, values);
+	Eigen::VectorXd values = CalculateValues(rStructure,rResidual_j,rResidual_k);
 
-	if (values.cols()!=mData.cols())
-		throw MechanicsException("[NuTo::ResultGroupNodeDof::CalculateAndAddValues] the allocated number of columns is wrong.");
+	if (values.rows()!=mData.cols())
+		throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 
-	mData.row(rTimeStepPlot) = values;
+	mData.row(rTimeStepPlot) = values.transpose();
 }
 
 const NuTo::Group<NuTo::NodeBase>* NuTo::ResultGroupNodeDof::GetGroupNodePtr(const StructureBase& rStructure)const

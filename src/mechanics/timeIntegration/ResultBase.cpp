@@ -9,13 +9,12 @@
 
 #include "mechanics/timeIntegration/ResultBase.h"
 #include "mechanics/structures/StructureBase.h"
-//! @brief constructor
+
 NuTo::ResultBase::ResultBase(const std::string& rIdent)
 {
 	mIdent = rIdent;
 }
 
-//! @brief deconstructor
 NuTo::ResultBase::~ResultBase()
 {
 }
@@ -39,9 +38,9 @@ void NuTo::ResultBase::WriteToFile(const std::string& rResultDir, int rTimeStepP
 
 void NuTo::ResultBase::Resize(const StructureBase& rStructure, int rNumTimeSteps, bool rInitValues)
 {
-	if (rInitValues==true)
+	if (rInitValues)
 	{
-		mData.resize(rNumTimeSteps,this->GetNumData(rStructure));
+		mData.setZero(rNumTimeSteps,this->GetNumData(rStructure));
 	}
 	else
 	{

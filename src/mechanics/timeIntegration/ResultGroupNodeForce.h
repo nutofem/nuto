@@ -29,10 +29,9 @@ public:
 
     NuTo::eTimeIntegrationResultType GetResultType()const;
 
-    void CalculateValues(const StructureBase& rStructure,
+    Eigen::VectorXd CalculateValues(const StructureBase& rStructure,
     		const Eigen::VectorXd& rResidual_j,
-    		const Eigen::VectorXd& rResidual_k,
-    		Eigen::MatrixXd& rResult)const;
+    		const Eigen::VectorXd& rResidual_k)const override;
 
     std::string GetTypeId() const
     {

@@ -34,28 +34,26 @@ NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() con
 }
 
 
-void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k, Eigen::MatrixXd& rResult) const
+Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k) const
 {
-    const Group<NodeBase>& nodeGroup = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
-
-    rResult.resize(1, rStructure.GetDimension());
-
+    const Group<NodeBase>& nodeGroup = *GetGroupNodePtr(rStructure);
+    const int dim = rStructure.GetDimension();
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(dim);
     for (auto& itNode : nodeGroup)
     {
-        assert(itNode.second->GetNum(Node::eDof::DISPLACEMENTS) == rStructure.GetDimension());
-
-        for (int iDim = 0; iDim < rStructure.GetDimension(); iDim++)
+        assert(itNode.second->GetNum(Node::eDof::DISPLACEMENTS) == dim);
+        for (int iDim = 0; iDim < dim; iDim++)
         {
             int theDof = itNode.second->GetDof(Node::eDof::DISPLACEMENTS, iDim);
-
             if (theDof < rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS))
             {
-                rResult(0, iDim) += rResidual_j(theDof);
+                result[iDim] += rResidual_j(theDof);
             }
             else
             {
-                rResult(0, iDim) += rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
+                result[iDim] += rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
             }
         }
     }
+    return result;
 }

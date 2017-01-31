@@ -33,9 +33,8 @@ public:
     	return this;
     }
 
-    virtual void CalculateValues(const StructureBase& rStructure,
-    		   const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k,
-    		   Eigen::MatrixXd& rResult)const=0;
+    virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure,
+    		   const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k) const = 0;
 
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
     		const Eigen::VectorXd& rResidual_j,
@@ -52,7 +51,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info() const override;
 
 protected:
     int mGroupNodeId;
