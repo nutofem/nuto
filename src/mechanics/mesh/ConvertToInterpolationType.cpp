@@ -128,13 +128,28 @@ void CreateAndAddNewNodesToNodeMap(NuTo::Structure& rS, NodeMap& rNodeMap, std::
     }
 }
 
+
+std::set<NuTo::Node::eDof> GetDofTypeUnion(const SameCoordinateNodes& nodes)
+{
+    std::set<NuTo::Node::eDof> allDofs;
+    for (const auto& entry : nodes.newEntries)
+    {
+        const auto& dofsOfNode = entry.node->GetDofTypes();
+        std::set_union(allDofs.begin(), allDofs.end(),
+                       dofsOfNode.begin(), dofsOfNode.end(),
+                       std::inserter(allDofs, allDofs.end()));
+    }
+    return allDofs;
+}
+
+
 NuTo::NodeBase* CreateNodeWithRightDofs(NuTo::Structure& rS,
                                         const std::map<const NuTo::NodeBase*, int>& rNodeToId,
                                         const std::pair<const Eigen::VectorXd, SameCoordinateNodes>& rCoordinateNodePair)
 {
     Eigen::VectorXd coordinate = rCoordinateNodePair.first;
     auto& sameCoordinateNodes = rCoordinateNodePair.second;
-    const auto& dofTypes= sameCoordinateNodes.newEntries[0].node->GetDofTypes();
+    const auto& dofTypes = GetDofTypeUnion(sameCoordinateNodes);
     if (sameCoordinateNodes.original.node == nullptr)
     {
         // all nodeMap at this coordinate did not exist before
@@ -156,11 +171,8 @@ void ReplaceNewNodeInElements(NuTo::Structure& rS,
                               NuTo::NodeBase* rNewNode,
                               const std::pair<const Eigen::VectorXd, SameCoordinateNodes>& rCoordinateNodePair)
 {
-    const auto& dofTypes= rCoordinateNodePair.second.newEntries[0].node->GetDofTypes();
     for (const auto& entry : rCoordinateNodePair.second.newEntries)
     {
-        if (dofTypes != entry.node->GetDofTypes())
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Dof types do not match... TODO improve msg.");
         entry.element->ExchangeNodePtr(entry.node, rNewNode);
         delete entry.node;
     }
