@@ -16,19 +16,14 @@ NuTo::ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, 
 {
 }
 
-//! @brief calculate the relevant nodal dofs
-void NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const
+Eigen::VectorXd NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure)const
 {
-    const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
-
-    rValues = node->Get(Node::eDof::DISPLACEMENTS, 2).transpose();
+    return rStructure.NodeGetNodePtr(mNodeId)->Get(Node::eDof::DISPLACEMENTS, 2);
 }
 
-//! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
 int NuTo::ResultNodeAcceleration::GetNumData(const StructureBase& rStructure)const
 {
-    const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
-    return node->GetNum(Node::eDof::DISPLACEMENTS);
+    return rStructure.NodeGetNodePtr(mNodeId)->GetNum(Node::eDof::DISPLACEMENTS);
 }
 
 NuTo::eTimeIntegrationResultType NuTo::ResultNodeAcceleration::GetResultType() const

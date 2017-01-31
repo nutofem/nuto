@@ -26,7 +26,7 @@ public:
     ResultNodeAcceleration(const std::string& rIdent, int rNodeId);
 
     //! @brief calculate the relevant nodal dofs
-    void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const override;
+    Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const override;
 
     //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
     int GetNumData(const StructureBase& rStructure)const override;

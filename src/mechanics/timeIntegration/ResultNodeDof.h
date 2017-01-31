@@ -34,7 +34,7 @@ public:
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
 
     //! @brief calculate the relevant nodal dofs
-    virtual void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const=0;
+    virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const = 0;
 
     ResultNodeDof* AsResultNodeDof()
     {
