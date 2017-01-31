@@ -224,6 +224,8 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     std::vector<int> GroupNodesLoad = myStructure.GroupGetMemberIds(grpNodes_Load);
     int RightNode = GroupNodesLoad[0];
     myIntegrationScheme->AddResultNodeDisplacements("DisplacementsNodeRight", RightNode);
+    int plotElement = myStructure.GetNumElements()/2;
+    myIntegrationScheme->AddResultElementIpData("StressCenterElement",plotElement,NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     // only plot at every 5%
     myIntegrationScheme->SetMinTimeStepPlot(simulationTime * 0.05);

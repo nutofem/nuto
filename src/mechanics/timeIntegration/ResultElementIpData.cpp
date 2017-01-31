@@ -46,7 +46,7 @@ void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure,
     unsigned int numComponents = ipDataResult.rows();
     for (int iCol = 0; iCol < ipDataResult.cols(); ++iCol)
     {
-        rValues.block(0, iCol * numComponents, 1, ipDataResult.cols()) = ipDataResult.col(iCol).transpose();
+        rValues.block(0, iCol * numComponents, 1, ipDataResult.rows()) = ipDataResult.col(iCol).transpose();
     }
 }
 

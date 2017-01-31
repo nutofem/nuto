@@ -2,9 +2,7 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/MechanicsEnums.h"
 #include "mechanics/structures/unstructured/Structure.h"
 
 #include "mechanics/timeIntegration/RungeKutta4.h"
@@ -124,6 +122,7 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
 
     rTimeIntegrationScheme.AddResultTime("Time");
     rTimeIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Right", grpNodes_Right);
+    rTimeIntegrationScheme.AddResultElementIpData("StressElement",1,NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS); //only for test issues
 
     //set result directory
     bool deleteResultDirectoryFirst(true);
