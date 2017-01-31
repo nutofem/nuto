@@ -122,6 +122,9 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
                     ConstitutiveIOBase::makeConstitutiveIO<TDim>(derivativeOutputEnum));
             }
             break;
+        case Constitutive::eOutput::UPDATE_STATIC_DATA:
+            modifiedOutputMap[Constitutive::eOutput::UPDATE_STATIC_DATA];
+            break;
 
         default:
             break;

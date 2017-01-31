@@ -24,19 +24,22 @@ NuTo::eError ThermalStrains::Evaluate(
 {
     const int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
-    double temperature = 0.0;
+    if (rConstitutiveOutput.size() == 1 and rConstitutiveOutput.count(Constitutive::eOutput::UPDATE_STATIC_DATA) == 1)
+        return eError::SUCCESSFUL;
+
+    double temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
+
     std::array<double, 2> strain = {0.0, 0.0};
-    try
+    if (mNonlinearExpansionFunction)
     {
-        temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
-        strain = NonlinearExpansionCoeff(temperature);
+        if (temperature < 0.0) temperature = 0.0;
+        strain = mNonlinearExpansionFunction(temperature);
     }
-    catch(const std::bad_function_call& e)
+    else
     {
         strain[0] = mExpansionCoefficient * temperature;
         strain[1] = mExpansionCoefficient;
     }
-    catch(const std::out_of_range& e) {}
 
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -156,7 +159,7 @@ Constitutive::eConstitutiveType NuTo::ThermalStrains::GetType() const
 
 void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double, 2>(double)> ExpansionFunction)
 {
-    NonlinearExpansionCoeff = ExpansionFunction;
+    mNonlinearExpansionFunction = ExpansionFunction;
 }
 
 template NuTo::eError ThermalStrains::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,

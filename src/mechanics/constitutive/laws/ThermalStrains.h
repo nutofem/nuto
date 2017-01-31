@@ -45,6 +45,6 @@ private:
     //! Thermal expansion coefficient \f$ \alpha \f$.
     double mExpansionCoefficient = 0.0;
 
-    std::function<std::array<double, 2>(double)> NonlinearExpansionCoeff;
+    std::function<std::array<double, 2>(double)> mNonlinearExpansionFunction;
 };
 }
