@@ -11,6 +11,7 @@
 foreach(mesh
         HeatedPlate
         CSDAMesh
+        PGDPlateMeso2D
         )
     execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
 endforeach()
@@ -33,6 +34,7 @@ foreach(test
     MortonOrder
     ExplicitTimeIntegration
     HeatedPlate
+    PGDPlateMeso2D
     )
 
     add_executable(${test} ${test}.cpp)
