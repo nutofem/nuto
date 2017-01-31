@@ -314,7 +314,13 @@ void ContactHertzCircularIndenterFull(const std::string &path,
     int groupNodesIGAlayer = myStructure->GroupCreate("Nodes");
     groupElementsIGAlayer  = myStructure->GroupCreate("Elements");
 
-    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1DLAYER");
+    Eigen::VectorXi nodeIDs;
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(*myStructure,
+                                                                                                                setOfDOFS,
+                                                                                                                groupElementsIGAlayer,
+                                                                                                                groupNodesIGAlayer,
+                                                                                                                "IGA1DLAYER",
+                                                                                                                nodeIDs);
 
     ///////////////////
     // ===> material //

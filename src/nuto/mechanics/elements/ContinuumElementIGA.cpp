@@ -196,7 +196,7 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalCurrentConf
     Eigen::VectorXd nodalInit    = this->ExtractNodeValues(rTimeDerivative, rDofTypeInit);
     Eigen::VectorXd nodalCurrent = this->ExtractNodeValues(rTimeDerivative, rDofTypeCurrent);
 
-    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates, mKnotIDs);
+    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates);
 
     return matrixN * (nodalInit + nodalCurrent);
 }
@@ -242,7 +242,7 @@ namespace NuTo // template specialization in *.cpp somehow requires the definiti
 {
 
 template<>
-double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
     Eigen::VectorXd globalIPCoordinate = matrixN * this->ExtractNodeValues(0, Node::eDof::COORDINATES);
@@ -251,50 +251,19 @@ double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJ
 }
 
 template<>
-double NuTo::ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
 }
 
-//template<>
-//Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
-//{
-//    // think of it somehow as of a tensor ....
-//    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative;
-//    switch (rDerivative)
-//    {
-//    case 0:
-//    {
-//        derivative.resize(1,1);
-//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-//        break;
-//    }
-//    case 1:
-//    {
-//        derivative.resize(1,2);
-//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-//        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
-//        break;
-//    }
-//    case 2:
-//    {
-//        derivative.resize(2,2);
-//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-//        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
-//        derivative(1,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
-//        derivative(1,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
-//        break;
-//    }
-//    default:
-//        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
-//        break;
-//    }
-
-//    return derivative;
-//}
+template<>
+Eigen::VectorXd ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Normal of a 1D element!");
+}
 
 template<>
-Eigen::VectorXd NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+Eigen::VectorXd ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
 {
     Eigen::VectorXd tangent = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
 
@@ -308,29 +277,13 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(
 }
 
 template<>
-Eigen::VectorXd NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
-{
-    Eigen::VectorXd tangentX = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
-    Eigen::VectorXd tangentY = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 1);
-
-    if(tangentX.rows() != 3 && tangentY.rows() != 3)
-        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 3D domains.");
-
-    Eigen::Vector3d normal = (Eigen::Vector3d(tangentX)).cross(Eigen::Vector3d(tangentY));
-    normal.normalize();
-
-    return normal;
-
-}
-
-template<>
-Eigen::VectorXd NuTo::ContinuumElementIGA<1>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+Eigen::VectorXd ContinuumElementIGA<1>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "There is no surface in 1D case.");
 }
 
 template<>
-Eigen::VectorXd NuTo::ContinuumElementIGA<2>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+Eigen::VectorXd ContinuumElementIGA<2>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
 {
     const InterpolationBase&  interpolationTypeCoords =  this->mInterpolationType->Get(Node::eDof::COORDINATES);
     Eigen::MatrixXd derivativeShapeFunctionsNaturalSlave =  interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(rParameter);

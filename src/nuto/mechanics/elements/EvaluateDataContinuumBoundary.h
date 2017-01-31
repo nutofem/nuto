@@ -26,6 +26,7 @@ public:
     Eigen::MatrixXd mMortarGapMatrixPenalty;
     Eigen::VectorXd mMortarGapVector;
     Eigen::VectorXd mJacobianbyWeight;
+    Eigen::VectorXd mShapeFunctionsIntegral;
     std::unordered_map<int, int> mMappingGlobal2LocalDof;
 
     // Misc

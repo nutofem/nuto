@@ -519,7 +519,13 @@ void ContactHertzQuarterCircle(const std::string &path,
     int groupNodesIGAlayer = myStructure->GroupCreate("Nodes");
     groupElementsIGAlayer  = myStructure->GroupCreate("Elements");
 
-    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1DLAYER");
+    Eigen::VectorXi nodeIDs;
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(*myStructure,
+                                                                                                                setOfDOFS,
+                                                                                                                groupElementsIGAlayer,
+                                                                                                                groupNodesIGAlayer,
+                                                                                                                "IGA1DLAYER",
+                                                                                                                nodeIDs);
 
     ///////////////////
     // ===> material //
@@ -1100,7 +1106,7 @@ int main(int argc, char* argv[])
 //        true);
 
     resultDir = "./ResultsContactStatic_5_11_4Ip_CA1";
-    penalty = 5.e11;
+    penalty = 1.e19;
     run(resultDir,
         path,
         fileNameSlave,
@@ -1108,7 +1114,7 @@ int main(int argc, char* argv[])
         penalty,
         gap,
         1.e5,
-        1.e10,
+        1.e5,
         10,
         contactAlgo,
         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,

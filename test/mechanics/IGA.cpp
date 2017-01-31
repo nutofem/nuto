@@ -94,7 +94,8 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
     int groupNodesIGA    = myStructure->GroupCreate("Nodes");
     int groupElementsIGA = myStructure->GroupCreate("Elements");
 
-    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
+    Eigen::VectorXi nodeIDs;
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D", nodeIDs);
 
 
 
@@ -223,8 +224,9 @@ NuTo::Structure* buildStructure1DConstraintsElements(double& DisplacementCorrect
     int groupNodesIGA2    = myStructure->GroupCreate("Nodes");
     int groupElementsIGA2 = myStructure->GroupCreate("Elements");
 
-    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
-    curve2.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA2, groupNodesIGA2, "IGA1D");
+    Eigen::VectorXi nodeIDs;
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D", nodeIDs);
+    curve2.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA2, groupNodesIGA2, "IGA1D", nodeIDs);
 
     NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupNodesIGA);
     NuTo::FullVector<int, Eigen::Dynamic> members2 = myStructure->GroupGetMemberIds(groupNodesIGA2);
@@ -315,7 +317,8 @@ NuTo::Structure* buildStructure1DConstraintsWithoutElements(const std::string &r
     int groupNodesIGA    = myStructure->GroupCreate("Nodes");
     int groupElementsIGA = myStructure->GroupCreate("Elements");
 
-    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D");
+    Eigen::VectorXi nodeIDs;
+    curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1D", nodeIDs);
 
     /** set boundary conditions and loads **/
     NuTo::FullVector<double,Eigen::Dynamic> direction(1);
@@ -483,7 +486,8 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     int groupNodes  = myStructure->GroupCreate("Nodes");
     int groupElements = myStructure->GroupCreate("Elements");
 
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
+    Eigen::VectorXi nodeIDs;
+    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes, nodeIDs);
 
     myStructure->Info();
 
@@ -658,7 +662,8 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, const
     int groupNodes  = myStructure->GroupCreate("Nodes");
     int groupElements = myStructure->GroupCreate("Elements");
 
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
+    Eigen::VectorXi nodeIDs;
+    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes, nodeIDs);
 
     /** create section **/
     double Thickness = 1.;

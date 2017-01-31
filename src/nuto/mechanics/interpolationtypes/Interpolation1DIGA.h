@@ -165,7 +165,7 @@ public:
     //! @brief returns the number of surfaces
     inline int GetNumSurfaces() const override
     {
-        return 2;
+        return 1;
     }
 
 #ifdef ENABLE_SERIALIZATION

@@ -149,6 +149,15 @@ Eigen::VectorXi NuTo::NURBSCurve::GetElementControlPointIDsGlobal(int rElementID
     return ids;
 }
 
+Eigen::VectorXi NuTo::NURBSCurve::GetParameterControlPoints(double rParameter)
+{
+    int spanIdx = ShapeFunctionsIGA::FindSpan(rParameter, mDegree, mKnots);
+    Eigen::VectorXi controlPointIDs(mDegree+1);
+    for(int j = 0; j <= mDegree; j++) controlPointIDs(j) = spanIdx-mDegree+j;
+
+    return controlPointIDs;
+}
+
 int NuTo::NURBSCurve::GetMultiplicityOfKnot(double rKnot)
 {
     int spanIdx = ShapeFunctionsIGA::FindSpan(rKnot, mDegree, mKnots);
@@ -492,6 +501,7 @@ void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSl
         // ==> function (dprime)
         Eigen::VectorXd coordinatesMaster = CurvePoint(rParameterStartMaster, 0);
         Eigen::VectorXd r = rCoordinatesSlave - coordinatesMaster;
+        //if(r.norm() < tol) break;
         double b = 0.;
         Eigen::VectorXd fistDer   = CurvePoint(rParameterStartMaster, 1);
         Eigen::VectorXd secondDer = CurvePoint(rParameterStartMaster, 2);
@@ -515,9 +525,10 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCu
                                                                                                        const std::set<NuTo::Node::eDof> &rSetOfDOFS,
                                                                                                        int rGroupElements,
                                                                                                        int rGroupNodes,
-                                                                                                       const std::string &rInterpolation) const
+                                                                                                       const std::string &rInterpolation,
+                                                                                                       Eigen::VectorXi &nodeIDs) const
 {
-    Eigen::VectorXi nodeIDs(GetNumControlPoints());
+    nodeIDs.resize(GetNumControlPoints());
 
     // create dofs
     for(int i = 0; i < GetNumControlPoints(); i++)

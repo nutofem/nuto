@@ -282,7 +282,7 @@ void constantStress(const std::string &resultDir, double rPenalty, NuTo::eIntegr
 
     // ===> Boundary <=== //
     int countDBC;
-//    SetDBC(*myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
+    //SetDBC(*myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
     SetDBCPatchTest(*myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
 
     // ===> Slave side <=== //

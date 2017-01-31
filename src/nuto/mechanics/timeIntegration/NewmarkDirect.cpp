@@ -26,6 +26,7 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include <eigen3/Eigen/Dense>
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -275,7 +276,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                 /*------------------------------------------------*\
                 |         Calculate Residual for trail state       |
-                \*------------------------------------------------*/
+                \*-----------------------------------------------.-*/
                 residual = prevExtForce - extForce;
                 CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
                 residual.ApplyCMatrix(residual_mod, cmat);
@@ -653,6 +654,11 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
             rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
 
         rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+
+        Eigen::MatrixXd mat = rHessian_dt0.JJ.ExportToFullMatrix();
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(mat);
+        if (eigensolver.info() != Eigen::Success) abort();
+            std::cout << "The eigenvalues of A are:\n" << eigensolver.eigenvalues() << std::endl;
         auto result =  mStructure->SolveBlockSystem(rHessian_dt0.JJ, rResidualMod);
         mStructure->SetShowTime(structureShowTime);
         return result;

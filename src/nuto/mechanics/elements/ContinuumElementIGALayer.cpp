@@ -287,7 +287,7 @@ namespace NuTo // template specialization in *.cpp somehow requires the definiti
 {
 
 template<>
-Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGALayer<1>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rSurface) const
+Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> ContinuumElementIGALayer<1>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rSurface) const
 {
     (void) rSurface;
     Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative(1,1);
@@ -298,7 +298,7 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
 }
 
 template<>
-Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGALayer<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rSurface) const
+Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> ContinuumElementIGALayer<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rSurface) const
 {
     (void) rSurface;
     // think of it somehow as of a tensor ....
@@ -333,6 +333,36 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
     }
 
     return derivative;
+}
+
+template<>
+Eigen::VectorXd ContinuumElementIGALayer<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+{
+    Eigen::VectorXd tangent = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
+
+    if(tangent.rows() != 2)
+        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 2D domains.");
+
+    Eigen::Vector2d normal(-tangent(1), tangent(0));
+    normal.normalize();
+
+    return normal;
+}
+
+template<>
+Eigen::VectorXd ContinuumElementIGALayer<2>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+{
+    Eigen::VectorXd tangentX = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
+    Eigen::VectorXd tangentY = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 1);
+
+    if(tangentX.rows() != 3 && tangentY.rows() != 3)
+        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 3D domains.");
+
+    Eigen::Vector3d normal = (Eigen::Vector3d(tangentX)).cross(Eigen::Vector3d(tangentY));
+    normal.normalize();
+
+    return normal;
+
 }
 
 template<>

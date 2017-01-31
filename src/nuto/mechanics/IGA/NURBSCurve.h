@@ -125,6 +125,11 @@ public:
     //! @return ... vector of control point ids
     Eigen::VectorXi GetElementControlPointIDsGlobal(int rElementID, const Eigen::MatrixXi &rNodeIDs) const;
 
+    //! @brief ... get the control point ids belonging to a parameter
+    //! @param ... rParameter ...the parameter
+    //! @return ... vector of control point ids
+    Eigen::VectorXi GetParameterControlPoints(double rParameter);
+
     //! @brief ... get the multiplicity of a knot
     //! @return ... multiplicity
     int GetMultiplicityOfKnot(double rKnot);
@@ -192,7 +197,12 @@ public:
     void  findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster);
 
     /** Build NuTo structure **/
-    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes, const std::string &rInterpolation) const;
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> buildIGAStructure(NuTo::Structure &rStructure,
+                                                                                         const std::set<NuTo::Node::eDof> &rSetOfDOFS,
+                                                                                         int rGroupElements,
+                                                                                         int rGroupNodes,
+                                                                                         const std::string &rInterpolation,
+                                                                                         Eigen::VectorXi &nodeIDs) const;
 
 
     /** Degree elevation **/

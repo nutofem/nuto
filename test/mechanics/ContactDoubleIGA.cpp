@@ -282,7 +282,8 @@ void AddIGALayer(NuTo::Structure *myStructure,
     groupNodesIGAlayer = myStructure->GroupCreate("Nodes");
     groupElementsIGAlayer  = myStructure->GroupCreate("Elements");
 
-    rElements = curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1DLAYER");
+    Eigen::VectorXi nodeIDs;
+    rElements = curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1DLAYER", nodeIDs);
 
     // Matrix containing the ids and coordinates of the IGA layer control points (aka. nodes) => 'coordinatesAndIDsLayer'
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesLayer;
