@@ -44,6 +44,8 @@ private:
     //! Thermal expansion coefficient \f$ \alpha \f$.
     double mExpansionCoefficient = 0.0;
 
+    //! Thermal expansion function.
+    //! The return value is an array of {\f$ ε, \frac{dε}{dT}\f$}.
     std::function<std::array<double, 2>(double)> mNonlinearExpansionFunction;
 };
 }

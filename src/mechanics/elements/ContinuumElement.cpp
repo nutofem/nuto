@@ -426,7 +426,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
 {
 
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
-    {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
+    {                                       // Eigen::Matrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::DAMAGE:
@@ -460,6 +460,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
         case NuTo::IpData::eIpStaticDataType::THERMAL_STRAIN:
             it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::THERMAL_STRAIN];
+            break;
+        case NuTo::IpData::eIpStaticDataType::HEAT_FLUX:
+            it.second.resize(3, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::HEAT_FLUX];
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
@@ -1137,6 +1141,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
             break;
         case NuTo::IpData::eIpStaticDataType::THERMAL_STRAIN:
             it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutput.at(Constitutive::eOutput::THERMAL_STRAIN).get());
+            break;
+        case NuTo::IpData::eIpStaticDataType::HEAT_FLUX:
+            it.second.col(rTheIP) = static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::HEAT_FLUX).get())->ConvertTo3DVector();
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");

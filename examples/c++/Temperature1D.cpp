@@ -86,6 +86,7 @@ int main()
     myStructure.GroupAddElementsTotal(visualizationGroup);
 
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::TEMPERATURE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::HEAT_FLUX);
     myStructure.ExportVtkDataFileElements("Temperature1D.vtk");
 
     return 0;

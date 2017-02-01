@@ -29,6 +29,7 @@ void ThermalStrains::Evaluate(
     double temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
 
     std::array<double, 2> strain = {0.0, 0.0};
+    // if a function is attached, use that; if not use the linear expansion coefficient
     if (mNonlinearExpansionFunction)
     {
         if (temperature < 0.0) temperature = 0.0;

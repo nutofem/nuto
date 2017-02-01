@@ -20,21 +20,22 @@ endforeach()
 
 # generate tests
 foreach(test
-    TestOperators
-    CSDAPrism3D
-    SparseDirectSolverMUMPS
-    VisualizeTruss1D2N
     Brick8N
-    Plane2D4NFreeHangingNode
-    VisualizePlane2D4N
-    Temperature1D
-    Tetrahedron10N
-    Truss1D2NReference
-    Truss1D2N
-    MortonOrder
+    CSDAPrism3D
     ExplicitTimeIntegration
     HeatedPlate
+    InsulatedPlate
+    MortonOrder
     PGDPlateMeso2D
+    Plane2D4NFreeHangingNode
+    SparseDirectSolverMUMPS
+    Temperature1D
+    TestOperators
+    Tetrahedron10N
+    Truss1D2N
+    Truss1D2NReference
+    VisualizePlane2D4N
+    VisualizeTruss1D2N
     )
 
     add_executable(${test} ${test}.cpp)

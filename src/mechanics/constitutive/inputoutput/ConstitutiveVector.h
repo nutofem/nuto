@@ -41,6 +41,16 @@ public:
         return *this;
     }
 
+
+    //! @brief Convert vector of arbitrary dimension to 3d
+    //! This sets the rest to zero. Useful for visualization.
+    ConstitutiveVector<3> ConvertTo3DVector()
+    {
+        ConstitutiveVector<3> result;
+        result.setZero();
+        result.topRows(TRows) = this->AsVector();
+        return result;
+    }
 };
 
 } /* namespace NuTo */
