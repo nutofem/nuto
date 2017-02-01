@@ -64,13 +64,13 @@ public:
         throw OptimizeException(__PRETTY_FUNCTION__, "Hessian function not implemented in CallbackHandler object.");
     }
 
-    virtual void Info() const = 0;
+    virtual void Info() const override = 0;
 #ifdef ENABLE_SERIALIZATION
     virtual void Save(const std::string& filename, std::string rType) const {}
     virtual void Restore(const std::string& filename, std::string rType) {}
 #endif // ENABLE_SERIALIZATION
 
-    virtual std::string GetTypeId() const { return std::string("CallbackHandler"); }
+    virtual std::string GetTypeId() const override { return std::string("CallbackHandler"); }
 };
 } // namespace NuTo
 #ifdef ENABLE_SERIALIZATION

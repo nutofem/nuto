@@ -55,11 +55,11 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
     //check, if callback handler is set
     if (mpCallbackHandler==0)
-        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine objective function and derivatives.");
+        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine mObjective function and derivatives.");
 
-    // calculate objective
-    objective = mpCallbackHandler->Objective();
-    objectiveLastRestart = objective;
+    // calculate mObjective
+    mObjective = mpCallbackHandler->Objective();
+    objectiveLastRestart = mObjective;
     numFunctionCalls++;
     if (numFunctionCalls>mMaxFunctionCalls)
     {
@@ -68,7 +68,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     }
     while(!converged)
     {
-        if (objective<mMinObjective)
+        if (mObjective<mMinObjective)
         {
             converged = true;
             returnValue = eOptimizationReturnAttributes::MINOBJECTIVE;
@@ -113,8 +113,8 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             searchDirectionScaled = -gradientScaled;
             searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
             if (mVerboseLevel>5 && curCycle>0)
-                std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-objective << std::endl;
-            objectiveLastRestart = objective;
+                std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-mObjective << std::endl;
+            objectiveLastRestart = mObjective;
             curCycle = 0;
         }
         else
@@ -129,7 +129,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (std::abs(normProjection)>0.2*normPrevGradient)
             {
                 // check for convergence
-                if (std::abs(objectiveLastRestart-objective)/objective<mMinDeltaObjBetweenRestarts)
+                if (std::abs(objectiveLastRestart-mObjective)/mObjective<mMinDeltaObjBetweenRestarts)
                 {
                     converged = true;
                     returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
@@ -138,7 +138,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 }
                 else
                 {
-                    if (std::abs(objectiveLastRestart-objective)<mMinDeltaObjBetweenRestarts)
+                    if (std::abs(objectiveLastRestart-mObjective)<mMinDeltaObjBetweenRestarts)
                     {
                         {
                             converged = true;
@@ -165,11 +165,11 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
 
                 if (mVerboseLevel>5)
-                    std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-objective << std::endl;
+                    std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-mObjective << std::endl;
 
                 normGrad = gradientScaled.norm()*(double)GetNumParameters();
 
-                objectiveLastRestart = objective;
+                objectiveLastRestart = mObjective;
 
                 if (normGrad<mAccuracyGradientScaled)
                 {
@@ -215,9 +215,9 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                      searchDirectionOrig = scaleFactorsInv.asDiagonal()*searchDirectionScaled;
 
                      if (mVerboseLevel>3)
-                         std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-objective << std::endl;
+                         std::cout<< "   Restart after " <<curCycle << " cycles, DeltaObjective " << objectiveLastRestart-mObjective << std::endl;
 
-                     objectiveLastRestart = objective;
+                     objectiveLastRestart = mObjective;
 
                      normGrad = gradientScaled.norm();
 
@@ -231,7 +231,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                  }
             }
         }
-        // store gradient and previous objective for next search
+        // store gradient and previous mObjective for next search
         prevGradientScaled = gradientScaled;
 
         /*
@@ -265,7 +265,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         */
 
         if (mVerboseLevel>1 && curIteration%mShowSteps==0)
-            std::cout<< "Iteration " << curIteration << " with objective " << objective << " and norm grad scaled " << gradientScaled.norm()/sqrt(GetNumParameters()) << std::endl;
+            std::cout<< "Iteration " << curIteration << " with mObjective " << mObjective << " and norm grad scaled " << gradientScaled.norm()/sqrt(GetNumParameters()) << std::endl;
 
         //increase iteration and curCycle
         curCycle++;
@@ -278,11 +278,11 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             break;
         }
 
-        //store previous Parameters and objective for linesearch
+        //store previous Parameters and mObjective for linesearch
         prevAlpha = 0;
-        prevObjective = objective;
+        prevObjective = mObjective;
         intermediateAlpha = 0;
-        intermediateObjective = objective;
+        intermediateObjective = mObjective;
         prevParameters = mvParameters;
 
         //perform line search
@@ -293,8 +293,8 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         //set new parameters in search direction
         mpCallbackHandler->SetParameters(mvParameters);
 
-        //calculate objective
-        objective = mpCallbackHandler->Objective();
+        //calculate mObjective
+        mObjective = mpCallbackHandler->Objective();
         numFunctionCalls++;
         if (numFunctionCalls>mMaxFunctionCalls)
         {
@@ -305,22 +305,22 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
         //find first interval with x1<x2<x3 and f(x1)>f(x2) und f(x2)<f(x3)
         int numFunctionCallsBefore(numFunctionCalls);
-        if (objective<intermediateObjective)
+        if (mObjective<intermediateObjective)
         {
             if (mVerboseLevel>5 && curIteration%mShowSteps==0)
                 std::cout<< "   Increase search interval" << std::endl;
-            while(objective<intermediateObjective)
+            while(mObjective<intermediateObjective)
             {
-                //increase search interval until objective increases
-                //printf("Increase interval with alphas %g %g %g and objectives %g %g %g\n",prevAlpha,intermediateAlpha,alpha, prevObjective,intermediateObjective,objective);
+                //increase search interval until mObjective increases
+                //printf("Increase interval with alphas %g %g %g and objectives %g %g %g\n",prevAlpha,intermediateAlpha,alpha, prevObjective,intermediateObjective,mObjective);
                 prevAlpha = intermediateAlpha;
                 prevObjective = intermediateObjective;
                 intermediateAlpha = alpha;
-                intermediateObjective = objective;
+                intermediateObjective = mObjective;
                 alpha += 1.5*(intermediateAlpha-prevAlpha);
                 mvParameters=prevParameters+alpha*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
-                objective = mpCallbackHandler->Objective();
+                mObjective = mpCallbackHandler->Objective();
                 numFunctionCalls++;
                 if (numFunctionCalls>mMaxFunctionCalls)
                 {
@@ -335,13 +335,13 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (mVerboseLevel>5 && curIteration%mShowSteps==0)
                 std::cout<< "   Decrease search interval" << std::endl;
             intermediateAlpha = alpha;
-            intermediateObjective = objective;
+            intermediateObjective = mObjective;
             while(intermediateObjective>=prevObjective)
             {
-                //decrease search interval until intermediate objective is smaller than previous objective
-                //printf("Decrease interval with alphas %g %g %g and objectives %g %g %g\n",prevAlpha,intermediateAlpha,alpha, prevObjective,intermediateObjective,objective);
+                //decrease search interval until intermediate mObjective is smaller than previous mObjective
+                //printf("Decrease interval with alphas %g %g %g and objectives %g %g %g\n",prevAlpha,intermediateAlpha,alpha, prevObjective,intermediateObjective,mObjective);
                 alpha = intermediateAlpha;
-                objective = intermediateObjective;
+                mObjective = intermediateObjective;
                 intermediateAlpha = 0.25*alpha;
                 mvParameters=prevParameters+intermediateAlpha*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
@@ -353,7 +353,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
                     break;
                 }
-                if (std::abs(objective-intermediateObjective)<machine_precision)
+                if (std::abs(mObjective-intermediateObjective)<machine_precision)
                 {
                     converged = true;
                     returnValue = eOptimizationReturnAttributes::REACHINGMACHINEPRECISION;
@@ -366,7 +366,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
         if (converged)
             break;
-        //printf("Optimium is in between %g %g %g with alphas %g %g %g\n",prevObjective,intermediateObjective,objective,prevAlpha,intermediateAlpha,alpha);
+        //printf("Optimium is in between %g %g %g with alphas %g %g %g\n",prevObjective,intermediateObjective,mObjective,prevAlpha,intermediateAlpha,alpha);
 
         //find optimum in interval given by prev_alpha intermediate_alpha alpha, with intermediateObjective smaller than both interval limits
         v =intermediateAlpha;
@@ -381,7 +381,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         numFunctionCallsBefore = numFunctionCalls;
         while(!BrentsMethodConverged)
         {
-            objective = mpCallbackHandler->Objective();
+            mObjective = mpCallbackHandler->Objective();
             numFunctionCalls++;
             if (numFunctionCalls>mMaxFunctionCalls)
             {
@@ -389,14 +389,14 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
                 break;
             }
-            if (objective<intermediateObjective)
+            if (mObjective<intermediateObjective)
             {
                 if (u>=intermediateAlpha)
                     prevAlpha = intermediateAlpha;
                 else
                     alpha = intermediateAlpha;
                 SHFT(v,w,intermediateAlpha,u);
-                SHFT(fv,fw,intermediateObjective,objective);
+                SHFT(fv,fw,intermediateObjective,mObjective);
             }
             else
             {
@@ -404,19 +404,19 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     prevAlpha = u;
                 else
                     alpha = u;
-                if (objective<=fw || w==intermediateAlpha)
+                if (mObjective<=fw || w==intermediateAlpha)
                 {
                     v  = w;
                     w  = u;
                     fv = fw;
-                    fw = objective;
+                    fw = mObjective;
                 }
                 else
                 {
-                    if (objective<=fv || v==intermediateAlpha || v==w)
+                    if (mObjective<=fv || v==intermediateAlpha || v==w)
                     {
                         v=u;
-                        fv = objective;
+                        fv = mObjective;
                     }
 
                 }
@@ -429,7 +429,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (std::abs(intermediateAlpha-xm)<=tol2-0.5*(alpha-prevAlpha))
             {
                 //line search converged
-                objective = intermediateObjective;
+                mObjective = intermediateObjective;
                 mvParameters=prevParameters+intermediateAlpha*searchDirectionOrig;
                 initialAlpha = searchDirectionScaled.norm()*intermediateAlpha;
                 BrentsMethodConverged = true;
@@ -479,14 +479,14 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         if (converged)
             break;
     }
-    isBuild = true;
+    mIsBuild = true;
     if (mVerboseLevel>0)
     {
         std::cout<< "Number of Function Calls......... " << numFunctionCalls << std::endl;
         std::cout<< "Number of Gradient Calls......... " << numGradientCalls << std::endl;
         std::cout<< "Number of Hessian Calls.......... " << numHessianCalls << std::endl;
         std::cout<< "Number of Iterations............. " << curIteration << std::endl;
-        std::cout<< "Final objective function......... " << objective << std::endl;
+        std::cout<< "Final mObjective function......... " << mObjective << std::endl;
         std::cout<< "Norm of preconditioned gradient.. " << gradientScaled.norm()/sqrt(GetNumParameters()) << std::endl;
         std::cout<< "Active convergence criterion..... " ;
         switch (returnValue)
@@ -510,7 +510,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 std::cout<< "Objective smaller than prescribed value." << std::endl;
                 break;
             case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
-                std::cout<< "Delta objective between two restarts of the conjugate gradient method is smaller than prescribed minimum." << std::endl;
+                std::cout<< "Delta mObjective between two restarts of the conjugate gradient method is smaller than prescribed minimum." << std::endl;
                 break;
             case eOptimizationReturnAttributes::REACHINGMACHINEPRECISION:
                 std::cout<< "The machine precision is reached within the initial phase of the linesearch." << std::endl;

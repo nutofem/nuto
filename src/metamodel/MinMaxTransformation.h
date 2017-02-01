@@ -44,15 +44,15 @@ public:
 
     //! @brief build the transformation using the given Points
     //! @param rCoordinates ... input point coordinates
-    virtual void Build(const Eigen::MatrixXd& rCoordinates);
+    virtual void Build(const Eigen::MatrixXd& rCoordinates) override;
 
     //! @brief transform the given points in forward direction x = f(x) 
     //! @brief rCoordinates ... input point coordinates
-    virtual void TransformForward(Eigen::MatrixXd& rCoordinates)const;
+    virtual void TransformForward(Eigen::MatrixXd& rCoordinates)const override;
 
     //! @brief transform the given points in backward direction x = f^(-1)(x)
     //! @brief rCoordinates ... input point coordinates
-    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates)const;
+    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates)const override;
 
 protected:
     int  mCoordinate;     //!< coordinate within the point coordinates (0<=entry<dim

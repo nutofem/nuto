@@ -1580,7 +1580,7 @@ public:
 	int GetNumTimeDerivatives()const;
 
 	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info()const;
+    virtual void Info()const override;
 
     //! @brief set the beginning of the time increment to the structure
     void SetPrevTime(double rPrevTime);

@@ -31,15 +31,15 @@ public:
 
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot, double rTime);
 
-    NuTo::eTimeIntegrationResultType GetResultType()const;
+    NuTo::eTimeIntegrationResultType GetResultType()const override;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
-    int GetNumData(const StructureBase& rStructure)const
+    int GetNumData(const StructureBase& rStructure)const override
     {
     	return 1;
     }
 
-    ResultTime* AsResultTime()
+    ResultTime* AsResultTime() override
     {
     	return this;
     }
@@ -53,7 +53,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const override;
 
 protected:
 };

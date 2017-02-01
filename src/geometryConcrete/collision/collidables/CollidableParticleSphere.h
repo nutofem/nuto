@@ -46,48 +46,48 @@ public:
 
 	//! @brief ... move spheres and apply growth, mTimeOfLastCollision update
 	//! @param rTime ... new global time.
-	void MoveAndGrow(const double rTime);
+	void MoveAndGrow(const double rTime) override;
 
 	//! @brief ... calculates and returns the kinetic energy of the sphere
-	const double GetKineticEnergy() const;
+	const double GetKineticEnergy() const override;
 
 	//! @brief ... calculates and returns the volume of the sphere
-	const double GetVolume() const;
+	const double GetVolume() const override;
 
 	//! @brief ... collision between CollidableSphere and CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... collision partner
-	void PerformCollision(CollidableBase& rCollidable);
+	void PerformCollision(CollidableBase& rCollidable) override;
 
 	//! @brief ... collision between CollidableSphere and CollidableSphere, physics here.
 	//! @param rSphere ... collision partner
-	void PerformCollision(CollidableParticleSphere& rSphere);
+	void PerformCollision(CollidableParticleSphere& rSphere) override;
 
 	//! @brief ... collision between CollidableSphere and CollidableWall, forward to CollidableWall.
 	//! @param rWall ... collision partner
-	void PerformCollision(CollidableWallBase& rWall);
+	void PerformCollision(CollidableWallBase& rWall) override;
 
 	//! @brief ... collision check between this and a CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableBase& rCollidable, int& rType);
+	const double PredictCollision(CollidableBase& rCollidable, int& rType) override;
 
 	//! @brief ... collision check between this and another CollidableSphere:
 	//! Physics lead to quadratic equation.
 	//! @param rSphere ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
+	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... collision check between CollidableSphere and CollidableWall, forward to CollidableWall.
 	//! @param rWall ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableWallBase& rWall, int& rType);
+	const double PredictCollision(CollidableWallBase& rWall, int& rType) override;
 
 	//! @brief ... returns all old events, that need to be deleted
 	//! @param rEventsToDelete ... return argument
-    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const;
+    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const override;
 
 	//! @brief ... exports the sphere position and its radius to as a row in a Nx4-matrix
 	//! @param rInitialRadius ... switch to export mRadius or mRadius0
@@ -151,7 +151,7 @@ private:
 
 	//! @brief ... prints CollidableSphere
 	//! @param rReturnStream ... output stream, that gets modified
-	void Print(std::ostream & rReturnStream) const;
+	void Print(std::ostream & rReturnStream) const override;
 
 };
 

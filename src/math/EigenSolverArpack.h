@@ -63,7 +63,7 @@ public:
     EigenSolverArpack();
 
     //! @brief ... print information about the class attributes
-    void Info()const
+    void Info()const override
     {
     }
 
@@ -77,7 +77,7 @@ public:
 		throw MathException("NuTo::EigenSolverArpack::Restore] To be implemented.");
 	}
 
-    std::string GetTypeId()const
+    std::string GetTypeId()const override
     {
         return std::string("EigenSolverArpack");
     }

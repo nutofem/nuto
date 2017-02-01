@@ -104,7 +104,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info()const;
+    virtual void Info()const override;
 
 protected:
     //pointer to the residual function

@@ -29,15 +29,15 @@ public:
 
 	//! @brief ... collision between CollidableWall and CollidableSphere
 	//! @param rSphere ... collision partner
-	void PerformCollision(CollidableParticleSphere& rSphere);
+	void PerformCollision(CollidableParticleSphere& rSphere) override;
 
 	//! @brief ... collision check between CollidableWall and CollidableSphere, physics here
 	//! @param rSphere ... possible collision partner
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
+	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... returns true
-	const bool IsPhysical() const;
+	const bool IsPhysical() const override;
 };
 
 } /* namespace NuTo */

@@ -42,7 +42,7 @@ public:
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-    int Optimize();
+    int Optimize() override;
 
     inline void SetMaxGradientCalls(int rMaxGradientCalls) { mMaxGradientCalls = rMaxGradientCalls; }
 
@@ -74,10 +74,10 @@ public:
     //! @brief Return the name of the class, this is important for the serialize routines, since this is stored in the
     //! file in case of restoring from a file with the wrong object type, the file id is printed
     //! @return Class name
-    virtual std::string GetTypeId() const;
+    virtual std::string GetTypeId() const override;
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info() const;
+    virtual void Info() const override;
 
 protected:
     void CalcScalingFactors(int& numHessianCalls, Eigen::MatrixXd& hessianOrig, Eigen::VectorXd& scaleFactorsInv);

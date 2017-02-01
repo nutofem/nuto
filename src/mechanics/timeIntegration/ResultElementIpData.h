@@ -41,9 +41,9 @@ public:
     void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues) const;
 
     //! @brief number of data points per time step, e.g. number of stress components for an integration point
-    int GetNumData(const StructureBase& rStructure) const;
+    int GetNumData(const StructureBase& rStructure) const override;
 
-    NuTo::eTimeIntegrationResultType GetResultType() const;
+    NuTo::eTimeIntegrationResultType GetResultType() const override;
 
     //! @brief returns the class name
     std::string GetTypeId() const
@@ -52,13 +52,13 @@ public:
     }
 
     //! @brief this is used to cast an object of ResultBase to an object of ResultElementIpData
-    ResultElementIpData* AsResultElementIpData()
+    ResultElementIpData* AsResultElementIpData() override
     {
         return this;
     }
 
     //! @brief ... Info routine that prints general information about the object
-    void Info()const;
+    void Info()const override;
 
 private:
     int mElementId;

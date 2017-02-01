@@ -91,7 +91,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		}
 	}
 
-	isBuild = true;
+	mIsBuild = true;
 #ifdef SHOW_TIME
     endJac=clock();
 	if (mShowTime &&mVerboseLevel>0 )
@@ -111,7 +111,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 				break;
             case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
 				std::cout<< "Norm of error smaller than prescribed value." << std::endl;
-				objective=sqrt(rErrorNorm);
+				mObjective=sqrt(rErrorNorm);
 				break;
 			default:
 				std::cout<< "Unknown convergence criterion." << std::endl;

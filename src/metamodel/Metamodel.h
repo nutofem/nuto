@@ -67,7 +67,7 @@ public:
     void BuildTransformation();
     void InitRandomNumberGenerator(int rSeed);
     double RandomDouble();
-    virtual void Info()const;
+    virtual void Info()const override;
     void Solve(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const;
     void SolveConfidenceInterval(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
             Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax)const;

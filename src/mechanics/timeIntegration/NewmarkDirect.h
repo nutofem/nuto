@@ -63,14 +63,14 @@ public:
 
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
-    bool HasCriticalTimeStep()const
+    bool HasCriticalTimeStep()const override
     {
     	return false;
     }
 
     //! @brief calculate the critical time step for explicit routines
     //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
-    double CalculateCriticalTimeStep()const
+    double CalculateCriticalTimeStep()const  override
     {
     	return 0;
     }
@@ -137,15 +137,15 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    virtual void Solve(double rTimeDelta);
+    virtual void Solve(double rTimeDelta) override;
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const override;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    virtual std::string GetTypeId()const;
+    virtual std::string GetTypeId()const override;
 
 protected:
     StructureOutputBlockVector CalculateDof1(

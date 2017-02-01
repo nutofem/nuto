@@ -36,10 +36,10 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    void Solve(double rTimeDelta);
+    void Solve(double rTimeDelta) override;
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const override;
 
     //! @brief ... return number of intermediate stages
     virtual int GetNumStages()const=0;

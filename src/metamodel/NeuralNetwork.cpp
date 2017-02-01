@@ -65,7 +65,7 @@ NuTo::NeuralNetwork::NeuralNetwork () :
 
 double NuTo::NeuralNetwork::Objective()const
 {
-    //printf("call objective from NuTo::NeuralNetwork\n");
+    //printf("call mObjective from NuTo::NeuralNetwork\n");
     double objective=0;
 
     int dimInput = mSupportPoints.GetDimInput(),
@@ -124,7 +124,7 @@ double NuTo::NeuralNetwork::Objective()const
         Eigen::VectorXd VecCurExactOutput  = Eigen::Map<Eigen::VectorXd>((double*)&(mSupportPoints.GetTransformedSupportPointsOutput().data()[cntSample*dimOutput]),dimOutput);
         Eigen::VectorXd VecCurApproxOutput = Eigen::Map<Eigen::VectorXd>(&pO[numNeurons-dimOutput],dimOutput);
 
-/*        printf("[NeuralNetwork::objective]Output\n");
+/*        printf("[NeuralNetwork::mObjective]Output\n");
         MatrixOperations::print(&pO[numNeurons-dimOutput],1,dimOutput,10,3);
 */
         //error for the current training sample
@@ -138,7 +138,7 @@ double NuTo::NeuralNetwork::Objective()const
         objective += curObjective;
     }
     objective*=0.5; //because o=0.5*alpha*w^2+0.5*EtSE
-    //printf("NuTo::NeuralNetwork::objective objective %g\n\n",objective);
+    //printf("NuTo::NeuralNetwork::mObjective mObjective %g\n\n",mObjective);
 
     return objective;
 }
@@ -163,7 +163,7 @@ void NuTo::NeuralNetwork::Gradient(Eigen::MatrixXd& rGradient)const
 
     std::vector<double> pA(numNeurons);       //store the current value of each neuron before applying the transfer function
     std::vector<double> pO(numNeurons);       //store the current value of each neuron after having applied the transfer function
-    std::vector<double> pSigma(numNeurons);   //store the derivative of the objective with respect to A of the current Neuron
+    std::vector<double> pSigma(numNeurons);   //store the derivative of the mObjective with respect to A of the current Neuron
     Eigen::VectorXd pDelta(dimOutput);               //store the current difference between training and output data
     //const double *pCurWeight(0), *pCurBias(0);            //pointer to current weight
     double *pGradientCurWeight, *pGradientCurBias; //pointer to gradient of current weight/biases
@@ -515,7 +515,7 @@ void NuTo::NeuralNetwork::BuildDerived()
     //allocate Optimizer
     ConjugateGradientNonLinear myOptimizer(numParameters);
 
-    //set callback routines for the calculation of the objective function, gradient etc
+    //set callback routines for the calculation of the mObjective function, gradient etc
     //this works, because Neural network has been derived from CallbackHandler of the optimization module
     myOptimizer.SetCallback(this);
     myOptimizer.SetVerboseLevel(mVerboseLevel);
@@ -753,7 +753,7 @@ void NuTo::NeuralNetwork::BuildDerived()
             {
                 if(this->mVerboseLevel > 0)
                 {
-                    std::cout << "[NeuralNetwork::BuildDerived] Bayes iteration step " << theGlobalIteration << ": delta in objective between two bayes iterations: " << std::abs(myOptimizer.GetObjective()-prevObjective) << " (" << this->mMinDeltaObjectiveBayesianIteration * myOptimizer.GetObjective()<< ")" << std::endl;
+                    std::cout << "[NeuralNetwork::BuildDerived] Bayes iteration step " << theGlobalIteration << ": delta in mObjective between two bayes iterations: " << std::abs(myOptimizer.GetObjective()-prevObjective) << " (" << this->mMinDeltaObjectiveBayesianIteration * myOptimizer.GetObjective()<< ")" << std::endl;
                 }
             }
 

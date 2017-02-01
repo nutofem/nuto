@@ -51,15 +51,15 @@ public:
     void SetCallbackFunctions(
             PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian);
 
-    void SetParameters(const Eigen::MatrixXd& rParameters);
+    void SetParameters(const Eigen::MatrixXd& rParameters) override;
 
-    double Objective() const;
+    double Objective() const override;
 
-    void Gradient(Eigen::MatrixXd& rGradient) const;
+    void Gradient(Eigen::MatrixXd& rGradient) const override;
 
-    void Hessian(Eigen::MatrixXd& rHessian) const;
+    void Hessian(Eigen::MatrixXd& rHessian) const override;
 
-    void Info() const;
+    void Info() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief Restore the object from a file
@@ -77,7 +77,7 @@ public:
     //! @brief Return the name of the class, this is important for the serialize routines, since this is stored in the
     //! file in case of restoring from a file with the wrong object type, the file id is printed
     //! @return Class name
-    virtual std::string GetTypeId() const { return std::string("CallbackHandlerPython"); }
+    virtual std::string GetTypeId() const override { return std::string("CallbackHandlerPython"); }
 
 private:
     PyObject* mCallbackSetParameters;

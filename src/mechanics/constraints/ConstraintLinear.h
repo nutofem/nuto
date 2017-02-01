@@ -31,26 +31,26 @@ public:
     ~ConstraintLinear();
 
     //! @brief true, if the constraint is linear
-    bool IsLinear()const
+    bool IsLinear()const override
     {
         return true;
     }
 
     //! @brief cast to linear constraint
-    NuTo::ConstraintLinear* AsConstraintLinear()
+    NuTo::ConstraintLinear* AsConstraintLinear() override
     {
         return this;
     }
 
     //! @brief cast to linear constraint
-    const NuTo::ConstraintLinear* AsConstraintLinear()const
+    const NuTo::ConstraintLinear* AsConstraintLinear()const override
     {
         return this;
     }
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    virtual int GetNumLinearConstraints()const=0;
+    virtual int GetNumLinearConstraints()const override = 0;
 
     using ConstraintBase::GetRHS;
 

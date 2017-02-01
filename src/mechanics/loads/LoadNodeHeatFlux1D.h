@@ -30,7 +30,7 @@ public:
     //! @param rDependentDofsLoadVector Global load vector which correspond to the dependent dofs
     void AddLoadToGlobalSubVectors(int rLoadCase,
             Eigen::VectorXd& rActiceDofsLoadVector,
-            Eigen::VectorXd& rDependentDofsLoadVector)const;
+            Eigen::VectorXd& rDependentDofsLoadVector)const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

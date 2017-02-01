@@ -110,13 +110,13 @@ BOOST_SERIALIZATION_SPLIT_MEMBER()
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId()const
+    std::string GetTypeId()const override
     {
         return std::string("Logger");
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-	void Info()const
+	void Info()const override
 	{
 		std::cout << "LogFileName " << mLogFileName << " is quiet " << mQuiet << std::endl;
 	}

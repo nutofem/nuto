@@ -7,7 +7,7 @@ using namespace NuTo;
 void CallbackHandlerPython::SetCallbackFunctions(
         PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian)
 {
-    // check if objective routine is callable
+    // check if mObjective routine is callable
     if (!PyCallable_Check(args_parameters))
     {
         throw(OptimizeException(__PRETTY_FUNCTION__, "Set parameter routine not callable - check the routine"));
@@ -17,7 +17,7 @@ void CallbackHandlerPython::SetCallbackFunctions(
     Py_XDECREF(mCallbackSetParameters); // Dispose of previous callback
     mCallbackSetParameters = args_parameters; // Remember new callback
 
-    // check of objective routine is callable
+    // check of mObjective routine is callable
     if (!PyCallable_Check(args_objective))
     {
         throw(OptimizeException(__PRETTY_FUNCTION__, "Objective routine not callable - check the routine"));
@@ -76,7 +76,7 @@ double CallbackHandlerPython::Objective() const
 
     if (result == 0)
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Objective error calling callback objective."));
+        throw(OptimizeException(__PRETTY_FUNCTION__, "Objective error calling callback mObjective."));
     }
     objective = PyFloat_AsDouble(result);
 

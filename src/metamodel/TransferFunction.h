@@ -66,11 +66,11 @@ public:
     ~EmptyTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -80,7 +80,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return EMPTY_TRANSFER_FUNCTION;}
+	TransferFunction::eTransferFunction get_enum()const override {return EMPTY_TRANSFER_FUNCTION;}
 };
 
 /*******************************************************************************
@@ -99,11 +99,11 @@ public:
     ~HardLimTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -113,7 +113,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return HardLim;}
+	TransferFunction::eTransferFunction get_enum()const override {return HardLim;}
 };
 
 /*******************************************************************************
@@ -132,11 +132,11 @@ public:
     ~HardLimsTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -146,7 +146,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return HardLimS;}
+	TransferFunction::eTransferFunction get_enum()const override {return HardLimS;}
 };
 
 /*******************************************************************************
@@ -165,11 +165,11 @@ public:
     ~PureLinTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -179,7 +179,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return PURELIN;}
+	TransferFunction::eTransferFunction get_enum()const override {return PURELIN;}
 };
 
 /*******************************************************************************
@@ -198,11 +198,11 @@ public:
     ~SatLinTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -211,7 +211,7 @@ public:
 	template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
-	TransferFunction::eTransferFunction get_enum()const {return SATLIN;}
+	TransferFunction::eTransferFunction get_enum()const override {return SATLIN;}
 };
 
 /*******************************************************************************
@@ -230,11 +230,11 @@ public:
     ~SatLinsTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -243,7 +243,7 @@ public:
 	template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
-	TransferFunction::eTransferFunction get_enum()const {return SATLINS;}
+	TransferFunction::eTransferFunction get_enum()const override {return SATLINS;}
 };
 
 /*******************************************************************************
@@ -261,11 +261,11 @@ public:
     ~LogSigTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -275,7 +275,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return LOGSIG;}
+	TransferFunction::eTransferFunction get_enum()const override {return LOGSIG;}
 };
 
 /*******************************************************************************
@@ -294,11 +294,11 @@ public:
     ~TanSigTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -308,7 +308,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return TANSIG;}
+	TransferFunction::eTransferFunction get_enum()const override {return TANSIG;}
 };
 
 /*******************************************************************************
@@ -326,11 +326,11 @@ public:
     ~PosLinTransferFunction()
     {}
 
-    double evaluate(double x);
-    TransferFunction* clone()const;
-    double derivative(double x);
-    double second_derivative(double x);
-    void info()const;
+    double evaluate(double x) override;
+    TransferFunction* clone()const override;
+    double derivative(double x) override;
+    double second_derivative(double x) override;
+    void info()const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class 
@@ -340,7 +340,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-	TransferFunction::eTransferFunction get_enum()const {return POSLIN;}
+	TransferFunction::eTransferFunction get_enum()const override {return POSLIN;}
 };
 
 }  // namespace surrogate

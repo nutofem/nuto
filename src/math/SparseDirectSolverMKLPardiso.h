@@ -18,11 +18,11 @@ public:
     SparseDirectSolverMKLPardiso();
 
     //! @brief ... print information about the class attributes
-    virtual void Info()const
+    virtual void Info() const override
     {
     }
 
-    std::string GetTypeId()const
+    std::string GetTypeId() const override
     {
         return std::string("SparseDirectSolverMKLPardiso");
     }

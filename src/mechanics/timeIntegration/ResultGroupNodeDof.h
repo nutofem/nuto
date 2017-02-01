@@ -28,7 +28,7 @@ public:
     //! @brief constructor
     ResultGroupNodeDof(const std::string& rIdent, int rNodeGroupId);
 
-    NuTo::ResultGroupNodeDof* AsResultGroupNodeDof()override
+    NuTo::ResultGroupNodeDof* AsResultGroupNodeDof() override
     {
     	return this;
     }

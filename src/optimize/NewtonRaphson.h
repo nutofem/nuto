@@ -67,7 +67,7 @@ public:
 
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
-    void Solve(Eigen::VectorXd &rUnknown);
+    void Solve(Eigen::VectorXd &rUnknown) override;
 
     //! @brief ... the routine performs line search correction of the Newton step
     void LineSearch(Eigen::VectorXd &rXold, const double rFold, Eigen::VectorXd &rG, Eigen::VectorXd &rP,
@@ -78,7 +78,7 @@ public:
 
     //! @brief ... Return the name of the class, this is important for the serialize routines
     //! @return    class name
-    virtual std::string GetTypeId()const;
+    virtual std::string GetTypeId()const override;
 
 protected:
     //pointer to the analytical derivative of the residual function (analytic Jacobi matrix)

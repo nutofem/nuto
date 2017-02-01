@@ -118,7 +118,7 @@ public:
 		throw OptimizeException("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
 
 	}
-	void Info()const
+	void Info() const override
 	{
 		std::cout << "CallbackHandlerGrid" << std::endl;
 	}
@@ -142,7 +142,7 @@ public:
 	}
 #endif // ENABLE_SERIALIZATION
 
-    virtual std::string GetTypeId()const
+    virtual std::string GetTypeId() const override
     {
     	return std::string("CallbackHandlerGrid");
     }

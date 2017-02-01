@@ -60,18 +60,18 @@ enum eTransferFunctions {
 #endif
 #endif  // ENABLE_SERIALIZATION
 
-	void BuildDerived();
+	void BuildDerived() override;
 	void SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction);
 	
-	double Objective()const;
-	void Gradient(Eigen::MatrixXd& rGradient)const;
-    void Hessian(Eigen::MatrixXd&  rDiagHessian)const;
+	double Objective()const override;
+	void Gradient(Eigen::MatrixXd& rGradient)const override;
+    void Hessian(Eigen::MatrixXd&  rDiagHessian)const override;
     void HessianDiag(Eigen::MatrixXd&  rDiagHessian)const;
     void HessianFull(Eigen::MatrixXd&  rDiagHessian)const;
     
     Eigen::MatrixXd GetParameters() const;
-    void SetParameters(const Eigen::MatrixXd& Parameters);
-    virtual void Info()const;
+    void SetParameters(const Eigen::MatrixXd& Parameters) override;
+    virtual void Info()const override;
     
     //! @brief ... get the inverse noise covariance matrix
     //! @param rInverseCovariance ... inverse noise covariance matrix
@@ -174,9 +174,9 @@ enum eTransferFunctions {
     void Jacobian(Eigen::MatrixXd& rJacobian, std::vector<double>& pA, std::vector<double>& pO, Eigen::MatrixXd& pM)const;
 #endif
     
-    void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const;
+    void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const override;
     void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
-            Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax) const;
+            Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax) const override;
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... restore the object from a file
     //! @param filename ... filename
@@ -193,7 +193,7 @@ enum eTransferFunctions {
 	//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId()const;
+    std::string GetTypeId()const override;
 
 protected:                                                                 
     void ForwardPropagateInput(std::vector<double> &pA, std::vector<double> &pO)const;

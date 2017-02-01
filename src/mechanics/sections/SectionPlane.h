@@ -25,19 +25,19 @@ public:
 
     //! @brief ... get the section thickness
     //! @return ... section thickness
-    virtual double GetThickness() const;
+    virtual double GetThickness() const override;
 
     //! @brief ... set the thickness of the section
     //! @param rThickness ... section thickness
-    virtual void SetThickness(double rThickness);
+    virtual void SetThickness(double rThickness) override;
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual eSectionType GetType() const;
+    virtual eSectionType GetType() const override;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information
-    virtual void Info(unsigned short rVerboseLevel) const;
+    virtual void Info(unsigned short rVerboseLevel) const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

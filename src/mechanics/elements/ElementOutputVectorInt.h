@@ -24,12 +24,12 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    ElementOutputVectorInt* Clone() const
+    ElementOutputVectorInt* Clone() const override
     {
     	return new ElementOutputVectorInt(*this);
     }
 
-    std::vector<int>& GetVectorInt()
+    std::vector<int>& GetVectorInt() override
 	{
         return mVector;
 	}

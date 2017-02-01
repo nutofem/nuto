@@ -31,16 +31,16 @@ public:
 	//! Case 2) Sphere IS in the outside box
 	//!     --> Sphere has just left the inside box and needs to be removed from there
 	//! @param rSphere ... collision partner
-	void PerformCollision(CollidableParticleSphere& rSphere);
+	void PerformCollision(CollidableParticleSphere& rSphere) override;
 
 	//! @brief ... collision check between CollidableWall and CollidableSphere
 	//! Predict wall transfer events
 	//! @param rSphere ... possible collision partner
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
+	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... returns false
-	const bool IsPhysical() const;
+	const bool IsPhysical() const override;
 
 private:
 

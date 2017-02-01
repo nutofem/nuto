@@ -36,7 +36,7 @@ public:
     //! @brief calculate the relevant nodal dofs
     virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const = 0;
 
-    ResultNodeDof* AsResultNodeDof()
+    ResultNodeDof* AsResultNodeDof() override
     {
     	return this;
     }
@@ -50,7 +50,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const override;
 
 protected:
     int mNodeId;

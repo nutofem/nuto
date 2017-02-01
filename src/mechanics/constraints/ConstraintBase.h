@@ -69,12 +69,6 @@ public:
     //! @brief cast to nonlinear constraint - the corresponding dofs are eliminated in the global system
     virtual const ConstraintNonlinear* AsConstraintNonlinear()const;
 
-    //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
-    virtual ConstraintLagrange* AsConstraintLagrange();
-
-    //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
-    virtual const ConstraintLagrange* AsConstraintLagrange()const;
-
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
     virtual void SetRHS(double rRHS);

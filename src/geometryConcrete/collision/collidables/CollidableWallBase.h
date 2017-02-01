@@ -39,36 +39,36 @@ public:
 
 	//! @brief ... collision between CollidableWall and CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... collision partner
-	void PerformCollision(CollidableBase& rCollidable);
+	void PerformCollision(CollidableBase& rCollidable) override;
 
 	//! @brief ... collision between CollidableWall and CollidableSphere, pass to child classes
 	//! @param rSphere ... collision partner
-	virtual void PerformCollision(CollidableParticleSphere& rSphere) = 0;
+	virtual void PerformCollision(CollidableParticleSphere& rSphere) override = 0;
 
 	//! @brief ... collision between CollidableWall and CollidableWall, does nothing
 	//! @param rWall ... collision partner
-	void PerformCollision(CollidableWallBase& rWall);
+	void PerformCollision(CollidableWallBase& rWall) override;
 
 	//! @brief ... collision check between CollidableWall and CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableBase& rCollidable, int& rType);
+	const double PredictCollision(CollidableBase& rCollidable, int& rType) override;
 
 	//! @brief ... collision check between CollidableWall and CollidableSphere, pass to child classes
 	//! @param rSphere ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	virtual const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) = 0;
+	virtual const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override = 0;
 
 	//! @brief ... collision check between CollidableWall and CollidableWall, does nothing
 	//! @param rWall ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableWallBase& rWall, int& rType);
+	const double PredictCollision(CollidableWallBase& rWall, int& rType) override;
 
 	//! @brief ... walls to neither grow nor move, do nothing
-	void MoveAndGrow(const double rTime);
+	void MoveAndGrow(const double rTime) override;
 
 	//! @brief ... ture for physical walls
 	virtual const bool IsPhysical() const = 0;
@@ -80,7 +80,7 @@ public:
 #endif
 
 	//! @brief ... does nothing as all other wall events are still legal
-    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const;
+    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const override;
 
 	//! @brief ... returns whether a sphere is on the positive side of this wall
 	//! @param rSphere ... sphere to test
@@ -108,7 +108,7 @@ protected:
 
 	//! @brief ... prints CollidableWall
 	//! @param rReturnStream ... output stream, that gets modified
-	virtual void Print(std::ostream & rReturnStream) const;
+	virtual void Print(std::ostream & rReturnStream) const override;
 
 
 	//! @brief ... index of the direction component that is != 0

@@ -35,7 +35,7 @@ public:
     //! @param rNormal ... normal to the surface (pointing outwards)
     //! @param rLoadVector ... load vector
     void CalculateSurfaceLoad(Eigen::Vector3d& rCoordinates, Eigen::Vector3d& rNormal,
-                              Eigen::Vector3d& rLoadVector)const;
+                              Eigen::Vector3d& rLoadVector)const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

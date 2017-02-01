@@ -39,7 +39,7 @@ public:
     //! @param rData ... data object
     friend std::ostream& operator<<(std::ostream& os, const VisualizeDataBase& rData);
 
-private:
+protected:
     //! @brief ... create output stream
     //! @param os ... output stream
     //! @return ... output stream

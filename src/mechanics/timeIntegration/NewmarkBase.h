@@ -22,7 +22,7 @@ public:
     //! @brief constructor
     NewmarkBase(StructureBase* rStructure);
 
-    virtual void Solve(double rTimeDelta)=0;
+    virtual void Solve(double rTimeDelta) override = 0;
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
@@ -103,7 +103,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const;
+    void Info()const override;
 
 
 protected:

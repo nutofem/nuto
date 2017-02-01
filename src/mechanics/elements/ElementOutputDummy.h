@@ -18,7 +18,7 @@ public:
     ElementOutputDummy()
     {}
 
-    ElementOutputDummy* Clone() const
+    ElementOutputDummy* Clone() const override
     {
     	return new ElementOutputDummy(*this);
     }

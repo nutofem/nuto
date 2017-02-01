@@ -142,9 +142,6 @@ public:
     //! @return ... full matrix
     virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
 
-    //! @brief ... print info about the object
-    virtual void Info() const = 0;
-
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
@@ -233,7 +230,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    virtual std::string GetTypeId() const;
+    virtual std::string GetTypeId() const override;
 
     //! @brief Calculate the largest matrix entry
     //! @param rResultOutput ... largest matrix entry

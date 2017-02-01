@@ -34,8 +34,8 @@ public:
         MAXHESSIANCALLS,   //maximum number of hessian calls is reached
         MAXITERATIONS,     //maximum number of iterations is reached
         NORMGRADIENT,       //norm of gradient is smaller than a prescribed value
-        MINOBJECTIVE,       //objective is smaller than a prescribed value
-        DELTAOBJECTIVEBETWEENCYCLES,  //decrease in objective function between two consecutive cycles is smaller than prescribed value
+        MINOBJECTIVE,       //mObjective is smaller than a prescribed value
+        DELTAOBJECTIVEBETWEENCYCLES,  //decrease in mObjective function between two consecutive cycles is smaller than prescribed value
         REACHINGMACHINEPRECISION  //machine precision is reached for the norm of the increment
     };
     
@@ -46,7 +46,7 @@ public:
         mvInEqualConstraints.resize(rNumInEqualConstraints);
         mMaxFunctionCalls = INT_MAX;
         mMinObjective = -DBL_MAX;
-        isBuild = false;
+        mIsBuild = false;
 	}
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -59,12 +59,12 @@ public:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
            & BOOST_SERIALIZATION_NVP(mpCallbackHandler)
            & BOOST_SERIALIZATION_NVP(mpCallbackHandlerGrid)
-           & BOOST_SERIALIZATION_NVP(objective)
+           & BOOST_SERIALIZATION_NVP(mObjective)
            & BOOST_SERIALIZATION_NVP(mvParameters)
            & BOOST_SERIALIZATION_NVP(mParameters)
            & BOOST_SERIALIZATION_NVP(mvEqualConstraints)
            & BOOST_SERIALIZATION_NVP(mvInEqualConstraints)
-           & BOOST_SERIALIZATION_NVP(isBuild)
+           & BOOST_SERIALIZATION_NVP(mIsBuild)
            & BOOST_SERIALIZATION_NVP(mMinObjective);
     }
 #endif // SWIG
@@ -85,7 +85,7 @@ public:
     void SetParameters(const Eigen::MatrixXd& rParameters)
     {
         mvParameters = rParameters;
-        isBuild = false;
+        mIsBuild = false;
     }
 
     const Eigen::MatrixXd& GetParameters()const
@@ -96,7 +96,7 @@ public:
     void SetParameters(std::vector<double>& rParameters)
     {
     	mParameters=rParameters;
-        isBuild = false;
+        mIsBuild = false;
     }
 
     std::vector<double>& GetParametersVec()
@@ -124,8 +124,8 @@ public:
 
      inline double GetObjective()
     {
-        if (isBuild==true)
-            return objective;
+        if (mIsBuild)
+            return mObjective;
         else
         {
             if (mpCallbackHandler!=0)
@@ -141,7 +141,7 @@ public:
 		std::cout << "Number of parameters             :" << mvParameters.rows() << std::endl;
 		std::cout << "Number of equality constraints   :" << mvEqualConstraints.size() << std::endl;
 		std::cout << "Number of inequality constraints :" << mvInEqualConstraints.size() << std::endl;
-		std::cout << "Build                            :" << isBuild << std::endl;
+		std::cout << "Build                            :" << mIsBuild << std::endl;
 		std::cout << "MaxFunctionCalls                 :" << mMaxFunctionCalls << std::endl;
 		std::cout << "MinObjective                     :" << mMinObjective << std::endl;
     }
@@ -149,13 +149,13 @@ public:
 protected:
     CallbackHandler *mpCallbackHandler;
     CallbackHandlerGrid *mpCallbackHandlerGrid;
-    double objective;
+    double mObjective;
     Eigen::MatrixXd mvParameters;
     std::vector<double> mParameters;
     std::vector<double> mvEqualConstraints;
     std::vector<double> mvInEqualConstraints;
     
-    bool isBuild;
+    bool mIsBuild;
     int mMaxFunctionCalls;
     double mMinObjective;
         

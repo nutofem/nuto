@@ -12,7 +12,6 @@
 #include <iostream>
 
 #include "mechanics/constraints/ConstraintBase.h"
-#include "mechanics/constraints/ConstraintLagrange.h"
 #include "mechanics/constraints/ConstraintLinear.h"
 #include "mechanics/MechanicsException.h"
 
@@ -62,18 +61,6 @@ NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()
 const NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Constraint is not nonlinear.");
-}
-
-//! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
-NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint has no Lagrange multipliers.");
-}
-
-//! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
-const NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()const
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint has no Lagrange multipliers.");
 }
 
 #ifdef ENABLE_SERIALIZATION

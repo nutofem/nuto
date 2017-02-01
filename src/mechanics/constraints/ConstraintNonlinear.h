@@ -31,19 +31,19 @@ public:
     virtual ~ConstraintNonlinear();
 
     //! @brief true, if the constraint is linear
-    bool IsLinear()const
+    bool IsLinear()const override
     {
         return false;
     }
 
     //! @brief cast to nonlinear constraint
-    NuTo::ConstraintNonlinear* AsConstraintNonlinear()
+    NuTo::ConstraintNonlinear* AsConstraintNonlinear() override
     {
         return this;
     }
 
     //! @brief cast to nonlinear constraint
-    const NuTo::ConstraintNonlinear* AsConstraintNonlinear()const
+    const NuTo::ConstraintNonlinear* AsConstraintNonlinear()const override
     {
         return this;
     }

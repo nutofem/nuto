@@ -20,11 +20,11 @@ public:
     SparseDirectSolverMKLDSS();
 
     //! @brief ... print information about the class attributes
-    void Info()const
+    void Info() const override
     {
     }
 
-    std::string GetTypeId()const
+    std::string GetTypeId() const override
     {
         return std::string("SparseDirectSolverMKLDSS");
     }

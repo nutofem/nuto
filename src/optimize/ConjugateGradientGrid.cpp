@@ -68,7 +68,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	if (localMaxGradientCalls<mMaxGradientCalls)
 		SetMaxGradientCalls(localMaxGradientCalls);
 
-	// calculate objective
+	// calculate mObjective
 	if (numFunctionCalls++>mMaxFunctionCalls)
 	{
 		converged = true;
@@ -278,7 +278,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		}
 	}
 
-	isBuild = true;
+	mIsBuild = true;
 
 #ifdef SHOW_TIME
     endOpt=clock();
@@ -337,7 +337,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //		}
 //		std::cout << std::endl;
 	}
-	objective=sqrt(betaNumerator);
+	mObjective=sqrt(betaNumerator);
     return static_cast<int>(returnValue);
 }
 

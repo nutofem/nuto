@@ -17,15 +17,15 @@ public:
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
-    unsigned int GetNumPoints() const;
+    unsigned int GetNumPoints() const override;
 
     //! @brief ... return point id's
     //! @return ... array of point id's
-    const unsigned int* GetPoints() const;
+    const unsigned int* GetPoints() const override;
 
     //! @brief ... returns the corresponding Vtk cell type
     //! @return ... Vtk cell type
-    unsigned int GetVtkCellType() const;
+    unsigned int GetVtkCellType() const override;
 private:
     //! @brief ... point id's
     unsigned int mPoints[1];

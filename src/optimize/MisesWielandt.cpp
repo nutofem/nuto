@@ -48,16 +48,13 @@ int NuTo::MisesWielandt::Optimize()
 	for(size_t i=0;i<mNumParameters;++i)
 		u[i]*=1./norm;
 
-	bool converged(false);
-
 	SetMaxGradientCalls((int) mNumParameters);
 
-	while(!converged)
+	while(true)
 	{
 		numGradientCalls++;
 		 if (numGradientCalls>mMaxGradientCalls)
 		 {
-			 converged = true;
              returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
 			 break;
 			 //return MAXGRADIENTCALLS;
@@ -105,23 +102,21 @@ int NuTo::MisesWielandt::Optimize()
 		{
 			if((lambda-prevLambda)>=0&&(lambda-prevLambda)<tol)
 			{
-				converged = true;
                 returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
 				break;
 			}
 			else if((lambda-prevLambda)<0&&(lambda-prevLambda)>-tol)
 			{
-				converged = true;
                 returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
 				break;
 			}
 		}
 	}
 	// so far condition number equal max eigenvalue
-	objective=lambda;
+	mObjective=lambda;
 
 
-	isBuild = true;
+	mIsBuild = true;
 
 #ifdef SHOW_TIME
     endOpt=clock();
@@ -130,7 +125,7 @@ int NuTo::MisesWielandt::Optimize()
 		std::cout << "[NuTo::MisesWielandt::Optimize] " << difftime(endOpt, startOpt) / CLOCKS_PER_SEC << "sec"
 				  << std::endl;
 		std::cout << "[MisesWielandt] lambda - norm " << lambda << " " << norm << " " << "\n";
-		std::cout << "[MisesWielandt] " << mObjectiveType << " " << objective << "\n";
+		std::cout << "[MisesWielandt] " << mObjectiveType << " " << mObjective << "\n";
 		outputTime.open(filename, std::fstream::out | std::fstream::app);
 		outputTime << (difftime(endOpt, startOpt) / CLOCKS_PER_SEC) << "   " << curIteration << "\n";
 		outputTime.close();
@@ -161,7 +156,7 @@ int NuTo::MisesWielandt::Optimize()
 				std::cout<< "lambda_min of preconditioned gradient smaller than prescribed value." << std::endl;
 				break;
             case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
-				std::cout<< "Decrease in objective function between two consecutive cycles is smaller than prescribed value."<<std::endl;
+				std::cout<< "Decrease in mObjective function between two consecutive cycles is smaller than prescribed value."<<std::endl;
 				break;
 			default:
 				std::cout<< "Unknown convergence criterion." << std::endl;
