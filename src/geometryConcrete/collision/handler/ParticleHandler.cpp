@@ -434,13 +434,13 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     // some default options, adjust this afterwards in the .geo file
 
     mFile.open(rOutputFile);
-    mFile << "Mesh.Algorithm = 1;\n";
+    mFile << "Mesh.Algorithm = 6;\n";
     //mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
-    //mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
+    mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
     //mFile << "Mesh.HighOrderNumLayers = 6;\n";
     //mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
     //mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
-    mFile << "Mesh.Optimize = 1;\n";
+    mFile << "Mesh.Optimize = 2;\n";
     //mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
     //mFile << "Mesh.OptimizeNetgen = 1;\n";
     //mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
