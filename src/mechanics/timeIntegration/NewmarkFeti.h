@@ -117,12 +117,13 @@ public:
     //! Solves for the Lagrange multipliers at the subdomain interfaces.
     //! Calculates the increment of the free degrees of freedom
     //!
-    StructureOutputBlockVector FetiSolve(const VectorXd& residual_mod, const std::set<Node::eDof>& activeDofSet, VectorXd& deltaLambda);
+    StructureOutputBlockVector FetiSolve(const VectorXd& residual_mod, const std::set<Node::eDof>& activeDofSet, VectorXd& deltaLambda, const double timeStep);
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
     NuTo::eError Solve(double rTimeDelta) override;
 
+    double CalculateLoadFactor(double rTime);
 private:
 //    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
 //    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> mSolver;
@@ -130,7 +131,7 @@ private:
     Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
-    const double    mCpgTolerance     = 1.0e-9;
+    const double    mCpgTolerance     = 1.0e-4;
     const int       mCpgMaxIterations = 1000;
 };
 }// namespace NuTo

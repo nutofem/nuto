@@ -295,13 +295,14 @@ public:
 
 
     void ApplyConstraintsTotalFeti(const int nodeGroupId);
-
-
-
-
+    void ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap);
 
     void CalculateProjectionMatrix();
     void CalculateG();
+
+    void CalculateAndAppyVirtualConstraints();
+
+    const Eigen::VectorXd & GetPrescribedDofVector() {return mPrescribedDofVector;}
 protected:
 
     bool mIsFloating = true;
@@ -363,6 +364,13 @@ protected:
     ///
     std::vector<int>            mBoundaryDofIds;
 
+    Eigen::VectorXd             mPrescribedDofVector;
+
+    ///
+    /// \brief mPrescribedDisplacementDofIds
+    ///
+    std::vector<int>            mPrescribedDisplacementDofIds;
+
     ///
     /// \brief mGlobalStartIndexBoundaryDofIds
     ///
@@ -375,6 +383,8 @@ protected:
     ///
     int                         mGlobalStartIndexBoundaryDofIds = -1337;
 
+
+    int                         mGlobalStartIndexPrescribedDisplacementDofIds = -1337;
 
     ///
     /// \brief mNumTotalBoundaryDofIds
@@ -389,6 +399,14 @@ protected:
     ///                 MPI_COMM_WORLD);
     ///
     int                         mNumTotalBoundaryDofIds = -1337;
+
+    ///
+    /// \brief mNumTotalPrescribedDisplacementDofIds
+    ///
+    /// The total number of degrees of freedom that have a prescribed displacement
+    ///
+    ///
+    int                         mNumTotalPrescribedDisplacementDofIds = 0;
 
     ///
     /// \brief mRigidBodyModes

@@ -95,7 +95,7 @@ NuTo::StructureFETI::StructureFETI(int rDimension):
 
 void NuTo::StructureFETI::AssembleConnectivityMatrix()
 {
-
+    boost::mpi::communicator world;
     const auto& dofTypes    = GetDofStatus().GetDofTypes();
     const int numTotalDofs  = GetNumTotalDofs();
 
@@ -107,7 +107,9 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     }
 
     numLagrangeMultipliers  += mNumTotalBoundaryDofIds;
+    numLagrangeMultipliers  += mNumTotalPrescribedDisplacementDofIds;
     mConnectivityMatrix.resize(numLagrangeMultipliers, numTotalDofs);
+    mPrescribedDofVector.setZero(numLagrangeMultipliers);
 
     int offsetRows = 0;
     int offsetCols = 0;
@@ -133,7 +135,7 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
         offsetCols += GetNumActiveDofs(dofType) + mNumRigidBodyModes;
     }
 
-    int globalIndex = numLagrangeMultipliers - mNumTotalBoundaryDofIds + mGlobalStartIndexBoundaryDofIds;
+    int globalIndex = numLagrangeMultipliers - mNumTotalBoundaryDofIds - mNumTotalPrescribedDisplacementDofIds + mGlobalStartIndexBoundaryDofIds;
     for (const int& id :  mBoundaryDofIds)
     {
         mConnectivityMatrix.insert(globalIndex,id) = 1;
@@ -141,14 +143,32 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     }
 
 
+    globalIndex = numLagrangeMultipliers - mNumTotalPrescribedDisplacementDofIds + mGlobalStartIndexPrescribedDisplacementDofIds;
+    for (const int& id :  mPrescribedDisplacementDofIds)
+    {
+        mConnectivityMatrix.insert(globalIndex,id) = 1;
 
-    GetLogger() << "Number of Lagrange multipliers:  \t"        << numLagrangeMultipliers       << "\n\n";
-    GetLogger() << "Total number of interface nodes: \t"        << mNumInterfaceNodesTotal      << "\n\n";
-    GetLogger() << "Total number of boundary dofs:   \t"        << mNumTotalBoundaryDofIds      << "\n\n";
-    GetLogger() << "Total number of dofs:            \t"        << GetNumTotalDofs()            << "\n\n";
-    GetLogger() << "Total number of active dofs:     \t"        << GetNumTotalActiveDofs()      << "\n\n";
-    GetLogger() << "Total number of dependent dofs:  \t"        << GetNumTotalDependentDofs()   << "\n\n";
+        mPrescribedDofVector[globalIndex] = 1;
 
+        ++globalIndex;
+
+    }
+
+    // sum up all prescribed dof vectors
+    boost::mpi::all_reduce(world,
+                           boost::mpi::inplace(mPrescribedDofVector.data()),
+                           mPrescribedDofVector.size(),
+                           std::plus<double>());
+
+    GetLogger() << "Number of Lagrange multipliers:              \t" << numLagrangeMultipliers                << "\n\n";
+    GetLogger() << "Total number of interface nodes:             \t" << mNumInterfaceNodesTotal               << "\n\n";
+    GetLogger() << "Total number of boundary dofs:               \t" << mNumTotalBoundaryDofIds               << "\n\n";
+    GetLogger() << "Total number of prescribed displacement dofs:\t" << mNumTotalPrescribedDisplacementDofIds << "\n\n";
+    GetLogger() << "Total number of dofs:                        \t" << GetNumTotalDofs()                     << "\n\n";
+    GetLogger() << "Total number of active dofs:                 \t" << GetNumTotalActiveDofs()               << "\n\n";
+    GetLogger() << "Total number of dependent dofs:              \t" << GetNumTotalDependentDofs()            << "\n\n";
+
+    GetLogger() << "Connectivity matrix:  \n"        << mConnectivityMatrix  << "\n\n";
 
 
 }
@@ -510,6 +530,17 @@ void NuTo::StructureFETI::CalculateInterfaceRigidBodyModes()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void NuTo::StructureFETI::CalculateAndAppyVirtualConstraints()
+{
+
+throw MechanicsException(__PRETTY_FUNCTION__, "Not yet implemented.");
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
 {
     boost::mpi::communicator world;
@@ -528,7 +559,7 @@ void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
     // determine the global ids for the constraints
 
     // recvCount:
-    // Contais the number of elements that are received from each process.
+    // Contains the number of elements that are received from each process.
     std::vector<int> recvCount(mNumProcesses, 0);
 
     boost::mpi::all_gather<int>(world,mBoundaryDofIds.size(),recvCount);
@@ -551,11 +582,60 @@ void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
 
 
 
-    GetLogger() << "mBoundaryDofIds.size() \t" << mBoundaryDofIds.size() << "\n \n";
-    GetLogger() << "mNumTotalBoundaryDofIds \t" << mNumTotalBoundaryDofIds << "\n \n";
+    GetLogger() << "Number of boundary dof ids:       \t" << mBoundaryDofIds.size() << "\n \n";
+    GetLogger() << "Total number of boundary dof ids: \t" << mNumTotalBoundaryDofIds << "\n \n";
 
 
     mGlobalStartIndexBoundaryDofIds = displs[mRank];
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NuTo::StructureFETI::ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap)
+{
+    boost::mpi::communicator world;
+
+
+
+    for (auto const& idAndDisp : dofIdAndPrescribedDisplacementMap)
+    {
+        mPrescribedDisplacementDofIds.push_back(idAndDisp.first);
+    }
+
+    // recvCount:
+    // Contains the number of elements that are received from each process.
+    std::vector<int> recvCount(mNumProcesses, 0);
+
+    const int numLocalDofIds = mPrescribedDisplacementDofIds.size();
+    boost::mpi::all_gather<int>(world,numLocalDofIds,recvCount);
+
+    // displs:
+    // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
+    std::vector<int> displs;
+    displs.resize(mNumProcesses, 0);
+    for (int i = 1; i < mNumProcesses; ++i)
+        displs[i] = displs[i-1] + recvCount[i-1];
+
+    MPI_Allreduce(&numLocalDofIds,
+                  &mNumTotalPrescribedDisplacementDofIds,
+                  1,
+                  MPI_INT,
+                  MPI_SUM,
+                  MPI_COMM_WORLD);
+
+    GetLogger() << "Number of prescribed displacement dof ids:       \t" << mPrescribedDisplacementDofIds.size() << "\n \n";
+    GetLogger() << "Total number of prescribed displacement dof ids: \t" << mNumTotalPrescribedDisplacementDofIds << "\n \n";
+
+
+
+    mGlobalStartIndexPrescribedDisplacementDofIds = displs[mRank];
+
+    GetLogger() << "mGlobalStartIndexPrescribedDisplacementDofIds: \t" << mGlobalStartIndexPrescribedDisplacementDofIds << "\n \n";
+
+    for (const auto& id : mPrescribedDisplacementDofIds)
+        GetLogger() << "Prescribed displacement dof ids:       \t" << id << "\n \n";
 
 }
 

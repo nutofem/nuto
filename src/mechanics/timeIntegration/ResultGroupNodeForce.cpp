@@ -39,6 +39,7 @@ Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase&
     const Group<NodeBase>& nodeGroup = *GetGroupNodePtr(rStructure);
     const int dim = rStructure.GetDimension();
     Eigen::VectorXd result = Eigen::VectorXd::Zero(dim);
+
     for (auto& itNode : nodeGroup)
     {
         assert(itNode.second->GetNum(Node::eDof::DISPLACEMENTS) == dim);
