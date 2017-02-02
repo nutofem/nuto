@@ -43,7 +43,6 @@ foreach(test
     MoistureTransport
     ConstraintsNodeToElement
     CSDAInterface
-    EngineeringInvariants
     GradientDamage
     IGA
     ImplEx
