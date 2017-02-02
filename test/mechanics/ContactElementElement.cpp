@@ -234,10 +234,18 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
             }
 
             int myElement = myStructure->ElementCreate(interpolationType, elementIncidence);
+
+//            NuTo::ElementBase* el = myStructure->ElementGetElementPtr(myElement);
+//            Eigen::VectorXd nodalCurrent;
+//            nodalCurrent.setZero(0);
+//            nodalCurrent = el->ExtractNodeValues(0, NuTo::Node::eDof::DISPLACEMENTS);
+//            nodalCurrent = el->ExtractNodeValues(0, NuTo::Node::eDof::COORDINATES);
+
 //            std::cout << "Element: " << myElement << ", Nodes: " << elementIncidence.Trans() << std::endl;
             myStructure->GroupAddElement(rElementGroup, myElement);
         }
     }
+    myStructure->ElementConvertToInterpolationType(rElementGroup, 1.e-6,10);
     return node;
 }
 

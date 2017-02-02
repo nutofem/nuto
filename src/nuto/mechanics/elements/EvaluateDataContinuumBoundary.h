@@ -29,6 +29,10 @@ public:
     Eigen::VectorXd mShapeFunctionsIntegral;
     std::unordered_map<int, int> mMappingGlobal2LocalDof;
 
+    Eigen::MatrixXd mHessianContribution;
+    Eigen::MatrixXd mForceContribution;
+
+
     // Misc
     // --------------------------------------------------------------------------------------------
     double mDetJxWeightIPxSection;

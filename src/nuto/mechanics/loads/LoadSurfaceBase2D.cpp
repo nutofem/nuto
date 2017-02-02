@@ -250,8 +250,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if(std::fabs(theLoad) > 1.e-5)
-                        std::cout << "Node:  (" << node->Get(NuTo::Node::eDof::COORDINATES).transpose() << "), load: " << theLoad << std::endl;
                     if (theDof < rActiveDofsLoadVector.GetNumRows())
                     {
                         rActiveDofsLoadVector(theDof) += theLoad;

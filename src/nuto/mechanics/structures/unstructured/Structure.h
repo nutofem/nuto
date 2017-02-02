@@ -13,6 +13,7 @@
 namespace NuTo
 {
 template <int TDim> class ContinuumElementIGA;
+template <int TDim> class ContinuumElement;
 
 namespace ElementData
 {
@@ -528,7 +529,10 @@ public:
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID);
 
     template<int TDimMaster>
-    Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(int rGroupElementsMaster, int rGroupNodesMaster);
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(int rGroupElementsMaster, int rGroupNodesMaster);
+
+    template<int TDimSlave>
+    void ContactElementsCreateSlave(const std::vector<std::pair<const ElementBase*, int> > &rElementsSlave, std::vector<std::pair<const ContinuumElement<TDimSlave>*, int> > &rElementsSlaveContinuum);
 
     template<int TDimSlave, int TDimMaster>
     int ContactElementsCreate(int rElementsGroupIDSlave,

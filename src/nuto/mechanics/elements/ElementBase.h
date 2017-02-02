@@ -186,7 +186,7 @@ public:
 
     //! @brief resizes the node vector
     //! @param rNewNumNodes new number of nodes
-    virtual void ResizeNodes(int rNewNumNodes) = 0;
+    virtual void ResizeNodes(int rNewNumNodes) =0;
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical

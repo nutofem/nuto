@@ -655,10 +655,10 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
 
         rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
-        Eigen::MatrixXd mat = rHessian_dt0.JJ.ExportToFullMatrix();
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(mat);
-        if (eigensolver.info() != Eigen::Success) abort();
-            std::cout << "The eigenvalues of A are:\n" << eigensolver.eigenvalues() << std::endl;
+//        Eigen::MatrixXd mat = rHessian_dt0.JJ.ExportToFullMatrix();
+//        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(mat);
+//        if (eigensolver.info() != Eigen::Success) abort();
+//            std::cout << "The eigenvalues of A are:\n" << eigensolver.eigenvalues() << std::endl;
         auto result =  mStructure->SolveBlockSystem(rHessian_dt0.JJ, rResidualMod);
         mStructure->SetShowTime(structureShowTime);
         return result;
