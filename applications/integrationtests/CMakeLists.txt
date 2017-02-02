@@ -1,3 +1,7 @@
+if(ENABLE_GEOMETRYCONCRETE)
+    add_subdirectory(geometryConcrete)
+endif()
+
 if(ENABLE_PYTHON)
     foreach(test
         Brick8N

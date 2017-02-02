@@ -11,7 +11,3 @@ endif()
 if(ENABLE_OPTIMIZE)
     add_subdirectory(optimize)
 endif()
-
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(geometryConcrete)
-endif()
