@@ -6,6 +6,10 @@ if(ENABLE_METAMODEL)
     add_subdirectory(metamodel)
 endif()
 
+if(ENABLE_OPTIMIZE)
+    add_subdirectory(optimize)
+endif()
+
 if(ENABLE_PYTHON)
     foreach(test
         Brick8N
