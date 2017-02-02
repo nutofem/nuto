@@ -15,3 +15,19 @@ endif()
 add_executable(EigenCompanion EigenCompanion.cpp ${CMAKE_SOURCE_DIR}/src/math/EigenCompanion.cpp)
 target_link_libraries(EigenCompanion ${Boost_LIBRARIES})
 add_test(c::unit::EigenCompanion ${CMAKE_CURRENT_BUILD_DIR}/EigenCompanion)
+
+add_executable(SparseMatrixCSRGeneral SparseMatrixCSRGeneral.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRGeneral.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSR.cpp
+    )
+target_link_libraries(SparseMatrixCSRGeneral ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+add_test(c::unit::SparseMatrixCSRGeneral ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixCSRGeneral)
+
+add_executable(SparseMatrixCSRVector2General SparseMatrixCSRVector2General.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRVector2General.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRVector2.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRGeneral.cpp
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSR.cpp
+    )
+target_link_libraries(SparseMatrixCSRVector2General ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+add_test(c::unit::SparseMatrixCSRVector2General ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixCSRVector2General)
