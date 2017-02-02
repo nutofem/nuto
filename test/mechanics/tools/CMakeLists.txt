@@ -1,0 +1,3 @@
+add_executable(GlobalFractureEnergyIntegration GlobalFractureEnergyIntegration.cpp)
+target_link_libraries(GlobalFractureEnergyIntegration NuToMath NuToBase)
+add_test(c::unit::GlobalFractureEnergyIntegration ${CMAKE_CURRENT_BINARY_DIR}/GlobalFractureEnergyIntegration)

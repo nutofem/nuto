@@ -5,7 +5,7 @@
  *      Author: Thomas Titscher
  */
 
-#include "../test/mechanics/ElementUniaxialTest.h"
+#include "ElementUniaxialTest.h"
 
 std::string directory = "";
 

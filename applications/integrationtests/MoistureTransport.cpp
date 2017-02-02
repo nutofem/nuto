@@ -14,8 +14,8 @@
 //  TESTS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#include "ConstitutiveLawMoistureTransport_ConstitutiveOutputTest.h"
-#include "ConstitutiveLawMoistureTransport_SimulationTest.h"
+#include "MoistureTransport_ConstitutiveOutputTest.h"
+#include "MoistureTransport_SimulationTest.h"
 
 void RunSimulationTest_AllDiemnsions(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                                      int rNumElementsXYZ)

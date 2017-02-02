@@ -12,7 +12,7 @@
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "ConstitutiveLawMoistureTransport_Setup.h"
+#include "MoistureTransport_Setup.h"
 
 void ConstitutiveOutputTest_SetupMoistureTransport(MoistureTransportControl& rMT)
 {
