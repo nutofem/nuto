@@ -2,13 +2,14 @@ if(ENABLE_PYTHON)
     foreach(test
         Brick8N
         CreateNodesAndGroupOperations
-        GlobalDofs
-        Sections
-        Tetrahedron10N
         DeleteElemNode
         ElementUniaxialTest
-        Quad2DPatchTest
+        GlobalDofs
         HeatConduction
+        Quad2DPatchTest
+        Sections
+        SparseMatrixCSR
+        Tetrahedron10N
         )
 
         add_test(p::mechanics::${test} ${PYTHON_EXECUTABLE}
@@ -22,7 +23,7 @@ if(ENABLE_PYTHON)
 endif()
 
 
-if(ENABLE_C++_TESTS)
+if(ENABLE_TESTS)
     # copy meshes
     foreach(mesh
         2D
@@ -64,6 +65,7 @@ if(ENABLE_C++_TESTS)
         ParallelAssembly
         RungeKutta
         Shrinkage
+        SparseMatrixTests
         SpringDamperCombination
         SurfaceLoad
         ThermoMechanics2D
@@ -106,6 +108,5 @@ if(ENABLE_C++_TESTS)
         set(MPIEXEC mpirun)
         add_test(NAME c::mechanics::${test} COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endif()
-
 
 endif()

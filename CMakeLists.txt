@@ -373,22 +373,7 @@ include(CTest)
 add_custom_target(unit COMMAND ctest -R unit)
 
 if(ENABLE_TESTS)
-    add_subdirectory(test/math)
-    if(ENABLE_MECHANICS)
-        add_subdirectory(test/mechanics)
-    endif()
-
-    if(ENABLE_METAMODEL)
-        add_subdirectory(test/metamodel)
-    endif()
-
-    if(ENABLE_OPTIMIZE)
-        add_subdirectory(test/optimize)
-    endif()
-
-    if(ENABLE_GEOMETRYCONCRETE)
-        add_subdirectory(test/geometryConcrete)
-    endif()
+    add_subdirectory(test)
 
     add_subdirectory(applications/integrationtests)
 endif()
