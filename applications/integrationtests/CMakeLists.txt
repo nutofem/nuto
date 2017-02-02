@@ -34,7 +34,7 @@ if(ENABLE_C++_TESTS)
         ConstraintsNodeToElementFiberMesh3d
         TwoElements
         )
-        execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshFiles/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
+        execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
     endforeach()
 
     # generate tests
@@ -90,7 +90,7 @@ if(ENABLE_C++_TESTS)
                 0
                 1
                 )
-            execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshFiles/feti_rectangle_tri.msh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
+            execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/feti_rectangle_tri.msh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
         endforeach()
 
         set(test Feti)

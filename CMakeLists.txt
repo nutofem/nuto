@@ -16,7 +16,7 @@ option(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
-option(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
+option(ENABLE_CUSTOM_EXAMPLES "enable building private examples in a separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
@@ -404,11 +404,11 @@ endif()
 
 
 
-# myExamples should be modified locally, but are not supposed to be added to the repository
-# if it is empty, there is just an empty include
-# it is used for adding working examples locally, which should not be exposed to the public
-if(ENABLE_MY_EXAMPLES)
-    add_subdirectory(myNutoExamples)
+# Custom examples are applications you don't want to add to the repository, but
+# that should still be picked up by CMake. If this directory is empty, nothing
+# happens.
+if(ENABLE_CUSTOM_EXAMPLES)
+    add_subdirectory(applications/custom)
 endif()
 
 
