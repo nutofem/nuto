@@ -23,5 +23,5 @@ add_unit_test(SparseMatrixCSRVector2General
 if(ENABLE_ARPACK)
     add_executable(EigenSolverArpack EigenSolverArpack.cpp)
     target_link_libraries(EigenSolverArpack NuToMath NuToBase)
-    add_test(c::unit::EigenSolverArpack ${CMAKE_CURRENT_BUILD_DIR}/EigenSolverArpack)
+    add_test(unit::math::EigenSolverArpack ${CMAKE_CURRENT_BUILD_DIR}/EigenSolverArpack)
 endif()

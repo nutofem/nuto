@@ -12,13 +12,13 @@ if(ENABLE_PYTHON)
         Tetrahedron10N
         )
 
-        add_test(p::mechanics::${test} ${PYTHON_EXECUTABLE}
+        add_test(integration::mechanics::${test} ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py
             ${CMAKE_SYSTEM_NAME}
 	    ${CMAKE_SYSTEM_PROCESSOR}
 	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ${CMAKE_CURRENT_BINARY_DIR})
-        set_property(TEST p::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+        set_property(TEST integration::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     endforeach()
 endif()
 
@@ -71,7 +71,7 @@ foreach(test
     if(MUMPS_FOUND)
         target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
-    add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    add_test(integration::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
@@ -95,5 +95,5 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
     endif()
     set(MPIEXEC_NUMPROC_FLAG -np 2)
     set(MPIEXEC mpirun)
-    add_test(NAME c::mechanics::Feti COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/Feti)
+    add_test(NAME integration::mechanics::Feti COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/Feti)
 endif()

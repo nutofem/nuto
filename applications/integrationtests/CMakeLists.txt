@@ -16,4 +16,4 @@ endif()
 
 add_executable(SparseMatrixTests SparseMatrixTests.cpp)
 target_link_libraries(SparseMatrixTests NuToMath NuToBase)
-add_test(c::mechanics::SparseMatrixTests ${CMAKE_CURRENT_BINARY_DIR}/SparseMatrixTests)
+add_test(integration::SparseMatrixTests ${CMAKE_CURRENT_BINARY_DIR}/SparseMatrixTests)

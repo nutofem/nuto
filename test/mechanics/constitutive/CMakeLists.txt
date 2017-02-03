@@ -4,7 +4,7 @@ foreach(test AdditiveInput AdditiveOutput)
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} NuToVisualize)
     endif()
-    add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+    add_test(unit::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
 endforeach()
 
 add_unit_test(DataContainer)
