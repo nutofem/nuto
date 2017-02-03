@@ -1,4 +1,5 @@
 add_subdirectory(constitutive)
 add_subdirectory(elements)
+add_subdirectory(groups)
 add_subdirectory(mesh)
 add_subdirectory(tools)

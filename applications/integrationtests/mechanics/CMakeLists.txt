@@ -3,7 +3,6 @@ add_subdirectory(uniaxial)
 if(ENABLE_PYTHON)
     foreach(test
         Brick8N
-        CreateNodesAndGroupOperations
         DeleteElemNode
         GlobalDofs
         HeatConduction
