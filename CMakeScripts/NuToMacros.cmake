@@ -104,3 +104,22 @@ function(NUTO_SWIG_MODULE module_name interface_file install_path)
   # installation
   NUTO_INSTALL_SWIG_PYTHON_MODULE(${module_name} ${NUTO_PYTHON_MODULES_INSTALL_PATH}/${install_path})
 endfunction()
+
+# `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the
+# name `SomeClass` and all the files required (`FilesItNeedsToLink`), links
+# NuToBase and the Boost unit test framework to it, and adds it to the test
+# suite under an appropriate name
+function(add_unit_test ClassName)
+    string(REPLACE "${CMAKE_SOURCE_DIR}/test/" "" relpath ${CMAKE_CURRENT_SOURCE_DIR})
+    set(AdditionalFiles ${ARGN})
+    set(srcPath "${CMAKE_SOURCE_DIR}/src/${relpath}/${ClassName}.cpp")
+    if(EXISTS "${srcPath}")
+        add_executable(${ClassName} ${ClassName}.cpp ${srcPath} ${AdditionalFiles})
+    else()
+        add_executable(${ClassName} ${ClassName}.cpp ${AdditionalFiles})
+    endif()
+    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase)
+
+    string(REPLACE "/" "::" testname ${relpath})
+    add_test(unit::${testname}::${ClassName} ${CMAKE_CURRENT_BUILD_DIR}/${ClassName})
+endfunction()
