@@ -22,12 +22,12 @@ before_install:
     - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main'
     - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-numpy libboost1.55-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
+    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-numpy libboost1.55-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran gmsh
     - sudo apt-get install -y lcov curl
 before_script:
     - mkdir build
     - cd build
-    - OPTIONS="-DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE -DENABLE_ARPACK=TRUE -DENABLE_GEOMETRYCONCRETE"
+    - OPTIONS="-DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE -DENABLE_ARPACK=TRUE -DENABLE_GEOMETRYCONCRETE=TRUE"
     - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE $OPTIONS ..; fi
     - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE $OPTIONS ..; fi
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE $OPTIONS ..; fi

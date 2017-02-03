@@ -7,7 +7,6 @@ if(ENABLE_PYTHON)
         GlobalDofs
         HeatConduction
         Quad2DPatchTest
-        Sections
         Tetrahedron10N
         )
 
