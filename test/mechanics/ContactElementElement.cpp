@@ -166,7 +166,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     nodeCoordinates += nodeStart;
 
     myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
-//    std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
+    std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
 //    myStructure->NodeCreate(node, nodeCoordinates);
     myStructure->GroupAddNode(rNodeGroup, node);
     node++;
@@ -182,7 +182,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                 nodeCoordinates += nodeStart;
 
                 myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
-//                std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
+                std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
                 myStructure->GroupAddNode(rNodeGroup, node);
 //                myStructure->NodeCreate(node, nodeCoordinates);
                 node++;
@@ -198,7 +198,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                     nodeCoordinates += nodeStart;
 
                     myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
-//                    std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
+                    std::cout << "Node: " << node << ", Coordinates: " << nodeCoordinates.Trans() << std::endl;
                     myStructure->GroupAddNode(rNodeGroup, node);
 //                    myStructure->NodeCreate(node, nodeCoordinates);
                     node++;
@@ -1004,7 +1004,7 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
     int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
     double startX = 1.;
     double length = 1.;
-    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
+    buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
                                 numElXSlave, numElYSlave, 1., length, startX, 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
 
     // ===> build contact elements slave elements
@@ -1794,10 +1794,9 @@ void ContactTestRigidIGA(const std::string &resultDir,
 
     int groupNodesSlave = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
+    buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement,
                                 numElXSlave, numElYSlave, 1., 1., 1., 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
 
-    myStructure.NodeInfo(10);
 
     // ===> build contact elements slave elements
     auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
@@ -2863,21 +2862,28 @@ int main()
     int degree = 0;
 
     // LOBATTO 2
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(2);
-    nodeCoordinates(0) = 0;
-    nodeCoordinates(1) = 2;
+    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(3);
+
+    int contactAlgorithm = 0;
+    degree = 2;
 
     nodeCoordinates.resize(3);
     nodeCoordinates(0) = 0;
     nodeCoordinates(1) = 1;
     nodeCoordinates(2) = 2;
+    contactAlgorithm = 0;
+    resultDir = "./ResultsStaticOneElementLayerSlave";
 
-    int contactAlgorithm = 0;
-    int factor = 1;
-    degree = 2;
-
+    ContactTestOneElementLayerSlave(resultDir,
+                                    NuTo::Interpolation::eTypeOrder::LOBATTO2,
+                                    3,
+                                    nodeCoordinates,
+                                    degree,
+                                    1.e6,
+                                    NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 2, 1);
 
     resultDir = "./ResultsStaticFE_IGA_L_RigidLobatto2";
+    int factor = 1;
 
     ContactTestRigidIGA(resultDir,
                         NuTo::Interpolation::eTypeOrder::LOBATTO2,
@@ -2886,9 +2892,9 @@ int main()
                         degree,
                         1.e6,
                         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 1*factor, 1);
+    return 0;
 
     resultDir = "./ResultsStatic_IGA_IGA_Patch";
-    factor = 3;
     contactAlgorithm = 0;
 
     ContactTestIGA_IGA_Patch(resultDir,
@@ -2913,21 +2919,6 @@ int main()
 //                        degree,
 //                        1.e6,
 //                        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 1*factor, 1);
-
-    nodeCoordinates.resize(3);
-    nodeCoordinates(0) = 0;
-    nodeCoordinates(1) = 1;
-    nodeCoordinates(2) = 2;
-    contactAlgorithm = 0;
-    resultDir = "./ResultsStaticOneElementLayerSlave";
-
-    ContactTestOneElementLayerSlave(resultDir,
-                                    NuTo::Interpolation::eTypeOrder::LOBATTO2,
-                                    3,
-                                    nodeCoordinates,
-                                    degree,
-                                    1.e6,
-                                    NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 2, 1);
 
     return 0;
 

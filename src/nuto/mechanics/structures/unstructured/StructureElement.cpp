@@ -1224,7 +1224,7 @@ void NuTo::Structure::ContactElementsCreateSlave(const std::vector<std::pair<con
         switch (it.first->GetEnumType())
         {
         case Element::eElementType::CONTINUUMELEMENTIGA:
-            rElementsSlaveContinuum.push_back(std::make_pair(&(it.first->AsContinuumElementIGALayer1D()), it.second));
+            rElementsSlaveContinuum.push_back(std::make_pair(&(it.first->AsContinuumElementIGALayer1D()), -1));
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,"For 1D only ContinuumElementIGALayer1D available as slave elements.");

@@ -102,6 +102,7 @@ protected:
     int mNumDofs;
     int mNumSlaveDofs;
     int mNumMasterDofs;
+    bool mDofMappingComputed;
 
     const ConstitutiveBase* mConstitutiveContactLaw;
 

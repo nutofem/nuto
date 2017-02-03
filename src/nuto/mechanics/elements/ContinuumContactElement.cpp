@@ -48,6 +48,7 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(co
     //    if(TDimMaster != ((rSurfaceId == -1) ? TDimSlave : TDimSlave - 1))
     //        throw MechanicsException(__PRETTY_FUNCTION__, "The dimension of master side interpolation is not correct.");
 
+    mDofMappingComputed = false;
     mContactForce.setZero(0);
     mDerivativeContactForce.setZero(0,0);
 
@@ -135,9 +136,14 @@ template <int TDimSlave, int TDimMaster>
 NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(const ConstitutiveInputMap& rInput,
                                                                             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
-    FillMappingGlobalLocal();
+    (void)rInput;
+
+    if (mDofMappingComputed == false) FillMappingGlobalLocal();
 
     GetConstitutiveOutputMap(rElementOutput);
+
+    mContactForce.setZero(mNumDofs);
+    mDerivativeContactForce.setZero(mNumDofs, mNumDofs);
 
     for (const auto &it : mElementsSlave)
     {
@@ -146,16 +152,15 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
         const InterpolationBase& interpolationType = it.first->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
         int numNodesSlave = interpolationType.GetNumNodes();
         int numDofsSlave = interpolationType.GetNumDofs();
-        int numAllDofsMaster = mMappingGlobal2LocalDof.size();
 
-        data.mMortarGapMatrix.setZero(numDofsSlave + numAllDofsMaster, numNodesSlave);
-        data.mMortarGapMatrixPenalty.setZero(numDofsSlave + numAllDofsMaster, numNodesSlave);
+        data.mMortarGapMatrix.setZero(numDofsSlave + mNumMasterDofs, numNodesSlave);
+        data.mMortarGapMatrixPenalty.setZero(numDofsSlave + mNumMasterDofs, numNodesSlave);
         data.mMortarGapVector.setZero(numNodesSlave, 1);
 
-        data.mJacobianbyWeight.setZero(it.first->GetNumIntegrationPoints());
+        data.mJacobianbyWeight.setZero(this->GetNumIntegrationPoints());
         data.mShapeFunctionsIntegral.setZero(numNodesSlave);
 
-        int numIP = it.first->GetNumIntegrationPoints();
+        int numIP = this->GetNumIntegrationPoints(); // REFACTOR - the number od integration points must be at least sufficient for the lower integration
 
         for (int theIP = 0; theIP < numIP; theIP++)
         {
@@ -164,7 +169,7 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
             GetGlobalIntegrationPointCoordinatesAndParameters(theIP, coordinatesIPSlave, ipCoordsNaturalSlave, it);
 
             auto jacobianSurface = it.first->CalculateJacobianSurface(ipCoordsNaturalSlave, it.first->ExtractNodeValues(0, Node::eDof::COORDINATES), it.second);
-            data.mJacobianbyWeight(theIP) = jacobianSurface.norm() * it.first->GetIntegrationPointWeight(theIP);
+            data.mJacobianbyWeight(theIP) = jacobianSurface.norm() * this->GetIntegrationPointWeight(theIP);
 
             Eigen::VectorXd  shapeFunsSlave = interpolationType.CalculateShapeFunctions(ipCoordsNaturalSlave);
 
@@ -554,7 +559,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                         }
 
                         // ==> master
-                        mContactForce.tail(mNumMasterDofs) += mContactForce.tail(mNumMasterDofs);
+                        mContactForce.tail(mNumMasterDofs) += localContactForce.tail(mNumMasterDofs);
 
                         break;
                     }
@@ -730,7 +735,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationP
         naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
     }
 
-
     // ===> Get the position \xi^s_{IP}
     const InterpolationBase& interpolationTypeCoordsSlave = rElementAndSurfaceId.first->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
 
@@ -771,6 +775,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillMappingGlobalLoca
                 if (got == mMappingGlobal2LocalDof.end()) // not found => insert a new one
                 {
                     mMappingGlobal2LocalDof.insert( std::make_pair(dofID , mNumSlaveDofs) );
+                    std::cout << "(dofID, mNumSlaveDofs): " << dofID << " " << mNumSlaveDofs << std::endl;
                     mNumSlaveDofs++;
                 }
             }
@@ -817,10 +822,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillMappingGlobalLoca
     }
 
     mNumDofs = mMappingGlobal2LocalDof.size();
-
-    mContactForce.setZero(mNumDofs);
-    mDerivativeContactForce.setZero(mNumDofs, mNumDofs);
-
+    mDofMappingComputed = true;
 }
 
 namespace NuTo
