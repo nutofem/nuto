@@ -7,9 +7,9 @@ target_link_libraries(CubicSplineInterpolation NuToMath NuToBase)
 add_test(c::unit::CubicSplineInterpolation ${CMAKE_CURRENT_BUILD_DIR}/CubicSplineInterpolation)
 
 if(ENABLE_ARPACK)
-    add_executable(Arpack Arpack.cpp)
-    target_link_libraries(Arpack NuToMath NuToBase)
-    add_test(c::unit::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
+    add_executable(EigenSolverArpack EigenSolverArpack.cpp)
+    target_link_libraries(EigenSolverArpack NuToMath NuToBase)
+    add_test(c::unit::EigenSolverArpack ${CMAKE_CURRENT_BUILD_DIR}/EigenSolverArpack)
 endif()
 
 add_executable(EigenCompanion EigenCompanion.cpp ${CMAKE_SOURCE_DIR}/src/math/EigenCompanion.cpp)
