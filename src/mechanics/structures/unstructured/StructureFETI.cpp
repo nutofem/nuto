@@ -24,7 +24,6 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "base/ErrorEnum.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -358,6 +357,23 @@ void NuTo::StructureFETI::CreateDummy1D()
 
 void NuTo::StructureFETI::CalculateRigidBodyModes()
 {
+
+    switch (GetDimension())
+    {
+    case 1:
+    {
+        mNumRigidBodyModes = 1;
+    }
+        break;
+    case 2:
+    {
+        mNumRigidBodyModes = 3;
+    }
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+    }
+
     const int numActiveDofs     = GetNumTotalActiveDofs();
     const int numRigidBodyModes = mNumRigidBodyModes;
     const int numTotalDofs      = GetNumTotalDofs();
@@ -407,6 +423,8 @@ void NuTo::StructureFETI::CalculateRigidBodyModes()
 
     mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
 
+    boost::mpi::communicator world;
+    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
 
 }
 
@@ -422,8 +440,29 @@ void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix
 
 
     Eigen::MatrixXd zeroMatrix0      = hessian0_JJ * mRigidBodyModes.topRows(GetNumTotalActiveDofs());
+
     zeroMatrix0                     += hessian0_JK * mRigidBodyModes.bottomRows(mNumRigidBodyModes);
     const double norm0 = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+
+    GetLogger() << "Guess something is wrong here...";
+
+
+    Eigen::MatrixXd zeroMatrixBla      = hessian0_JJ.leftCols(GetNumActiveDofs(eDof::DISPLACEMENTS)) * mRigidBodyModes.topRows(GetNumActiveDofs(eDof::DISPLACEMENTS));
+    zeroMatrixBla      += hessian0_JK.leftCols(GetNumDependentDofs(eDof::DISPLACEMENTS)) * mRigidBodyModes.block(GetNumActiveDofs(eDof::DISPLACEMENTS),0,GetNumDependentDofs(eDof::DISPLACEMENTS),mNumRigidBodyModes);
+
+
+    GetLogger() << "Subdomain: \t"          << mRank
+                << "\n K*R: \n"     <<  zeroMatrixBla << "\n\n";
+
+    //    GetLogger() << "Subdomain: \t"          << mRank
+    //                << "\nKjj*R: \n"     <<  zeroMatrixBla << "\n\n";
+
+
+    //    assert( zeroMatrixBla.isMuchSmallerThan(1e-6, 1.e-1) and "Kjj * R != 0");
+
 
     SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
     SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
@@ -436,7 +475,8 @@ void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix
 
     GetLogger() << "Subdomain: \t"          << mRank
                 << "\t norm of K*R: \t"     << norm0   << "\t and \t"   << norm1
-                << "\t tolerance: \t"       << tolerance                << "\n\n";
+                << "\t tolerance: \t"       << tolerance                << "\n\n"
+                << "RBMs      : \t"       << mRigidBodyModes                << "\n\n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 

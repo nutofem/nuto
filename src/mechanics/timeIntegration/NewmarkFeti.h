@@ -1,7 +1,6 @@
 #include <mpi.h>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/MechanicsException.h"
 #include "base/Timer.h"
@@ -121,7 +120,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    NuTo::eError Solve(double rTimeDelta) override;
+    virtual void Solve(double rTimeDelta) override;
 
     double CalculateLoadFactor(double rTime);
 private:
@@ -131,7 +130,7 @@ private:
     Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
-    const double    mCpgTolerance     = 1.0e-4;
+    const double    mCpgTolerance     = 1.0e-6;
     const int       mCpgMaxIterations = 1000;
 };
 }// namespace NuTo
