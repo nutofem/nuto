@@ -1,4 +1,4 @@
-foreach(test HeatConduction ConstitutiveIO AdditiveInput AdditiveOutput GradientDamageFatigue LocalDamageModel)
+foreach(test AdditiveInput AdditiveOutput) 
     add_executable(${test} ${test}.cpp)
     target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
     if(ENABLE_VISUALIZE)
@@ -14,3 +14,4 @@ add_unit_test(IPConstitutiveLaw
     )
 
 add_subdirectory(inputoutput)
+add_subdirectory(laws)
