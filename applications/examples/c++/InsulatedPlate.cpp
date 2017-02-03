@@ -4,7 +4,7 @@
 // Top and bottom are insulated (no heat flux).
 #include <iostream>
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
@@ -25,15 +25,13 @@ int main()
     structure.ConstitutiveLawSetParameterDouble(
             law, NuTo::Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, 1.0);
 
-    auto interpolationType = structure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    structure.InterpolationTypeAdd(
-            interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    structure.InterpolationTypeAdd(
-            interpolationType, NuTo::Node::eDof::TEMPERATURE, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    structure.InterpolationTypeSetIntegrationType(
-            interpolationType, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
+    auto meshInfo = NuTo::MeshGenerator::Grid<2>(structure, {L, H}, {10, 10});
+    structure.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::TEMPERATURE, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeSetIntegrationType(meshInfo.second, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 
-    NuTo::MeshGenerator::MeshRectangularPlane(structure, section, law, interpolationType, {10, 10}, {L, H});
+    structure.ElementGroupSetSection(meshInfo.first, section);
+    structure.ElementGroupSetConstitutiveLaw(meshInfo.first, law);
+
 
     structure.ElementTotalConvertToInterpolationType();
 

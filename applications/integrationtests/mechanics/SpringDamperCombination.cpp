@@ -9,7 +9,7 @@
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "visualize/VisualizeEnum.h"
 
 #include <boost/foreach.hpp>
@@ -134,116 +134,6 @@ void AddSurfaceLoad(NuTo::Structure& rS,
                                 GRPNodesSurfaceLoad,
                                 Eigen::Matrix<double, TDim, 1>::UnitX(),
                                 SURFACELOAD);
-}
-
-
-
-/*---------------------------------------------*\
-|*             interpolation type              *|
-\*---------------------------------------------*/
-
-template <int TDim>
-inline int SetupInterpolationType(NuTo::Structure& rS,
-                                  std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
-                                  std::string rShape = "")
-{
-    if(rShape.empty())
-    {
-        switch(TDim)
-        {
-        case 1:
-            rShape = "TRUSS1D";
-            break;
-
-        case 2:
-            rShape = "QUAD2D";
-            break;
-
-        case 3:
-            rShape = "BRICK3D";
-            break;
-
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
-        }
-    }
-
-
-    int IPT = rS.InterpolationTypeCreate(rShape);
-    for(auto itIPT : rDofIPTMap)
-    {
-        rS.InterpolationTypeAdd(IPT, itIPT.first, itIPT.second);
-    }
-    return IPT;
-}
-
-
-
-/*---------------------------------------------*\
-|*                  mesh setup                 *|
-\*---------------------------------------------*/
-
-template<int TDim>
-void SetupMesh(NuTo::Structure &rS,
-               int rSEC,
-               int rConsLaw,
-               int rIPT,
-               std::array<int, TDim> rN,
-               std::array<double,TDim> rL)
-{
-    throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
-}
-
-
-
-template<>
-void SetupMesh<1>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 1> rN,
-                  std::array<double,1> rL)
-{
-NuTo::MeshGenerator::MeshLineSegment(rS,
-                                     rSEC,
-                                     rConsLaw,
-                                     rIPT,
-                                     rN,
-                                     rL);
-}
-
-template<>
-void SetupMesh<2>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 2> rN,
-                  std::array<double,2> rL)
-{
-NuTo::MeshGenerator::MeshRectangularPlane(rS,
-                                          rSEC,
-                                          rConsLaw,
-                                          rIPT,
-                                          rN,
-                                          rL);
-}
-
-
-template<>
-void SetupMesh<3>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 3> rN,
-                  std::array<double,3> rL)
-{
-NuTo::MeshGenerator::MeshCuboid(rS,
-                                rSEC,
-                                rConsLaw,
-                                rIPT,
-                                rN,
-                                rL);
-
 }
 
 
@@ -472,8 +362,7 @@ void CheckResultsSpringDamperSerial(NuTo::Structure& rS,
 
 template <int TDim>
 void TestSpringDamperCombination(std::array<int,TDim> rN,
-                                 std::array<double,TDim> rL,
-                                 std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap)
+                                 std::array<double,TDim> rL)
 {
     if(TDim>1)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
@@ -509,14 +398,13 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
-    SetupMesh<TDim>(S,
-                    SEC,
-                    CL_AO_ID,
-                    IPT,
-                    rN,
-                    rL);
+    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+
+    S.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, CL_AO_ID);
 
     S.ElementTotalConvertToInterpolationType();
     S.NodeBuildGlobalDofs();
@@ -621,8 +509,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
 template <int TDim>
 void TestSpringDamperSerialChain(std::array<int,TDim> rN,
-                                 std::array<double,TDim> rL,
-                                 std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap)
+                                 std::array<double,TDim> rL)
 {
     if(TDim>1)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
@@ -676,18 +563,15 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
     CL_LE2_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, LE_POISSONRATIO);
     CL_LE2_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, LE_YOUNGSMODULUS * 2);
 
-
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
-    SetupMesh<TDim>(S,
-                    SEC,
-                    CL_AII_ID,
-                    IPT,
-                    rN,
-                    rL);
+    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
 
+    S.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, CL_AII_ID);
     S.ElementTotalConvertToInterpolationType();
     S.NodeBuildGlobalDofs();
 //    ApplyInitialNodalValues<TDim>(S,
@@ -797,19 +681,12 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
 
 int main()
 {
-    std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap = {
-        {NuTo::Node::eDof::COORDINATES,   NuTo::Interpolation::eTypeOrder::EQUIDISTANT1},
-        {NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1}};
-
-
     TestSpringDamperCombination<1>( {10},
-                                    {0.01},
-                                    dofIPTMap);
+                                    {0.01});
 
 
     TestSpringDamperSerialChain<1>( {10},
-                                    {0.01},
-                                    dofIPTMap);
+                                    {0.01});
 
     std::cout << "Everything went well -  NO errors." << std::endl;
     return 0;

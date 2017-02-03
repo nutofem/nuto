@@ -12,7 +12,7 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/elements/ElementBase.h"
 

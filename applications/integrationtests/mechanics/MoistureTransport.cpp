@@ -3,7 +3,7 @@
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
 #include <iostream>
 #include <array>
@@ -47,7 +47,6 @@ int main()
     try
     {
         std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap;
-        dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
         dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
         dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 

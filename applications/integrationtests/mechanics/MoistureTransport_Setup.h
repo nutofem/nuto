@@ -9,7 +9,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 
@@ -288,117 +288,6 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
     }
 
-}
-
-
-/*---------------------------------------------*\
-|*             interpolation type              *|
-\*---------------------------------------------*/
-
-template <int TDim>
-inline int SetupInterpolationType(NuTo::Structure& rS,
-                                  std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
-                                  std::string rShape = "")
-{
-    if(rShape.empty())
-    {
-        switch(TDim)
-        {
-        case 1:
-            rShape = "TRUSS1D";
-            break;
-
-        case 2:
-            rShape = "QUAD2D";
-            break;
-
-        case 3:
-            rShape = "BRICK3D";
-            break;
-
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
-        }
-    }
-
-
-    int IPT = rS.InterpolationTypeCreate(rShape);
-    for(auto itIPT : rDofIPTMap)
-    {
-        rS.InterpolationTypeAdd(IPT, itIPT.first, itIPT.second);
-    }
-    return IPT;
-}
-
-/*---------------------------------------------*\
-|*                  mesh setup                 *|
-\*---------------------------------------------*/
-
-template<int TDim>
-void SetupMesh(NuTo::Structure &rS,
-               int rSEC,
-               int rConsLaw,
-               int rIPT,
-               std::array<int, TDim> rN,
-               std::array<double,TDim> rL);
-
-
-
-template<>
-void SetupMesh<1>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 1> rN,
-                  std::array<double,1> rL)
-{
-NuTo::MeshGenerator::MeshLineSegment(rS,
-                                     rSEC,
-                                     rConsLaw,
-                                     rIPT,
-                                     rN,
-                                     rL);
-}
-
-template<>
-void SetupMesh<2>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 2> rN,
-                  std::array<double,2> rL)
-{
-NuTo::MeshGenerator::MeshRectangularPlane(rS,
-                                          rSEC,
-                                          rConsLaw,
-                                          rIPT,
-                                          rN,
-                                          rL);
-}
-
-
-template<>
-void SetupMesh<3>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 3> rN,
-                  std::array<double,3> rL)
-{
-NuTo::MeshGenerator::MeshCuboid(rS,
-                                rSEC,
-                                rConsLaw,
-                                rIPT,
-                                rN,
-                                rL);
-
-//NuTo::MeshGenerator::MeshCylinder(rS,
-//                                rSEC,
-//                                rConsLaw,
-//                                rIPT,
-//                                {10,10,30},
-//                                0.1,
-//                                0.3);
 }
 
 

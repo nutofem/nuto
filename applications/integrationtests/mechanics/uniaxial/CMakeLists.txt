@@ -1,20 +1,7 @@
-if(ENABLE_PYTHON)
-    add_test(integration::mechanics::uniaxial::ElementUniaxialTest ${PYTHON_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/ElementUniaxialTest.py
-        ${CMAKE_SYSTEM_NAME}
-    ${CMAKE_SYSTEM_PROCESSOR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR})
-    set_property(TEST integration::mechanics::uniaxial::ElementUniaxialTest PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-endif()
-
 foreach(test
-    ElementUniaxialBrick3D
-    ElementUniaxialPrism3D
-    ElementUniaxialQuad2D
-    ElementUniaxialTetrahedron3D
-    ElementUniaxialTriangle2D
-    ElementUniaxialTruss1D
+    ElementUniaxial3D
+    ElementUniaxial2D
+    ElementUniaxial1D
     )
 
     add_executable(${test} ${test}.cpp)

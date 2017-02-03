@@ -255,39 +255,33 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
     SetupStructure<TDim>(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
+    std::pair<int, int> meshInfo;
 
     switch (TDim)
     {
     case 1:
-        NuTo::MeshGenerator::MeshLineSegment(S,
-                                             SEC,
-                                             MT.ConstitutiveLawID,
-                                             IPT,
-                                             {1},
-                                             {1});
+        meshInfo = NuTo::MeshGenerator::Grid<1>(S, {1}, {1});
         break;
     case 2:
-        NuTo::MeshGenerator::MeshRectangularPlane(S,
-                                                  SEC,
-                                                  MT.ConstitutiveLawID,
-                                                  IPT,
-                                                  {1,1},
-                                                  {1,1});
+        meshInfo = NuTo::MeshGenerator::Grid<2>(S, {1,1}, {1,1});
         break;
     case 3:
-        NuTo::MeshGenerator::MeshCuboid(S,
-                                        SEC,
-                                        MT.ConstitutiveLawID,
-                                        IPT,
-                                        {1,1,1},
-                                        {1,1,1});
+        meshInfo = NuTo::MeshGenerator::Grid<3>(S, {1,1,1}, {1,1,1});
         break;
-
     default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"invalid dimension");
     }
+
+
+    for (auto& it : rDofIPTMap)
+        S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
+
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, MT.ConstitutiveLawID);
+
+    SetupIntegrationType<TDim>(S,meshInfo.first);
+
     S.ElementTotalConvertToInterpolationType();
     ConstitutiveOutputTest_SetNodalValues(S,MT);
 

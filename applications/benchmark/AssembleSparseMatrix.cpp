@@ -8,7 +8,7 @@
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"
 
@@ -25,13 +25,15 @@ public:
         mS.SetNumTimeDerivatives(2);
         int section = mS.SectionCreate(eSectionType::VOLUME);
         int constitutiveLaw = mS.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-        int interpolationType = mS.InterpolationTypeCreate(eShapeType::BRICK3D);
-        mS.InterpolationTypeAdd(interpolationType, Node::eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);
-        mS.InterpolationTypeAdd(interpolationType, Node::eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
 
         std::array<int, 3> numElements{10, 10, 1000}; // i.e. 100k Elements
         std::array<double, 3> length{1.0, 1.0, 10.0};
-        MeshGenerator::MeshCuboid(mS, section, constitutiveLaw, interpolationType, numElements, length);
+        auto meshInfo = MeshGenerator::Grid<3>(mS, length, numElements);
+
+        mS.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
+
+        mS.ElementGroupSetConstitutiveLaw(meshInfo.first, constitutiveLaw);
+        mS.ElementGroupSetSection(meshInfo.first, section);
 
         mS.ElementTotalConvertToInterpolationType();
 

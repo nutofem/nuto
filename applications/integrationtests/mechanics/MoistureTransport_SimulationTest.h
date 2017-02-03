@@ -167,17 +167,16 @@ void SimulationTest(std::array<int,TDim> rN,
 
     SetupStructure<TDim>(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
+    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
 
-    SetupMesh<TDim>(S,
-                    SEC,
-                    MT.ConstitutiveLawID,
-                    IPT,
-                    rN,
-                    rL);
+    for (auto& it : rDofIPTMap)
+        S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
 
-    SetupIntegrationType<TDim>(S,IPT);
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, MT.ConstitutiveLawID);
+
+    SetupIntegrationType<TDim>(S,meshInfo.first);
 
     S.ElementTotalConvertToInterpolationType(); //old used values 1.0e-12,0.001
     MT.ApplyInitialNodalValues();

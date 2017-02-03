@@ -1,5 +1,5 @@
 #include "Benchmark.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
@@ -14,15 +14,15 @@ void SolveAMediumSizedProblem()
     int section = structure.SectionCreate(eSectionType::VOLUME);
     int constitutiveLaw = structure.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     structure.ConstitutiveLawSetParameterDouble(constitutiveLaw, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
-    int interpolationType = structure.InterpolationTypeCreate(Interpolation::eShapeType::BRICK3D);
-    structure.InterpolationTypeAdd(interpolationType, Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
-    structure.InterpolationTypeAdd(interpolationType, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
 
-    std::array<int, 3> numElements {10, 10, 100}; // i.e. 10k Elements
-    std::array<double, 3> length {1.0, 1.0, 10.0};
-    MeshGenerator::MeshCuboid(structure, section, constitutiveLaw, interpolationType, numElements, length);
 
-    // why, oh why...
+    std::array<int, 3> numElements{10, 10, 100}; // i.e. 100k Elements
+    std::array<double, 3> length{1.0, 1.0, 10.0};
+    auto meshInfo = MeshGenerator::Grid<3>(structure, length, numElements);
+
+    structure.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.ElementGroupSetConstitutiveLaw(meshInfo.first, constitutiveLaw);
+    structure.ElementGroupSetSection(meshInfo.first, section);
     structure.ElementTotalConvertToInterpolationType();
 
     int bottomNodes = structure.GroupCreate(eGroupId::Nodes);

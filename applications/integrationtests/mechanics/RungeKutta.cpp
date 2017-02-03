@@ -12,7 +12,7 @@
 #include "mechanics/timeIntegration/RungeKuttaCashKarp.h"
 #include "mechanics/timeIntegration/RungeKuttaDormandPrince.h"
 
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
 /*
  *  TT:
@@ -44,10 +44,6 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     //set number of time derivatives to 2 (nodes have disp, vel and accelerations)
     myStructure.SetNumTimeDerivatives(2);
 
-    int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-
     //section
     double thickness(1);
     int mySection = myStructure.SectionCreate("Plane_Stress");
@@ -61,15 +57,16 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     myStructure.ConstitutiveLawSetParameterDouble(myMatLattice, NuTo::Constitutive::eConstitutiveParameter::DENSITY, density);
     myStructure.ElementTotalSetConstitutiveLaw(myMatLattice);
 
-    NuTo::MeshGenerator::MeshRectangularPlane(
-            myStructure,
-            mySection,
-            myMatLattice,
-            myInterpolationType,
-            std::array<int,2>(
-                    {   numElementsX,numElementsY}),
-            std::array<double,2>(
-                    {   mL, mH}));
+
+
+    auto meshInfo = NuTo::MeshGenerator::Grid<2>(myStructure, {mL, mH},
+                                                 {numElementsX,numElementsY}, NuTo::Interpolation::eShapeType::QUAD2D);
+
+    myStructure.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    myStructure.ElementGroupSetSection(meshInfo.first, mySection);
+    myStructure.ElementGroupSetConstitutiveLaw(meshInfo.first, myMatLattice);
+
 
     myStructure.ElementTotalConvertToInterpolationType();
 

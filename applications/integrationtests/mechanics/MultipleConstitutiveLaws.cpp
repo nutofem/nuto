@@ -1,7 +1,7 @@
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/mesh/MeshGenerator.h"
 #include <array>
 #include <boost/foreach.hpp>
 #include "mechanics/constitutive/ConstitutiveEnum.h"
@@ -355,114 +355,6 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
 
 }
 
-
-/*---------------------------------------------*\
-|*             interpolation type              *|
-\*---------------------------------------------*/
-
-template <int TDim>
-inline int SetupInterpolationType(NuTo::Structure& rS,
-                                  std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
-                                  std::string rShape = "")
-{
-    if(rShape.empty())
-    {
-        switch(TDim)
-        {
-        case 1:
-            rShape = "TRUSS1D";
-            break;
-
-        case 2:
-            rShape = "QUAD2D";
-            break;
-
-        case 3:
-            rShape = "BRICK3D";
-            break;
-
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
-        }
-    }
-
-
-    int IPT = rS.InterpolationTypeCreate(rShape);
-    for(auto itIPT : rDofIPTMap)
-    {
-        rS.InterpolationTypeAdd(IPT, itIPT.first, itIPT.second);
-    }
-    return IPT;
-}
-
-/*---------------------------------------------*\
-|*                  mesh setup                 *|
-\*---------------------------------------------*/
-
-template<int TDim>
-void SetupMesh(NuTo::Structure &rS,
-               int rSEC,
-               int rConsLaw,
-               int rIPT,
-               std::array<int, TDim> rN,
-               std::array<double,TDim> rL)
-{
-    throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
-}
-
-
-
-template<>
-void SetupMesh<1>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 1> rN,
-                  std::array<double,1> rL)
-{
-NuTo::MeshGenerator::MeshLineSegment(rS,
-                                     rSEC,
-                                     rConsLaw,
-                                     rIPT,
-                                     rN,
-                                     rL);
-}
-
-template<>
-void SetupMesh<2>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 2> rN,
-                  std::array<double,2> rL)
-{
-NuTo::MeshGenerator::MeshRectangularPlane(rS,
-                                          rSEC,
-                                          rConsLaw,
-                                          rIPT,
-                                          rN,
-                                          rL);
-}
-
-
-template<>
-void SetupMesh<3>(NuTo::Structure &rS,
-                  int rSEC,
-                  int rConsLaw,
-                  int rIPT,
-                  std::array<int, 3> rN,
-                  std::array<double,3> rL)
-{
-NuTo::MeshGenerator::MeshCuboid(rS,
-                                rSEC,
-                                rConsLaw,
-                                rIPT,
-                                rN,
-                                rL);
-
-}
-
-
 /*---------------------------------------------*\
 |*            multi processor setup            *|
 \*---------------------------------------------*/
@@ -741,16 +633,17 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
-    SetupMesh<TDim>(S,
-                    SEC,
-                    CL_CLAL_ID,
-                    IPT,
-                    rN,
-                    rL);
+    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
 
-    SetupIntegrationType<TDim>(S,IPT);
+    for (auto& it : rDofIPTMap)
+        S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
+
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, CL_CLAL_ID);
+
+
+    SetupIntegrationType<TDim>(S,meshInfo.first);
 
     S.ElementTotalConvertToInterpolationType(); //old used values 1.0e-12,0.001
     MTCtrl.ApplyInitialNodalValues();
@@ -959,15 +852,16 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
 
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
-    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
 
-    SetupMesh<TDim>(S,
-                    SEC,
-                    CL_AII_ID,
-                    IPT,
-                    rN,
-                    rL);
+    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
 
+    for (auto& it : rDofIPTMap)
+        S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
+
+    S.ElementGroupSetSection(meshInfo.first, SEC);
+    S.ElementGroupSetConstitutiveLaw(meshInfo.first, CL_AII_ID);
+
+    SetupIntegrationType<TDim>(S,meshInfo.first);
 
     S.ElementTotalConvertToInterpolationType(); //old used values 1.0e-12,0.001
 
@@ -1087,7 +981,6 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
 int main()
 {
     std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap;
-    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
@@ -1122,7 +1015,6 @@ int main()
 
 
     dofIPTMap.clear();
-    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
     AdditiveInputImplicitTest<1>({16},
