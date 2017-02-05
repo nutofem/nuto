@@ -12,17 +12,15 @@ matrix:
         - compiler: clang
           env: RELEASE=false
 before_install:
-    - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH=/home/travis/miniconda/bin:$PATH
-    - conda install --yes numpy
+    - ./scripts/install_numpy.sh
+    - ./scripts/install_eigen.sh
     - pip install --user cpp-coveralls
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main'
     - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-numpy libboost1.55-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran gmsh
+    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-numpy libboost1.55-all-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran gmsh
     - sudo apt-get install -y lcov curl
 before_script:
     - mkdir build
