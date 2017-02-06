@@ -599,7 +599,13 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
+    //*************************************************
+    //************ DOF routine          ***************
+    //**  defined in structures/Structure.cpp *********
+    //*************************************************
 
+    bool IsActiveDofId(int rDofId, Node::eDof rDofType) const
+    { return (rDofId < GetNumActiveDofs(rDofType)); }
 
 protected:
 #ifdef ENABLE_SERIALIZATION

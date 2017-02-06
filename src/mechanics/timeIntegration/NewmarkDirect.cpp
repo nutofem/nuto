@@ -298,6 +298,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
             MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
 
+
             // ******************************************************
             mStructure->Evaluate(inputMap, evaluate_InternalGradient);
             // ******************************************************

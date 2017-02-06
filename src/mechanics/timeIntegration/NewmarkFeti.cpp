@@ -152,7 +152,7 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
 
 //    const double tol    = mCpgTolerance;
     //        const double tol2   = tol*tol*rhs_sqnorm;
-    const double tol2   = 1.0e-12*rhs_sqnorm; // the phase-field model is worse conditioned it seems. Lower tolerance required?
+    const double tol2   = 1.0e-7*rhs_sqnorm; // the phase-field model is worse conditioned it seems. Lower tolerance required?
 
     //const double eps    = std::numeric_limits<double>::epsilon();
     //const double eps2   = eps*eps;
@@ -380,6 +380,10 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     const MatrixXd GtransGinv =   (G.transpose() * G).inverse();
 
 
+    mStructure->GetLogger() << "G \n" << G << "\n \n";
+    mStructure->GetLogger() << "GtransGinv\n" << GtransGinv << "\n \n";
+
+
     // R_s^T f
     VectorXd rigidBodyForceVectorLocal = rigidBodyModes.transpose() * residual_mod;
 
@@ -414,11 +418,14 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
 
 
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied");
+
+
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
     mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
@@ -441,17 +448,19 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     structure->GetLogger() << "\n*************************************\n\n";
 
 
+    mStructure->GetLogger() << "deltaLambda \n" << deltaLambda << "\n \n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied");
+
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
 
     zeroVec = rigidBodyModes.transpose() * ( residual_mod - B.transpose() *deltaLambda );
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied");
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -473,11 +482,11 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     MPI_Barrier(MPI_COMM_WORLD);
     VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
-    if( (zeroVecTmp.array() > 1.e-6).any() or (zeroVecTmp.array() < -1.e-6).any())
+    if( not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)) )
         throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
 
     VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
-    if( (zeroVecTmp2.array() > 1.e-6).any() or (zeroVecTmp2.array() < -1.e-6).any())
+    if( not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)) )
         throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied");
 
 
@@ -498,26 +507,31 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     delta_dof_active.setZero(mStructure->GetNumTotalDofs());
     delta_dof_active.head(mStructure->GetNumTotalActiveDofs())    = mSolver.solve( (residual_mod - Btrans * deltaLambda).head(structure->GetNumTotalActiveDofs()));
 
+
+
     delta_dof_active   = delta_dof_active - rigidBodyModes * alphaLocal;
+
+    mStructure->GetLogger() << "delta_dof_active: \n" << delta_dof_active << "\n\n";
 
     StructureOutputBlockVector  delta_dof_dt0(structure->GetDofStatus());
     int offset = 0;
     for (const auto& dof : activeDofSet)
     {
         const int numActiveDofs       = structure->GetNumActiveDofs(dof);
-        const int numDependentDofs    = structure->GetNumDependentDofs(dof);
 
         delta_dof_dt0.J[dof]    = delta_dof_active.segment(offset, numActiveDofs);
         offset += numActiveDofs;
 
-        delta_dof_dt0.K[dof]    = delta_dof_active.segment(offset, numDependentDofs);
-        offset += numDependentDofs;
+
     }
 
+    delta_dof_dt0.K[Node::eDof::DISPLACEMENTS]    = delta_dof_active.segment(offset, structure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS));
     //    structure->GetLogger() << "delta_dof_active: \n" << delta_dof_active                << "\n\n";
     //    structure->GetLogger() << "delta_dof_active.size(): \n" << delta_dof_active.size()  << "\n\n";
     //    structure->GetLogger() << "delta_dof_dt0.J: \n" << delta_dof_dt0.J                  << "\n\n";
     //    structure->GetLogger() << "delta_dof_dt0.K: \n" << delta_dof_dt0.K                  << "\n\n";
+
+    mStructure->GetLogger() << "delta_dof_dt0: \n" << delta_dof_dt0 << "\n\n";
 
     return delta_dof_dt0;
 
@@ -574,6 +588,8 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
         mStructure->GetLogger() << "******************************************************" << "\n";
         mStructure->GetLogger() << "**        Calculate interface rigid body modes      **" << "\n";
         mStructure->GetLogger() << "******************************************************" << "\n\n";
+
+
 
         structure->CalculateInterfaceRigidBodyModes();
 
@@ -717,7 +733,8 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 mStructure->Evaluate(inputMap, evalInternalGradientAndHessian0);
                 // ******************************************************
 
-                structure->CheckRigidBodyModes(hessian0);
+//                structure->CheckRigidBodyModes(hessian0);
+                structure->CheckStiffnessPartitioning(hessian0);
 
                 mStructure->GetLogger() << "extForce norm: \t" << extForce.J.Export().norm() + extForce.K.Export().norm() << "\n\n";
                 mStructure->GetLogger() << "intForce norm: \t" << intForce.J.Export().norm() + intForce.K.Export().norm() << "\n\n";
@@ -751,16 +768,18 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
 //                mStructure->GetLogger() << "active dofs nl eq strain: \n" << mStructure->GetNumActiveDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
 //                mStructure->GetLogger() << "depe dofs nl eq strain: \n" << mStructure->GetNumDependentDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
 
-//                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.J[Node::eDof::DISPLACEMENTS].size() << "\n\n";
-//                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.K[Node::eDof::DISPLACEMENTS].size() << "\n\n";
+                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.J[Node::eDof::DISPLACEMENTS].size() << "\n\n";
+                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.K[Node::eDof::DISPLACEMENTS].size() << "\n\n";
 //                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
 //                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
 
+                mStructure->GetLogger() << "dof_dt0: \n" << dof_dt0 << "\n\n";
+
+
+
                 mStructure->NodeMergeDofValues(dof_dt0);
 
-                mTime+=timeStep*0.5;
-                PostProcess(residual);
-                mTime-=timeStep*0.5;
+
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evalInternalGradient);
