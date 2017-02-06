@@ -603,9 +603,10 @@ public:
     //************ DOF routine          ***************
     //**  defined in structures/Structure.cpp *********
     //*************************************************
-
+#ifndef SWIG
     bool IsActiveDofId(int rDofId, Node::eDof rDofType) const
     { return (rDofId < GetNumActiveDofs(rDofType)); }
+#endif // SWIG
 
 protected:
 #ifdef ENABLE_SERIALIZATION
