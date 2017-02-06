@@ -2,4 +2,5 @@
 # a change, but were unable to get all the tests to run correctly
 set(CTEST_CUSTOM_TESTS_IGNORE
     integration::mechanics::ParallelAssembly # does not work properly on machines under load
+    integration::geometryConcrete::GmshExport
     )
