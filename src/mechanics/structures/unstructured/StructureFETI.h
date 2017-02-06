@@ -420,6 +420,8 @@ protected:
     ///
     Matrix                      mRigidBodyModes;
 
+    StructureOutputBlockMatrix  mRigidBodyModesBlockMatrix;
+
     ///
     /// \brief mInterfaceRigidBodyModes
     ///

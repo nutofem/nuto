@@ -24,7 +24,6 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "base/ErrorEnum.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -48,7 +47,8 @@ using NuTo::eVisualizeWhat;
 NuTo::StructureFETI::StructureFETI(int rDimension):
     Structure(rDimension),
     mRank(boost::mpi::communicator().rank()),
-    mNumProcesses(boost::mpi::communicator().size())
+    mNumProcesses(boost::mpi::communicator().size()),
+    mRigidBodyModesBlockMatrix(GetDofStatus())
 {
 
 }
@@ -125,14 +125,16 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
                 for (unsigned i = 0; i < dofVector.size(); ++i)
                 {
                     // remove the mNumRigidBodyModes because it is only associated with displacements
-                    if (dofVector[i] < GetNumActiveDofs(dofType) + mNumRigidBodyModes)
+                    if (dofVector[i] < GetNumActiveDofs(dofType))
                         mConnectivityMatrix.insert(globalIndex + i + offsetRows , dofVector[i] + offsetCols) = interface.mValue;
+                    else
+                        throw MechanicsException(__PRETTY_FUNCTION__, "All DOFs in the connectivity matrix should be active.");
                 }
             }
 
         offsetRows += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
         // remove the mNumRigidBodyModes because it is only associated with displacements
-        offsetCols += GetNumActiveDofs(dofType) + mNumRigidBodyModes;
+        offsetCols += GetNumActiveDofs(dofType);
     }
 
     int globalIndex = numLagrangeMultipliers - mNumTotalBoundaryDofIds - mNumTotalPrescribedDisplacementDofIds + mGlobalStartIndexBoundaryDofIds;
@@ -289,12 +291,14 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
 void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
 {
 
+    const auto displacements = NuTo::Node::eDof::DISPLACEMENTS;
+    const int numTotalDofs = GetNumTotalDofs();
+
     switch (GetDimension())
     {
     case 1:
     {
         mNumRigidBodyModes = 1;
-        const int numTotalDofs = GetNumTotalDofs();
         mRigidBodyModes.setOnes(numTotalDofs,mNumRigidBodyModes);
     }
         break;
@@ -302,19 +306,70 @@ void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
     {
         mNumRigidBodyModes = 3;
 
-        const int numTotalDofs = GetNumTotalDofs();
-
         mRigidBodyModes.setZero(numTotalDofs,mNumRigidBodyModes);
 
         for (const auto& nodePair : mNodeMap)
         {
-            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, NuTo::Node::eDof::DISPLACEMENTS);
+            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
 
             const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(NuTo::Node::eDof::COORDINATES);
 
-            mRigidBodyModes.row(dofIds[0]) << 1.,   0., -coordinates[1];
-            mRigidBodyModes.row(dofIds[1]) << 0.,   1.,  coordinates[0];
+            if (IsActiveDofId(dofIds[0], displacements))
+                mRigidBodyModes.row(dofIds[0]) << 1.,   0., -coordinates[1];
+            else {
+
+                const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[0];
+                mRigidBodyModes.row(rowId) << 1.,   0., -coordinates[1];
+            }
+
+
+            if (IsActiveDofId(dofIds[1], displacements)) {
+                mRigidBodyModes.row(dofIds[1]) << 0., 1., coordinates[0];
+            } else {
+                const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[1];
+                mRigidBodyModes.row(rowId) << 0.,   1., coordinates[0];
+
+            }
+
+
         }
+
+//        mRigidBodyModesBlockMatrix.Resize(GetDofStatus().GetNumActiveDofsMap(), GetDofStatus().GetNumDependentDofsMap());
+//        mRigidBodyModesBlockMatrix.SetZero();
+//
+//        for (const auto& nodePair : mNodeMap)
+//        {
+//            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
+//
+//            const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(displacements);
+//
+//
+//            if (IsActiveDofId(dofIds[0], displacements))
+//            {
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 0, 1);
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 1, 0);
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 2, -coordinates[1]);
+//            } else
+//            {
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 0, 1);
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 1, 0);
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 2, -coordinates[1]);
+//            }
+//
+//            if (IsActiveDofId(dofIds[1], displacements))
+//            {
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 0, 0);
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 1, 1);
+//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 2, -coordinates[0]);
+//            } else
+//            {
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 0, 0);
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 1, 1);
+//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 2, coordinates[0]);
+//            }
+//
+//
+//        }
 
 
     }
@@ -329,6 +384,14 @@ void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
 
     GetLogger() << "Number of rigid body modes:        \t"        << mNumRigidBodyModes        << "\n\n";
     GetLogger() << "Total number of rigid body modes:  \t"        << mNumRigidBodyModesTotal   << "\n\n";
+
+
+
+    NodeInfo(10);
+    GetLogger() << "Rigid body modes:                  \n"        << mRigidBodyModes   << "\n\n";
+
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -358,6 +421,23 @@ void NuTo::StructureFETI::CreateDummy1D()
 
 void NuTo::StructureFETI::CalculateRigidBodyModes()
 {
+
+    switch (GetDimension())
+    {
+    case 1:
+    {
+        mNumRigidBodyModes = 1;
+    }
+        break;
+    case 2:
+    {
+        mNumRigidBodyModes = 3;
+    }
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+    }
+
     const int numActiveDofs     = GetNumTotalActiveDofs();
     const int numRigidBodyModes = mNumRigidBodyModes;
     const int numTotalDofs      = GetNumTotalDofs();
@@ -407,6 +487,8 @@ void NuTo::StructureFETI::CalculateRigidBodyModes()
 
     mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
 
+    boost::mpi::communicator world;
+    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
 
 }
 
@@ -422,8 +504,11 @@ void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix
 
 
     Eigen::MatrixXd zeroMatrix0      = hessian0_JJ * mRigidBodyModes.topRows(GetNumTotalActiveDofs());
+
     zeroMatrix0                     += hessian0_JK * mRigidBodyModes.bottomRows(mNumRigidBodyModes);
     const double norm0 = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
     SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
@@ -434,9 +519,9 @@ void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    GetLogger() << "Subdomain: \t"          << mRank
-                << "\t norm of K*R: \t"     << norm0   << "\t and \t"   << norm1
-                << "\t tolerance: \t"       << tolerance                << "\n\n";
+    GetLogger() << "Norm of K*R:  \t"     << norm0                    << "\t and \t"   << norm1
+                << "\t tolerance: \t"     << tolerance                << "\n\n"
+                << "Rigid body modes      : \n"       << mRigidBodyModes                << "\n\n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 

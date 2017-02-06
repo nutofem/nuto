@@ -1,6 +1,5 @@
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "base/ErrorEnum.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/MechanicsException.h"
 #include "base/Timer.h"
@@ -108,13 +107,23 @@ void NuTo::NewmarkFeti::MpiGatherRecvCountAndDispls(std::vector<int> &recvCount,
 int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const VectorXd &rhs)
 {
 
+    boost::mpi::communicator world;
+
     StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
     const SparseMatrix& B      = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans = B.transpose();
 
+    world.barrier();
+
+
+    const int numActiveDofs     = mStructure->GetNumTotalActiveDofs();
+    const int numRigidBodyModes = structure->GetNumRigidBodyModes();
 
     // solve the linear system Ax = b
-    VectorXd Ax = B * mSolver.solve(Btrans*x);
+    VectorXd tmp;
+    tmp.setZero(numActiveDofs + numRigidBodyModes);
+    tmp.head(numActiveDofs) = mSolver.solve( (Btrans*x).head(numActiveDofs));
+    VectorXd Ax = B * tmp;
     MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     VectorXd& Ay = Ax;
@@ -143,7 +152,7 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
 
 //    const double tol    = mCpgTolerance;
     //        const double tol2   = tol*tol*rhs_sqnorm;
-    const double tol2   = 1.0e-8*rhs_sqnorm; // the phase-field model is worse conditioned it seems. Lower tolerance required?
+    const double tol2   = 1.0e-7*rhs_sqnorm; // the phase-field model is worse conditioned it seems. Lower tolerance required?
 
     //const double eps    = std::numeric_limits<double>::epsilon();
     //const double eps2   = eps*eps;
@@ -167,16 +176,15 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
         if (std::fabs(rho) < 1.0e-20)
         {
 
-            if (structure->mRank == 0)
-            {
-                std::cout << "The new residual vector became too orthogonal to the arbitrarily chosen direction r0.\n"
-                             "Let's restart with a new r0!" << std::endl;
-            }
+            structure->GetLogger() << "The new residual vector became too orthogonal to the arbitrarily chosen direction r0.\n"
+                                      "Let's restart with a new r0!" << "\n\n";
 
             // The new residual vector became too orthogonal to the arbitrarily chosen direction r0
             // Let's restart with a new r0:
 
-            Ax.noalias() = B * mSolver.solve(Btrans*x);
+            tmp.head(numActiveDofs) = mSolver.solve( (Btrans*x).head(numActiveDofs));
+            Ax.noalias() = B * tmp;
+
             MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 
@@ -196,7 +204,9 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
         //      y = precond.solve(p);
         y = p;
 
-        Ay.noalias() = B * mSolver.solve(Btrans*y);
+        tmp.head(numActiveDofs) = mSolver.solve( (Btrans*y).head(numActiveDofs));
+        Ay.noalias() = B * tmp;
+
         MPI_Allreduce(MPI_IN_PLACE, Ay.data(), Ay.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         v.noalias() = projection * Ay;
@@ -208,7 +218,9 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
         //      z = precond.solve(s);
         z = s;
 
-        Az.noalias() = B * mSolver.solve(Btrans*z);
+        tmp.head(numActiveDofs) = mSolver.solve( (Btrans*z).head(numActiveDofs));
+        Az.noalias() = B * tmp;
+
         MPI_Allreduce(MPI_IN_PLACE, Az.data(), Az.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         t.noalias() = projection * Az;
@@ -223,12 +235,9 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
         x += alpha * y + w * z;
         rProj = z - w * t;
 
-        if (structure->mRank == 0)
-            std::cout << "BiCGStab rel. error = " << rProj.squaredNorm()/rhs_sqnorm << "\t at iteration = " << i << "/" << maxIters << std::endl;
-
+        structure->GetLogger() << "BiCGStab rel. error = "   << rProj.squaredNorm()/rhs_sqnorm
+                               << "\t at iteration = "  << i << "/" << maxIters <<"\n";
         ++i;
-
-
 
     }
     //    tol_error = sqrt(r.squaredNorm()/rhs_sqnorm);
@@ -257,22 +266,16 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     const int numActiveDofs     = mStructure->GetNumTotalActiveDofs();
     const int numRigidBodyModes = structure->GetNumRigidBodyModes();
 
-    std::cout << "Got here" << std::endl;
-
-    std::cout << "mSolver.rows() \n" << mSolver.rows() << std::endl;
-    std::cout << "numActiveDofs \n" << numActiveDofs << std::endl;
 
     VectorXd tmp;
     tmp.setZero(numActiveDofs + numRigidBodyModes);
     tmp.head(numActiveDofs) = mSolver.solve( (Btrans*x).head(numActiveDofs));
     VectorXd Ax = B * tmp;
 
-
-    std::cout << "Got here 2" << std::endl;
     world.barrier();
 
 
-    boost::mpi::all_reduce(world,boost::mpi::inplace(Ax.data()), Ax.size(),std::plus<double>());
+    MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     world.barrier();
     // initial residual
@@ -302,7 +305,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
         Ap.noalias() = B * tmp;
 
         world.barrier();
-        boost::mpi::all_reduce(world,boost::mpi::inplace(Ap.data()), Ap.size(),std::plus<double>());
+        MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         // step size
         double alpha = absNew / p.dot(Ap);
@@ -377,6 +380,10 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     const MatrixXd GtransGinv =   (G.transpose() * G).inverse();
 
 
+    mStructure->GetLogger() << "G \n" << G << "\n \n";
+    mStructure->GetLogger() << "GtransGinv\n" << GtransGinv << "\n \n";
+
+
     // R_s^T f
     VectorXd rigidBodyForceVectorLocal = rigidBodyModes.transpose() * residual_mod;
 
@@ -411,11 +418,14 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
 
 
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied");
+
+
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
     mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
@@ -427,8 +437,8 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    int iteration = CPG(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
-    //int iteration = BiCgStab(projection,x,rhs);
+//    int iteration = CPG(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
+    int iteration = BiCgStab(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
 
     if (iteration >= mCpgMaxIterations)
         throw MechanicsException(__PRETTY_FUNCTION__,"Maximum number of iterations exceeded.");
@@ -438,17 +448,19 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     structure->GetLogger() << "\n*************************************\n\n";
 
 
+    mStructure->GetLogger() << "deltaLambda \n" << deltaLambda << "\n \n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied");
+
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
 
     zeroVec = rigidBodyModes.transpose() * ( residual_mod - B.transpose() *deltaLambda );
-    if( (zeroVec.array() > 1.e-6).any() or (zeroVec.array() < -1.e-6).any())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied");
+    if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -470,11 +482,11 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     MPI_Barrier(MPI_COMM_WORLD);
     VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
-    if( (zeroVecTmp.array() > 1.e-6).any() or (zeroVecTmp.array() < -1.e-6).any())
+    if( not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)) )
         throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
 
     VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
-    if( (zeroVecTmp2.array() > 1.e-6).any() or (zeroVecTmp2.array() < -1.e-6).any())
+    if( not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)) )
         throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied");
 
 
@@ -487,26 +499,39 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     MpiGatherRecvCountAndDispls(recvCount, displs, numRigidBodyModesLocal);
     VectorXd alphaLocal = alphaGlobal.segment(displs[structure->mRank], numRigidBodyModesLocal);
 
+//    structure->GetLogger() << "alphaGlobal: \n" << alphaGlobal                << "\n\n";
+//    structure->GetLogger() << "alphaLocal: \n" << alphaLocal                << "\n\n";
+//    structure->GetLogger() << "rigidBodyModes: \n" << rigidBodyModes                << "\n\n";
 
     VectorXd delta_dof_active;
     delta_dof_active.setZero(mStructure->GetNumTotalDofs());
     delta_dof_active.head(mStructure->GetNumTotalActiveDofs())    = mSolver.solve( (residual_mod - Btrans * deltaLambda).head(structure->GetNumTotalActiveDofs()));
 
+
+
     delta_dof_active   = delta_dof_active - rigidBodyModes * alphaLocal;
+
+    mStructure->GetLogger() << "delta_dof_active: \n" << delta_dof_active << "\n\n";
 
     StructureOutputBlockVector  delta_dof_dt0(structure->GetDofStatus());
     int offset = 0;
     for (const auto& dof : activeDofSet)
     {
-        int numActiveDofs       = structure->GetNumActiveDofs(dof);
-        delta_dof_dt0.J[dof]    = delta_dof_active.segment(offset, structure->GetNumActiveDofs(dof));
-        /// \todo This will not work for multi field problems, please implement it more generally
-        delta_dof_dt0.K[dof]    = delta_dof_active.tail(numRigidBodyModesLocal);
+        const int numActiveDofs       = structure->GetNumActiveDofs(dof);
+
+        delta_dof_dt0.J[dof]    = delta_dof_active.segment(offset, numActiveDofs);
         offset += numActiveDofs;
+
+
     }
 
+    delta_dof_dt0.K[Node::eDof::DISPLACEMENTS]    = delta_dof_active.segment(offset, structure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS));
+    //    structure->GetLogger() << "delta_dof_active: \n" << delta_dof_active                << "\n\n";
+    //    structure->GetLogger() << "delta_dof_active.size(): \n" << delta_dof_active.size()  << "\n\n";
+    //    structure->GetLogger() << "delta_dof_dt0.J: \n" << delta_dof_dt0.J                  << "\n\n";
+    //    structure->GetLogger() << "delta_dof_dt0.K: \n" << delta_dof_dt0.K                  << "\n\n";
 
-
+    mStructure->GetLogger() << "delta_dof_dt0: \n" << delta_dof_dt0 << "\n\n";
 
     return delta_dof_dt0;
 
@@ -532,7 +557,7 @@ double NuTo::NewmarkFeti::CalculateLoadFactor(double rTime)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
+void NuTo::NewmarkFeti::Solve(double rTimeDelta)
 {
 
     try
@@ -546,8 +571,11 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         mStructure->GetLogger() << "********************************************" << "\n\n";
 
         structure->CalculateRigidBodyModesTotalFETI();
+//        structure->CalculateRigidBodyModes();
 
         const int numRigidBodyModes = structure->GetNumRigidBodyModes();
+
+
 
         mStructure->GetLogger() << "************************************************" << "\n";
         mStructure->GetLogger() << "**        Assemble connectivity matrix B      **" << "\n";
@@ -561,6 +589,8 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         mStructure->GetLogger() << "**        Calculate interface rigid body modes      **" << "\n";
         mStructure->GetLogger() << "******************************************************" << "\n\n";
 
+
+
         structure->CalculateInterfaceRigidBodyModes();
 
         mStructure->GetLogger() << "********************************************" << "\n";
@@ -570,8 +600,8 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         structure->CalculateG();
         structure->CalculateProjectionMatrix();
 
-//        structure->CheckProjectionMatrix();
-//        structure->CheckProjectionOfCoarseGrid();
+        structure->CheckProjectionMatrix();
+        structure->CheckProjectionOfCoarseGrid();
 
         const int numActiveDofs     = mStructure->GetNumTotalActiveDofs();
         const int numTotalDofs      = mStructure->GetNumTotalDofs();
@@ -638,6 +668,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 //        const auto& cmat = mStructure->GetConstraintMatrix();
 
         BlockScalar normResidual(dofStatus);
+        BlockScalar normResidualK(dofStatus);
 
         //********************************************
         //        Declare and fill Output maps
@@ -702,6 +733,8 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 mStructure->Evaluate(inputMap, evalInternalGradientAndHessian0);
                 // ******************************************************
 
+//                structure->CheckRigidBodyModes(hessian0);
+                structure->CheckStiffnessPartitioning(hessian0);
 
                 mStructure->GetLogger() << "extForce norm: \t" << extForce.J.Export().norm() + extForce.K.Export().norm() << "\n\n";
                 mStructure->GetLogger() << "intForce norm: \t" << intForce.J.Export().norm() + intForce.K.Export().norm() << "\n\n";
@@ -730,7 +763,23 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 lambda  = lastConverged_lambda + deltaLambda;
 
+//                mStructure->GetLogger() << "active dofs disp: \n" << mStructure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) << "\n\n";
+//                mStructure->GetLogger() << "depe dofs disp: \n" << mStructure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS) << "\n\n";
+//                mStructure->GetLogger() << "active dofs nl eq strain: \n" << mStructure->GetNumActiveDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
+//                mStructure->GetLogger() << "depe dofs nl eq strain: \n" << mStructure->GetNumDependentDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
+
+                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.J[Node::eDof::DISPLACEMENTS].size() << "\n\n";
+                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.K[Node::eDof::DISPLACEMENTS].size() << "\n\n";
+//                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
+//                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
+
+                mStructure->GetLogger() << "dof_dt0: \n" << dof_dt0 << "\n\n";
+
+
+
                 mStructure->NodeMergeDofValues(dof_dt0);
+
+
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evalInternalGradient);
@@ -747,8 +796,11 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 for (const auto& dof : activeDofSet)
                     boost::mpi::all_reduce(world,boost::mpi::inplace(normResidual[dof]),std::plus<double>());
 
-                mStructure->GetLogger() << "Residual: \t" << normResidual << "\n\n";
+                mStructure->GetLogger() << "Residual J: \t" << normResidual << "\n\n";
                 mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
+
+                mStructure->GetLogger() << "residual J: \t" << residual.J << "\n\n";
+                mStructure->GetLogger() << "residual K: \t" << residual.K << "\n\n";
 
                 int iteration = 0;
                 while( not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
@@ -831,7 +883,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
                     mStructure->GetLogger() << "normResidual: \n" << normResidual << "\n\n";
 
                     if (mCallback && mCallback->Exit(*mStructure))
-                        return NuTo::eError::SUCCESSFUL;
+                        return;
 
                 }
                 else
@@ -871,8 +923,6 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         throw;
     }
 
-
-    return NuTo::eError::SUCCESSFUL;
 
 }
 
