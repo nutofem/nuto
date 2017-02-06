@@ -26,6 +26,7 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 }
 
 using namespace NuTo;
+
 BOOST_AUTO_TEST_CASE(additive_strains)
 {
     int NumTimeDerivatives = 2;

@@ -1,0 +1,5 @@
+add_subdirectory(base)
+add_subdirectory(math)
+if(ENABLE_MECHANICS)
+    add_subdirectory(mechanics)
+endif()

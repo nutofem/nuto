@@ -252,7 +252,7 @@ endif()
 
 
 set(NuToMechanicsTools_SOURCES
-    tools/MeshGenerator.cpp
+        mesh/MeshGenerator.cpp
     )
 
 set(NuToMechanics_SOURCES

@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.0)
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
 option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
-option(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
+option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
@@ -16,7 +16,7 @@ option(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
-option(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
+option(ENABLE_CUSTOM_EXAMPLES "enable building private examples in a separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
@@ -30,9 +30,9 @@ option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
-configure_file(${CMAKE_SOURCE_DIR}/CMakeScripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
 include_directories(external/jsoncpp/dist/)
@@ -372,39 +372,28 @@ add_subdirectory(doc)
 include(CTest)
 add_custom_target(unit COMMAND ctest -R unit)
 
-add_subdirectory(test/math)
-if(ENABLE_MECHANICS)
-    add_subdirectory(test/mechanics)
-endif()
+if(ENABLE_TESTS)
+    add_subdirectory(test)
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(test/metamodel)
-endif()
-
-if(ENABLE_OPTIMIZE)
-    add_subdirectory(test/optimize)
-endif()
-
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(test/geometryConcrete)
+    add_subdirectory(applications/integrationtests)
 endif()
 
 if(ENABLE_EXAMPLES)
-    add_subdirectory(examples)
+    add_subdirectory(applications/examples)
 endif()
 
 if(ENABLE_BENCHMARKS)
-    add_subdirectory(benchmark)
+    add_subdirectory(applications/benchmark)
 endif()
 
 
 
 
-# myExamples should be modified locally, but are not supposed to be added to the repository
-# if it is empty, there is just an empty include
-# it is used for adding working examples locally, which should not be exposed to the public
-if(ENABLE_MY_EXAMPLES)
-    add_subdirectory(myNutoExamples)
+# Custom examples are applications you don't want to add to the repository, but
+# that should still be picked up by CMake. If this directory is empty, nothing
+# happens.
+if(ENABLE_CUSTOM_EXAMPLES)
+    add_subdirectory(applications/custom)
 endif()
 
 
