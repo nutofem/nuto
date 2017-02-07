@@ -17,3 +17,9 @@ foreach(test
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
+
+if(ENABLE_GEOMETRYCONCRETE)
+    add_executable(DenseSpherePacking DenseSpherePacking.cpp)
+    target_link_libraries(DenseSpherePacking NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
+    add_test(benchmark::DenseSpherePacking ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
+endif()
