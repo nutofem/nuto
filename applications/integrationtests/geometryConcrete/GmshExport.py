@@ -37,7 +37,7 @@ sphereMatrix = np.array([[ 0., 0., 0., 5.]])
 spheres = nuto.ParticleHandler(sphereMatrix, 0,0,0)
 
 
-meshSize = 2
+meshSize = 5
 
 # define files
 
@@ -64,12 +64,10 @@ os.system(gmsh + " " + geoFile3D + ' -3 -order 1 -v 1 -o '+mshFile3D +' 2> ' + e
 if os.stat(errFile2D).st_size > 0:
     print "Errors or warnings occured while meshing 2D. See error file for details:"
     print errFile2D
-    sys.exit(-1)
 
 if os.stat(errFile3D).st_size > 0:
     print "Errors or warnings occured while meshing 3D. See error file for details:"
     print errFile3D
-    sys.exit(-1)
 
 # check the mesh proper import of the mesh
 
