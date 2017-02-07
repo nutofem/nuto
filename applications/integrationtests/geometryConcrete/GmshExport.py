@@ -30,13 +30,10 @@ print "   |---> ",workDir
 print
 
 # create a box specimen
-specimen = nuto.Specimen(np.array([[-10., 10.], [-10., 10.], [-5., 5.]]), 0)
+specimen = nuto.Specimen(np.array([[-10., 10.], [-10., 10.], [-10., 10.]]), 0)
 
 # create some spheres
-sphereMatrix = np.array([[-4., -4., 0., 2.],
-                         [-4.,  4., 0., 2.],
-                         [ 4.,  4., 0., 2.],
-                         [ 4., -4., 0., 2.]])
+sphereMatrix = np.array([[ 0., 0., 0., 5.]])
 spheres = nuto.ParticleHandler(sphereMatrix, 0,0,0)
 
 
