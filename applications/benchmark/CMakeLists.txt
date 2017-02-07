@@ -1,6 +1,7 @@
 add_custom_target(benchmark COMMAND ctest -V -R benchmark)
 
-# generate tests
+
+if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
@@ -17,6 +18,7 @@ foreach(test
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
+endif()
 
 if(ENABLE_GEOMETRYCONCRETE)
     add_executable(DenseSpherePacking DenseSpherePacking.cpp)
