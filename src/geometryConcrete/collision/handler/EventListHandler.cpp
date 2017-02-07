@@ -7,12 +7,13 @@
 
 #include <iomanip>
 
+#include "base/Timer.h"
+
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/handler/EventListHandler.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
-#include "geometryConcrete/WallTime.h"
 
 NuTo::EventListHandler::EventListHandler()
 		:
@@ -128,19 +129,17 @@ void NuTo::EventListHandler::PerformNextEvent()
 		break;
 	}
 
-	double timeTmp;
-
-	timeTmp = WallTime::Get();
+    Timer t("", false);
 	nextEvent->PerformCollision();
-	mTimeUpdate += WallTime::Get() - timeTmp;
+	mTimeUpdate += t.GetTimeDifference();
 
-	timeTmp = WallTime::Get();
+	t.Reset();
 	nextEvent->EraseOldEvents(*this);
-	mTimeErase += WallTime::Get() - timeTmp;
+	mTimeErase += t.GetTimeDifference();
 
-	timeTmp = WallTime::Get();
+    t.Reset();
 	nextEvent->AddNewEvents(*this);
-	mTimeAdd += WallTime::Get() - timeTmp;
+	mTimeAdd += t.GetTimeDifference();
 
 	delete nextEvent;
 
@@ -150,7 +149,7 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 {
 	mTimeBarrier = rTimeBarrier;
 
-	double sTime = WallTime::Get();
+    Timer t("", false);
 
 	mEvents.clear();
 
@@ -166,7 +165,7 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 	}
 
 
-	double timeRebuild = WallTime::Get() - sTime;
+	double timeRebuild = t.GetTimeDifference();
 	mTimeRebuild += timeRebuild;
 
 

@@ -27,7 +27,7 @@ public:
 	//! @brief ... constructor, initializes the handler with a given number of sub box divisions
 	//! @param rSpheres ... spheres to be added to the sub boxes
 	//! @param rDivisions ... sets divs[0]*divs[1]*divs[2] sub boxes
-	SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, const Eigen::VectorXi& rDivisions);
+	SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, const Eigen::Vector3i& rDivisions);
 
 	//! @brief ... constructor, initializes the handler, calculates the number of sub boxes
 	//! @param rSpheres ... spheres to be added to the sub boxes
@@ -59,7 +59,7 @@ private:
 	ParticleHandler* mSpheres;
 	std::vector<SubBox*> mSubBoxes;
 	Specimen mSpecimen;
-	Eigen::VectorXi mDivisions;
+	Eigen::Vector3i mDivisions;
 
     void Build();
 

@@ -7,7 +7,6 @@
 
 #include "base/Exception.h"
 
-#include "geometryConcrete/WallTime.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"

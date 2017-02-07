@@ -4,11 +4,11 @@
  *  Created on: 27 Feb 2014
  *      Author: junger, improved by ttitsche
  */
+#include "base/Exception.h"
+#include "base/Timer.h"
 
 #include "geometryConcrete/takeAndPlace/ParticleCreator.h"
 #include "geometryConcrete/InputReader.h"
-#include "base/Exception.h"
-#include "geometryConcrete/WallTime.h"
 
 
 
@@ -26,8 +26,7 @@ Eigen::MatrixXd NuTo::ParticleCreator::CreateSpheresInSpecimen(
 		const int rSeed,
 		const Eigen::MatrixXd& rSpheresBoundary) const
 		{
-
-	double tStart = WallTime::Get();
+    Timer (__PRETTY_FUNCTION__, true);
 
 	// random number generator
 	srand(rSeed);
@@ -43,8 +42,6 @@ Eigen::MatrixXd NuTo::ParticleCreator::CreateSpheresInSpecimen(
 			particles,
 			rRelativeDistance,
 			rAbsoluteDistance);
-
-	std::cout << std::endl << "[Take-And-Place] Took " << WallTime::Get() - tStart << "s." << std::endl;
 
 	return particles.block(rSpheresBoundary.rows(), 0, particles.rows() - rSpheresBoundary.rows(), 4);
 }
@@ -154,7 +151,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		const double rAbsoluteDistance) const
 		{
 
-	int numParticles = rParticles.rows();
+	auto numParticles = rParticles.rows();
 
 	std::vector<double> sizeClasses = GetSizeClasses(rParticles);
 
@@ -273,7 +270,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 void NuTo::ParticleCreator::CheckGradingCurve(
 		const Eigen::MatrixXd& rGradingCurve) const
 		{
-	int numGradingClasses = rGradingCurve.rows();
+	auto numGradingClasses = rGradingCurve.rows();
 
 	if (numGradingClasses < 1)
 		throw Exception(
@@ -307,9 +304,9 @@ bool NuTo::ParticleCreator::CollidesWithBoundary(
 	bool collidesWithBoundary = false;
 	switch (mSpecimen.GetTypeOfSpecimen())
 	{
-	case 0:
+	case Specimen::Box:
 		break;
-	case 1:
+	case Specimen::Dogbone:
 		{
 		double D = bBox(0, 1) - bBox(0, 0);
 		double deltaX = rParticle(0) - (bBox(0, 1) + 0.525 * D);
@@ -324,21 +321,21 @@ bool NuTo::ParticleCreator::CollidesWithBoundary(
 			collidesWithBoundary = true;
 	}
 		break;
-	case 2:
+	case Specimen::Cylinder:
 		{
 		double D = bBox(0, 1) -bBox(0, 0);
 		double deltaX = rParticle(0) - (bBox(0, 0) + 0.5 * D);
 		double deltaY = rParticle(1) - (bBox(1, 0) + 0.5 * D);
 		double sumR = 0.5 * D - rParticle(3) * (1. + rRelativeDistance) - rAbsoluteDistance;
 		if (sumR < 0)
-			throw Exception("[NuTo::ParticleCreator::CreateSpheresInSpecimen] that should not have happend.");
+			throw Exception(__PRETTY_FUNCTION__, "that should not have happend.");
 
 		if (deltaX * deltaX + deltaY * deltaY > sumR * sumR)
 			collidesWithBoundary = true;
 	}
 		break;
 	default:
-		throw Exception("[NuTo::ParticleCreator::CreateSpheresInSpecimen] specimen type not implemented.");
+		throw Exception(__PRETTY_FUNCTION__, "specimen type not implemented.");
 	}
 	return collidesWithBoundary;
 }
