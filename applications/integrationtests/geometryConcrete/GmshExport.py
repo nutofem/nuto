@@ -38,7 +38,7 @@ sphereMatrix = np.array([[-4., -4., 0., 2.],
 spheres = nuto.ParticleHandler(sphereMatrix, 0,0,0)
 
 
-meshSize = 4
+meshSize = 2
 
 # define files
 
