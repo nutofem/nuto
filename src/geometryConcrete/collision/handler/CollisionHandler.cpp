@@ -90,7 +90,6 @@ double NuTo::CollisionHandler::Simulate(
 
 	long numEvents = 0;
 	double globalTime = 0.;
-	double globalTimePrint = 0.;
 
 	double wTimeEventList = mGlobalEventList.SetTimeBarrier(rInitialTimeBarrier, *mSubBoxes);
 
@@ -137,17 +136,11 @@ double NuTo::CollisionHandler::Simulate(
 //		VisualizeSpheres(numEvents, globalTime, false);
 
 		// print a status update
-		// a) at time print out
 		bool statusPrintOut = rTimePrintOut != 0 && timer.GetTimeDifference() > timePrintOut;
-		// b) at every 0.1 global time steps
-		bool statusGlobalTime = globalTime > globalTimePrint;
 
-		if (statusPrintOut or statusGlobalTime)
+		if (statusPrintOut)
 		{
 			LogStatus(logger, numEvents, globalTime, timer.GetTimeDifference());
-
-	        if (statusGlobalTime)
-	            globalTimePrint = globalTime + 0.1;
 
 	        if (statusPrintOut)
 	            timePrintOut += rTimePrintOut;
