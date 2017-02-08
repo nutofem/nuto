@@ -1,4 +1,3 @@
-
 project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
 
 cmake_minimum_required(VERSION 3.0)
@@ -32,6 +31,7 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
+include(CompilerFlags)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
@@ -60,7 +60,6 @@ if(ENABLE_MPI)
     message(STATUS "MPIEXEC_POSTFLAG:           ${MPIEXEC_POSTFLAG}")
 
 endif()
-
 
 
 if(ENABLE_METAMODEL)
@@ -137,14 +136,6 @@ else()
     find_package(Threads REQUIRED)
     #the package finds the THREADS_LIBRARY but does not add the pthread flag
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif()
-
-# use newer c++ standard, enable additional warnings, support for sse4
-# set(CMAKE_CXX_STANDARD 14) # use this if cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic -std=c++14")
-# prevent warnings from boost and eigen
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-missing-braces")
 endif()
 
 if(ENABLE_COVERAGE)

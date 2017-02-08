@@ -1,3 +1,8 @@
+# temporarily save compiler flags, set them to "python flags", and reset them
+# at the end of the file
+set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${PYTHON_CXX_FLAGS}")
+
 find_package(Numpy REQUIRED)
 include_directories(${NUMPY_INCLUDE_PATH})
 
@@ -76,3 +81,5 @@ else()
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
 endif()
+
+set(CMAKE_CXX_FLAGS "${ORIGINAL_CXX_FLAGS}")
