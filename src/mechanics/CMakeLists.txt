@@ -213,9 +213,7 @@ set(NuToMechanicsStructures_SOURCES
     structures/unstructured/StructureNode.cpp
     )
 
-if(ENABLE_MPI)
-    set(NuToMechanicsStructures_SOURCES ${NuToMechanicsStructures_SOURCES} structures/unstructured/StructureFETI.cpp)
-endif()
+
 
 set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/NewmarkBase.cpp
@@ -245,10 +243,6 @@ set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/ImplExCallback.cpp
     timeIntegration/VelocityVerlet.cpp
     )
-
-if(ENABLE_MPI)
-    set(NuToMechanicsTimeIntegration_SOURCES ${NuToMechanicsTimeIntegration_SOURCES} timeIntegration/NewmarkFeti.cpp)
-endif()
 
 
 set(NuToMechanicsTools_SOURCES
@@ -303,3 +297,10 @@ install(TARGETS NuToMechanics
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     )
+
+
+if(ENABLE_MPI)
+    message(STATUS "Creating feti library...")
+    add_subdirectory(feti)
+endif()
+

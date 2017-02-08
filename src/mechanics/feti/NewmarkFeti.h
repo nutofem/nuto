@@ -6,7 +6,7 @@
 #include "base/Timer.h"
 
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/structures/unstructured/StructureFETI.h"
+#include "mechanics/feti/StructureFETI.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"

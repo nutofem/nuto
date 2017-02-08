@@ -6,7 +6,7 @@
 
 
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/structures/unstructured/StructureFETI.h"
+#include "mechanics/feti/StructureFETI.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"
@@ -21,7 +21,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
-#include "mechanics/timeIntegration/NewmarkFeti.h"
+#include "mechanics/feti/NewmarkFeti.h"
 
 #include <cmath>
 
