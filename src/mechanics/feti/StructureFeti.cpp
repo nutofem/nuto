@@ -4,7 +4,7 @@
 #include <json/json.h>
 
 
-#include "mechanics/feti/StructureFETI.h"
+#include "mechanics/feti/StructureFeti.h"
 #include "mechanics/nodes/NodeBase.h"
 
 #include "mechanics/MechanicsException.h"
