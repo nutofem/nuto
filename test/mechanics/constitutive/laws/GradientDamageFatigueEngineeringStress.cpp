@@ -1,23 +1,12 @@
-//
-// Created by Thomas Titscher on 10/24/16.
-//
+#include "BoostUnitTest.h"
+#include "TypeTraits.h"
+#include "ConstitutiveTangentTester.h"
 
-#define BOOST_TEST_MODULE GradientDamageFatigueTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "../../../tools/TypeTraits.h"
-#include "ConstitutiveTangentTester.h"
-
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
 
 namespace GradientDamageFatigueTest
 {

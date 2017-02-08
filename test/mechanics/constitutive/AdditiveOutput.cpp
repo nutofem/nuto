@@ -1,3 +1,5 @@
+#include "BoostUnitTest.h"
+
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"
@@ -14,16 +16,6 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/sections/SectionEnum.h"
 
-#define BOOST_TEST_MODULE AdditiveOutputTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
-
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
 
 using namespace NuTo;
 BOOST_AUTO_TEST_CASE(additive_stresses)

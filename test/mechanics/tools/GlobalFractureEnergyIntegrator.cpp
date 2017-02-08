@@ -1,11 +1,5 @@
-//
-// Created by Thomas Titscher on 10/28/16.
-//
-#define BOOST_TEST_MODULE GlobalFractureEnergyIntegrator
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include "BoostUnitTest.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
-#include <iostream>
 
 BOOST_AUTO_TEST_CASE(IntegrateFunction)
 {

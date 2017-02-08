@@ -373,8 +373,8 @@ include(CTest)
 add_custom_target(unit COMMAND ctest -R unit)
 
 if(ENABLE_TESTS)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
     add_subdirectory(test)
-
     add_subdirectory(applications/integrationtests)
 endif()
 

@@ -1,7 +1,4 @@
-#define BOOST_TEST_MODULE SparseMatrixCSRVector2General
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include "BoostUnitTest.h"
 
 #include <eigen3/Eigen/Core>
 #include "math/SparseMatrixCSRVector2General.h"

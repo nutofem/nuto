@@ -1,25 +1,12 @@
-//
-// Created by Thomas Titscher on 10/22/16.
-//
+#include "BoostUnitTest.h"
+#include "TypeTraits.h"
 
-#define BOOST_TEST_MODULE IPDataTest
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include "mechanics/elements/IPData.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include <type_traits>
-
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
-
 
 const NuTo::GradientDamageEngineeringStress* AsLaw(const NuTo::Constitutive::IPConstitutiveLawBase& rLaw)
 {
@@ -53,11 +40,8 @@ BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
 
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::IPData>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::IPData>::value);
-
-    BOOST_CHECK(std::is_copy_assignable<NuTo::IPData>::value);
-    BOOST_CHECK(std::is_move_assignable<NuTo::IPData>::value);
+    NuTo::Test::Copy<NuTo::IPData>();
+    NuTo::Test::Move<NuTo::IPData>();
 }
 
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move_Values)

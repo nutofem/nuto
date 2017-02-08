@@ -1,18 +1,12 @@
+#include "BoostUnitTest.h"
+
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#define BOOST_TEST_MODULE ConstitutiveIOTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
 
 using namespace NuTo;
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
-
 BOOST_AUTO_TEST_CASE(modify_value_in_map)
 {
     using namespace NuTo::Constitutive;

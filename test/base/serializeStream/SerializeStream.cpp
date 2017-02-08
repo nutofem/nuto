@@ -1,7 +1,4 @@
-#define BOOST_TEST_MODULE SerializeDataTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include "BoostUnitTest.h"
 
 #include <memory>
 #include <eigen3/Eigen/Dense>
@@ -11,12 +8,6 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 
-
-// needed for building with clang when boost test has been built with gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size()));
-}
 //! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
 T WriteReadNumber(const std::string &rFile, bool rIsBinary, T &rValue, T rZero)

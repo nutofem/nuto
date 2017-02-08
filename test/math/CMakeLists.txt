@@ -20,6 +20,8 @@ add_unit_test(SparseMatrixCSRVector2General
     ${CMAKE_SOURCE_DIR}/src/math/SparseMatrix.cpp
     )
 
+add_unit_test(SpacialContainer)
+
 if(ENABLE_ARPACK)
     add_executable(EigenSolverArpack EigenSolverArpack.cpp)
     target_link_libraries(EigenSolverArpack NuToMath NuToBase)

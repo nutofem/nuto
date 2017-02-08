@@ -1,3 +1,5 @@
+#include "BoostUnitTest.h"
+
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -14,19 +16,8 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#define BOOST_TEST_MODULE ContinuumElementTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
 
 using namespace NuTo;
-
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
-
-
 BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
 {
     Structure structure(1);

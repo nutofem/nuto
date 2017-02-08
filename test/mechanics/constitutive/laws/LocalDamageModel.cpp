@@ -1,3 +1,5 @@
+#include "BoostUnitTest.h"
+#include "ConstitutiveTangentTester.h"
 
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 
@@ -8,20 +10,8 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "ConstitutiveTangentTester.h"
 
 #include <iostream>
-
-#define BOOST_TEST_MODULE LocalDamageModelTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
-
 
 using std::cout;
 using std::endl;
