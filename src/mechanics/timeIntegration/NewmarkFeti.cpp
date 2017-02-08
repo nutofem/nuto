@@ -287,9 +287,14 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     VectorXd p = w;
 
     // precondition
-//    p =  projection * mLocalPreconditioner * w;
-//    boost::mpi::all_reduce(world,boost::mpi::inplace(p.data()), p.size(),std::plus<double>());
-    p = w;
+    structure->GetLogger() << "projection.cols() = \t"   << projection.cols()
+                           << "\nmLocalPreconditioner.rows() = \t"  << mLocalPreconditioner.rows()
+                           << "\nmLocalPreconditioner.cols() = \t"  << mLocalPreconditioner.cols()
+                           << "\nw.rows() = \t"  << w.rows();
+
+    p =  projection * mLocalPreconditioner * w;
+    boost::mpi::all_reduce(world,boost::mpi::inplace(p.data()), p.size(),std::plus<double>());
+//    p = w;
 
     const double rhs_sqnorm = rhs.squaredNorm();
     const double threshold = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
@@ -317,9 +322,9 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
         w -= alpha * projection * Ap;
 
         // precondition
-//        z =  projection * mLocalPreconditioner * w;
-//        boost::mpi::all_reduce(world,boost::mpi::inplace(z.data()), z.size(),std::plus<double>());
-        z = w;
+        z =  projection * mLocalPreconditioner * w;
+        boost::mpi::all_reduce(world,boost::mpi::inplace(z.data()), z.size(),std::plus<double>());
+//        z = w;
 
         if (w.squaredNorm() < threshold)
             break;
@@ -371,6 +376,9 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     const MatrixXd& rigidBodyModes              = structure->GetRigidBodyModes();
 
+
+
+
     world.barrier();
 
     // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
@@ -379,9 +387,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     // GtransGinv.size() = (total number of rigid body modes) x (total number of rigid body modes)
     const MatrixXd GtransGinv =   (G.transpose() * G).inverse();
 
-
-    mStructure->GetLogger() << "G \n" << G << "\n \n";
-    mStructure->GetLogger() << "GtransGinv\n" << GtransGinv << "\n \n";
 
 
     // R_s^T f
@@ -437,8 +442,8 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-//    int iteration = CPG(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
-    int iteration = BiCgStab(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
+    int iteration = CPG(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
+//    int iteration = BiCgStab(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
 
     if (iteration >= mCpgMaxIterations)
         throw MechanicsException(__PRETTY_FUNCTION__,"Maximum number of iterations exceeded.");
@@ -448,7 +453,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     structure->GetLogger() << "\n*************************************\n\n";
 
 
-    mStructure->GetLogger() << "deltaLambda \n" << deltaLambda << "\n \n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -511,7 +515,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     delta_dof_active   = delta_dof_active - rigidBodyModes * alphaLocal;
 
-    mStructure->GetLogger() << "delta_dof_active: \n" << delta_dof_active << "\n\n";
 
     StructureOutputBlockVector  delta_dof_dt0(structure->GetDofStatus());
     int offset = 0;
@@ -531,7 +534,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
     //    structure->GetLogger() << "delta_dof_dt0.J: \n" << delta_dof_dt0.J                  << "\n\n";
     //    structure->GetLogger() << "delta_dof_dt0.K: \n" << delta_dof_dt0.K                  << "\n\n";
 
-    mStructure->GetLogger() << "delta_dof_dt0: \n" << delta_dof_dt0 << "\n\n";
 
     return delta_dof_dt0;
 
@@ -742,9 +744,6 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 residual =  extForce - intForce;
                 residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs), dofStatus);
 
-                mStructure->GetLogger() << "After next time step \n\n";
-
-
 
                 rhs.setZero(numTotalDofs);
                 rhs.head(numActiveDofs)     = residual.J.Export();
@@ -755,6 +754,29 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 // K_{JJ}^{-1}
                 mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
+
+                mLocalPreconditioner.resize(B.rows(), B.rows());
+//                mLocalPreconditioner.setIdentity();
+
+                VectorXd hessianJJdiag = hessian0.JJ.ExportToEigenSparseMatrix().diagonal();
+                VectorXd hessianKKdiag = hessian0.KK.ExportToEigenSparseMatrix().diagonal();
+                SparseMatrix Kdiag(B.cols(),B.cols());
+
+                mStructure->GetLogger() << "mLocalPreconditioner.rows(): \t" << mLocalPreconditioner.rows() << "\n\n";
+                mStructure->GetLogger() << "hessianJJdiag.rows(): \t" << hessianJJdiag.rows() << "\n\n";
+                mStructure->GetLogger() << "hessianKKdiag.rows(): \t" << hessianKKdiag.rows() << "\n\n";
+                for (int i = 0; i < hessianJJdiag.rows(); ++i)
+                    Kdiag.insert(i,i) = hessianJJdiag[i];
+
+                for (int i = 0; i < hessianKKdiag.rows(); ++i)
+                    Kdiag.insert(i + hessianJJdiag.rows(),i + hessianJJdiag.rows()) = hessianKKdiag[i];
+
+                mStructure->GetLogger() << "mLOca: \t" << Kdiag << "\n\n";
+
+                MPI_Barrier(MPI_COMM_WORLD);
+
+                mLocalPreconditioner = B * Kdiag * Btrans;
+
 
                 delta_dof_dt0   = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
@@ -768,12 +790,6 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
 //                mStructure->GetLogger() << "active dofs nl eq strain: \n" << mStructure->GetNumActiveDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
 //                mStructure->GetLogger() << "depe dofs nl eq strain: \n" << mStructure->GetNumDependentDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
 
-                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.J[Node::eDof::DISPLACEMENTS].size() << "\n\n";
-                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::DISPLACEMENTS].size(): \n" << dof_dt0.K[Node::eDof::DISPLACEMENTS].size() << "\n\n";
-//                mStructure->GetLogger() << "dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.J[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
-//                mStructure->GetLogger() << "dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size(): \n" << dof_dt0.K[Node::eDof::NONLOCALEQSTRAIN].size() << "\n\n";
-
-                mStructure->GetLogger() << "dof_dt0: \n" << dof_dt0 << "\n\n";
 
 
 
@@ -799,8 +815,6 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 mStructure->GetLogger() << "Residual J: \t" << normResidual << "\n\n";
                 mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
 
-                mStructure->GetLogger() << "residual J: \t" << residual.J << "\n\n";
-                mStructure->GetLogger() << "residual K: \t" << residual.K << "\n\n";
 
                 int iteration = 0;
                 while( not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)

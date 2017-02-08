@@ -387,9 +387,6 @@ void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
 
 
 
-    NodeInfo(10);
-    GetLogger() << "Rigid body modes:                  \n"        << mRigidBodyModes   << "\n\n";
-
 
 
 }
