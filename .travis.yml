@@ -5,12 +5,13 @@ compiler:
     - clang
     - gcc
 env:
-    - RELEASE=true
-    - RELEASE=false
+    - BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
+    - BUILD_TYPE=Release OPENMP=FALSE COVERAGE=FALSE EXAMPLES=TRUE
+    - BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
 matrix:
     exclude:
         - compiler: clang
-          env: RELEASE=false
+          env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
@@ -24,13 +25,13 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - OPTIONS="-DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE -DENABLE_ARPACK=TRUE -DENABLE_GEOMETRYCONCRETE=TRUE"
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE $OPTIONS ..; fi
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE $OPTIONS ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE $OPTIONS ..; fi
+    - MODULES="-DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE -DENABLE_ARPACK=TRUE -DENABLE_GEOMETRYCONCRETE=TRUE"
+    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_EXAMPLES=$EXAMPLES"
+    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake $BUILD_OPTIONS $OPTIONS ..; fi
 script:
     - make -j2
     - ctest --output-on-failure
 after_success:
     - cd ..
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
+    - if [[ "$COVERAGE" == "TRUE" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi

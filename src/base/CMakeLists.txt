@@ -9,9 +9,6 @@ set(NuToBase_SOURCES
 # build static library
 add_library(NuToBase ${NuToBase_SOURCES})
 target_link_libraries(NuToBase ${Boost_LIBRARIES})
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToBase PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
 
 # install library
 install(TARGETS NuToBase

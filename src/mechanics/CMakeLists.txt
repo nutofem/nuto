@@ -277,14 +277,6 @@ if(ENABLE_SHOW_TIME)
     target_link_libraries(NuToMechanics rt)
 endif()
 
-if(ENABLE_CGAL)
-    target_link_libraries(NuToMechanics ${CGAL_LIBRARIES})
-endif()
-
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
-
 target_link_libraries(NuToMechanics jsoncpp)
 
 if(ENABLE_MPI)
@@ -297,7 +289,6 @@ install(TARGETS NuToMechanics
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     )
-
 
 if(ENABLE_MPI)
     message(STATUS "Creating feti library...")

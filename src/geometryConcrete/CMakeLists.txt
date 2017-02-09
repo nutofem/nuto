@@ -35,10 +35,6 @@ else()
     target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath)
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToGeometryConcrete PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
-
 # install library
 install(TARGETS NuToGeometryConcrete
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}

@@ -27,11 +27,7 @@ if(ENABLE_SHOW_TIME)
     target_link_libraries(NuToOptimize rt)
 endif()
 
-set(NuToOptimize_COMPILE_FLAGS "${PYTHON_C_FLAGS}")
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set(NuToOptimize_COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS} -fPIC")
-endif()
-set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS}")
+set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 
 # install library
 install(TARGETS NuToOptimize

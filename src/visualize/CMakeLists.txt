@@ -22,9 +22,6 @@ set(NuToVisualize_SOURCES
 
 # build shared library
 add_library(NuToVisualize ${NuToVisualize_SOURCES})
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToVisualize PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
 
 # install library
 install(TARGETS NuToVisualize
