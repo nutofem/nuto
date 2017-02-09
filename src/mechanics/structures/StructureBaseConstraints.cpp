@@ -30,7 +30,6 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "ANN/ANN.h"
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
@@ -576,70 +575,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     GroupAddNodesFromElements(nodeGroup, rElementGroup);
     std::vector<int> nodeGroupIds = GroupGetMemberIds(nodeGroup);
 
-    const int dim = GetDimension();
-
-    //////////////////////////////////////
-    // find nearest nodes
-    //////////////////////////////////////
-
-
-//    std::cout << "Query Node Id: \t " << rNode << std::endl;
-
-    // quueryPoint stores the coordinates of rNode in an ANN container
-    ANNcoord* queryPoint;
-    queryPoint = annAllocPt(dim);
-
-    // dataPoints stores the coordinates of all nodes in rElementGroup in an ANN container
-    ANNpoint* dataPoints;
-    dataPoints = annAllocPts(GroupGetNumMembers(nodeGroup), dim);
-
-
-//    std::cout << "GroupGetNumMembers(nodeGroup)" << GroupGetNumMembers(nodeGroup) << std::endl;
-
-    for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
-    {
-        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds[iNode])->Get(Node::eDof::COORDINATES);
-
-        for (int iDim = 0; iDim < dim; ++iDim)
-            dataPoints[iNode][iDim] = tmpMatrix(iDim, 0);
-    }
-
-
-
     Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
-
-    for (int iDim = 0; iDim < dim; ++iDim)
-        queryPoint[iDim] = queryNodeCoords(iDim,0);
-
-
-//    std::cout << "queryPoint: \n" << queryPoint[0] << std::endl;
-//    std::cout << queryPoint[1] << std::endl;
-//    std::cout << queryPoint[2] << std::endl;
-
-
-    // distances stores the sorted distances in an ANN container
-    ANNdist* distances;
-    distances = new ANNdist[rNumNearestNeighbours];
-
-    // distances stores the nearest node ids in an ANN container
-    ANNidx* nearestNeighbourIds;
-    nearestNeighbourIds = new ANNidx[rNumNearestNeighbours];
-
-    // builds a k-dimensional tree for the nearest neighbour algorithm
-    ANNkd_tree* kdTree;
-    kdTree = new ANNkd_tree(dataPoints, GroupGetNumMembers(nodeGroup), dim);
-    kdTree->annkSearch(queryPoint, rNumNearestNeighbours, nearestNeighbourIds, distances, rTolerance);
-
-    delete [] nearestNeighbourIds; // clean things up
-    delete [] distances;
-    delete kdTree;
-
-    annDeallocPts(dataPoints);
-    annDeallocPt(queryPoint);
-    annClose(); // done with ANN
-
-//    std::cout << "end of ANN" << std::endl;
-
 
     //////////////////////////////////////
     //
@@ -650,6 +586,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     std::vector<int> elementGroupIds = GroupGetMemberIds(nearestElements);
 
     int correctElementId = -1;
+    const int dim = GetDimension();
     switch (dim)
     {
         case 2:
@@ -773,15 +710,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     std::vector<int> unusedId(dim);
     for (int iDim = 0; iDim < dim; ++iDim)
     {
-//        unusedId[iDim] = mConstraintMap.rbegin()->first + 1;
-        //find unused integer id
-        unusedId[iDim] =  0;
-        boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(unusedId[iDim]);
-        while (it!=mConstraintMap.end())
-        {
-            unusedId[iDim]++;
-            it = mConstraintMap.find(unusedId[iDim]);
-        }
+        unusedId[iDim] = GetUnusedId(mConstraintMap);
         ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::eDof::DISPLACEMENTS, iDim, 1.0, 0.0);
     }
 
