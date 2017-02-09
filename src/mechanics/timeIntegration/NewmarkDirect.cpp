@@ -10,7 +10,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "math/EigenSolverArpack.h"
 #include "base/CallbackInterface.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
@@ -428,20 +427,8 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     //no convergence, reduce the time step and start from scratch
                     curTime -= timeStep;
                     timeStep *= 0.5;
-                    if (timeStep < mMinTimeStep) {
-
-#ifdef HAVE_ARPACK
-                        hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
-                        const BlockSparseMatrix& evMatrix = hessian0.JJ;
-
-                        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = evMatrix.ExportToCSR();
-                        EigenSolverArpack m;
-                        auto evs = m.GetSmallest(*matrixForSolver);
-                        auto evl = m.GetLargest(*matrixForSolver);
-                        std::cout << "EV smallest: " << evs.first << std::endl;
-                        std::cout << "EV largest:  " << evl.first << std::endl;
-                        std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
-#endif // HAVE_ARPACK
+                    if (timeStep < mMinTimeStep)
+                    {
                         mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
                         throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                     }

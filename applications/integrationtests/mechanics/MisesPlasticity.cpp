@@ -17,6 +17,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
 
 void SetConstitutiveLaw(NuTo::Structure& rStructure)
@@ -64,18 +65,8 @@ void Mises2D(const std::string& rDir)
     NuTo::Structure myStructure(2);
     myStructure.SetVerboseLevel(10);
 
-    std::vector<int> nodeIds(4);
-    nodeIds[0] = myStructure.NodeCreate(Eigen::Vector2d({1,1}));
-    nodeIds[1] = myStructure.NodeCreate(Eigen::Vector2d({0,1}));
-    nodeIds[2] = myStructure.NodeCreate(Eigen::Vector2d({0,0}));
-    nodeIds[3] = myStructure.NodeCreate(Eigen::Vector2d({1,0}));
-
-    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpol = NuTo::MeshGenerator::Grid<2>(myStructure, {1., 1.}, {1, 1}).second;
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-
-
-    myStructure.ElementCreate(interpol, nodeIds);
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
@@ -154,51 +145,17 @@ void Mises3D(const std::string& rDir)
     NuTo::Structure myStructure(3);
     myStructure.SetVerboseLevel(10);
 
-    std::vector<int> nodeIds(8);
-
-
-    nodeIds[0] = myStructure.NodeCreate(Eigen::Vector3d({1,1,1}));
-    nodeIds[1] = myStructure.NodeCreate(Eigen::Vector3d({0,1,1}));
-    nodeIds[2] = myStructure.NodeCreate(Eigen::Vector3d({0,0,1}));
-    nodeIds[3] = myStructure.NodeCreate(Eigen::Vector3d({1,0,1}));
-    nodeIds[4] = myStructure.NodeCreate(Eigen::Vector3d({1,1,0}));
-    nodeIds[5] = myStructure.NodeCreate(Eigen::Vector3d({0,1,0}));
-    nodeIds[6] = myStructure.NodeCreate(Eigen::Vector3d({0,0,0}));
-    nodeIds[7] = myStructure.NodeCreate(Eigen::Vector3d({1,0,0}));
-
-
-    std::vector<int> nodesTet0 = {nodeIds[0], nodeIds[1], nodeIds[3], nodeIds[7]};
-    std::vector<int> nodesTet1 = {nodeIds[0], nodeIds[1], nodeIds[7], nodeIds[4]};
-    std::vector<int> nodesTet2 = {nodeIds[5], nodeIds[4], nodeIds[7], nodeIds[1]};
-    std::vector<int> nodesTet3 = {nodeIds[6], nodeIds[5], nodeIds[7], nodeIds[1]};
-    std::vector<int> nodesTet4 = {nodeIds[2], nodeIds[7], nodeIds[1], nodeIds[6]};
-    std::vector<int> nodesTet5 = {nodeIds[2], nodeIds[3], nodeIds[1], nodeIds[7]};
-
-
-
-
-    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpol = NuTo::MeshGenerator::Grid<3>(myStructure, {1., 1., 1.}, {1, 1, 1},
+                                                NuTo::Interpolation::eShapeType::TETRAHEDRON3D).second;
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-
-
-    myStructure.ElementCreate(interpol, nodesTet0);
-    myStructure.ElementCreate(interpol, nodesTet1);
-    myStructure.ElementCreate(interpol, nodesTet2);
-    myStructure.ElementCreate(interpol, nodesTet3);
-    myStructure.ElementCreate(interpol, nodesTet4);
-    myStructure.ElementCreate(interpol, nodesTet5);
-
-
-
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
-
     myStructure.ElementTotalSetSection(myStructure.SectionCreate(NuTo::eSectionType::VOLUME));
 
     // boundary conditions
     int nOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector3d::Zero(), 1.e-6);
+    int nFix = myStructure.NodeGetIdAtCoordinate(Eigen::Vector3d(0,1,0), 1.e-6);
 
     int gNodesXminus = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int gNodesXplus  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
@@ -207,8 +164,10 @@ void Mises3D(const std::string& rDir)
     myStructure.GroupAddNodeCoordinateRange(gNodesXplus,  0, 1, 1);
 
     myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXminus, Eigen::Vector3d::UnitX(), 0);
+
     myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector3d::UnitY(), 0);
     myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector3d::UnitZ(), 0);
+    myStructure.ConstraintLinearSetDisplacementNode(nFix, Eigen::Vector3d::UnitZ(), 0);
 
     int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXplus, Eigen::Vector3d::UnitX(), 0);
 
