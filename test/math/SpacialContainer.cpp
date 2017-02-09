@@ -84,3 +84,12 @@ BOOST_AUTO_TEST_CASE(SpacialContainer_GetDuplicatesValues)
     BOOST_CHECK_EQUAL(duplicates[2].size(), 1);
     BOOST_CHECK_EQUAL(duplicates[2][0].value, 20);
 }
+
+BOOST_AUTO_TEST_CASE(SpacialContainer_HasEntryAtCoordinate)
+{
+    auto testNodes = GetTestNodes();
+    NuTo::SpacialContainer<TestNode, TestNodeCoord> s(testNodes);
+
+    BOOST_CHECK(s.HasEntryAtCoordinate(Eigen::Vector2d({0,0}), 0.1));
+    BOOST_CHECK(not s.HasEntryAtCoordinate(Eigen::Vector2d({1,0}), 0.1));
+}

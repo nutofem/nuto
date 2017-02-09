@@ -97,6 +97,7 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
         s.GroupAddElement(gMatrix, 1);
         s.GroupAddElement(gAggreg, 2);
     }
+
     auto prism = NuTo::MeshCompanion::ElementPrismsCreate(s, gMatrix, gAggreg, thickness);
 
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

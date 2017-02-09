@@ -49,11 +49,23 @@ public:
         annClose();
     }
 
+
+    //! @brief checks if there are entries at rCoordinate in the radius rRadius
+    //! @param rCoordinate querry point
+    //! @param rRadius nearest neighbor search radius
+    //! @return true (at least one coordinate found) or false (nothing found)
+    bool HasEntryAtCoordinate(Eigen::VectorXd rCoordinate, double rRadius) const
+    {
+        ANNpoint querryPoint = rCoordinate.data();
+        ANNdist radiusSquared = rRadius * rRadius;
+        return mTree->annkFRSearch(querryPoint, radiusSquared, 0) > 0;
+    }
+
     //! @brief finds and returns values that have the same coordinates within the radius rRadius
     //! @param rRadius nearest neighbor search radius
     //! @return outer vector has the size of unique coordinates
     //!         inner vector contains all objects with the same coordinates
-    std::vector<std::vector<T>> GetAllDuplicateValues(double rRadius)
+    std::vector<std::vector<T>> GetAllDuplicateValues(double rRadius) const
     {
         auto duplicateIds = GetAllDuplicateIDs(rRadius);
         std::vector<std::vector<T>> values;
@@ -75,7 +87,7 @@ public:
     //! @brief completely similar to public function @GetAllDuplicateValues but returns IDs instead of values
     //! @param rRadius nearest neighbor search radius
     //! @return see @GetAllDuplicateValues (with IDs)
-    std::vector<std::vector<int>> GetAllDuplicateIDs(double rRadius)
+    std::vector<std::vector<int>> GetAllDuplicateIDs(double rRadius) const
     {
         // define a set of searchIDs. All points in the neighborhood of a previously searched ID
         // are removed from this set. (to prevent duplicate duplicates. u see?)
@@ -98,7 +110,7 @@ public:
     //! @brief finds all ids in the neighborhood of point rIndex
     //! @param rRadius nearest neighbor search radius
     //! @return all ids in the neighborhood of point rIndex
-    std::vector<int> FindIDsWithinRadius(int rIndex, double rRadius)
+    std::vector<int> FindIDsWithinRadius(int rIndex, double rRadius) const
     {
         ANNpoint querryPoint = mPoints[rIndex];
         ANNdist radiusSquared = rRadius * rRadius;
