@@ -6,40 +6,56 @@
 #include <set>
 
 #include <vector>
-
+#include <memory>
 
 namespace NuTo
 {
 
-//! @brief
-//! @tparam T
-//! @tparam TDim
-template <typename T, int TDim>
+//! @brief Container that builds a KD-tree data structure using ANN for various neighbor searches
+//! @tparam T object type
+//! @tparam TDim struct that defines
+//!              Eigen::VectorXd operator() (const T&)
+//!              to extract the coordinate of T
+template <typename T, typename Coordinate>
 class SpacialContainer
 {
 public:
-    SpacialContainer(const std::vector<Eigen::Matrix<double, TDim, 1>>& rCoordinates, const std::vector<T>& rValues)
-        : mData(rValues), mSize(static_cast<int>(mData.size()))
-    {
-        assert(rCoordinates.size() == rValues.size());
-        mPoints = annAllocPts(mSize, TDim);
-        for (int iRow = 0; iRow < mSize; ++iRow)
-            for (int iDim = 0; iDim < TDim; ++iDim)
-                mPoints[iRow][iDim] = rCoordinates[iRow][iDim];
 
-        mTree = new ANNkd_tree(mPoints, mSize, TDim);
+    //! @brief ctor. saves rValues and builds the KD-tree for each coordinate in rValues
+    //! @param rValues objects
+    SpacialContainer(const std::vector<T>& rValues)
+        : mData(rValues)
+    {
+        assert (not mData.empty());
+
+        const int dim = Coordinate()(mData[0]).rows();
+        const int size = static_cast<int>(mData.size());
+
+
+
+        mPoints = annAllocPts(size, dim);
+        for (int iRow = 0; iRow < size; ++iRow)
+        {
+            Eigen::VectorXd coordinate = Coordinate()(mData[iRow]);
+            for (int iDim = 0; iDim < dim; ++iDim)
+                mPoints[iRow][iDim] = coordinate[iDim];
+        }
+        mTree = std::make_unique<ANNkd_tree>(mPoints, size, dim);
     }
 
     ~SpacialContainer()
     {
-        delete mTree;
         annDeallocPts(mPoints);
         annClose();
     }
 
-    std::vector<std::vector<T>> GetAllDuplicateValues(double rTolerance)
+    //! @brief finds and returns values that have the same coordinates within the radius rRadius
+    //! @param rRadius nearest neighbor search radius
+    //! @return outer vector has the size of unique coordinates
+    //!         inner vector contains all objects with the same coordinates
+    std::vector<std::vector<T>> GetAllDuplicateValues(double rRadius)
     {
-        auto duplicateIds = GetAllDuplicateIDs(rTolerance);
+        auto duplicateIds = GetAllDuplicateIDs(rRadius);
         std::vector<std::vector<T>> values;
         values.reserve(duplicateIds.size());
 
@@ -56,18 +72,21 @@ public:
         return values;
     }
 
-
-    std::vector<std::vector<int>> GetAllDuplicateIDs(double rTolerance)
+    //! @brief completely similar to public function @GetAllDuplicateValues but returns IDs instead of values
+    //! @param rRadius nearest neighbor search radius
+    //! @return see @GetAllDuplicateValues (with IDs)
+    std::vector<std::vector<int>> GetAllDuplicateIDs(double rRadius)
     {
-        std::vector<std::vector<int>> duplicates;
-
+        // define a set of searchIDs. All points in the neighborhood of a previously searched ID
+        // are removed from this set. (to prevent duplicate duplicates. u see?)
         std::set<int> searchIds;
-        for (int i = 0; i < mSize; ++i)
+        for (int i = 0; i < static_cast<int>(mData.size()); ++i)
             searchIds.insert(i);
 
+        std::vector<std::vector<int>> duplicates;
         while (not searchIds.empty())
         {
-            auto duplicatesAtId = GetDuplicateIDs(*searchIds.begin(), rTolerance);
+            auto duplicatesAtId = FindIDsWithinRadius(*searchIds.begin(), rRadius);
             duplicates.push_back(duplicatesAtId);
 
             for (int duplicate : duplicatesAtId)
@@ -76,31 +95,33 @@ public:
         return duplicates;
     }
 
-    std::vector<int> GetDuplicateIDs(int rIndex, double rTolerance)
+    //! @brief finds all ids in the neighborhood of point rIndex
+    //! @param rRadius nearest neighbor search radius
+    //! @return all ids in the neighborhood of point rIndex
+    std::vector<int> FindIDsWithinRadius(int rIndex, double rRadius)
     {
         ANNpoint querryPoint = mPoints[rIndex];
-        ANNdist distanceSquared = rTolerance * rTolerance;
+        ANNdist radiusSquared = rRadius * rRadius;
 
-        // the return value of this function is ALWAYS the number of points in the distanceSquared
-        int numPointsInDistance = mTree->annkFRSearch(querryPoint, distanceSquared, 0);
+        // the return value of this function is ALWAYS the number of points in the radiusSquared
+        int numPointsInDistance = mTree->annkFRSearch(querryPoint, radiusSquared, 0);
 
         // tiny hack: ANNidx == int. so allocate std::vector<int> directly
         std::vector<ANNidx> nearestNeighbourIds(numPointsInDistance);
-        mTree->annkFRSearch(querryPoint, distanceSquared, numPointsInDistance, nearestNeighbourIds.data());
+        mTree->annkFRSearch(querryPoint, radiusSquared, numPointsInDistance, nearestNeighbourIds.data());
         return nearestNeighbourIds;
     }
 
-
-
 private:
 
+    //! @brief data reference
     const std::vector<T>& mData;
 
+    //! @brief coordinates
     ANNpointArray mPoints;
 
-    ANNkd_tree* mTree;
-
-    int mSize; // annoying "unsigned comparison...
+    //! @brief KD-tree
+    std::unique_ptr<ANNkd_tree> mTree;
 };
 
 } // namespace NuTo
