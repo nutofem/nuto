@@ -3,25 +3,13 @@ import sys
 import os
 import numpy as np
 
-# call of the test file, e.g.
-# /usr/local/bin/python ~/develop/nuto/test/mechanics/Brick8N.py Linux x86_64 ~/develop/nuto/test/mechanics
-
 # if set to true, the result will be generated (for later use in the test routine)
 # otherwise, the current result will be compared to the stored result
 createResult = False
 
-# show the results on the screen
-printResult = True
-
-# system name and processor
-system = sys.argv[1]+sys.argv[2]
-
 # path in the original source directory and current filename at the end
-pathToResultFiles = os.path.join(sys.argv[3], "results", system, os.path.basename(sys.argv[0]))
-
-# remove the extension
-fileExt = os.path.splitext(sys.argv[0])[1]
-pathToResultFiles = pathToResultFiles.replace(fileExt, '')
+path = os.path.dirname(os.path.abspath(__file__))
+pathToResultFiles = os.path.join(path, "results")
 
 # no error in file, modified, if error is detected
 error = False
@@ -87,19 +75,12 @@ myStructure.NodeBuildGlobalDofs()
 # calculate element stiffness matrix
 Ke = myStructure.ElementBuildHessian0(myElement1).Get("Displacements", "Displacements")
 
-if (printResult):
-    print "Ke"
-    print Ke
-
 # correct stiffness matrix
+resultFile = os.path.join(pathToResultFiles, "Brick8NStiffness.txt")
 if createResult:
-    print pathToResultFiles+"Stiffness.txt"
-    np.savetxt(pathToResultFiles+"Stiffness.txt", Ke, header="#Correct result")
+    np.savetxt(resultFile, Ke, header="#Correct result")
 else:
-    KeCorrect = np.loadtxt(pathToResultFiles+"Stiffness.txt", skiprows=1)
-    if (printResult):
-        print "KeCorrect"
-        print KeCorrect
+    KeCorrect = np.loadtxt(resultFile, skiprows=1)
     if (np.max(np.abs(Ke-KeCorrect)) > 1e-8):
         print '[' + system, sys.argv[0] + '] : stiffness is not correct.'
         error = True
@@ -109,19 +90,12 @@ else:
 Fi = myStructure.ElementBuildInternalGradient(myElement1).Get("Displacements")
 Fi = Fi.squeeze()
 
-if (printResult):
-    print "Fi"
-    print Fi
-
 # correct resforce vector
+resultFile = os.path.join(pathToResultFiles, "Brick8NInternalforce.txt")
 if createResult:
-    print pathToResultFiles+"Internalforce.txt"
-    np.savetxt(pathToResultFiles+"Internalforce.txt", Fi, header="#Correct result")
+    np.savetxt(resultFile, Fi, header="#Correct result")
 else:
-    FiCorrect = np.loadtxt(pathToResultFiles+"Internalforce.txt", skiprows=1)
-    if (printResult):
-        print "FiCorrect"
-        print FiCorrect
+    FiCorrect = np.loadtxt(resultFile, skiprows=1)
     if (np.max(np.abs(Fi-FiCorrect)) > 1e-8):
         print '[' + system, sys.argv[0] + '] : internal force is not correct.'
         error = True
@@ -145,11 +119,6 @@ for theNode in range(0, cols/myStructure.GetDimension()):
         KeApprox[:, curColumn] = (Fi_new-Fi)*(1./delta)
         curColumn += 1
 
-if (printResult):
-    print "KeApprox with central differences"
-    print KeApprox
-
-
 # check stiffness with internal force vector
 if (np.max(np.abs(KeApprox-Ke)) > 1e-8):
     print '[' + system, sys.argv[0] + '] : stiffness matrix via central differences and resforces not correct.'
@@ -172,12 +141,6 @@ EngineeringStrainCorrect = np.array([
     [0.1, 0, 0, 0, 0.1, 0.1],
     [0.1, 0, 0, 0, 0.1, 0.1]]).transpose()
 
-if (printResult):
-    print "EngineeringStrainCorrect"
-    print EngineeringStrainCorrect
-    print "EngineeringStrain"
-    print EngineeringStrain
-
 if (np.max(np.abs(EngineeringStrain-EngineeringStrainCorrect)) > 1e-8):
     print '[' + system, sys.argv[0] + '] : strain is not correct.'
     error = True
@@ -195,12 +158,6 @@ EngineeringStressCorrect = np.array([
     [1.2, 0.4, 0.4, 0.0, 0.4, 0.4],
     [1.2, 0.4, 0.4, 0.0, 0.4, 0.4]]).transpose()
 
-if (printResult):
-    print "EngineeringStressCorrect"
-    print EngineeringStressCorrect
-    print "EngineeringStress"
-    print EngineeringStress
-
 if (np.max(np.abs(EngineeringStress-EngineeringStressCorrect)) > 1e-8):
     print '[' + system, sys.argv[0] + '] : stress is not correct.'
     error = True
@@ -208,10 +165,6 @@ if (np.max(np.abs(EngineeringStress-EngineeringStressCorrect)) > 1e-8):
 
 # calculate external force vector for the first load case (pressure)
 Fe = myStructure.BuildGlobalExternalLoadVector(0)
-
-if (printResult):
-    print "Fe.J for pressure load"
-    print Fe.J.Get("Displacements")
 
 # correct external force for pressure load vector (sum up the load in
 # x direction eveything else should be zero
@@ -222,11 +175,6 @@ if (abs(sumX-8.) > 1e-8):
 
 # calculate external force vector for the second load cases (constDirection)
 Fe = myStructure.BuildGlobalExternalLoadVector(1)
-
-if (printResult):
-    print "Fe1 const direction load"
-    print Fe.J.Get("Displacements")
-
 
 # correct external force for pressure load vector (sum up the load in
 # x direction eveything else should be zero

@@ -5,7 +5,6 @@
 # - NonlocalDamagePlasticityBeam
 # - NonlocalDamagePlasticityModel
 # - ImportGmsh
-# - Truss1DMultiphase
 
 # copy meshes
 foreach(mesh
@@ -20,7 +19,6 @@ endforeach()
 
 # generate tests
 foreach(test
-    Brick8N
     CSDAPrism3D
     ExplicitTimeIntegration
     HeatedPlate
@@ -31,11 +29,8 @@ foreach(test
     SparseDirectSolverMUMPS
     Temperature1D
     TestOperators
-    Tetrahedron10N
     Truss1D2N
-    Truss1D2NReference
     VisualizePlane2D4N
-    VisualizeTruss1D2N
     )
 
     add_executable(${test} ${test}.cpp)
