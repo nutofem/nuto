@@ -24,7 +24,7 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    Eigen::MatrixXd GatherInterfaceRigidBodyModes(const Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
+    Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
     {
 
         std::vector<int> recvCount;
@@ -99,8 +99,22 @@ public:
 
     }
 
+    void AssembleGMatrix(MatrixXd interfaceRigidModes)
+    {
+
+    }
+
+    void Solve()
+    {
+
+    }
 private:
     const double    mCpgTolerance     = 1.0e-6;
     const int       mCpgMaxIterations = 1000;
+
+    MatrixXd mG;
+    MatrixXd mGtransGinv;
+
+
 };
 
