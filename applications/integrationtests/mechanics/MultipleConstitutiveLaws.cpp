@@ -504,8 +504,8 @@ void CheckMechanicsResultsAdditiveOutput(NuTo::Structure& rS)
 
 template<int TDim>
 void CheckMoistureTransportResults(NuTo::Structure& rS,
-                                   std::array<int,TDim> rN,
-                                   std::array<double,TDim> rL)
+                                   std::vector<int> rN,
+                                   std::vector<double> rL)
 {
     assert((rN[0] == 16)   && "Only 16 elements in x-direction allowed for this test --- needed for direct comparison to values given in Johannesson 2010");
     assert((rL[0] == 0.16) && "The length in flow direction (x) must be 0.16m for direct comparison with paper values");
@@ -579,8 +579,8 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 //! @param rN: array with number of elements in each direction
 //! @param rL: array with length of elements in each direction
 template<int TDim>
-void AdditiveOutputTest(std::array<int,TDim> rN,
-                        std::array<double,TDim> rL,
+void AdditiveOutputTest(std::vector<int> rN,
+                        std::vector<double> rL,
                         std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                         bool rStaggered = false)
 {
@@ -634,7 +634,7 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     for (auto& it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
@@ -806,8 +806,8 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
 
 template<int TDim>
-void AdditiveInputImplicitTest(std::array<int,TDim> rN,
-                               std::array<double,TDim> rL,
+void AdditiveInputImplicitTest(std::vector<int> rN,
+                               std::vector<double> rL,
                                std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                                bool rStaggered = false)
 {
@@ -853,7 +853,7 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     for (auto& it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);

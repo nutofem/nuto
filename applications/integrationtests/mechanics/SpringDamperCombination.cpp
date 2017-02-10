@@ -292,7 +292,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
 
 template<int TDim>
 void CheckResultsSpringDamper(NuTo::Structure& rS,
-                              std::array<double,TDim> rL)
+                              std::vector<double> rL)
 {
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
@@ -323,7 +323,7 @@ void CheckResultsSpringDamper(NuTo::Structure& rS,
 
 template<int TDim>
 void CheckResultsSpringDamperSerial(NuTo::Structure& rS,
-                              std::array<double,TDim> rL)
+                                    std::vector<double> rL)
 {
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
@@ -361,8 +361,8 @@ void CheckResultsSpringDamperSerial(NuTo::Structure& rS,
 
 
 template <int TDim>
-void TestSpringDamperCombination(std::array<int,TDim> rN,
-                                 std::array<double,TDim> rL)
+void TestSpringDamperCombination(std::vector<int> rN,
+                                 std::vector<double> rL)
 {
     if(TDim>1)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
@@ -399,7 +399,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     S.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
@@ -499,8 +499,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     S.CalculateInitialValueRates(TI);
     TI.Solve(tCtrl.t_final);
 
-    CheckResultsSpringDamper<TDim>(S,
-                       rL);
+    CheckResultsSpringDamper<TDim>(S, rL);
 
     std::cout << "Test - PASSED!" << std::endl << std::endl;
 }
@@ -508,8 +507,8 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
 
 template <int TDim>
-void TestSpringDamperSerialChain(std::array<int,TDim> rN,
-                                 std::array<double,TDim> rL)
+void TestSpringDamperSerialChain(std::vector<int> rN,
+                                 std::vector<double> rL)
 {
     if(TDim>1)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
@@ -566,7 +565,7 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     S.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
@@ -668,8 +667,7 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
     S.CalculateInitialValueRates(TI);
     TI.Solve(tCtrl.t_final);
 
-    CheckResultsSpringDamperSerial<TDim>(S,
-                       rL);
+    CheckResultsSpringDamperSerial<TDim>(S, rL);
 
     std::cout << "Test - PASSED!" << std::endl << std::endl;
 }

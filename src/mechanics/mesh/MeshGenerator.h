@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include <array>
 #include <functional>
 #include <eigen3/Eigen/Dense>
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -20,10 +20,9 @@ public:
     //! @param rNumDivisions number of grid cells in each direction
     //! @param rElementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
-    template <int TDim>
     static std::pair<int, int> Grid(Structure& rS,
-                                    std::array<double, TDim> rEnd,
-                                    std::array<int, TDim> rNumDivisions,
+                                    std::vector<double> rEnd,
+                                    std::vector<int> rNumDivisions,
                                     Interpolation::eShapeType rElementShape);
 
     //! @brief creates a grid from origin to rEnd with a default element shape
@@ -32,10 +31,9 @@ public:
     //! @param rEnd coordinates of the end point
     //! @param rNumDivisions number of grid cells in each direction
     //! @return pair<groupId, interpolationTypeId>
-    template <int TDim>
     static std::pair<int, int> Grid(Structure& rS,
-                                    std::array<double, TDim> rEnd,
-                                    std::array<int, TDim> rNumDivisions);
+                                    std::vector<double> rEnd,
+                                    std::vector<int> rNumDivisions);
 
     //! @param rRadius ... radius of the cylinder
     //! @param rHeight ... height of the cylinder

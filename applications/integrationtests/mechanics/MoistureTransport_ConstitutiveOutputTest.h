@@ -261,13 +261,13 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
     switch (TDim)
     {
     case 1:
-        meshInfo = NuTo::MeshGenerator::Grid<1>(S, {1}, {1});
+        meshInfo = NuTo::MeshGenerator::Grid(S, {1}, {1});
         break;
     case 2:
-        meshInfo = NuTo::MeshGenerator::Grid<2>(S, {1,1}, {1,1});
+        meshInfo = NuTo::MeshGenerator::Grid(S, {1,1}, {1,1});
         break;
     case 3:
-        meshInfo = NuTo::MeshGenerator::Grid<3>(S, {1,1,1}, {1,1,1});
+        meshInfo = NuTo::MeshGenerator::Grid(S, {1,1,1}, {1,1,1});
         break;
     default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"invalid dimension");

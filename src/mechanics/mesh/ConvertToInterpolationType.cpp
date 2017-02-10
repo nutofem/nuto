@@ -157,8 +157,6 @@ void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int r
     NuTo::SpacialContainer<TmpNode, TmpNodeCoordinate> spacialContainer(newNodes);
     auto duplicates = spacialContainer.GetAllDuplicateValues(rNodeDistanceMerge);
 
-    std::cout << "num duplicates " << duplicates.size() << std::endl;
-
     for (auto& pairsAtSameCoordinate : duplicates)
     {
         Eigen::VectorXd coordinate = pairsAtSameCoordinate[0].coordinate;

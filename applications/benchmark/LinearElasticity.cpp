@@ -16,9 +16,9 @@ void SolveAMediumSizedProblem()
     structure.ConstitutiveLawSetParameterDouble(constitutiveLaw, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
 
 
-    std::array<int, 3> numElements{10, 10, 100}; // i.e. 100k Elements
-    std::array<double, 3> length{1.0, 1.0, 10.0};
-    auto meshInfo = MeshGenerator::Grid<3>(structure, length, numElements);
+    std::vector<int> numElements{10, 10, 100}; // i.e. 100k Elements
+    std::vector<double> length{1.0, 1.0, 10.0};
+    auto meshInfo = MeshGenerator::Grid(structure, length, numElements);
 
     structure.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.ElementGroupSetConstitutiveLaw(meshInfo.first, constitutiveLaw);

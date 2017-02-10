@@ -533,8 +533,8 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
 
 template<int TDim>
 void CheckMoistureTransportResults(NuTo::Structure& rS,
-                                   std::array<int,TDim> rN,
-                                   std::array<double,TDim> rL)
+                                   std::vector<int> rN,
+                                   std::vector<double> rL)
 {
 
 
@@ -588,8 +588,8 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 //! @param rN: array with number of elements in each direction
 //! @param rL: array with length of elements in each direction
 template<int TDim>
-void ShrinkageTestStressBased(  std::array<int,TDim> rN,
-                                std::array<double,TDim> rL,
+void ShrinkageTestStressBased(  std::vector<int> rN,
+                                std::vector<double> rL,
                                 std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                                 bool rStaggered = false)
 {
@@ -650,7 +650,7 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     for (auto& it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
@@ -873,8 +873,8 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 //! @param rN: array with number of elements in each direction
 //! @param rL: array with length of elements in each direction
 template<int TDim>
-void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
-                                std::array<double,TDim> rL,
+void ShrinkageTestStrainBased(  std::vector<int> rN,
+                                std::vector<double> rL,
                                 std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                                 bool rStaggered = false)
 {
@@ -939,7 +939,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     for (auto& it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
@@ -1146,9 +1146,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     NuTo::Timer timer("shrinkagetest");
     TI.Solve(tCtrl.t_final);
 
-    CheckMoistureTransportResults<TDim>(S,
-                                        rN,
-                                        rL);
+    CheckMoistureTransportResults<TDim>(S, rN, rL);
     /*CheckMechanicsResults<TDim>(S)*/;
 }
 

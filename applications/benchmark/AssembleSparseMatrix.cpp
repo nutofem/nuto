@@ -26,9 +26,9 @@ public:
         int section = mS.SectionCreate(eSectionType::VOLUME);
         int constitutiveLaw = mS.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
 
-        std::array<int, 3> numElements{10, 10, 1000}; // i.e. 100k Elements
-        std::array<double, 3> length{1.0, 1.0, 10.0};
-        auto meshInfo = MeshGenerator::Grid<3>(mS, length, numElements);
+        std::vector<int> numElements{10, 10, 1000}; // i.e. 100k Elements
+        std::vector<double> length{1.0, 1.0, 10.0};
+        auto meshInfo = MeshGenerator::Grid(mS, length, numElements);
 
         mS.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
 

@@ -65,7 +65,7 @@ void Mises2D(const std::string& rDir)
     NuTo::Structure myStructure(2);
     myStructure.SetVerboseLevel(10);
 
-    int interpol = NuTo::MeshGenerator::Grid<2>(myStructure, {1., 1.}, {1, 1}).second;
+    int interpol = NuTo::MeshGenerator::Grid(myStructure, {1., 1.}, {1, 1}).second;
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     myStructure.ElementTotalConvertToInterpolationType();
 
@@ -145,8 +145,8 @@ void Mises3D(const std::string& rDir)
     NuTo::Structure myStructure(3);
     myStructure.SetVerboseLevel(10);
 
-    int interpol = NuTo::MeshGenerator::Grid<3>(myStructure, {1., 1., 1.}, {1, 1, 1},
-                                                NuTo::Interpolation::eShapeType::TETRAHEDRON3D).second;
+    int interpol = NuTo::MeshGenerator::Grid(myStructure, {1., 1., 1.}, {1, 1, 1},
+                                             NuTo::Interpolation::eShapeType::TETRAHEDRON3D).second;
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     myStructure.ElementTotalConvertToInterpolationType();
 

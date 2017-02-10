@@ -1,9 +1,4 @@
-/*
- * Interpolation2D.cpp
- *
- *  Created on: 20 Mar 2015
- *      Author: ttitsche
- */
+#include "BoostUnitTest.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/ElementBase.h"
@@ -27,26 +22,13 @@
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
-#include "base/Exception.h"
-#include <boost/filesystem.hpp>
-
-#include <map>
-#include <string>
-#include <iostream>
-
-#include <cmath>
-
-const bool PRINTRESULT = true;
-
 //! @brief checks if the shape functions sum up to 1 (at all integration points)
 void CheckPartitionOfUnity(const NuTo::InterpolationType &rIT, const NuTo::Node::eDof &dofType)
 {
     for (int iIP = 0; iIP < rIT.GetCurrentIntegrationType().GetNumIntegrationPoints(); ++iIP)
     {
         Eigen::VectorXd ip = rIT.GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
-        if (abs(rIT.Get(dofType).CalculateShapeFunctions(ip).sum() - 1.) > 1.e-6)
-            throw NuTo::MechanicsException("[CheckPartitionOfUnity] shape functions at integration point "
-                                               + std::to_string(iIP) + " do not sum up to 1.");
+        BOOST_CHECK_CLOSE(rIT.Get(dofType).CalculateShapeFunctions(ip).sum(),  1., 1.e-6);
     }
 }
 
@@ -72,15 +54,8 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
             B_CDF.col(iDim) = (IT.CalculateShapeFunctions(nodeCoordinates) - N) / delta;
             nodeCoordinates[iDim] -= delta;
         }
-
-        if ((B - B_CDF).cwiseAbs().maxCoeff() > 1.e-4)
-        {
-            std::cout << "B\n" << B << std::endl;
-            std::cout << "B_CDF\n" << B_CDF << std::endl;
-            throw NuTo::MechanicsException("[CheckDerivatives] B != dN/dXi");
-        }
+        BOOST_CHECK_SMALL((B - B_CDF).cwiseAbs().maxCoeff(), 1.e-4);
     }
-    std::cout << "[CheckDerivatives] OK!" << std::endl;
 }
 
 //! @brief checks, whether or not the natural node coordinates match the shape functions
@@ -88,51 +63,24 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
 void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumNodesExpected)
 {
     auto dofType = NuTo::Node::eDof::COORDINATES;
-    assert(rIT.IsDof(dofType)); // coordinates exist?
-
-    if (rIT.GetNumNodes() != rNumNodesExpected)
-    {
-        std::cout << rIT.GetNumNodes() << std::endl;
-        std::cout << rIT.Info() << std::endl;
-        throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] Wrong node number");
-    }
-
+    BOOST_CHECK(rIT.IsDof(dofType));
+    BOOST_CHECK_EQUAL(rIT.GetNumNodes(), rNumNodesExpected);
 
     int numNodes = rIT.GetNumNodes();
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         auto naturalNodeCoordinate = rIT.Get(dofType).CalculateNaturalNodeCoordinates(iNode);
         auto shapeFunctions = rIT.Get(dofType).CalculateShapeFunctions(naturalNodeCoordinate);
-        int numShapeFunctions = shapeFunctions.rows();
-        if (numShapeFunctions != numNodes)
-            throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] number of nodes and number of shape functions does not match.");
+        BOOST_CHECK_EQUAL(shapeFunctions.rows(), numNodes);
 
-        for (int iShapeFunctions = 0; iShapeFunctions < numShapeFunctions; ++iShapeFunctions)
+        for (int iShapeFunctions = 0; iShapeFunctions < shapeFunctions.rows(); ++iShapeFunctions)
         {
             if (iShapeFunctions == iNode)
-            {
-                // should be 1
-                if (std::abs(shapeFunctions(iShapeFunctions) - 1) > 1.e-10)
-                {
-                    std::cout << "Error at ShapeFunction " << iShapeFunctions << std::endl;
-                    throw NuTo::MechanicsException(
-                        "[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 1).");
-                }
-            }
+                BOOST_CHECK_CLOSE(shapeFunctions(iShapeFunctions), 1, 1.e-8);
             else
-            {
-                // should be 0
-                if (std::abs(shapeFunctions(iShapeFunctions)) > 1.e-10)
-                {
-                    std::cout << "Error at ShapeFunction " << iShapeFunctions << " and node " << iNode << std::endl;
-                    throw NuTo::MechanicsException(
-                        "[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 0).");
-                }
-            }
+                BOOST_CHECK_SMALL(shapeFunctions(iShapeFunctions), 1.e-8);
         }
     }
-    std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;
-
     CheckPartitionOfUnity(rIT, dofType);
     CheckDerivatives(rIT);
 }
@@ -153,19 +101,13 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
             auto coordinatesLocal = rIT.Get(dofType).CalculateNaturalNodeCoordinates(iNodeDof);
             auto coordinatesGlobal = rIT.GetNaturalNodeCoordinates(globalNodeIndex);
 
-            bool coordinatesAreEqual = true;
             for (int iDim = 0; iDim < coordinatesGlobal.rows(); ++iDim)
-                if (std::abs(coordinatesGlobal(iDim) - coordinatesLocal(iDim)) > 1.e-10)
-                    coordinatesAreEqual = false;
-
-            if (not coordinatesAreEqual)
-                throw NuTo::MechanicsException("[CheckNodeIndexing] Node indexing wrong.");
+                BOOST_CHECK_CLOSE(coordinatesGlobal(iDim), coordinatesLocal(iDim), 1.e-8);
         }
     }
-    std::cout << "[CheckNodeIndexing] OK!" << std::endl;
 }
 
-void CheckTruss()
+BOOST_AUTO_TEST_CASE(InterpolationTruss)
 {
         NuTo::IntegrationType1D2NGauss2Ip myIntegrationType;
     {
@@ -200,13 +142,9 @@ void CheckTruss()
         myIT.PrintNodeIndices();
         CheckNodeIndexing (myIT);
     }
-
-
-    std::cout << "[CheckTruss] OK!" << std::endl;
-
 }
 
-void CheckTriangle()
+BOOST_AUTO_TEST_CASE(InterpolationTriangle)
 {
     NuTo::IntegrationType2D3NGauss13Ip myIntegrationType;
 
@@ -237,16 +175,10 @@ void CheckTriangle()
     myIT.AddDofInterpolation(NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     myIT.UpdateIntegrationType(myIntegrationType);
 
-    if (PRINTRESULT)
-    {
-        myIT.PrintNodeCoordinates();
-        myIT.PrintNodeIndices();
-    }
-
     CheckNodeIndexing(myIT);
 }
 
-void CheckQuad()
+BOOST_AUTO_TEST_CASE(InterpolationQuad)
 {
 
     NuTo::IntegrationType2D4NGauss4Ip myIntegrationType;
@@ -278,7 +210,7 @@ void CheckQuad()
 
 }
 
-void CheckTetrahedron()
+BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
 {
     NuTo::IntegrationType3D4NGauss4Ip myIntegrationType;
 
@@ -294,7 +226,7 @@ void CheckTetrahedron()
 
 }
 
-void CheckBrick()
+BOOST_AUTO_TEST_CASE(InterpolationBrick)
 {
     NuTo::IntegrationType3D8NGauss2x2x2Ip myIntegrationType;
 
@@ -324,7 +256,7 @@ void CheckBrick()
     CheckShapeFunctionsAndNodePositions(myIT125, 125);
 }
 
-void CheckPrism()
+BOOST_AUTO_TEST_CASE(InterpolationPrism)
 {
     NuTo::IntegrationType3D6NGauss2x3Ip myIntegrationType;
 
@@ -339,316 +271,122 @@ void CheckPrism()
     CheckShapeFunctionsAndNodePositions(myIT15, 18);
 }
 
-//! @brief API of the interpolation types
-void CheckAPI()
+
+BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTruss)
 {
-    NuTo::Structure myStructure(2);
 
-    double lx = 3;
-    double ly = 5;
-
-    //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
-    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-
-    //create section
-    int mySection = myStructure.SectionCreate("Plane_Strain");
-    myStructure.SectionSetThickness(mySection, 1);
-
-
-    // nodes without dofs, only coordinates
-    int nodeIndex0 = myStructure.NodeCreate(Eigen::Vector2d({0,0}));
-    int nodeIndex1 = myStructure.NodeCreate(Eigen::Vector2d({lx,0}));
-    int nodeIndex2 = myStructure.NodeCreate(Eigen::Vector2d({0,ly}));
-
-    std::vector<int> nodeIndices({nodeIndex0, nodeIndex1, nodeIndex2});
-
-    // create interpolation type
-    int myInterpolationTypeIndex = myStructure.InterpolationTypeCreate("TRIANGLE2D");
-
-    myStructure.InterpolationTypeAdd(myInterpolationTypeIndex, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationTypeIndex, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeSetIntegrationType(myInterpolationTypeIndex, NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip);
-
-    int elementIndex = myStructure.ElementCreate(myInterpolationTypeIndex, nodeIndices);
-    myStructure.ElementSetConstitutiveLaw(elementIndex, myMatLin);
-
-    int elementGroup = myStructure.GroupCreate("ELEMENTS");
-    myStructure.GroupAddElement(elementGroup, elementIndex);
-
-    myStructure.ElementConvertToInterpolationType(elementGroup, 0.01, 2.);
-
-    int numIP = myStructure.ElementGetElementPtr(elementIndex)->GetNumIntegrationPoints();
-    std::cout << numIP << std::endl;
-    assert(numIP == 13);
-
-    //assign constitutive law
-    myStructure.ElementTotalSetSection(mySection);
-
-    myStructure.NodeBuildGlobalDofs();
-    myStructure.CalculateMaximumIndependentSets();
-
-    auto hessian = myStructure.BuildGlobalHessian0();
-    auto internalGradient = myStructure.BuildGlobalInternalGradient();
-
-//    hessian.JJ.ExportToFullMatrix().Info(10,3, true);
-//    internalGradient.J.Export().Info(10,3, true);
-
-}
-
-//! @brief Imports a mesh file and builds the hessian and the internal gradient.
-void ImportFromGmsh(std::string rMeshFile)
-{
-    NuTo::Structure myStructure(2);
-    auto groupIndices = myStructure.ImportFromGmsh(rMeshFile);
-
-    std::cout << groupIndices.size() << std::endl;
-
-    int interpolationType = groupIndices[0].second;
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-
-    myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
-
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip);
-
-    myStructure.InterpolationTypeInfo(0);
-
-    myStructure.NodeBuildGlobalDofs();
-    int section = myStructure.SectionCreate("PLANE_STRAIN");
-    myStructure.SectionSetThickness(section, 3);
-
-    myStructure.ElementTotalSetSection(section);
-
-    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 42);
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .25);
-    myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
-
-    myStructure.CalculateMaximumIndependentSets();
-    auto hessian = myStructure.BuildGlobalHessian0();
-    auto internalGradient = myStructure.BuildGlobalInternalGradient();
-}
-
-
-//! @brief Creates two elements from the same set of nodes. One with positive jacobian, one with a negative one. In the latter one, the nodes should be swapped.
-void NodeReordering()
-{
-    bool errorsOccurred = false;
-
-    // structures
     NuTo::Structure myStructureTruss(1);
+    int itTruss = myStructureTruss.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
+    myStructureTruss.InterpolationTypeAdd(itTruss,
+                                          NuTo::Node::eDof::COORDINATES,
+                                          NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    Eigen::MatrixXd nodes(1, 2);
+    nodes << 0, 1;
+
+    std::vector<int> nodeIds = myStructureTruss.NodesCreate(nodes);
+    std::vector<int> ids(2);
+
+    // right numbering
+    ids = {nodeIds[0], nodeIds[1]};
+    myStructureTruss.ElementCreate(itTruss, ids);
+
+    // "wrong" numbering
+    ids = {nodeIds[1], nodeIds[0]};
+    myStructureTruss.ElementCreate(itTruss, ids);
+}
+BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTriangle)
+{
     NuTo::Structure myStructureTriangle(2);
+    int itTriangle = myStructureTriangle.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
+    myStructureTriangle.InterpolationTypeAdd(itTriangle,
+                                             NuTo::Node::eDof::COORDINATES,
+                                             NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    Eigen::MatrixXd nodes(2, 3);
+    nodes << 0, 2, 2,
+        0, 0, 3;
+
+    std::vector<int> nodeIds = myStructureTriangle.NodesCreate(nodes);
+    std::vector<int> ids(3);
+
+    // right numbering
+    ids = {nodeIds[0], nodeIds[1], nodeIds[2]};
+    myStructureTriangle.ElementCreate(itTriangle, ids);
+
+    // "wrong" numbering
+    ids = {nodeIds[2], nodeIds[1], nodeIds[0]};
+    myStructureTriangle.ElementCreate(itTriangle, ids);
+}
+
+BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingQuad)
+{
     NuTo::Structure myStructureQuad(2);
+    int itQuad = myStructureQuad.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+    myStructureQuad.InterpolationTypeAdd(itQuad,
+                                         NuTo::Node::eDof::COORDINATES,
+                                         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    Eigen::MatrixXd nodes(2, 4);
+    nodes << 0, 2, 2, 0,
+        0, 0, 3, 2;
+
+    std::vector<int> nodeIds = myStructureQuad.NodesCreate(nodes);
+    std::vector<int> ids(4);
+
+    // right numbering
+    ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
+    myStructureQuad.ElementCreate(itQuad, ids);
+
+    // "wrong" numbering
+    ids = {nodeIds[3], nodeIds[2], nodeIds[1], nodeIds[0]};
+    myStructureQuad.ElementCreate(itQuad, ids);
+}
+BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTetrahedron)
+{
     NuTo::Structure myStructureTetrahedron(3);
-    NuTo::Structure myStructureBrick(3);
-
-    // interpolation types
-    int itTruss       = myStructureTruss.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    int itTriangle    = myStructureTriangle.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-    int itQuad        = myStructureQuad.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
     int itTetrahedron = myStructureTetrahedron.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
-    int itBricks      = myStructureBrick.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::BRICK3D);
+    myStructureTetrahedron.InterpolationTypeAdd(itTetrahedron,
+                                                NuTo::Node::eDof::COORDINATES,
+                                                NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
-    myStructureTruss.InterpolationTypeAdd(itTruss, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructureTriangle.InterpolationTypeAdd(itTriangle, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructureQuad.InterpolationTypeAdd(itQuad, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructureTetrahedron.InterpolationTypeAdd(itTetrahedron, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructureBrick.InterpolationTypeAdd(itBricks, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    Eigen::MatrixXd nodes(3, 4);
+    nodes << 0, 2, 0, 0,
+        0, 0, 3, 0,
+        0, 0, 0, 4;
 
+    std::vector<int> nodeIds = myStructureTetrahedron.NodesCreate(nodes);
+    std::vector<int> ids(4);
 
+    // right numbering
+    ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
+    myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
 
-
-    // **************
-    // **  TRUSS
-    // **************
-    try
-    {
-        Eigen::MatrixXd nodes(1,2);
-        nodes << 0, 1;
-
-        std::vector<int> nodeIds = myStructureTruss.NodesCreate(nodes);
-        std::vector<int> ids(2);
-
-        // right numbering
-        ids = {nodeIds[0], nodeIds[1]};
-        myStructureTruss.ElementCreate(itTruss, ids);
-
-        // "wrong" numbering
-        ids = {nodeIds[1], nodeIds[0]};
-        myStructureTruss.ElementCreate(itTruss, ids);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Truss failed." << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        errorsOccurred = true;
-    }
-
-    // **************
-    // **  TRIANGLE
-    // **************
-    try
-    {
-
-        Eigen::MatrixXd nodes(2,3);
-        nodes << 0, 2, 2,
-                 0, 0, 3;
-
-        std::vector<int> nodeIds = myStructureTriangle.NodesCreate(nodes);
-        std::vector<int> ids(3);
-
-        // right numbering
-        ids = {nodeIds[0], nodeIds[1], nodeIds[2]};
-        myStructureTriangle.ElementCreate(itTriangle, ids);
-
-        // "wrong" numbering
-        ids = {nodeIds[2], nodeIds[1], nodeIds[0]};
-        myStructureTriangle.ElementCreate(itTriangle, ids);
-
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Triangle failed." << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        errorsOccurred = true;
-    }
-
-    // **************
-    // **    QUAD
-    // **************
-    try
-    {
-        Eigen::MatrixXd nodes(2,4);
-        nodes << 0, 2, 2, 0,
-                 0, 0, 3, 2;
-
-        std::vector<int> nodeIds = myStructureQuad.NodesCreate(nodes);
-        std::vector<int> ids(4);
-
-        // right numbering
-        ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
-        myStructureQuad.ElementCreate(itQuad, ids);
-
-        // "wrong" numbering
-        ids = {nodeIds[3], nodeIds[2], nodeIds[1], nodeIds[0]};
-        myStructureQuad.ElementCreate(itQuad, ids);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Quad failed." << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        errorsOccurred = true;
-    }
-
-    // **************
-    // ** TETRAHEDRON
-    // **************
-    try
-    {
-        Eigen::MatrixXd nodes(3,4);
-        nodes << 0, 2, 0, 0,
-                 0, 0, 3, 0,
-                 0, 0, 0, 4;
-
-
-        std::vector<int> nodeIds = myStructureTetrahedron.NodesCreate(nodes);
-        std::vector<int> ids(4);
-
-        // right numbering
-        ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
-        myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
-
-        // "wrong" numbering
-        ids = {nodeIds[0], nodeIds[3], nodeIds[2], nodeIds[1]};
-        myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Tetrahedron failed." << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        errorsOccurred = true;
-    }
-
-    // **************
-    // **  BRICK
-    // **************
-    try
-    {
-        Eigen::MatrixXd nodes(3,8);
-        nodes << 0, 2, 2, 0, 0, 2, 2, 0,
-                 0, 0, 3, 3, 0, 0, 3, 3,
-                 0, 0, 0, 0, 4, 4, 4, 4;
-
-
-        std::vector<int> nodeIds = myStructureBrick.NodesCreate(nodes);
-        std::vector<int> ids(8);
-
-        // right numbering
-        ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3], nodeIds[4], nodeIds[5], nodeIds[6], nodeIds[7]};
-        myStructureBrick.ElementCreate(itBricks, ids);
-
-        // "wrong" numbering
-        ids = {nodeIds[4], nodeIds[5], nodeIds[6], nodeIds[7], nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
-        myStructureBrick.ElementCreate(itBricks, ids);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Brick failed." << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        errorsOccurred = true;
-    }
-
-
-    if (errorsOccurred)
-        throw NuTo::MechanicsException("[NodeReordering] Errors occurred!");
+    // "wrong" numbering
+    ids = {nodeIds[0], nodeIds[3], nodeIds[2], nodeIds[1]};
+    myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
 }
-
-
-//#define TRYCATCH
-
-int main(int argc, char* argv[])
+BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingBrick)
 {
+    NuTo::Structure myStructureBrick(3);
+    int itBricks = myStructureBrick.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::BRICK3D);
+    myStructureBrick.InterpolationTypeAdd(itBricks,
+                                          NuTo::Node::eDof::COORDINATES,
+                                          NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
-    boost::filesystem::path binaryPath = std::string(argv[0]);
-    binaryPath.remove_filename();
+    Eigen::MatrixXd nodes(3, 8);
+    nodes << 0, 2, 2, 0, 0, 2, 2, 0,
+        0, 0, 3, 3, 0, 0, 3, 3,
+        0, 0, 0, 0, 4, 4, 4, 4;
 
-    std::string meshFile2D = binaryPath.string() + "/2D.msh";
+    std::vector<int> nodeIds = myStructureBrick.NodesCreate(nodes);
+    std::vector<int> ids(8);
 
-#ifdef TRYCATCH
-    try
-    {
-#endif
-    CheckTriangle();
-    CheckQuad();
-    CheckTetrahedron();
-    CheckBrick();
-    CheckPrism();
-    CheckTruss();
-    CheckAPI();
-    ImportFromGmsh(meshFile2D);
-    NodeReordering();
-#ifdef TRYCATCH
+    // right numbering
+    ids = {nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3], nodeIds[4], nodeIds[5], nodeIds[6], nodeIds[7]};
+    myStructureBrick.ElementCreate(itBricks, ids);
+
+    // "wrong" numbering
+    ids = {nodeIds[4], nodeIds[5], nodeIds[6], nodeIds[7], nodeIds[0], nodeIds[1], nodeIds[2], nodeIds[3]};
+    myStructureBrick.ElementCreate(itBricks, ids);
 }
-catch (NuTo::Exception& e)
-{
-    std::cout << e.ErrorMessage();
-    return -1;
-}
-catch (...)
-{
-    std::cout << "Something else went wrong." << std::endl;
-    return -1;
-}
-#endif
-
-    std::cout << std::endl;
-    std::cout << "#####################################" << std::endl;
-    std::cout << "##  Congratulations! Everything    ##" << std::endl;
-    std::cout << "##   went better than expected!    ##" << std::endl;
-    std::cout << "#####################################" << std::endl;
-
-    return 0;
-}
-

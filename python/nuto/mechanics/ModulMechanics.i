@@ -15,6 +15,7 @@
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/mesh/MeshGenerator.h"
 %}
 
 
@@ -42,9 +43,12 @@
 %include "mechanics/timeIntegration/NewmarkBase.h"
 %include "mechanics/timeIntegration/NewmarkDirect.h"
 
+%include "mechanics/mesh/MeshGenerator.h"
+
 %template(DoubleBlockFullMatrix) NuTo::BlockFullMatrix<double>;
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
 %template(IntBlockFullVector) NuTo::BlockFullVector<int>;
+
 
 
 

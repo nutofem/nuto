@@ -19,7 +19,7 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, int rDiv)
     NuTo::Structure s(1);
     s.SetShowTime(false);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<1>(s, {test.lX}, {rDiv}, rShapeType);
+    auto meshInfo = NuTo::MeshGenerator::Grid(s, {test.lX}, {rDiv}, rShapeType);
     s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
     s.ElementTotalConvertToInterpolationType();
 
