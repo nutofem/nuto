@@ -83,7 +83,7 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    Eigen::MatrixXd GatherInterfaceRigidBodyModes(const Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
+    Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
     {
 
         std::vector<int> recvCount;
