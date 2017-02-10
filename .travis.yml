@@ -31,7 +31,7 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE $OPTIONS ..; fi
 script:
     - make -j2
-    - ctest --output-on-failure
+    - ctest -R MPI -V
 after_success:
     - cd ..
     - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi

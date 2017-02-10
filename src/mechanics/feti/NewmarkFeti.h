@@ -1,3 +1,5 @@
+#pragma once
+
 #include <mpi.h>
 #include <boost/mpi.hpp>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
@@ -29,7 +31,7 @@
 
 namespace NuTo
 {
-template <class EigenSolver>
+template <class EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>>
 class NewmarkFeti : public NewmarkDirect
 {
 public:
