@@ -48,7 +48,7 @@ def RunPatchTest(StressState):
     myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1")
     myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1")
 
-    print elementIncidence
+    print(elementIncidence)
     myStructure.ElementsCreate(interpolationType, elementIncidence)
 
     myStructure.ElementTotalConvertToInterpolationType()
@@ -73,7 +73,7 @@ def RunPatchTest(StressState):
     directionX = np.array([1.0, 0.0])
     directionY = np.array([0.0, 1.0])
 
-    print "Displacement control with stress state ", StressState
+    print("Displacement control with stress state ", StressState)
 
     if StressState == "XX":
         myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
@@ -89,7 +89,7 @@ def RunPatchTest(StressState):
         myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionY, BoundaryDisplacement)
         myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, 0)
     else:
-        print 'Wrong stressstate given'
+        print('Wrong stressstate given')
         error = True
         sys.exit(-1)
 
@@ -104,17 +104,17 @@ def RunPatchTest(StressState):
     internalGradient = myStructure.BuildGlobalInternalGradient()
     if (printResult):
         residualVector = internalGradient.J.Export()*(-1.)
-        print "residual: " + str(np.linalg.norm(residualVector))
+        print("residual: " + str(np.linalg.norm(residualVector)))
 
     if (np.linalg.norm(internalGradient.J.Export()) > 1e-8):
-        print 'Internal and external forces differs.'
+        print('Internal and external forces differs.')
         error = True
 
     # calculate internal force vector
     Fi = myStructure.ElementBuildInternalGradient(2)
     if (printResult):
-        print "Internal Force"
-        print Fi
+        print("Internal Force")
+        print(Fi)
 
     # calculate engineering strain of 2 at all integration points
     # the size the matrix is not important and reallocated within the procedure
@@ -136,17 +136,17 @@ def RunPatchTest(StressState):
             EngineeringStressCorrect[5, i] = sigma
 
     if (printResult):
-        print "EngineeringStressCorrect"
-        print EngineeringStressCorrect
-        print "EngineeringStress"
-        print EngineeringStress
+        print("EngineeringStressCorrect")
+        print(EngineeringStressCorrect)
+        print("EngineeringStress")
+        print(EngineeringStress)
 
     if (np.max(np.abs(EngineeringStress - EngineeringStressCorrect)) > 1e-4):
-        print 'stress is not correct.'
+        print('stress is not correct.')
         error = True
         if (printResult):
-            print "np.max(np.abs(EngineeringStress - EngineeringStressCorrect))"
-            print np.max(np.abs(EngineeringStress - EngineeringStressCorrect))
+            print("np.max(np.abs(EngineeringStress - EngineeringStressCorrect))")
+            print(np.max(np.abs(EngineeringStress - EngineeringStressCorrect)))
 
     C1 = 1./E
     C2 = -v/E
@@ -164,13 +164,13 @@ def RunPatchTest(StressState):
     EngineeringStrainCorrect = D.dot(EngineeringStressCorrect)
 
     if (printResult):
-        print "EngineeringStrainCorrect"
-        print EngineeringStrainCorrect
-        print "EngineeringStrain"
-        print EngineeringStrain
+        print("EngineeringStrainCorrect")
+        print(EngineeringStrainCorrect)
+        print("EngineeringStrain")
+        print(EngineeringStrain)
 
     if (np.max(np.abs(EngineeringStrain - EngineeringStrainCorrect)) > 1e-8):
-        print 'strain is not correct.'
+        print('strain is not correct.')
         error = True
 
 

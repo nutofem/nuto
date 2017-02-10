@@ -165,7 +165,7 @@ myStructure.CalculateMaximumIndependentSets();
 myStructure.SolveGlobalSystemStaticElastic(0)
 
 # calculate residual
-print "calculate residual"
+print("calculate residual")
 # start analysis
 intGradient = myStructure.BuildGlobalInternalGradient()
 extGradient = myStructure.BuildGlobalExternalLoadVector(0)
@@ -177,7 +177,7 @@ intGradientKcast = - intGradientK
 cmat = myStructure.GetConstraintMatrix()
 
 residual = intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(intGradientKcast) - extGradientJ
-print "residual: " + str(np.linalg.norm(residual))
+print("residual: " + str(np.linalg.norm(residual)))
 
 # visualize results
 visualizationGroup = myStructure.GroupCreate("Elements");

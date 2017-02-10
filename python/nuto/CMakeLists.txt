@@ -8,8 +8,8 @@ include_directories(${NUMPY_INCLUDE_PATH})
 
 # Python required for interface files c++ and python
 message(STATUS "Checking for Python...")
-find_package(PythonInterp 2 REQUIRED)
-find_package(PythonLibs 2 REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
+find_package(PythonLibs 3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

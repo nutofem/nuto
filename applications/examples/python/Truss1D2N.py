@@ -2,19 +2,20 @@ import nuto
 import numpy as np
 
 
-class Material:
+class Material(object):
     youngsModulus = 20000.
 
-class Geometry:
+
+class Geometry(object):
     lx = 70.
     ly = 3.1415
     lz = 0.42
     numElements = 10
 
-class BoundaryCondition:
+
+class BoundaryCondition(object):
     force = 12.
     displacement = 0.1
-
 
 
 def SetupGeometry(structure):
@@ -40,12 +41,12 @@ def SetupBoundaryConditions(structure, BCType):
     nodeSelectionTolerance = 1.e-6
     xDirection = np.array([1.0])
 
-    #     fix left node at x = [0]
-    nodeLeft  = structure.NodeGetIdAtCoordinate(np.array([0.]), nodeSelectionTolerance)
+    # fix left node at x = [0]
+    nodeLeft = structure.NodeGetIdAtCoordinate(np.array([0.]), nodeSelectionTolerance)
     prescribedDisplacement = 0.
     structure.ConstraintLinearSetDisplacementNode(nodeLeft, xDirection, prescribedDisplacement)
 
-    #     apply nonzero BC at x = length
+    # apply nonzero BC at x = length
     nodeRight = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
     if BCType == "DisplacmentBC":
         structure.ConstraintLinearSetDisplacementNode(nodeRight, xDirection, BoundaryCondition.displacement)
@@ -59,8 +60,8 @@ def Solve(structure):
     intGradient = structure.BuildGlobalInternalGradient()
     extGradient = structure.BuildGlobalExternalLoadVector(0)
     residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
-    print "residual: " + str(np.linalg.norm(residual))
-    print "(should be _very_ close to zero.)"
+    print("residual: {0}".format(np.linalg.norm(residual)))
+    print("(should be _very_ close to zero.)")
 
 
 def Visualize(structure, file):
@@ -83,7 +84,6 @@ def Run(BCType):
     Solve(structure)
 
     Visualize(structure, "Truss1D2N_" + BCType + ".vtk")
-
 
 
 Run("DisplacmentBC")
