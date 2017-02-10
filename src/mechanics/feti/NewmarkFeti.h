@@ -14,7 +14,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"
 
-
+#include "mechanics/feti/FetiSolver.h"
 
 #include "base/CallbackInterface.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -24,6 +24,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "FetiSolver.h"
 #include <eigen3/Eigen/Dense>
 
 #include <eigen3/Eigen/Sparse>
@@ -457,7 +458,7 @@ public:
         // e = |     :          |
         //     | R_{N_s}^T f    |
         //
-        VectorXd rigidBodyForceVectorGlobal = GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
+        VectorXd rigidBodyForceVectorGlobal = mFetiSolver.GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
 
         // initial guess for lambda
         deltaLambda = G * GtransGinv * rigidBodyForceVectorGlobal;
@@ -999,10 +1000,12 @@ public:
     }
 private:
 
+    FetiSolver mFetiSolver;
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
     const double    mCpgTolerance     = 1.0e-6;
     const int       mCpgMaxIterations = 1000;
+
 };
 }// namespace NuTo
