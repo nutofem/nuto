@@ -109,7 +109,7 @@ int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const V
 
     boost::mpi::communicator world;
 
-    StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
+    StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
     const SparseMatrix& B      = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans = B.transpose();
 
@@ -256,7 +256,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     boost::mpi::communicator world;
     VectorXd        Ap;
 
-    StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
+    StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
     const SparseMatrix& B       = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans   = B.transpose();
@@ -361,7 +361,7 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(const VectorXd& re
 
     boost::mpi::communicator world;
 
-    StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
+    StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
 
 
@@ -565,7 +565,7 @@ void NuTo::NewmarkFeti::Solve(double rTimeDelta)
     try
     {
         boost::mpi::communicator world;
-        StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
+        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
         mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
         mStructure->GetLogger() << "********************************************" << "\n";

@@ -78,7 +78,7 @@ namespace NuTo
  *
  *
  */
-class StructureFETI: public Structure
+class StructureFeti: public Structure
 {
 private:
     ///
@@ -124,7 +124,7 @@ private:
 public:
     //! @brief Constructor
     //! @param rDimension   Structural dimension (1,2 or 3)
-    StructureFETI(int rDimension);
+    StructureFeti(int rDimension);
 
     ///
     /// \brief mRank

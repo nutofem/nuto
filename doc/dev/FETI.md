@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 # Implementation
 
 ```cpp
-NuTo::StructureFETI structure(dim);
+NuTo::StructureFeti structure(dim);
 structure.SetNumTimeDerivatives(0);
 
 const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
