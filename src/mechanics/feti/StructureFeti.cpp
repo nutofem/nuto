@@ -545,7 +545,7 @@ void NuTo::StructureFeti::CheckStiffnessPartitioning(  const StructureOutputBloc
     SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
 
 
-    Eigen::MatrixXd tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
+    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
     Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
     const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
 
