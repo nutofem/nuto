@@ -55,9 +55,9 @@ void NuTo::EventListHandler::AddEvent(const double rTime,
 	if (rTime < 0 || rTime > mTimeBarrier)
 		return;
 
-	auto insert = mEvents.insert(new Event(rTime, &rCollidable2, &rCollidable1, rType));
+	auto insert = mEvents.insert(Event(rTime, &rCollidable2, &rCollidable1, rType));
 	if(insert.second)
-		(*insert.first).AddLocalEvent();
+		const_cast<Event&>(*insert.first).AddLocalEvent();
 
 
 //	Event* tmp = new Event(rTime, &rCollidable2, &rCollidable1, rType);
@@ -67,9 +67,8 @@ void NuTo::EventListHandler::AddEvent(const double rTime,
 
 void NuTo::EventListHandler::DeleteOldEvents(Event::LocalEvents& rOldEvents)
 {
-	for (unsigned int iOldEvent = 0; iOldEvent < rOldEvents.size(); ++iOldEvent) {
-		mEvents.erase(*rOldEvents[iOldEvent]);
-	}
+	for (const auto& oldEvent : rOldEvents)
+		mEvents.erase(*oldEvent);
 }
 
 const double NuTo::EventListHandler::GetNextEventTime()
@@ -112,9 +111,9 @@ const int NuTo::EventListHandler::GetEventListSize()
 void NuTo::EventListHandler::PerformNextEvent()
 {
 
-	const Event* nextEvent = new Event(*(mEvents.begin()));
+	const Event nextEventCopy = *(mEvents.begin());
 
-	switch (nextEvent->GetType())
+	switch (nextEventCopy.GetType())
 	{
 	case Event::EventType::SphereCollision:
 		mNSphereCollisions++;
@@ -130,19 +129,16 @@ void NuTo::EventListHandler::PerformNextEvent()
 	}
 
     Timer t("", false);
-	nextEvent->PerformCollision();
+	nextEventCopy.PerformCollision();
 	mTimeUpdate += t.GetTimeDifference();
 
 	t.Reset();
-	nextEvent->EraseOldEvents(*this);
+	nextEventCopy.EraseOldEvents(*this);
 	mTimeErase += t.GetTimeDifference();
 
     t.Reset();
-	nextEvent->AddNewEvents(*this);
+	nextEventCopy.AddNewEvents(*this);
 	mTimeAdd += t.GetTimeDifference();
-
-	delete nextEvent;
-
 }
 
 double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler& rSubBoxes)
