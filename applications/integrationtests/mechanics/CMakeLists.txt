@@ -72,29 +72,34 @@ foreach(test
     add_test(integration::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
 
-#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
-#
-#    # create symlinks to the necessary mesh files
-#    foreach(task
-#            _compare
-#            0
-#            1
-#            )
-#        execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/feti_rectangle_tri.msh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
-#    endforeach()
-#
-#    add_executable(Feti Feti.cpp)
-#    target_link_libraries(Feti NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-#    if(ENABLE_VISUALIZE)
-#        target_link_libraries(Feti NuToVisualize)
-#    endif()
-#    if(MUMPS_FOUND)
-#        target_link_libraries(Feti ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#    endif()
-#    set(MPIEXEC_NUMPROC_FLAG -np 2)
-#    set(MPIEXEC mpirun)
-#    add_test(NAME integration::mechanics::Feti COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/Feti)
-#endif()
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
+
+    # create symlinks to the necessary mesh files
+    foreach(task
+            0
+            1
+            )
+        execute_process(
+                COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/feti_beam_coarse_2_subdomains_24_ele.mesh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_beam_coarse_2_subdomains_24_ele.mesh${task}"
+        )
+    endforeach()
+
+    execute_process(
+            COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh" "${CMAKE_CURRENT_BINARY_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh"
+    )
+
+    add_executable(Feti Feti.cpp)
+    target_link_libraries(Feti NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(Feti NuToVisualize)
+    endif()
+    if(MUMPS_FOUND)
+        target_link_libraries(Feti ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    endif()
+    set(MPIEXEC_NUMPROC_FLAG -np 2)
+    set(MPIEXEC mpirun)
+    add_test(NAME integration::mechanics::Feti COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/Feti)
+endif()
 
 
 if(ENABLE_MPI)
