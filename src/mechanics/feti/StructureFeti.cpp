@@ -690,7 +690,7 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
     // Contains the number of elements that are received from each process.
     std::vector<int> recvCount(mNumProcesses, 0);
 
-    const int numLocalDofIds = mPrescribedDisplacementDofIds.size();
+    int numLocalDofIds = mPrescribedDisplacementDofIds.size();
     boost::mpi::all_gather<int>(world,numLocalDofIds,recvCount);
 
     // displs:
