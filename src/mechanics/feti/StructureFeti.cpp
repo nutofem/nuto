@@ -654,7 +654,7 @@ void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const int nodeGroupId)
         displs[i] = displs[i-1] + recvCount[i-1];
 
 
-    const int numLocalBoundaryDofIds = mBoundaryDofIds.size();
+    int numLocalBoundaryDofIds = mBoundaryDofIds.size();
     MPI_Allreduce(&numLocalBoundaryDofIds,
                   &mNumTotalBoundaryDofIds,
                   1,
