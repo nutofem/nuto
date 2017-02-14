@@ -169,10 +169,11 @@ set(NuToMechanicsLoads_SOURCES
     )
 
 set(NuToMechanicsMesh_SOURCES
-    mesh/MeshCompanion.cpp
-    mesh/ImportFromGmsh.cpp
     mesh/ConvertToInterpolationType.cpp
     mesh/ElementPrismCreate.cpp
+    mesh/ImportFromGmsh.cpp
+    mesh/MeshCompanion.cpp
+    mesh/MeshGenerator.cpp
     )
 
 set(NuToMechanicsNodes_SOURCES
@@ -245,10 +246,6 @@ set(NuToMechanicsTimeIntegration_SOURCES
     )
 
 
-set(NuToMechanicsTools_SOURCES
-        mesh/MeshGenerator.cpp
-    )
-
 set(NuToMechanics_SOURCES
     ${NuToMechanicsConstitutive_SOURCES}
     ${NuToMechanicsConstraint_SOURCES}
@@ -265,8 +262,10 @@ set(NuToMechanics_SOURCES
     ${NuToMechanicsSection_SOURCES}
     ${NuToMechanicsStructures_SOURCES}
     ${NuToMechanicsTimeIntegration_SOURCES}
-    ${NuToMechanicsTools_SOURCES}
     )
+
+
+
 
 # build static library
 add_library(NuToMechanics ${NuToMechanics_SOURCES})

@@ -31,30 +31,30 @@ def SetParameters(rParameterTuple):
     x = rParameterTuple[0]
     y = rParameterTuple[1]
     if (printResult):
-        print "[Python - Parameters routine]"
-        print x, y
+        print ("[Python - Parameters routine]")
+        print (x, y)
 
 
 def Objective():
     o = scaleFactorX/12*(x-2)*(x-2)*(x-2)*(x-2)+0.5*(y-3)*(y-3)
     if (printResult):
-       print "[Python - Objective routine] (x,y)=(" + str(x) + "," + str(y) + ") : obj=" + str(o)
+       print ("[Python - Objective routine] (x,y)=(" + str(x) + "," + str(y) + ") : obj=" + str(o))
     return o
 
 
 def Gradient():
     rGradient = [scaleFactorX/3*(x-2)*(x-2)*(x-2), (y-3)]
     if (printResult):
-        print "[Python - Gradient routine]"
-        print rGradient
+        print ("[Python - Gradient routine]")
+        print (rGradient)
     return rGradient
 
 
 def Hessian():
     rHessian = [scaleFactorX*(x-2)*(x-2), 0, 0, 1]
     if (printResult):
-        print "[Python - Hessian routine]"
-        print rHessian
+        print ("[Python - Hessian routine]")
+        print (rHessian)
     return rHessian
 
 
@@ -89,7 +89,7 @@ else:
 
 returnValue = myOptimizer.Optimize()
 if (printResult):
-    print "Final objective : ", myOptimizer.GetObjective()
+    print ("Final objective : ", myOptimizer.GetObjective())
 if (createResult):
     f = open(pathToResultFiles+'Objective.txt', 'w')
     f.write('#Correct Objective\n')
@@ -101,21 +101,20 @@ else:
     objectiveExact = float(f.readline())
     f.close()
     if (math.fabs(myOptimizer.GetObjective() - objectiveExact) > 1e-8):
-        print '[' + system,sys.argv[0] + '] : objective is not correct.'
+        print ('[' + system,sys.argv[0] + '] : objective is not correct.')
         error = True
 
 parameters = myOptimizer.GetParameters()
 parameters = parameters.squeeze()
 if (printResult):
-    print "Final Set of Parameters"
-    print parameters
+    print ("Final Set of Parameters\n", parameters)
 if createResult:
     np.savetxt(pathToResultFiles+"Parameters.txt", parameters, header="#Correct result")
 else:
     ParametersExact = np.loadtxt(pathToResultFiles+"Parameters.txt", skiprows=1)
-    print ParametersExact
+    print (ParametersExact)
     if (np.max(np.abs(ParametersExact - parameters)) > 1e-8):
-        print '[' + system, sys.argv[0] + '] : Parameters is not correct.'
+        print ('[' + system, sys.argv[0] + '] : Parameters is not correct.')
         error = True
 
 if (error):

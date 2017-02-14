@@ -1,220 +1,123 @@
 # -*- coding: utf-8 -*-
 
-import math
-# load nuto package
 import nuto
-import sys
 import numpy as np
-
-error = False
-
-
-# ======================================================
-# ==       Sphere-Sphere collision detection          ==
-# ======================================================
-
-sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
-    # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
-
-sphere2 = nuto.CollidableParticleSphere(np.array([19.,0.,0.]), np.array([-2.,0.,0.]), 1., 2., 11)
-    # surface position after timeCollision = 2 seconds: x = 19 - 2*2 - 1 - 2*2 = 10
-
-    
-print "[CollisionFrontalSphere] synchronous"
-timeCollision, eventType = sphere1.PredictCollision(sphere2)
-if abs(timeCollision - 2.) > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-  
-  
-print "[CollisionFrontalSphere] asynchronous"
-sphere1.MoveAndGrow(-42.42)
-sphere2.MoveAndGrow(-6.174)
-timeCollision, eventType = sphere1.PredictCollision(sphere2)
-if abs(timeCollision - 2.) > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-
-print "[CollisionFrontalSphere] after collision"
-event = nuto.Event(timeCollision, sphere1, sphere2, eventType)
-event.PerformCollision()
-timeCollision, eventType = sphere1.PredictCollision(sphere2)
-if timeCollision != -1 > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-
-# ======================================================
-# ==  Sphere-Sphere collision detection, growth only  ==
-# ======================================================  
-
-sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([0.,0.,0.]), 2., 1., 10)
-    # surface position after timeCollision = 1 second: x = 0 + 2 + 1*1 = 3
-sphere2 = nuto.CollidableParticleSphere(np.array([6.,0.,0.]), np.array([0.,0.,0.]), 1., 2., 11)
-    # surface position after timeCollision = 1 second: x = 6 - 1 - 2*1 = 2
-sphere1.MoveAndGrow(.5)
-sphere2.MoveAndGrow(.2)
-    
-print "[CollisionGrowthOnlySphere]"
-timeCollision, eventType = sphere1.PredictCollision(sphere2)
-if abs(timeCollision - 1.) > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-    
-    
-    
-# ======================================================
-# ==        Wall-Sphere collision detection           ==
-# ======================================================
-
-sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
-    # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
-
-wall = nuto.CollidableWallPhysical(np.array([10.,0.,0.]), np.array([-1.,0.,0.]), 0)
-    
-print "[CollisionFrontalWall] synchronous"
-timeCollision, eventType = sphere1.PredictCollision(wall)
-if abs(timeCollision - 2.) > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-
-print "[CollisionFrontalWall] after collision"
-event = nuto.Event(timeCollision, sphere1, wall, eventType)
-event.PerformCollision()
-timeCollision, eventType = sphere1.PredictCollision(wall)
-if timeCollision != -1 > 1e-14 :
-    print "Collision Time = ", timeCollision, "  E R R O R"
-    error = True
-
-# ======================================================
-# ==       simultaneous collision detection           ==
-# ======================================================
-
-# build sphere matrix
-#rawSpheres = nuto.DoubleFullMatrix(3,4, [0.,0.,0.,4,           10.,0.,0.,4.,            5.,math.sqrt(75.),0.,4.])
-# rawSpheres = np.array([[0.,10.,5.],[0.,0.,math.sqrt(75.)],[0.,0.,0.],[5.,5.,5.]])
-rawSpheres = np.array([[0.,0.,0.,4],
-                       [10.,0.,0.,4.],
-                       [5.,math.sqrt(75.),0.,4.]])
-
-# build boundary matrix
-boundary = np.array([[-1e10, 1e10],
-                     [-1e10, 1e10],
-                     [-1e10, 1e10]])
-
-specimen = nuto.Specimen(boundary, 0);
-
-# build sub box division vector
-subBoxDivs = np.array([1,1,1])
-
-# particle handler
-spheres = nuto.ParticleHandler(rawSpheres,0.,0.,1.)
-
-# sub box handler
-# subBoxes = nuto.SubBoxHandler(spheres, specimen, subBoxDivs.T)
-
-# events = nuto.EventListHandler()
-# dummy = events.SetTimeBarrier(1000.,subBoxes)
-
-#.........
- 
- 
-# ======================================================
-# ==       EventList behaviour                        ==
-# ====================================================== 
+import unittest
 
 
-sphere3 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
-sphere4 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
+class Brick8NTestCase(unittest.TestCase):
+    def test_SphereSphere(self):
+        sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
+        # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
 
-events = nuto.EventListHandler()
-print ""
-print "[EventList behaviour] simultaneous, same events"
-events.AddEvent(0., sphere1, sphere2, 0)
-events.AddEvent(0., sphere2, sphere1, 0)
-events.AddEvent(0., sphere1, sphere2, 0)
-numEvents = events.GetEventListSize();
-if (events.GetEventListSize == 1) :
-  print " E R R O R", events.GetEventListSize()
-  error = True
-events.Clear()    
- 
-print "[EventList behaviour] simultaneous, differ first"
-events.AddEvent(0., sphere2, sphere1, 0)
-events.AddEvent(0., sphere3, sphere1, 0)
-events.AddEvent(0., sphere4, sphere1, 0)
-if events.GetEventListSize == 3 :
-  print " E R R O R"
-  error = True
-events.Clear()
+        sphere2 = nuto.CollidableParticleSphere(np.array([19.,0.,0.]), np.array([-2.,0.,0.]), 1., 2., 11)
+        # surface position after timeCollision = 2 seconds: x = 19 - 2*2 - 1 - 2*2 = 10
 
-print "[EventList behaviour] simultaneous, differ second"
-events.AddEvent(0., sphere1, sphere2, 0)
-events.AddEvent(0., sphere1, sphere3, 0)
-events.AddEvent(0., sphere1, sphere4, 0)
-if events.GetEventListSize == 3 :
-  print " E R R O R"
-  error = True
-events.Clear()
- 
-events.Clear()
- 
- 
-# ======================================================
-# ==      Complex test of a box                       ==
-# ====================================================== 
- 
-numParticles = 1000;
-bBoxLength = 40.
-bBox = np.array([[-bBoxLength/2.,bBoxLength/2.],
-                 [-bBoxLength/2.,bBoxLength/2.],
-                 [-bBoxLength/2.,bBoxLength/2.]])
+        timeCollision, eventType = sphere1.PredictCollision(sphere2)
+        self.assertAlmostEqual(timeCollision, 2., msg="synchronous")
 
-specimen = nuto.Specimen(bBox, 0)
+        sphere1.MoveAndGrow(-42.42)
+        sphere2.MoveAndGrow(-6.174)
+        timeCollision, eventType = sphere1.PredictCollision(sphere2)
+        self.assertAlmostEqual(timeCollision, 2., msg="asynchronous")
 
-spheres = nuto.ParticleHandler(numParticles, bBox, 1., 0.1)
+        event = nuto.Event(timeCollision, sphere1, sphere2, eventType)
+        event.PerformCollision()
+        timeCollision, eventType = sphere1.PredictCollision(sphere2)
+        self.assertAlmostEqual(timeCollision, -1, msg="after collision")
 
-subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
+    def test_SphereSphereGrowthOnly(self):
+        sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([0.,0.,0.]), 2., 1., 10)
+        # surface position after timeCollision = 1 second: x = 0 + 2 + 1*1 = 3
 
-collisions = nuto.CollisionHandler(spheres, subBoxes, "")
+        sphere2 = nuto.CollidableParticleSphere(np.array([6.,0.,0.]), np.array([0.,0.,0.]), 1., 2., 11)
+        # surface position after timeCollision = 1 second: x = 6 - 1 - 2*1 = 2
 
-collisions.Simulate(
-   100000000,
-   8.,
-   30.,
-   1.,
-   10.) 
-spheres = None
-subBoxes = None
-collisions = None
+        sphere1.MoveAndGrow(.5)
+        sphere2.MoveAndGrow(.2)
 
-   
-# ======================================================
-# ==      Complex test of a cylinder                  ==
-# ====================================================== 
+        timeCollision, eventType = sphere1.PredictCollision(sphere2)
+        self.assertAlmostEqual(timeCollision, 1, msg="CollisionGrowthOnlySphere")
 
+    def test_SphereWall(self):
+        sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
+            # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
+        wall = nuto.CollidableWallPhysical(np.array([10.,0.,0.]), np.array([-1.,0.,0.]), 0)
 
-bBoxLength = 40. * .7
-bBoxCylPos = np.array([[-bBoxLength/2.,bBoxLength/2.],
-                       [-bBoxLength/2.,bBoxLength/2.],
-                       [-bBoxLength/2.,bBoxLength/2.]])
+        timeCollision, eventType = sphere1.PredictCollision(wall)
+        self.assertAlmostEqual(timeCollision, 2, msg="synchronous")
 
-specimen = nuto.Specimen(bBox, 2)
+        event = nuto.Event(timeCollision, sphere1, wall, eventType)
+        event.PerformCollision()
+        timeCollision, eventType = sphere1.PredictCollision(wall)
+        self.assertAlmostEqual(timeCollision, -1, msg="after collision")
 
-spheres = nuto.ParticleHandler(numParticles, bBoxCylPos, 1., 0.1)
+    def test_EventList(self):
 
-subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
+        sphere1 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
+        sphere2 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
+        sphere3 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
+        sphere4 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
 
-collisions = nuto.CollisionHandler(spheres, subBoxes, "")
+        events = nuto.EventListHandler()
+        events.AddEvent(0., sphere1, sphere2, 0)
+        events.AddEvent(0., sphere2, sphere1, 0)
+        events.AddEvent(0., sphere1, sphere2, 0)
+        self.assertEqual(events.GetEventListSize(), 1, msg="simultaneous, same events")
+        events.Clear()
 
-collisions.Simulate(
-   100000000,
-   8.,
-   30,
-   1.,
-   10.) 
- 
+        events.AddEvent(0., sphere2, sphere1, 0)
+        events.AddEvent(0., sphere3, sphere1, 0)
+        events.AddEvent(0., sphere4, sphere1, 0)
+        self.assertEqual(events.GetEventListSize(), 3, msg="simultaneous, differ first")
+        events.Clear()
 
-if (error):
-    sys.exit(-1)
-else:
-    sys.exit(0)
+        events.AddEvent(0., sphere1, sphere2, 0)
+        events.AddEvent(0., sphere1, sphere3, 0)
+        events.AddEvent(0., sphere1, sphere4, 0)
+        self.assertEqual(events.GetEventListSize(), 3, msg="simultaneous, differ first")
+
+    def test_Box(self):
+        numParticles = 1000
+        bBoxLength = 40.
+        bBox = np.array([[-bBoxLength/2.,bBoxLength/2.],
+                         [-bBoxLength/2.,bBoxLength/2.],
+                         [-bBoxLength/2.,bBoxLength/2.]])
+
+        specimen = nuto.Specimen(bBox, 0)
+
+        spheres = nuto.ParticleHandler(numParticles, bBox, 1., 0.1)
+
+        subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
+
+        collisions = nuto.CollisionHandler(spheres, subBoxes, "")
+
+        collisions.Simulate(
+           100000000,
+           8.,
+           30.,
+           1.,
+           10.)
+
+    def test_Cylinder(self):
+
+        numParticles = 1000
+        bBoxLength = 40. * .7
+        bBoxCylPos = np.array([[-bBoxLength/2.,bBoxLength/2.],
+                               [-bBoxLength/2.,bBoxLength/2.],
+                               [-bBoxLength/2.,bBoxLength/2.]])
+
+        specimen = nuto.Specimen(bBoxCylPos, 2)
+
+        spheres = nuto.ParticleHandler(numParticles, bBoxCylPos, 1., 0.1)
+
+        subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
+
+        collisions = nuto.CollisionHandler(spheres, subBoxes, "")
+
+        collisions.Simulate(
+           100000000,
+           8.,
+           30,
+           1.,
+           10.)
