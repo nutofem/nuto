@@ -22,7 +22,7 @@
 
 * @ref FullMatrixToEigenRemarks
 
-* [Profiling using gperftools](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
+* [**Profiling using gperftools**](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
 
 ### NuTo related documentation
 
