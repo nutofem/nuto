@@ -22,13 +22,6 @@ NuTo::Event::Event(const double rTime, CollidableBase* rFirst,
 	mSecond = rSecond;
 }
 
-NuTo::Event::Event(const Event& rEvent)
-		: mTime(rEvent.mTime), mType(rEvent.mType)
-{
-	mFirst = rEvent.mFirst;
-	mSecond = rEvent.mSecond;
-}
-
 NuTo::Event::~Event()
 {
 	auto& local1st = mFirst->mLocalEvents;

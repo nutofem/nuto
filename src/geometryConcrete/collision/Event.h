@@ -23,8 +23,6 @@ class Event
 {
 public:
 
-	typedef boost::ptr_set<Event> GlobalEvents;
-
 	typedef std::vector<Event*> LocalEvents;
 
 	//! @brief ... statistics
@@ -44,8 +42,15 @@ public:
 	Event(const double rTime, CollidableBase* rFirst,
 			CollidableBase* rSecond, const int rType);
 
-	//! @brief ... copy constructor
-	Event(const Event& rEvent);
+    //! @brief ... copy constructor
+    Event(const Event& rEvent) = default;
+
+    //! @brief ... move constructor
+    Event(Event&& rEvent) = default;
+
+    Event& operator=(const NuTo::Event&) = default;
+
+    Event& operator=(Event&&) = default;
 
 
 	//! @brief ... important operator for the event list sorting
@@ -99,10 +104,10 @@ protected:
 private:
 
 	//! @brief ... event time
-	const double mTime;
+	double mTime;
 
 	//! @brief ... member of CollidableBase::EventType
-	const int mType;
+	int mType;
 
 #ifndef SWIG
 	friend std::ostream& operator<<(std::ostream& rOutStream,
