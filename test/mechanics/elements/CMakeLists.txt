@@ -3,7 +3,7 @@ target_link_libraries(ContinuumElement NuToMechanics NuToMath NuToBase)
 if(ENABLE_VISUALIZE)
     target_link_libraries(ContinuumElement NuToVisualize)
 endif()
-add_test(unit::mechanics::elements::ContinuumElement ${CMAKE_CURRENT_BINARY_DIR}/ContinuumElement)
+add_test(almost::mechanics::elements::ContinuumElement ${CMAKE_CURRENT_BINARY_DIR}/ContinuumElement)
 
 add_unit_test(IPData
     mechanics/constitutive/ConstitutiveBase.cpp

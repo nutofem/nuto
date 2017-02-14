@@ -5,4 +5,4 @@ target_link_libraries(MeshCompanion NuToMechanics NuToMath NuToBase ${Boost_LIBR
 if(ENABLE_VISUALIZE)
     target_link_libraries(MeshCompanion NuToVisualize)
 endif()
-add_test(unit::mechanics::mesh::MeshCompanion ${CMAKE_CURRENT_BINARY_DIR}/MeshCompanion)
+add_test(almost::mechanics::mesh::MeshCompanion ${CMAKE_CURRENT_BINARY_DIR}/MeshCompanion)

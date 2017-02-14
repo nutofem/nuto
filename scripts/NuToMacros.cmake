@@ -137,6 +137,7 @@ function(add_unit_test ClassName)
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})
     add_test(unit::${testname}::${ClassName} ${CMAKE_CURRENT_BUILD_DIR}/${ClassName})
+    set(all_unit_tests "${all_unit_tests};${ClassName}" CACHE INTERNAL "The names of all the unit tests")
 endfunction()
 
 function(create_object_lib Source Object)
