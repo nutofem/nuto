@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
+import unittest
 import numpy as np
 import nuto
-import unittest
 
 
 class GlobalDofTestCase(unittest.TestCase):
@@ -9,45 +10,39 @@ class GlobalDofTestCase(unittest.TestCase):
         self.structure = nuto.Structure(1)
 
         # create nodes
-        myNode1 = self.structure.NodeCreate(np.array([0.]))
-        myNode2 = self.structure.NodeCreate(np.array([5.]))
-        myNode3 = self.structure.NodeCreate(np.array([10.]))
+        node1 = self.structure.NodeCreate(np.array([0.]))
+        node2 = self.structure.NodeCreate(np.array([5.]))
+        node3 = self.structure.NodeCreate(np.array([10.]))
 
-        myInterpolationType = self.structure.InterpolationTypeCreate("Truss1D")
-        self.structure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant2")
-        self.structure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant2")
+        interpolationType = self.structure.InterpolationTypeCreate("Truss1D")
+        self.structure.InterpolationTypeAdd(interpolationType, "coordinates", "equidistant2")
+        self.structure.InterpolationTypeAdd(interpolationType, "displacements", "equidistant2")
 
-        self.structure.ElementCreate(myInterpolationType, [myNode1, myNode2, myNode3])
+        self.structure.ElementCreate(interpolationType, [node1, node2, node3])
         self.structure.ElementTotalConvertToInterpolationType()
 
         # create group of nodes
-        myNodeGroup = self.structure.GroupCreate("Nodes")
-        self.structure.GroupAddNode(myNodeGroup, myNode1)
-        self.structure.GroupAddNode(myNodeGroup, myNode3)
+        nodeGroup = self.structure.GroupCreate("Nodes")
+        self.structure.GroupAddNode(nodeGroup, node1)
+        self.structure.GroupAddNode(nodeGroup, node3)
 
         # add constraints for a single node
-        self.structure.ConstraintLinearSetDisplacementNode(myNode2, np.array([1.0, 1.0, -1.0]), 0.5)
+        self.structure.ConstraintLinearSetDisplacementNode(node2, np.array([1.0, 1.0, -1.0]), 0.5)
 
         # add constraints for a group of nodes
-        self.structure.ConstraintLinearSetDisplacementNodeGroup(myNodeGroup, np.array([1.0, 0.0, 0.0]), 2.0)
+        self.structure.ConstraintLinearSetDisplacementNodeGroup(nodeGroup, np.array([1.0, 0.0, 0.0]), 2.0)
 
         self.structure.NodeBuildGlobalDofs()
 
-
-class CheckConstraints(GlobalDofTestCase):
-    def runTest(self):
+    def testNumConstraints(self):
         numConstraints = self.structure.ConstraintGetNumLinearConstraints("Displacements")
         self.assertEqual(numConstraints, 3)
 
-
-class CheckGlobalDofs(GlobalDofTestCase):
-    def runTest(self):
+    def testGlobalDofs(self):
         numberGlobalDofs = self.structure.GetNumDofs("Displacements")
         self.assertEqual(numberGlobalDofs, 3)
 
-
-class CheckConstraints(GlobalDofTestCase):
-    def runTest(self):
+    def testConstraints(self):
         # build constraint matrix and rhs
         rhs = self.structure.ConstraintGetRHSBeforeGaussElimination().Export()
         rhs = rhs.squeeze()
@@ -59,8 +54,8 @@ class CheckConstraints(GlobalDofTestCase):
         # correct rhs
         rhsCorrect = np.r_[0.5, 2.0, 2.0]
 
-        self.assertTrue(np.max(np.abs(constraintMatrixFull - constraintMatrixFullCorrect)) < 1e-8)
-        self.assertTrue(np.max(np.abs(rhs - rhsCorrect)) < 1e-8)
+        self.assertTrue(np.allclose(constraintMatrixFull, constraintMatrixFullCorrect))
+        self.assertTrue(np.allclose(rhs, rhsCorrect))
 
 
 if __name__ == '__main__':

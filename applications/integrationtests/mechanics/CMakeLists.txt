@@ -10,7 +10,7 @@ if(ENABLE_PYTHON)
         Tetrahedron10N
         )
 
-        add_test(integration::mechanics::${test} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
+        add_test(integration::mechanics::${test} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
         set_property(TEST integration::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     endforeach()
 endif()

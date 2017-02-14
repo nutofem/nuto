@@ -2,18 +2,18 @@ import nuto
 import numpy as np
 
 
-class Material(object):
+class Material:
     youngsModulus = 20000.
 
 
-class Geometry(object):
+class Geometry:
     lx = 70.
     ly = 3.1415
     lz = 0.42
     numElements = 10
 
 
-class BoundaryCondition(object):
+class BoundaryCondition:
     force = 12.
     displacement = 0.1
 
