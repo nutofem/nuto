@@ -1,4 +1,4 @@
-set(NuToMath_SOURCES
+set(NuToMathSources
     CubicSplineInterpolation.cpp
     EigenCompanion.cpp
     EigenSolverArpack.cpp
@@ -18,8 +18,10 @@ set(NuToMath_SOURCES
     SparseDirectSolverMUMPS.cpp
 )
 
+sources_to_objects("${NuToMathSources}" NuToMathObjects)
+
 # build static library
-add_library(NuToMath ${NuToMath_SOURCES})
+add_library(NuToMath ${NuToMathObjects})
 target_link_libraries(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
 
 # install library

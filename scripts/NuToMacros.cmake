@@ -110,16 +110,60 @@ endfunction()
 # NuToBase and the Boost unit test framework to it, and adds it to the test
 # suite under an appropriate name
 function(add_unit_test ClassName)
+    # find relative path, i.e. remove the `.../test/`
     string(REPLACE "${CMAKE_SOURCE_DIR}/test/" "" relpath ${CMAKE_CURRENT_SOURCE_DIR})
-    set(AdditionalFiles ${ARGN})
-    set(srcPath "${CMAKE_SOURCE_DIR}/src/${relpath}/${ClassName}.cpp")
-    if(EXISTS "${srcPath}")
-        add_executable(${ClassName} ${ClassName}.cpp ${srcPath} ${AdditionalFiles})
-    else()
-        add_executable(${ClassName} ${ClassName}.cpp ${AdditionalFiles})
+
+    # if there are additional arguments, transform them from their filename
+    # to the appropriate object library targets
+    if(ARGN)
+        foreach(filename ${ARGN})
+            get_target_from_source(${CMAKE_SOURCE_DIR}/src/${filename} target)
+            set(AdditionalObjects "${AdditionalObjects};$<TARGET_OBJECTS:${target}>")
+        endforeach()
     endif()
+
+    # look for the corresponding object to the unit test
+    string(REPLACE "/" "." relpath ${relpath})
+    set(srcObject "${relpath}.${ClassName}")
+    # if there is an object (the class is not "header-only"), link it as well
+    if(TARGET "${srcObject}")
+        add_executable(${ClassName} ${ClassName}.cpp $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
+    else()
+        add_executable(${ClassName} ${ClassName}.cpp ${AdditionalObjects})
+    endif()
+    # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase)
 
-    string(REPLACE "/" "::" testname ${relpath})
+    # generate a ctest name for the test
+    string(REPLACE "." "::" testname ${relpath})
     add_test(unit::${testname}::${ClassName} ${CMAKE_CURRENT_BUILD_DIR}/${ClassName})
+endfunction()
+
+function(create_object_lib Source Object)
+    # give a source file, and create an object lib for it
+    # return the link target $<TARGET_OBJECT:target> to Object
+    get_target_from_source(${Source} libName)
+    add_library(${libName} OBJECT ${Source})
+
+    set(objectLib "$<TARGET_OBJECTS:${libName}>")
+    set(${Object} ${objectLib} PARENT_SCOPE)
+endfunction()
+
+# in three steps go from "/home/user/nuto/src/mechanics/MyClass.cpp"
+# to "mechanics.MyClass", and export this to Target
+function(get_target_from_source Source Target)
+    string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" libName ${Source})
+    string(REPLACE ".cpp" "" libName ${libName})
+    string(REPLACE "/" "." libName ${libName})
+    set(${Target} ${libName} PARENT_SCOPE)
+endfunction()
+
+# give it a list of sources, and it creates an object lib for each source,
+# and returns the list of link targets
+function(sources_to_objects Sources Objects)
+    foreach(source ${Sources})
+        create_object_lib(${CMAKE_CURRENT_SOURCE_DIR}/${source} object)
+        list(APPEND objectList ${object})
+    endforeach()
+    set(${Objects} ${objectList} PARENT_SCOPE)
 endfunction()

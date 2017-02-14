@@ -10,7 +10,7 @@ endforeach()
 add_unit_test(DataContainer)
 
 add_unit_test(IPConstitutiveLaw
-    ${CMAKE_SOURCE_DIR}/src/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
+    mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
     )
 
 add_subdirectory(inputoutput)

@@ -1,4 +1,4 @@
-set(NuToVisualize_SOURCES
+set(NuToVisualizeSources
     CellBase.cpp
     CellHexahedron.cpp
     CellVertex.cpp
@@ -20,8 +20,10 @@ set(NuToVisualize_SOURCES
     VisualizeUnstructuredGrid.cpp
 )
 
+sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)
+
 # build shared library
-add_library(NuToVisualize ${NuToVisualize_SOURCES})
+add_library(NuToVisualize ${NuToVisualizeObjects})
 
 # install library
 install(TARGETS NuToVisualize

@@ -1,4 +1,4 @@
-set(NuToMechanicsConstitutive_SOURCES
+set(NuToMechanicsConstitutiveSources
     constitutive/ConstitutiveBase.cpp
     constitutive/ConstitutiveEnum.cpp
     constitutive/inputoutput/ConstitutiveIOBase.cpp
@@ -32,7 +32,7 @@ set(NuToMechanicsConstitutive_SOURCES
     constitutive/staticData/IPAdditiveOutput.cpp
     )
 
-set(NuToMechanicsConstraint_SOURCES
+set(NuToMechanicsConstraintSources
     constraints/ConstraintBase.cpp
     constraints/ConstraintEquationTerm.cpp
     constraints/ConstraintLinear.cpp
@@ -56,7 +56,7 @@ set(NuToMechanicsConstraint_SOURCES
     constraints/ConstraintNonlinear.cpp
     )
 
-set(NuToMechanicsDofSubMatrixStorage_SOURCES
+set(NuToMechanicsDofSubMatrixStorageSources
     dofSubMatrixStorage/DofStatus.cpp
     dofSubMatrixStorage/BlockStorageBase.cpp
     dofSubMatrixStorage/BlockSparseMatrix.cpp
@@ -65,7 +65,7 @@ set(NuToMechanicsDofSubMatrixStorage_SOURCES
     dofSubMatrixStorage/BlockFullMatrix.cpp
     )
 
-set(NuToMechanicsElements_SOURCES
+list(APPEND NuToMechanicsElementsSources
     elements/ContinuumElement.cpp
     elements/ContinuumBoundaryElement.cpp
     elements/ContinuumBoundaryElementConstrainedControlNode.cpp
@@ -78,14 +78,15 @@ set(NuToMechanicsElements_SOURCES
     elements/ElementOutputBase.cpp
     elements/ElementShapeFunctions.cpp
     elements/IpDataEnum.cpp
-    elements/IPData.cpp)
+    elements/IPData.cpp
+    )
 
-set(NuToMechanicsGroups_SOURCES
+set(NuToMechanicsGroupsSources
     groups/Group.cpp
     groups/GroupBase.cpp
     )
 
-set(NuToMechanicsIntegrationtypes_SOURCES
+set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
@@ -123,7 +124,7 @@ set(NuToMechanicsIntegrationtypes_SOURCES
     integrationtypes/IntegrationTypeEnum.cpp
     )
 
-set(NuToMechanicsInterpolationtypes_SOURCE
+set(NuToMechanicsInterpolationtypesSources
     interpolationtypes/InterpolationBase.cpp
     interpolationtypes/InterpolationBaseFEM.cpp
     interpolationtypes/InterpolationBaseIGA.cpp
@@ -143,12 +144,12 @@ set(NuToMechanicsInterpolationtypes_SOURCE
     interpolationtypes/Interpolation2DIGA.cpp
     )
 
-set(NuToMechanicsIGA_SOURCE
+set(NuToMechanicsIGASources
     IGA/BSplineCurve.cpp
     IGA/BSplineSurface.cpp
     )
 
-set(NuToMechanicsLoads_SOURCES
+set(NuToMechanicsLoadsSources
     loads/LoadBase.cpp
     loads/LoadNode.cpp
     loads/LoadNodeGroup.cpp
@@ -168,7 +169,7 @@ set(NuToMechanicsLoads_SOURCES
     loads/LoadSurfacePressureFunction2D.cpp
     )
 
-set(NuToMechanicsMesh_SOURCES
+set(NuToMechanicsMeshSources
     mesh/ConvertToInterpolationType.cpp
     mesh/ElementPrismCreate.cpp
     mesh/ImportFromGmsh.cpp
@@ -176,13 +177,13 @@ set(NuToMechanicsMesh_SOURCES
     mesh/MeshGenerator.cpp
     )
 
-set(NuToMechanicsNodes_SOURCES
+set(NuToMechanicsNodesSources
     nodes/NodeBase.cpp
     nodes/NodeDof.cpp
     nodes/NodeEnum.cpp
     )
 
-set(NuToMechanicsSection_SOURCES
+set(NuToMechanicsSectionSources
     sections/SectionBase.cpp
     sections/SectionTruss.cpp
     sections/SectionPlane.cpp
@@ -191,7 +192,7 @@ set(NuToMechanicsSection_SOURCES
     sections/SectionFibreMatrixBond.cpp
     )
 
-set(NuToMechanicsStructures_SOURCES
+set(NuToMechanicsStructuresSources
     structures/StructureBase.cpp
     structures/StructureBaseConstitutiveLaw.cpp
     structures/StructureBaseConstraints.cpp
@@ -216,7 +217,7 @@ set(NuToMechanicsStructures_SOURCES
 
 
 
-set(NuToMechanicsTimeIntegration_SOURCES
+set(NuToMechanicsTimeIntegrationSources
     timeIntegration/NewmarkBase.cpp
     timeIntegration/NewmarkDirect.cpp    
     #timeIntegration/JumpDirect.cpp
@@ -246,29 +247,29 @@ set(NuToMechanicsTimeIntegration_SOURCES
     )
 
 
-set(NuToMechanics_SOURCES
-    ${NuToMechanicsConstitutive_SOURCES}
-    ${NuToMechanicsConstraint_SOURCES}
-    ${NuToMechanicsCrack_SOURCES}
-    ${NuToMechanicsDofSubMatrixStorage_SOURCES}
-    ${NuToMechanicsElements_SOURCES}
-    ${NuToMechanicsGroups_SOURCES}
-    ${NuToMechanicsIntegrationtypes_SOURCES}
-    ${NuToMechanicsInterpolationtypes_SOURCE}
-    ${NuToMechanicsIGA_SOURCE}
-    ${NuToMechanicsLoads_SOURCES}
-    ${NuToMechanicsMesh_SOURCES}
-    ${NuToMechanicsNodes_SOURCES}
-    ${NuToMechanicsSection_SOURCES}
-    ${NuToMechanicsStructures_SOURCES}
-    ${NuToMechanicsTimeIntegration_SOURCES}
+set(NuToMechanicsSources
+    ${NuToMechanicsConstitutiveSources}
+    ${NuToMechanicsConstraintSources}
+    ${NuToMechanicsCrackSources}
+    ${NuToMechanicsDofSubMatrixStorageSources}
+    ${NuToMechanicsElementsSources}
+    ${NuToMechanicsGroupsSources}
+    ${NuToMechanicsIntegrationtypesSources}
+    ${NuToMechanicsInterpolationtypesSources}
+    ${NuToMechanicsIGASources}
+    ${NuToMechanicsLoadsSources}
+    ${NuToMechanicsMeshSources}
+    ${NuToMechanicsNodesSources}
+    ${NuToMechanicsSectionSources}
+    ${NuToMechanicsStructuresSources}
+    ${NuToMechanicsTimeIntegrationSources}
     )
 
 
-
+sources_to_objects("${NuToMechanicsSources}" NuToMechanicsObjects)
 
 # build static library
-add_library(NuToMechanics ${NuToMechanics_SOURCES})
+add_library(NuToMechanics ${NuToMechanicsObjects})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
 
 if(ENABLE_SHOW_TIME)

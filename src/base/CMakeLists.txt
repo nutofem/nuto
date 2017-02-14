@@ -1,4 +1,4 @@
-set(NuToBase_SOURCES
+set(NuToBaseSources
     Logger.cpp
     CallbackInterface.cpp
     serializeStream/SerializeStreamBase.cpp
@@ -6,8 +6,10 @@ set(NuToBase_SOURCES
     serializeStream/SerializeStreamOut.cpp
     )
 
+sources_to_objects("${NuToBaseSources}" NuToBaseObjects)
+
 # build static library
-add_library(NuToBase ${NuToBase_SOURCES})
+add_library(NuToBase ${NuToBaseObjects})
 target_link_libraries(NuToBase ${Boost_LIBRARIES})
 
 # install library
