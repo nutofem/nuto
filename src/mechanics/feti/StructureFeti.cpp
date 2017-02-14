@@ -561,6 +561,7 @@ void NuTo::StructureFeti::CheckStiffnessPartitioning(  const StructureOutputBloc
 //    assert(     (norm < tolerance)
 //            and "Stiffness matrix is not partitioned correctly. Check constraints.");
 
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
