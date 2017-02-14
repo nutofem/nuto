@@ -5,6 +5,8 @@ import sys
 import os
 import numpy as np
 
+
+
 # Get path to work dir as cmake_current_binary_dir
 pathToWorkDir = sys.argv[1]
 
@@ -27,16 +29,13 @@ print ("   |---> ", workDir)
 print ()
 
 # create a box specimen
-specimen = nuto.Specimen(np.array([[-10., 10.], [-10., 10.], [-5., 5.]]), 0)
+specimen = nuto.Specimen(np.array([[-10., 10.], [-10., 10.], [-10., 10.]]), 0)
 
 # create some spheres
-sphereMatrix = np.array([[-4., -4., 0., 2.],
-                         [-4., 4., 0., 2.],
-                         [4., 4., 0., 2.],
-                         [4., -4., 0., 2.]])
-spheres = nuto.ParticleHandler(sphereMatrix, 0, 0, 0)
+sphereMatrix = np.array([[ 0., 0., 0., 5.]])
+spheres = nuto.ParticleHandler(sphereMatrix, 0,0,0)
 
-meshSize = 4
+meshSize = 5
 
 # define files
 
@@ -60,15 +59,13 @@ os.system(gmsh + ' ' + geoFile2D + ' -2 -order 1 -v 1 -o ' + mshFile2D + ' 2> ' 
 os.system(gmsh + " " + geoFile3D + ' -3 -order 1 -v 1 -o ' + mshFile3D + ' 2> ' + errFile3D)
 
 # check the emptyness of the error files
-if (os.stat(errFile2D).st_size > 0):
+if os.stat(errFile2D).st_size > 0:
     print ("Errors or warnings occured while meshing 2D. See error file for details:")
     print (errFile2D)
-    sys.exit(-1)
 
-if (os.stat(errFile3D).st_size > 0):
+if os.stat(errFile3D).st_size > 0:
     print ("Errors or warnings occured while meshing 3D. See error file for details:")
     print (errFile3D)
-    sys.exit(-1)
 
 # check the mesh proper import of the mesh
 

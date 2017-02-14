@@ -14,14 +14,13 @@
 NuTo::CollidableWallVirtual::CollidableWallVirtual(
 	Eigen::Vector3d rPosition,
 	Eigen::Vector3d rDirection,
-	const int rIndex)
+	int rIndex)
 	: CollidableWallBase(rPosition, rDirection, rIndex)
 {
 }
 
-const bool NuTo::CollidableWallVirtual::IsInOutsideBox(
-		const CollidableParticleSphere& rSphere) const
-		{
+bool NuTo::CollidableWallVirtual::IsInOutsideBox(const CollidableParticleSphere& rSphere) const
+{
 	const auto& boxes = rSphere.GetSubBoxes();
 	for(unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
 		if(boxes[iBox] == this->mOutsideBox)
@@ -52,10 +51,6 @@ void NuTo::CollidableWallVirtual::GetDistanceAligned(double& rDynamicDistance,
 	rStaticDistance = direction * (rSphere.mPosition[mNonNullAxis] - this->mPosition[mNonNullAxis]) + rSign * rSphere.mRadius;
 }
 
-const bool NuTo::CollidableWallVirtual::IsPhysical() const
-{
-	return false;
-}
 
 void NuTo::CollidableWallVirtual::GetDistanceGeneral(double& rDynamicDistance,
 		double& rStaticDistance, bool rIsInOutsideBox,
@@ -66,8 +61,7 @@ void NuTo::CollidableWallVirtual::GetDistanceGeneral(double& rDynamicDistance,
 	rStaticDistance = this->mDirection.dot(rSphere.mPosition - this->mPosition)	+ rSign * rSphere.mRadius;
 }
 
-const double NuTo::CollidableWallVirtual::PredictCollision(
-		CollidableParticleSphere& rSphere, int& rType)
+double NuTo::CollidableWallVirtual::PredictCollision(CollidableParticleSphere& rSphere, int& rType)
 {
 	rType = Event::EventType::WallTransfer;
 
@@ -112,6 +106,4 @@ const double NuTo::CollidableWallVirtual::PredictCollision(
 
 	}
 	return Event::EVENTNULL;
-
 }
-

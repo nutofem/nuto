@@ -17,13 +17,27 @@ endforeach()
 
 
 
-# generate tests
+
+# math/base tests
+foreach(test
+        MortonOrder
+        TestOperators
+        )
+
+    add_executable(${test} ${test}.cpp)
+    target_link_libraries(${test} NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+    if(MUMPS_FOUND)
+        target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    endif()
+    add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+endforeach()
+
+if (ENABLE_MECHANICS)
 foreach(test
     CSDAPrism3D
     ExplicitTimeIntegration
     HeatedPlate
     InsulatedPlate
-    MortonOrder
     PGDPlateMeso2D
     Plane2D4NFreeHangingNode
     SparseDirectSolverMUMPS
@@ -43,6 +57,7 @@ foreach(test
     endif()
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
+endif()
 
 if(ENABLE_OPENMP AND OPENMP_FOUND)
     add_executable(OpenMP OpenMP.cpp)

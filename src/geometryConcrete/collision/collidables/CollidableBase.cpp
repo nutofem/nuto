@@ -14,7 +14,7 @@
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 
 
-NuTo::CollidableBase::CollidableBase(const int rIndex)
+NuTo::CollidableBase::CollidableBase(int rIndex)
 		: mIndex(rIndex)
 {
 }
@@ -23,7 +23,7 @@ NuTo::CollidableBase::~CollidableBase()
 {
 }
 
-const int NuTo::CollidableBase::GetIndex() const
+int NuTo::CollidableBase::GetIndex() const
 {
 	return mIndex;
 }

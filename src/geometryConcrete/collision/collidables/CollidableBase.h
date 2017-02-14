@@ -31,13 +31,13 @@ public:
 
 	//! @brief ... constructor, initialized with an index
 	//! @param rIndex ... index, multiple collidables with same index are allowed
-	CollidableBase(const int rIndex);
+	CollidableBase(int rIndex);
 
 	//! @brief ... destructor
 	virtual ~CollidableBase();
 
 	//! @brief ... getter for collidable index
-	const int GetIndex() const;
+	int GetIndex() const;
 
 	//! @brief ... collision handling, resolve double dispatch
 	//! @param rCollidable ... collision partner
@@ -55,19 +55,19 @@ public:
 	//! @param rCollidable ... collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted time of collision
-	virtual const double PredictCollision(CollidableBase& rCollidable, int& rType) = 0;
+	virtual double PredictCollision(CollidableBase& rCollidable, int& rType) = 0;
 
 	//! @brief ... collision prediction between (this) and collision partner
 	//! @param rSphere ... collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted time of collision
-	virtual const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) = 0;
+	virtual double PredictCollision(CollidableParticleSphere& rSphere, int& rType) = 0;
 
 	//! @brief ... collision prediction between (this) and collision partner
 	//! @param rWall ... collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted time of collision
-	virtual const double PredictCollision(CollidableWallBase& rWall, int& rType) = 0;
+	virtual double PredictCollision(CollidableWallBase& rWall, int& rType) = 0;
 
 	//! @brief ... adds a SubBox to this collidable
 	//! @param rBox ... SubBox to add
@@ -79,7 +79,7 @@ public:
 
 	//! @brief ... updates this collidable in time
 	//! @param rTime ... new global time
-	virtual void MoveAndGrow(const double rTime) = 0;
+	virtual void MoveAndGrow(double rTime) = 0;
 
 
 	//! @brief ... returns all old events, that need to be deleted
@@ -106,7 +106,7 @@ public:
 protected:
 
 	//! @brief ... index, just a name for each collidable, multiple collidables with the same index possible
-	const int mIndex;
+	int mIndex;
 
 	//! @brief ... list of SubBoxes in which this collidable is inside
 	//! if the collidable is passing a virutal sub box wall, multiple mBoxes are possible
@@ -116,7 +116,6 @@ protected:
 	//! adding single event: through EventBase::AddLocalEvents()
 	//! remove single event: through EventBase::~EventBase()
     //! clear everything: on collision
-
     LocalEvents mLocalEvents;
 
 };

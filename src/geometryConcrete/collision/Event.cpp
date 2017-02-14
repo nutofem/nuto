@@ -14,19 +14,12 @@
 
 const double NuTo::Event::EVENTNULL = -1.;
 
-NuTo::Event::Event(const double rTime, CollidableBase* rFirst,
-		CollidableBase* rSecond, const int rType)
+NuTo::Event::Event(double rTime, CollidableBase* rFirst,
+		CollidableBase* rSecond, int rType)
 		: mTime(rTime), mType(rType)
 {
 	mFirst = rFirst;
 	mSecond = rSecond;
-}
-
-NuTo::Event::Event(const Event& rEvent)
-		: mTime(rEvent.mTime), mType(rEvent.mType)
-{
-	mFirst = rEvent.mFirst;
-	mSecond = rEvent.mSecond;
 }
 
 NuTo::Event::~Event()
@@ -41,7 +34,7 @@ NuTo::Event::~Event()
 	local2nd.erase(newEnd, local2nd.end());
 }
 
-const double NuTo::Event::GetTime() const
+double NuTo::Event::GetTime() const
 {
 	return mTime;
 }
@@ -54,7 +47,7 @@ void NuTo::Event::PerformCollision() const
 }
 
 void NuTo::Event::AddNewEvents(EventListHandler& rEvents) const
-		{
+{
 	// get boxes involved
 
 	auto& boxesFirst = mFirst->GetSubBoxes();
@@ -129,7 +122,7 @@ bool NuTo::Event::operator <(const Event& rOther) const
 }
 
 bool NuTo::Event::operator ==(Event const& rRhs) const
-		{
+{
 	// return false if not simultaneous
 	if (mTime != rRhs.mTime)
 		return false;
@@ -145,7 +138,7 @@ bool NuTo::Event::operator ==(Event const& rRhs) const
 }
 
 bool NuTo::Event::operator !=(const Event& rRhs) const
-		{
+{
 	return !(*this == rRhs);
 }
 
@@ -155,13 +148,13 @@ void NuTo::Event::AddLocalEvent()
 	mSecond->mLocalEvents.push_back(this);
 }
 
-const int NuTo::Event::GetType() const
+int NuTo::Event::GetType() const
 {
 	return mType;
 }
 
 void NuTo::Event::Print(std::ostream& rOutStream) const
-		{
+{
 	int indexWidth = 6;
 	rOutStream.setf(std::ios::scientific);
 	rOutStream << "Time="

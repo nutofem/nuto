@@ -9,9 +9,9 @@
 #include "base/Exception.h"
 
 NuTo::CollidableParticleBase::CollidableParticleBase(
-		Eigen::VectorXd rPosition,
-		Eigen::VectorXd rVelocity,
-		const int rIndex)
+		Eigen::Vector3d rPosition,
+		Eigen::Vector3d rVelocity,
+		int rIndex)
 		: CollidableBase(rIndex), mPosition(rPosition), mVelocity(rVelocity)
 {
 

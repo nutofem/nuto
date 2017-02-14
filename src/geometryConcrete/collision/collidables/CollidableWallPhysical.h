@@ -23,9 +23,9 @@ public:
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
 	CollidableWallPhysical(
-			Eigen::VectorXd rPosition,
-			Eigen::VectorXd rDirection,
-			const int rIndex);
+			Eigen::Vector3d rPosition,
+			Eigen::Vector3d rDirection,
+			int rIndex);
 
 	//! @brief ... collision between CollidableWall and CollidableSphere
 	//! @param rSphere ... collision partner
@@ -34,10 +34,13 @@ public:
 	//! @brief ... collision check between CollidableWall and CollidableSphere, physics here
 	//! @param rSphere ... possible collision partner
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
+	double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... returns true
-	const bool IsPhysical() const override;
+	bool IsPhysical() const override
+	{
+		return true;
+	}
 };
 
 } /* namespace NuTo */

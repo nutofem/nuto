@@ -21,7 +21,6 @@ set(NuToGeometryConcreteGradingCurveSources
 set(NuToGeometryConcreteSources
     GeometryConcrete.cpp
     InputReader.cpp
-    WallTime.cpp
     Specimen.cpp
     ${NuToGeometryConcreteCollisionSources}
     ${NuToGeometryConcreteGradingCurveSources}

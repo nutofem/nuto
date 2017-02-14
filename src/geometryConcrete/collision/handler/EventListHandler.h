@@ -8,7 +8,9 @@
 #pragma once
 
 #include <vector>
-#include <boost/ptr_container/ptr_set.hpp>
+//#include <boost/ptr_container/ptr_set.hpp>
+#include <set>
+
 
 namespace NuTo
 {
@@ -16,7 +18,7 @@ class CollidableBase;
 class Event;
 class SubBoxHandler;
 
-typedef boost::ptr_set<Event> GlobalEvents;
+typedef std::set<Event> GlobalEvents;
 typedef std::vector<Event*> LocalEvents;
 
 //! @brief ... class for event list operations

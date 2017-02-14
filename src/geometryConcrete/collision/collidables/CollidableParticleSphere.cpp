@@ -19,11 +19,11 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 NuTo::CollidableParticleSphere::CollidableParticleSphere(
-		Eigen::VectorXd rPosition,
-		Eigen::VectorXd rVelocity,
+		Eigen::Vector3d rPosition,
+		Eigen::Vector3d rVelocity,
 		double rRadius,
 		double rGrowthRate,
-		const int rIndex)
+		int rIndex)
 		: CollidableParticleBase(rPosition, rVelocity, rIndex),
 				mRadius(rRadius),
 				mRadiusGrowth(rRadius),
@@ -34,7 +34,7 @@ NuTo::CollidableParticleSphere::CollidableParticleSphere(
 {
 }
 
-void NuTo::CollidableParticleSphere::MoveAndGrow(const double rTime)
+void NuTo::CollidableParticleSphere::MoveAndGrow(double rTime)
 {
 	double dTUpdate = rTime - mTimeOfLastUpdate;
 	mPosition += mVelocity * dTUpdate;
@@ -45,7 +45,7 @@ void NuTo::CollidableParticleSphere::MoveAndGrow(const double rTime)
 	mTimeOfLastUpdate = rTime;
 }
 
-void NuTo::CollidableParticleSphere::SetGrowthRate(const double rGrowthRateFactor, const double rTime)
+void NuTo::CollidableParticleSphere::SetGrowthRate(double rGrowthRateFactor, double rTime)
 {
 	// calculate new growth radius
 	double dTGrowth = rTime - mTimeOfGrowthReset;
@@ -56,12 +56,12 @@ void NuTo::CollidableParticleSphere::SetGrowthRate(const double rGrowthRateFacto
 	mTimeOfGrowthReset = rTime;
 }
 
-const double NuTo::CollidableParticleSphere::SphereCollision1D(
-		const double rVelocity1,
-		const double rVelocity2,
-		const double rMass1,
-		const double rMass2) const
-		{
+double NuTo::CollidableParticleSphere::SphereCollision1D(
+		double rVelocity1,
+		double rVelocity2,
+		double rMass1,
+		double rMass2) const
+{
 	return (rVelocity1 * (rMass1 - rMass2) + 2 * rVelocity2 * rMass2) / (rMass1 + rMass2);
 }
 
@@ -125,12 +125,12 @@ void NuTo::CollidableParticleSphere::PerformCollision(CollidableWallBase& rWall)
 	rWall.PerformCollision(*this);
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableBase& rCollidable, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableBase& rCollidable, int& rType)
 {
 	return rCollidable.PredictCollision(*this, rType);
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticleSphere& rSphere, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticleSphere& rSphere, int& rType)
 {
 	if (this == &rSphere)
 		return Event::EVENTNULL;
@@ -198,7 +198,7 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 	return Event::EVENTNULL;
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase& rWall, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase& rWall, int& rType)
 {
 	return rWall.PredictCollision(*this, rType);
 }
@@ -211,17 +211,17 @@ Eigen::MatrixXd NuTo::CollidableParticleSphere::ExportRow(bool rInitialRadius) c
 	return data;
 }
 
-const Eigen::VectorXd NuTo::CollidableParticleSphere::GetPosition() const
+const Eigen::Vector3d& NuTo::CollidableParticleSphere::GetPosition() const
 {
 	return mPosition;
 }
 
-const double NuTo::CollidableParticleSphere::GetRadius() const
+double NuTo::CollidableParticleSphere::GetRadius() const
 {
 	return mRadius;
 }
 
-const double NuTo::CollidableParticleSphere::GetRadius0() const
+double NuTo::CollidableParticleSphere::GetRadius0() const
 {
 	return mRadius0;
 }
@@ -270,12 +270,12 @@ void NuTo::CollidableParticleSphere::VisualizationDynamic(
 }
 #endif
 
-const double NuTo::CollidableParticleSphere::GetKineticEnergy() const
+double NuTo::CollidableParticleSphere::GetKineticEnergy() const
 {
 	return .5 * std::pow(mRadius, 3) * mVelocity.dot(mVelocity);
 }
 
-const double NuTo::CollidableParticleSphere::GetVolume() const
+double NuTo::CollidableParticleSphere::GetVolume() const
 {
 	return 4. / 3. * M_PI * std::pow(mRadius, 3);
 }

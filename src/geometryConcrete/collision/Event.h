@@ -23,8 +23,6 @@ class Event
 {
 public:
 
-	typedef boost::ptr_set<Event> GlobalEvents;
-
 	typedef std::vector<Event*> LocalEvents;
 
 	//! @brief ... statistics
@@ -41,22 +39,26 @@ public:
 	//! @param rTime ... event time
 	//! @param rFirst ... first CollidableBase involved
 	//! @param rSecond ... second CollidableBase involved
-	Event(const double rTime, CollidableBase* rFirst,
-			CollidableBase* rSecond, const int rType);
+	Event(double rTime, CollidableBase* rFirst, CollidableBase* rSecond, int rType);
 
-	//! @brief ... copy constructor
-	Event(const Event& rEvent);
+    //! @brief ... copy constructor
+    Event(const Event& rEvent) = default;
+    Event& operator=(const NuTo::Event&) = default;
 
+#ifndef SWIG
+    Event(Event&& rEvent) = default;
+    Event& operator=(Event&&) = default;
+#endif
 
 	//! @brief ... important operator for the event list sorting
 	//! ... sort priority: time >> collidables
-	bool operator<(const Event& rOther) const;
+	bool operator < (const Event& rOther) const;
 
 	//! @brief ... determines, whether two events are equal
-	bool operator==(Event const& rRhs) const;
+	bool operator == (Event const& rRhs) const;
 
 	//! @brief ... determines, whether two events are unequal
-	bool operator!=(Event const& rRhs) const;
+	bool operator != (Event const& rRhs) const;
 
 
 
@@ -66,8 +68,7 @@ public:
 
 	//! @brief ... getter for mTime
 	//! @return ... time of event
-	const double GetTime() const;
-
+	double GetTime() const;
 
 	//! @brief ... creates new events for mFirst and mSecond
 	//! (--> automatically added to local event lists, see constructor)
@@ -86,7 +87,7 @@ public:
 	void AddLocalEvent();
 
 	//! @brief ... getter for type
-	const int GetType() const;
+	int GetType() const;
 
 protected:
 
@@ -99,10 +100,10 @@ protected:
 private:
 
 	//! @brief ... event time
-	const double mTime;
+	double mTime;
 
 	//! @brief ... member of CollidableBase::EventType
-	const int mType;
+	int mType;
 
 #ifndef SWIG
 	friend std::ostream& operator<<(std::ostream& rOutStream,

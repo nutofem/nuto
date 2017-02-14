@@ -25,8 +25,8 @@ public:
 	//! @param rHeigth ... height
 	//! @param rIndex ... name
 	CollidableWallCylinder(Eigen::Vector3d rPosition,
-						   Eigen::Vector3d rDirection, const double rRadius, const double rHeigth,
-						   const int rIndex);
+						   Eigen::Vector3d rDirection, double rRadius, double rHeigth,
+						   int rIndex);
 
 	//! @brief ... collision between this and CollidableSphere
 	//! @param rSphere ... collision partner
@@ -35,9 +35,12 @@ public:
 	//! @brief ... collision prediction between (this) and a sphere
 	//! @param rSphere ... collision partner
 	//! @return ... predicted time of collision
-    const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
+    double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
-    const bool IsPhysical() const override;
+    bool IsPhysical() const override
+	{
+		return true;
+	}
 
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables
@@ -56,10 +59,10 @@ protected:
 	void Print(std::ostream & rReturnStream) const override;
 
 	//! @brief ... cylinder radius
-	const double mRadius;
+	double mRadius;
 
 	//! @brief ... cylinder height
-	const double mHeigth;
+	double mHeigth;
 };
 
 } /* namespace NuTo */
