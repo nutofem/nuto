@@ -42,7 +42,6 @@ foreach(test
     Plane2D4NFreeHangingNode
     SparseDirectSolverMUMPS
     Temperature1D
-    TestOperators
     Truss1D2N
     VisualizePlane2D4N
     )

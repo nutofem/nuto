@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <list>
 #include <vector>
 
 namespace NuTo
@@ -24,7 +23,7 @@ public:
 
 	//! @brief ... constructor
 	//! @param rIndex ... name for debug
-	SubBox(const int rIndex);
+	SubBox(int rIndex);
 
 	//! @brief ... destructor, Deletes mWalls on destruction
 	~SubBox();
@@ -44,7 +43,7 @@ public:
 	void RemoveSphere(CollidableParticleSphere& rSphere);
 
 	//! @brief ... sets the virtual and physical walls as sub box boundaries
-	void SetWalls(const std::list<CollidableWallBase*>& rCollidables);
+	void SetWalls(const std::vector<CollidableWallBase*>& rCollidables);
 
 	//! @brief ... add a single wall
 	void AddWall(CollidableWallBase& rWall);
@@ -59,14 +58,14 @@ public:
 	const std::vector<CollidableBase*>& GetCollidables() const;
 
 	//! @brief ... getter for mWalls
-	const std::list<CollidableWallBase*>& GetWalls() const;
+	const std::vector<CollidableWallBase*>& GetWalls() const;
 
 	//! @brief ... getter for mIndex
-	const int GetIndex() const;
+	int GetIndex() const;
 
 private:
-	const int mIndex;
-	std::list<CollidableWallBase*> mWalls;
+	int mIndex;
+	std::vector<CollidableWallBase*> mWalls;
 	std::vector<CollidableBase*> mCollidables;
 };
 

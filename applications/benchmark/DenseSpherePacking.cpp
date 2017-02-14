@@ -5,6 +5,15 @@
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "geometryConcrete/Specimen.h"
 
+BENCHMARK(DenseSpherePacking, Warmup, runner)
+{
+    while (runner.KeepRunningTime(1.))
+    {
+
+    }
+}
+
+
 BENCHMARK(DenseSpherePacking, Run, runner)
 {
     Eigen::MatrixXd boundingBox(3,2);

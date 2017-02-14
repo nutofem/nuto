@@ -43,9 +43,9 @@ public:
 
     //! @brief ... copy constructor
     Event(const Event& rEvent) = default;
-    Event& operator=(const NuTo::Event&) = default;
 
 #ifndef SWIG
+	Event& operator=(const NuTo::Event&) = default;
     Event(Event&& rEvent) = default;
     Event& operator=(Event&&) = default;
 #endif
@@ -64,7 +64,7 @@ public:
 
 	//! @brief ... destructor
 	//! removes itself (this) from the local event lists of both collidables
-	virtual ~Event();
+	~Event();
 
 	//! @brief ... getter for mTime
 	//! @return ... time of event
@@ -112,7 +112,7 @@ private:
 
 	//! @brief ... output
 	//! @param rOutStream ... return argument, gets modified
-	virtual void Print(std::ostream& rOutStream) const;
+	void Print(std::ostream& rOutStream) const;
 
 };
 

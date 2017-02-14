@@ -38,7 +38,7 @@ NuTo::EventListHandler::~EventListHandler()
 void NuTo::EventListHandler::PrintEvents()
 {
 	std::cout << std::endl << "======== GLOBAL EVENT LIST ========" << std::endl;
-	for (auto event : mEvents)
+	for (auto& event : mEvents)
 		std::cout << event << std::endl;
 
 	std::cout << "===================================" << std::endl << std::endl;
@@ -49,7 +49,7 @@ void NuTo::EventListHandler::Clear()
 	mEvents.clear();
 }
 
-void NuTo::EventListHandler::AddEvent(const double rTime,
+void NuTo::EventListHandler::AddEvent(double rTime,
 		CollidableBase& rCollidable1, CollidableBase& rCollidable2, int rType)
 {
 	if (rTime < 0 || rTime > mTimeBarrier)
@@ -71,7 +71,7 @@ void NuTo::EventListHandler::DeleteOldEvents(Event::LocalEvents& rOldEvents)
 		mEvents.erase(*oldEvent);
 }
 
-const double NuTo::EventListHandler::GetNextEventTime()
+double NuTo::EventListHandler::GetNextEventTime()
 {
 	if (mEvents.begin() == mEvents.end())
 		return Event::EVENTNULL;
@@ -103,7 +103,7 @@ void NuTo::EventListHandler::PrintStatistics(double rTimeTotal)
 }
 
 
-const int NuTo::EventListHandler::GetEventListSize()
+int NuTo::EventListHandler::GetEventListSize()
 {
 	return mEvents.size();
 }
@@ -153,10 +153,10 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 	auto& boxes = rSubBoxes.GetSubBoxes();
 	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
 	{
-		auto& collidables = boxes[iBox]->GetCollidables();
+		auto& collidables = boxes[iBox].GetCollidables();
 		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
 		{
-			boxes[iBox]->CreateEvents(*this, *collidables[iCollidable]);
+			boxes[iBox].CreateEvents(*this, *collidables[iCollidable]);
 		}
 	}
 

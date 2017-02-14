@@ -48,16 +48,11 @@ void NuTo::Event::PerformCollision() const
 
 void NuTo::Event::AddNewEvents(EventListHandler& rEvents) const
 {
-	// get boxes involved
+	for (auto* box : mFirst->GetSubBoxes())
+        box->CreateEvents(rEvents, *mFirst);
 
-	auto& boxesFirst = mFirst->GetSubBoxes();
-	auto& boxesSecond = mSecond->GetSubBoxes();
-
-	for(unsigned int iBox = 0; iBox < boxesFirst.size(); ++iBox)
-		boxesFirst[iBox]->CreateEvents(rEvents, *mFirst);
-
-	for(unsigned int iBox = 0; iBox < boxesSecond.size(); ++iBox)
-		boxesSecond[iBox]->CreateEvents(rEvents, *mSecond);
+    for (auto* box : mSecond->GetSubBoxes())
+        box->CreateEvents(rEvents, *mSecond);
 }
 
 void NuTo::Event::EraseOldEvents(
@@ -77,48 +72,27 @@ void NuTo::Event::EraseOldEvents(
 }
 
 bool NuTo::Event::operator <(const Event& rOther) const
-		{
+{
 	// most likely case:
 	if (this->mTime != rOther.mTime)
 		return this->mTime < rOther.mTime;
 
-
 	// simultaneous events!
-
 	// avoid the same event to be added twice, same event might be: this->mFirst == rOther.mSecond
 
-//	if (*this == rOther)
-//		return false;
+	CollidableBase* smaller1 = this->mFirst < this->mSecond ? this->mFirst : this->mSecond;
+    CollidableBase* smaller2 = rOther.mFirst < rOther.mSecond ? rOther.mFirst : rOther.mSecond;
 
-	CollidableBase* smaller1 = this->mFirst;
-	CollidableBase* bigger1 = this->mSecond;
-
-	CollidableBase* smaller2 = rOther.mFirst;
-	CollidableBase* bigger2 = rOther.mSecond;
-
-	if (smaller1 > bigger1)
-		std::swap(smaller1, bigger1);
-
-	if(smaller2 > bigger2)
-		std::swap(smaller2, bigger2);
+    if (smaller1 != smaller2)
+    {
+        return smaller1 > smaller2;
+    }
 
 
-	// compare smaller pointer:
-	if (smaller1 == smaller2)
-		return bigger1 > bigger2;
+	CollidableBase* bigger1 = this->mFirst < this->mSecond ? this->mSecond : this->mFirst;
+    CollidableBase* bigger2 = rOther.mFirst < rOther.mSecond ? rOther.mSecond : rOther.mFirst;
 
-	return smaller1 > smaller2;
-
-
-	// simultaneous, non-equal events: add somehow distinguish-able
-
-//	if (this->mFirst != rOther.mFirst)
-//		return this->mFirst < rOther.mFirst;
-//
-//	if (this->mSecond != rOther.mSecond)
-//		return this->mSecond > rOther.mSecond;
-//
-//	return this->mFirst < rOther.mSecond;
+    return bigger1 > bigger2;
 }
 
 bool NuTo::Event::operator ==(Event const& rRhs) const

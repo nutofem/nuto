@@ -8,9 +8,8 @@
 #pragma once
 
 #include <vector>
-//#include <boost/ptr_container/ptr_set.hpp>
 #include <set>
-
+#include "geometryConcrete/collision/Event.h"
 
 namespace NuTo
 {
@@ -19,7 +18,6 @@ class Event;
 class SubBoxHandler;
 
 typedef std::set<Event> GlobalEvents;
-typedef std::vector<Event*> LocalEvents;
 
 //! @brief ... class for event list operations
 class EventListHandler
@@ -47,14 +45,14 @@ public:
 	//! @param rCollidable1 ... collision partner 1
 	//! @param rCollidable2 ... collision partner 2
 	//! @param rType ... type of the collision
-	void AddEvent(const double rTime, CollidableBase& rCollidable1, CollidableBase& rCollidable2, int rType);
+	void AddEvent(double rTime, CollidableBase& rCollidable1, CollidableBase& rCollidable2, int rType);
 
 	//! @brief ... deletes every event in rOldEvents
 	//! @param rOldEvents ... old events that need to be deleted
-    void DeleteOldEvents(LocalEvents& rOldEvents);
+    void DeleteOldEvents(Event::LocalEvents& rOldEvents);
 
 	//! @brief ... returns the time of the most recent event
-	const double GetNextEventTime();
+	double GetNextEventTime();
 
 	//! @brief ... setter for the time barrier, rebuilds the event list
 	//! @param rTimeBarrier ... new in-simulation time barrier
@@ -62,7 +60,7 @@ public:
 	double SetTimeBarrier(double rTimeBarrier, SubBoxHandler& rSubBoxes);
 
 	//! @brief getter for the event list size
-	const int GetEventListSize();
+	int GetEventListSize();
 
 	//! @brief ... deletes all events
 	void Clear();
