@@ -419,73 +419,73 @@ void NuTo::StructureFeti::CreateDummy1D()
 void NuTo::StructureFeti::CalculateRigidBodyModes()
 {
 
-    switch (GetDimension())
-    {
-    case 1:
-    {
-        mNumRigidBodyModes = 1;
-    }
-        break;
-    case 2:
-    {
-        mNumRigidBodyModes = 3;
-    }
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
-    }
-
-    const int numActiveDofs     = GetNumTotalActiveDofs();
-    const int numRigidBodyModes = mNumRigidBodyModes;
-    const int numTotalDofs      = GetNumTotalDofs();
-
-
-    ConstitutiveIOMap<Constitutive::eInput> inputMap;
-    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-                eCalculateStaticData::EULER_BACKWARD);
-
-    StructureOutputBlockMatrix  hessian0(GetDofStatus(), true);
-
-    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalHessian0;
-    evalHessian0                        [eStructureOutput::HESSIAN0]            = &hessian0;
-
-    Evaluate(inputMap, evalHessian0);
-
-    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-
-    // check if K.JJ is invertible
-    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> testSolver;
-    testSolver.compute(hessian0_JJ);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    std::cout << "structure->mRank \t" << mRank << "\n testSolver.rank(); \t" << testSolver.rank() << "\n testSolver.row \t" << testSolver.rows() << std::endl << std::endl;
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
-    mSolver.compute(hessian0_JJ);
-
-    // The dimension of the rigid body modes depends on the number of types
-    mRigidBodyModes.setZero(numTotalDofs, numRigidBodyModes);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    std::cout << "structure->mRank \t"                          << mRank
-              << "\n structure->mRigidBodyModes.rows() \t"      << mRigidBodyModes.rows()
-              << "\n structure->mRigidBodyModes.cols() \t"      << mRigidBodyModes.cols() << std::endl << std::endl;
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    if (IsFloating())
-    {
-        mRigidBodyModes.topRows(numActiveDofs) = mSolver.solve(hessian0_JK);
-        mRigidBodyModes *= -1.; // this is stupid please fix asap
-    }
-
-    mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
-
-    boost::mpi::communicator world;
-    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
+//    switch (GetDimension())
+//    {
+//    case 1:
+//    {
+//        mNumRigidBodyModes = 1;
+//    }
+//        break;
+//    case 2:
+//    {
+//        mNumRigidBodyModes = 3;
+//    }
+//        break;
+//    default:
+//        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+//    }
+//
+//    const int numActiveDofs     = GetNumTotalActiveDofs();
+//    const int numRigidBodyModes = mNumRigidBodyModes;
+//    const int numTotalDofs      = GetNumTotalDofs();
+//
+//
+//    ConstitutiveIOMap<Constitutive::eInput> inputMap;
+//    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+//                eCalculateStaticData::EULER_BACKWARD);
+//
+//    StructureOutputBlockMatrix  hessian0(GetDofStatus(), true);
+//
+//    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalHessian0;
+//    evalHessian0                        [eStructureOutput::HESSIAN0]            = &hessian0;
+//
+//    Evaluate(inputMap, evalHessian0);
+//
+//    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+//    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
+//
+//    // check if K.JJ is invertible
+//    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> testSolver;
+//    testSolver.compute(hessian0_JJ);
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//    std::cout << "structure->mRank \t" << mRank << "\n testSolver.rank(); \t" << testSolver.rank() << "\n testSolver.row \t" << testSolver.rows() << std::endl << std::endl;
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
+//    mSolver.compute(hessian0_JJ);
+//
+//    // The dimension of the rigid body modes depends on the number of types
+//    mRigidBodyModes.setZero(numTotalDofs, numRigidBodyModes);
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    std::cout << "structure->mRank \t"                          << mRank
+//              << "\n structure->mRigidBodyModes.rows() \t"      << mRigidBodyModes.rows()
+//              << "\n structure->mRigidBodyModes.cols() \t"      << mRigidBodyModes.cols() << std::endl << std::endl;
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    if (IsFloating())
+//    {
+//        mRigidBodyModes.topRows(numActiveDofs) = mSolver.solve(hessian0_JK);
+//        mRigidBodyModes *= -1.; // this is stupid please fix asap
+//    }
+//
+//    mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
+//
+//    boost::mpi::communicator world;
+//    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
 
 }
 
@@ -536,30 +536,32 @@ void NuTo::StructureFeti::CheckStiffnessPartitioning(  const StructureOutputBloc
                                                         const double tolerance) const
 {
 
-//    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-//    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
-//
-//    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-//
-//    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
-//    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
-//
-//
-//    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
-//    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
-//    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
-//
-//
-//    MPI_Barrier(MPI_COMM_WORLD);
-//
-//    GetLogger() << "Subdomain: \t"          << mRank
-//                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
-//                << "\t tolerance: \t"       << tolerance                << "\n\n";
-//
-//    MPI_Barrier(MPI_COMM_WORLD);
-//
-//    assert(     (norm < tolerance)
-//            and "Stiffness matrix is not partitioned correctly. Check constraints.");
+    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
+
+    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
+
+    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
+    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
+
+
+    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
+    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
+    SparseMatrix asdfaf = hessian0_KK  - tmp;
+
+    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
+
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    GetLogger() << "Subdomain: \t"          << mRank
+                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
+                << "\t tolerance: \t"       << tolerance                << "\n\n";
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    assert(     (norm < tolerance)
+            and "Stiffness matrix is not partitioned correctly. Check constraints.");
 
 
 }
