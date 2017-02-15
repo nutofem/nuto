@@ -1,1 +1,1 @@
-__all__ = ["NuToMath","SparseMatrix","SparseSolver"]
+__all__ = ["SparseMatrix","SparseSolver"]
