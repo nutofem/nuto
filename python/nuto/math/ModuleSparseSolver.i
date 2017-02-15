@@ -1,4 +1,4 @@
-%module ModulSparseSolver
+%module ModuleSparseSolver
 %feature("autodoc","1");
 //remove the warning for not exposing the base class features of eigen to python via swig
 #pragma SWIG nowarn=401
@@ -14,7 +14,7 @@
 %}
 
 
-%include "math/ModulSparseMatrix.i"
+%include "math/ModuleSparseMatrix.i"
 
 /* solver */
 %include "math/SparseDirectSolver.h"

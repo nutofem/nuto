@@ -1,4 +1,4 @@
-%module ModulSparseMatrix
+%module ModuleSparseMatrix
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
@@ -14,7 +14,7 @@
 
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "base/ModulNuToBase.i"
+%include "base/ModuleNuToBase.i"
 
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 

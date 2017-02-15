@@ -1,4 +1,4 @@
-%module(package="nuto") ModulGeometryConcrete
+%module(package="nuto") ModuleGeometryConcrete
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files

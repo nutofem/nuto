@@ -326,6 +326,8 @@ if(ENABLE_TESTS)
         COMMAND ctest -R unit
         DEPENDS ${all_unit_tests}
         )
+
+    add_custom_target(integrationtests COMMAND ctest -R integration)
 endif()
 
 if(ENABLE_EXAMPLES)

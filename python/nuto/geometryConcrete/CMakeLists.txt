@@ -1,4 +1,4 @@
-set(SWIG_MODULE_ModulGeometryConcrete_EXTRA_DEPS
+set(SWIG_MODULE_ModuleGeometryConcrete_EXTRA_DEPS
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/collision
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/Specimen.h
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/collision/collidables/CollidableBase.h
@@ -15,10 +15,5 @@ set(SWIG_MODULE_ModulGeometryConcrete_EXTRA_DEPS
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/InputReader.h
         )
 
-
-
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/geometryConcrete)
-nuto_swig_module(ModulGeometryConcrete ModulGeometryConcrete.i nuto/geometryConcrete NuToGeometryConcrete)
-
-
+nuto_swig_module(ModuleGeometryConcrete ModuleGeometryConcrete.i NuToGeometryConcrete)

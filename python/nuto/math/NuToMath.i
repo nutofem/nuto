@@ -41,7 +41,7 @@ namespace std {
 
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "base/ModulNuToBase.i"
+%include "base/ModuleNuToBase.i"
 
 // provide the public interface
 %include "math/NuToMath.h"
