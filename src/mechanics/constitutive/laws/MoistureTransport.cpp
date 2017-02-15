@@ -8,7 +8,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "math/Math.h"
 
 #include <limits>
 

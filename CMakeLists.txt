@@ -1,4 +1,4 @@
-project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
+project(NuTo CXX)
 
 cmake_minimum_required(VERSION 3.0)
 
