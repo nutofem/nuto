@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -589,15 +587,6 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
 #endif // ENABLE_VISUALIZE
 }
 
-
-
-
-
-//! @brief ... evaluates the structure
-void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase *> &rStructureOutput)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
-}
 
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStructureOutput rOutput)
 {

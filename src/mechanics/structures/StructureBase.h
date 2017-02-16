@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #include <functional>
@@ -215,7 +213,7 @@ public:
     virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme);
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput);
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) = 0;
 
 
 #endif // SWIG
