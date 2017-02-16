@@ -567,30 +567,27 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     }
 }
 
-void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType, int rNumNearestNeighbours, double rTolerance)
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
+                                                                      NuTo::Node::eDof rDofType,
+                                                                      const double rTolerance,
+                                                                      Eigen::Vector3d rNodeCoordOffset)
 {
     this->mNodeNumberingRequired = true;
 
-    int nodeGroup = GroupCreate(eGroupId::Nodes);
-    GroupAddNodesFromElements(nodeGroup, rElementGroup);
-    std::vector<int> nodeGroupIds = GroupGetMemberIds(nodeGroup);
+    const int dim = GetDimension();
 
     Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
+    queryNodeCoords = queryNodeCoords +  rNodeCoordOffset.head(dim);
 
-    //////////////////////////////////////
-    //
-    /////////////////////////////////////
 
-    int nearestElements =  GroupCreate(eGroupId::Elements);
-    GroupAddElementsFromNodes(nearestElements, nodeGroup, false);
-    std::vector<int> elementGroupIds = GroupGetMemberIds(nearestElements);
+    std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
 
-    int correctElementId = -1;
-    const int dim = GetDimension();
+    int correctElementId = -1337;
+
     switch (dim)
     {
         case 2:
-        for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
+        for (int iElement = 0; iElement < GroupGetNumMembers(rElementGroup); ++iElement)
         {
             const int iElementId              = elementGroupIds[iElement];
             Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
@@ -604,34 +601,28 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
                         && (queryNodeCoords(0, 0) < (elementNodeCoords(0 + 2*j) - elementNodeCoords(0 + 2*i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1 + 2*i)) / (elementNodeCoords(1 + 2*j) - elementNodeCoords(1 + 2*i)) + elementNodeCoords(0 + 2*i)))
                                     pointInsideElement = !pointInsideElement;
 
-//                if (((elementNodeCoords(1, i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1, j) > queryNodeCoords(1, 0)))
-//                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0, j) - elementNodeCoords(0, i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1, i)) / (elementNodeCoords(1, j) - elementNodeCoords(1, i)) + elementNodeCoords(0, i)))
-//                    pointInsideElement = !pointInsideElement;
             }
 
 
             if (pointInsideElement)
             {
                 correctElementId = iElementId;
-//                std::cout << "inside element id: \t" << correctElementId << std::endl;
-//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
             }
         }
             break;
         case 3:
         {
-        for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
+        for (int iElement = 0; iElement < GroupGetNumMembers(rElementGroup); ++iElement)
         {
 
             int iElementId = elementGroupIds[iElement];
             Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
             int numNodes = elementNodeCoords.rows()/mDimension;
 
-            Eigen::Matrix4d matrices;
-            matrices.Zero();
-
+            Eigen::Matrix4d matrices = Eigen::Matrix4d::Zero();
             matrices.col(3) = Eigen::Vector4d::Ones();
+
             for (int iNode = 0; iNode < numNodes; ++iNode)
             {
                 matrices.block<1,3>(iNode,0) = elementNodeCoords.segment(iNode*mDimension,mDimension);
@@ -645,18 +636,19 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
                 auto mat(matrices);
                 mat.block<1, 3>(i, 0) = queryNodeCoords.transpose();
 
-                if (mat.determinant() != 0.0)
-                    pointInsideElement = (std::signbit(mat.determinant()) == std::signbit(det));
+                std::cout << "mat.det \t" << mat.determinant() << std::endl;
+
+                if (std::abs(mat.determinant()) < rTolerance)
+                    break;
+
+                pointInsideElement = (std::signbit(mat.determinant()) == std::signbit(det));
+
 
             }
-
-//            std::cout << "inside polygon" << pointInsideElement << std::endl;
 
             if (pointInsideElement)
             {
                 correctElementId = iElementId;
-//                std::cout << "inside element id: \t" << correctElementId << std::endl;
-//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
             }
 
@@ -671,6 +663,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
 
+    if (correctElementId == -1337)
+        throw MechanicsException(__PRETTY_FUNCTION__, ("Node ") + std::to_string(rNode) + (" is not inside an element in element group ") + std::to_string(rElementGroup));
 
     ElementBase* elementPtr = ElementGetElementPtr(correctElementId);
 

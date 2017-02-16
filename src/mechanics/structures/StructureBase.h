@@ -6,7 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
-
+#include <eigen3/Eigen/Core>
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -973,7 +973,13 @@ public:
     //! @param rElement ... element group id
     //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
-    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+    void ConstraintLinearEquationNodeToElementCreate(int rNode,
+                                                     int rElementGroup,
+                                                     NuTo::Node::eDof rDofType,
+                                                     const double rTolerance = 1.e-6,
+                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
+
+
 
 
 #endif

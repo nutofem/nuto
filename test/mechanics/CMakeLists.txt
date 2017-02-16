@@ -1,4 +1,5 @@
 add_subdirectory(constitutive)
+add_subdirectory(constraints)
 add_subdirectory(elements)
 add_subdirectory(groups)
 add_subdirectory(mesh)
