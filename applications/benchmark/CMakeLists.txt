@@ -18,6 +18,12 @@ foreach(test
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
+
+add_executable(LinearElasticityOPENMP LinearElasticityOPENMP.cpp)
+target_link_libraries(LinearElasticityOPENMP NuToMechanics NuToMath NuToBase)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(LinearElasticityOPENMP NuToVisualize)
+endif()
 endif()
 
 if(ENABLE_GEOMETRYCONCRETE)

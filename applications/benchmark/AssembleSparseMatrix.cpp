@@ -8,35 +8,17 @@
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/MechanicsEnums.h"
+#include "LinearElasticBenchmarkStructure.h"
 
 using namespace NuTo;
+
+constexpr int numBenchmarkRuns = 10;
 
 class Setup
 {
 public:
-    Setup() : mS(3)
+    Setup() : mBenchmarkStructure({10,10,100}), mS(mBenchmarkStructure.GetStructure())
     {
-        mS.SetShowTime(false);
-        using namespace Constitutive;
-        using namespace Interpolation;
-        mS.SetNumTimeDerivatives(2);
-        int section = mS.SectionCreate(eSectionType::VOLUME);
-        int constitutiveLaw = mS.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-
-        std::vector<int> numElements{10, 10, 1000}; // i.e. 100k Elements
-        std::vector<double> length{1.0, 1.0, 10.0};
-        auto meshInfo = MeshGenerator::Grid(mS, length, numElements);
-
-        mS.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
-
-        mS.ElementGroupSetConstitutiveLaw(meshInfo.first, constitutiveLaw);
-        mS.ElementGroupSetSection(meshInfo.first, section);
-
-        mS.ElementTotalConvertToInterpolationType();
-
         mS.NodeBuildGlobalDofs();
 
         mDofNumbers.resize(NumElements());
@@ -44,7 +26,6 @@ public:
             mDofNumbers[i] = mS.ElementBuildGlobalDofsColumn(i)[Node::eDof::DISPLACEMENTS];
 
         mNumDofsPerElement = mDofNumbers[0].rows();
-
         mKe = Eigen::MatrixXd::Random(mNumDofsPerElement, mNumDofsPerElement);
     }
 
@@ -54,7 +35,9 @@ public:
     Eigen::MatrixXd Ke() {return mKe;}
 
 private:
-    Structure mS;
+    NuTo::Benchmark::LinearElasticBenchmarkStructure mBenchmarkStructure;
+    Structure& mS;
+
     std::vector<Eigen::VectorXi> mDofNumbers;
     int mNumDofsPerElement;
     Eigen::MatrixXd mKe;
@@ -65,9 +48,10 @@ private:
 BENCHMARK(Assembly, NuToVector2, runner)
 {
     Setup s;
-    NuTo::SparseMatrixCSRVector2General<double> mVector2(s.NumDofs(), s.NumDofs());
-    while (runner.KeepRunningIterations(1))
+    NuTo::SparseMatrixCSRVector2General<double> mVector2;
+    while (runner.KeepRunningIterations(numBenchmarkRuns))
     {
+        mVector2.Resize(s.NumDofs(), s.NumDofs());
         for (int iElement = 0; iElement < s.NumElements(); ++iElement)
         {
             auto dofs = s.DofNumbering(iElement);
@@ -99,8 +83,9 @@ BENCHMARK(Assembly, EigenSparseTriplet, runner)
 {
     Setup s;
     std::vector<Eigen::Triplet<double>> coeffs;
-    while (runner.KeepRunningIterations(1))
+    while (runner.KeepRunningIterations(numBenchmarkRuns))
     {
+        coeffs.clear();
         size_t numEntriesApprox = s.NumElements() * s.Ke().size();
         coeffs.reserve(numEntriesApprox);
 
@@ -126,7 +111,7 @@ BENCHMARK(Assembly, EigenSparseTriplet, runner)
 BENCHMARK(Assembly, EigenSparseInsert, runner)
 {
     Setup s;
-    while (runner.KeepRunningIterations(1))
+    while (runner.KeepRunningIterations(numBenchmarkRuns))
     {
         Eigen::SparseMatrix<double> m(s.NumDofs(),s.NumDofs());
         m.reserve(Eigen::VectorXi::Constant(s.NumDofs(),s.Ke().rows()*10));
