@@ -34,7 +34,7 @@ NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads, int 
 }
 
 #ifdef HAVE_PARDISO
-void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic> &rRhs, NuTo::FullVector<double, Eigen::Dynamic> &rSolution)
+void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
     Timer timerTotal(std::string("PARDISO ") + __FUNCTION__ + " TOTAL TIME", GetShowTime());
     Timer timer(std::string("PARDISO ") + __FUNCTION__ + " License checking and and initialization", GetShowTime());
@@ -70,7 +70,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     }
 
     // check right hand side
-    if (matrixDimension != rRhs.GetNumRows())
+    if (matrixDimension != rRhs.rows())
     {
         throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
     }
@@ -78,7 +78,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     const double *rhsValues = rRhs.data();
 
     // prepare solution matrix
-    rSolution.Resize(matrixDimension);
+    rSolution.resize(matrixDimension);
     const double *solutionValues = rSolution.data();
 
     void* pt[64];
