@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/nutofem/nuto.svg?branch=master)](https://travis-ci.org/nutofem/nuto)
 [![Coverage Status](https://coveralls.io/repos/github/nutofem/nuto/badge.svg)](https://coveralls.io/github/nutofem/nuto)
+[![Documentation Status](https://readthedocs.org/projects/nuto/badge/?version=master)](http://nuto.readthedocs.io/en/master/?badge=master)
 
 What is it?
 ===========
