@@ -35,4 +35,3 @@ script:
 after_success:
     - cd ..
     - if [[ "$COVERAGE" == "TRUE" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
-    - if [[ "$COVERAGE" == "TRUE" ]]; then ./scripts/deployGHPages.sh; fi
