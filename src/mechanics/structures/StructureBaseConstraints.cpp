@@ -250,7 +250,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase
 {
 	this->mNodeNumberingRequired = true;
     int id = GetUnusedId(mConstraintMap);
-    
+
     switch (mDimension)
     {
     case 1:
@@ -272,7 +272,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* r
 {
 	this->mNodeNumberingRequired = true;
     int id = GetUnusedId(mConstraintMap);
-    
+
     switch (mDimension)
     {
     case 1:
@@ -582,122 +582,47 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
 
-    int correctElementId = -1337;
-
-    switch (dim)
+    ElementBase* elementPtr = nullptr;
+    Eigen::VectorXd elementNaturalNodeCoords;
+    bool nodeInElement = false;
+    for (auto const& eleId : elementGroupIds)
     {
-        case 2:
-        for (int iElement = 0; iElement < GroupGetNumMembers(rElementGroup); ++iElement)
-        {
-            const int iElementId              = elementGroupIds[iElement];
-            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            const int numNodes                = ElementGetElementPtr(iElementId)->GetNumNodes(Node::eDof::COORDINATES);
+        elementPtr = ElementGetElementPtr(eleId);
 
-            bool pointInsideElement = false;
-            for (int i = 0, j = numNodes - 1; i < numNodes; j = i++)
+        // Coordinate interpolation must be linear so the shape function derivatives are constant!
+        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
+        const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+
+        // real coordinates of every node in rElement
+        Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+
+        switch (mDimension)
+        {
+            case 3:
             {
-                // This check whether queryNode is inside the polygon
-                if (((elementNodeCoords(1 + 2*i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1 + 2*j) > queryNodeCoords(1, 0)))
-                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0 + 2*j) - elementNodeCoords(0 + 2*i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1 + 2*i)) / (elementNodeCoords(1 + 2*j) - elementNodeCoords(1 + 2*i)) + elementNodeCoords(0 + 2*i)))
-                                    pointInsideElement = !pointInsideElement;
+                Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
 
             }
-
-
-            if (pointInsideElement)
-            {
-                correctElementId = iElementId;
                 break;
-            }
+
+            default:
+                throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 3D");
+
         }
-            break;
-        case 3:
+
+
+        if (elementNaturalNodeCoords[0] > -1.e-6 and elementNaturalNodeCoords[1] > -1.e-6 and elementNaturalNodeCoords[2] > -1.e-6 and elementNaturalNodeCoords.sum() <= 1.+1.e-6 )
         {
-        for (int iElement = 0; iElement < GroupGetNumMembers(rElementGroup); ++iElement)
-        {
-
-            int iElementId = elementGroupIds[iElement];
-            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            int numNodes = elementNodeCoords.rows()/mDimension;
-
-            Eigen::Matrix4d matrices = Eigen::Matrix4d::Zero();
-            matrices.col(3) = Eigen::Vector4d::Ones();
-
-            for (int iNode = 0; iNode < numNodes; ++iNode)
-            {
-                matrices.block<1,3>(iNode,0) = elementNodeCoords.segment(iNode*mDimension,mDimension);
-            }
-            const double det = matrices.determinant();
-
-            bool pointInsideElement = true;
-            // check if all determinantes have the same sign
-            for (int i = 0; i < numNodes and pointInsideElement; ++i)
-            {
-                auto mat(matrices);
-                mat.block<1, 3>(i, 0) = queryNodeCoords.transpose();
-
-                std::cout << "mat.det \t" << mat.determinant() << std::endl;
-
-                if (std::abs(mat.determinant()) < rTolerance)
-                    break;
-
-                pointInsideElement = (std::signbit(mat.determinant()) == std::signbit(det));
-
-
-            }
-
-            if (pointInsideElement)
-            {
-                correctElementId = iElementId;
-                break;
-            }
-
+            nodeInElement = true;            
+            break;
         }
 
-
-        }
-            break;
-        default:
-            break;
     }
 
-
-
-    if (correctElementId == -1337)
-        throw MechanicsException(__PRETTY_FUNCTION__, ("Node ") + std::to_string(rNode) + (" is not inside an element in element group ") + std::to_string(rElementGroup));
-
-    ElementBase* elementPtr = ElementGetElementPtr(correctElementId);
-
-
-    // Coordinate interpolation must be linear so the shape function derivatives are constant!
-    assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
-
-    // real coordinates of every node in rElement
-    Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-    Eigen::MatrixXd elementNaturalNodeCoords;
-    switch (mDimension)
-    {
-    case 2:
-    {
-        Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
-
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
-    }
-        break;
-    case 3:
-    {
-        Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
-
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
-    }
-        break;
-
-    default:
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2 and 3 dimensions.");
-    }
-
-
+    if (nodeInElement == false)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element");
     auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
     //find unused integer id
