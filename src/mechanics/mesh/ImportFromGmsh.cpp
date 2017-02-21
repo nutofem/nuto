@@ -466,9 +466,40 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             break;
 
         case 17: // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
+        {
             shapeType = Interpolation::eShapeType::BRICK3D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
+            //ordering is different than in gmsh, fix this first
+            std::vector<int> nodeNumbersGmsh = nodeNumbers;
+            // vertices
+            nodeNumbers[0]  = nodeNumbersGmsh[0];
+            nodeNumbers[1]  = nodeNumbersGmsh[1];
+            nodeNumbers[2]  = nodeNumbersGmsh[2];
+            nodeNumbers[3]  = nodeNumbersGmsh[3];
+            nodeNumbers[4]  = nodeNumbersGmsh[4];
+            nodeNumbers[5]  = nodeNumbersGmsh[5];
+            nodeNumbers[6]  = nodeNumbersGmsh[6];
+            nodeNumbers[7]  = nodeNumbersGmsh[7];
+
+            // "rear" plane
+            nodeNumbers[8]  = nodeNumbersGmsh[8];
+            nodeNumbers[9]  = nodeNumbersGmsh[11];
+            nodeNumbers[10] = nodeNumbersGmsh[13];
+            nodeNumbers[11] = nodeNumbersGmsh[9];
+
+            // "middle" plane
+            nodeNumbers[12] = nodeNumbersGmsh[10];
+            nodeNumbers[13] = nodeNumbersGmsh[12];
+            nodeNumbers[14] = nodeNumbersGmsh[14];
+            nodeNumbers[15] = nodeNumbersGmsh[15];
+
+            // "front" plane
+            nodeNumbers[16] = nodeNumbersGmsh[16];
+            nodeNumbers[17] = nodeNumbersGmsh[18];
+            nodeNumbers[18] = nodeNumbersGmsh[19];
+            nodeNumbers[19] = nodeNumbersGmsh[17];
             break;
+        }
 
 //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
 

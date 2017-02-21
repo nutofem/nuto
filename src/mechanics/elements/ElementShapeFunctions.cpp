@@ -1077,7 +1077,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-
+    // vertices
     case 0: return Eigen::Vector3d(-1., -1., -1.);
     case 1: return Eigen::Vector3d(1., -1., -1.);
     case 2: return Eigen::Vector3d(1., 1., -1.);
@@ -1087,16 +1087,19 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
     case 6: return Eigen::Vector3d(1., 1., 1.);
     case 7: return Eigen::Vector3d(-1., 1., 1.);
 
+    // "rear" plane
     case 8: return Eigen::Vector3d(0., -1., -1.);
     case 9: return Eigen::Vector3d(1., 0., -1.);
     case 10: return Eigen::Vector3d(0., 1., -1.);
     case 11: return Eigen::Vector3d(-1., 0., -1.);
 
+    // "middle" plane
     case 12: return Eigen::Vector3d(-1., -1., 0.);
     case 13: return Eigen::Vector3d(1., -1., 0.);
     case 14: return Eigen::Vector3d(1., 1., 0.);
     case 15: return Eigen::Vector3d(-1., 1., 0.);
 
+    // "front" plane
     case 16: return Eigen::Vector3d(0., -1., 1.);
     case 17: return Eigen::Vector3d(1., 0., 1.);
     case 18: return Eigen::Vector3d(0., 1., 1.);
@@ -2265,4 +2268,3 @@ Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder)
 
 
 }
-
