@@ -1,5 +1,3 @@
-#include <typeinfo>
-
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
