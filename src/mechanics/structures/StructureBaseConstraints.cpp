@@ -1,4 +1,5 @@
 // $Id$
+#include <eigen3/Eigen/Dense>
 #include "base/Timer.h"
 
 #include <boost/foreach.hpp>
@@ -30,6 +31,7 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
@@ -585,44 +587,57 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     ElementBase* elementPtr = nullptr;
     Eigen::VectorXd elementNaturalNodeCoords;
     bool nodeInElement = false;
-    for (auto const& eleId : elementGroupIds)
-    {
+    for (auto const& eleId : elementGroupIds) {
         elementPtr = ElementGetElementPtr(eleId);
 
         // Coordinate interpolation must be linear so the shape function derivatives are constant!
-        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
-        const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
+               Interpolation::eTypeOrder::EQUIDISTANT1);
+        const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
+                Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
 
         // real coordinates of every node in rElement
         Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
 
-        switch (mDimension)
-        {
-            case 3:
-            {
-                Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+        switch (mDimension) {
+            case 2: {
+                Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
+            }
+                break;
+            case 3: {
+                Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
                 elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
+
 
             }
                 break;
 
             default:
-                throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 3D");
+                throw NuTo::MechanicsException(
+                        std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
 
         }
 
 
-        if (elementNaturalNodeCoords[0] > -1.e-6 and elementNaturalNodeCoords[1] > -1.e-6 and elementNaturalNodeCoords[2] > -1.e-6 and elementNaturalNodeCoords.sum() <= 1.+1.e-6 )
+        if ( (elementNaturalNodeCoords.array() > -rTolerance).all() and elementNaturalNodeCoords.sum() <= 1. + rTolerance)
         {
-            nodeInElement = true;            
+            nodeInElement = true;
             break;
         }
 
     }
 
-    if (nodeInElement == false)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element");
+    if (not nodeInElement)
+    {
+        GetLogger() << "Natural node coordinates: \n" << elementNaturalNodeCoords << "\n";
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
+    }
+
     auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
     //find unused integer id

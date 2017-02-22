@@ -104,17 +104,17 @@ void run2d()
         std::cout << "**      Material                 **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-//        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
-//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
-
-        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
         myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, Parameters::mMatrixTensileStrength);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, Parameters::mMatrixCompressiveStrength);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, Parameters::mMatrixNonlocalRadius);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, Parameters::mMatrixFractureEnergy);
+
+//        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, Parameters::mMatrixTensileStrength);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, Parameters::mMatrixCompressiveStrength);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, Parameters::mMatrixNonlocalRadius);
+//        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, Parameters::mMatrixFractureEnergy);
 
         int fibreMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mFibreYoungsModulus);
@@ -127,7 +127,7 @@ void run2d()
         int matrixInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
         myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+//        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 
         int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
@@ -186,25 +186,12 @@ void run2d()
         std::cout << "***********************************" << std::endl;
 
 
-        constexpr int       numNearestNeighbours    = 1;
-        constexpr int       numSearchDomains        = 1;
-        constexpr double    length                  = 10.0;
-        constexpr double    deltaLength             = length/numSearchDomains;
+        int groupNodesFiber = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+        myStructure.GroupAddNodesFromElements(groupNodesFiber, groupIdFiber);
 
-        for (int iDomain = 0; iDomain < numSearchDomains; ++iDomain)
-        {
-            int groupMatrixNodes = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-            myStructure.GroupAddNodeFromElementGroupCoordinateRange(groupMatrixNodes, groupIdMatrix, 0, iDomain * deltaLength, (iDomain+1) * deltaLength);
 
-            int groupMatrixElements = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-            myStructure.GroupAddElementsFromNodes(groupMatrixElements, groupMatrixNodes, false);
-
-            int groupConstraintNodes = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-            myStructure.GroupAddNodeFromElementGroupCoordinateRange(groupConstraintNodes, groupIdFiber, 0, iDomain * deltaLength, (iDomain+1) * deltaLength);
-
-            for (int nodeId : myStructure.GroupGetMemberIds(groupConstraintNodes))
-                myStructure.ConstraintLinearEquationNodeToElementCreate(nodeId, groupMatrixElements, NuTo::Node::eDof::DISPLACEMENTS);
-        }
+        for (int nodeId : myStructure.GroupGetMemberIds(groupNodesFiber))
+            myStructure.ConstraintLinearEquationNodeToElementCreate(nodeId, groupIdMatrix, NuTo::Node::eDof::DISPLACEMENTS);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Loads                    **" << std::endl;
@@ -221,7 +208,7 @@ void run2d()
 
         myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DISPLACEMENTS);
         myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::CONSTITUTIVE);
-        myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DAMAGE);
+//        myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DAMAGE);
 
         myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::DISPLACEMENTS);
         myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::CONSTITUTIVE);

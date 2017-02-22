@@ -31,36 +31,40 @@ void BuildStructure(NuTo::Structure& s);
 /// Creates a reference tetrahedron and arbitrary nodes and checks whether the node coordinates are inside the element.
 BOOST_AUTO_TEST_CASE(check_constraint_node_to_element)
 {
-    NuTo::Structure s(3);
+    NuTo::Structure s(dim);
     BuildStructure(s);
     const int groupElementId = s.GroupGetElementsTotal();
 
     Eigen::VectorXd nodeCoordinates(dim);
 
     // this node is inside the reference tetrahedron
-    nodeCoordinates << 0.1, 0.1, 0.;
+    nodeCoordinates = Eigen::VectorXd::Constant(dim, 0.1);
     s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS);
+
 
     // this node is inside the reference tetrahedron
-    nodeCoordinates << 0, 0, 0.;
+    nodeCoordinates = Eigen::VectorXd::Constant(dim, 0.);
     s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS);
 
+
     // this node is NOT inside the reference tetrahedron
-    nodeCoordinates << 1, 1, 1.;
+    nodeCoordinates = Eigen::VectorXd::Constant(dim, 1.);
     BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS), NuTo::MechanicsException);
+
+
 
     // this node is NOT inside the reference tetrahedron but the offset lets us constrain the node anyway :-)
     Eigen::Vector3d nodeCoordinateOffset = Eigen::Vector3d::Constant(-1.);
     s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-6, nodeCoordinateOffset);
 
+
     // this node is NOT inside the reference tetrahedron but the default tolerance (1.e-6) accepts it
-    nodeCoordinates << -1.e-8, 0, 0.;
+    nodeCoordinates = Eigen::VectorXd::Constant(dim, -1.e-8);
     s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS);
 
     // this node is NOT inside the reference tetrahedron and the tolerance is too small
-    nodeCoordinates << -1.e-8, 0, 0.;
+    nodeCoordinates = Eigen::VectorXd::Constant(dim, -1.e-8);
     BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-9), NuTo::MechanicsException);
-
 }
 
 int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure &structure)
@@ -81,12 +85,10 @@ void BuildStructure(NuTo::Structure& s)
 
     Eigen::MatrixXd nodesCoordinates(dim,4);
     nodesCoordinates << 0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1;
+                        0, 0, 1, 0,
+                        0, 0, 0, 1;
 
     auto nodeIds = s.NodesCreate(nodesCoordinates);
     s.ElementCreate(interpolationTypeId,nodeIds);
     s.ElementTotalConvertToInterpolationType();
-
-
 }

@@ -1,5 +1,6 @@
 foreach(test
-        ConstraintNodeToElement
+        ConstraintNodeToElement2D
+        ConstraintNodeToElement3D
         )
     add_executable(${test} ${test}.cpp)
     target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
