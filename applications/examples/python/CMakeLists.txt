@@ -17,14 +17,12 @@ if(ENABLE_MECHANICS)
         examples::py::Truss1D2N
     )
 
-    if(PARDISO_FOUND)
-        add_test(examples::py::SparseDirectSolverMKLPardiso ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseDirectSolverMKLPardiso.py)
-        set(pythontests examples::py::SparseDirectSolverMKLPardiso)
-    endif()
-
     if(MKLSolver_FOUND)
-        add_test(EXAMPLES::PYTHON::SparseDirectSolverMKLDSS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseDirectSolverMKLDSS.py)
-        set(MYTESTS EXAMPLES::PYTHON::SparseDirectSolverMKLDSS)
+        add_test(examples::py::SparseDirectSolverMKLDSS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseDirectSolverMKLDSS.py)
+        set(pythontests "${pythontests};examples::py::SparseDirectSolverMKLDSS")
+        
+        add_test(examples::py::SparseDirectSolverMKLPardiso ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseDirectSolverMKLPardiso.py)
+        set(pythontests "${pythontests};examples::py::SparseDirectSolverMKLPardiso")
     endif()
 
     # set PYTHONPATH environment for all examples

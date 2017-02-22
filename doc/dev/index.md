@@ -34,6 +34,6 @@
 
 * @ref Constraints
 
-* @ref SpacialContainer
+* @ref SpatialContainer
 
 * @ref NuTo-codeStyle

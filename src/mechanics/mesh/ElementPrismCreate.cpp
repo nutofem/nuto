@@ -1,4 +1,4 @@
-#include <math/SpacialContainer.h>
+#include <math/SpatialContainer.h>
 #include "mechanics/mesh/MeshCompanion.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/elements/ElementBase.h"
@@ -27,7 +27,7 @@ struct NodeCoordinate
     }
 };
 
-using NodeTree = NuTo::SpacialContainer<NuTo::NodeBase*, NodeCoordinate>;
+using NodeTree = NuTo::SpatialContainer<NuTo::NodeBase*, NodeCoordinate>;
 
 
 std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure &rS, int rGroupMaster, int rGroupSlave)

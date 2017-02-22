@@ -1,4 +1,4 @@
-@page SpacialContainer
+@page SpatialContainer
 
 # About
 
@@ -23,7 +23,7 @@ struct NodeCoordinate
     }
 };
 
-NuTo::SpacialContainer<NuTo::NodeBase*, NodeCoordinate> tree(nodes);
+NuTo::SpatialContainer<NuTo::NodeBase*, NodeCoordinate> tree(nodes);
 
 double searchRadius = 0.1;
 std::vector<std::vector<NuTo::NodeBase*>> duplicates =  tree.GetAllDuplicateValues(searchRadius);

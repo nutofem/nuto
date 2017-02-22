@@ -20,8 +20,8 @@ add_unit_test(SparseMatrixCSRVector2General
     math/SparseMatrix.cpp
     )
 
-add_unit_test(SpacialContainer)
-target_link_libraries(SpacialContainer ${ANN_LIBRARIES})
+add_unit_test(SpatialContainer)
+target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
 
 if(ENABLE_ARPACK)
     add_unit_test(EigenSolverArpack)

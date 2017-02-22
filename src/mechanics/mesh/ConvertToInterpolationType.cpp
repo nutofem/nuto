@@ -8,7 +8,7 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 
-#include "math/SpacialContainer.h"
+#include "math/SpatialContainer.h"
 #include <limits>
 
 
@@ -63,7 +63,7 @@ struct TmpNode
     int originalId = NOT_SET;
 };
 
-//! @brief struct to extract the coodinates from TmpNode (for NuTo::SpacialContainer)
+//! @brief struct to extract the coodinates from TmpNode (for NuTo::SpatialContainer)
 struct TmpNodeCoordinate
 {
     Eigen::VectorXd operator() (const TmpNode& rTmpNode)
@@ -154,7 +154,7 @@ void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int r
     // concatenate...
     newNodes.insert(newNodes.end(), existingNodes.begin(), existingNodes.end());
 
-    NuTo::SpacialContainer<TmpNode, TmpNodeCoordinate> spacialContainer(newNodes);
+    NuTo::SpatialContainer<TmpNode, TmpNodeCoordinate> spacialContainer(newNodes);
     auto duplicates = spacialContainer.GetAllDuplicateValues(rNodeDistanceMerge);
 
     for (auto& pairsAtSameCoordinate : duplicates)

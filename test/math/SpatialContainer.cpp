@@ -3,7 +3,7 @@
 //
 
 #include "BoostUnitTest.h"
-#include "math/SpacialContainer.h"
+#include "math/SpatialContainer.h"
 
 struct TestNode
 {
@@ -30,10 +30,10 @@ std::vector<TestNode> GetTestNodes()
 }
 
 
-BOOST_AUTO_TEST_CASE(SpacialContainer_GetDuplicateIDs)
+BOOST_AUTO_TEST_CASE(SpatialContainer_GetDuplicateIDs)
 {
     auto testNodes = GetTestNodes();
-    NuTo::SpacialContainer<TestNode, TestNodeCoord> s(testNodes);
+    NuTo::SpatialContainer<TestNode, TestNodeCoord> s(testNodes);
 
     auto ids0 = s.FindIDsWithinRadius(0, 0.1);
     BOOST_CHECK_EQUAL(ids0.size(), 1);
@@ -45,10 +45,10 @@ BOOST_AUTO_TEST_CASE(SpacialContainer_GetDuplicateIDs)
     BOOST_CHECK_EQUAL(ids1[1], 3);
 }
 
-BOOST_AUTO_TEST_CASE(SpacialContainer_GetAllDuplicates)
+BOOST_AUTO_TEST_CASE(SpatialContainer_GetAllDuplicates)
 {
     auto testNodes = GetTestNodes();
-    NuTo::SpacialContainer<TestNode, TestNodeCoord> s(testNodes);
+    NuTo::SpatialContainer<TestNode, TestNodeCoord> s(testNodes);
 
     auto ids = s.GetAllDuplicateIDs(0.1);
     
@@ -65,10 +65,10 @@ BOOST_AUTO_TEST_CASE(SpacialContainer_GetAllDuplicates)
     BOOST_CHECK_EQUAL(ids[2][0], 2);
 }
 
-BOOST_AUTO_TEST_CASE(SpacialContainer_GetDuplicatesValues)
+BOOST_AUTO_TEST_CASE(SpatialContainer_GetDuplicatesValues)
 {
     auto testNodes = GetTestNodes();
-    NuTo::SpacialContainer<TestNode, TestNodeCoord> s(testNodes);
+    NuTo::SpatialContainer<TestNode, TestNodeCoord> s(testNodes);
 
     auto duplicates = s.GetAllDuplicateValues(0.1);
 
@@ -85,10 +85,10 @@ BOOST_AUTO_TEST_CASE(SpacialContainer_GetDuplicatesValues)
     BOOST_CHECK_EQUAL(duplicates[2][0].value, 20);
 }
 
-BOOST_AUTO_TEST_CASE(SpacialContainer_HasEntryAtCoordinate)
+BOOST_AUTO_TEST_CASE(SpatialContainer_HasEntryAtCoordinate)
 {
     auto testNodes = GetTestNodes();
-    NuTo::SpacialContainer<TestNode, TestNodeCoord> s(testNodes);
+    NuTo::SpatialContainer<TestNode, TestNodeCoord> s(testNodes);
 
     BOOST_CHECK(s.HasEntryAtCoordinate(Eigen::Vector2d({0,0}), 0.1));
     BOOST_CHECK(not s.HasEntryAtCoordinate(Eigen::Vector2d({1,0}), 0.1));

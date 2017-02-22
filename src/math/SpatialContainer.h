@@ -17,13 +17,13 @@ namespace NuTo
 //!              Eigen::VectorXd operator() (const T&)
 //!              to extract the coordinate of T
 template <typename T, typename Coordinate>
-class SpacialContainer
+class SpatialContainer
 {
 public:
 
     //! @brief ctor. saves rValues and builds the KD-tree for each coordinate in rValues
     //! @param rValues objects
-    SpacialContainer(const std::vector<T>& rValues)
+    SpatialContainer(const std::vector<T>& rValues)
         : mData(rValues)
     {
         assert (not mData.empty());
@@ -43,7 +43,7 @@ public:
         mTree = std::make_unique<ANNkd_tree>(mPoints, size, dim);
     }
 
-    ~SpacialContainer()
+    ~SpatialContainer()
     {
         annDeallocPts(mPoints);
         annClose();
