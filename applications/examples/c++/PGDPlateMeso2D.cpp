@@ -561,7 +561,7 @@ int main()
     				double alpha2i = SimpsonsIntegration(MeshL, ValuesL); // \int_L T F2i dE
 
     				Eigen::VectorXd PGDXNc = PGDX.col(countNc);
-    				double alpha3i = NewX.transpose()* (mass * PGDXNc);
+    				double alpha3i = NewX.transpose()* (stiffX * PGDXNc);
 
     				Eigen::VectorXd PGDENc = PGDE.col(countNc);
 
@@ -813,16 +813,6 @@ int main()
     	std::cout << "[PlateMeso2DPGD] result is not correct!" << std::endl;
     	return EXIT_FAILURE;
     }
-
-//letze Ausgabe Konsole
-//######### fix point iteration converged
-//step: 1 error: 4.4408921e-15, 2.3413271e-12, 3.297045e-24
-//######### displacement norm: 0
-//######### Convergence reached (normU= 0)
-//PGD modes saved! computed number=1 modes total=3
-//PGDE2:
-//1.7909852         0         0
-
 
 }
 
