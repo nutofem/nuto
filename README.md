@@ -48,7 +48,7 @@ Requirements
 
 Name     | Version | Description
 ---------|---------|----------------
-CMake    | ≥ 2.8   | Build system
+CMake    | ≥ 3.0   | Build system
 Boost    | ≥ 1.54  | General purpose C++ libraries
 Eigen    | ≥ 3.2   | C++ template library for linear algebra
 Python   | ≥ 3.4   | Python programming language
