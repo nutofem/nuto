@@ -15,7 +15,6 @@ matrix:
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
-    - pip install --user cpp-coveralls
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main'
     - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -34,4 +33,4 @@ script:
     - ctest --output-on-failure
 after_success:
     - cd ..
-    - if [[ "$COVERAGE" == "TRUE" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
+    - ./scripts/upload_coverage.sh

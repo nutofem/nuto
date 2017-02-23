@@ -398,7 +398,6 @@ void run3d()
     std::cout << "***********************************" << std::endl;
 
 
-    constexpr int       numNearestNeighbours    = 1;
     constexpr int       numSearchDomains        = 3;
     constexpr double    length                  = 10.0;
     constexpr double    deltaLength             = length/numSearchDomains;
