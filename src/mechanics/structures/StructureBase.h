@@ -1586,20 +1586,6 @@ public:
 	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const override;
 
-    //! @brief set number of cycles to be extrapolated in the cycle jump routine
-    //! @brief ... rNumber[0] is the number of extrapolated cycles itself Njump
-    //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
-    //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
-    //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    void SetNumExtrapolatedCycles(Eigen::VectorXd rNumber);
-
-    //! @brief get the number of cycles to be extrapolated in the cycle jump routine. Returns:
-    //! @brief ... [0] is the number of extrapolated cycles itself Njump
-    //! @brief ... [1] is the weighting coefficient of the implicit term
-    //! @brief ... [2] is the weighting coefficient of the explicit term
-    //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    Eigen::VectorXd GetNumExtrapolatedCycles() const;
-
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     void SetToleranceStiffnessEntries(double rToleranceStiffnessEntries);
@@ -1790,14 +1776,6 @@ protected:
 	int mNumTimeDerivatives;
 
     int mDimension;
-
-    //! @brief ... number of cycles applied for extrapolation in the cycle jump.
-    //! @brief ... extrapolation is Njump * (ImplicitTerm*A1 + ExplicitTerm*A2 + HigherOrder*A3 + ... )
-    //! @brief ... [0] is the number of extrapolated cycles itself Njump
-    //! @brief ... [1] is the weighting coefficient of the implicit term A1
-    //! @brief ... [2] is the weighting coefficient of the explicit term A2
-    //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    Eigen::VectorXd mNumExtrapolatedCycles;
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase

@@ -100,7 +100,6 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     }
     mDimension = rDimension;
     mNodeNumberingRequired = true;
-    mNumExtrapolatedCycles.setZero();
 
     mNumLoadCases = 1;
 
@@ -206,38 +205,6 @@ int NuTo::StructureBase::GetNumTimeDerivatives()const
 	return mNumTimeDerivatives;
 }
 
-
-//! @brief set number of cycles to be extrapolated in the cycle jump routine
-//! @brief ... rNumber[0] is the number of extrapolated cycles itself Njump
-//! @brief ... rNumber[1] is the weighting coefficient of the implicit term
-//! @brief ... rNumber[2] is the weighting coefficient of the explicit term
-//! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-void NuTo::StructureBase::SetNumExtrapolatedCycles(Eigen::VectorXd rNumber)
-{
-	if (rNumber.size()<3)
-	        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of extrapolation cycles and weighting coefficient for explicit and implicit terms are required.");
-
-	// check the number of extrapolation cycles
-	if (rNumber[0] < 0)
-			throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] number of extrapolation cycles is negative.");
-
-	// check the weighting coefficients
-	for (int i = 1; i < rNumber.size(); ++i) {
-		if (rNumber[i] < 0 || rNumber[i]>1)
-				throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] the " + std::to_string(i) + " weighting coefficient is out of the [0,1] range.");
-	}
-	mNumExtrapolatedCycles = rNumber;
-}
-
-//! @brief get the number of cycles to be extrapolated. Returns
-//! @brief ... [0] is the number of extrapolated cycles itself Njump
-//! @brief ... [1] is the weighting coefficient of the implicit term
-//! @brief ... [2] is the weighting coefficient of the explicit term
-//! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-Eigen::VectorXd NuTo::StructureBase::GetNumExtrapolatedCycles() const
-{
-	return mNumExtrapolatedCycles;
-}
 
 // store all elements of a group in a vector
 void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const
