@@ -1,6 +1,5 @@
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp> #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -420,7 +419,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
             }
             else
             {
-                mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
+                mStructure->GetLogger() << "No convergence with timestep " << timeStep << " at time " << mTime << "\n";
                 //no convergence
                 if (mAutomaticTimeStepping)
                 {
