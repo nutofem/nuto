@@ -63,8 +63,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
     double curTime  = mTime;
     double timeStep = mTimeStep;
-    mStructure->SetPrevTime(curTime);
-    mStructure->SetTime(curTime);
 
     const DofStatus& dofStatus = mStructure->GetDofStatus();
 
@@ -253,7 +251,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         curTime += timeStep;
         inputTime = mTime + timeStep;
         SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
-        mStructure->SetTime(curTime);
 
         deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
@@ -390,9 +387,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                 MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
 
-
-                //update structure time
-                mStructure->SetPrevTime(curTime);
 
                 mTime+=timeStep;
                 inputTime = mTime;

@@ -99,8 +99,6 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
     }
     mDimension = rDimension;
-    mPrevTime = 0.;
-    mTime = 0.;
     mNodeNumberingRequired = true;
     mNumExtrapolatedCycles.setZero();
 
@@ -143,8 +141,6 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
     ar & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
-    ar & BOOST_SERIALIZATION_NVP(mPrevTime);
-    ar & BOOST_SERIALIZATION_NVP(mTime);
     ar & BOOST_SERIALIZATION_NVP(mDimension);
     ar & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
     ar & BOOST_SERIALIZATION_NVP(mConstraintMap);
@@ -210,29 +206,6 @@ int NuTo::StructureBase::GetNumTimeDerivatives()const
 	return mNumTimeDerivatives;
 }
 
-//! @brief set the beginning of the time increment to the structure
-void NuTo::StructureBase::SetPrevTime(double rPrevTime)
-{
-	mPrevTime = rPrevTime;
-}
-
-//! @brief get the beginning of the time increment of the structure
-double NuTo::StructureBase::GetPrevTime() const
-{
-	return mPrevTime;
-}
-
-//! @brief set the end of the time increment to the structure (current time)
-void NuTo::StructureBase::SetTime(double rTime)
-{
-	mTime = rTime;
-}
-
-//! @brief get the end of the time increment of the structure (current time)
-double NuTo::StructureBase::GetTime() const
-{
-	return mTime;
-}
 
 //! @brief set number of cycles to be extrapolated in the cycle jump routine
 //! @brief ... rNumber[0] is the number of extrapolated cycles itself Njump
