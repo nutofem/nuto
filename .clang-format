@@ -19,6 +19,7 @@ IndentWidth: 4
 PointerAlignment: Left
 ReflowComments: true
 MaxEmptyLinesToKeep: 2
+BreakConstructorInitializersBeforeComma: true
 SpaceBeforeParens: ControlStatements
 SortIncludes: false
 Standard: Cpp11
