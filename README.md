@@ -46,7 +46,19 @@ In the end, run the test suite to see if all went well
 Requirements
 ============
 
-![alt text](doc/images/library_requirements.png "library requirements")
+Name     | Version | Description
+---------|---------|----------------
+CMake    | ≥ 2.8   | Build system
+Boost    | ≥ 1.54  | General purpose C++ libraries
+Eigen    | ≥ 3.2   | C++ template library for linear algebra
+Python   | ≥ 3.4   | Python programming language
+NumPy    | ≥ 1.8   | Linear algebra in Python
+OpenBLAS | ≥ 0.2.8 | Optimized BLAS library
+METIS    | ≥ 5.1   | Serial graph partitioning and fill-reducing matrix ordering
+MUMPS    |   4.10  | Parallel sparse direct solver
+OpenMP   | ≥ 3.7   | Management of multiple OpenMP threads
+ARPACK   | ≥ 3.1.5 | Solver for large scale eigenvalue problems
+ANN      | ≥ 1.1.2 | Approximate nearest neighbour searching
 
 Examples
 ========
