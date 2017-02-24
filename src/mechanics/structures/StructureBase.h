@@ -1904,12 +1904,7 @@ protected:
     //! @param rNodes ... vector of element pointer
     virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
 #endif
-
-    //! @brief ... get all elements of a group in a vector
-    //! @param rElementGroup ... element group
-    //! @param rElements ... vector of element pointer
-    void GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const;
-
+ 
     //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer

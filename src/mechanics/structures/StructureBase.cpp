@@ -207,17 +207,6 @@ int NuTo::StructureBase::GetNumTimeDerivatives()const
 
 
 // store all elements of a group in a vector
-void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const
-{
-    Group<ElementBase>::const_iterator ElementIter = rElementGroup->begin();
-    while (ElementIter != rElementGroup->end())
-    {
-        rElements.push_back(ElementIter->second);
-        ElementIter++;
-    }
-}
-
-// store all elements of a group in a vector
 void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements)
 {
     Group<ElementBase>::iterator ElementIter = rElementGroup->begin();

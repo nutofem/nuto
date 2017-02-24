@@ -103,16 +103,6 @@ public:
         return std::string("Structure");
     }
 
-    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-    //! @param rConstitutiveId constitutive model for which the data is build
-    void BuildNonlocalData(int rConstitutiveId);
-
-#ifndef SWIG
-    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-    //! @param rConstitutiveId constitutive model for which the data is build
-    void BuildNonlocalData(const ConstitutiveBase* rConstitutive);
-#endif //SWIG
-
 #ifndef SWIG
 
     //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
@@ -510,30 +500,6 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @return InterpolationType ptr
     const InterpolationType* InterpolationTypeGet(int rInterpolationTypeId) const;
-
-
-#endif //SWIG
-
-    //***********************************************************
-    //************         Mesh routines        *****************
-    //**  defined in structures/unstructured/StructureMesh.cpp **
-    //***********************************************************
-    //! @brief creates a lattice mesh from the positions of the circles
-    //! @param rTypeOfSpecimen 0 box, 1 dogbone
-    //! @param rBoundingBox box for the spheres (3*2 matrix)
-    //! @param rCircles (coordinates x,y and radius)
-    //! @param rTriangles (triangles connecting the circle centers)
-    void MeshCreateLattice2D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rCircles, Eigen::MatrixXd& rTriangles);
-
-    //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
-    //! @param rTypeOfSpecimen 0 box, 1 dogbone
-    //! @param rBoundingBox box for the spheres (3*2 matrix)
-    //! @param rBoundingBox (min and max for x and y)
-    //! @param rSpheres (coordinates x,y,z and radius)
-    void MeshCreateLattice3D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rSpheres, Eigen::MatrixXd& rTetraeders);
-
-
-#ifndef SWIG
 
     //! @brief creates a node
     //! @param rDOFs
