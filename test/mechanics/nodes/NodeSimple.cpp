@@ -1,5 +1,13 @@
 #include "BoostUnitTest.h"
+#include "TypeTraits.h"
 #include "mechanics/nodes/NodeSimple.h"
+
+
+BOOST_AUTO_TEST_CASE(NodeSimpleCopyMove)
+{
+    NuTo::Test::Copy<NuTo::NodeSimple>();
+    NuTo::Test::Move<NuTo::NodeSimple>();
+}
 
 BOOST_AUTO_TEST_CASE(NodeSimpleValues)
 {

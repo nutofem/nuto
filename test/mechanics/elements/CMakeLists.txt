@@ -21,4 +21,5 @@ add_unit_test(IPData
     mechanics/timeIntegration/ImplExCallback.cpp
     )
 
-add_unit_test(Element)
+add_unit_test(Element
+    mechanics/elements/ElementShapeFunctions.cpp)
