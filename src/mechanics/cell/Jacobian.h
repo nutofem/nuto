@@ -23,18 +23,14 @@ public:
             nodeBlockCoordinates.col(i) = rNodalValues.block<TDim, 1>(TDim * i, 0);
 
         mJacobian    = nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
+        mInvJacobian = mJacobian.inverse();
         mDetJacobian = mJacobian.determinant();
     }
 
 
     //! @brief returns the inverse, performs a simplistic memoization
-    const Eigen::Matrix<double, TDim, TDim>& Inv()
+    const Eigen::Matrix<double, TDim, TDim>& Inv() const
     {
-        if (mNeedToCalculateInvJacobian)
-        {
-            mInvJacobian                = mJacobian.inverse();
-            mNeedToCalculateInvJacobian = false;
-        }
         return mInvJacobian;
     }
 
@@ -46,7 +42,6 @@ public:
 private:
     Eigen::Matrix<double, TDim, TDim> mJacobian;
     Eigen::Matrix<double, TDim, TDim> mInvJacobian;
-    bool mNeedToCalculateInvJacobian = true;
     double mDetJacobian;
 };
 } /* NuTo */
