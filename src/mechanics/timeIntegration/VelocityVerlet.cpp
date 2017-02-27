@@ -81,7 +81,7 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 #endif
     start=clock();
 #endif
-   	NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
    	{

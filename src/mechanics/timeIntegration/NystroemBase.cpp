@@ -71,7 +71,7 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 void NuTo::NystroemBase::Solve(double rTimeDelta)
 {
-	NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 #ifdef SHOW_TIME
     std::clock_t start,end;
 #ifdef _OPENMP

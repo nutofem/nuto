@@ -29,7 +29,7 @@ NuTo::ImplicitExplicitBase::~ImplicitExplicitBase()
 
 void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 {
-    NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
     {

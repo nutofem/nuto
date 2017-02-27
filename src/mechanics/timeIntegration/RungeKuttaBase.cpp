@@ -67,7 +67,7 @@ void NuTo::RungeKuttaBase::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 {
-    NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
     {

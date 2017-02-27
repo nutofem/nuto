@@ -48,7 +48,7 @@ void NuTo::NewmarkDirect::Info()const
 
 void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
-    NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     //renumber dofs and build constraint matrix
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
