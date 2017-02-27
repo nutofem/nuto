@@ -142,6 +142,7 @@ set(NuToMechanicsInterpolationtypesSources
     interpolationtypes/Interpolation3DPrism.cpp
     interpolationtypes/Interpolation1DIGA.cpp
     interpolationtypes/Interpolation2DIGA.cpp
+    interpolation/Interpolation.cpp
     )
 
 set(NuToMechanicsIGASources

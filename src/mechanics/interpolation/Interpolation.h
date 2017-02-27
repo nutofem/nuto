@@ -19,10 +19,15 @@ public:
     Interpolation& operator=(const Interpolation&) = default;
     Interpolation& operator=(Interpolation&&) = default;
 
-    virtual Eigen::VectorXd GetShapeFunctions(const Eigen::VectorXd& rIPCoords) const = 0;
+    Eigen::MatrixXd GetN(const Eigen::VectorXd& rIPCoords) const;
+    Eigen::MatrixXd GetBGradient(const Eigen::VectorXd& rIPCoords) const;
+    Eigen::MatrixXd GetBStrain(const Eigen::VectorXd& rIPCoords) const;
+
+    virtual Eigen::VectorXd GetShapeFunctions(const Eigen::VectorXd& rIPCoords) const           = 0;
     virtual Eigen::MatrixXd GetDerivativeShapeFunctions(const Eigen::VectorXd& rIPCoords) const = 0;
-    virtual Eigen::VectorXd GetLocalCoords(int rNodeId) const            = 0;
-    virtual int GetNumNodes() const                                      = 0;
+    virtual Eigen::VectorXd GetLocalCoords(int rNodeId) const                                   = 0;
+    virtual int GetNumNodes() const                                                             = 0;
+    virtual int GetDimension() const                                                            = 0;
 
 protected:
     eInterpolation mType;

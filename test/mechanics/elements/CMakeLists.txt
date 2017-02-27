@@ -22,4 +22,5 @@ add_unit_test(IPData
     )
 
 add_unit_test(Element
+    mechanics/interpolation/Interpolation.cpp
     mechanics/elements/ElementShapeFunctions.cpp)

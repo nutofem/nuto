@@ -27,7 +27,7 @@ public:
 
     Eigen::VectorXd Interpolate(const Eigen::VectorXd& rLocalCoords) const
     {
-        return GetN(rLocalCoords) * ExtractNodeValues();
+        return mInterpolation.GetN(rLocalCoords) * ExtractNodeValues();
     }
 
     const Interpolation& GetInterpolation() const
@@ -36,19 +36,6 @@ public:
     }
 
 private:
-    //! @brief 'blows' shape functions to N matrix
-    Eigen::MatrixXd GetN(const Eigen::VectorXd& rLocalCoords) const
-    {
-        int dim = mNodes[0]->GetNumValues();
-        Eigen::MatrixXd N(dim, dim * mNodes.size());
-
-        auto shapeFunctions = mInterpolation.GetShapeFunctions(rLocalCoords);
-
-        for (size_t i = 0; i < mNodes.size(); ++i)
-            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
-        return N;
-    }
-
 
     std::vector<NuTo::NodeSimple*> mNodes;
     const Interpolation& mInterpolation;

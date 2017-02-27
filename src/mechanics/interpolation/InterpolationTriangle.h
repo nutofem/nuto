@@ -39,6 +39,10 @@ public:
             return 3;
         throw;
     }
+    int GetDimension() const override
+    {
+        return 2;
+    }
 
 
 private:
