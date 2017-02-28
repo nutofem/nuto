@@ -226,10 +226,16 @@ public:
     //! @return ... StructureBlockVector containing the dofs (J and K)
     virtual NuTo::StructureOutputBlockVector NodeExtractDofValues(int rTimeDerivative) const override;
 
-    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues) override
+    {
+        NodeMergeDofValues(rTimeDerivative, rDofValues.J, rDofValues.K);
+    }
+
+    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) override
+    {
+        NodeMergeDofValues(0,rDofValues);
+    }
+
     virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) override;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)

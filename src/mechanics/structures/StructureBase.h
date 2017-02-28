@@ -27,7 +27,7 @@
 
 
 #include "mechanics/MechanicsException.h"
-
+#include "StructureOutputBlockVector.h"
 
 
 namespace NuTo
@@ -436,15 +436,12 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rDofValues ... StructureBlockVector containing the dofs (J and K)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues);
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues)
-    {
-        NodeMergeDofValues(0,rDofValues);
-    }
+    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)

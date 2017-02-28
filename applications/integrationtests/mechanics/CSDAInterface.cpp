@@ -127,7 +127,7 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
         globalDisplacementDofs[dofBC1] = bc;
         globalDisplacementDofs[dofBC2] = bc;
 
-        s.StructureBase::NodeMergeDofValues(globalDofs);
+        s.NodeMergeDofValues(globalDofs);
         auto internalForces = s.ElementBuildInternalGradient(0)[NuTo::Node::eDof::DISPLACEMENTS];
         force[i] = (internalForces[localDofIndex1] + internalForces[localDofIndex2]);
     }
