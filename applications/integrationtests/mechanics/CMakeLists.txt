@@ -46,6 +46,7 @@ foreach(test
     MultipleConstitutiveLaws
     NewmarkPlane2D4N
     ParallelAssembly
+    PlateWithHole
     RungeKutta
     Shrinkage
     SpringDamperCombination
