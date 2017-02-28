@@ -482,6 +482,8 @@ int main()
     CSDA2D();
     CSDA3D();
 
+    PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     CheckFractureEnergy2D(90, .1);
     CheckFractureEnergy2D(90, .01);
