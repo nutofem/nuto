@@ -6,6 +6,7 @@ if(ENABLE_PYTHON)
         DeleteElemNode
         GlobalDofs
         HeatConduction
+        MassMatrixIntegration
         Quad2DPatchTest
         Tetrahedron10N
         )
