@@ -660,8 +660,7 @@ public:
 
             double curTime  = mTime;
             double timeStep = mTimeStep;
-            mStructure->SetPrevTime(curTime);
-            mStructure->SetTime(curTime);
+
 
 
             CalculateStaticAndTimeDependentExternalLoad();
@@ -767,7 +766,6 @@ public:
 
                 curTime += timeStep;
                 SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
-                mStructure->SetTime(curTime);
 
 //            auto deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
                 extForce = CalculateCurrentExternalLoad(curTime);
@@ -917,8 +915,6 @@ public:
 
                         mStructure->NodeMergeDofValues(dof_dt0);
 
-                        //update structure time
-                        mStructure->SetPrevTime(curTime);
 
                         mTime+=timeStep;
 
