@@ -1,5 +1,8 @@
 #pragma once
 
+#include "mechanics/elements/Element.h"
+#include "mechanics/nodes/DofContainer.h"
+
 namespace NuTo
 {
 
@@ -8,6 +11,17 @@ namespace NuTo
 class CellData
 {
 public:
+    CellData(const DofContainer<const Element*> rElements)
+        : mElements(rElements)
+    {
+    }
+
+    Eigen::VectorXd GetNodeValues(const DofType& rDofType)
+    {
+        return mElements[rDofType]->ExtractNodeValues();
+    }
+
 private:
+    const DofContainer<const Element*> mElements;
 };
 } /* NuTo */

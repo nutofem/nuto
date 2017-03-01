@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "mechanics/elements/Element.h"
+#include "mechanics/nodes/DofContainer.h"
 
 namespace NuTo
 {
@@ -15,5 +16,6 @@ public:
 
 private:
     const Element& mCoordinateElement;
+    DofContainer<Element*> mElements;
 }; 
 } /* NuTo */ 
