@@ -175,6 +175,54 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeIdsBoundaries, const std::vector<int>& nodeIdsLoads)
+{
+
+    std::set<int> setNodeIdsBoundaries(nodeIdsBoundaries.begin(), nodeIdsBoundaries.end());
+    std::set<int> setNodeIdsLoads(nodeIdsLoads.begin(), nodeIdsLoads.end());
+
+    std::set<int> setNodeIdsInterfaces;
+    for (const auto& interface : mInterfaces)
+        for (const auto& nodePair : interface.mNodeIdsMap)
+            setNodeIdsInterfaces.insert(nodePair.second);
+
+    std::vector<int> nodeIdsVirtualConstraints;
+    for (const auto& nodePair : NodeGetNodeMap())
+    {
+        if (            setNodeIdsBoundaries.find(nodePair.first)   == setNodeIdsBoundaries.end()
+                 and    setNodeIdsLoads.find(nodePair.first)        == setNodeIdsLoads.end()
+                 and    setNodeIdsInterfaces.find(nodePair.first)   == setNodeIdsInterfaces.end() )
+        {
+            nodeIdsVirtualConstraints.push_back(nodePair.first);
+        }
+    }
+
+    switch (GetDimension())
+    {
+        case 2:
+        {
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[1], Eigen::Vector2d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector2d::UnitY(), 0.);
+
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Y \n\n";
+
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for dimension: " + std::to_string(GetDimension()));
+    }
+
+
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

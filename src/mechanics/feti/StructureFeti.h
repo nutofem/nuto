@@ -194,7 +194,12 @@ public:
     void AssembleBoundaryDofIds();
 
 
-
+    ///
+    /// \brief ApplyVirtualConstraints
+    /// \param nodeIdsBoundaries
+    /// \param nodeIdsLoads
+    void ApplyVirtualConstraints(const std::vector<int>& nodeIdsBoundaries,
+                                                      const std::vector<int>& nodeIdsLoads);
 
 
     ///
