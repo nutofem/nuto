@@ -23,7 +23,7 @@ public:
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
 	CollidableWallVirtual(Eigen::Vector3d rPosition,
-						  Eigen::Vector3d rDirection, const int rIndex);
+						  Eigen::Vector3d rDirection, int rIndex);
 
 	//! @brief ... collision between CollidableWall and CollidableSphere
 	//! Case 1) Sphere is NOT in outside box of this wall
@@ -37,16 +37,19 @@ public:
 	//! Predict wall transfer events
 	//! @param rSphere ... possible collision partner
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
+	double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... returns false
-	const bool IsPhysical() const override;
+	bool IsPhysical() const override
+	{
+		return false;
+	}
 
 private:
 
 	//! @brief ... returns whether a sphere is in the outside box of this wall
 	//! @param rSphere ... sphere to test
-	const bool IsInOutsideBox(const CollidableParticleSphere& rSphere) const;
+	bool IsInOutsideBox(const CollidableParticleSphere& rSphere) const;
 
 	//! @brief ... get the distance between the sphere surface and the wall
 	void GetDistanceAligned(double& rDynamicDistance,

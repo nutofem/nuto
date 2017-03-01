@@ -1,6 +1,5 @@
 #ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp> #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -10,7 +9,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "math/EigenSolverArpack.h"
 #include "base/CallbackInterface.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
@@ -50,7 +48,7 @@ void NuTo::NewmarkDirect::Info()const
 
 void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
-    NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+    NuTo::Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     //renumber dofs and build constraint matrix
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
@@ -65,8 +63,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
     double curTime  = mTime;
     double timeStep = mTimeStep;
-    mStructure->SetPrevTime(curTime);
-    mStructure->SetTime(curTime);
 
     const DofStatus& dofStatus = mStructure->GetDofStatus();
 
@@ -255,7 +251,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         curTime += timeStep;
         inputTime = mTime + timeStep;
         SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
-        mStructure->SetTime(curTime);
 
         deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
@@ -393,9 +388,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
 
 
-                //update structure time
-                mStructure->SetPrevTime(curTime);
-
                 mTime+=timeStep;
                 inputTime = mTime;
 
@@ -421,27 +413,15 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
             }
             else
             {
-                mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
+                mStructure->GetLogger() << "No convergence with timestep " << timeStep << " at time " << mTime << "\n";
                 //no convergence
                 if (mAutomaticTimeStepping)
                 {
                     //no convergence, reduce the time step and start from scratch
                     curTime -= timeStep;
                     timeStep *= 0.5;
-                    if (timeStep < mMinTimeStep) {
-
-#ifdef HAVE_ARPACK
-                        hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
-                        const BlockSparseMatrix& evMatrix = hessian0.JJ;
-
-                        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = evMatrix.ExportToCSR();
-                        EigenSolverArpack m;
-                        auto evs = m.GetSmallest(*matrixForSolver);
-                        auto evl = m.GetLargest(*matrixForSolver);
-                        std::cout << "EV smallest: " << evs.first << std::endl;
-                        std::cout << "EV largest:  " << evl.first << std::endl;
-                        std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
-#endif // HAVE_ARPACK
+                    if (timeStep < mMinTimeStep)
+                    {
                         mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
                         throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                     }

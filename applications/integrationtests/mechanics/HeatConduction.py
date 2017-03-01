@@ -1,85 +1,88 @@
+#!/usr/bin/env python3
+import unittest
 import nuto
-import numpy as np
 
-structure1D = nuto.Structure(1)
-structure2D = nuto.Structure(2)
-structure3D = nuto.Structure(3)
 
-# create section
-area = 1.0
-thickness = 1.0
-section1D = structure1D.SectionCreate("Truss")
-section2D = structure2D.SectionCreate("Plane_Strain")
-section3D = structure3D.SectionCreate("Volume")
-structure1D.SectionSetArea(section1D, area)
-structure2D.SectionSetThickness(section2D, thickness)
+def OneDimensional(structure):
+    _, ipType = nuto.MeshGenerator.Grid(structure, [2.0], [1])
+    structure.InterpolationTypeAdd(ipType, "temperature", "equidistant1")
 
-# create material law
-conductivity = 1.0
-material1D = structure1D.ConstitutiveLawCreate("Heat_Conduction")
-material2D = structure2D.ConstitutiveLawCreate("Heat_Conduction")
-material3D = structure3D.ConstitutiveLawCreate("Heat_Conduction")
-structure1D.ConstitutiveLawSetParameterDouble(material1D, "Thermal_Conductivity", conductivity)
-structure2D.ConstitutiveLawSetParameterDouble(material2D, "Thermal_Conductivity", conductivity)
-structure3D.ConstitutiveLawSetParameterDouble(material3D, "Thermal_Conductivity", conductivity)
+    # set section
+    area = 1.0
+    section = structure.SectionCreate("Truss")
+    structure.SectionSetArea(section, area)
+    structure.ElementTotalSetSection(section)
 
-# create nodes
-node_id = 0
-for x in np.arange(2.0):
-    structure1D.NodeCreate(node_id, np.array([x]))
-    node_id += 1
+    return structure
 
-node_id = 0
-for x in np.arange(2.0):
-    for y in np.arange(2.0):
-        structure2D.NodeCreate(node_id, np.array([x, y]))
-        node_id += 1
 
-node_id = 0
-for x in np.arange(2.0):
-    for y in np.arange(2.0):
-        for z in np.arange(2.0):
-            structure3D.NodeCreate(node_id, np.array([x, y, z]))
-            node_id += 1
+def TwoDimensional(structure):
+    _, ipType = nuto.MeshGenerator.Grid(structure, [2.0, 2.0], [1, 1])
+    structure.InterpolationTypeAdd(ipType, "temperature", "equidistant1")
 
-# create interpolation type
-truss_iptype = structure1D.InterpolationTypeCreate("Truss1D")
-structure1D.InterpolationTypeAdd(truss_iptype, "coordinates", "equidistant1")
-structure1D.InterpolationTypeAdd(truss_iptype, "temperature", "equidistant1")
+    # create section
+    thickness = 1.0
+    section = structure.SectionCreate("Plane_Strain")
+    structure.SectionSetThickness(section, thickness)
+    structure.ElementTotalSetSection(section)
 
-quad_iptype = structure2D.InterpolationTypeCreate("Quad2D")
-structure2D.InterpolationTypeAdd(quad_iptype, "coordinates", "equidistant1")
-structure2D.InterpolationTypeAdd(quad_iptype, "temperature", "equidistant1")
+    return structure
 
-brick_iptype = structure3D.InterpolationTypeCreate("Brick3D")
-structure3D.InterpolationTypeAdd(brick_iptype, "coordinates", "equidistant1")
-structure3D.InterpolationTypeAdd(brick_iptype, "temperature", "equidistant1")
 
-# create one truss element
-element_incidence = [0, 1]
-structure1D.ElementCreate(truss_iptype, element_incidence)
-structure1D.ElementSetSection(0, section1D)
-structure1D.ElementSetConstitutiveLaw(0, material1D)
+def ThreeDimensional(structure):
+    _, ipType = nuto.MeshGenerator.Grid(structure, [2.0, 2.0, 2.0], [1, 1, 1])
+    structure.InterpolationTypeAdd(ipType, "temperature", "equidistant1")
 
-# create one quad element
-element_incidence = [0, 1, 3, 2]
-structure2D.ElementCreate(quad_iptype, element_incidence)
-structure2D.ElementSetSection(0, section2D)
-structure2D.ElementSetConstitutiveLaw(0, material2D)
+    # create section
+    section = structure.SectionCreate("Volume")
+    structure.ElementTotalSetSection(section)
 
-# create one brick element
-element_incidence = [0, 1, 3, 2, 4, 5, 7, 6]
-structure3D.ElementCreate(brick_iptype, element_incidence)
-structure3D.ElementSetSection(0, section3D)
-structure3D.ElementSetConstitutiveLaw(0, material3D)
+    return structure
 
-structure1D.ElementTotalConvertToInterpolationType()
-structure2D.ElementTotalConvertToInterpolationType()
-structure3D.ElementTotalConvertToInterpolationType()
 
-# check stiffness matrices
-delta = 1e-6
-rel_tolerance = 1e-4
-structure1D.CheckHessian0(delta, rel_tolerance, True)
-structure2D.CheckHessian0(delta, rel_tolerance, True)
-structure3D.CheckHessian0(delta, rel_tolerance, True)
+def SetupStructure(dimension):
+    assert(dimension in [1, 2, 3])
+    structure = nuto.Structure(dimension)
+
+    if dimension == 1:
+        structure = OneDimensional(structure)
+    elif dimension == 2:
+        structure = TwoDimensional(structure)
+    else:
+        structure = ThreeDimensional(structure)
+
+    # create material law
+    conductivity = 1.0
+    material = structure.ConstitutiveLawCreate("Heat_Conduction")
+    structure.ConstitutiveLawSetParameterDouble(material, "Thermal_Conductivity", conductivity)
+
+    structure.ElementTotalConvertToInterpolationType()
+    structure.ElementTotalSetConstitutiveLaw(material)
+
+    return structure
+
+
+class HeatConductionXd:
+    def testHessian(self):
+        delta = 1e-16
+        rel_tolerance = 1e-15
+        self.assertTrue(self.structure.CheckHessian0(delta, rel_tolerance, True))
+
+
+class HeatConduction1D(HeatConductionXd, unittest.TestCase):
+    def setUp(self):
+        self.structure = SetupStructure(1)
+
+
+class HeatConduction2D(HeatConductionXd, unittest.TestCase):
+    def setUp(self):
+        self.structure = SetupStructure(2)
+
+
+class HeatConduction3D(HeatConductionXd, unittest.TestCase):
+    def setUp(self):
+        self.structure = SetupStructure(3)
+
+
+if __name__ == '__main__':
+    unittest.main()

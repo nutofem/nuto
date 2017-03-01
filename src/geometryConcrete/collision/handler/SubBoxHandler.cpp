@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/Exception.h"
-#include "geometryConcrete/WallTime.h"
-#include "geometryConcrete/collision/SubBox.h"
+#include "base/Timer.h"
+
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "geometryConcrete/collision/handler/ParticleHandler.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
@@ -24,25 +24,19 @@
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
 		Specimen& rSpecimen,
-		const Eigen::VectorXi& rDivisions)
+		Eigen::Vector3i rDivisions)
 		:
-				mSpecimen(rSpecimen),
-				mDivisions(rDivisions)
-
+	mSpheres(&rSpheres),
+	mSpecimen(rSpecimen),
+	mDivisions(rDivisions)
 {
-	if (rDivisions.rows() != 3)
-		throw Exception(__PRETTY_FUNCTION__, "VectorXi rDivisions!");
-
-	mSpheres = &rSpheres;
-	mSubBoxes.clear();
-
 	Build();
 }
 
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
 		Specimen& rSpecimen,
-		const int rParticlesPerSubBox)
+		int rParticlesPerSubBox)
 		:
 				mSpecimen(rSpecimen),
 				mDivisions(rSpheres.GetSubBoxDivisions(mSpecimen, rParticlesPerSubBox))
@@ -50,18 +44,10 @@ NuTo::SubBoxHandler::SubBoxHandler(
 	mSpheres = &rSpheres;
 	mSubBoxes.clear();
 
-	int numDivisions = mDivisions[0] * mDivisions[1] * mDivisions[2];
-
-	std::cout << "[NuTo::SubBoxHandler::SubBoxHandler] Build " << numDivisions << " sub boxes." << std::endl;
-
+	std::cout << "[NuTo::SubBoxHandler::SubBoxHandler] Build " << mDivisions.prod() << " sub boxes." << std::endl;
 	Build();
 }
 
-NuTo::SubBoxHandler::~SubBoxHandler()
-{
-	for (auto box : mSubBoxes)
-		delete box;
-}
 
 unsigned int NuTo::SubBoxHandler::GetBoxIndex(int rX, int rY, int rZ)
 {
@@ -83,14 +69,14 @@ void NuTo::SubBoxHandler::Build()
 {
 	switch (mSpecimen.GetTypeOfSpecimen())
 	{
-	case 0:
+	case Specimen::Box:
 		BuildBox();
 		break;
-	case 2:
+	case Specimen::Cylinder:
 		BuildCylinder();
 		break;
 	default:
-		throw Exception("[NuTo::SubBoxHandler::Build] Type not specimen not implemented yet.");
+		throw Exception(__PRETTY_FUNCTION__, "Type not specimen not implemented yet.");
 		break;
 	}
 }
@@ -102,29 +88,24 @@ void NuTo::SubBoxHandler::BuildBox()
 	AddSpheresToBoxes();
 }
 
-Eigen::VectorXd NuTo::SubBoxHandler::GetSubBoxLength()
+Eigen::Vector3d NuTo::SubBoxHandler::GetSubBoxLength()
 {
-	Eigen::Vector3d subBoxLength = mSpecimen.GetLength();
-	subBoxLength[0] /= mDivisions[0];
-	subBoxLength[1] /= mDivisions[1];
-	subBoxLength[2] /= mDivisions[2];
-	return subBoxLength;
+	return mSpecimen.GetLength().cwiseQuotient(mDivisions.cast<double>());
 }
 
 void NuTo::SubBoxHandler::BuildSubBoxes()
 {
-
 	mSubBoxes.clear();
 
 	// equal length sub-boxes
 	Eigen::Vector3d subBoxLength = GetSubBoxLength();
 	int index = 0;
 
-	unsigned int nDivisions = mDivisions[0] * mDivisions[1] * mDivisions[2];
+	unsigned int nDivisions = mDivisions.prod();
 
 	// create cell grid boxes
 	for (unsigned int i = 0; i < nDivisions; ++i)
-		mSubBoxes.push_back(new SubBox(i));
+		mSubBoxes.push_back(SubBox(i));
 
 	// TODO make this ugly method readable, ffs!
 	Eigen::Matrix<int, 6, 3> neighborBox, direction;
@@ -137,8 +118,8 @@ void NuTo::SubBoxHandler::BuildSubBoxes()
 		for (int iY = 0; iY < mDivisions[1]; ++iY)
 			for (int iZ = 0; iZ < mDivisions[2]; ++iZ)
 			{
-				std::list<CollidableWallBase*> walls;
-				SubBox& insideBox = *mSubBoxes[GetBoxIndex(iX, iY, iZ)];
+				std::vector<CollidableWallBase*> walls;
+				SubBox& insideBox = mSubBoxes[GetBoxIndex(iX, iY, iZ)];
 
 				for (int iWall = 0; iWall < 6; ++iWall)
 				{
@@ -146,7 +127,7 @@ void NuTo::SubBoxHandler::BuildSubBoxes()
 					int indexY = neighborBox(iWall, 1);
 					int indexZ = neighborBox(iWall, 2);
 
-					SubBox& outsideBox = *mSubBoxes[GetBoxIndex(iX + indexX, iY + indexY, iZ + indexZ)];
+					SubBox& outsideBox = mSubBoxes[GetBoxIndex(iX + indexX, iY + indexY, iZ + indexZ)];
 					Eigen::Vector3d wallPosition( {
 							(position(iWall, 0) + iX) * subBoxLength[0] + mSpecimen.GetBoundingBox()(0, 0),
 							(position(iWall, 1) + iY) * subBoxLength[1] + mSpecimen.GetBoundingBox()(1, 0),
@@ -173,12 +154,9 @@ std::vector<NuTo::CollidableWallBase*> NuTo::SubBoxHandler::GetXYWalls(unsigned 
 {
 	std::vector<CollidableWallBase*> xyWalls;
 
-	for (auto wall : mSubBoxes[rIndex]->GetWalls())
+	for (auto wall : mSubBoxes[rIndex].GetWalls())
 		if (wall->GetDirection()[2] == 0)
 			xyWalls.push_back(wall);
-
-	if (xyWalls.size() != 4)
-		throw NuTo::Exception("[NuTo::SubBoxHandler::BuildCylinder] This should not have happened. #BestThrow #JFU ");
 
 	return xyWalls;
 }
@@ -210,14 +188,14 @@ std::vector<Eigen::VectorXd > NuTo::SubBoxHandler::GetXYCorners(
 	return corners;
 }
 
-const std::vector<NuTo::SubBox*>& NuTo::SubBoxHandler::GetSubBoxes() const
+std::vector<NuTo::SubBox>& NuTo::SubBoxHandler::GetSubBoxes()
 {
 	return mSubBoxes;
 }
 
 void NuTo::SubBoxHandler::AddSubBox(SubBox& rSubBox)
 {
-	mSubBoxes.push_back(&rSubBox);
+	mSubBoxes.push_back(rSubBox);
 }
 
 std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCylinder)
@@ -268,16 +246,16 @@ void NuTo::SubBoxHandler::BuildCylinder()
 		if (1 <= nInside[i] && nInside[i] <= 3)
 		{
 			CollidableWallCylinder* subWallCylinder = new CollidableWallCylinder(origin, direction, radius, height, 1);
-			subWallCylinder->SetBoxes(*mSubBoxes[i], *mSubBoxes[i]);
-			mSubBoxes[i]->AddWall(*subWallCylinder);
+			subWallCylinder->SetBoxes(mSubBoxes[i], mSubBoxes[i]);
+			mSubBoxes[i].AddWall(*subWallCylinder);
 		}
 
 	// delete all physical side walls
 
-	for (auto box : mSubBoxes)
+	for (auto& box : mSubBoxes)
 	{
 		std::vector<CollidableWallBase*> toDelete;
-		for (auto wall : box->GetWalls())
+		for (auto wall : box.GetWalls())
 		{
 			bool isPhysicalWall = wall->IsPhysical();
 			bool isSideWall = wall->GetDirection()(2) == 0;
@@ -289,7 +267,7 @@ void NuTo::SubBoxHandler::BuildCylinder()
 		}
 		for (auto wall : toDelete)
 		{
-			box->RemoveWall(*wall);
+			box.RemoveWall(*wall);
 			delete wall;
 		}
 	}
@@ -297,8 +275,7 @@ void NuTo::SubBoxHandler::BuildCylinder()
 
 void NuTo::SubBoxHandler::AddSpheresToBoxes()
 {
-
-	double sTime = WallTime::Get();
+    Timer timer(__FUNCTION__, true);
 
 	Eigen::Vector3d subLength = GetSubBoxLength();
 
@@ -354,18 +331,14 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 					// add sphere to corresponding box
 					unsigned int boxIndex = mDivisions[1] * mDivisions[2] * indX + mDivisions[2] * indY + indZ;
                     if (std::abs(boxIndex) >= mSubBoxes.size())
-						throw NuTo::Exception("[NuTo::SubBoxHandler::AddSpheresToBoxes] Box size/position does not match sphere size/position.");
+						throw NuTo::Exception(__PRETTY_FUNCTION__, "Box size/position does not match sphere size/position.");
 
 					// only add new spheres
-					CollidableBase* tmpColl = mSubBoxes[boxIndex]->GetCollidables().back();
+					CollidableBase* tmpColl = mSubBoxes[boxIndex].GetCollidables().back();
 					if (tmpColl != mSpheres->GetParticle(sph))
-						mSubBoxes[boxIndex]->AddSphere(*mSpheres->GetParticle(sph));
+						mSubBoxes[boxIndex].AddSphere(*mSpheres->GetParticle(sph));
 				}
-
 	}
-	std::cout << "AddSpheresToBoxes() took " << WallTime::Get() - sTime
-			<< " seconds." << std::endl;
-
 }
 
 void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
@@ -373,8 +346,8 @@ void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 #ifdef ENABLE_VISUALIZE
 	NuTo::VisualizeUnstructuredGrid visuBorders;
 	visuBorders.DefineCellDataVector("Direction");
-	for (auto box : mSubBoxes)
-		for (auto wall : box->GetWalls())
+	for (auto& box : mSubBoxes)
+		for (auto wall : box.GetWalls())
 			wall->VisualizationStatic(visuBorders);
 
 	visuBorders.ExportVtuDataFile(rFile);
@@ -388,10 +361,10 @@ double NuTo::SubBoxHandler::GetVolume() const
 
 void NuTo::SubBoxHandler::PrintBoxes()
 {
-	for (auto box : mSubBoxes)
+	for (auto& box : mSubBoxes)
 	{
-		std::cout << "Box " << box->GetIndex() << "  =======================" << std::endl;
-		box->Print();
+		std::cout << "Box " << box.GetIndex() << "  =======================" << std::endl;
+		box.Print();
 	}
 
 }

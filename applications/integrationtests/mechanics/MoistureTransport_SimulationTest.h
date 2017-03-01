@@ -35,8 +35,8 @@ std::string SimulationTest_GetTestName(std::array<bool,TDim>& rBS)
 
 template<int TDim>
 void CompareResultsToPaper(NuTo::Structure& rS,
-                           std::array<int,TDim> rN,
-                           std::array<double,TDim> rL)
+                           std::vector<int> rN,
+                           std::vector<double> rL)
 {
     int NumActiveDimensions = 0;
     int relevantDirection = 0;
@@ -116,8 +116,8 @@ void CompareResultsToPaper(NuTo::Structure& rS,
 //! @param rBS: array of bools for each direction to determine if the corresponding surfaces are boundary surfaces
 //! @param rTestInterpolationTypeCombi if true the simulation does just a single timestep to check if the program works with the current interpolation type combination. Results aren't compared
 template<int TDim>
-void SimulationTest(std::array<int,TDim> rN,
-                    std::array<double,TDim> rL,
+void SimulationTest(std::vector<int> rN,
+                    std::vector<double> rL,
                     std::array<bool,TDim> rBS,
                     std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
                     bool rTestInterpolationTypeCombi = false)
@@ -168,7 +168,7 @@ void SimulationTest(std::array<int,TDim> rN,
     SetupStructure<TDim>(S,testName);
     int SEC = SetupSection<TDim>(S);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<TDim>(S, rL, rN);
+    auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
     for (auto& it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);

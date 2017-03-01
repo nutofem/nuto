@@ -1,4 +1,4 @@
-set(NuToMetamodel_SOURCES
+set(NuToMetamodelSources
     Metamodel.cpp
     NeuralNetwork.cpp
     TransferFunction.cpp
@@ -9,12 +9,11 @@ set(NuToMetamodel_SOURCES
     PolynomialLeastSquaresFitting.cpp
     )
 
+sources_to_objects("${NuToMetamodelSources}" NuToMetamodelObjects)
+
 # build static library
-add_library(NuToMetamodel ${NuToMetamodel_SOURCES})
+add_library(NuToMetamodel ${NuToMetamodelObjects})
 target_link_libraries(NuToMetamodel NuToOptimize NuToMath NuToBase)
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToMetamodel PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
 
 # install library
 install(TARGETS NuToMetamodel

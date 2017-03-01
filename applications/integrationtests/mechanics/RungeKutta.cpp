@@ -59,8 +59,8 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
 
 
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<2>(myStructure, {mL, mH},
-                                                 {numElementsX,numElementsY}, NuTo::Interpolation::eShapeType::QUAD2D);
+    auto meshInfo = NuTo::MeshGenerator::Grid(myStructure, {mL, mH},
+                                              {numElementsX,numElementsY}, NuTo::Interpolation::eShapeType::QUAD2D);
 
     myStructure.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 

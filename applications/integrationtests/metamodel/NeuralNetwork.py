@@ -1,7 +1,6 @@
 import nuto
 import random
 import math
-import tempfile
 import sys
 import os
 import numpy as np
@@ -107,8 +106,7 @@ myNetwork.Build()
 
 if (printResult):
     Parameters = myNetwork.GetParameters()
-    print 'final set of parameters:'
-    print Parameters
+    print ('final set of parameters:\n', Parameters)
 
 # calculate error for the training samples including standard deviation of
 # approximation
@@ -122,7 +120,7 @@ myNetwork.SolveConfidenceInterval(SupportPointsInput,
 
 objective = myNetwork.Objective()
 if (printResult):
-    print 'objective including regularization terms (transformed space):\n  ' + str(objective)
+    print ('objective including regularization terms (transformed space):\n  ', objective)
 if (createResult):
     f = open(pathToResultFiles+'Objective.txt', 'w')
     f.write('#Correct Objective\n')
@@ -134,8 +132,8 @@ else:
     objectiveExact = float(f.readline())
     f.close()
     if (math.fabs(objective - objectiveExact) > 1e-8):
-        print '[' + system, sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective - objectiveExact)) + ')'
-        print 'objectiveExact including regularization terms (transformed space):\n  ' + str(objectiveExact)
+        print ('[' + system, sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective - objectiveExact)) + ')')
+        print ('objectiveExact including regularization terms (transformed space):\n', objectiveExact)
         error = True
 
 # gradient
@@ -144,35 +142,30 @@ gradient = np.zeros((NumParameters, 1))
 myNetwork.Gradient(gradient)
 gradient = gradient.squeeze()
 if (printResult):
-    print 'gradient:'
-    print gradient
+    print ('gradient:\n', gradient)
 if (createResult):
     np.savetxt(pathToResultFiles+"Gradient.txt", gradient, header="#Correct gradient matrix")
 else:
     gradientExact = np.loadtxt(pathToResultFiles + "Gradient.txt", skiprows=1)
     if (np.max(np.abs(gradientExact - gradient)) > 1e-8):
-        print '[' + system, sys.argv[0] + '] : gradient is not correct.(' + str(np.max(np.abs(gradientExact - gradient))) + ')'
-        print 'gradientExact:'
-        print gradientExact
+        print ('[' + system, sys.argv[0] + '] : gradient is not correct.(' + str(np.max(np.abs(gradientExact - gradient))) + ')')
+        print ('gradientExact:\n', gradientExact)
         error = True
 
 # hessian
 hessian = np.zeros((NumParameters, NumParameters))
 myNetwork.HessianFull(hessian)
 if (printResult):
-    print 'hessian:'
-    print hessian
+    print ('hessian:\n', hessian)
 if (createResult):
     np.savetxt(pathToResultFiles+"Hessian.txt", hessian, header="#Correct hessian matrix")
 else:
     hessianExact = np.loadtxt(pathToResultFiles+"Hessian.txt", skiprows=1)
     RelError = (hessianExact - hessian) / hessianExact
     if (np.max(np.abs(RelError)) > 1e-8):
-        print '[' + system, sys.argv[0] + '] : hessian is not correct.(' + str(np.max(np.abs(RelError))) + ')'
-        print 'hessianExact:'
-        print hessianExact
-        print 'relative Error:'
-        print RelError
+        print ('[' + system, sys.argv[0] + '] : hessian is not correct.(' + str(np.max(np.abs(RelError))) + ')')
+        print ('hessianExact:\n', hessianExact)
+        print ('relative Error:\n', RelError)
         error = True
 
 plotResult = False
@@ -206,7 +199,6 @@ if plotResult:
 
 
 if (error):
-    print "This test fails because the random number generator in NuTo::Metamodel was changed from a mersenne twister implementation from an external lib to the c++11 version in lib<random>. Maybe with different parameters/seed/idk. However, the results are in the same order of magnitude. \nI suggest updating the reference files. \nOver and Out. TT\n"
     sys.exit(-1)
 else:
     sys.exit(0)

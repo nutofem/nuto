@@ -1,3 +1,5 @@
+#include "BoostUnitTest.h"
+
 #include <boost/filesystem.hpp>
 
 #include "base/Timer.h"
@@ -7,22 +9,16 @@
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/ImplEx.h"
+#include "mechanics/elements/ElementBase.h"
+#include "mechanics/MechanicsEnums.h"
 
-#include "mechanics/elements/ContinuumBoundaryElement.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/groups/GroupEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
 #include "visualize/VisualizeEnum.h"
-
-namespace NuToTest {
-namespace ImplEx {
-
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
@@ -36,11 +32,6 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
     rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
-
-//    int myNumberConstitutiveLaw = rStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-//    rStructure.ConstitutiveLawSetDensity(myNumberConstitutiveLaw, 1.0);
-//    rStructure.ConstitutiveLawSetYoungsModulus(myNumberConstitutiveLaw, 30000);
-//    rStructure.ConstitutiveLawSetPoissonsRatio(myNumberConstitutiveLaw, 0.0);
 
     return lawId;
 }
@@ -56,7 +47,7 @@ void Extrapolate()
         double X1 = 2;
         double X0 = 1;
         double result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
-        if (std::abs(result - 2.6) > 1.e-10) throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "EulerForward<double> incorrect");
+        BOOST_CHECK_CLOSE(result, 2.6, 1.e-10);
     }
 
     {
@@ -64,7 +55,7 @@ void Extrapolate()
         NuTo::ConstitutiveScalar X1; X1[0] = 2;
         NuTo::ConstitutiveScalar X0; X0[0] = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
-        if (std::abs(result[0] - 2.6) > 1.e-10) throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "EulerForward<ConstitutiveScalar> incorrect");
+        BOOST_CHECK_CLOSE(result[0], 2.6, 1.e-10);
     }
 
     {
@@ -72,7 +63,7 @@ void Extrapolate()
         NuTo::ConstitutiveVector<1> X1; X1[0] = 2;
         NuTo::ConstitutiveVector<1> X0; X0[0] = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
-        if (std::abs(result[0] - 2.6) > 1.e-10) throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "EulerForward<ConstitutiveVector> incorrect");
+        BOOST_CHECK_CLOSE(result[0], 2.6, 1.e-10);
     }
 
     {
@@ -80,22 +71,24 @@ void Extrapolate()
         NuTo::ConstitutiveMatrix<1,1> X1; X1(0,0) = 2;
         NuTo::ConstitutiveMatrix<1,1> X0; X0(0,0) = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
-        if (std::abs(result(0,0) - 2.6) > 1.e-10) throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "EulerForward<ConstitutiveMatrix> incorrect");
+        BOOST_CHECK_CLOSE(result(0,0), 2.6, 1.e-10);
     }
-
 
 
 
     NuTo::ConstitutiveTimeStep t(4);
     t[0] = 42;
-    t.SetCurrentTimeStep(1337); // t should be [1337, 42, 0 0]
-    if (not (t[0] == 1337 and t[1] == 42 and t[2] == 0 and t[3] == 0))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SetCurrentTimeStep incorrect");
+    t.SetCurrentTimeStep(1337);
+    BOOST_CHECK_EQUAL(t[0], 1337);
+    BOOST_CHECK_EQUAL(t[1], 42);
+    BOOST_CHECK_EQUAL(t[2], 0);
+    BOOST_CHECK_EQUAL(t[3], 0);
 
-    t.SetCurrentTimeStep(6174); // t should be [6174, 1337, 42, 0 0]
-    if (not (t[0] == 6174 and t[1] == 1337 and t[2] == 42 and t[3] == 0))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SetCurrentTimeStep incorrect");
-
+    t.SetCurrentTimeStep(6174);
+    BOOST_CHECK_EQUAL(t[0], 6174);
+    BOOST_CHECK_EQUAL(t[1], 1337);
+    BOOST_CHECK_EQUAL(t[2], 42);
+    BOOST_CHECK_EQUAL(t[3], 0);
 }
 
 
@@ -110,39 +103,17 @@ void ImplEx()
     s.SetShowTime(false);
     s.SetVerboseLevel(0);
 
-    // create nodes
-    int numNodes = numElements + 1;
-    double lengthElement = length / numElements;
-
-    Eigen::VectorXd nodeCoordinates(1);
-    for (int iNode = 0; iNode < numNodes; ++iNode)
-    {
-        nodeCoordinates(0) = iNode * lengthElement;
-        s.NodeCreate(iNode, nodeCoordinates);
-    }
-
-    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpolationType = NuTo::MeshGenerator::Grid(s, {length}, {numElements}).second;
     s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
-
-    // create elements
-    std::vector<int> nodes(2);
-    for (int iElement = 0; iElement < numElements; iElement++)
-    {
-        nodes[0] = iElement;
-        nodes[1] = iElement + 1;
-        s.ElementCreate(interpolationType, nodes);
-    }
 
     // create sections
-    int mySection = s.SectionCreate("Truss");
-    s.SectionSetArea(mySection, area);
+    int sectionId = s.SectionCreate("Truss");
+    s.SectionSetArea(sectionId, area);
 
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
-    s.ElementTotalSetSection(mySection);
+    s.ElementTotalSetSection(sectionId);
     s.DofTypeSetIsSymmetric(NuTo::Node::eDof::DISPLACEMENTS, true);
     s.DofTypeSetIsSymmetric(NuTo::Node::eDof::NONLOCALEQSTRAIN, true);
 
@@ -153,12 +124,6 @@ void ImplEx()
     auto eWeak = s.ElementGetElementPtr(numElements/2.);
     for (int i = 0; i < eWeak->GetNumIntegrationPoints(); ++i)
         eWeak->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa_star);
-
-//
-//    int mySection2 = s.SectionCreate("Truss");
-//    s.SectionSetArea(mySection2, area*.9);
-//    s.ElementSetSection(24, mySection2);
-//    s.ElementSetSection(25, mySection2);
 
     s.ElementGroupAllocateAdditionalStaticData(s.GroupGetElementsTotal(), 2);
 
@@ -212,39 +177,12 @@ void ImplEx()
 
 }
 
-}  // namespace NuToTest
-}  // namespace ImplEx
-
-int main()
+BOOST_AUTO_TEST_CASE(ImplexExtrapolate)
 {
+    Extrapolate();
+}
 
-
-    try
-    {
-        NuTo::Timer Timer("ImplEx", true);
-
-        NuToTest::ImplEx::Extrapolate();
-
-        NuToTest::ImplEx::ImplEx();
-
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << e.ErrorMessage();
-        return EXIT_FAILURE;
-    }
-    catch (...)
-    {
-        std::cout << "Something else went wrong." << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::cout << std::endl;
-    std::cout << "#####################################" << std::endl;
-    std::cout << "##  Congratulations! Everything    ##" << std::endl;
-    std::cout << "##   went better than expected!    ##" << std::endl;
-    std::cout << "#####################################" << std::endl;
-
-    return EXIT_SUCCESS;
-
+BOOST_AUTO_TEST_CASE(ImplexRun)
+{
+    BOOST_CHECK_NO_THROW(ImplEx());
 }

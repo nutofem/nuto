@@ -7,12 +7,13 @@
 
 #include <iomanip>
 
+#include "base/Timer.h"
+
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/handler/EventListHandler.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
-#include "geometryConcrete/WallTime.h"
 
 NuTo::EventListHandler::EventListHandler()
 		:
@@ -37,7 +38,7 @@ NuTo::EventListHandler::~EventListHandler()
 void NuTo::EventListHandler::PrintEvents()
 {
 	std::cout << std::endl << "======== GLOBAL EVENT LIST ========" << std::endl;
-	for (auto event : mEvents)
+	for (auto& event : mEvents)
 		std::cout << event << std::endl;
 
 	std::cout << "===================================" << std::endl << std::endl;
@@ -48,15 +49,15 @@ void NuTo::EventListHandler::Clear()
 	mEvents.clear();
 }
 
-void NuTo::EventListHandler::AddEvent(const double rTime,
+void NuTo::EventListHandler::AddEvent(double rTime,
 		CollidableBase& rCollidable1, CollidableBase& rCollidable2, int rType)
 {
 	if (rTime < 0 || rTime > mTimeBarrier)
 		return;
 
-	auto insert = mEvents.insert(new Event(rTime, &rCollidable2, &rCollidable1, rType));
+	auto insert = mEvents.insert(Event(rTime, &rCollidable2, &rCollidable1, rType));
 	if(insert.second)
-		(*insert.first).AddLocalEvent();
+		const_cast<Event&>(*insert.first).AddLocalEvent();
 
 
 //	Event* tmp = new Event(rTime, &rCollidable2, &rCollidable1, rType);
@@ -66,12 +67,11 @@ void NuTo::EventListHandler::AddEvent(const double rTime,
 
 void NuTo::EventListHandler::DeleteOldEvents(Event::LocalEvents& rOldEvents)
 {
-	for (unsigned int iOldEvent = 0; iOldEvent < rOldEvents.size(); ++iOldEvent) {
-		mEvents.erase(*rOldEvents[iOldEvent]);
-	}
+	for (const auto& oldEvent : rOldEvents)
+		mEvents.erase(*oldEvent);
 }
 
-const double NuTo::EventListHandler::GetNextEventTime()
+double NuTo::EventListHandler::GetNextEventTime()
 {
 	if (mEvents.begin() == mEvents.end())
 		return Event::EVENTNULL;
@@ -103,7 +103,7 @@ void NuTo::EventListHandler::PrintStatistics(double rTimeTotal)
 }
 
 
-const int NuTo::EventListHandler::GetEventListSize()
+int NuTo::EventListHandler::GetEventListSize()
 {
 	return mEvents.size();
 }
@@ -111,9 +111,9 @@ const int NuTo::EventListHandler::GetEventListSize()
 void NuTo::EventListHandler::PerformNextEvent()
 {
 
-	const Event* nextEvent = new Event(*(mEvents.begin()));
+	const Event nextEventCopy = *(mEvents.begin());
 
-	switch (nextEvent->GetType())
+	switch (nextEventCopy.GetType())
 	{
 	case Event::EventType::SphereCollision:
 		mNSphereCollisions++;
@@ -128,29 +128,24 @@ void NuTo::EventListHandler::PerformNextEvent()
 		break;
 	}
 
-	double timeTmp;
+    Timer t("", false);
+	nextEventCopy.PerformCollision();
+	mTimeUpdate += t.GetTimeDifference();
 
-	timeTmp = WallTime::Get();
-	nextEvent->PerformCollision();
-	mTimeUpdate += WallTime::Get() - timeTmp;
+	t.Reset();
+	nextEventCopy.EraseOldEvents(*this);
+	mTimeErase += t.GetTimeDifference();
 
-	timeTmp = WallTime::Get();
-	nextEvent->EraseOldEvents(*this);
-	mTimeErase += WallTime::Get() - timeTmp;
-
-	timeTmp = WallTime::Get();
-	nextEvent->AddNewEvents(*this);
-	mTimeAdd += WallTime::Get() - timeTmp;
-
-	delete nextEvent;
-
+    t.Reset();
+	nextEventCopy.AddNewEvents(*this);
+	mTimeAdd += t.GetTimeDifference();
 }
 
 double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler& rSubBoxes)
 {
 	mTimeBarrier = rTimeBarrier;
 
-	double sTime = WallTime::Get();
+    Timer t("", false);
 
 	mEvents.clear();
 
@@ -158,15 +153,15 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 	auto& boxes = rSubBoxes.GetSubBoxes();
 	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
 	{
-		auto& collidables = boxes[iBox]->GetCollidables();
+		auto& collidables = boxes[iBox].GetCollidables();
 		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
 		{
-			boxes[iBox]->CreateEvents(*this, *collidables[iCollidable]);
+			boxes[iBox].CreateEvents(*this, *collidables[iCollidable]);
 		}
 	}
 
 
-	double timeRebuild = WallTime::Get() - sTime;
+	double timeRebuild = t.GetTimeDifference();
 	mTimeRebuild += timeRebuild;
 
 

@@ -12,14 +12,14 @@
 
 using namespace NuTo::Interpolation;
 
-void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, std::array<int, 2> rDiv)
+void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, std::vector<int> rDiv)
 {
     NuToTest::ElementUniaxialTest test;
 
     NuTo::Structure s(2);
     s.SetShowTime(false);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<2>(s, {test.lX, test.lY}, rDiv, rShapeType);
+    auto meshInfo = NuTo::MeshGenerator::Grid(s, {test.lX, test.lY}, rDiv, rShapeType);
     s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
     s.ElementTotalConvertToInterpolationType();
 

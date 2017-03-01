@@ -1,4 +1,5 @@
 // $Id$
+#include <eigen3/Eigen/Dense>
 #include "base/Timer.h"
 
 #include <boost/foreach.hpp>
@@ -30,7 +31,7 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "ANN/ANN.h"
+
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
@@ -251,7 +252,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase
 {
 	this->mNodeNumberingRequired = true;
     int id = GetUnusedId(mConstraintMap);
-    
+
     switch (mDimension)
     {
     case 1:
@@ -273,7 +274,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* r
 {
 	this->mNodeNumberingRequired = true;
     int id = GetUnusedId(mConstraintMap);
-    
+
     switch (mDimension)
     {
     case 1:
@@ -568,204 +569,74 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     }
 }
 
-void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType, int rNumNearestNeighbours, double rTolerance)
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
+                                                                      NuTo::Node::eDof rDofType,
+                                                                      const double rTolerance,
+                                                                      Eigen::Vector3d rNodeCoordOffset)
 {
     this->mNodeNumberingRequired = true;
 
-    int nodeGroup = GroupCreate(eGroupId::Nodes);
-    GroupAddNodesFromElements(nodeGroup, rElementGroup);
-    std::vector<int> nodeGroupIds = GroupGetMemberIds(nodeGroup);
-
     const int dim = GetDimension();
 
-    //////////////////////////////////////
-    // find nearest nodes
-    //////////////////////////////////////
-
-
-//    std::cout << "Query Node Id: \t " << rNode << std::endl;
-
-    // quueryPoint stores the coordinates of rNode in an ANN container
-    ANNcoord* queryPoint;
-    queryPoint = annAllocPt(dim);
-
-    // dataPoints stores the coordinates of all nodes in rElementGroup in an ANN container
-    ANNpoint* dataPoints;
-    dataPoints = annAllocPts(GroupGetNumMembers(nodeGroup), dim);
-
-
-//    std::cout << "GroupGetNumMembers(nodeGroup)" << GroupGetNumMembers(nodeGroup) << std::endl;
-
-    for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
-    {
-        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds[iNode])->Get(Node::eDof::COORDINATES);
-
-        for (int iDim = 0; iDim < dim; ++iDim)
-            dataPoints[iNode][iDim] = tmpMatrix(iDim, 0);
-    }
-
-
-
     Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
-
-    for (int iDim = 0; iDim < dim; ++iDim)
-        queryPoint[iDim] = queryNodeCoords(iDim,0);
+    queryNodeCoords = queryNodeCoords +  rNodeCoordOffset.head(dim);
 
 
-//    std::cout << "queryPoint: \n" << queryPoint[0] << std::endl;
-//    std::cout << queryPoint[1] << std::endl;
-//    std::cout << queryPoint[2] << std::endl;
+    std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
 
+    ElementBase* elementPtr = nullptr;
+    Eigen::VectorXd elementNaturalNodeCoords;
+    bool nodeInElement = false;
+    for (auto const& eleId : elementGroupIds) {
+        elementPtr = ElementGetElementPtr(eleId);
 
-    // distances stores the sorted distances in an ANN container
-    ANNdist* distances;
-    distances = new ANNdist[rNumNearestNeighbours];
+        // Coordinate interpolation must be linear so the shape function derivatives are constant!
+        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
+               Interpolation::eTypeOrder::EQUIDISTANT1);
+        const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
+                Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
 
-    // distances stores the nearest node ids in an ANN container
-    ANNidx* nearestNeighbourIds;
-    nearestNeighbourIds = new ANNidx[rNumNearestNeighbours];
+        // real coordinates of every node in rElement
+        Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
 
-    // builds a k-dimensional tree for the nearest neighbour algorithm
-    ANNkd_tree* kdTree;
-    kdTree = new ANNkd_tree(dataPoints, GroupGetNumMembers(nodeGroup), dim);
-    kdTree->annkSearch(queryPoint, rNumNearestNeighbours, nearestNeighbourIds, distances, rTolerance);
+        switch (mDimension) {
+            case 2: {
+                Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
-    delete [] nearestNeighbourIds; // clean things up
-    delete [] distances;
-    delete kdTree;
-
-    annDeallocPts(dataPoints);
-    annDeallocPt(queryPoint);
-    annClose(); // done with ANN
-
-//    std::cout << "end of ANN" << std::endl;
-
-
-    //////////////////////////////////////
-    //
-    /////////////////////////////////////
-
-    int nearestElements =  GroupCreate(eGroupId::Elements);
-    GroupAddElementsFromNodes(nearestElements, nodeGroup, false);
-    std::vector<int> elementGroupIds = GroupGetMemberIds(nearestElements);
-
-    int correctElementId = -1;
-    switch (dim)
-    {
-        case 2:
-        for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
-        {
-            const int iElementId              = elementGroupIds[iElement];
-            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            const int numNodes                = ElementGetElementPtr(iElementId)->GetNumNodes(Node::eDof::COORDINATES);
-
-            bool pointInsideElement = false;
-            for (int i = 0, j = numNodes - 1; i < numNodes; j = i++)
-            {
-                // This check whether queryNode is inside the polygon
-                if (((elementNodeCoords(1 + 2*i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1 + 2*j) > queryNodeCoords(1, 0)))
-                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0 + 2*j) - elementNodeCoords(0 + 2*i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1 + 2*i)) / (elementNodeCoords(1 + 2*j) - elementNodeCoords(1 + 2*i)) + elementNodeCoords(0 + 2*i)))
-                                    pointInsideElement = !pointInsideElement;
-
-//                if (((elementNodeCoords(1, i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1, j) > queryNodeCoords(1, 0)))
-//                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0, j) - elementNodeCoords(0, i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1, i)) / (elementNodeCoords(1, j) - elementNodeCoords(1, i)) + elementNodeCoords(0, i)))
-//                    pointInsideElement = !pointInsideElement;
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
             }
-
-
-            if (pointInsideElement)
-            {
-                correctElementId = iElementId;
-//                std::cout << "inside element id: \t" << correctElementId << std::endl;
-//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
-            }
-        }
-            break;
-        case 3:
-        {
-        for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
-        {
+            case 3: {
+                Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
-            int iElementId = elementGroupIds[iElement];
-            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            int numNodes = elementNodeCoords.rows()/mDimension;
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
 
-            Eigen::Matrix4d matrices;
-            matrices.Zero();
-
-            matrices.col(3) = Eigen::Vector4d::Ones();
-            for (int iNode = 0; iNode < numNodes; ++iNode)
-            {
-                matrices.block<1,3>(iNode,0) = elementNodeCoords.segment(iNode*mDimension,mDimension);
-            }
-            const double det = matrices.determinant();
-
-            bool pointInsideElement = true;
-            // check if all determinantes have the same sign
-            for (int i = 0; i < numNodes and pointInsideElement; ++i)
-            {
-                auto mat(matrices);
-                mat.block<1, 3>(i, 0) = queryNodeCoords.transpose();
-
-                if (mat.determinant() != 0.0)
-                    pointInsideElement = (std::signbit(mat.determinant()) == std::signbit(det));
 
             }
-
-//            std::cout << "inside polygon" << pointInsideElement << std::endl;
-
-            if (pointInsideElement)
-            {
-                correctElementId = iElementId;
-//                std::cout << "inside element id: \t" << correctElementId << std::endl;
-//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
-            }
+
+            default:
+                throw NuTo::MechanicsException(
+                        std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
 
         }
 
 
+        if ( (elementNaturalNodeCoords.array() > -rTolerance).all() and elementNaturalNodeCoords.sum() <= 1. + rTolerance)
+        {
+            nodeInElement = true;
+            break;
         }
-            break;
-        default:
-            break;
+
     }
 
-
-
-
-    ElementBase* elementPtr = ElementGetElementPtr(correctElementId);
-
-
-    // Coordinate interpolation must be linear so the shape function derivatives are constant!
-    assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
-
-    // real coordinates of every node in rElement
-    Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-    Eigen::MatrixXd elementNaturalNodeCoords;
-    switch (mDimension)
+    if (not nodeInElement)
     {
-    case 2:
-    {
-        Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
-
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
+        GetLogger() << "Natural node coordinates: \n" << elementNaturalNodeCoords << "\n";
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
     }
-        break;
-    case 3:
-    {
-        Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
-
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
-    }
-        break;
-
-    default:
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2 and 3 dimensions.");
-    }
-
 
     auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
@@ -773,15 +644,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     std::vector<int> unusedId(dim);
     for (int iDim = 0; iDim < dim; ++iDim)
     {
-//        unusedId[iDim] = mConstraintMap.rbegin()->first + 1;
-        //find unused integer id
-        unusedId[iDim] =  0;
-        boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(unusedId[iDim]);
-        while (it!=mConstraintMap.end())
-        {
-            unusedId[iDim]++;
-            it = mConstraintMap.find(unusedId[iDim]);
-        }
+        unusedId[iDim] = GetUnusedId(mConstraintMap);
         ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::eDof::DISPLACEMENTS, iDim, 1.0, 0.0);
     }
 

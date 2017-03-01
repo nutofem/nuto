@@ -276,8 +276,6 @@ namespace BenchmarkInternal
 } // namespace Benchmark
 
 
-
-
 int main(int argc, char const *argv[])
 {
     auto testReporter = BenchmarkInternal::EvaluateArguments(argc, argv);
@@ -288,7 +286,6 @@ int main(int argc, char const *argv[])
     testReporter->Report();
     return 0;
 }
-
 
 #define CONCAT(x,y) x ## y
 #define CLASS_NAME(x,y) CONCAT(x, y)

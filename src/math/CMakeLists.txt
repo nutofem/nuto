@@ -1,10 +1,9 @@
-set(NuToMath_SOURCES
+set(NuToMathSources
     CubicSplineInterpolation.cpp
     EigenCompanion.cpp
     EigenSolverArpack.cpp
     Interpolation.cpp
     LinearInterpolation.cpp
-    NuToMath.cpp
     SparseMatrix.cpp
     SparseMatrixCSR.cpp
     SparseMatrixCSRGeneral.cpp
@@ -18,12 +17,11 @@ set(NuToMath_SOURCES
     SparseDirectSolverMUMPS.cpp
 )
 
+sources_to_objects("${NuToMathSources}" NuToMathObjects)
+
 # build static library
-add_library(NuToMath ${NuToMath_SOURCES})
+add_library(NuToMath ${NuToMathObjects})
 target_link_libraries(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToMath PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
 
 # install library
 install(TARGETS NuToMath

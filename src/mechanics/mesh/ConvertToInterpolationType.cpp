@@ -8,9 +8,14 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 
-double GetSmallestElementSize(NuTo::Structure& rS, int rGroupNumberElements)
+#include "math/SpatialContainer.h"
+#include <limits>
+
+
+//! @brief calculate a reasonable node merge distance
+double GetMergeDistance(NuTo::Structure& rS, int rGroupNumberElements)
 {
-    // calculate and store the 'size' of each element
+    // calculate and store the 'size' of each element ...
     // = volume in 3D
     // = area in 2D
     // = length in 1D
@@ -21,7 +26,9 @@ double GetSmallestElementSize(NuTo::Structure& rS, int rGroupNumberElements)
         Eigen::VectorXd sizeForEachIntegrationPoint = element->GetIntegrationPointVolume();
         smallestElementSize = std::min(smallestElementSize, sizeForEachIntegrationPoint.sum());
     }
-    return smallestElementSize;
+    // length ~ area**(1/2) ~ volume**(1/3)
+    double lengthMin = std::pow(smallestElementSize, 1. / rS.GetDimension());
+    return std::max(lengthMin / 1000., std::numeric_limits<double>::epsilon() * 10);
 }
 
 void NuTo::MeshCompanion::ElementTotalConvertToInterpolationType(Structure& rS)
@@ -33,10 +40,7 @@ void NuTo::MeshCompanion::ElementTotalConvertToInterpolationType(Structure& rS)
 
 void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int rGroupNumberElements)
 {
-    double sizeMin = GetSmallestElementSize(rS, rGroupNumberElements);
-    double lengthMin = std::pow(sizeMin, 1. / rS.GetDimension());
-    double mergeDist = lengthMin / 1000.;
-    ElementConvertToInterpolationType(rS, rGroupNumberElements, mergeDist);
+    ElementConvertToInterpolationType(rS, rGroupNumberElements, GetMergeDistance(rS, rGroupNumberElements));
 }
 
 
@@ -47,69 +51,54 @@ void NuTo::MeshCompanion::ElementTotalConvertToInterpolationType(Structure& rS, 
     rS.GroupDelete(groupNumber);
 }
 
-//! @brief store one newly created node and the corresponding element
-//! @remark for replacing this node in the element
-struct NodeElementPair
+static constexpr int NOT_SET = -1337;
+
+//! @brief node information required to build
+struct TmpNode
 {
-    NuTo::NodeBase* node;
+    Eigen::VectorXd coordinate;
+    std::set<NuTo::Node::eDof> dofs;
     NuTo::ElementBase* element;
+    int elementNodeId;
+    int originalId = NOT_SET;
 };
 
-//! @brief store the original node (only COORDINATE interpolation) and all the elements containing it
-//! @remark this saves the original node ID
-struct OriginalNodeElement
+//! @brief struct to extract the coodinates from TmpNode (for NuTo::SpatialContainer)
+struct TmpNodeCoordinate
 {
-    NuTo::NodeBase* node = nullptr;
-    std::vector<NuTo::ElementBase*> elements;
-};
-
-//! @brief collection of all nodes (and their elements) at a unique coordinate
-struct SameCoordinateNodes
-{
-    OriginalNodeElement original;
-    std::vector<NodeElementPair> newEntries;
-};
-
-//! @brief defines a strong order for Eigen::VectorXd coordinates
-//! @remark coordinates within a rTolerance are equal
-struct CoordinateCompare
-{
-    CoordinateCompare(double rTolerance) : mTolerance(rTolerance) {}
-    bool operator() (const Eigen::VectorXd& r1, const Eigen::VectorXd& r2)
+    Eigen::VectorXd operator() (const TmpNode& rTmpNode)
     {
-        for (int i = 0; i < r1.rows(); ++i)
-            if (std::abs(r1[i] - r2[i]) > mTolerance)
-                return (r1[i] > r2[i]);
-        return false;
+        return rTmpNode.coordinate;
     }
-private:
-    const double mTolerance;
 };
 
-template <typename T>
-using SpacialMap =  std::map<Eigen::VectorXd, T, CoordinateCompare>;
-
-using NodeMap = SpacialMap<SameCoordinateNodes>;
-
-void AddExistingNodesToNodesMap(NuTo::Structure& rS, NodeMap& rNodeMap, std::vector<NuTo::ElementBase*> rElements)
+//! @brief extract TmpNodes from existing nodes
+std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements, std::map<const NuTo::NodeBase*, int> rNodeToId)
 {
-    // add existing nodes to the node map as "orignalNode"
+    std::vector<TmpNode> existingNodes;
     for (NuTo::ElementBase* element : rElements)
     {
         // loop through nodes with coordinates
         for (int iNode = 0; iNode < element->GetNumNodes(NuTo::Node::eDof::COORDINATES); ++iNode)
         {
             NuTo::NodeBase* node = element->GetNode(iNode, NuTo::Node::eDof::COORDINATES);
-            Eigen::VectorXd nodeCoordinates = node->Get(NuTo::Node::eDof::COORDINATES);
-            assert(nodeCoordinates.rows() == rS.GetDimension());
-            rNodeMap[nodeCoordinates].original.node = node;
-            rNodeMap[nodeCoordinates].original.elements.push_back(element);
+            TmpNode pair;
+            pair.coordinate = node->Get(NuTo::Node::eDof::COORDINATES);
+            pair.dofs = {};
+            pair.element = element;
+            pair.elementNodeId = element->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetNodeIndex(iNode);
+            pair.originalId = rNodeToId[node];
+
+            existingNodes.push_back(pair);
         }
     }
+    return existingNodes;
 }
 
-void CreateAndAddNewNodesToNodeMap(NuTo::Structure& rS, NodeMap& rNodeMap, std::vector<NuTo::ElementBase*> rElements)
+//! @brief create TmpNodes from existing nodes
+std::vector<TmpNode> GetNewTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements)
 {
+    std::vector<TmpNode> existingNodes;
     for (NuTo::ElementBase* element : rElements)
     {
         const NuTo::InterpolationType& interpolationType = element->GetInterpolationType();
@@ -119,84 +108,77 @@ void CreateAndAddNewNodesToNodeMap(NuTo::Structure& rS, NodeMap& rNodeMap, std::
             Eigen::VectorXd naturalNodeCoordinates = interpolationType.GetNaturalNodeCoordinates(iNode);
             Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, NuTo::Node::eDof::COORDINATES);
 
-            const std::set<NuTo::Node::eDof>& nodeDofs = interpolationType.GetNodeDofs(iNode);
-            NuTo::NodeBase* node = rS.NodePtrCreate(nodeDofs, globalNodeCoordinates);
-
-            rNodeMap[globalNodeCoordinates].newEntries.push_back({node, element});
-            element->SetNode(iNode, node);
+            TmpNode pair;
+            pair.coordinate = globalNodeCoordinates;
+            pair.dofs = interpolationType.GetNodeDofs(iNode);
+            pair.element = element;
+            pair.elementNodeId = iNode;
+            existingNodes.push_back(pair);
         }
     }
+    return existingNodes;
 }
 
-
-std::set<NuTo::Node::eDof> GetDofTypeUnion(const SameCoordinateNodes& nodes)
+//! @brief unites the dof types of all tmp nodes at the same coordinate
+std::set<NuTo::Node::eDof> GetDofTypeUnion(const std::vector<TmpNode>& rSameCoordinateNodes)
 {
     std::set<NuTo::Node::eDof> allDofs;
-    for (const auto& entry : nodes.newEntries)
+    for (const auto& entry : rSameCoordinateNodes)
     {
-        const auto& dofsOfNode = entry.node->GetDofTypes();
         std::set_union(allDofs.begin(), allDofs.end(),
-                       dofsOfNode.begin(), dofsOfNode.end(),
+                       entry.dofs.begin(), entry.dofs.end(),
                        std::inserter(allDofs, allDofs.end()));
     }
     return allDofs;
 }
 
-
-NuTo::NodeBase* CreateNodeWithRightDofs(NuTo::Structure& rS,
-                                        const std::map<const NuTo::NodeBase*, int>& rNodeToId,
-                                        const std::pair<const Eigen::VectorXd, SameCoordinateNodes>& rCoordinateNodePair)
+//! @brief finds the old node id (before calling ElementConvertToInterpolationType)
+//! @return node id, or NOT_SET if the node is new
+int FindPreviousNodeId(const std::vector<TmpNode>& rSameCoordinateNodes)
 {
-    Eigen::VectorXd coordinate = rCoordinateNodePair.first;
-    auto& sameCoordinateNodes = rCoordinateNodePair.second;
-    const auto& dofTypes = GetDofTypeUnion(sameCoordinateNodes);
-    if (sameCoordinateNodes.original.node == nullptr)
-    {
-        // all nodeMap at this coordinate did not exist before
-        // --> give random new ID
-        int nodeId = rS.NodeCreateDOFs(dofTypes, coordinate);
-        return rS.NodeGetNodePtr(nodeId);
-    }
-    else
-    {
-        NuTo::NodeBase* newNode = rS.NodePtrCreate(dofTypes, coordinate);
-        int nodeId = rNodeToId.at(sameCoordinateNodes.original.node);
-        // replace the node ptr in all constraints, groups, and the original element
-        rS.NodeExchangePtr(nodeId, sameCoordinateNodes.original.node, newNode, sameCoordinateNodes.original.elements);
-        return newNode;
-    }
-}
-
-void ReplaceNewNodeInElements(NuTo::Structure& rS,
-                              NuTo::NodeBase* rNewNode,
-                              const std::pair<const Eigen::VectorXd, SameCoordinateNodes>& rCoordinateNodePair)
-{
-    for (const auto& entry : rCoordinateNodePair.second.newEntries)
-    {
-        entry.element->ExchangeNodePtr(entry.node, rNewNode);
-        delete entry.node;
-    }
+    for (const auto& node : rSameCoordinateNodes)
+        if (node.originalId != NOT_SET)
+            return node.originalId;
+    return NOT_SET;
 }
 
 void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int rGroupNumberElements, double rNodeDistanceMerge)
 {
     Timer timer(__FUNCTION__, rS.GetShowTime(), rS.GetLogger());
 
-    CoordinateCompare compare(rNodeDistanceMerge);
-    NodeMap nodeMap(compare);
-
-
     std::vector<ElementBase*> elements = GetElementVector(rS, rGroupNumberElements);
-    AddExistingNodesToNodesMap(rS, nodeMap, elements);
-    CreateAndAddNewNodesToNodeMap(rS, nodeMap, elements);
 
-    std::map<const NodeBase*, int> nodeToId = GetNodeToIdMap(rS);
+    std::vector<TmpNode> existingNodes = GetExistingTmpNodes(rS, elements, GetNodeToIdMap(rS));
+    std::vector<TmpNode> newNodes = GetNewTmpNodes(rS, elements);
 
-    // clean up duplicate nodeMap
-    for (auto& coordinateNodePair : nodeMap)
+    // concatenate...
+    newNodes.insert(newNodes.end(), existingNodes.begin(), existingNodes.end());
+
+    NuTo::SpatialContainer<TmpNode, TmpNodeCoordinate> spacialContainer(newNodes);
+    auto duplicates = spacialContainer.GetAllDuplicateValues(rNodeDistanceMerge);
+
+    for (auto& pairsAtSameCoordinate : duplicates)
     {
-        NuTo::NodeBase* newNode = CreateNodeWithRightDofs(rS, nodeToId, coordinateNodePair);
-        ReplaceNewNodeInElements(rS, newNode, coordinateNodePair);
+        Eigen::VectorXd coordinate = pairsAtSameCoordinate[0].coordinate;
+        auto dofTypes = GetDofTypeUnion(pairsAtSameCoordinate);
+
+        int oldNodeId = FindPreviousNodeId(pairsAtSameCoordinate);
+        if (oldNodeId == NOT_SET)
+        {
+            NuTo::NodeBase* newNode = rS.NodeGetNodePtr(rS.NodeCreate(coordinate, dofTypes));
+            for (auto& pair : pairsAtSameCoordinate)
+                pair.element->SetNode(pair.elementNodeId, newNode);
+        }
+        else
+        {
+            NuTo::NodeBase* newNode = rS.NodePtrCreate(dofTypes, coordinate);
+            std::vector<ElementBase*> elementsToChange;
+            for (auto& pair : pairsAtSameCoordinate)
+                elementsToChange.push_back(pair.element);
+
+            // replace the node ptr in all constraints, groups, and the original element
+            rS.NodeExchangePtr(oldNodeId, rS.NodeGetNodePtr(oldNodeId), newNode, elementsToChange);
+        }
     }
 }
 

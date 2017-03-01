@@ -25,15 +25,15 @@ public:
 	//! @param rVelocity ... velocity
 	//! @param rIndex ... index, multiple particles with same index are allowed
 	CollidableParticleBase(
-			Eigen::VectorXd rPosition,
-			Eigen::VectorXd rVelocity,
-			const int rIndex);
+			Eigen::Vector3d rPosition,
+			Eigen::Vector3d rVelocity,
+			int rIndex);
 
 	//! @brief ... getter for the particle volume
-	virtual const double GetVolume() const = 0;
+	virtual double GetVolume() const = 0;
 
 	//! @brief ... getter for the kinetic energy of the particle
-	virtual const double GetKineticEnergy() const = 0;
+	virtual double GetKineticEnergy() const = 0;
 
 protected:
 

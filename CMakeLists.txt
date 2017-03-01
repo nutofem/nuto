@@ -1,5 +1,4 @@
-
-project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
+project(NuTo)
 
 cmake_minimum_required(VERSION 3.0)
 
@@ -7,7 +6,6 @@ option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
 option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
 option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
-option(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 option(ENABLE_EXAMPLES "enables examples" FALSE)
@@ -32,6 +30,7 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
+include(CompilerFlags)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
@@ -60,7 +59,6 @@ if(ENABLE_MPI)
     message(STATUS "MPIEXEC_POSTFLAG:           ${MPIEXEC_POSTFLAG}")
 
 endif()
-
 
 
 if(ENABLE_METAMODEL)
@@ -118,33 +116,6 @@ endif()
 
 if(ENABLE_OPENACC)
     add_definitions("-D_OPENACC")
-endif()
-
-# find openmp
-if(ENABLE_OPENMP)
-    message(STATUS "Checking for OpenMP support ...")
-    find_package(OpenMP)
-    if(OPENMP_FOUND)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-        endif()
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-else()
-    set(OPENMP_FOUND FALSE)
-    find_package(Threads REQUIRED)
-    #the package finds the THREADS_LIBRARY but does not add the pthread flag
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif()
-
-# use newer c++ standard, enable additional warnings, support for sse4
-# set(CMAKE_CXX_STANDARD 14) # use this if cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic -std=c++14")
-# prevent warnings from boost and eigen
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-missing-braces")
 endif()
 
 if(ENABLE_COVERAGE)
@@ -314,30 +285,6 @@ else()
     message(FATAL_ERROR "Fatal error: Eigen (version >= 3.0) required.\n")
 endif()
 
-
-# find CGAL installation
-if(ENABLE_CGAL)
-    # initialize variables
-    message(STATUS "Checking for CGAL headers ...")
-    # check if CGAL_ROOT is set
-    if(NOT CGAL_ROOT AND NOT $ENV{CGAL_ROOT} STREQUAL "")
-        set(CGAL_ROOT $ENV{CGAL_ROOT})
-    endif()
-    if(NOT CGAL_ROOT)
-        set(CGAL_ROOT ${NUTO_EXTERNAL_LIBRARIES_ROOT})
-    endif()
-    find_package(CGAL)
-    if(CGAL_FOUND)
-        message(STATUS "CGAL_LIBRARIES = ${CGAL_LIBRARIES}")
-        message(STATUS "CGAL_INCLUDE_DIR = ${CGAL_INCLUDE_DIR}")
-        include_directories(${CGAL_INCLUDE_DIR})
-        add_definitions("-DHAVE_CGAL")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
-    else()
-        message(WARNING "CGAL not found")
-    endif()
-endif()
-
 # find ARPACK library for eigenvalue analysis
 if(ENABLE_ARPACK)
     if(NOT ARPACK_ROOT AND NOT DEFINED $ENV{ARPACK_ROOT})
@@ -370,7 +317,6 @@ add_subdirectory(doc)
 
 #test Environment
 include(CTest)
-add_custom_target(unit COMMAND ctest -R unit)
 
 if(ENABLE_TESTS)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)

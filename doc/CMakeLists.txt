@@ -1,5 +1,3 @@
-add_custom_target(doc)
-
 message(STATUS "Checking for doxygen ...")
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -18,29 +16,13 @@ if(DOXYGEN_FOUND)
 
     configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-
     # clean doc path
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/nuto")
 
     # create target doxgen
-    add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-    # configure Doxyfile for python interface
-    set(DOXYGEN_PYTHON_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/nuto_python)
-    set(DOXYGEN_PYTHON_INPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../src/nuto)
-    configure_file(DoxyfilePython.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyfilePython)
-
-    # clean doc path
-    set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/nuto_python")
-
-    # create target doxgen
-    add_custom_target(doxygen_python ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/DoxyfilePython)
+    add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 else()
     # create target doxgen
-    add_custom_target(doxygen echo "WARNING: Doxygen not found -- source code documentation is not possible!")
-    add_custom_target(doxygen_python echo "WARNING: Doxygen not found -- source code documentation is not possible!")
+    add_custom_target(doc echo "WARNING: Doxygen not found -- source code documentation is not possible!")
 endif()
-
-# add target doxygen as depedency of target doc
-add_dependencies(doc doxygen doxygen_python)

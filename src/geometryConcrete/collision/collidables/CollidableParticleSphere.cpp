@@ -19,11 +19,11 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 NuTo::CollidableParticleSphere::CollidableParticleSphere(
-		Eigen::VectorXd rPosition,
-		Eigen::VectorXd rVelocity,
+		Eigen::Vector3d rPosition,
+		Eigen::Vector3d rVelocity,
 		double rRadius,
 		double rGrowthRate,
-		const int rIndex)
+		int rIndex)
 		: CollidableParticleBase(rPosition, rVelocity, rIndex),
 				mRadius(rRadius),
 				mRadiusGrowth(rRadius),
@@ -34,7 +34,7 @@ NuTo::CollidableParticleSphere::CollidableParticleSphere(
 {
 }
 
-void NuTo::CollidableParticleSphere::MoveAndGrow(const double rTime)
+void NuTo::CollidableParticleSphere::MoveAndGrow(double rTime)
 {
 	double dTUpdate = rTime - mTimeOfLastUpdate;
 	mPosition += mVelocity * dTUpdate;
@@ -45,7 +45,7 @@ void NuTo::CollidableParticleSphere::MoveAndGrow(const double rTime)
 	mTimeOfLastUpdate = rTime;
 }
 
-void NuTo::CollidableParticleSphere::SetGrowthRate(const double rGrowthRateFactor, const double rTime)
+void NuTo::CollidableParticleSphere::SetGrowthRate(double rGrowthRateFactor, double rTime)
 {
 	// calculate new growth radius
 	double dTGrowth = rTime - mTimeOfGrowthReset;
@@ -56,12 +56,12 @@ void NuTo::CollidableParticleSphere::SetGrowthRate(const double rGrowthRateFacto
 	mTimeOfGrowthReset = rTime;
 }
 
-const double NuTo::CollidableParticleSphere::SphereCollision1D(
-		const double rVelocity1,
-		const double rVelocity2,
-		const double rMass1,
-		const double rMass2) const
-		{
+double NuTo::CollidableParticleSphere::SphereCollision1D(
+		double rVelocity1,
+		double rVelocity2,
+		double rMass1,
+		double rMass2) const
+{
 	return (rVelocity1 * (rMass1 - rMass2) + 2 * rVelocity2 * rMass2) / (rMass1 + rMass2);
 }
 
@@ -72,11 +72,11 @@ void NuTo::CollidableParticleSphere::PerformCollision(CollidableBase& rCollidabl
 
 void NuTo::CollidableParticleSphere::PerformCollision(CollidableParticleSphere& rSphere)
 {
-	Eigen::Vector3d velocity1 = this->mVelocity;
-	Eigen::Vector3d velocity2 = rSphere.mVelocity;
+	const Eigen::Vector3d& velocity1 = this->mVelocity;
+	const Eigen::Vector3d& velocity2 = rSphere.mVelocity;
 
-	double mass1 = pow(this->mRadius, 3);
-	double mass2 = pow(rSphere.mRadius, 3);
+	double mass1 = this->mRadius * this->mRadius * this->mRadius;
+	double mass2 = rSphere.mRadius * rSphere.mRadius * rSphere.mRadius;
 
 	// 1) Get normal direction
 	Eigen::Vector3d n = this->mPosition - rSphere.mPosition;
@@ -125,12 +125,12 @@ void NuTo::CollidableParticleSphere::PerformCollision(CollidableWallBase& rWall)
 	rWall.PerformCollision(*this);
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableBase& rCollidable, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableBase& rCollidable, int& rType)
 {
 	return rCollidable.PredictCollision(*this, rType);
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticleSphere& rSphere, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticleSphere& rSphere, int& rType)
 {
 	if (this == &rSphere)
 		return Event::EVENTNULL;
@@ -140,38 +140,26 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 	// sync both spheres to the more recent time
 	double baseTime;
 
-	CollidableParticleSphere* s1 = this;
-	CollidableParticleSphere* s2 = &rSphere;
+    // RAII!
+    CollidableParticleSphere& s1 = this->mTimeOfLastUpdate > rSphere.mTimeOfLastUpdate ? *this : rSphere;
+    CollidableParticleSphere& s2 = this->mTimeOfLastUpdate > rSphere.mTimeOfLastUpdate ? rSphere : *this;
+	baseTime = s1.mTimeOfLastUpdate;
 
-	if (s1->mTimeOfLastUpdate <= s2->mTimeOfLastUpdate)
-	{
-	    s1 = &rSphere;
-	    s2 = this;
-	}
-	baseTime = s1->mTimeOfLastUpdate;
+	Eigen::Vector3d dP = s1.mPosition - (s2.mPosition + s2.mVelocity * (s1.mTimeOfLastUpdate - s2.mTimeOfLastUpdate));
+	Eigen::Vector3d dV = s1.mVelocity - s2.mVelocity;
 
-	Eigen::Vector3d dP = s1->mPosition - (s2->mPosition + s2->mVelocity * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate));
-	Eigen::Vector3d dV = s1->mVelocity - s2->mVelocity;
-
-    double dR = s1->mRadius + s2->mRadius + s2->mGrowthRate * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate);
-    double dG = s1->mGrowthRate + s2->mGrowthRate;
+    double dR = s1.mRadius + s2.mRadius + s2.mGrowthRate * (s1.mTimeOfLastUpdate - s2.mTimeOfLastUpdate);
+    double dG = s1.mGrowthRate + s2.mGrowthRate;
 
 	double a = dV.dot(dV) - dG * dG;
 	double b = 2 * (dV.dot(dP) - dR * dG);
 	double c = dP.dot(dP) - dR * dR;
 
-//	std::cout << "a: " << a << " b: " << b << " c: " << c <<std::endl;
-	double timeCollision = 0.;
-
-	if (c < -2.e-10 * s1->mRadius)
+	if (c < -2.e-10 * s1.mRadius)
 	{
-		std::stringstream exceptionStream;
-		exceptionStream << "[NuTo::CollidableSphere::CreateNewEvent] "
-				<< "Sphere " << this->mIndex << " overlapping with Sphere "
-				<< rSphere.mIndex << "!";
-		throw NuTo::Exception(exceptionStream.str());
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Sphere " + std::to_string(s1.mIndex)
+            + " overlaps with Sphere " + std::to_string(s2.mIndex));
 	}
-
 
 	double discriminant = b * b - 4 * a * c;
 
@@ -180,25 +168,18 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 		return Event::EVENTNULL;
 
 	// ... an treat them as zero
-	if (discriminant < 0.)
-		discriminant = 0.;
+    discriminant = std::max(discriminant, 0.);
 
-	if (b < 0.)
-	{
-		timeCollision = 2 * c / (-b + std::sqrt(discriminant));
-		return baseTime + timeCollision;
-	}
-	else
-		if (a < 0. && b >= 0.)
-		{
-			timeCollision = (-b - std::sqrt(discriminant)) / (2 * a);
-			return baseTime + timeCollision;
-		}
+    if (b < 0.)
+        return baseTime + 2 * c / (-b + std::sqrt(discriminant));
 
-	return Event::EVENTNULL;
+    if (a < 0.)
+        return baseTime + (-b - std::sqrt(discriminant)) / (2 * a);
+
+    return Event::EVENTNULL;
 }
 
-const double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase& rWall, int& rType)
+double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase& rWall, int& rType)
 {
 	return rWall.PredictCollision(*this, rType);
 }
@@ -211,17 +192,17 @@ Eigen::MatrixXd NuTo::CollidableParticleSphere::ExportRow(bool rInitialRadius) c
 	return data;
 }
 
-const Eigen::VectorXd NuTo::CollidableParticleSphere::GetPosition() const
+const Eigen::Vector3d& NuTo::CollidableParticleSphere::GetPosition() const
 {
 	return mPosition;
 }
 
-const double NuTo::CollidableParticleSphere::GetRadius() const
+double NuTo::CollidableParticleSphere::GetRadius() const
 {
 	return mRadius;
 }
 
-const double NuTo::CollidableParticleSphere::GetRadius0() const
+double NuTo::CollidableParticleSphere::GetRadius0() const
 {
 	return mRadius0;
 }
@@ -270,18 +251,17 @@ void NuTo::CollidableParticleSphere::VisualizationDynamic(
 }
 #endif
 
-const double NuTo::CollidableParticleSphere::GetKineticEnergy() const
+double NuTo::CollidableParticleSphere::GetKineticEnergy() const
 {
-	return .5 * std::pow(mRadius, 3) * mVelocity.dot(mVelocity);
+	return .5 * mRadius * mRadius * mRadius * mVelocity.dot(mVelocity);
 }
 
-const double NuTo::CollidableParticleSphere::GetVolume() const
+double NuTo::CollidableParticleSphere::GetVolume() const
 {
-	return 4. / 3. * M_PI * std::pow(mRadius, 3);
+	return 4. / 3. * M_PI * mRadius * mRadius * mRadius;
 }
 
 void NuTo::CollidableParticleSphere::ResetVelocity()
 {
-//	mVelocity *= 0.5;
 	mVelocity << 0, 0, 0;
 }

@@ -14,6 +14,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
 int main()
 {
@@ -32,42 +33,23 @@ int main()
     //! create one-dimensional structure
     NuTo::Structure myStructure(1);
 
+    int interpolationType = NuTo::MeshGenerator::Grid(myStructure, {length}, {num_elements}).second;
+
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::TEMPERATURE,
+                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, "IntegrationType1D2NGauss2Ip");
+    myStructure.ElementTotalConvertToInterpolationType();
+
     // create section
     auto truss = myStructure.SectionCreate("Truss");
     myStructure.SectionSetArea(truss, area);
+    myStructure.ElementTotalSetSection(truss);
 
     // create material law
     auto material = myStructure.ConstitutiveLawCreate("Heat_Conduction");
     myStructure.ConstitutiveLawSetParameterDouble(material, 
         NuTo::Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
-
-    // create nodes
-    Eigen::VectorXd nodeCoordinates(1);
-    for(int node = 0; node < num_elements + 1; node++)
-    {
-        nodeCoordinates(0) = node * length/num_elements;
-        myStructure.NodeCreate(node, nodeCoordinates);
-    }
-
-    auto InterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
-    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::COORDINATES,
-        NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::TEMPERATURE,
-        NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "IntegrationType1D2NGauss2Ip");
-
-    // create elements
-    std::vector<int> elementIncidence(2);
-    for(int element = 0; element < num_elements; element++)
-    {
-        elementIncidence[0] = element;
-        elementIncidence[1] = element + 1;
-        myStructure.ElementCreate(InterpolationType, elementIncidence);
-        myStructure.ElementSetSection(element, truss);
-        myStructure.ElementSetConstitutiveLaw(element, material);
-    }
-
-    myStructure.ElementTotalConvertToInterpolationType();
+    myStructure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads
     Eigen::VectorXd direction(1);

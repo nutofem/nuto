@@ -2,7 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/NuToMath.h"
 %}
 
 //declare inputs of the functions to be used as output on python level
@@ -41,8 +40,5 @@ namespace std {
 
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "base/ModulNuToBase.i"
-
-// provide the public interface
-%include "math/NuToMath.h"
+%include "base/ModuleNuToBase.i"
 

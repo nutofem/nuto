@@ -27,7 +27,7 @@ public:
 	CollidableWallBase(
 			Eigen::VectorXd rPosition,
 			Eigen::VectorXd rDirection,
-			const int rIndex);
+			int rIndex);
 
 	//! @brief ... destructor, do nothing
 	virtual ~CollidableWallBase();
@@ -53,25 +53,25 @@ public:
 	//! @param rCollidable ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableBase& rCollidable, int& rType) override;
+	double PredictCollision(CollidableBase& rCollidable, int& rType) override;
 
 	//! @brief ... collision check between CollidableWall and CollidableSphere, pass to child classes
 	//! @param rSphere ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	virtual const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override = 0;
+	virtual double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override = 0;
 
 	//! @brief ... collision check between CollidableWall and CollidableWall, does nothing
 	//! @param rWall ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableWallBase& rWall, int& rType) override;
+	double PredictCollision(CollidableWallBase& rWall, int& rType) override;
 
 	//! @brief ... walls to neither grow nor move, do nothing
-	void MoveAndGrow(const double rTime) override;
+	void MoveAndGrow(double rTime) override;
 
 	//! @brief ... ture for physical walls
-	virtual const bool IsPhysical() const = 0;
+	virtual bool IsPhysical() const = 0;
 
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables
@@ -87,10 +87,10 @@ public:
 	virtual bool IsInside(const CollidableParticleSphere& rSphere) const;
 
 	//! @brief getter for the wall direction
-	const Eigen::VectorXd GetDirection() const;
+	const Eigen::Vector3d& GetDirection() const;
 
 	//! @brief getter fot the wall position
-	const Eigen::VectorXd GetPosition() const;
+	const Eigen::Vector3d& GetPosition() const;
 
 protected:
 
@@ -112,15 +112,15 @@ protected:
 
 
 	//! @brief ... index of the direction component that is != 0
-	const int mNonNullAxis;
+	int mNonNullAxis;
 
 	//! @brief ... true --> calculations without vector calculations
-	const bool mIsAxisAligned;
+	bool mIsAxisAligned;
 
 private:
 
 	//! @brief ... calculates index of the direction component that is != 0
-	const int GetNonNullAxis();
+	int GetNonNullAxis();
 };
 
 } /* namespace NuTo */

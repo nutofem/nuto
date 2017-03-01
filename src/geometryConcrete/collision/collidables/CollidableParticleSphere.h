@@ -38,21 +38,21 @@ public:
 	//! @param rGrowthRate ... sphere growth rate > 0
 	//! @param rIndex ... name
 	CollidableParticleSphere(
-			Eigen::VectorXd rPosition,
-			Eigen::VectorXd rVelocity,
+			Eigen::Vector3d rPosition,
+			Eigen::Vector3d rVelocity,
 			double rRadius,
 			double rGrowthRate,
-			const int rIndex);
+			int rIndex);
 
 	//! @brief ... move spheres and apply growth, mTimeOfLastCollision update
 	//! @param rTime ... new global time.
-	void MoveAndGrow(const double rTime) override;
+	void MoveAndGrow(double rTime) override;
 
 	//! @brief ... calculates and returns the kinetic energy of the sphere
-	const double GetKineticEnergy() const override;
+	double GetKineticEnergy() const override;
 
 	//! @brief ... calculates and returns the volume of the sphere
-	const double GetVolume() const override;
+	double GetVolume() const override;
 
 	//! @brief ... collision between CollidableSphere and CollidableBase, resolve double dispatch, forward *this
 	//! @param rCollidable ... collision partner
@@ -70,20 +70,20 @@ public:
 	//! @param rCollidable ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableBase& rCollidable, int& rType) override;
+	double PredictCollision(CollidableBase& rCollidable, int& rType) override;
 
 	//! @brief ... collision check between this and another CollidableSphere:
 	//! Physics lead to quadratic equation.
 	//! @param rSphere ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
+	double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
 	//! @brief ... collision check between CollidableSphere and CollidableWall, forward to CollidableWall.
 	//! @param rWall ... possible collision partner
 	//! @param rType ... return argument, element of enum CollidableBase::EventType
 	//! @return ... predicted collision time
-	const double PredictCollision(CollidableWallBase& rWall, int& rType) override;
+	double PredictCollision(CollidableWallBase& rWall, int& rType) override;
 
 	//! @brief ... returns all old events, that need to be deleted
 	//! @param rEventsToDelete ... return argument
@@ -106,16 +106,16 @@ public:
 	//! @brief ... sets a new growth rate
 	//! @param rGrowthRateFactor ... growthrate *= rGRFactor
 	//! @param rTime ... global time
-	void SetGrowthRate(const double rGrowthRateFactor, const double rTime);
+	void SetGrowthRate(double rGrowthRateFactor, double rTime);
 
 	//! @brief ... getter for sphere position
-	const Eigen::VectorXd GetPosition() const;
+	const Eigen::Vector3d& GetPosition() const;
 
 	//! @brief ... getter for sphere radius
-	const double GetRadius() const;
+	double GetRadius() const;
 
 	//! @brief ... getter for initial sphere radius
-	const double GetRadius0() const;
+	double GetRadius0() const;
 
 private:
 
@@ -126,7 +126,7 @@ private:
 	double mRadiusGrowth;
 
 	//! @brief ... initial sphere radius
-	const double mRadius0;
+	double mRadius0;
 
 	//! @brief ... sphere growth rate
 	double mGrowthRate;
@@ -143,11 +143,11 @@ private:
 	//! @param rMass1 ... mass of sphere 1
 	//! @param rMass2 ... mass of sphere 2
 	//! @return ... post-collision velocity for sphere 1.
-	const double SphereCollision1D(
-			const double rVelocity1,
-			const double rVelocity2,
-			const double rMass1,
-			const double rMass2) const;
+	double SphereCollision1D(
+			double rVelocity1,
+			double rVelocity2,
+			double rMass1,
+			double rMass2) const;
 
 	//! @brief ... prints CollidableSphere
 	//! @param rReturnStream ... output stream, that gets modified

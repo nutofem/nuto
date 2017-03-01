@@ -12,5 +12,5 @@ foreach(test
     if(MUMPS_FOUND)
         target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
-    add_test(integration::mechanics::uniaxial::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    add_test(integration::mechanics::uniaxial::${test}.cpp ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()

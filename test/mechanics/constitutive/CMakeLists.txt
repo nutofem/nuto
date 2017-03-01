@@ -4,13 +4,13 @@ foreach(test AdditiveInput AdditiveOutput)
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} NuToVisualize)
     endif()
-    add_test(unit::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+    add_test(almost::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
 endforeach()
 
 add_unit_test(DataContainer)
 
 add_unit_test(IPConstitutiveLaw
-    ${CMAKE_SOURCE_DIR}/src/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
+    mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
     )
 
 add_subdirectory(inputoutput)

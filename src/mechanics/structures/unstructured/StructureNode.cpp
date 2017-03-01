@@ -135,32 +135,14 @@ int NuTo::Structure::NodeCreate()
 
 int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates)
 {
-
-    //find unused integer id
-    int id(mNodeMap.size());
-    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
-    while (it!=mNodeMap.end())
-    {
-        id++;
-        it = mNodeMap.find(id);
-    }
+    int id = GetUnusedId(mNodeMap);
     this->NodeCreate(id, rCoordinates);
-
-    //return int identifier of the new node
     return id;
 }
 
 int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Node::eDof> rDofs)
 {
-
-    //find unused integer id
-    int id(mNodeMap.size());
-    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
-    while (it!=mNodeMap.end())
-    {
-        id++;
-        it = mNodeMap.find(id);
-    }
+    int id = GetUnusedId(mNodeMap);
 
     NodeBase* nodePtr = NodePtrCreate(rDofs, rCoordinates);
 
@@ -294,17 +276,8 @@ int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
 
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, Eigen::VectorXd rCoordinates)
 {
-    //find unused integer id
-    int id(mNodeMap.size());
-    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
-    while (it!=mNodeMap.end())
-    {
-        id++;
-        it = mNodeMap.find(id);
-    }
-
+    int id = GetUnusedId(mNodeMap);
     NodeCreateDOFs(id, rDOFs, rCoordinates);
-
     return id;
 }
 
@@ -363,17 +336,8 @@ int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs)
 
 int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
-    //find unused integer id
-    int id(mNodeMap.size());
-    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
-    while (it!=mNodeMap.end())
-    {
-        id++;
-        it = mNodeMap.find(id);
-    }
-
+    int id = GetUnusedId(mNodeMap);
     NodeCreateDOFs(id, rDOFs, rCoordinates);
-
     return id;
 }
 
@@ -736,7 +700,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
 
     mNodeMap.insert(rId,rNewPtr);
 
-    if (rElements.size() == 0)
+    if (rElements.empty())
     {
         // in all elements
         for (boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.begin(); itElement!= mElementMap.end(); itElement++)
@@ -765,11 +729,8 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     }
 
     //in constraints
-    //in groups
     for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mConstraintMap.begin();constraintIt!=mConstraintMap.end(); ++constraintIt)
     {
         constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
     }
-
-
 }

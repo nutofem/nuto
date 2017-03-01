@@ -51,7 +51,7 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
     IN.GetAbsoluteGrowthRate())
   spheres.SetVisualizationFileName(rVisuFileName)
   minDist = spheres.GetAbsoluteMininimalDistance(specimen)
-  print minDist
+  print (minDist)
   
   # sub box handler
   subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
@@ -100,13 +100,13 @@ inputDir = sys.argv[2]
 if not os.path.exists(workDir):
     os.makedirs(workDir)
 
-print
-print "   |--->  Read input files from"
-print "   |---> ",inputDir
-print
-print "   |--->  Print result files to"
-print "   |---> ",workDir
-print
+print ()
+print ( "   |--->  Read input files from")
+print ( "   |---> ",inputDir)
+print ()
+print ( "   |--->  Print result files to")
+print ( "   |---> ",workDir)
+print ()
 
 inputFile3D = os.path.join(inputDir, inputFileName3D)
 

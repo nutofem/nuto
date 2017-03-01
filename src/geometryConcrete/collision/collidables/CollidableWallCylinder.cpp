@@ -16,9 +16,9 @@
 NuTo::CollidableWallCylinder::CollidableWallCylinder(
 	Eigen::Vector3d rPosition,
 	Eigen::Vector3d rDirection,
-	const double rRadius,
-	const double rHeigth,
-	const int rIndex)
+	double rRadius,
+	double rHeigth,
+	int rIndex)
 	: CollidableWallBase(rPosition, rDirection, rIndex), mRadius(rRadius), mHeigth(rHeigth)
 {
 }
@@ -42,7 +42,7 @@ void NuTo::CollidableWallCylinder::PerformCollision(CollidableParticleSphere& rS
 	rSphere.mVelocity += (rSphere.mGrowthRate) * n;
 }
 
-const double NuTo::CollidableWallCylinder::PredictCollision(
+double NuTo::CollidableWallCylinder::PredictCollision(
 		CollidableParticleSphere& rSphere, int& rType)
 {
 	rType = Event::EventType::WallCollision;
@@ -188,10 +188,6 @@ bool NuTo::CollidableWallCylinder::IsInside(
 	return dP.dot(dP) < (mRadius - rSphere.mRadius) * (mRadius - rSphere.mRadius);
 }
 
-const bool NuTo::CollidableWallCylinder::IsPhysical() const
-{
-	return true;
-}
 
 void NuTo::CollidableWallCylinder::Print(std::ostream& rReturnStream) const
 {

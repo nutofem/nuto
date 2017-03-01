@@ -11,13 +11,11 @@
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 
 NuTo::CollidableWallPhysical::CollidableWallPhysical(
-		Eigen::VectorXd rPosition,
-		Eigen::VectorXd rDirection,
-		const int rIndex)
+		Eigen::Vector3d rPosition,
+		Eigen::Vector3d rDirection,
+		int rIndex)
 		: NuTo::CollidableWallBase(rPosition, rDirection, rIndex)
-{
-
-}
+{}
 
 void NuTo::CollidableWallPhysical::PerformCollision(CollidableParticleSphere& rSphere)
 {
@@ -31,7 +29,7 @@ void NuTo::CollidableWallPhysical::PerformCollision(CollidableParticleSphere& rS
 	rSphere.mVelocity += (rSphere.mGrowthRate) * mDirection;
 }
 
-const double NuTo::CollidableWallPhysical::PredictCollision(
+double NuTo::CollidableWallPhysical::PredictCollision(
 		CollidableParticleSphere& rSphere, int& rType)
 {
 	rType = Event::EventType::WallCollision;
@@ -48,13 +46,11 @@ const double NuTo::CollidableWallPhysical::PredictCollision(
 
 		staticDistanceToWall = sign * (rSphere.mPosition[mNonNullAxis] - this->mPosition[mNonNullAxis]) - rSphere.mRadius;
 		dynamicDistanceToWall = sign * rSphere.mVelocity[mNonNullAxis] - rSphere.mGrowthRate;
-
 	}
 	else
 	{
 		staticDistanceToWall = this->mDirection.dot(rSphere.mPosition - this->mPosition) - rSphere.mRadius;
 		dynamicDistanceToWall = rSphere.mVelocity.dot(this->mDirection)	- rSphere.mGrowthRate;
-
 	}
 
 	if (staticDistanceToWall < 1e-15 && dynamicDistanceToWall >= 0)
@@ -66,10 +62,4 @@ const double NuTo::CollidableWallPhysical::PredictCollision(
 		return rSphere.mTimeOfLastUpdate + timeCollision;
 
 	return Event::EVENTNULL;
-
-}
-
-const bool NuTo::CollidableWallPhysical::IsPhysical() const
-{
-	return true;
 }

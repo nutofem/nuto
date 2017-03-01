@@ -1,4 +1,4 @@
-set(NuToVisualize_SOURCES
+set(NuToVisualizeSources
     CellBase.cpp
     CellHexahedron.cpp
     CellVertex.cpp
@@ -20,11 +20,10 @@ set(NuToVisualize_SOURCES
     VisualizeUnstructuredGrid.cpp
 )
 
+sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)
+
 # build shared library
-add_library(NuToVisualize ${NuToVisualize_SOURCES})
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToVisualize PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
+add_library(NuToVisualize ${NuToVisualizeObjects})
 
 # install library
 install(TARGETS NuToVisualize

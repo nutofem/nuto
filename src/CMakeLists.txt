@@ -1,8 +1,3 @@
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    add_definitions(-Wsuggest-override)
-endif()
-
-
 add_subdirectory(base)
 add_subdirectory(math)
 

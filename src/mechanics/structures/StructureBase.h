@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #include <functional>
@@ -8,7 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
-
+#include <eigen3/Eigen/Core>
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -29,7 +27,7 @@
 
 
 #include "mechanics/MechanicsException.h"
-
+#include "StructureOutputBlockVector.h"
 
 
 namespace NuTo
@@ -215,7 +213,7 @@ public:
     virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme);
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput);
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) = 0;
 
 
 #endif // SWIG
@@ -438,15 +436,12 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rDofValues ... StructureBlockVector containing the dofs (J and K)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues);
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues)
-    {
-        NodeMergeDofValues(0,rDofValues);
-    }
+    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
@@ -975,7 +970,13 @@ public:
     //! @param rElement ... element group id
     //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
-    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+    void ConstraintLinearEquationNodeToElementCreate(int rNode,
+                                                     int rElementGroup,
+                                                     NuTo::Node::eDof rDofType,
+                                                     const double rTolerance = 1.e-6,
+                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
+
+
 
 
 #endif
@@ -1582,32 +1583,6 @@ public:
 	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const override;
 
-    //! @brief set the beginning of the time increment to the structure
-    void SetPrevTime(double rPrevTime);
-
-    //! @brief get the beginning of the time increment of the structure
-    double GetPrevTime() const;
-
-    //! @brief set the end of the time increment to the structure (current time)
-    void SetTime(double rTime);
-
-    //! @brief get the end of the time increment of the structure (current time)
-    double GetTime() const;
-
-    //! @brief set number of cycles to be extrapolated in the cycle jump routine
-    //! @brief ... rNumber[0] is the number of extrapolated cycles itself Njump
-    //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
-    //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
-    //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    void SetNumExtrapolatedCycles(Eigen::VectorXd rNumber);
-
-    //! @brief get the number of cycles to be extrapolated in the cycle jump routine. Returns:
-    //! @brief ... [0] is the number of extrapolated cycles itself Njump
-    //! @brief ... [1] is the weighting coefficient of the implicit term
-    //! @brief ... [2] is the weighting coefficient of the explicit term
-    //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    Eigen::VectorXd GetNumExtrapolatedCycles() const;
-
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
     void SetToleranceStiffnessEntries(double rToleranceStiffnessEntries);
@@ -1797,21 +1772,7 @@ protected:
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
 	int mNumTimeDerivatives;
 
-	//! @brief ... storing the beginning of the time increment
-	double mPrevTime;
-
-    //! @brief ... storing the end of the time increment (current time)
-	double mTime;
-
     int mDimension;
-
-    //! @brief ... number of cycles applied for extrapolation in the cycle jump.
-    //! @brief ... extrapolation is Njump * (ImplicitTerm*A1 + ExplicitTerm*A2 + HigherOrder*A3 + ... )
-    //! @brief ... [0] is the number of extrapolated cycles itself Njump
-    //! @brief ... [1] is the weighting coefficient of the implicit term A1
-    //! @brief ... [2] is the weighting coefficient of the explicit term A2
-    //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    Eigen::VectorXd mNumExtrapolatedCycles;
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase
@@ -1940,12 +1901,7 @@ protected:
     //! @param rNodes ... vector of element pointer
     virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
 #endif
-
-    //! @brief ... get all elements of a group in a vector
-    //! @param rElementGroup ... element group
-    //! @param rElements ... vector of element pointer
-    void GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const;
-
+ 
     //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer

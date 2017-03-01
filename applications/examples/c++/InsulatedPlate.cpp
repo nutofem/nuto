@@ -25,7 +25,7 @@ int main()
     structure.ConstitutiveLawSetParameterDouble(
             law, NuTo::Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, 1.0);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid<2>(structure, {L, H}, {10, 10});
+    auto meshInfo = NuTo::MeshGenerator::Grid(structure, {L, H}, {10, 10});
     structure.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::TEMPERATURE, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeSetIntegrationType(meshInfo.second, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 

@@ -1,13 +1,6 @@
 import nuto
 import random
-import math
 import numpy as np
-import tempfile
-import sys
-import os
-
-# show the results on the screen
-printResult = True
 
 # Random seed for training data generation and initial weights
 randomSeed = 1234567
@@ -98,22 +91,15 @@ myNetwork.SolveConfidenceInterval(SupportPointsInput,
 
 
 # objective
-objective = myNetwork.Objective()
-if (printResult):
-    print 'objective including regularization terms (transformed space):\n  ' + str(objective)
+print ('objective including regularization terms (transformed space):\n', myNetwork.Objective())
 	
 # gradient
 NumParameters = myNetwork.GetNumParameters()
 gradient = np.zeros((NumParameters, 1))
 myNetwork.Gradient(gradient)
-gradient = gradient.squeeze()
-if (printResult):
-    print 'gradient:'
-    print gradient
+print ('gradient:\n', gradient.squeeze())
 
 # hessian
 hessian = np.zeros((NumParameters, NumParameters))
 myNetwork.HessianFull(hessian)
-if (printResult):
-    print 'hessian:'
-    print hessian
+print ('hessian:\n', hessian)

@@ -7,14 +7,13 @@
 
 #include "base/Exception.h"
 
-#include "geometryConcrete/WallTime.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "geometryConcrete/collision/handler/EventListHandler.h"
 
-NuTo::SubBox::SubBox(const int rIndex)
+NuTo::SubBox::SubBox(int rIndex)
 		: mIndex(rIndex)
 {
 }
@@ -37,7 +36,7 @@ void NuTo::SubBox::RemoveSphere(CollidableParticleSphere& rSphere)
 	rSphere.RemoveBox(*this);
 }
 
-void NuTo::SubBox::SetWalls(const std::list<CollidableWallBase*>& rCollidables)
+void NuTo::SubBox::SetWalls(const std::vector<CollidableWallBase*>& rCollidables)
 {
 
 	mWalls = rCollidables;
@@ -52,7 +51,7 @@ void NuTo::SubBox::AddWall(CollidableWallBase& rWall)
 	mCollidables.push_back(&rWall);
 }
 
-const std::list<NuTo::CollidableWallBase*>& NuTo::SubBox::GetWalls() const
+const std::vector<NuTo::CollidableWallBase*>& NuTo::SubBox::GetWalls() const
 {
 	return mWalls;
 }
@@ -73,18 +72,13 @@ void NuTo::SubBox::Print()
 void NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 		CollidableBase& rCollidable)
 {
-
-	const unsigned int size(mCollidables.size());
-
-	Exception parallelException("");
-	for (unsigned int i = 0; i < size; ++i)
+	for (auto* collidable : mCollidables)
 	{
 	    int eventType;
-		double collisionTime = rCollidable.PredictCollision(*mCollidables[i], eventType);
+		double collisionTime = rCollidable.PredictCollision(*collidable, eventType);
         if (collisionTime != Event::EVENTNULL)
-            rEvents.AddEvent(collisionTime, rCollidable, *mCollidables[i], eventType);
+            rEvents.AddEvent(collisionTime, rCollidable, *collidable, eventType);
 	}
-
 }
 
 const std::vector<NuTo::CollidableBase*>& NuTo::SubBox::GetCollidables() const
@@ -96,10 +90,10 @@ void NuTo::SubBox::RemoveWall(CollidableWallBase& rWall)
 {
 	auto newEnd = std::remove(mCollidables.begin(), mCollidables.end(), &rWall);
 	mCollidables.erase(newEnd, mCollidables.end());
-	mWalls.remove(&rWall);
+    mWalls.erase(std::remove(mWalls.begin(), mWalls.end(), &rWall), mWalls.end());
 }
 
-const int NuTo::SubBox::GetIndex() const
+int NuTo::SubBox::GetIndex() const
 {
 	return mIndex;
 }

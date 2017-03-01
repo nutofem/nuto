@@ -1,4 +1,4 @@
-set(NuToGeometryConcreteCollision_SOURCES
+set(NuToGeometryConcreteCollisionSources
     collision/collidables/CollidableBase.cpp
     collision/collidables/CollidableParticleBase.cpp
     collision/collidables/CollidableParticleSphere.cpp
@@ -14,29 +14,26 @@ set(NuToGeometryConcreteCollision_SOURCES
     collision/handler/ParticleHandler.cpp
     )
 
-set(NuToGeometryConcreteGradingCurve_SOURCES
+set(NuToGeometryConcreteGradingCurveSources
     takeAndPlace/ParticleCreator.cpp
     )
 
-set(NuToGeometryConcrete_SOURCES
+set(NuToGeometryConcreteSources
     GeometryConcrete.cpp
     InputReader.cpp
-    WallTime.cpp
     Specimen.cpp
-    ${NuToGeometryConcreteCollision_SOURCES}
-    ${NuToGeometryConcreteGradingCurve_SOURCES}
+    ${NuToGeometryConcreteCollisionSources}
+    ${NuToGeometryConcreteGradingCurveSources}
     )
 
+sources_to_objects("${NuToGeometryConcreteSources}" NuToGeometryConcreteObjects)
+
 # build static library
-add_library(NuToGeometryConcrete ${NuToGeometryConcrete_SOURCES})
+add_library(NuToGeometryConcrete ${NuToGeometryConcreteObjects})
 if(ENABLE_VISUALIZE)
     target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath NuToVisualize)
 else()
     target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath)
-endif()
-
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set_target_properties(NuToGeometryConcrete PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
 # install library

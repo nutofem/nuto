@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include "base/Timer.h"
 
-#include "geometryConcrete/WallTime.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/handler/CollisionHandler.h"
 #include "geometryConcrete/collision/SubBox.h"
@@ -34,12 +34,11 @@ void NuTo::CollisionHandler::LogStatus(
 		Logger& rLogger,
 		const long rTimeStep,
 		const double rGlobalTime,
-		const double rWSTime) const
+		const double rTime) const
 		{
 	double eKin = mSpheres->GetKineticEnergy();
 	mSpheres->Sync(rGlobalTime);
 	double vol = mSpheres->GetVolume();
-	double time = WallTime::Get() - rWSTime;
 
 	std::stringstream toLog;
 	toLog.setf(std::ios::scientific);
@@ -47,7 +46,7 @@ void NuTo::CollisionHandler::LogStatus(
 	toLog << std::setprecision(8) << rGlobalTime << "\t";
 	toLog << std::setprecision(2) << eKin << "\t";
 	toLog << std::setprecision(4) << vol / mSubBoxes->GetVolume() << "\t";
-	toLog << std::setprecision(5) << time << "\n";
+	toLog << std::setprecision(5) << rTime << "\n";
 
 	rLogger << toLog.str();
 
@@ -91,7 +90,6 @@ double NuTo::CollisionHandler::Simulate(
 
 	long numEvents = 0;
 	double globalTime = 0.;
-	double globalTimePrint = 0.;
 
 	double wTimeEventList = mGlobalEventList.SetTimeBarrier(rInitialTimeBarrier, *mSubBoxes);
 
@@ -103,9 +101,8 @@ double NuTo::CollisionHandler::Simulate(
 	double globalTimeOfBarrierReset = 0.;
 	double wallTimeOfBarrierReset = 0.;
 
-	double wStartTime = WallTime::Get();
-	double wMeasureTime = 0;
-    while (WallTime::Get() - wStartTime < rWTimeMax && globalTime < rTimeMax)
+	Timer timer("", false);
+    while (timer.GetTimeDifference() < rWTimeMax && globalTime < rTimeMax)
 	{
 		globalTime = mGlobalEventList.GetNextEventTime();
 		if (globalTime == Event::EVENTNULL)
@@ -118,11 +115,11 @@ double NuTo::CollisionHandler::Simulate(
 			globalTime = mGlobalEventList.GetNextEventTime();
 
 			globalTimeOfBarrierReset = globalTime;
-			wallTimeOfBarrierReset = WallTime::Get() - wStartTime;
+			wallTimeOfBarrierReset = timer.GetTimeDifference();
 		}
 
 		// reset the time barrier
-		if (WallTime::Get() - wStartTime > wallTimeOfBarrierReset + 5. * wTimeEventList)
+		if (timer.GetTimeDifference() > wallTimeOfBarrierReset + 5. * wTimeEventList)
 		{
 
 			globalTimeBarrier = oldGlobalTime + 1.1 * (oldGlobalTime - globalTimeOfBarrierReset);
@@ -131,7 +128,7 @@ double NuTo::CollisionHandler::Simulate(
 			globalTime = mGlobalEventList.GetNextEventTime();
 
 			globalTimeOfBarrierReset = globalTime;
-			wallTimeOfBarrierReset = WallTime::Get() - wStartTime;
+			wallTimeOfBarrierReset = timer.GetTimeDifference();
 
 		}
 
@@ -139,17 +136,11 @@ double NuTo::CollisionHandler::Simulate(
 //		VisualizeSpheres(numEvents, globalTime, false);
 
 		// print a status update
-		// a) at time print out
-		bool statusPrintOut = rTimePrintOut != 0 && WallTime::Get() - wStartTime > timePrintOut;
-		// b) at every 0.1 global time steps
-		bool statusGlobalTime = globalTime > globalTimePrint;
+		bool statusPrintOut = rTimePrintOut != 0 && timer.GetTimeDifference() > timePrintOut;
 
-		if (statusPrintOut or statusGlobalTime)
+		if (statusPrintOut)
 		{
-			LogStatus(logger, numEvents, globalTime, wStartTime);
-
-	        if (statusGlobalTime)
-	            globalTimePrint = globalTime + 0.1;
+			LogStatus(logger, numEvents, globalTime, timer.GetTimeDifference());
 
 	        if (statusPrintOut)
 	            timePrintOut += rTimePrintOut;
@@ -193,22 +184,21 @@ double NuTo::CollisionHandler::Simulate(
 		oldGlobalTime = globalTime;
 	}
 
-	double wTime = WallTime::Get() - wStartTime;
-	double wTimeMeasure = WallTime::Get() - wMeasureTime;
+    const double finalTimeDifference = timer.GetTimeDifference();
 
-	mGlobalEventList.PrintStatistics(wTime);
+	mGlobalEventList.PrintStatistics(finalTimeDifference);
 
 	mSpheres->Sync(globalTime);
-	LogStatus(logger, numEvents, globalTime, wStartTime);
+	LogStatus(logger, numEvents, globalTime, finalTimeDifference);
 
 	logger.CloseFile();
 
 
 	// rethrow exceptions for proper test failure
 	if (caughtException.ErrorMessage() != "")
-		throw Exception("[NuTo::CollisionHandler::Simulate] Simulation ended with the exception: \n" + caughtException.ErrorMessage());
+		throw Exception(__PRETTY_FUNCTION__, "Simulation ended with the exception: \n" + caughtException.ErrorMessage());
 
-    return wTimeMeasure;
+    return finalTimeDifference;
 }
 
 void NuTo::CollisionHandler::EnableFileOutput(bool rEnableFileOutput)

@@ -26,7 +26,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionBase.h"
 #include "mechanics/sections/SectionEnum.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
 
 
 NuTo::LinearElasticEngineeringStress::LinearElasticEngineeringStress() :
@@ -78,10 +77,6 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
         case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
-
-            if (rInterpolationType.IsConstitutiveInput(Node::eDof::TEMPERATURE))
-                constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
-
             break;
         }
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:

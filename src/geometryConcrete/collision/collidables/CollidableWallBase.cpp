@@ -17,7 +17,7 @@
 NuTo::CollidableWallBase::CollidableWallBase(
 		Eigen::VectorXd rPosition,
 		Eigen::VectorXd rDirection,
-		const int rIndex)
+		int rIndex)
 		: NuTo::CollidableBase::CollidableBase(rIndex),
 		  mPosition(rPosition),
 		  mDirection(rDirection),
@@ -42,13 +42,13 @@ void NuTo::CollidableWallBase::PerformCollision(CollidableWallBase& rWall)
 // nothing here.
 }
 
-const double NuTo::CollidableWallBase::PredictCollision(
+double NuTo::CollidableWallBase::PredictCollision(
 		CollidableBase& rCollidable, int& rType)
 {
 	return rCollidable.PredictCollision(*this, rType);
 }
 
-const double NuTo::CollidableWallBase::PredictCollision(
+double NuTo::CollidableWallBase::PredictCollision(
 		CollidableWallBase& rWall, int& rType)
 {
 	return -1;
@@ -131,7 +131,7 @@ void NuTo::CollidableWallBase::GetLocalEventsToDelete(Event::LocalEvents& rEvent
 {
 }
 
-void NuTo::CollidableWallBase::MoveAndGrow(const double rTime)
+void NuTo::CollidableWallBase::MoveAndGrow(double rTime)
 {
 }
 
@@ -144,17 +144,17 @@ bool NuTo::CollidableWallBase::IsInside(const CollidableParticleSphere& rSphere)
 	return (distanceToWall + rSphere.mRadius >= 0);
 }
 
-const Eigen::VectorXd NuTo::CollidableWallBase::GetDirection() const
+const Eigen::Vector3d& NuTo::CollidableWallBase::GetDirection() const
 {
 	return mDirection;
 }
 
-const Eigen::VectorXd NuTo::CollidableWallBase::GetPosition() const
+const Eigen::Vector3d& NuTo::CollidableWallBase::GetPosition() const
 {
 	return mPosition;
 }
 
-const int NuTo::CollidableWallBase::GetNonNullAxis()
+int NuTo::CollidableWallBase::GetNonNullAxis()
 {
 	for (int i = 0; i < 3; i++)
 		if (mDirection[i] != 0.)

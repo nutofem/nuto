@@ -24,10 +24,12 @@
 #endif
 
 NuTo::ParticleHandler::ParticleHandler(
-		const int rNumParticles,
-		const Eigen::MatrixXd rParticleBoundingBox,
-		const double rVelocityRange,
-		const double rGrowthRate)
+		int rNumParticles,
+		Eigen::MatrixXd rParticleBoundingBox,
+		double rVelocityRange,
+		double rGrowthRate,
+        int rSeed)
+    : mRNG(rSeed)
 {
 	mParticles.reserve(rNumParticles);
 
@@ -47,19 +49,24 @@ NuTo::ParticleHandler::ParticleHandler(
 }
 
 NuTo::ParticleHandler::ParticleHandler(
-		const Eigen::MatrixXd rSpheres,
-		const double rVelocityRange,
-		const double rRelativeGrowthRate,
-        const double rAbsoluteGrowthRate)
+		Eigen::MatrixXd rSpheres,
+		double rVelocityRange,
+		double rRelativeGrowthRate,
+        double rAbsoluteGrowthRate,
+        int rSeed)
+    : mRNG(rSeed)
 {
-
-
     CreateParticlesFromMatrix(rSpheres, rVelocityRange, rRelativeGrowthRate, rAbsoluteGrowthRate);
     mVisualizationFileName = "spheres";
-
 }
 
-NuTo::ParticleHandler::ParticleHandler(const std::string &rFileName, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate)
+NuTo::ParticleHandler::ParticleHandler(
+    const std::string &rFileName,
+    double rVelocityRange,
+    double rRelativeGrowthRate,
+    double rAbsoluteGrowthRate,
+    int rSeed)
+    : mRNG(rSeed)
 {
     Eigen::MatrixXd particles;
     NuTo::SerializeStreamIn sIn(rFileName, false);
@@ -195,7 +202,7 @@ NuTo::CollidableParticleSphere* NuTo::ParticleHandler::GetParticle(const int rIn
 	return mParticles[rIndex];
 }
 
-const int NuTo::ParticleHandler::GetNumParticles() const
+int NuTo::ParticleHandler::GetNumParticles() const
 {
 	return mParticles.size();
 }
@@ -314,7 +321,10 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(Specimen& rSpecimen)
 
 }
 
-void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate)
+void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd& rSpheres,
+                                                      double rVelocityRange,
+                                                      double rRelativeGrowthRate,
+                                                      double rAbsoluteGrowthRate)
 {
     int numRows = rSpheres.rows();
     mParticles.reserve(numRows);
@@ -336,17 +346,15 @@ void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd rSph
     }
 }
 
-Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
+Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(double rStart, double rEnd)
 {
     Eigen::Vector3d randomVector;
-	for (int i = 0; i < 3; ++i)
-	{
-		double rnd = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
-		rnd *= rEnd - rStart;   // correct range
-		rnd += rStart;			// correct starting point
-		randomVector[i] = rnd;
-	}
-	return randomVector;
+    std::uniform_real_distribution<double> distr(rStart, rEnd);
+
+    for (int i = 0; i < 3; ++i)
+	    randomVector[i] = distr(mRNG);
+
+    return randomVector;
 }
 
 void NuTo::ParticleHandler::ResetVelocities()
@@ -356,16 +364,14 @@ void NuTo::ParticleHandler::ResetVelocities()
 }
 
 Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(
-		const Eigen::MatrixXd rBounds)
+		const Eigen::MatrixXd& rBounds)
 {
 	int vectorSize = rBounds.rows();
 	Eigen::VectorXd randomVector(vectorSize);
 	for (int i = 0; i < vectorSize; ++i)
 	{
-		double rnd = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
-		rnd *= rBounds(i, 1) - rBounds(i, 0);   // correct range
-		rnd += rBounds(i, 0);		         	// correct starting point
-		randomVector[i] = rnd;
+        std::uniform_real_distribution<double> distr(rBounds(i, 0), rBounds(i, 1));
+        randomVector[i] = distr(mRNG);
 	}
 	return randomVector;
 }

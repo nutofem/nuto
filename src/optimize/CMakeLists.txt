@@ -1,4 +1,4 @@
-set(NuToOptimize_SOURCES
+set(NuToOptimizeSources
     ConjugateGradientGrid.cpp
     ConjugateGradientNonLinear.cpp
     CallbackHandler.cpp
@@ -11,11 +11,13 @@ set(NuToOptimize_SOURCES
     )
 
 message(STATUS "Checking for Python...")
-find_package(PythonInterp 2 REQUIRED)
-find_package(PythonLibs 2 REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
+find_package(PythonLibs 3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-add_library(NuToOptimize ${NuToOptimize_SOURCES})
+sources_to_objects("${NuToOptimizeSources}" NuToOptimizeObjects)
+
+add_library(NuToOptimize ${NuToOptimizeSources})
 target_link_libraries(NuToOptimize NuToMath NuToBase ${PYTHON_LIBRARY})
 
 if(ENABLE_VISUALIZE)
@@ -27,11 +29,7 @@ if(ENABLE_SHOW_TIME)
     target_link_libraries(NuToOptimize rt)
 endif()
 
-set(NuToOptimize_COMPILE_FLAGS "${PYTHON_C_FLAGS}")
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set(NuToOptimize_COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS} -fPIC")
-endif()
-set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS}")
+set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 
 # install library
 install(TARGETS NuToOptimize

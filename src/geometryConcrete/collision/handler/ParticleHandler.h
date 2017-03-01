@@ -7,9 +7,10 @@
 
 #pragma once
 
-#include "eigen3/Eigen/Core"
 
 #include <vector>
+#include <random>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -28,24 +29,27 @@ public:
 
     //! @brief ... constructor, builds rNumParticles equal particles
 	ParticleHandler(
-			const int rNumParticles,
-			const Eigen::MatrixXd rParticleBoundingBox,
-			const double rVelocityRange,
-			const double rGrowthRate);
+			int rNumParticles,
+			Eigen::MatrixXd rParticleBoundingBox,
+			double rVelocityRange,
+			double rGrowthRate,
+            int rSeed = 0);
 
 	//! @brief ... constructor, uses rSpheres
 	ParticleHandler(
-			const Eigen::MatrixXd rSpheres,
-			const double rVelocityRange,
-			const double rRelativeGrowthRate,
-			const double rAbsoluteGrowthRate);
+			Eigen::MatrixXd rSpheres,
+			double rVelocityRange,
+			double rRelativeGrowthRate,
+			double rAbsoluteGrowthRate,
+            int rSeed = 0);
 
     //! @brief ... constructor, builds particles from external file
     ParticleHandler(
             const std::string& rFileName,
-            const double rVelocityRange,
-            const double rRelativeGrowthRate,
-            const double rAbsoluteGrowthRate);
+            double rVelocityRange,
+            double rRelativeGrowthRate,
+            double rAbsoluteGrowthRate,
+            int rSeed = 0);
 
 
 
@@ -108,7 +112,7 @@ public:
 	CollidableParticleSphere* GetParticle(const int rIndex) const;
 
 	//! @brief ... getter for the particle list size
-	const int GetNumParticles() const;
+	int GetNumParticles() const;
 
 	//! @brief ... calculates the minimal distance between all particles using sub boxes
 	double GetAbsoluteMininimalDistance(Specimen& rSpecimen);
@@ -119,8 +123,6 @@ public:
 	//! @brief ... calculates approximate sub box length, based on box size and the number of particles per sub box
 	Eigen::VectorXi GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox);
 
-
-
 private:
 
     ParticleContainer mParticles;
@@ -128,16 +130,17 @@ private:
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rStart ... start of value range
 	//! @param rEnd ... end of value range
-	Eigen::VectorXd GetRandomVector(const double rStart, const double rEnd);
+	Eigen::VectorXd GetRandomVector(double rStart, double rEnd);
 
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rBounds ... rBounds(:,0) start of value range, rBounds(:,1) end of value range
-	Eigen::VectorXd GetRandomVector(const Eigen::MatrixXd rBounds);
+	Eigen::VectorXd GetRandomVector(const Eigen::MatrixXd& rBounds);
 
-    void CreateParticlesFromMatrix(const Eigen::MatrixXd rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate);
+    void CreateParticlesFromMatrix(const Eigen::MatrixXd& rSpheres, double rVelocityRange, double rRelativeGrowthRate, double rAbsoluteGrowthRate);
 
 	std::string mVisualizationFileName;
 
+    std::mt19937 mRNG;
 };
 
 

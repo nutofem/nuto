@@ -22,6 +22,8 @@
 
 * @ref FullMatrixToEigenRemarks
 
+* [**Profiling using gperftools**](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
+
 ### NuTo related documentation
 
 * @ref ConstitutiveStaticData
@@ -31,3 +33,7 @@
 * @ref NuToSerializeStream
 
 * @ref Constraints
+
+* @ref SpatialContainer
+
+* @ref NuTo-codeStyle
