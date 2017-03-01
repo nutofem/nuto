@@ -27,8 +27,6 @@ public:
         mDetJacobian = mJacobian.determinant();
     }
 
-
-    //! @brief returns the inverse, performs a simplistic memoization
     const Eigen::Matrix<double, TDim, TDim>& Inv() const
     {
         return mInvJacobian;

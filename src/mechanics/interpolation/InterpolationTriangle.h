@@ -8,8 +8,8 @@ namespace NuTo
 class InterpolationTriangle : public Interpolation
 {
 public:
-    InterpolationTriangle(eInterpolation rType, int rOrder)
-        : Interpolation(rType, rOrder)
+    InterpolationTriangle(eInterpolation rType, int rOrder, int rDofDimension)
+        : Interpolation(rType, rOrder, rDofDimension)
     {
     }
 
@@ -39,11 +39,6 @@ public:
             return 3;
         throw;
     }
-    int GetDimension() const override
-    {
-        return 2;
-    }
-
 
 private:
 };

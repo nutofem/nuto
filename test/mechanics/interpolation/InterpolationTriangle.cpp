@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangleCopyMove)
 
 BOOST_AUTO_TEST_CASE(InterpolationTriangleN)
 {
-    NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1);
+    NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
 
     for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
     {

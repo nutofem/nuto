@@ -3,7 +3,7 @@
 
 Eigen::MatrixXd NuTo::Interpolation::GetN(const Eigen::VectorXd& rIPCoords) const
 {
-    int dim = GetDimension();
+    int dim = GetDofDimension();
     Eigen::MatrixXd N(dim, dim * GetNumNodes());
 
     auto shapeFunctions = GetShapeFunctions(rIPCoords);
