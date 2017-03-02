@@ -421,8 +421,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
             }
             case eTimeIntegrationResultType::GROUP_NODE_FORCE:
             {
-                ResultGroupNodeDof* resultPtr(
-                        itResult->second->AsResultGroupNodeDof());
+                ResultGroupNodeDof* resultPtr(itResult->second->AsResultGroupNodeDof());
                 resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance.J[Node::eDof::DISPLACEMENTS],rOutOfBalance.K[Node::eDof::DISPLACEMENTS]);
                 break;
 

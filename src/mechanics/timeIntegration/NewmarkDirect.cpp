@@ -273,7 +273,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
             /*------------------------------------------------*\
             |         Calculate Residual for trail state       |
             \*------------------------------------------------*/
-            residual = prevExtForce - extForce;
+            residual =  extForce - prevExtForce;
             CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
             residual.ApplyCMatrix(residual_mod, cmat);
 
@@ -474,6 +474,8 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateDof2(const Struct
           - rDof_dt2       * ((0.5 - mBeta) / mBeta);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateResidual(
         const StructureOutputBlockVector& rIntForce,
@@ -482,16 +484,19 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateResidual(
         const StructureOutputBlockVector& rDof_dt1,
         const StructureOutputBlockVector& rDof_dt2) const
 {
-    StructureOutputBlockVector residual = rIntForce - rExtForce;
+    StructureOutputBlockVector residual = rExtForce - rIntForce;
 
     // The residual for numTimeDerivatives = 1 is included in the internal forces.
     // If there is muDamping, there must be a rHessian2.
     if (mStructure->GetNumTimeDerivatives() >= 2)
     {
-        residual += rHessian_dt2 * (rDof_dt1 * mMuDampingMass + rDof_dt2);
+        residual -= rHessian_dt2 * (rDof_dt1 * mMuDampingMass + rDof_dt2);
     }
     return residual;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NuTo::NewmarkDirect::CalculateResidualKForPostprocessing(
         StructureOutputBlockVector& rResidual,
@@ -512,10 +517,13 @@ void NuTo::NewmarkDirect::CalculateResidualKForPostprocessing(
     if (hasNodeForce && mStructure->GetNumTimeDerivatives() >= 2)
     {
         auto dof = rDof_dt1 * mMuDampingMass + rDof_dt2;
-        rResidual.K += rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
+        rResidual.K -= rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
     }
     // else:  no need to calculate forces if they are not needed in the post processing
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NuTo::NewmarkDirect::CalculateResidualTrial(
         StructureOutputBlockVector& rResidual,
@@ -533,22 +541,24 @@ void NuTo::NewmarkDirect::CalculateResidualTrial(
     deltaDof_dt0.K = rDeltaBRHS;
 
 
-    rResidual += rHessian_dt0 * deltaDof_dt0;
+    rResidual -= rHessian_dt0 * deltaDof_dt0;
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
     {
         StructureOutputBlockVector delta_dof1 = CalculateDof1(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt1;
-        rResidual += rHessian_dt1 * delta_dof1;
+        rResidual -= rHessian_dt1 * delta_dof1;
     }
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
     {
         StructureOutputBlockVector delta_dof2 = CalculateDof2(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt2;
-        rResidual += rHessian_dt2 * delta_dof2;
+        rResidual -= rHessian_dt2 * delta_dof2;
     }
 }
 
-//! @brief Prints Info about the current calculation stage
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void NuTo::NewmarkDirect::PrintInfoStagger() const
 {
     if (mStepActiveDofs.size() == 1) // equals unstaggered solution, no info needed
