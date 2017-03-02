@@ -12,7 +12,6 @@
 
 #include "boost/filesystem.hpp"
 #include <iostream>
-#include <fstream>
 
 
 #include "base/Timer.h"
@@ -27,40 +26,40 @@
 #include "mechanics/timeIntegration/ResultTime.h"
 #include "mechanics/timeIntegration/TimeDependencyFunction.h"
 #include "mechanics/timeIntegration/TimeDependencyMatrix.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
+
+#include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
 
 
 
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
-    NuTo::NuToObject::NuToObject(),
-    mStructure(rStructure),
-    mLoadVectorStatic(rStructure->GetDofStatus()),
-    mLoadVectorTimeDependent(rStructure->GetDofStatus()),
-    mToleranceResidual(rStructure->GetDofStatus())
+        NuTo::NuToObject::NuToObject(),
+        mStructure(rStructure),
+        mSolver(std::make_unique<SolverMUMPS>()),
+        mTimeDependentConstraint(-1),
+        mTimeDependentLoadCase(-1),
+        mLoadVectorStatic(rStructure->GetDofStatus()),
+        mLoadVectorTimeDependent(rStructure->GetDofStatus()),
+        mTime(0.),
+        mAutomaticTimeStepping(false),
+        mTimeStep(0),
+        mMaxTimeStep(1),
+        mMinTimeStep(0),
+        mMergeActiveDofValuesOrder1(true),
+        mMergeActiveDofValuesOrder2(false),
+        mCheckCoefficientMatrix(false),
+        mToleranceResidual(rStructure->GetDofStatus()),
+        mLoadStep(0),
+        mTimeStepResult(0),
+        mTimeStepVTK(0),
+        mMinTimeStepPlot(0),
+        mLastTimePlot(-1e99),
+        mIterationCount(0),
+        mCallback(nullptr)
 {
-    mTime = 0.;
-    mLoadStep = 1;
-    mTimeStep = 0;
-    mMaxTimeStep = 1;
-    mMinTimeStep = 0;
-    mLoadStep = 0;
-    mMinTimeStepPlot = 0;
-    mTimeStepResult = 0;
-    mTimeStepVTK = 0;
-    mLastTimePlot = -1e99;
-    mAutomaticTimeStepping = false;
-    mTimeDependentConstraint = -1;
-    mTimeDependentLoadCase = -1;
-    mMergeActiveDofValuesOrder1 = true;
-    mMergeActiveDofValuesOrder2 = false;
-    mCheckCoefficientMatrix = false;
-    mCallback = nullptr;
     ResetForNextLoad();
-    mIterationCount = 0;
 }
 
 NuTo::TimeIntegrationBase::~TimeIntegrationBase()

@@ -645,7 +645,8 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
 
         rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
-        auto result =  mStructure->SolveBlockSystem(rHessian_dt0.JJ, rResidualMod);
+        auto result = mSolver->Solve(rHessian_dt0.JJ, rResidualMod);
+
         mStructure->SetShowTime(structureShowTime);
         return result;
     }

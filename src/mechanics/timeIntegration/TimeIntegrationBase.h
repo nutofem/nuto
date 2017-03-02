@@ -15,6 +15,7 @@
 // member
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 
 namespace NuTo
 {
@@ -269,6 +270,14 @@ public:
     //! param rActiveDofs ... active Dofs of the calculation step
     void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
 
+#ifndef SWIG
+    //! @brief Sets the solver
+    void SetSolver(std::unique_ptr<SolverBase> rSolver)
+    {
+        mSolver = std::move(rSolver);
+    }
+#endif
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -297,6 +306,8 @@ protected:
     //structure belonging to the time integration scheme
     StructureBase* mStructure;
 
+    /// \brief Sparse matrix solver
+    std::unique_ptr<SolverBase> mSolver;
 
     // DEPRECATED BLOCK BEGIN
 
