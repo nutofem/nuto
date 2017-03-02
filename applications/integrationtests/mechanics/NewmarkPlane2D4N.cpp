@@ -284,14 +284,13 @@ try
     resultFile_left /= std::string("Forces_GroupNodes_Left.dat");
 
 	Eigen::MatrixXd result_left = NuTo::EigenCompanion::ReadFromFile(resultFile_left.string());
-    std::cout << "result_left \n" << result_left << std::endl;
 
     Eigen::Matrix2d result_leftRef;
     result_leftRef.setZero();
     result_leftRef(0,0) = -1; //disp on fixed node
     result_leftRef(1,0) = -3.001682840791e+02;
 
-    if ((result_leftRef-result_left).isMuchSmallerThan(1.e-4,1.e-1))
+    if (not (result_leftRef-result_left).isMuchSmallerThan(1.e-4,1.e-1))
     {
     	std::cout << std::setprecision(10) << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
         std::cout << "real result \n" << result_left << std::endl;
@@ -312,7 +311,7 @@ try
     result_rightRef.setZero();
     result_rightRef(1,0) = 3.016648179801e+02;
 
-    if ((result_rightRef-result_right).isMuchSmallerThan(1.e-4,1.e-1))
+    if (not (result_rightRef-result_right).isMuchSmallerThan(1.e-4,1.e-1))
     {
     	std::cout << "difference " << (result_rightRef-result_right).cwiseAbs().maxCoeff() << "\n";
         std::cout<< "real result \n" << result_right << std::endl;

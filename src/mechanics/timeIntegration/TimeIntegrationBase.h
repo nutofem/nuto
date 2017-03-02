@@ -107,6 +107,7 @@ public:
 
     //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
     //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+    //! @remark rOutOfBalance here means Residual = ExternalForces - InternalForces
     void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
 
     //! @brief sets the  time step for the time integration procedure (initial value)

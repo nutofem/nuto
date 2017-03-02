@@ -15,6 +15,8 @@
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/RungeKuttaBase.h"
+#include "mechanics/timeIntegration/RungeKutta4.h"
 #include "mechanics/mesh/MeshGenerator.h"
 %}
 
@@ -42,6 +44,8 @@
 %include "mechanics/timeIntegration/TimeIntegrationBase.h"
 %include "mechanics/timeIntegration/NewmarkBase.h"
 %include "mechanics/timeIntegration/NewmarkDirect.h"
+%include "mechanics/timeIntegration/RungeKuttaBase.h"
+%include "mechanics/timeIntegration/RungeKutta4.h"
 
 %include "mechanics/mesh/MeshGenerator.h"
 

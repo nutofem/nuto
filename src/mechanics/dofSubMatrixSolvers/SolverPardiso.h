@@ -25,6 +25,7 @@ public:
     {
         Eigen::VectorXd result;
         std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
+        matrixForSolver->SetOneBasedIndexing();
 
         NuTo::SparseDirectSolverPardiso pardiso(mNumProcessors);
         pardiso.Solve(*matrixForSolver, rVector.Export(), result);
