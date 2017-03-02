@@ -4,6 +4,11 @@
 
 namespace NuTo
 {
+
+typedef Eigen::MatrixXd NMatrix;
+typedef Eigen::MatrixXd BMatrixGradient;
+typedef Eigen::MatrixXd BMatrixStrain;
+
 class Interpolation
 {
 public:
@@ -25,9 +30,9 @@ public:
         return mDofDimension;
     }
 
-    Eigen::MatrixXd GetN(const Eigen::VectorXd& rIPCoords) const;
-    Eigen::MatrixXd GetBGradient(const Eigen::VectorXd& rIPCoords) const;
-    Eigen::MatrixXd GetBStrain(const Eigen::VectorXd& rIPCoords) const;
+    NMatrix GetN(const Eigen::VectorXd& rIPCoords) const;
+    BMatrixGradient GetBGradient(const Eigen::VectorXd& rIPCoords) const;
+    BMatrixStrain GetBStrain(const Eigen::VectorXd& rIPCoords) const;
 
     virtual Eigen::VectorXd GetShapeFunctions(const Eigen::VectorXd& rIPCoords) const           = 0;
     virtual Eigen::MatrixXd GetDerivativeShapeFunctions(const Eigen::VectorXd& rIPCoords) const = 0;

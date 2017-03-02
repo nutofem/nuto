@@ -16,7 +16,7 @@ public:
     {
     }
 
-    Eigen::VectorXd GetNodeValues(const DofType& rDofType)
+    NodeValues GetNodeValues(const DofType& rDofType)
     {
         return mElements[rDofType]->ExtractNodeValues();
     }

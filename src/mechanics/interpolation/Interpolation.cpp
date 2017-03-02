@@ -1,7 +1,7 @@
 #include "mechanics/interpolation/Interpolation.h"
 #include "mechanics/MechanicsException.h"
 
-Eigen::MatrixXd NuTo::Interpolation::GetN(const Eigen::VectorXd& rIPCoords) const
+NuTo::NMatrix NuTo::Interpolation::GetN(const Eigen::VectorXd& rIPCoords) const
 {
     int dim = GetDofDimension();
     Eigen::MatrixXd N(dim, dim * GetNumNodes());
@@ -12,11 +12,13 @@ Eigen::MatrixXd NuTo::Interpolation::GetN(const Eigen::VectorXd& rIPCoords) cons
         N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
     return N;
 }
-Eigen::MatrixXd NuTo::Interpolation::GetBGradient(const Eigen::VectorXd& rIPCoords) const
+
+NuTo::BMatrixGradient NuTo::Interpolation::GetBGradient(const Eigen::VectorXd& rIPCoords) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
-Eigen::MatrixXd NuTo::Interpolation::GetBStrain(const Eigen::VectorXd& rIPCoords) const
+
+NuTo::BMatrixStrain NuTo::Interpolation::GetBStrain(const Eigen::VectorXd& rIPCoords) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }

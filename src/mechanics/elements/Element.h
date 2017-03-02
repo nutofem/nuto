@@ -7,6 +7,8 @@
 namespace NuTo
 {
 
+typedef Eigen::VectorXd NodeValues;
+
 class Element
 {
 public:
@@ -16,7 +18,7 @@ public:
     {
     }
 
-    Eigen::VectorXd ExtractNodeValues() const
+    NodeValues ExtractNodeValues() const
     {
         int dim = mNodes[0]->GetNumValues();
         Eigen::VectorXd nodeValues(mNodes.size() * dim);
@@ -36,7 +38,6 @@ public:
     }
 
 private:
-
     std::vector<NuTo::NodeSimple*> mNodes;
     const Interpolation& mInterpolation;
 };
