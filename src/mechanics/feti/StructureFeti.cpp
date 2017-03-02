@@ -44,7 +44,7 @@ using NuTo::eVisualizeWhat;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-NuTo::StructureFETI::StructureFETI(int rDimension):
+NuTo::StructureFeti::StructureFeti(int rDimension):
     Structure(rDimension),
     mRank(boost::mpi::communicator().rank()),
     mNumProcesses(boost::mpi::communicator().size()),
@@ -57,7 +57,7 @@ NuTo::StructureFETI::StructureFETI(int rDimension):
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//void NuTo::StructureFETI::AssembleBoundaryDofIds()
+//void NuTo::StructureFeti::AssembleBoundaryDofIds()
 //{
 
 //    const auto& dofTypes = GetDofStatus().GetDofTypes();
@@ -93,7 +93,7 @@ NuTo::StructureFETI::StructureFETI(int rDimension):
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::AssembleConnectivityMatrix()
+void NuTo::StructureFeti::AssembleConnectivityMatrix()
 {
     boost::mpi::communicator world;
     const auto& dofTypes    = GetDofStatus().GetDofTypes();
@@ -175,10 +175,58 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
 
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interpolationTypeId)
+void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeIdsBoundaries, const std::vector<int>& nodeIdsLoads)
+{
+
+    std::set<int> setNodeIdsBoundaries(nodeIdsBoundaries.begin(), nodeIdsBoundaries.end());
+    std::set<int> setNodeIdsLoads(nodeIdsLoads.begin(), nodeIdsLoads.end());
+
+    std::set<int> setNodeIdsInterfaces;
+    for (const auto& interface : mInterfaces)
+        for (const auto& nodePair : interface.mNodeIdsMap)
+            setNodeIdsInterfaces.insert(nodePair.second);
+
+    std::vector<int> nodeIdsVirtualConstraints;
+    for (const auto& nodePair : NodeGetNodeMap())
+    {
+        if (            setNodeIdsBoundaries.find(nodePair.first)   == setNodeIdsBoundaries.end()
+                 and    setNodeIdsLoads.find(nodePair.first)        == setNodeIdsLoads.end()
+                 and    setNodeIdsInterfaces.find(nodePair.first)   == setNodeIdsInterfaces.end() )
+        {
+            nodeIdsVirtualConstraints.push_back(nodePair.first);
+        }
+    }
+
+    switch (GetDimension())
+    {
+        case 2:
+        {
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[1], Eigen::Vector2d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector2d::UnitY(), 0.);
+
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Y \n\n";
+
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for dimension: " + std::to_string(GetDimension()));
+    }
+
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interpolationTypeId)
 {
 
     Json::Value root;
@@ -288,7 +336,7 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
+void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
 {
 
     const auto displacements = NuTo::Node::eDof::DISPLACEMENTS;
@@ -394,7 +442,7 @@ void NuTo::StructureFETI::CalculateRigidBodyModesTotalFETI()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CreateDummy1D()
+void NuTo::StructureFeti::CreateDummy1D()
 {
     mInterfaces.resize(1);
 
@@ -416,83 +464,83 @@ void NuTo::StructureFETI::CreateDummy1D()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateRigidBodyModes()
+void NuTo::StructureFeti::CalculateRigidBodyModes()
 {
 
-    switch (GetDimension())
-    {
-    case 1:
-    {
-        mNumRigidBodyModes = 1;
-    }
-        break;
-    case 2:
-    {
-        mNumRigidBodyModes = 3;
-    }
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
-    }
-
-    const int numActiveDofs     = GetNumTotalActiveDofs();
-    const int numRigidBodyModes = mNumRigidBodyModes;
-    const int numTotalDofs      = GetNumTotalDofs();
-
-
-    ConstitutiveIOMap<Constitutive::eInput> inputMap;
-    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-                eCalculateStaticData::EULER_BACKWARD);
-
-    StructureOutputBlockMatrix  hessian0(GetDofStatus(), true);
-
-    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalHessian0;
-    evalHessian0                        [eStructureOutput::HESSIAN0]            = &hessian0;
-
-    Evaluate(inputMap, evalHessian0);
-
-    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-
-    // check if K.JJ is invertible
-    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> testSolver;
-    testSolver.compute(hessian0_JJ);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    std::cout << "structure->mRank \t" << mRank << "\n testSolver.rank(); \t" << testSolver.rank() << "\n testSolver.row \t" << testSolver.rows() << std::endl << std::endl;
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
-    mSolver.compute(hessian0_JJ);
-
-    // The dimension of the rigid body modes depends on the number of types
-    mRigidBodyModes.setZero(numTotalDofs, numRigidBodyModes);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    std::cout << "structure->mRank \t"                          << mRank
-              << "\n structure->mRigidBodyModes.rows() \t"      << mRigidBodyModes.rows()
-              << "\n structure->mRigidBodyModes.cols() \t"      << mRigidBodyModes.cols() << std::endl << std::endl;
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    if (IsFloating())
-    {
-        mRigidBodyModes.topRows(numActiveDofs) = mSolver.solve(hessian0_JK);
-        mRigidBodyModes *= -1.; // this is stupid please fix asap
-    }
-
-    mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
-
-    boost::mpi::communicator world;
-    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
+//    switch (GetDimension())
+//    {
+//    case 1:
+//    {
+//        mNumRigidBodyModes = 1;
+//    }
+//        break;
+//    case 2:
+//    {
+//        mNumRigidBodyModes = 3;
+//    }
+//        break;
+//    default:
+//        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+//    }
+//
+//    const int numActiveDofs     = GetNumTotalActiveDofs();
+//    const int numRigidBodyModes = mNumRigidBodyModes;
+//    const int numTotalDofs      = GetNumTotalDofs();
+//
+//
+//    ConstitutiveIOMap<Constitutive::eInput> inputMap;
+//    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+//                eCalculateStaticData::EULER_BACKWARD);
+//
+//    StructureOutputBlockMatrix  hessian0(GetDofStatus(), true);
+//
+//    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalHessian0;
+//    evalHessian0                        [eStructureOutput::HESSIAN0]            = &hessian0;
+//
+//    Evaluate(inputMap, evalHessian0);
+//
+//    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+//    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
+//
+//    // check if K.JJ is invertible
+//    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> testSolver;
+//    testSolver.compute(hessian0_JJ);
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//    std::cout << "structure->mRank \t" << mRank << "\n testSolver.rank(); \t" << testSolver.rank() << "\n testSolver.row \t" << testSolver.rows() << std::endl << std::endl;
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
+//    mSolver.compute(hessian0_JJ);
+//
+//    // The dimension of the rigid body modes depends on the number of types
+//    mRigidBodyModes.setZero(numTotalDofs, numRigidBodyModes);
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    std::cout << "structure->mRank \t"                          << mRank
+//              << "\n structure->mRigidBodyModes.rows() \t"      << mRigidBodyModes.rows()
+//              << "\n structure->mRigidBodyModes.cols() \t"      << mRigidBodyModes.cols() << std::endl << std::endl;
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    if (IsFloating())
+//    {
+//        mRigidBodyModes.topRows(numActiveDofs) = mSolver.solve(hessian0_JK);
+//        mRigidBodyModes *= -1.; // this is stupid please fix asap
+//    }
+//
+//    mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
+//
+//    boost::mpi::communicator world;
+//    mNumRigidBodyModesTotal       = boost::mpi::all_reduce(world,mNumRigidBodyModes, std::plus<int>());
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix hessian0,
+void NuTo::StructureFeti::CheckRigidBodyModes(  const StructureOutputBlockMatrix hessian0,
                                                 const double tolerance) const
 {
 
@@ -532,40 +580,44 @@ void NuTo::StructureFETI::CheckRigidBodyModes(  const StructureOutputBlockMatrix
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CheckStiffnessPartitioning(  const StructureOutputBlockMatrix hessian0,
+void NuTo::StructureFeti::CheckStiffnessPartitioning(  const StructureOutputBlockMatrix hessian0,
                                                         const double tolerance) const
 {
 
-    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
+//    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+//    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
+//
+//    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
+//
+//    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
+//    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
+//
+//
+//    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
+//    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
+//    SparseMatrix asdfaf = hessian0_KK  - tmp;
+//
+//    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
+//
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    GetLogger() << "Subdomain: \t"          << mRank
+//                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
+//                << "\t tolerance: \t"       << tolerance                << "\n\n";
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//
+//    assert(     (norm < tolerance)
+//            and "Stiffness matrix is not partitioned correctly. Check constraints.");
 
-    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-
-    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
-    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
-
-
-    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
-    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
-
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    GetLogger() << "Subdomain: \t"          << mRank
-                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
-                << "\t tolerance: \t"       << tolerance                << "\n\n";
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    assert(     (norm < tolerance)
-            and "Stiffness matrix is not partitioned correctly. Check constraints.");
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CheckProjectionMatrix( const double tolerance ) const
+void NuTo::StructureFeti::CheckProjectionMatrix( const double tolerance ) const
 {
 
     const Eigen::MatrixXd zeroMatrix = mProjectionMatrix - mProjectionMatrix*mProjectionMatrix;
@@ -583,7 +635,7 @@ void NuTo::StructureFETI::CheckProjectionMatrix( const double tolerance ) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CheckProjectionOfCoarseGrid( const double tolerance ) const
+void NuTo::StructureFeti::CheckProjectionOfCoarseGrid( const double tolerance ) const
 {
 
     const Eigen::MatrixXd zeroMatrix = mProjectionMatrix.transpose() * mG;
@@ -604,7 +656,7 @@ void NuTo::StructureFETI::CheckProjectionOfCoarseGrid( const double tolerance ) 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateInterfaceRigidBodyModes()
+void NuTo::StructureFeti::CalculateInterfaceRigidBodyModes()
 {
     mInterfaceRigidBodyModes = mConnectivityMatrix * mRigidBodyModes;
 }
@@ -612,7 +664,7 @@ void NuTo::StructureFETI::CalculateInterfaceRigidBodyModes()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateAndAppyVirtualConstraints()
+void NuTo::StructureFeti::CalculateAndAppyVirtualConstraints()
 {
 
 throw MechanicsException(__PRETTY_FUNCTION__, "Not yet implemented.");
@@ -623,7 +675,7 @@ throw MechanicsException(__PRETTY_FUNCTION__, "Not yet implemented.");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
+void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const int nodeGroupId)
 {
     boost::mpi::communicator world;
 
@@ -654,7 +706,7 @@ void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
         displs[i] = displs[i-1] + recvCount[i-1];
 
 
-    const int numLocalBoundaryDofIds = mBoundaryDofIds.size();
+    int numLocalBoundaryDofIds = mBoundaryDofIds.size();
     MPI_Allreduce(&numLocalBoundaryDofIds,
                   &mNumTotalBoundaryDofIds,
                   1,
@@ -675,7 +727,7 @@ void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap)
+void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap)
 {
     boost::mpi::communicator world;
 
@@ -690,7 +742,7 @@ void NuTo::StructureFETI::ApplyPrescribedDisplacements(const std::map<int, doubl
     // Contains the number of elements that are received from each process.
     std::vector<int> recvCount(mNumProcesses, 0);
 
-    const int numLocalDofIds = mPrescribedDisplacementDofIds.size();
+    int numLocalDofIds = mPrescribedDisplacementDofIds.size();
     boost::mpi::all_gather<int>(world,numLocalDofIds,recvCount);
 
     // displs:
@@ -724,7 +776,7 @@ void NuTo::StructureFETI::ApplyPrescribedDisplacements(const std::map<int, doubl
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateProjectionMatrix()
+void NuTo::StructureFeti::CalculateProjectionMatrix()
 {
     mProjectionMatrix = Eigen::MatrixXd::Identity(mG.rows(), mG.rows()) - mG * (mG.transpose() * mG).inverse() * mG.transpose();
 }
@@ -732,7 +784,7 @@ void NuTo::StructureFETI::CalculateProjectionMatrix()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::CalculateG()
+void NuTo::StructureFeti::CalculateG()
 {
 
     std::vector<int> recvCount;
