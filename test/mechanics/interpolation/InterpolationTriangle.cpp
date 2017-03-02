@@ -1,12 +1,8 @@
 #include "BoostUnitTest.h"
+#include "InterpolationTests.h"
 #include "TypeTraits.h"
 #include "mechanics/interpolation/InterpolationTriangle.h"
 
-
-/**
- * Define a InterpolationTest.h that runs these checks
- * for arbitrary interpolations
- */
 
 BOOST_AUTO_TEST_CASE(InterpolationTriangleCopyMove)
 {
@@ -14,25 +10,22 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangleCopyMove)
     NuTo::Test::Move<NuTo::InterpolationTriangle>();
 }
 
+std::vector<Eigen::VectorXd> GetTestPoints()
+{
+    return {Eigen::Vector2d({1. / 6., 1. / 6.}), Eigen::Vector2d({4. / 6., 1. / 6.}),
+            Eigen::Vector2d({1. / 6., 4. / 6.})};
+}
+
+
 BOOST_AUTO_TEST_CASE(InterpolationTriangleN)
 {
     NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
-
-    for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
-    {
-        auto localNodeCoordinates = interpolation.GetLocalCoords(iNode);
-        auto N                    = interpolation.GetShapeFunctions(localNodeCoordinates);
-        for (int i = 0; i < interpolation.GetNumNodes(); ++i)
-        {
-            if (i == iNode)
-                BOOST_CHECK_CLOSE(N[i], 1, 1.e-10);
-            else
-                BOOST_CHECK_SMALL(N[i], 1.e-10);
-        }
-    }
+    NuTo::Test::CheckShapeFunctionsAndNodePositions(interpolation);
 }
 
-BOOST_AUTO_TEST_CASE(InterpolationTriangleB)
+
+BOOST_AUTO_TEST_CASE(InterpolationTriangleUnity)
 {
-    // check derviatives via CDF.
+    NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
+    NuTo::Test::CheckPartitionOfUnity(interpolation, GetTestPoints());
 }

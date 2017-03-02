@@ -18,27 +18,22 @@ struct TestElement : public NuTo::Element
     {
     }
 
-    NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-    NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
-    NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
+    NuTo::NodeSimple n0                       = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
+    NuTo::NodeSimple n1                       = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
+    NuTo::NodeSimple n2                       = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
     NuTo::InterpolationTriangle interpolation = NuTo::InterpolationTriangle(NuTo::eInterpolation::GAUSS, 1, 2);
 };
 
 BOOST_AUTO_TEST_CASE(ElementExtractNodeValues)
 {
-    auto nodeValues = TestElement().ExtractNodeValues();
-    BOOST_CHECK_CLOSE(nodeValues[0], 1, 1.e-10);
-    BOOST_CHECK_CLOSE(nodeValues[1], 1, 1.e-10);
-    BOOST_CHECK_CLOSE(nodeValues[2], 5, 1.e-10);
-    BOOST_CHECK_CLOSE(nodeValues[3], 1, 1.e-10);
-    BOOST_CHECK_CLOSE(nodeValues[4], 1, 1.e-10);
-    BOOST_CHECK_CLOSE(nodeValues[5], 7, 1.e-10);
+    NuTo::NodeValues nodeValues = TestElement().ExtractNodeValues();
+    BoostUnitTest::CheckVector(nodeValues, std::vector<double>{1, 1, 5, 1, 1, 7}, 6);
 }
 
 
 BOOST_AUTO_TEST_CASE(ElementInterpolate)
 {
-    auto interpolatedValues = TestElement().Interpolate(Eigen::Vector2d({0.5, 0.5}));
-    BOOST_CHECK_CLOSE(interpolatedValues[0], 3., 1.e-10);
-    BOOST_CHECK_CLOSE(interpolatedValues[1], 4., 1.e-10);
+    auto interpolatedValues     = TestElement().Interpolate(Eigen::Vector2d({0.5, 0.5}));
+    std::vector<double> correct = {3., 4.};
+    BoostUnitTest::CheckVector(interpolatedValues, correct, 2);
 }

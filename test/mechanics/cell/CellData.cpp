@@ -30,8 +30,8 @@ BOOST_AUTO_TEST_CASE(CellDataNodeValues)
     elements[d1] = &e1;
 
     NuTo::CellData cell(elements);
-    auto nodeValues0 = cell.GetNodeValues(d0);
-    auto nodeValues1 = cell.GetNodeValues(d1);
+    NuTo::NodeValues nodeValues0 = cell.GetNodeValues(d0);
+    NuTo::NodeValues nodeValues1 = cell.GetNodeValues(d1);
 
     BoostUnitTest::CheckVector(nodeValues0, std::vector<double>({1,1,5,1,1,7}), 6);
     BoostUnitTest::CheckVector(nodeValues1, std::vector<double>({1,3,7}), 3);
