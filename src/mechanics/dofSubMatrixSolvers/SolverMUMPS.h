@@ -7,11 +7,7 @@
 
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "math/SparseMatrixCSR.h"
-#include <eigen3/Eigen/Dense>
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 namespace NuTo
 {

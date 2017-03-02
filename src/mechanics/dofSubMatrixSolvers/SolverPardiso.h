@@ -1,33 +1,38 @@
 //
-// Created by phuschke on 3/2/17.
+// Created by Thomas Titscher on 3/1/17.
 //
-
-//
-// Created by phuschke on 3/1/17.
-//
-
 
 #pragma once
 
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 #include "math/SparseDirectSolverPardiso.h"
-#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "math/SparseMatrixCSR.h"
-#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
 
-    class SolverPardiso : public SolverBase
+class SolverPardiso : public SolverBase
+{
+public:
+    SolverPardiso(int rNumProcessors)
+        : SolverBase()
+        , mNumProcessors(rNumProcessors)
     {
-    public:
-        SolverPardiso() : SolverBase()
-        {}
+    }
+#ifdef HAVE_PARDISO
+    virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix,
+                                          const BlockFullVector<double>& rVector) override
+    {
+        Eigen::VectorXd result;
+        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
 
-        virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) override
-        {
-            throw MathException(__PRETTY_FUNCTION__, "not implemented");
-        }
-    };
+        NuTo::SparseDirectSolverPardiso pardiso(mNumProcessors);
+        pardiso.Solve(*matrixForSolver, rVector.Export(), result);
+
+        return BlockFullVector<double>(result, rMatrix.GetDofStatus());
+    }
+#endif // HAVE_PARDISO
+private:
+    int mNumProcessors;
+};
 } // namespace NuTo

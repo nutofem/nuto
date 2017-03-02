@@ -36,9 +36,12 @@ add_unit_test(SparseSolver
         math/SparseMatrixCSR.cpp
         math/SparseMatrix.cpp
         math/SparseDirectSolverMUMPS.cpp
+        math/SparseDirectSolverPardiso.cpp
         )
 target_link_libraries(SparseSolver ${MUMPS_LIBRARIES})
-
+if (PARDISO_FOUND)
+    target_link_libraries(SparseSolver ${PARDISO_LIBRARIES})
+endif()
 
 add_unit_test(SpatialContainer)
 target_link_libraries(SpatialContainer ${ANN_LIBRARIES})

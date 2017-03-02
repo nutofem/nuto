@@ -5,8 +5,6 @@
 #pragma once
 
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
-#include "math/SparseDirectSolverMUMPS.h"
-
 
 namespace NuTo
 {
