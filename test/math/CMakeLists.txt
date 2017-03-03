@@ -21,27 +21,6 @@ add_unit_test(SparseMatrixCSRVector2General
     )
 
 
-add_unit_test(SparseSolver
-        mechanics/dofSubMatrixStorage/BlockSparseMatrix.cpp
-        mechanics/dofSubMatrixStorage/DofStatus.cpp
-        mechanics/dofSubMatrixStorage/BlockFullVector.cpp
-        mechanics/dofSubMatrixStorage/BlockStorageBase.cpp
-        mechanics/dofSubMatrixStorage/BlockScalar.cpp
-        mechanics/nodes/NodeEnum.cpp
-        math/SparseMatrixCSRVector2.cpp
-        math/SparseMatrixCSRVector2General.cpp
-        math/SparseMatrixCSRSymmetric.cpp
-        math/SparseMatrixCSRVector2Symmetric.cpp
-        math/SparseMatrixCSRGeneral.cpp
-        math/SparseMatrixCSR.cpp
-        math/SparseMatrix.cpp
-        math/SparseDirectSolverMUMPS.cpp
-        math/SparseDirectSolverPardiso.cpp
-        )
-target_link_libraries(SparseSolver ${MUMPS_LIBRARIES})
-if (PARDISO_FOUND)
-    target_link_libraries(SparseSolver ${PARDISO_LIBRARIES})
-endif()
 
 add_unit_test(SpatialContainer)
 target_link_libraries(SpatialContainer ${ANN_LIBRARIES})

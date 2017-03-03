@@ -2,7 +2,6 @@
 import unittest
 import nuto
 import numpy as np
-import matplotlib.pyplot as plt
 
 L = 20.
 A = 12.

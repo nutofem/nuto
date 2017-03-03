@@ -1,13 +1,5 @@
-//
-// Created by phuschke on 3/1/17.
-//
-
-#include <eigen3/Eigen/SparseLU>
-#include <eigen3/Eigen/Sparse>
 #include "BoostUnitTest.h"
-#include "mechanics/dofSubMatrixSolvers/SolverEigen.h"
-#include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
-#include "mechanics/dofSubMatrixSolvers/SolverPardiso.h"
+#include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -63,34 +55,3 @@ void SolveAndCheckSystem(NuTo::SolverBase& solver)
     BOOST_CHECK((solver.Solve(p.matrix, p.rhs).Export() - p.expectedSolution.Export()).isMuchSmallerThan(1.e-6, 1.e-1));
 }
 
-BOOST_AUTO_TEST_CASE(SolverMUMPS)
-{
-    NuTo::SolverMUMPS s;
-    SolveAndCheckSystem(s);
-}
-
-BOOST_AUTO_TEST_CASE(SolverPardiso)
-{
-#ifdef HAVE_PARDISO    
-    NuTo::SolverPardiso s(1);
-    SolveAndCheckSystem(s);
-#endif // HAVE_PARDISO
-}
-
-BOOST_AUTO_TEST_CASE(SolverEigenSparseLU)
-{
-    NuTo::SolverEigen<Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>> s;
-    SolveAndCheckSystem(s);
-}
-
-BOOST_AUTO_TEST_CASE(SolverEigenSparseQR)
-{
-    NuTo::SolverEigen<Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>> s;
-    SolveAndCheckSystem(s);
-}
-
-BOOST_AUTO_TEST_CASE(SolverEigenSimplicialLDLT)
-{
-    NuTo::SolverEigen<Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>>> s;
-    SolveAndCheckSystem(s);
-}
