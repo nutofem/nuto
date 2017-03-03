@@ -44,7 +44,7 @@ function(add_unit_test ClassName)
         add_executable(${ClassName} ${ClassName}.cpp ${AdditionalObjects})
     endif()
     # link the unit test framework to the unit test
-    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase)
+    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})

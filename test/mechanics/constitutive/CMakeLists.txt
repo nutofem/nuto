@@ -7,7 +7,12 @@ foreach(test AdditiveInput AdditiveOutput)
     add_test(almost::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
 endforeach()
 
-add_unit_test(DataContainer)
+add_unit_test(DataContainer
+    base/serializeStream/SerializeStreamBase.cpp
+    base/serializeStream/SerializeStreamIn.cpp
+    base/serializeStream/SerializeStreamOut.cpp
+    )
+
 
 add_unit_test(IPConstitutiveLaw
     mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
