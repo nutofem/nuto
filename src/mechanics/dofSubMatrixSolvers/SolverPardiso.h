@@ -14,9 +14,10 @@ namespace NuTo
 class SolverPardiso : public SolverBase
 {
 public:
-    SolverPardiso(int rNumProcessors)
+    SolverPardiso(int rNumProcessors, bool rShowTime = true)
         : SolverBase()
         , mNumProcessors(rNumProcessors)
+        , mShowTime(rShowTime)
     {
     }
 #ifdef HAVE_PARDISO
@@ -27,7 +28,9 @@ public:
         std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
         matrixForSolver->SetOneBasedIndexing();
 
-        NuTo::SparseDirectSolverPardiso pardiso(mNumProcessors);
+        int verboseLevel = mShowTime ? 1 : 0;
+        NuTo::SparseDirectSolverPardiso pardiso(mNumProcessors, verboseLevel);
+        pardiso.SetShowTime(mShowTime);
         pardiso.Solve(*matrixForSolver, rVector.Export(), result);
 
         return BlockFullVector<double>(result, rMatrix.GetDofStatus());
@@ -35,5 +38,6 @@ public:
 #endif // HAVE_PARDISO
 private:
     int mNumProcessors;
+    bool mShowTime;
 };
 } // namespace NuTo

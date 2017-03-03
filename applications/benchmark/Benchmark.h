@@ -204,9 +204,21 @@ namespace BenchmarkInternal
         std::function<void(Runner&)> mFunction;
     };
 
+struct Warmup
+{
+    static void Test(BenchmarkInternal::Runner& runner)
+    {
+        while(runner.KeepRunningTime(0.5))
+        {}
+    }
+}; 
+
+
     class Holder
     {
     public:
+        Holder() : mWarmup({"Warm", "up", &Warmup::Test}) {}
+
         static Holder& GetInstance()
         {
             static Holder singleton;
@@ -215,24 +227,26 @@ namespace BenchmarkInternal
 
         void Run(Reporter& rTestReporter)
         {
+            Runner s;
+            mWarmup.mFunction(s);
             for (auto& benchmark : mBenchmarks)
             {
                 Runner s;
                 benchmark.mFunction(s);
-                rTestReporter.AddTestResult(Result({benchmark.mTestCase, benchmark.mTestName, s.GetSeconds()}));
+                rTestReporter.AddTestResult({benchmark.mTestCase, benchmark.mTestName, s.GetSeconds()});
             }
         }
 
-        void AddBenchmark(Benchmark rBenchmark)
+        void AddBenchmark(Benchmark&& rBenchmark)
         {
             mBenchmarks.push_back(std::move(rBenchmark));
         }
 
     private:
-        Holder() = default;
         Holder(const Holder&) = delete;
         Holder& operator=(const Holder&) = delete;
         std::vector<Benchmark> mBenchmarks;
+        Benchmark mWarmup; 
     };
 
 
@@ -274,7 +288,6 @@ namespace BenchmarkInternal
         return nullptr;
     }
 } // namespace Benchmark
-
 
 int main(int argc, char const *argv[])
 {

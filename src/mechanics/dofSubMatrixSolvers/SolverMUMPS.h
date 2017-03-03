@@ -12,24 +12,31 @@
 namespace NuTo
 {
 
-    class SolverMUMPS : public SolverBase
+class SolverMUMPS : public SolverBase
+{
+public:
+    SolverMUMPS(bool rShowTime = true)
+        : SolverBase()
+        , mShowTime(rShowTime)
     {
-    public:
-        SolverMUMPS() : SolverBase()
-        {}
-        virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) override
-        {
+    }
+    virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix,
+                                          const BlockFullVector<double>& rVector) override
+    {
 
-            Eigen::VectorXd result;
-            std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
-            matrixForSolver->SetOneBasedIndexing();
+        Eigen::VectorXd result;
+        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
+        matrixForSolver->SetOneBasedIndexing();
 
-            NuTo::SparseDirectSolverMUMPS mySolver;
+        NuTo::SparseDirectSolverMUMPS solver;
+        solver.SetShowTime(mShowTime);
 
-            mySolver.Solve(*matrixForSolver, rVector.Export(), result);
+        solver.Solve(*matrixForSolver, rVector.Export(), result);
 
-            return BlockFullVector<double>(result, rMatrix.GetDofStatus());
+        return BlockFullVector<double>(result, rMatrix.GetDofStatus());
+    }
 
-        }
-    };
+private:
+    bool mShowTime;
+};
 } // namespace NuTo

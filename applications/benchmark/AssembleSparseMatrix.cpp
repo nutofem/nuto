@@ -114,7 +114,7 @@ BENCHMARK(Assembly, EigenSparseInsert, runner)
     while (runner.KeepRunningIterations(numBenchmarkRuns))
     {
         Eigen::SparseMatrix<double> m(s.NumDofs(),s.NumDofs());
-        m.reserve(Eigen::VectorXi::Constant(s.NumDofs(),s.Ke().rows()*10));
+        m.reserve(Eigen::VectorXi::Constant(s.NumDofs(),s.Ke().rows()*20));
         {
             for (int iElement = 0; iElement < s.NumElements(); ++iElement)
             {

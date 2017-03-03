@@ -195,13 +195,6 @@ private:
 }
 
 
-BENCHMARK(BuildGradient, WarmUp, runner)
-{
-    while (runner.KeepRunningIterations(1e6))
-    {
-    }
-}
-
 BENCHMARK(BuildGradient, HardcodeFix, runner)
 {
     std::vector<NuTo::NodeBase*> nodes;
