@@ -57,7 +57,6 @@ public:
 
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDimSlave>& data, const std::pair<const ContinuumElement<TDimSlave>*, int> &rElementAndSurfaceId);
 
-
     void CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const;
 
     void CalculateGlobalRowDofsLocal(BlockFullVector<int> &rGlobalRowDofs) const;
@@ -73,6 +72,9 @@ public:
                                       EvaluateDataContinuumBoundary<TDimSlave>                       &rData,
                                       const std::pair<const ContinuumElement<TDimSlave> *, int>      &rElementAndSurfaceId);
 
+    void CalculateElementOutputsLocalForce(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
+    void CalculateElementOutputsLocalForceDerivative(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
+
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput) const;
 
 
@@ -85,7 +87,7 @@ public:
                                                            Eigen::VectorXd &rParamsIPSlave,
                                                            const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId) const;
 
-//    const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
+    const Eigen::MatrixXd& ComputeContactMatrix();
 
 protected:
     std::vector<std::pair<const ContinuumElement<TDimSlave>*, int> > mElementsSlave;

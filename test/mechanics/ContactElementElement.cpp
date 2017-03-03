@@ -2882,6 +2882,8 @@ int main()
                                     1.e6,
                                     NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 2, 1);
 
+    return 0;
+
     resultDir = "./ResultsStaticFE_IGA_L_RigidLobatto2";
     int factor = 1;
 
