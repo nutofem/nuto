@@ -247,7 +247,7 @@ public:
     //! @brief ... build global external load vector (currently for displacements only)
     //! @param rLoadCase ... load case
     //! @return  ... StructureOutputBlockVector containing the external loads
-    NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector(int rLoadCase);
+    NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector(int rLoadCase = 0);
 
     NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix, const NuTo::BlockFullVector<double>& rVector) const;
 
