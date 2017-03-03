@@ -9,6 +9,7 @@ if(ENABLE_PYTHON)
         MassMatrixIntegration
         Quad2DPatchTest
         Tetrahedron10N
+        TimeIntegrationResultForce
         )
         add_test(integration::mechanics::${test}.py ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
         set_property(TEST integration::mechanics::${test}.py PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")

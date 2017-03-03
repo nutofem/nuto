@@ -9,7 +9,7 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
-
+#include <iomanip>
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif
@@ -284,18 +284,17 @@ try
     resultFile_left /= std::string("Forces_GroupNodes_Left.dat");
 
 	Eigen::MatrixXd result_left = NuTo::EigenCompanion::ReadFromFile(resultFile_left.string());
-    std::cout << "result_left \n" << result_left << std::endl;
 
     Eigen::Matrix2d result_leftRef;
     result_leftRef.setZero();
     result_leftRef(0,0) = -1; //disp on fixed node
     result_leftRef(1,0) = -3.001682840791e+02;
 
-    if ((result_leftRef-result_left).cwiseAbs().maxCoeff()>1e-4)
+    if (not (result_leftRef-result_left).isMuchSmallerThan(1.e-4,1.e-1))
     {
-    	std::cout << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
-        std::cout<< "real result \n" << result_left << std::endl;
-        std::cout<< "ref result  \n" << result_leftRef << std::endl;
+    	std::cout << std::setprecision(10) << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
+        std::cout << "real result \n" << result_left << std::endl;
+        std::cout << "ref result  \n" << result_leftRef << std::endl;
     	std::cout << "difference " << (result_leftRef-result_leftRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for left displacements is not correct." << std::endl;
         return EXIT_FAILURE;
@@ -312,7 +311,7 @@ try
     result_rightRef.setZero();
     result_rightRef(1,0) = 3.016648179801e+02;
 
-    if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)
+    if (not (result_rightRef-result_right).isMuchSmallerThan(1.e-4,1.e-1))
     {
     	std::cout << "difference " << (result_rightRef-result_right).cwiseAbs().maxCoeff() << "\n";
         std::cout<< "real result \n" << result_right << std::endl;

@@ -14,11 +14,13 @@ add_unit_test(SparseMatrixCSRGeneral
     )
 
 add_unit_test(SparseMatrixCSRVector2General
-    math/SparseMatrixCSRVector2.cpp
-    math/SparseMatrixCSRGeneral.cpp
-    math/SparseMatrixCSR.cpp
-    math/SparseMatrix.cpp
+        math/SparseMatrixCSRVector2.cpp
+        math/SparseMatrixCSRGeneral.cpp
+        math/SparseMatrixCSR.cpp
+        math/SparseMatrix.cpp
     )
+
+
 
 add_unit_test(SpatialContainer)
 target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
