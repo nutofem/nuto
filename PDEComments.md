@@ -5,7 +5,8 @@
 
 - fix resize of DofContainer to "magicContainerSize = 10"
 - add automatic assignment of a DofType::mId (currently done manually
-
+- The approach with BMatrixLocal was tremendously stupid. The transformation to BMatrixGlobal cannot be done afterwards. This has to be moved to `NuTo::CellIPData`. However, it could be done for the `N` matrix...
+    - new typedefs: DerivativeShapeFunctionsLocal --> DerivativeShapeFunctionsGlobal --> BMatrixStrain/BMatrixGradient
 
 ## Cache
 
