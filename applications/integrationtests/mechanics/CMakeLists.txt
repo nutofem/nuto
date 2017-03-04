@@ -25,7 +25,6 @@ foreach(mesh
     ConstraintsNodeToElementFiberMesh2d
     ConstraintsNodeToElementMatrixMesh3d
     ConstraintsNodeToElementFiberMesh3d
-    TwoElements
     )
     execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
 endforeach()
@@ -53,7 +52,7 @@ foreach(test
     Shrinkage
     SpringDamperCombination
     SurfaceLoad
-    ThermoMechanics2D
+    ThermoElasticity1D
     TrussIn2D
     TrussIn3D
     )
