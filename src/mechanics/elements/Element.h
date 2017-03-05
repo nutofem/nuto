@@ -7,8 +7,6 @@
 namespace NuTo
 {
 
-typedef Eigen::VectorXd NodeValues;
-
 class Element
 {
 public:
@@ -27,9 +25,9 @@ public:
         return nodeValues;
     }
 
-    Eigen::VectorXd Interpolate(const Eigen::VectorXd& rLocalCoords) const
+    Eigen::VectorXd Interpolate(const NaturalCoords& rNaturalCoords) const
     {
-        return mInterpolation.GetN(rLocalCoords) * ExtractNodeValues();
+        return mInterpolation.GetN(rNaturalCoords) * ExtractNodeValues();
     }
 
     const Interpolation& GetInterpolation() const

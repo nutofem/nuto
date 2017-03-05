@@ -30,3 +30,8 @@ BOOST_AUTO_TEST_CASE(Jacobian3DDet)
     NuTo::Jacobian jacobian(coordinates, B);
     BOOST_CHECK_CLOSE(jacobian.Det(), 10 * 5 * 42, 1.e-10);
 }
+
+BOOST_AUTO_TEST_CASE(JacobianTransform)
+{
+    // TODO! How?
+}

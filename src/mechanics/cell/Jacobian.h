@@ -1,6 +1,7 @@
 #pragma once
 
 #include <eigen3/Eigen/Dense>
+#include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo
 {
@@ -8,7 +9,7 @@ namespace NuTo
 class Jacobian
 {
 public:
-    Jacobian(const Eigen::VectorXd& rNodalValues, const Eigen::MatrixXd& rDerivativeShapeFunctions)
+    Jacobian(const NodeValues& rNodeValues, const DerivativeShapeFunctionsNatural& rDerivativeShapeFunctions)
     {
         const int numRows = rDerivativeShapeFunctions.rows();
         const int dim     = rDerivativeShapeFunctions.cols();
@@ -18,11 +19,16 @@ public:
         // y0  y1  y2  y3 ...
         // z0  z1  z2  z3 ...
         for (int i                      = 0; i < numRows; ++i)
-            nodeBlockCoordinates.col(i) = rNodalValues.block(dim * i, 0, dim, 1);
+            nodeBlockCoordinates.col(i) = rNodeValues.block(dim * i, 0, dim, 1);
 
         mJacobian    = nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
         mInvJacobian = mJacobian.inverse();
         mDetJacobian = mJacobian.determinant();
+    }
+
+    DerivativeShapeFunctionsGlobal TransformDerivativeShapeFunctions(const DerivativeShapeFunctionsNatural& rGlobal) const
+    {
+        return rGlobal * Inv();
     }
 
     const Eigen::MatrixXd& Inv() const

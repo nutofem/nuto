@@ -9,30 +9,33 @@ class InterpolationTriangle : public Interpolation
 {
 public:
     InterpolationTriangle(eInterpolation rType, int rOrder, int rDofDimension)
-        : Interpolation(rType, rOrder, rDofDimension)
+        : mType(rType)
+        , mOrder(rOrder)
+        , mDofDimension(rDofDimension)
     {
     }
 
-    Eigen::VectorXd GetShapeFunctions(const Eigen::VectorXd& rIPCoords) const override
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
     {
         if (mType == eInterpolation::GAUSS && mOrder == 1)
-            return ShapeFunctions2D::ShapeFunctionsTriangleOrder1(rIPCoords);
+            return ShapeFunctions2D::ShapeFunctionsTriangleOrder1(rNaturalIPCoords);
         throw;
     }
 
-    Eigen::MatrixXd GetDerivativeShapeFunctions(const Eigen::VectorXd& rIPCoords) const override
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
     {
         if (mType == eInterpolation::GAUSS && mOrder == 1)
-            return ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(rIPCoords);
+            return ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(rNaturalIPCoords);
         throw;
     }
 
-    Eigen::VectorXd GetLocalCoords(int rNodeId) const override
+    NaturalCoords GetLocalCoords(int rNodeId) const override
     {
         if (mType == eInterpolation::GAUSS && mOrder == 1)
             return ShapeFunctions2D::NodeCoordinatesTriangleOrder1(rNodeId);
         throw;
     }
+
     int GetNumNodes() const override
     {
         if (mType == eInterpolation::GAUSS && mOrder == 1)
@@ -40,6 +43,14 @@ public:
         throw;
     }
 
+    int GetDofDimension() const override
+    {
+        return mDofDimension;
+    }
+
 private:
+    eInterpolation mType;
+    int mOrder;
+    int mDofDimension;
 };
 } /* NuTo */

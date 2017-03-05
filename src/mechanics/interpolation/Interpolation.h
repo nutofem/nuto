@@ -1,18 +1,10 @@
 #pragma once
 #include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/InterpolationEnum.h"
+#include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo
 {
-
-//! @brief N, the 'blown up' shape functions
-typedef Eigen::MatrixXd NMatrix;
-
-//! @brief BGradient in local coordinates. has to be transformed to BGradientGlobal using the jacobian
-typedef Eigen::MatrixXd BGradientLocal;
-
-//! @brief BStrain in local coordinates. has to be transformed to BStrainGlobal using the jacobian
-typedef Eigen::MatrixXd BStrainLocal;
 
 
 //! @brief Base class for the interpolation. The derived classes provide information about the actual interpolation.
@@ -21,51 +13,47 @@ typedef Eigen::MatrixXd BStrainLocal;
 class Interpolation
 {
 public:
-    Interpolation(eInterpolation rType, int rOrder, int rDofDimension)
-        : mType(rType)
-        , mOrder(rOrder)
-        , mDofDimension(rDofDimension)
-    {
-    }
+    Interpolation()                     = default;
     virtual ~Interpolation()            = default; // virtual destructor needed, rule of 5 below...
     Interpolation(const Interpolation&) = default;
     Interpolation(Interpolation&&)      = default;
     Interpolation& operator=(const Interpolation&) = default;
     Interpolation& operator=(Interpolation&&) = default;
 
-    int GetDofDimension() const
+
+    NMatrix GetN(const NaturalCoords& rNaturalIPCoords) const
     {
-        return mDofDimension;
+        int dim = GetDofDimension();
+        Eigen::MatrixXd N(dim, dim * GetNumNodes());
+
+        auto shapeFunctions = GetShapeFunctions(rNaturalIPCoords);
+
+        for (size_t i = 0; i < GetNumNodes(); ++i)
+            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
+        return N;
     }
 
-    NMatrix GetN(const Eigen::VectorXd& rLocalIPCoords) const;
-    BGradientLocal GetBGradient(const Eigen::VectorXd& rLocalIPCoords) const;
-    BStrainLocal GetBStrain(const Eigen::VectorXd& rLocalIPCoords) const;
-
     //! @brief calculates the shape functions
-    //! @param rLocalIPCoords integration point coordinates in the local coordinate system
+    //! @param rNaturalIPCoords integration point coordinates in the natural coordinate system
     //! @return vector of shape functions, dimension: [GetNumNodes() x 1]
-    virtual Eigen::VectorXd GetShapeFunctions(const Eigen::VectorXd& rLocalIPCoords) const = 0;
+    virtual ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const = 0;
 
     //! @brief calculates the derivative shape functions
-    //! @param rLocalIPCoords integration point coordinates in the local coordinate system
+    //! @param rNaturalPCoords integration point coordinates in the natural coordinate system
     //! @return matrix of derivate shape functions, dimension: [GetNumNodes() x local dimension]
     //! @remark 'local dimension' above is the dimension of rLocalIPCoords
-    virtual Eigen::MatrixXd GetDerivativeShapeFunctions(const Eigen::VectorXd& rLocalIPCoords) const = 0;
+    virtual DerivativeShapeFunctionsNatural
+    GetDerivativeShapeFunctions(const NaturalCoords& rNaturalIPCoords) const = 0;
 
     //! @brief returns the local node coordinates
     //! @param rNodeId local node number
-    //! @return node coordinates in the local coordinate system
-    virtual Eigen::VectorXd GetLocalCoords(int rNodeId) const = 0;
+    //! @return node coordinates in the natural coordinate system
+    virtual NaturalCoords GetLocalCoords(int rNodeId) const = 0;
 
     //! @brief returns the number of nodes
     //! @return number of nodes
     virtual int GetNumNodes() const = 0;
 
-
-protected:
-    eInterpolation mType;
-    int mOrder;
-    int mDofDimension;
+    virtual int GetDofDimension() const = 0;
 };
 } /* NuTo */
