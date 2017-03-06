@@ -7,10 +7,10 @@
 namespace NuTo
 {
 
-class Element
+class ElementSimple
 {
 public:
-    Element(std::vector<NuTo::NodeSimple*> rNodes, const Interpolation& rInterpolation)
+    ElementSimple(std::vector<NuTo::NodeSimple*> rNodes, const Interpolation& rInterpolation)
         : mNodes(rNodes)
         , mInterpolation(rInterpolation)
     {

@@ -1,20 +1,20 @@
 #include "BoostUnitTest.h"
 #include <type_traits>
 
-#include "mechanics/elements/Element.h"
+#include "mechanics/elements/ElementSimple.h"
 #include "mechanics/interpolation/InterpolationTriangle.h"
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::Element>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::Element>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::ElementSimple>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::ElementSimple>::value);
 }
 
 
-struct TestElement : public NuTo::Element
+struct TestElement : public NuTo::ElementSimple
 {
     TestElement()
-        : NuTo::Element({&n0, &n1, &n2}, interpolation)
+        : NuTo::ElementSimple({&n0, &n1, &n2}, interpolation)
     {
     }
 
