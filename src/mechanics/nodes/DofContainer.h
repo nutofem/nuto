@@ -5,7 +5,7 @@
 
 namespace NuTo
 {
-    
+
 
 template <typename T>
 class DofContainer
@@ -16,18 +16,24 @@ public:
         constexpr int magicVectorSize = 10;
         mData.resize(magicVectorSize);
     }
-    
+
+    virtual ~DofContainer()           = default;
+    DofContainer(const DofContainer&) = default;
+    DofContainer(DofContainer&&)      = default;
+    DofContainer& operator=(const DofContainer&) = default;
+    DofContainer& operator=(DofContainer&&) = default;
+
     T& operator[](const DofType& rDofType)
     {
         return mData[rDofType.GetId()];
     }
-    
+
     const T& operator[](const DofType& rDofType) const
     {
         return mData[rDofType.GetId()];
     }
 
-private:
+protected:
     std::vector<T> mData;
 };
 

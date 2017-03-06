@@ -3,7 +3,7 @@
 #include <vector>
 #include "mechanics/elements/ElementSimple.h"
 #include "mechanics/nodes/DofContainer.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "mechanics/nodes/DofVector.h"
 #include "mechanics/cell/Integrand.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
@@ -21,8 +21,11 @@ public:
     {
     }
 
-    BlockFullVector<double> Gradient()
+    DofVector<Eigen::VectorXd> Gradient()
     {
+        auto ipCoordinate = mIntegrationType.GetLocalIntegrationPointCoordinates(0);
+        DofVector<Eigen::VectorXd> gradient;
+        return gradient;
     }
 
 

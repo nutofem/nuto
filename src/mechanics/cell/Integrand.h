@@ -2,6 +2,7 @@
 #include <memory>
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/CellIPData.h"
+#include "mechanics/nodes/DofVector.h"
 
 namespace NuTo
 {
@@ -10,6 +11,6 @@ class Integrand
 public:
     virtual std::unique_ptr<Integrand> Clone() const = 0;
     virtual ~Integrand()        = default;
-    virtual DofContainer<Eigen::VectorXd> Gradient(const CellData&, const CellIPData&) = 0;
+    virtual DofVector<Eigen::VectorXd> Gradient(const CellData&, const CellIPData&) = 0;
 };
 } /* NuTo */
