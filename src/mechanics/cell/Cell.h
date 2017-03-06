@@ -21,10 +21,19 @@ public:
     {
     }
 
-    DofVector<Eigen::VectorXd> Gradient()
+    DofVector Gradient()
     {
-        auto ipCoordinate = mIntegrationType.GetLocalIntegrationPointCoordinates(0);
-        DofVector<Eigen::VectorXd> gradient;
+        DofVector gradient;
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                              mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
+            CellIPData cellipData(mElements, jacobian, ipCoords);
+            gradient += mIntegrand->Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
+        }
         return gradient;
     }
 

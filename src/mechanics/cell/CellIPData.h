@@ -12,7 +12,7 @@ namespace NuTo
 class CellIPData
 {
 public:
-    CellIPData(const DofContainer<const ElementSimple*> rElements, const NuTo::Jacobian& rJacobian,
+    CellIPData(const DofContainer<ElementSimple*> rElements, const NuTo::Jacobian& rJacobian,
                const NaturalCoords& rIPCoords)
         : mElements(rElements)
         , mJacobian(rJacobian)
@@ -108,7 +108,7 @@ private:
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const DofContainer<const ElementSimple*> mElements;
+    const DofContainer<ElementSimple*> mElements;
     const NuTo::Jacobian& mJacobian;
     const NaturalCoords& mIPCoords;
 };

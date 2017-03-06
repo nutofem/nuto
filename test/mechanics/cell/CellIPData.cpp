@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::ElementSimple e1({&n3, &n4, &n5}, interpolation1.get());
     NuTo::DofType d1("dof0", 1, 1);
 
-    NuTo::DofContainer<const NuTo::ElementSimple*> elements;
+    NuTo::DofContainer<NuTo::ElementSimple*> elements;
     elements[d0] = &e0;
     elements[d1] = &e1;
 

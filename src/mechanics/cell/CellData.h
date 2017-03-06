@@ -14,7 +14,7 @@ namespace NuTo
 class CellData
 {
 public:
-    CellData(const DofContainer<const ElementSimple*> rElements)
+    CellData(const DofContainer<ElementSimple*>& rElements)
         : mElements(rElements)
     {
     }
@@ -25,6 +25,6 @@ public:
     }
 
 private:
-    const DofContainer<const ElementSimple*> mElements;
+    const DofContainer<ElementSimple*>& mElements;
 };
 } /* NuTo */

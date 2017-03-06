@@ -10,9 +10,9 @@ public:
     {
         return std::make_unique<MockIntegrand>(*this);
     }
-    NuTo::DofVector<Eigen::VectorXd> Gradient(const NuTo::CellData&, const NuTo::CellIPData&) override
+    NuTo::DofVector Gradient(const NuTo::CellData&, const NuTo::CellIPData&) override
     {
-        NuTo::DofVector<Eigen::VectorXd> gradient;
+        NuTo::DofVector gradient;
         return gradient;
     }
 };
