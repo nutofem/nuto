@@ -256,7 +256,6 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, E
 
 std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Node::eDof rDof)const
 {
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     const NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
 
