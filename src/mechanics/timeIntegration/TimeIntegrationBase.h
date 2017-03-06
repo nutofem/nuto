@@ -197,7 +197,7 @@ public:
 
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed
-    void SetResultDirectory(std::string rResultDir, bool rDelete);
+    void SetResultDirectory(std::string rResultDir, bool rDelete = false);
 
     //! @brief returns the result directory
     std::string GetResultDirectory()const
