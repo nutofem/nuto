@@ -170,7 +170,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     GetLogger() << "Total number of active dofs:                 \t" << GetNumTotalActiveDofs()               << "\n\n";
     GetLogger() << "Total number of dependent dofs:              \t" << GetNumTotalDependentDofs()            << "\n\n";
 
-    GetLogger() << "Connectivity matrix:  \n"        << mConnectivityMatrix  << "\n\n";
+//    GetLogger() << "Connectivity matrix:  \n"        << mConnectivityMatrix  << "\n\n";
 
 
 }
@@ -565,8 +565,8 @@ void NuTo::StructureFeti::CheckRigidBodyModes(  const StructureOutputBlockMatrix
     MPI_Barrier(MPI_COMM_WORLD);
 
     GetLogger() << "Norm of K*R:  \t"     << norm0                    << "\t and \t"   << norm1
-                << "\t tolerance: \t"     << tolerance                << "\n\n"
-                << "Rigid body modes      : \n"       << mRigidBodyModes                << "\n\n";
+                << "\t tolerance: \t"     << tolerance                << "\n\n";
+//                << "Rigid body modes      : \n"       << mRigidBodyModes                << "\n\n";
 
     MPI_Barrier(MPI_COMM_WORLD);
 
