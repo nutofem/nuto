@@ -419,7 +419,7 @@ public:
     StructureOutputBlockVector FetiSolve(const VectorXd& residual_mod, const std::set<Node::eDof> &activeDofSet, VectorXd &deltaLambda, const double timeStep)
     {
 
-
+        NuTo::Timer timer("Time for FetiSolve");
         boost::mpi::communicator world;
 
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
@@ -485,7 +485,7 @@ public:
 
 
 
-        MPI_Barrier(MPI_COMM_WORLD);
+//        //MPI_Barrier(MPI_COMM_WORLD);
 
         VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
@@ -495,13 +495,13 @@ public:
 
         mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
-        MPI_Barrier(MPI_COMM_WORLD);
+//        //MPI_Barrier(MPI_COMM_WORLD);
 
         structure->GetLogger() << "\n*************************************\n";
         structure->GetLogger() << "       Start Interface Problem           ";
         structure->GetLogger() << "\n*************************************\n\n";
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        ////MPI_Barrier(MPI_COMM_WORLD);
 
         int iteration = CPG(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
 //    int iteration = BiCgStab(structure->GetProjectionMatrix(),deltaLambda,displacementGap);
@@ -515,7 +515,7 @@ public:
 
 
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
 
         zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
@@ -527,7 +527,7 @@ public:
         if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
             throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
 
         //*****************************************
         //
@@ -545,7 +545,7 @@ public:
         alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
 
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
         VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
         if( not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)) )
             throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
@@ -555,7 +555,7 @@ public:
             throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied");
 
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
 
 
 
@@ -606,6 +606,7 @@ public:
     //! @param rTimeDelta ... length of the simulation
     void Solve(double rTimeDelta)
     {
+
 
         try
         {
@@ -814,9 +815,9 @@ public:
                     for (int i = 0; i < hessianKKdiag.rows(); ++i)
                         Kdiag.insert(i + hessianJJdiag.rows(),i + hessianJJdiag.rows()) = hessianKKdiag[i];
 
-                    mStructure->GetLogger() << "mLOca: \t" << Kdiag << "\n\n";
+//                    mStructure->GetLogger() << "mLOca: \t" << Kdiag << "\n\n";
 
-                    MPI_Barrier(MPI_COMM_WORLD);
+                    //MPI_Barrier(MPI_COMM_WORLD);
 
                     mLocalPreconditioner = B * Kdiag * Btrans;
 
@@ -869,7 +870,9 @@ public:
 
                         mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
+
                         delta_dof_dt0   = FetiSolve(rhs, activeDofSet, deltaLambda, 0.);
+
 
                         dof_dt0 += delta_dof_dt0;
                         lambda += deltaLambda;
