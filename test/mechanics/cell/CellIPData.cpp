@@ -5,39 +5,50 @@
 #include "mechanics/cell/CellIPData.h"
 #include <iostream>
 
+
+constexpr double dN0dX = 1;
+constexpr double dN0dY = 2;
+constexpr double dN0dZ = 3;
+constexpr double dN1dX = 11;
+constexpr double dN1dY = 12;
+constexpr double dN1dZ = 13;
+constexpr double dN2dX = 21;
+constexpr double dN2dY = 22;
+constexpr double dN2dZ = 23;
+
 NuTo::DerivativeShapeFunctionsNatural MockDerivatives1D()
 {
     NuTo::DerivativeShapeFunctionsNatural m(3, 1);
-    m(0, 0) = 0;
-    m(1, 0) = 10;
-    m(2, 0) = 20;
+    m(0, 0) = dN0dX;
+    m(1, 0) = dN1dX;
+    m(2, 0) = dN2dX;
     return m;
 }
 
 NuTo::DerivativeShapeFunctionsNatural MockDerivatives2D()
 {
     NuTo::DerivativeShapeFunctionsNatural m(3, 2);
-    m(0, 0) = 0;
-    m(0, 1) = 1;
-    m(1, 0) = 10;
-    m(1, 1) = 11;
-    m(2, 0) = 20;
-    m(2, 1) = 21;
+    m(0, 0) = dN0dX;
+    m(0, 1) = dN0dY;
+    m(1, 0) = dN1dX;
+    m(1, 1) = dN1dY;
+    m(2, 0) = dN2dX;
+    m(2, 1) = dN2dY;
     return m;
 }
 
 NuTo::DerivativeShapeFunctionsNatural MockDerivatives3D()
 {
     NuTo::DerivativeShapeFunctionsNatural m(3, 2);
-    m(0, 0) = 0;
-    m(0, 1) = 1;
-    m(0, 2) = 2;
-    m(1, 0) = 10;
-    m(1, 1) = 11;
-    m(1, 2) = 12;
-    m(2, 0) = 20;
-    m(2, 1) = 21;
-    m(2, 2) = 22;
+    m(0, 0) = dN0dX;
+    m(0, 1) = dN0dY;
+    m(0, 2) = dN0dZ;
+    m(1, 0) = dN1dX;
+    m(1, 1) = dN1dY;
+    m(1, 2) = dN1dZ;
+    m(2, 0) = dN2dX;
+    m(2, 1) = dN2dY;
+    m(2, 2) = dN2dZ;
     return m;
 }
 
@@ -71,30 +82,30 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
     Eigen::MatrixXd correctGradient(2, 3);
-    correctGradient(0, 0) = 0;
-    correctGradient(0, 1) = 10;
-    correctGradient(0, 2) = 20;
-    correctGradient(1, 0) = 1;
-    correctGradient(1, 1) = 11;
-    correctGradient(1, 2) = 21;
+    correctGradient(0, 0) = dN0dX;
+    correctGradient(0, 1) = dN1dX;
+    correctGradient(0, 2) = dN2dX;
+    correctGradient(1, 0) = dN0dY;
+    correctGradient(1, 1) = dN1dY;
+    correctGradient(1, 2) = dN2dY;
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixGradient(d1), correctGradient);
 
 
     Eigen::MatrixXd correctStrain = Eigen::MatrixXd::Zero(3, 6);
-    correctStrain(0, 0) = 0;
-    correctStrain(1, 1) = 1;
-    correctStrain(2, 0) = 1;
-    correctStrain(2, 1) = 0;
+    correctStrain(0, 0) = dN0dX;
+    correctStrain(1, 1) = dN0dY;
+    correctStrain(2, 0) = dN0dY;
+    correctStrain(2, 1) = dN0dX;
 
-    correctStrain(0, 2) = 10;
-    correctStrain(1, 3) = 11;
-    correctStrain(2, 2) = 11;
-    correctStrain(2, 3) = 10;
+    correctStrain(0, 2) = dN1dX;
+    correctStrain(1, 3) = dN1dY;
+    correctStrain(2, 2) = dN1dY;
+    correctStrain(2, 3) = dN1dX;
 
-    correctStrain(0, 4) = 20;
-    correctStrain(1, 5) = 21;
-    correctStrain(2, 4) = 21;
-    correctStrain(2, 5) = 20;
+    correctStrain(0, 4) = dN2dX;
+    correctStrain(1, 5) = dN2dY;
+    correctStrain(2, 4) = dN2dY;
+    correctStrain(2, 5) = dN2dX;
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixStrain(d1), correctStrain);
 }
 
@@ -108,35 +119,35 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 // BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 //{
 //    Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);
-//    expected(0, 0) = 0;
-//    expected(1, 1) = 1;
-//    expected(2, 2) = 2;
-//    expected(3, 1) = 2;
-//    expected(3, 2) = 1;
-//    expected(4, 0) = 2;
-//    expected(4, 2) = 0;
-//    expected(5, 0) = 1;
-//    expected(5, 1) = 0;
+//    expected(0, 0) = dN0dX;
+//    expected(1, 1) = dN0dY;
+//    expected(2, 2) = dN0dZ;
+//    expected(3, 1) = dN0dZ;
+//    expected(3, 2) = dN0dY;
+//    expected(4, 0) = dN0dZ;
+//    expected(4, 2) = dN0dX;
+//    expected(5, 0) = dN0dY;
+//    expected(5, 1) = dN0dX;
 //
-//    expected(0, 3) = 10;
-//    expected(1, 4) = 11;
-//    expected(2, 5) = 12;
-//    expected(3, 4) = 12;
-//    expected(3, 5) = 11;
-//    expected(4, 3) = 12;
-//    expected(4, 5) = 10;
-//    expected(5, 3) = 11;
-//    expected(5, 4) = 10;
+//    expected(0, 3) = dN1dX;
+//    expected(1, 7) = dN1dY;
+//    expected(2, 5) = dN1dZ;
+//    expected(3, 4) = dN1dZ;
+//    expected(3, 5) = dN1dY;
+//    expected(4, 3) = dN1dZ;
+//    expected(4, 5) = dN1dX;
+//    expected(5, 3) = dN1dY;
+//    expected(5, 4) = dN1dX;
 //
-//    expected(0, 6) = 20;
-//    expected(1, 7) = 21;
-//    expected(2, 8) = 22;
-//    expected(3, 7) = 22;
-//    expected(3, 8) = 21;
-//    expected(4, 6) = 22;
-//    expected(4, 8) = 20;
-//    expected(5, 6) = 21;
-//    expected(5, 7) = 20;
+//    expected(0, 6) = dN2dX;
+//    expected(1, 7) = dN2dY;
+//    expected(2, 8) = dN2dZ;
+//    expected(3, 7) = dN2dZ;
+//    expected(3, 8) = dN2dY;
+//    expected(4, 6) = dN2dZ;
+//    expected(4, 8) = dN2dX;
+//    expected(5, 6) = dN2dY;
+//    expected(5, 7) = dN2dX;
 //
 //    MockInterpolation3D p(3);
 //    BoostUnitTest::CheckEigenMatrix(p.GetBStrain(Eigen::VectorXd()), expected);
