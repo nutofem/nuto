@@ -19,7 +19,7 @@ public:
     {
     }
 
-    NodeValues GetNodeValues(const DofType& rDofType)
+    NodeValues GetNodeValues(const DofType& rDofType) const
     {
         return mElements[rDofType]->ExtractNodeValues();
     }

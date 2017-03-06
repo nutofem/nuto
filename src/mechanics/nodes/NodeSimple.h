@@ -8,7 +8,8 @@ namespace NuTo
 class NodeSimple
 {
 public:
-    NodeSimple(Eigen::VectorXd rValues) : mValues(rValues)
+    NodeSimple(Eigen::VectorXd rValues)
+        : mValues(rValues)
     {
         mDofNumbers.setZero(mValues.rows());
     }
@@ -22,6 +23,18 @@ public:
     {
         assert(rComponent < mDofNumbers.rows());
         return mDofNumbers[rComponent];
+    }
+
+    void SetValue(int rComponent, double rValue)
+    {
+        assert(rComponent < mDofNumbers.rows());
+        mValues[rComponent] = rValue;
+    }
+
+    void SetDofNumber(int rComponent, int rDofNumber)
+    {
+        assert(rComponent < mDofNumbers.rows());
+        mDofNumbers[rComponent] = rDofNumber;
     }
 
     int GetNumValues() const
