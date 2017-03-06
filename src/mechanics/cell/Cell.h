@@ -21,6 +21,7 @@ public:
     {
     }
 
+    //! @brief builds the internal gradien
     DofVector Gradient()
     {
         DofVector gradient;
@@ -37,8 +38,25 @@ public:
         return gradient;
     }
 
+    //! @brief Extracts a vector (each IP) of vectors (several IPValues for the same integrion point) of IPValues
+    std::vector<std::vector<IPValue>> IPValues()
+    {
+        std::vector<std::vector<IPValue>> ipValues;
+
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                              mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
+            CellIPData cellipData(mElements, jacobian, ipCoords);
+            ipValues.push_back(mIntegrand->IPValues(cellData, cellipData));
+        }
+        return ipValues;
+    }
 
 private:
+
     const ElementSimple& mCoordinateElement;
     DofContainer<ElementSimple*> mElements;
     const IntegrationTypeBase& mIntegrationType;

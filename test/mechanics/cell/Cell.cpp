@@ -70,6 +70,22 @@ public:
         return gradient;
     }
 
+    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData, const NuTo::CellIPData& rCellIPData) override
+    {
+        const NuTo::DofType& dof = mDofTypes[0];
+        NuTo::BMatrixStrain B    = rCellIPData.GetBMatrixStrain(dof);
+        NuTo::NodeValues u       = rCellData.GetNodeValues(dof);
+
+        std::vector<NuTo::IPValue> ipValues;
+        Eigen::VectorXd strain = B * u;
+        Eigen::VectorXd stress = mLaw.Stress(strain);
+
+        ipValues.push_back({"Stress", stress});
+        ipValues.push_back({"Strain", strain});
+
+        return ipValues;
+    }
+
 private:
     std::vector<NuTo::DofType> mDofTypes;
     const LinearElasticLaw& mLaw;
@@ -102,9 +118,9 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     elements[dofDispl] = &displacementElement;
 
     fakeit::Mock<NuTo::IntegrationTypeBase> intType;
-    constexpr double a = 0.577350269189626;
     Method(intType, GetNumIntegrationPoints)   = 4;
     Method(intType, GetIntegrationPointWeight) = 1;
+    constexpr double a = 0.577350269189626;
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(0)).AlwaysReturn(Eigen::Vector2d({-a, -a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(1)).AlwaysReturn(Eigen::Vector2d({a, -a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(2)).AlwaysReturn(Eigen::Vector2d({a, a}));
@@ -125,9 +141,21 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     double area     = ly;
     double intForce = E * ux / lx * area / 2.;
 
-    std::cout << cell.Gradient()[dofDispl] << std::endl;
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl],
                                std::vector<double>({-intForce, 0, intForce, 0, intForce, 0, -intForce, 0}), 8);
+    
+    auto cellIPValuesX = cell.IPValues();
+    for (const auto& ipValues : cellIPValuesX)
+    {
+        NuTo::IPValue stress = ipValues[0];
+        BOOST_CHECK_EQUAL(stress.mName, "Stress");
+        BoostUnitTest::CheckEigenMatrix(stress.mValue, Eigen::Vector3d({E * ux / lx, 0, 0}));
+
+        NuTo::IPValue strain = ipValues[1];
+        BOOST_CHECK_EQUAL(strain.mName, "Strain");
+        BoostUnitTest::CheckEigenMatrix(strain.mValue, Eigen::Vector3d({ux / lx, 0, 0}));
+    }
+
 
     const double uy = 0.2;
     nDispl1.SetValue(0, 0);
@@ -139,4 +167,16 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     intForce = E * uy / ly * area / 2;
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl],
                                std::vector<double>({0, -intForce, 0, -intForce, 0, intForce, 0, intForce}), 8);
+    
+    auto cellIPValuesY = cell.IPValues();
+    for (const auto& ipValues : cellIPValuesY)
+    {
+        NuTo::IPValue stress = ipValues[0];
+        BOOST_CHECK_EQUAL(stress.mName, "Stress");
+        BoostUnitTest::CheckEigenMatrix(stress.mValue, Eigen::Vector3d({0, E * uy / ly, 0}));
+
+        NuTo::IPValue strain = ipValues[1];
+        BOOST_CHECK_EQUAL(strain.mName, "Strain");
+        BoostUnitTest::CheckEigenMatrix(strain.mValue, Eigen::Vector3d({0, uy / ly, 0}));
+    }
 }
