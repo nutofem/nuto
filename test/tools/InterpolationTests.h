@@ -1,4 +1,5 @@
 #pragma once
+#include "BoostUnitTest.h"
 #include <vector>
 #include "mechanics/interpolation/Interpolation.h"
 
@@ -28,9 +29,9 @@ void CheckDerivativeShapeFunctionsCDF(const NuTo::Interpolation& r, const std::v
         {
             auto pointDelta = point;
             pointDelta[iDim] += rDelta;
-            cdf.col(iDim) = (r.GetShapeFunctions(point) - shapeFunctions) / rDelta;
+            cdf.col(iDim) = (r.GetShapeFunctions(pointDelta) - shapeFunctions) / rDelta;
         }
-        BOOST_CHECK(cdf.isApprox(derivativeShapeFunctions));
+        BoostUnitTest::CheckEigenMatrix(cdf, derivativeShapeFunctions, 1.e-6);
     }
 }
 

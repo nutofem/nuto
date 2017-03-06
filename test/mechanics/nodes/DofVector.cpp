@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_CASE(DofVectorScalarMultiplication)
     BoostUnitTest::CheckVector(dofVector0[dof0], std::vector<double>({2, 4, 6}), 3);
     BoostUnitTest::CheckVector(dofVector0[dof1], std::vector<double>({16, 18}), 2);
 
-
     NuTo::DofVector dofVector1 = dofVector0 * 0.5;
     BoostUnitTest::CheckVector(dofVector1[dof0], std::vector<double>({1, 2, 3}), 3);
     BoostUnitTest::CheckVector(dofVector1[dof1], std::vector<double>({8, 9}), 2);

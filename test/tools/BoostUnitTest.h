@@ -28,7 +28,7 @@ void CheckEigenMatrix(const T1& r1, const T2& r2, double rTolerance = 1.e-10)
     BOOST_CHECK_EQUAL(r1.rows(), r2.rows());
     BOOST_CHECK_EQUAL(r1.cols(), r2.cols());
 
-    bool isApprox = r1.isApprox(r2);
+    bool isApprox = (r1 - r2).isMuchSmallerThan(rTolerance, 1.e-1);
     if (not isApprox)
     {
         BOOST_TEST_MESSAGE("1st matrix: \n" << r1);

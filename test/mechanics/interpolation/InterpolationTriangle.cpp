@@ -3,7 +3,6 @@
 #include "TypeTraits.h"
 #include "mechanics/interpolation/InterpolationTriangle.h"
 
-
 BOOST_AUTO_TEST_CASE(InterpolationTriangleCopyMove)
 {
     NuTo::Test::Copy<NuTo::InterpolationTriangle>();
@@ -16,16 +15,20 @@ std::vector<Eigen::VectorXd> GetTestPoints()
             Eigen::Vector2d({1. / 6., 4. / 6.})};
 }
 
-
 BOOST_AUTO_TEST_CASE(InterpolationTriangleN)
 {
     NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
     NuTo::Test::CheckShapeFunctionsAndNodePositions(interpolation);
 }
 
-
 BOOST_AUTO_TEST_CASE(InterpolationTriangleUnity)
 {
     NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
     NuTo::Test::CheckPartitionOfUnity(interpolation, GetTestPoints());
+}
+
+BOOST_AUTO_TEST_CASE(InterpolationTriangleB)
+{
+    NuTo::InterpolationTriangle interpolation(NuTo::eInterpolation::GAUSS, 1, 1);
+    NuTo::Test::CheckDerivativeShapeFunctionsCDF(interpolation, GetTestPoints());
 }
