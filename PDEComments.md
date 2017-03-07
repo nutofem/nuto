@@ -2,7 +2,7 @@
 
 ## Intro
 
-- have a look at `/test/mechanics/cell/Cell.cpp` for an unit test that builds the internal gradient and extracts integration point values
+- have a look at `/test/mechanics/cell/Cell.cpp` for a unit test that builds the internal gradient and extracts integration point values
 
 
 ## TODO
