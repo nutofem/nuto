@@ -7,7 +7,7 @@ If you want, you'll first, you need some external dependencies
 
 Then, you need to check out the source code
 
-    git clone git://git.code.sf.net/p/nuto/codegit nuto
+    git clone https://github.com/nutofem/nuto.git
 
 Create a build directory and switch to it
 
