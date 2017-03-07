@@ -13,15 +13,15 @@ void CheckLocalEqStrainDerivativesMises(ePlaneState planeState = ePlaneState::PL
     constexpr int VDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     double nu = 0.25;
-    double k = 9.81;
+    double k  = 9.81;
 
-    std::vector<Eigen::Matrix<double, VDim, 1>> strainCases(VDim*2, Eigen::Matrix<double, VDim, 1>::Zero());
+    std::vector<Eigen::Matrix<double, VDim, 1>> strainCases(VDim * 2, Eigen::Matrix<double, VDim, 1>::Zero());
 
     // define test cases with exactly one value =! 0
     for (int i = 0; i < VDim; ++i)
     {
-        strainCases[i     ][i] =   M_PI;
-        strainCases[i+VDim][i] = - M_PI;
+        strainCases[i][i]        = M_PI;
+        strainCases[i + VDim][i] = -M_PI;
     }
 
     // plus a random case
@@ -56,13 +56,26 @@ void CheckLocalEqStrainDerivativesMises(ePlaneState planeState = ePlaneState::PL
 }
 
 
-BOOST_AUTO_TEST_CASE(CheckEqStrain)
+BOOST_AUTO_TEST_CASE(CheckEqStrainDerivatives)
 {
-        CheckLocalEqStrainDerivativesMises<1>();
+    CheckLocalEqStrainDerivativesMises<1>();
 
-        CheckLocalEqStrainDerivativesMises<2>(ePlaneState::PLANE_STRAIN);
+    CheckLocalEqStrainDerivativesMises<2>(ePlaneState::PLANE_STRAIN);
 
-        CheckLocalEqStrainDerivativesMises<2>(ePlaneState::PLANE_STRESS);
+    CheckLocalEqStrainDerivativesMises<2>(ePlaneState::PLANE_STRESS);
 
-        CheckLocalEqStrainDerivativesMises<3>();
+    CheckLocalEqStrainDerivativesMises<3>();
+}
+
+
+BOOST_AUTO_TEST_CASE(EqStrain)
+{
+    const double k  = 10;
+    const double nu = 0.;
+    EngineeringStrain<3> strain;
+    strain[0] = 2.;
+    BOOST_CHECK_CLOSE(EquivalentStrainModifiedMises<3>(strain, k, nu).Get(), 2., 1.e-6);
+    strain[0] = 0.;
+    strain[2] = - 2 * k;
+    BOOST_CHECK_CLOSE(EquivalentStrainModifiedMises<3>(strain, k, nu).Get(), 2., 1.e-6);
 }
