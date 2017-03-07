@@ -9,15 +9,15 @@ namespace NuTo
 //! @brief Base class for the interpolation. The derived classes provide information about the actual interpolation.
 //!        [TODO] Implement 'caching' of the results. Requests for the same local node coordinates
 //!        must be calculated only once.
-class Interpolation
+class InterpolationSimple
 {
 public:
-    Interpolation()                     = default;
-    virtual ~Interpolation()            = default; // virtual destructor needed, rule of 5 below...
-    Interpolation(const Interpolation&) = default;
-    Interpolation(Interpolation&&)      = default;
-    Interpolation& operator=(const Interpolation&) = default;
-    Interpolation& operator=(Interpolation&&) = default;
+    InterpolationSimple()                     = default;
+    virtual ~InterpolationSimple()            = default; // virtual destructor needed, rule of 5 below...
+    InterpolationSimple(const InterpolationSimple&) = default;
+    InterpolationSimple(InterpolationSimple&&)      = default;
+    InterpolationSimple& operator=(const InterpolationSimple&) = default;
+    InterpolationSimple& operator=(InterpolationSimple&&) = default;
 
 
     NMatrix GetN(const NaturalCoords& rNaturalIPCoords) const

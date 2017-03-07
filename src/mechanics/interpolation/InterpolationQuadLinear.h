@@ -1,10 +1,10 @@
 #pragma once
-#include "mechanics/interpolation/Interpolation.h"
+#include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 
 namespace NuTo
 {
-class InterpolationQuadLinear : public Interpolation
+class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
     InterpolationQuadLinear(int rDofDimension)

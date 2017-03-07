@@ -18,7 +18,7 @@
     - dof numbering - IMO not in `NuTo::NodeSimple` but in another class that accesses `NuTo::NodeSimple`, maybe `NuTo::Assembler`?
     - add constraints
     - `NuTo::Mesh` that only holds `NuTo::ElementSimple` for coordinates
-- add the new implementation to `application/Benchmark/BuildInternalGradient.cpp`
+- ~~add the new implementation to `application/Benchmark/BuildGradient.cpp`~~
 - think about the general case of $n$ dimensional interpolation in $n+x$ dimensional space
 
 ## more or less trivial tasks

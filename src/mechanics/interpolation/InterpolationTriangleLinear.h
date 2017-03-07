@@ -1,11 +1,11 @@
 #pragma once
 #include <eigen3/Eigen/Core>
-#include "mechanics/interpolation/Interpolation.h"
+#include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 
 namespace NuTo
 {
-class InterpolationTriangleLinear : public Interpolation
+class InterpolationTriangleLinear : public InterpolationSimple
 {
 public:
     InterpolationTriangleLinear(int rDofDimension)

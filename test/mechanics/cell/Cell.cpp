@@ -3,93 +3,7 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-
-
-class LinearElasticLaw
-{
-public:
-    LinearElasticLaw(double rE, double rNu)
-        : mE(rE)
-        , mNu(rNu)
-    {
-    }
-
-    Eigen::Vector3d Stress(const Eigen::VectorXd& rStrain) const
-    {
-        return C() * rStrain;
-    }
-
-    Eigen::Matrix3d C() const
-    {
-
-        double factor = mE / (1.0 - (mNu * mNu));
-        double C11    = factor;
-        double C12    = factor * mNu;
-        double C33    = factor * 0.5 * (1.0 - mNu);
-
-        Eigen::Matrix3d C = Eigen::Matrix3d::Zero();
-
-        C(0, 0) = C11;
-        C(1, 0) = C12;
-
-        C(0, 1) = C12;
-        C(1, 1) = C11;
-
-        C(2, 2) = C33;
-
-        return C;
-    }
-
-    double mE;
-    double mNu;
-};
-
-class MockIntegrand : public NuTo::Integrand
-{
-public:
-    MockIntegrand(std::vector<NuTo::DofType> rDofTypes, const LinearElasticLaw& rLaw)
-        : mDofTypes(rDofTypes)
-        , mLaw(rLaw)
-    {
-    }
-
-    std::unique_ptr<NuTo::Integrand> Clone() const override
-    {
-        return std::make_unique<MockIntegrand>(*this);
-    }
-
-    NuTo::DofVector Gradient(const NuTo::CellData& rCellData, const NuTo::CellIPData& rCellIPData) override
-    {
-        const NuTo::DofType& dof = mDofTypes[0];
-        NuTo::BMatrixStrain B    = rCellIPData.GetBMatrixStrain(dof);
-        NuTo::NodeValues u       = rCellData.GetNodeValues(dof);
-        NuTo::DofVector gradient;
-
-        Eigen::VectorXd strain = B * u;
-        gradient[dof]          = B.transpose() * mLaw.Stress(strain);
-        return gradient;
-    }
-
-    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData, const NuTo::CellIPData& rCellIPData) override
-    {
-        const NuTo::DofType& dof = mDofTypes[0];
-        NuTo::BMatrixStrain B    = rCellIPData.GetBMatrixStrain(dof);
-        NuTo::NodeValues u       = rCellData.GetNodeValues(dof);
-
-        std::vector<NuTo::IPValue> ipValues;
-        Eigen::VectorXd strain = B * u;
-        Eigen::VectorXd stress = mLaw.Stress(strain);
-
-        ipValues.push_back({"Stress", stress});
-        ipValues.push_back({"Strain", strain});
-
-        return ipValues;
-    }
-
-private:
-    std::vector<NuTo::DofType> mDofTypes;
-    const LinearElasticLaw& mLaw;
-};
+#include "mechanics/cell/IntegrandLinearElastic.h"
 
 
 BOOST_AUTO_TEST_CASE(CellLetsSee)
@@ -126,8 +40,8 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(2)).AlwaysReturn(Eigen::Vector2d({a, a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(3)).AlwaysReturn(Eigen::Vector2d({-a, a}));
 
-    LinearElasticLaw law(E, 0.0);
-    MockIntegrand integrand({dofDispl}, law);
+    NuTo::LinearElasticLaw2D law(E, 0.0);
+    NuTo::IntegrandLinearElastic integrand({dofDispl}, law);
 
     NuTo::Cell cell(coordinateElement, elements, intType.get(), integrand);
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "BoostUnitTest.h"
 #include <vector>
-#include "mechanics/interpolation/Interpolation.h"
+#include "mechanics/interpolation/InterpolationSimple.h"
 #include "TypeTraits.h"
 
 namespace NuTo
@@ -16,13 +16,13 @@ void CheckCopyMove()
     NuTo::Test::Move<T>();
 }
 
-void CheckPartitionOfUnity(const NuTo::Interpolation& r, const std::vector<Eigen::VectorXd>& rPoints)
+void CheckPartitionOfUnity(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints)
 {
     for (const auto& point : rPoints)
         BOOST_CHECK_CLOSE(r.GetShapeFunctions(point).sum(), 1, 1.e-10);
 }
 
-void CheckDerivativeShapeFunctionsCDF(const NuTo::Interpolation& r, const std::vector<Eigen::VectorXd>& rPoints,
+void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints,
                                       double rDelta = 1.e-6)
 {
     for (const auto& point : rPoints)
@@ -43,7 +43,7 @@ void CheckDerivativeShapeFunctionsCDF(const NuTo::Interpolation& r, const std::v
     }
 }
 
-void CheckShapeFunctionsAndNodePositions(const NuTo::Interpolation& r)
+void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r)
 {
 
     for (int iNode = 0; iNode < r.GetNumNodes(); ++iNode)

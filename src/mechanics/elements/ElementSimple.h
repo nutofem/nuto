@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/interpolation/Interpolation.h"
+#include "mechanics/interpolation/InterpolationSimple.h"
 
 namespace NuTo
 {
@@ -10,7 +10,7 @@ namespace NuTo
 class ElementSimple
 {
 public:
-    ElementSimple(std::vector<NuTo::NodeSimple*> rNodes, const Interpolation& rInterpolation)
+    ElementSimple(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
         : mNodes(rNodes)
         , mInterpolation(rInterpolation)
     {
@@ -30,13 +30,13 @@ public:
         return mInterpolation.GetN(rNaturalCoords) * ExtractNodeValues();
     }
 
-    const Interpolation& GetInterpolation() const
+    const InterpolationSimple& GetInterpolation() const
     {
         return mInterpolation;
     }
 
 private:
     std::vector<NuTo::NodeSimple*> mNodes;
-    const Interpolation& mInterpolation;
+    const InterpolationSimple& mInterpolation;
 };
 } /* NuTo */

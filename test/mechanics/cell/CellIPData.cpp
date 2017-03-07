@@ -1,6 +1,5 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/interpolation/Interpolation.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/cell/CellIPData.h"
 #include <iostream>
@@ -64,7 +63,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Matrix<double, 1, 1>::Constant(1));
     NuTo::NodeSimple n4 = NuTo::NodeSimple(Eigen::Matrix<double, 1, 1>::Constant(3));
     NuTo::NodeSimple n5 = NuTo::NodeSimple(Eigen::Matrix<double, 1, 1>::Constant(7));
-    fakeit::Mock<NuTo::Interpolation> interpolation1;
+    fakeit::Mock<NuTo::InterpolationSimple> interpolation1;
     Method(interpolation1, GetDerivativeShapeFunctions) = MockDerivatives2D();
     NuTo::ElementSimple e1({&n3, &n4, &n5}, interpolation1.get());
     NuTo::DofType d1("dof0", 1, 1);

@@ -1,11 +1,11 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/interpolation/Interpolation.h"
+#include "mechanics/interpolation/InterpolationSimple.h"
 
 
 void TestN(int rDim)
 {
-    fakeit::Mock<NuTo::Interpolation> p;
+    fakeit::Mock<NuTo::InterpolationSimple> p;
     Method(p, GetNumNodes)       = 3;
     Method(p, GetDofDimension)   = rDim;
     Method(p, GetShapeFunctions) = Eigen::Vector3d({42, 6174, 12});

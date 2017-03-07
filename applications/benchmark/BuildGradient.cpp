@@ -11,6 +11,8 @@
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/cell/Cell.h"
+#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "mechanics/cell/IntegrandLinearElastic.h"
 
 namespace Benchmark
 {
@@ -302,13 +304,18 @@ BENCHMARK(BuildGradient, NuTo, runner)
     s.NodeCreate(1, Eigen::Vector2d({1,0}));
     s.NodeCreate(2, Eigen::Vector2d({1,1}));
     s.NodeCreate(3, Eigen::Vector2d({0,1}));
+    s.NodeCreate(4, Eigen::Vector2d({0.5,0}));
+    s.NodeCreate(5, Eigen::Vector2d({1,.5}));
+    s.NodeCreate(6, Eigen::Vector2d({0.5,1}));
+    s.NodeCreate(7, Eigen::Vector2d({0,.5}));
+
 
     int myInterpolationType = s.InterpolationTypeCreate("Quad2D");
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     s.InterpolationTypeSetIntegrationType(myInterpolationType, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 
-    int elementID = s.ElementCreate(myInterpolationType, {0,1,2,3});
+    int elementID = s.ElementCreate(myInterpolationType, {0,1,2,3,4,5,6,7});
 
     s.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     s.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 12);
@@ -336,47 +343,43 @@ BENCHMARK(BuildGradient, NuTo, runner)
 
 BENCHMARK(BuildGradient, NuToPDE, runner)
 {
-    std::vector<NuTo::NodeBase*> nodes;
+    NuTo::NodeSimple n0(Eigen::Vector2d({0  ,0}));
+    NuTo::NodeSimple n1(Eigen::Vector2d({1  ,0}));
+    NuTo::NodeSimple n2(Eigen::Vector2d({1  ,1}));
+    NuTo::NodeSimple n3(Eigen::Vector2d({0  ,1}));
+    NuTo::NodeSimple n4(Eigen::Vector2d({0.5,0}));
+    NuTo::NodeSimple n5(Eigen::Vector2d({1  ,0.5}));
+    NuTo::NodeSimple n6(Eigen::Vector2d({0.5,1}));
+    NuTo::NodeSimple n7(Eigen::Vector2d({0  ,0.5}));
+    std::vector<NuTo::NodeSimple*> coordNodes({&n0, &n1, &n2, &n3, &n4, &n5, &n6, &n7});
+    NuTo::InterpolationQuadSerendipity coordInterpolation(2);
+    NuTo::ElementSimple coordElement(coordNodes, coordInterpolation);
 
-    NuTo::NodeDofInfo info;
-    info.mDimension = 2;
-    info.mNumTimeDerivatives = 0;
-    info.mIsDof = true;
+    NuTo::NodeSimple nd0(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd1(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd2(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd3(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd4(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd5(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd6(Eigen::Vector2d({0,0}));
+    NuTo::NodeSimple nd7(Eigen::Vector2d({0,0}));
+    std::vector<NuTo::NodeSimple*> displNodes({&nd0, &nd1, &nd2, &nd3, &nd4, &nd5, &nd6, &nd7});
+    NuTo::InterpolationQuadSerendipity displInterpolation(2);
+    NuTo::ElementSimple displElement(displNodes, displInterpolation);
 
-    std::map<NuTo::Node::eDof, NuTo::NodeDofInfo> infos;
-    infos[NuTo::Node::eDof::COORDINATES] = info;
-    infos[NuTo::Node::eDof::DISPLACEMENTS] = info;
+    NuTo::DofType displDof("Displacements", 2, 0);
+    NuTo::DofContainer<NuTo::ElementSimple*> elements;
+    elements[displDof] = &displElement;
 
-    NuTo::NodeDof n0(infos);
-    NuTo::NodeDof n1(infos);
-    NuTo::NodeDof n2(infos);
-    NuTo::NodeDof n3(infos);
-    NuTo::NodeDof n4(infos);
-    NuTo::NodeDof n5(infos);
-    NuTo::NodeDof n6(infos);
-    NuTo::NodeDof n7(infos);
-    n0.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0}));
-    n1.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0}));
-    n2.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,1}));
-    n3.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,1}));
-    n4.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,0}));
-    n5.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0.5}));
-    n6.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,1}));
-    n7.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0.5}));
-    nodes.push_back(&n0);
-    nodes.push_back(&n1);
-    nodes.push_back(&n2);
-    nodes.push_back(&n3);
-    nodes.push_back(&n4);
-    nodes.push_back(&n5);
-    nodes.push_back(&n6);
-    nodes.push_back(&n7);
+    NuTo::LinearElasticLaw2D law(20000, 0.3);
+    NuTo::IntegrandLinearElastic integrand(displDof, law);
+    NuTo::IntegrationType2D4NGauss4Ip integrationType;
 
-    Benchmark::HardCodeElement8NDynamic e(nodes);
+    NuTo::Cell cell(coordElement, elements, integrationType, integrand);
 
     while(runner.KeepRunningIterations(1e6))
     {
-        e.BuildInternalGradient();
+        cell.Gradient();
     }
 }
 
