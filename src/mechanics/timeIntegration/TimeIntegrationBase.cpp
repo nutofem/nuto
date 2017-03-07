@@ -37,7 +37,7 @@
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
         NuTo::NuToObject::NuToObject(),
         mStructure(rStructure),
-        mSolver(std::make_unique<SolverMUMPS>()),
+        mSolver(std::make_unique<SolverMUMPS>(false)),
         mTimeDependentConstraint(-1),
         mTimeDependentLoadCase(-1),
         mLoadVectorStatic(rStructure->GetDofStatus()),

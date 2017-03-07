@@ -627,8 +627,6 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
         const BlockFullVector<double>& rResidualMod, double rTimeStep) const
 {
     Timer timer(__FUNCTION__, GetShowTime(), mStructure->GetLogger());
-    bool structureShowTime = mStructure->GetShowTime();
-    mStructure->SetShowTime(false); // does not show the output of the solver
 
 //    if (rHessian_dt0.IsConstant())
 //    {
@@ -656,8 +654,6 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
         rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
         auto result = mSolver->Solve(rHessian_dt0.JJ, rResidualMod);
-
-        mStructure->SetShowTime(structureShowTime);
         return result;
     }
 }
