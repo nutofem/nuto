@@ -9,11 +9,12 @@
 
 namespace NuTo
 {
+template <int TDim>
 class Cell
 {
 public:
     Cell(const ElementSimple& rCoordinateElement, DofContainer<ElementSimple*> rElements,
-         const IntegrationTypeBase& rIntegrationType, const Integrand& rIntegrand)
+         const IntegrationTypeBase& rIntegrationType, const Integrand<TDim>& rIntegrand)
         : mCoordinateElement(rCoordinateElement)
         , mElements(rElements)
         , mIntegrationType(rIntegrationType)
@@ -30,9 +31,9 @@ public:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
                               mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData cellipData(mElements, jacobian, ipCoords);
+            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
             gradient += mIntegrand->Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
@@ -47,9 +48,9 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
                               mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData cellipData(mElements, jacobian, ipCoords);
+            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
             ipValues.push_back(mIntegrand->IPValues(cellData, cellipData));
         }
         return ipValues;
@@ -60,6 +61,6 @@ private:
     const ElementSimple& mCoordinateElement;
     DofContainer<ElementSimple*> mElements;
     const IntegrationTypeBase& mIntegrationType;
-    std::unique_ptr<Integrand> mIntegrand;
+    std::unique_ptr<Integrand<TDim>> mIntegrand;
 };
 } /* NuTo */

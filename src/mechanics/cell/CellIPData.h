@@ -9,10 +9,11 @@ namespace NuTo
 
 
 //! @brief Similar to NuTo::CellData, but for N and B
+template <int TDim>
 class CellIPData
 {
 public:
-    CellIPData(const DofContainer<ElementSimple*> rElements, const NuTo::Jacobian& rJacobian,
+    CellIPData(const DofContainer<ElementSimple*> rElements, const NuTo::Jacobian<TDim>& rJacobian,
                const NaturalCoords& rIPCoords)
         : mElements(rElements)
         , mJacobian(rJacobian)
@@ -109,7 +110,7 @@ private:
     }
 
     const DofContainer<ElementSimple*> mElements;
-    const NuTo::Jacobian& mJacobian;
+    const NuTo::Jacobian<TDim>& mJacobian;
     const NaturalCoords& mIPCoords;
 };
 } /* NuTo */

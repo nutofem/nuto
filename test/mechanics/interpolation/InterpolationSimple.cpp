@@ -17,7 +17,7 @@ void TestN(int rDim)
         expected(iDim, iDim + rDim)        = 6174;
         expected(iDim, iDim + rDim + rDim) = 12;
     }
-    BoostUnitTest::CheckEigenMatrix(p.get().GetN(Eigen::VectorXd()), expected);
+    BoostUnitTest::CheckEigenMatrix(p.get().GetN(Eigen::Vector2d({0.0, 0.0})), expected);
 }
 
 BOOST_AUTO_TEST_CASE(InterpolationN)

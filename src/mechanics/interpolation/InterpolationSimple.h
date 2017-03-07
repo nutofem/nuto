@@ -12,8 +12,8 @@ namespace NuTo
 class InterpolationSimple
 {
 public:
-    InterpolationSimple()                     = default;
-    virtual ~InterpolationSimple()            = default; // virtual destructor needed, rule of 5 below...
+    InterpolationSimple()                           = default;
+    virtual ~InterpolationSimple()                  = default; // virtual destructor needed, rule of 5 below...
     InterpolationSimple(const InterpolationSimple&) = default;
     InterpolationSimple(InterpolationSimple&&)      = default;
     InterpolationSimple& operator=(const InterpolationSimple&) = default;

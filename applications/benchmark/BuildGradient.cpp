@@ -372,10 +372,10 @@ BENCHMARK(BuildGradient, NuToPDE, runner)
     elements[displDof] = &displElement;
 
     NuTo::LinearElasticLaw2D law(20000, 0.3);
-    NuTo::IntegrandLinearElastic integrand(displDof, law);
+    NuTo::IntegrandLinearElastic<2> integrand(displDof, law);
     NuTo::IntegrationType2D4NGauss4Ip integrationType;
 
-    NuTo::Cell cell(coordElement, elements, integrationType, integrand);
+    NuTo::Cell<2> cell(coordElement, elements, integrationType, integrand);
 
     while(runner.KeepRunningIterations(1e6))
     {

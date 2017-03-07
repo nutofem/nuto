@@ -41,9 +41,9 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(3)).AlwaysReturn(Eigen::Vector2d({-a, a}));
 
     NuTo::LinearElasticLaw2D law(E, 0.0);
-    NuTo::IntegrandLinearElastic integrand({dofDispl}, law);
+    NuTo::IntegrandLinearElastic<2> integrand({dofDispl}, law);
 
-    NuTo::Cell cell(coordinateElement, elements, intType.get(), integrand);
+    NuTo::Cell<2> cell(coordinateElement, elements, intType.get(), integrand);
 
     auto gradient = cell.Gradient();
     BoostUnitTest::CheckVector(gradient[dofDispl], Eigen::VectorXd::Zero(8), 8);
