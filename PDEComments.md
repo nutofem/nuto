@@ -20,6 +20,9 @@
     - `NuTo::Mesh` that only holds `NuTo::ElementSimple` for coordinates
 - ~~add the new implementation to `application/Benchmark/BuildGradient.cpp`~~
 - think about the general case of $n$ dimensional interpolation in $n+x$ dimensional space
+- fix serious problem with references to value-std::vectors
+    - a reference to members in a `std::vector<NodeSimple>` are invalidated as soon as any reallocation is required. Currently, this is solved by reserving the container to 1e6, which is rubbish. A owning pointer container would solve this...
+
 
 ## more or less trivial tasks
 

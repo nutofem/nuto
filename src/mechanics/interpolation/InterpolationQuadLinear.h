@@ -12,6 +12,11 @@ public:
     {
     }
 
+    std::unique_ptr<InterpolationSimple> Clone() const override
+    {
+        return std::make_unique<InterpolationQuadLinear>(*this);
+    }
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
     {
         return ShapeFunctions2D::ShapeFunctionsQuadOrder1(rNaturalIPCoords);

@@ -13,6 +13,11 @@ public:
     {
     }
 
+    std::unique_ptr<InterpolationSimple> Clone() const override
+    {
+        return std::make_unique<InterpolationTriangleLinear>(*this);
+    }
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
     {
         return ShapeFunctions2D::ShapeFunctionsTriangleOrder1(rNaturalIPCoords);

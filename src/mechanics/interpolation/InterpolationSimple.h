@@ -1,6 +1,7 @@
 #pragma once
 #include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/TypeDefs.h"
+#include <memory>
 
 namespace NuTo
 {
@@ -19,6 +20,7 @@ public:
     InterpolationSimple& operator=(const InterpolationSimple&) = default;
     InterpolationSimple& operator=(InterpolationSimple&&) = default;
 
+    virtual std::unique_ptr<InterpolationSimple> Clone() const = 0;
 
     NMatrix GetN(const NaturalCoords& rNaturalIPCoords) const
     {
@@ -55,4 +57,13 @@ public:
 
     virtual int GetDofDimension() const = 0;
 };
+
+//! @brief clone methods that enables a boost::ptr_container<this> to copy itself
+//! @param rLaw reference to the IPConstitutiveLawBase
+//! @return cloned owning raw pointer of rLaw
+inline NuTo::InterpolationSimple* new_clone( const NuTo::InterpolationSimple& rInterpolation)
+{
+    return rInterpolation.Clone().release();
+}
+
 } /* NuTo */
