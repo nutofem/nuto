@@ -1,16 +1,15 @@
 #pragma once
 
-#include <vector>
+#include "mechanics/cell/CellInterface.h"
 #include "mechanics/elements/ElementSimple.h"
 #include "mechanics/nodes/DofContainer.h"
-#include "mechanics/nodes/DofVector.h"
 #include "mechanics/cell/Integrand.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
 template <int TDim>
-class Cell
+class Cell : public CellInterface
 {
 public:
     Cell(const ElementSimple& rCoordinateElement, DofContainer<ElementSimple*> rElements,
@@ -23,7 +22,7 @@ public:
     }
 
     //! @brief builds the internal gradien
-    DofVector Gradient()
+    DofVector Gradient() override
     {
         DofVector gradient;
         CellData cellData(mElements);
@@ -40,7 +39,7 @@ public:
     }
 
     //! @brief Extracts a vector (each IP) of vectors (several IPValues for the same integrion point) of IPValues
-    std::vector<std::vector<IPValue>> IPValues()
+    std::vector<std::vector<IPValue>> IPValues() override
     {
         std::vector<std::vector<IPValue>> ipValues;
 

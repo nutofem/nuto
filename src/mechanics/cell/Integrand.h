@@ -3,15 +3,10 @@
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/CellIPData.h"
 #include "mechanics/nodes/DofVector.h"
+#include "mechanics/cell/IPValue.h"
 
 namespace NuTo
 {
-struct IPValue
-{
-    std::string mName;
-    Eigen::MatrixXd mValue;
-};
-
 template <int TDim>
 class Integrand
 {
