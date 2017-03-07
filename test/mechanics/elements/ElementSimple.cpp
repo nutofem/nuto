@@ -2,7 +2,7 @@
 #include <type_traits>
 
 #include "mechanics/elements/ElementSimple.h"
-#include "mechanics/interpolation/InterpolationTriangle.h"
+#include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
@@ -21,7 +21,7 @@ struct TestElement : public NuTo::ElementSimple
     NuTo::NodeSimple n0                       = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
     NuTo::NodeSimple n1                       = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
     NuTo::NodeSimple n2                       = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
-    NuTo::InterpolationTriangle interpolation = NuTo::InterpolationTriangle(NuTo::eInterpolation::GAUSS, 1, 2);
+    NuTo::InterpolationTriangleLinear interpolation = NuTo::InterpolationTriangleLinear(2);
 };
 
 BOOST_AUTO_TEST_CASE(ElementExtractNodeValues)

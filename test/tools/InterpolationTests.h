@@ -2,11 +2,19 @@
 #include "BoostUnitTest.h"
 #include <vector>
 #include "mechanics/interpolation/Interpolation.h"
+#include "TypeTraits.h"
 
 namespace NuTo
 {
 namespace Test
 {
+
+template <typename T>
+void CheckCopyMove()
+{
+    NuTo::Test::Copy<T>();
+    NuTo::Test::Move<T>();
+}
 
 void CheckPartitionOfUnity(const NuTo::Interpolation& r, const std::vector<Eigen::VectorXd>& rPoints)
 {
@@ -50,6 +58,21 @@ void CheckShapeFunctionsAndNodePositions(const NuTo::Interpolation& r)
                 BOOST_CHECK_SMALL(N[i], 1.e-10);
         }
     }
+}
+
+template <typename T>
+void RunTests(const std::vector<Eigen::VectorXd>& rPoints)
+{
+    T interpolation(1);
+
+    BOOST_TEST_MESSAGE("Checking copy move...");
+    CheckCopyMove<T>();
+    BOOST_TEST_MESSAGE("Checking match of shape functions and node positions...");
+    CheckShapeFunctionsAndNodePositions(interpolation);
+    BOOST_TEST_MESSAGE("Checking patrition of unity...");
+    CheckPartitionOfUnity(interpolation, rPoints);
+    BOOST_TEST_MESSAGE("Checking shape function derivatives via CDF...");
+    CheckDerivativeShapeFunctionsCDF(interpolation, rPoints);
 }
 } /* Test */
 } /* NuTo */

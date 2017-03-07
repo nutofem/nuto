@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/interpolation/Interpolation.h"
-#include "mechanics/interpolation/InterpolationTriangle.h"
+#include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/cell/CellIPData.h"
 #include <iostream>
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
     NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({0, 1}));
-    NuTo::InterpolationTriangle interpolation0(NuTo::eInterpolation::GAUSS, 1, 2);
+    NuTo::InterpolationTriangleLinear interpolation0(22);
     NuTo::ElementSimple e0({&n0, &n1, &n2}, interpolation0);
     NuTo::DofType d0("dof0", 2, 0);
 

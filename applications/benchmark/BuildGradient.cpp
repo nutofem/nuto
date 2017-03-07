@@ -10,7 +10,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "mechanics/elements/ElementBase.h"
-
+#include "mechanics/cell/Cell.h"
 
 namespace Benchmark
 {
@@ -332,3 +332,51 @@ BENCHMARK(BuildGradient, NuTo, runner)
         element->Evaluate(elementOutputMap);
     }
 }
+
+
+BENCHMARK(BuildGradient, NuToPDE, runner)
+{
+    std::vector<NuTo::NodeBase*> nodes;
+
+    NuTo::NodeDofInfo info;
+    info.mDimension = 2;
+    info.mNumTimeDerivatives = 0;
+    info.mIsDof = true;
+
+    std::map<NuTo::Node::eDof, NuTo::NodeDofInfo> infos;
+    infos[NuTo::Node::eDof::COORDINATES] = info;
+    infos[NuTo::Node::eDof::DISPLACEMENTS] = info;
+
+    NuTo::NodeDof n0(infos);
+    NuTo::NodeDof n1(infos);
+    NuTo::NodeDof n2(infos);
+    NuTo::NodeDof n3(infos);
+    NuTo::NodeDof n4(infos);
+    NuTo::NodeDof n5(infos);
+    NuTo::NodeDof n6(infos);
+    NuTo::NodeDof n7(infos);
+    n0.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0}));
+    n1.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0}));
+    n2.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,1}));
+    n3.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,1}));
+    n4.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,0}));
+    n5.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0.5}));
+    n6.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,1}));
+    n7.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0.5}));
+    nodes.push_back(&n0);
+    nodes.push_back(&n1);
+    nodes.push_back(&n2);
+    nodes.push_back(&n3);
+    nodes.push_back(&n4);
+    nodes.push_back(&n5);
+    nodes.push_back(&n6);
+    nodes.push_back(&n7);
+
+    Benchmark::HardCodeElement8NDynamic e(nodes);
+
+    while(runner.KeepRunningIterations(1e6))
+    {
+        e.BuildInternalGradient();
+    }
+}
+

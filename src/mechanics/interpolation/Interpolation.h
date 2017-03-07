@@ -1,6 +1,5 @@
 #pragma once
 #include <eigen3/Eigen/Core>
-#include "mechanics/interpolation/InterpolationEnum.h"
 #include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo
