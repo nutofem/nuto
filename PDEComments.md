@@ -7,6 +7,8 @@
 
 ## TODO
 
+**Lets have a go at TDD**: *some of the missing features are collected in failing unit tests in /test/mechanics/todo/. I recommend running them via `ctest -V -R todo`. If you perform the required implementations to make a test run (whole test file or just a single test case), please attach (move) the test code to an apropriate unit test.*
+
 - renaming 
     - some classes got the suffix `Simple` to avoid clashes with existing classes/namespaces
 - fix resize of DofContainer to "magicContainerSize = 10"

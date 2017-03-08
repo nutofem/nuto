@@ -12,8 +12,8 @@ class Integrand
 {
 public:
     virtual std::unique_ptr<Integrand> Clone() const = 0;
-    virtual ~Integrand()        = default;
-    virtual DofVector Gradient(const CellData&, const CellIPData<TDim>&) = 0;
+    virtual ~Integrand()                             = default;
+    virtual DofVector<double> Gradient(const CellData&, const CellIPData<TDim>&)    = 0;
     virtual std::vector<IPValue> IPValues(const CellData&, const CellIPData<TDim>&) = 0;
 };
 } /* NuTo */

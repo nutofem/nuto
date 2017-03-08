@@ -16,12 +16,8 @@ public:
     CellInterface& operator=(const CellInterface&) = default;
     CellInterface& operator=(CellInterface&&) = default;
 
-    virtual DofVector Gradient() = 0;
-
+    virtual DofVector<double> Gradient() = 0;
+    virtual DofVector<int> DofNumbering() = 0;
     virtual std::vector<std::vector<IPValue>> IPValues() = 0;
-
-
-private:
-    /* data */
 };
 } /* NuTo */

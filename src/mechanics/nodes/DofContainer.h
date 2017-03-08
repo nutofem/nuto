@@ -25,12 +25,14 @@ public:
 
     T& operator[](const DofType& rDofType)
     {
-        return mData[rDofType.GetId()];
+        //return mData[rDofType.GetId()];
+        return mData.at(rDofType.GetId());
     }
 
     const T& operator[](const DofType& rDofType) const
     {
-        return mData[rDofType.GetId()];
+        //return mData[rDofType.GetId()];
+        return mData.at(rDofType.GetId());
     }
 
 protected:

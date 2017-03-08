@@ -7,8 +7,8 @@ namespace NuTo
 {
 
 //! @brief dof container that is also capable of performing calculations.
-//! @remark We should certainly (!) discuss the name. But I wanted it to be short and catchy :)
-class DofVector : public DofContainer<Eigen::VectorXd>
+template <typename T>
+class DofVector : public DofContainer<Eigen::Matrix<T, Eigen::Dynamic, 1>>
 {
 public:
     DofVector& operator+=(const DofVector& rOther)

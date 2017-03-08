@@ -22,9 +22,9 @@ public:
     }
 
     //! @brief builds the internal gradien
-    DofVector Gradient() override
+    DofVector<double> Gradient() override
     {
-        DofVector gradient;
+        DofVector<double> gradient;
         CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
@@ -36,6 +36,11 @@ public:
             gradient += mIntegrand->Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
+    }
+
+    DofVector<int> DofNumbering() override
+    {
+        return DofVector<int>();
     }
 
     //! @brief Extracts a vector (each IP) of vectors (several IPValues for the same integrion point) of IPValues

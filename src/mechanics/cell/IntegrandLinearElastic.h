@@ -60,18 +60,20 @@ public:
         return std::make_unique<IntegrandLinearElastic<TDim>>(*this);
     }
 
-    NuTo::DofVector Gradient(const NuTo::CellData& rCellData, const NuTo::CellIPData<TDim>& rCellIPData) override
+    NuTo::DofVector<double> Gradient(const NuTo::CellData& rCellData,
+                                     const NuTo::CellIPData<TDim>& rCellIPData) override
     {
         NuTo::BMatrixStrain B = rCellIPData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u    = rCellData.GetNodeValues(mDofType);
-        NuTo::DofVector gradient;
+        NuTo::DofVector<double> gradient;
 
         Eigen::VectorXd strain = B * u;
         gradient[mDofType]     = B.transpose() * mLaw.Stress(strain);
         return gradient;
     }
 
-    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData, const NuTo::CellIPData<TDim>& rCellIPData) override
+    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData,
+                                        const NuTo::CellIPData<TDim>& rCellIPData) override
     {
         NuTo::BMatrixStrain B = rCellIPData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u    = rCellData.GetNodeValues(mDofType);
