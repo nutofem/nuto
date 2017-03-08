@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mechanics/cell/CellInterface.h"
+#include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/elements/ElementSimple.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Integrand.h"
@@ -17,8 +18,10 @@ public:
         : mCoordinateElement(rCoordinateElement)
         , mElements(rElements)
         , mIntegrationType(rIntegrationType)
-        , mIntegrand(rIntegrand.Clone())
+        , mIntegrand()
     {
+        for (int i=0; i<rIntegrationType.GetNumIntegrationPoints(); i++)
+            mIntegrand.push_back(rIntegrand.Clone());
     }
 
     //! @brief builds the internal gradien
@@ -33,7 +36,7 @@ public:
             Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
                               mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
             CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            gradient += mIntegrand->Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
+            gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
     }
@@ -55,7 +58,7 @@ public:
             Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
                               mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
             CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            ipValues.push_back(mIntegrand->IPValues(cellData, cellipData));
+            ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
         }
         return ipValues;
     }
@@ -65,6 +68,6 @@ private:
     const ElementSimple& mCoordinateElement;
     DofContainer<ElementSimple*> mElements;
     const IntegrationTypeBase& mIntegrationType;
-    std::unique_ptr<Integrand<TDim>> mIntegrand;
+    boost::ptr_vector<Integrand<TDim>> mIntegrand;
 };
 } /* NuTo */

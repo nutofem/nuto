@@ -55,9 +55,9 @@ public:
     {
     }
 
-    std::unique_ptr<NuTo::Integrand<TDim>> Clone() const override
+    virtual NuTo::Integrand<TDim>* Clone() const override
     {
-        return std::make_unique<IntegrandLinearElastic<TDim>>(*this);
+        return new IntegrandLinearElastic<TDim>(mDofType,mLaw);
     }
 
     NuTo::DofVector<double> Gradient(const NuTo::CellData& rCellData,
