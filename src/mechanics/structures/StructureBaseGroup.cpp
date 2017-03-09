@@ -111,7 +111,6 @@ void NuTo::StructureBase::GroupDelete(int rIdentGroup)
 
 void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 {
-    NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] Group with the given identifier does not exist.");
@@ -123,8 +122,6 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 
 void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
 {
-    NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");

@@ -158,3 +158,19 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain3D)
     EvaluateLocalDamageModelModel<3>({kappa,     -eps,   -eps, 0., 0., 0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<3>({kappa-eps,   0.,   -eps, 0., 0., 0.}, localDamageModel , kappa);
 }
+
+BOOST_AUTO_TEST_CASE(LocalDamageModelVisualize3D)
+{
+    NuTo::LocalDamageModel localDamageModel;
+    auto law = localDamageModel.CreateIPLaw();
+    NuTo::ConstitutiveInputMap input;
+    input.Add<3>(eInput::ENGINEERING_STRAIN);
+    input.Add<3>(eInput::CALCULATE_STATIC_DATA);
+
+    NuTo::ConstitutiveOutputMap output;
+    output.Add<3>(eOutput::ENGINEERING_STRAIN_VISUALIZE);
+    output.Add<3>(eOutput::ENGINEERING_STRESS_VISUALIZE);
+    output.Add<3>(eOutput::DAMAGE);
+    output.Add<3>(eOutput::LOCAL_EQ_STRAIN);
+    law->Evaluate<3>(input, output);
+}

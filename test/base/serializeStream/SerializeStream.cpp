@@ -92,6 +92,29 @@ BOOST_AUTO_TEST_CASE(SerializeNuTo)
     }
 }
 
+void CheckSeparator(const std::string& rFile, bool rIsBinary)
+{
+    // write
+    {
+        double d = 12;
+        NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
+        streamOut << d;
+        streamOut << d;
+        streamOut.Separator();
+    } // out stream out of scope and f***ing closes the f***ing file. Damnit.
+
+    // read
+    NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
+    double d = 0.;
+    streamIn >> d;
+    BOOST_CHECK_THROW(streamIn.Separator(), NuTo::Exception);
+}
+
+BOOST_AUTO_TEST_CASE(SerializeError)
+{
+    CheckSeparator("NuToSeparatorText", false);
+    CheckSeparator("NuToSeparatorBinary", true);
+}
 
 
 class CompoundDataBase

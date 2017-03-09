@@ -103,16 +103,6 @@ public:
         return std::string("Structure");
     }
 
-    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-    //! @param rConstitutiveId constitutive model for which the data is build
-    void BuildNonlocalData(int rConstitutiveId);
-
-#ifndef SWIG
-    //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-    //! @param rConstitutiveId constitutive model for which the data is build
-    void BuildNonlocalData(const ConstitutiveBase* rConstitutive);
-#endif //SWIG
-
 #ifndef SWIG
 
     //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
@@ -236,10 +226,16 @@ public:
     //! @return ... StructureBlockVector containing the dofs (J and K)
     virtual NuTo::StructureOutputBlockVector NodeExtractDofValues(int rTimeDerivative) const override;
 
-    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues) override
+    {
+        NodeMergeDofValues(rTimeDerivative, rDofValues.J, rDofValues.K);
+    }
+
+    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) override
+    {
+        NodeMergeDofValues(0,rDofValues);
+    }
+
     virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) override;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)
@@ -510,30 +506,6 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @return InterpolationType ptr
     const InterpolationType* InterpolationTypeGet(int rInterpolationTypeId) const;
-
-
-#endif //SWIG
-
-    //***********************************************************
-    //************         Mesh routines        *****************
-    //**  defined in structures/unstructured/StructureMesh.cpp **
-    //***********************************************************
-    //! @brief creates a lattice mesh from the positions of the circles
-    //! @param rTypeOfSpecimen 0 box, 1 dogbone
-    //! @param rBoundingBox box for the spheres (3*2 matrix)
-    //! @param rCircles (coordinates x,y and radius)
-    //! @param rTriangles (triangles connecting the circle centers)
-    void MeshCreateLattice2D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rCircles, Eigen::MatrixXd& rTriangles);
-
-    //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
-    //! @param rTypeOfSpecimen 0 box, 1 dogbone
-    //! @param rBoundingBox box for the spheres (3*2 matrix)
-    //! @param rBoundingBox (min and max for x and y)
-    //! @param rSpheres (coordinates x,y,z and radius)
-    void MeshCreateLattice3D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rSpheres, Eigen::MatrixXd& rTetraeders);
-
-
-#ifndef SWIG
 
     //! @brief creates a node
     //! @param rDOFs

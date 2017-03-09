@@ -48,11 +48,11 @@ Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase&
             int theDof = itNode.second->GetDof(Node::eDof::DISPLACEMENTS, iDim);
             if (theDof < rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS))
             {
-                result[iDim] += rResidual_j(theDof);
+                result[iDim] -= rResidual_j(theDof); // Defined as minus. [R = F_ext - F_int]
             }
             else
             {
-                result[iDim] += rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
+                result[iDim] -= rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
             }
         }
     }

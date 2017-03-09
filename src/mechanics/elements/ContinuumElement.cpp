@@ -153,7 +153,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
         case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
         {
             auto activeDofs = mInterpolationType->GetActiveDofs();
-            if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+            if (activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "Lumped Hessian2 is only implemented for displacements.");
             int numDofs = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetNumDofs();
             it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].resize(numDofs);

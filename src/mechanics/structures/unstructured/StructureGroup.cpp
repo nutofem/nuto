@@ -48,8 +48,6 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
 
 void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
 {
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");

@@ -15,6 +15,7 @@
 // member
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 
 namespace NuTo
 {
@@ -106,6 +107,7 @@ public:
 
     //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
     //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+    //! @remark rOutOfBalance here means Residual = ExternalForces - InternalForces
     void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
 
     //! @brief sets the  time step for the time integration procedure (initial value)
@@ -195,7 +197,7 @@ public:
 
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed
-    void SetResultDirectory(std::string rResultDir, bool rDelete);
+    void SetResultDirectory(std::string rResultDir, bool rDelete = false);
 
     //! @brief returns the result directory
     std::string GetResultDirectory()const
@@ -269,6 +271,14 @@ public:
     //! param rActiveDofs ... active Dofs of the calculation step
     void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
 
+#ifndef SWIG
+    //! @brief Sets the solver
+    void SetSolver(std::unique_ptr<SolverBase> rSolver)
+    {
+        mSolver = std::move(rSolver);
+    }
+#endif
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -297,6 +307,8 @@ protected:
     //structure belonging to the time integration scheme
     StructureBase* mStructure;
 
+    /// \brief Sparse matrix solver
+    std::unique_ptr<SolverBase> mSolver;
 
     // DEPRECATED BLOCK BEGIN
 

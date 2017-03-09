@@ -1117,26 +1117,29 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
         {
             switch (it.get()->GetComponentEnum())
             {
-            case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-                elementIpDataMap[IpData::eIpStaticDataType::ENGINEERING_STRAIN];
-            break;
-            case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-                elementIpDataMap[IpData::eIpStaticDataType::SHRINKAGE_STRAIN];
-            break;
-            default:
-                throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component " + it.get()->GetComponentName() + " is not implemented or not known at the integration points.");
-                break;
+                case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+                    elementIpDataMap[IpData::eIpStaticDataType::ENGINEERING_STRAIN];
+                    break;
+                case NuTo::eVisualizeWhat::DAMAGE:
+                    elementIpDataMap[IpData::eIpStaticDataType::DAMAGE];
+                    break;
+                case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
+                    elementIpDataMap[IpData::eIpStaticDataType::SHRINKAGE_STRAIN];
+                    break;
+                default:
+                    throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component " + it.get()->GetComponentName() + " is not implemented or not known at the integration points.");
+                    break;
             }
         }
 
         //calculate the element solution
         Evaluate(elementOutput);
 
-        // store data
-        for (auto const &it : rVisualizationList)
+    // store data
+    for (auto const &it : rVisualizationList)
+    {
+        switch (it.get()->GetComponentEnum())
         {
-            switch (it.get()->GetComponentEnum())
-            {
             case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
             {
                 const auto& engineeringStrain = elementIpDataMap.at(IpData::eIpStaticDataType::ENGINEERING_STRAIN);
@@ -1157,6 +1160,20 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
 
                     unsigned int CellId = CellIdVec[CellCount];
                     rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
+                }
+            }
+                break;
+
+            case NuTo::eVisualizeWhat::DAMAGE:
+            {
+                const auto& damage = elementIpDataMap.at(IpData::eIpStaticDataType::DAMAGE);
+                for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+                {
+                    unsigned int theIp = VisualizationCellsIP[CellCount];
+                    double Damage =       damage(0, theIp);
+                    unsigned int CellId = CellIdVec[CellCount];
+
+                    rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), Damage);
                 }
             }
                 break;
@@ -1183,10 +1200,10 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
                 }
             }
                 break;
-                default:
+            default:
                 throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component " + it.get()->GetComponentName() + " is not implemented or not known at the integration points.");
-            }
         }
+    }
 
 }
 #endif // ENABLE_VISUALIZE

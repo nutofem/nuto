@@ -19,8 +19,8 @@ endfunction()
 
 # `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the
 # name `SomeClass` and all the files required (`FilesItNeedsToLink`), links
-# NuToBase and the Boost unit test framework to it, and adds it to the test
-# suite under an appropriate name
+# Boost unit test framework to it, and adds it to the test suite under an 
+# appropriate name
 function(add_unit_test ClassName)
     # find relative path, i.e. remove the `.../test/`
     string(REPLACE "${CMAKE_SOURCE_DIR}/test/" "" relpath ${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,7 +44,7 @@ function(add_unit_test ClassName)
         add_executable(${ClassName} ${ClassName}.cpp ${AdditionalObjects})
     endif()
     # link the unit test framework to the unit test
-    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase)
+    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})

@@ -49,23 +49,6 @@ public:
         return mS;
     }
 
-private:
-
-    void SetupMesh(std::vector<int> rNumElements)
-    {
-        auto meshInfo = MeshGenerator::Grid(mS, {lx, ly, lz}, rNumElements);
-        mS.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
-        mS.ElementTotalConvertToInterpolationType();
-    }
-
-    void SetupSectionAndLaw()
-    {
-        int lawId = mS.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-        mS.ConstitutiveLawSetParameterDouble(lawId, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
-        mS.ElementTotalSetConstitutiveLaw(lawId);
-        mS.ElementTotalSetSection(mS.SectionCreate(eSectionType::VOLUME));
-    }
-
     void SetupBCs()
     {
         int bottomNodes = mS.GroupCreate(eGroupId::Nodes);
@@ -83,6 +66,23 @@ private:
 
         mS.SetNumLoadCases(1);
         mS.LoadSurfacePressureCreate3D(0, topElements, topNodes, 10.0);
+    }
+
+private:
+
+    void SetupMesh(std::vector<int> rNumElements)
+    {
+        auto meshInfo = MeshGenerator::Grid(mS, {lx, ly, lz}, rNumElements);
+        mS.InterpolationTypeAdd(meshInfo.second, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT2);
+        mS.ElementTotalConvertToInterpolationType();
+    }
+
+    void SetupSectionAndLaw()
+    {
+        int lawId = mS.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+        mS.ConstitutiveLawSetParameterDouble(lawId, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
+        mS.ElementTotalSetConstitutiveLaw(lawId);
+        mS.ElementTotalSetSection(mS.SectionCreate(eSectionType::VOLUME));
     }
 
     static constexpr double lx = 25;

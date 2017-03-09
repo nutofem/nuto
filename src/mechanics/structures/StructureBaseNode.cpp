@@ -56,12 +56,6 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::NodeExtractDofValues() con
     return NodeExtractDofValues(0);
 }
 
-
-void NuTo::StructureBase::NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector &rDofValues)
-{
-    NodeMergeDofValues(rTimeDerivative, rDofValues.J, rDofValues.K);
-}
-
 void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, const Eigen::VectorXd& rDisplacements)
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -262,7 +256,6 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, E
 
 std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Node::eDof rDof)const
 {
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     const NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
 

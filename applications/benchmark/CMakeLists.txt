@@ -6,6 +6,7 @@ foreach(test
     BuildGradient
     LinearElasticity
     AssembleSparseMatrix
+    Solvers
     )
 
     add_executable(${test} ${test}.cpp)
@@ -18,6 +19,11 @@ foreach(test
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
+
+if(PARDISO_FOUND)
+    target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${OpenBLAS_LIBRARIES})
+endif()
+
 
 add_executable(LinearElasticityOPENMP LinearElasticityOPENMP.cpp)
 target_link_libraries(LinearElasticityOPENMP NuToMechanics NuToMath NuToBase)
