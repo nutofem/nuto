@@ -1025,7 +1025,6 @@ void NuTo::ElementBase::Info() const
 {
     std::cout << "[" << __PRETTY_FUNCTION__ << "] \n";
     std::cout << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
-    std::cout << Element::ElementTypeToString(GetEnumType()) << "\n";
 
     for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
     {

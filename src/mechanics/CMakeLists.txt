@@ -74,7 +74,6 @@ list(APPEND NuToMechanicsElementsSources
     elements/Element1DInXD.cpp
     elements/Element2DInterface.cpp
     elements/ContinuumElementIGA.cpp
-    elements/ElementEnum.cpp
     elements/ElementOutputBase.cpp
     elements/ElementShapeFunctions.cpp
     elements/IpDataEnum.cpp

@@ -13,7 +13,7 @@ class DofVector : public DofContainer<Eigen::Matrix<T, Eigen::Dynamic, 1>>
 public:
     DofVector& operator+=(const DofVector& rOther)
     {
-        for (auto i = 0; i < rOther.mData.size(); ++i)
+        for (std::size_t i = 0; i < rOther.mData.size(); ++i)
         {
             if (this->mData[i].rows() == 0)
                 this->mData[i] = rOther.mData[i];
@@ -25,7 +25,7 @@ public:
 
     DofVector& operator*=(double rScalar)
     {
-        for (auto i = 0; i < this->mData.size(); ++i)
+        for (std::size_t i = 0; i < this->mData.size(); ++i)
             this->mData[i] *= rScalar;
         return *this;
     }

@@ -140,7 +140,7 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
             for (unsigned int iNode = 0; iNode < numberOfNodes; ++iNode)
             {
                 const unsigned int index = mGlobalDimension * iNode;
-                for (unsigned int iDim = 0; iDim < mGlobalDimension; ++iDim)
+                for (int iDim = 0; iDim < mGlobalDimension; ++iDim)
                 {
                     BMatrix(iDim, index + iDim) = shapeFunctions(0, iNode);
                 }
@@ -261,7 +261,7 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
              for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
              {
                  const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                 for (unsigned int iDof = 0; iDof < mGlobalDimension; ++iDof)
+                 for (int iDof = 0; iDof < mGlobalDimension; ++iDof)
                      dofWiseGlobalRowDofs[mGlobalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof);
              }
 

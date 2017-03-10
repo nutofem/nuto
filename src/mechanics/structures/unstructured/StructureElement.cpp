@@ -99,7 +99,6 @@ void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel
 {
     if (rVerboseLevel > 2)
     {
-        std::cout << "\tenum::type=" << Element::ElementTypeToString(rElement->GetEnumType()) << std::endl;
         if (rVerboseLevel > 3)
         {
             std::cout << "\tNodes:";

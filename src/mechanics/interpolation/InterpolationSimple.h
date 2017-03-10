@@ -29,7 +29,7 @@ public:
 
         auto shapeFunctions = GetShapeFunctions(rNaturalIPCoords);
 
-        for (size_t i = 0; i < GetNumNodes(); ++i)
+        for (int i = 0; i < GetNumNodes(); ++i)
             N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
         return N;
     }
