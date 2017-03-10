@@ -31,7 +31,6 @@
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/sections/SectionBase.h"
 #include "mechanics/sections/SectionEnum.h"
-#include "mechanics/structures/StructureBase.h"
 #include "visualize/VisualizeEnum.h"
 
 
@@ -45,8 +44,7 @@
 #include "visualize/VisualizeException.h"
 #endif
 
-NuTo::ElementBase::ElementBase(const StructureBase* rStructure, const InterpolationType& rInterpolationType) :
-        mStructure(rStructure),
+NuTo::ElementBase::ElementBase(const InterpolationType& rInterpolationType) :
         mInterpolationType(&rInterpolationType),
         mIPData(rInterpolationType.GetCurrentIntegrationType())
 {}
@@ -66,7 +64,6 @@ void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ElementBase " << std::endl;
 #endif
-    ar & boost::serialization::make_nvp ("mStructure", const_cast<StructureBase*&>(mStructure));
     ar & boost::serialization::make_nvp ("mInterpolationType", const_cast<InterpolationType*&>(mInterpolationType));
     ar & boost::serialization::make_nvp ("mElementData", mElementData);
 
@@ -87,11 +84,6 @@ void NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<Elem
     input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
     return this->Evaluate(input, rOutput);
-}
-
-int NuTo::ElementBase::ElementGetId() const
-{
-    return mStructure->ElementGetId(this);
 }
 
 const NuTo::ConstitutiveBase& NuTo::ElementBase::GetConstitutiveLaw(unsigned int rIP) const
@@ -117,7 +109,7 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw)
         mIPData.SetConstitutiveLaw(rConstitutiveLaw);
     } else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law " + std::to_string(mStructure->ConstitutiveLawGetId(&rConstitutiveLaw)) + " does not match element type of element " + std::to_string(mStructure->ElementGetId(this)) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law does not match element type of element.");
     }
 }
 
@@ -156,8 +148,6 @@ Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::
 
 Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
-    //assert(GetLocalDimension() == GetStructure()->GetDimension() && "Global and local dimensions do not agree.");
-
     return InterpolateDofGlobal(0, rNaturalCoordinates, rDofType);
 }
 
@@ -190,15 +180,14 @@ Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const E
 
 void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase& rIntegrationType)
 {
-    //check compatibility between element type and constitutive law
+    // check compatibility between element type and constitutive law
     if (rIntegrationType.CheckElementCompatibility(this->GetEnumType()))
     {
         mIPData.SetIntegrationType(rIntegrationType);
-    } else
+    }
+    else
     {
-        std::stringstream message;
-        message << "[NuTo::ElementBase::SetIntegrationType] Integration Type does not match element type of element " << mStructure->ElementGetId(this) << "." << std::endl;
-        throw MechanicsException(message.str());
+        throw MechanicsException(__PRETTY_FUNCTION__, "Integration Type does not match element type of element.");
     }
 }
 
@@ -731,38 +720,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), nonlocalEqStrain[0]);
             }
             break;
-        case NuTo::eVisualizeWhat::CONSTITUTIVE:
-        {
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int theIp = VisualizationCellsIP[CellCount];
-                unsigned int CellId = CellIdVec[CellCount];
-                int constitutiveId = mStructure->ConstitutiveLawGetId(&GetConstitutiveLaw(theIp));
-
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), constitutiveId);
-            }
-        }
-            break;
-        case NuTo::eVisualizeWhat::SECTION:
-        {
-            int sectionId = mStructure->SectionGetId(&GetSection());
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), sectionId);
-            }
-        }
-            break;
-        case NuTo::eVisualizeWhat::ELEMENT:
-        {
-            int elementId = this->ElementGetId();
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), elementId);
-            }
-        }
-            break;
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
             //do nothing
             break;
@@ -849,189 +806,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
 void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
 {
     throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t This function is not ready to be used yet. Choose a different visualization type!");
-    /*
-    // get visualization cells from integration type
-    unsigned int NumVisualizationPoints;
-    std::vector<double> VisualizationPointLocalCoordinates;
-    unsigned int NumVisualizationCells;
-    std::vector<NuTo::eCellTypes> VisualizationCellType;
-    std::vector<unsigned int> VisualizationCellsIncidence;
-    std::vector<unsigned int> VisualizationCellsIP;
-    int dimension = GetLocalDimension();
-
-    NumVisualizationPoints = 3;
-
-    for (unsigned int iNode = 0; iNode < NumVisualizationPoints; ++iNode)
-    {
-        for (int iDim = 0; iDim < dimension; ++iDim)
-        {
-            VisualizationPointLocalCoordinates.push_back(GetInterpolationType()->GetNaturalNodeCoordinates(iNode).at(iDim,0));
-        }
-
-    }
-
-    NumVisualizationCells = 1;
-
-    // cell 0
-    VisualizationCellType.push_back(NuTo::eCellTypes::TRIANGLE);
-    VisualizationCellsIncidence.push_back(0);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(2);
-    VisualizationCellsIP.push_back(0);
-
-
-    // TODO: fix that by proper visualization point (natural!) coordinates, local might be misleading here
-    Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dimension, NumVisualizationPoints);
-
-    std::vector<unsigned int> PointIdVec;
-    for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
-    {
-
-        const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eDof::COORDINATES);
-        unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
-        PointIdVec.push_back(PointId);
-    }
-
-    // store cells at the visualize object
-    assert(VisualizationCellType.size() == NumVisualizationCells);
-    assert(VisualizationCellsIP.size() == NumVisualizationCells);
-    std::vector<unsigned int> CellIdVec;
-    unsigned int Pos = 0;
-    for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-    {
-        switch (VisualizationCellType[CellCount])
-        {
-        case NuTo::eCellTypes::TRIANGLE:
-        {
-            assert(Pos + 3 <= VisualizationCellsIncidence.size());
-            unsigned int Points[3];
-            for (unsigned int PointCount = 0; PointCount < 3; PointCount++)
-            {
-                Points[PointCount] = PointIdVec[VisualizationCellsIncidence[Pos + PointCount]];
-            }
-            unsigned int CellId = rVisualize.AddTriangleCell(Points);
-            CellIdVec.push_back(CellId);
-            Pos += 3;
-        }
-            break;
-        case NuTo::eCellTypes::QUAD:
-        {
-            assert(Pos + 4 <= VisualizationCellsIncidence.size());
-            unsigned int Points[4];
-            for (unsigned int PointCount = 0; PointCount < 4; PointCount++)
-            {
-                Points[PointCount] = PointIdVec[VisualizationCellsIncidence[Pos + PointCount]];
-            }
-            unsigned int CellId = rVisualize.AddQuadCell(Points);
-            CellIdVec.push_back(CellId);
-            Pos += 4;
-        }
-            break;
-        default:
-            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported visualization cell type");
-        }
-    }
-
-    //determine the ipdata and determine the map
-    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-
-
-    for (auto const &it : rVisualizationList)
-    {
-        switch (it.get()->GetComponentEnum())
-        {
-        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-            boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRAIN);
-        break;
-        case NuTo::eVisualizeWhat::DISPLACEMENTS:
-        case NuTo::eVisualizeWhat::SECTION:
-        case NuTo::eVisualizeWhat::ELEMENT:
-        default:
-            //do nothing
-            break;
-        }
-    }
-
-    //calculate the element solution
-    Evaluate(elementOutput);
-
-    //assign the outputs
-    Eigen::MatrixXd* engineeringStrain(nullptr);
-
-    for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
-    {
-        switch (itElementOutput->second->GetIpDataType())
-        {
-        case NuTo::IpData::ENGINEERING_STRAIN:
-            engineeringStrain = &(itElementOutput->second->GetFullMatrixDouble());
-        break;
-        default:
-            throw MechanicsException("[NuTo::ElementBase::Visualize] other ipdatatypes not supported.");
-        }
-    }
-
-    // store data
-    for (auto const &it : rVisualizationList)
-    {
-        switch (it.get()->GetComponentEnum())
-        {
-        case NuTo::eVisualizeWhat::DISPLACEMENTS:
-            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
-            {
-                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eDof::DISPLACEMENTS);
-                unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalDisplacements.data());
-            }
-            break;
-        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-        {
-
-            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
-            {
-                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                const double* EngineeringStrainVector = &(engineeringStrain->data()[PointCount * 6]);
-                Eigen::Vector3d normalStrains;
-
-                normalStrains(0,0) = EngineeringStrainVector[0];
-                normalStrains(1,0) = EngineeringStrainVector[1];
-                normalStrains(2,0) = EngineeringStrainVector[2];
-
-                unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), normalStrains.data());
-            }
-
-        }
-            break;
-            case NuTo::eVisualizeWhat::SECTION:
-        {
-            int sectionId = mStructure->SectionGetId(GetSection());
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), sectionId);
-            }
-        }
-            break;
-        case NuTo::eVisualizeWhat::ELEMENT:
-        {
-            int elementId = this->ElementGetId();
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), elementId);
-            }
-        }
-            break;
-            default:
-            std::cout << it.get()->GetComponentEnum() << "\n";
-            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] unsupported datatype for visualization.");
-        }
-    }
-    */
 }
-
 
 void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
 {
@@ -1248,18 +1023,16 @@ void NuTo::ElementBase::GetIntegratedStrain(Eigen::MatrixXd& rStrain)
 
 void NuTo::ElementBase::Info() const
 {
-    mStructure->GetLogger() << "[" << __PRETTY_FUNCTION__ << "] \n";
-    mStructure->GetLogger() << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
-    mStructure->GetLogger() << Element::ElementTypeToString(GetEnumType()) << "\n";
+    std::cout << "[" << __PRETTY_FUNCTION__ << "] \n";
+    std::cout << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
+    std::cout << Element::ElementTypeToString(GetEnumType()) << "\n";
 
     for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
     {
         const NodeBase* node = GetNode(iNode);
-        mStructure->GetLogger() << "NodeInfo of local node " << iNode << ": \n";
-        mStructure->GetLogger() << node->GetNodeTypeStr() << "\n";
+        std::cout << "NodeInfo of local node " << iNode << ": \n";
+        std::cout << node->GetNodeTypeStr() << "\n";
     }
-//    mStructure->GetLogger() << "InterpolationTypeInfo: \n " << GetInterpolationType()->Info();
-
 }
 
 
@@ -1275,12 +1048,7 @@ void NuTo::ElementBase::ReorderNodes()
         NodeBase* tmpNode1 = GetNode(i1);
         SetNode(i0, tmpNode1);
         SetNode(i1, tmpNode0);
-
-        if (mStructure->GetVerboseLevel() > 5)
-            mStructure->GetLogger() << "[NuTo::ElementBase::ReorderNodes] Swapped nodes " << i0 << " and " << i1 << ".\n";
     }
-    if (mStructure->GetVerboseLevel() > 5)
-    	mStructure->GetLogger() << "\n";
 }
 
 

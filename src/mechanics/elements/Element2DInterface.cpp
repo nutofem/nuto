@@ -24,7 +24,6 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
-#include "mechanics/structures/StructureBase.h"
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeComponent.h"
 #include "visualize/VisualizeEnum.h"
@@ -32,17 +31,15 @@
 #endif // ENABLE_VISUALIZE
 
 
-NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure,
-        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType), mNodes(rNodes)
+NuTo::Element2DInterface::Element2DInterface(
+        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType, int globalDimension) :
+        NuTo::ElementBase::ElementBase(rInterpolationType), mNodes(rNodes), mGlobalDimension(globalDimension)
 {
-    mTransformationMatrix = CalculateTransformationMatrix(GetStructure()->GetDimension(), mNodes.size());
+    mTransformationMatrix = CalculateTransformationMatrix(mGlobalDimension, mNodes.size());
 }
 
 NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput)
 {
-
-//    const unsigned globalDimension = GetStructure()->GetDimension(); // --- unused so far
     ConstitutiveOutputMap constitutiveOutput;
 
     for (auto it : rElementOutput)
@@ -105,7 +102,6 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
     if (mSection == nullptr)
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t no section allocated for element.");
 
-    const unsigned globalDimension = GetStructure()->GetDimension();
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
 
     // extract all node values and store them
@@ -126,7 +122,7 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
         const Eigen::VectorXd nodeCoords = data.mNodalValues[Node::eDof::COORDINATES];
 
         // 0.5 * element length
-        data.mDetJacobian = 0.5 * (nodeCoords.segment(0, globalDimension) - nodeCoords.segment(0.5 * nodeCoords.rows(), globalDimension)).norm();
+        data.mDetJacobian = 0.5 * (nodeCoords.segment(0, mGlobalDimension) - nodeCoords.segment(0.5 * nodeCoords.rows(), mGlobalDimension)).norm();
 
         for (auto dof : mInterpolationType->GetDofs())
         {
@@ -138,13 +134,13 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
             const Eigen::MatrixXd shapeFunctions = *data.mMatrixN[dof];
 
             const unsigned numberOfNodes = interpolationType.GetNumNodes();
-            Eigen::MatrixXd BMatrix(globalDimension, globalDimension * numberOfNodes);
+            Eigen::MatrixXd BMatrix(mGlobalDimension, mGlobalDimension * numberOfNodes);
             BMatrix.setZero();
 
             for (unsigned int iNode = 0; iNode < numberOfNodes; ++iNode)
             {
-                const unsigned int index = globalDimension * iNode;
-                for (unsigned int iDim = 0; iDim < globalDimension; ++iDim)
+                const unsigned int index = mGlobalDimension * iNode;
+                for (unsigned int iDim = 0; iDim < mGlobalDimension; ++iDim)
                 {
                     BMatrix(iDim, index + iDim) = shapeFunctions(0, iNode);
                 }
@@ -250,7 +246,6 @@ const Eigen::VectorXd NuTo::Element2DInterface::GetIntegrationPointVolume() cons
 
 void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const
 {
-    const unsigned globalDimension = GetStructure()->GetDimension();
     for (auto dof : mInterpolationType->GetActiveDofs())
      {
          const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
@@ -266,8 +261,8 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
              for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
              {
                  const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                 for (unsigned int iDof = 0; iDof < globalDimension; ++iDof)
-                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof);
+                 for (unsigned int iDof = 0; iDof < mGlobalDimension; ++iDof)
+                     dofWiseGlobalRowDofs[mGlobalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof);
              }
 
          }
@@ -306,9 +301,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateRotationMatrix()
 {
     const Eigen::VectorXd globalNodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    unsigned int globalDimension = GetStructure()->GetDimension();
-
-    assert((globalDimension == 2 or globalDimension == 3) and "Need 2d or 3d coordinates");
+    assert((mGlobalDimension == 2 or mGlobalDimension == 3) and "Need 2d or 3d coordinates");
 
     // the rotation matrix consists of three basis vectors that define the new coordinate system.
     Eigen::Vector3d basisVector00 = Eigen::Vector3d::Zero();
@@ -316,7 +309,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateRotationMatrix()
     Eigen::Vector3d basisVector02 = Eigen::Vector3d::Zero();
 
     // basisVector00 is aligned with the truss. Note: Trusses have to be straight!
-    basisVector00.block(0, 0, globalDimension, 1) = globalNodeCoordinates.segment(globalDimension, globalDimension) - globalNodeCoordinates.head(globalDimension);
+    basisVector00.block(0, 0, mGlobalDimension, 1) = globalNodeCoordinates.segment(mGlobalDimension, mGlobalDimension) - globalNodeCoordinates.head(mGlobalDimension);
 
     // check if basisVector00 is linear independent to unitVectorZ and calculate the cross product to determine basisVector01
     if (basisVector00(0, 0) > 1e-8 or basisVector00(1, 0) > 1e-8)
@@ -342,7 +335,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateRotationMatrix()
     rotationMatrix3d.col(1) = basisVector01;
     rotationMatrix3d.col(2) = basisVector02;
 
-    return rotationMatrix3d.block(0, 0, globalDimension, globalDimension);
+    return rotationMatrix3d.block(0, 0, mGlobalDimension, mGlobalDimension);
 }
 
 Eigen::MatrixXd NuTo::Element2DInterface::CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes)
@@ -445,7 +438,6 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
 {
     const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
 
-    const unsigned globalDimension = GetStructure()->GetDimension();
     int numNodes = interpolationTypeDof.GetNumNodes();
     int numDofs = interpolationTypeDof.GetNumDofs();
 //    int numDofsPerNode = numDofs / numNodes; // --- unused so far
@@ -463,11 +455,11 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
         {
             Eigen::MatrixXd tmp(node->Get(Node::eDof::COORDINATES));
 
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::eDof::COORDINATES);
+            nodeValues.segment(iNode * mGlobalDimension, mGlobalDimension) = node->Get(Node::eDof::COORDINATES);
         }
             break;
         case Node::eDof::DISPLACEMENTS:
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::eDof::DISPLACEMENTS);
+            nodeValues.segment(iNode * mGlobalDimension, mGlobalDimension) = node->Get(Node::eDof::DISPLACEMENTS);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
@@ -533,7 +525,6 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
 {
 
     const IntegrationTypeBase& integrationType = GetIntegrationType();
-    const unsigned int globalDimension = GetStructure()->GetDimension();
     switch (integrationType.GetNumIntegrationPoints())
     {
     case 2:
@@ -542,23 +533,23 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         // Point 0
         VisualizationPointLocalCoordinates.push_back(-1);
         VisualizationPointLocalCoordinates.push_back(-1);
-        if (globalDimension == 3)
+        if (mGlobalDimension == 3)
             VisualizationPointLocalCoordinates.push_back(0);
 
         // Point 1
         VisualizationPointLocalCoordinates.push_back(+1);
         VisualizationPointLocalCoordinates.push_back(-1);
-        if (globalDimension == 3)
+        if (mGlobalDimension == 3)
                     VisualizationPointLocalCoordinates.push_back(0);
         // Point 2
         VisualizationPointLocalCoordinates.push_back(+1);
         VisualizationPointLocalCoordinates.push_back(+1);
-        if (globalDimension == 3)
+        if (mGlobalDimension == 3)
                     VisualizationPointLocalCoordinates.push_back(0);
         // Point 3
         VisualizationPointLocalCoordinates.push_back(-1);
         VisualizationPointLocalCoordinates.push_back(+1);
-        if (globalDimension == 3)
+        if (mGlobalDimension == 3)
                     VisualizationPointLocalCoordinates.push_back(0);
 
         NumVisualizationCells = 1;
@@ -792,38 +783,6 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             }
             break;
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
-            break;
-        case NuTo::eVisualizeWhat::CONSTITUTIVE:
-        {
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int theIp = VisualizationCellsIP[CellCount];
-                unsigned int CellId = CellIdVec[CellCount];
-                int constitutiveId = mStructure->ConstitutiveLawGetId(&GetConstitutiveLaw(theIp));
-
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), constitutiveId);
-            }
-        }
-            break;
-        case NuTo::eVisualizeWhat::SECTION:
-        {
-            int sectionId = mStructure->SectionGetId(&GetSection());
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), sectionId);
-            }
-        }
-            break;
-        case NuTo::eVisualizeWhat::ELEMENT:
-        {
-            int elementId = this->ElementGetId();
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-            {
-                unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), elementId);
-            }
-        }
             break;
         case NuTo::eVisualizeWhat::BOND_STRESS:
         {

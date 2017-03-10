@@ -2,7 +2,6 @@
 
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
-#include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
@@ -20,8 +19,6 @@
 using namespace NuTo;
 BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
 {
-    Structure structure(1);
-    structure.SetNumTimeDerivatives(1);
     std::vector<NodeBase*> nodes;
     std::map<Node::eDof, NuTo::NodeDofInfo> dofInfos;
     dofInfos[Node::eDof::COORDINATES].mDimension = 1;
@@ -56,15 +53,15 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     IntegrationType1D2NGauss2Ip integrationType;
     interpolationType.UpdateIntegrationType(integrationType);
 
-    ContinuumElement<1> element = ContinuumElement<1>(&structure, nodes, interpolationType);
-
-    ConstitutiveInputMap inputMap;
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;
     dofs.insert(Node::eDof::TEMPERATURE);
     dofStatus.SetDofTypes(dofs);
     dofStatus.SetActiveDofTypes(dofs);
+    ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, dofStatus);
+
+    ConstitutiveInputMap inputMap;
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
     outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
     outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
     outputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
@@ -78,9 +75,6 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     law.SetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, 1.0);
     law.SetParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, 1.0);
     element.SetConstitutiveLaw(law);
-
-    auto interp2 = structure.InterpolationTypeCreate("Truss1D");
-    structure.InterpolationTypeAdd(interp2, Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
 
     element.Evaluate(inputMap, outputMap);
 

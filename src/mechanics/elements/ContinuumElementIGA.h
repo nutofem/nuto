@@ -19,11 +19,11 @@ protected:
     friend class ContinuumBoundaryElement<TDim>;
 
 public:
-    ContinuumElementIGA(const NuTo::StructureBase*          rStructure,
-                        const std::vector<NuTo::NodeBase*> &rNodes,
+    ContinuumElementIGA(const std::vector<NuTo::NodeBase*> &rNodes,
                         const Eigen::MatrixXd              &rKnots,
                         const Eigen::VectorXi              &rKnotIDs,
-                        const InterpolationType            &rInterpolationType);
+                        const InterpolationType            &rInterpolationType,
+                        const DofStatus& dofStatus);
 
     ContinuumElementIGA(const ContinuumElementIGA& ) = default;
     ContinuumElementIGA(      ContinuumElementIGA&&) = default;
@@ -69,25 +69,6 @@ public:
     Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
 
     Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const override;
-
-    const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<1>.");}
-
-    const ContinuumElementIGA<2>& AsContinuumElementIGA2D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<2>.");}
-
-    const ContinuumElementIGA<3>& AsContinuumElementIGA3D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<3>.");}
-
-    ContinuumElementIGA<1>& AsContinuumElementIGA1D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<1>.");}
-
-    ContinuumElementIGA<2>& AsContinuumElementIGA2D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<2>.");}
-
-    ContinuumElementIGA<3>& AsContinuumElementIGA3D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<3>.");}
-
 
 protected:
 

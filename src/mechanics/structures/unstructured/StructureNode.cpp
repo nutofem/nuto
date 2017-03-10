@@ -70,7 +70,7 @@ void NuTo::Structure::NodeGetElements(const int rNodeId, std::vector<int>& rElem
 	rElementNumbers.resize(elementPtrs.size());
 	size_t i=0;
 	BOOST_FOREACH(NuTo::ElementBase* thisElPtr,elementPtrs)
-		rElementNumbers[++i] = thisElPtr->ElementGetId();
+		rElementNumbers[++i] = ElementGetId(thisElPtr);
 }
 
 void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)

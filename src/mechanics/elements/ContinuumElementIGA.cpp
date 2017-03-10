@@ -26,19 +26,16 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
-#include "mechanics/structures/StructureBase.h"
-
-template<int TDim>
-NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const NuTo::StructureBase*          rStructure,
-                                                     const std::vector<NuTo::NodeBase*> &rNodes,
-                                                     const Eigen::MatrixXd              &rKnots,
-                                                     const Eigen::VectorXi              &rKnotIDs,
-                                                     const InterpolationType            &rInterpolationType)
-    :
-        ContinuumElement<TDim>(rStructure, rNodes, rInterpolationType),
-        mKnots(rKnots),
-        mKnotIDs(rKnotIDs)
-{}
+template <int TDim>
+NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const std::vector<NuTo::NodeBase*>& rNodes,
+                                                     const Eigen::MatrixXd& rKnots, const Eigen::VectorXi& rKnotIDs,
+                                                     const InterpolationType& rInterpolationType,
+                                                     const DofStatus& dofStatus)
+    : ContinuumElement<TDim>(rNodes, rInterpolationType, dofStatus)
+    , mKnots(rKnots)
+    , mKnotIDs(rKnotIDs)
+{
+}
 
 template<int TDim>
 NuTo::Element::eElementType NuTo::ContinuumElementIGA<TDim>::GetEnumType() const

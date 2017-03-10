@@ -23,7 +23,6 @@ template <int TDim>
 class EngineeringStress;
 
 
-class StructureBase;
 class DeformationGradient1D;
 class TemperatureGradient1D;
 class LocalEqStrain;
@@ -40,8 +39,8 @@ class Element1DInXD: public ContinuumElement<1>
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes,
-            const InterpolationType& rInterpolationType);
+    Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
+            const InterpolationType& rInterpolationType, const DofStatus& dofStatus, int globalDimension);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -93,6 +92,8 @@ private:
     int GetNumDofsPerNode(Node::eDof rDofType) const;
 
     Eigen::MatrixXd mRotationMatrix;
+
+    const int mGlobalDimension;
 };
 
 } /* namespace NuTo */

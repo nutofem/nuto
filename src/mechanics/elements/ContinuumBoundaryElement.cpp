@@ -6,6 +6,7 @@
  */
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
@@ -20,7 +21,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -30,7 +30,7 @@
 
 template <int TDim>
 NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId)
-: ElementBase::ElementBase(rBaseElement.GetStructure(), rBaseElement.GetInterpolationType()),
+: ElementBase::ElementBase(rBaseElement.GetInterpolationType()),
   mBaseElement(rBaseElement),
   mSurfaceId(rSurfaceId),
   mAlphaUserDefined(-1)
@@ -77,9 +77,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(Evaluate
 
     rData.mNodalValues[Node::eDof::COORDINATES] = mBaseElement.ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    if (mStructure->GetNumTimeDerivatives() >= 1)
-        for (auto dof : dofs)
-            if (mInterpolationType->IsConstitutiveInput(dof))
+    for (auto dof : dofs)
+        if (mInterpolationType->IsConstitutiveInput(dof))
+            if (GetNode(0)->GetNumTimeDerivatives(dof) >= 1)
                 rData.mNodalValues_dt1[dof] = mBaseElement.ExtractNodeValues(1, dof);
 }
 
@@ -682,8 +682,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
 {
-    if (GetStructure()->GetVerboseLevel() > 10)
-        std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
+    std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }
 #endif
 
@@ -812,43 +811,6 @@ template<>
 double NuTo::ContinuumBoundaryElement<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     return  rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP);
-}
-
-
-template<>
-const ContinuumBoundaryElement<1>& ContinuumBoundaryElement<1>::AsContinuumBoundaryElement1D() const
-{
-    return *this;
-}
-
-template<>
-const ContinuumBoundaryElement<2>& ContinuumBoundaryElement<2>::AsContinuumBoundaryElement2D() const
-{
-    return *this;
-}
-
-template<>
-const ContinuumBoundaryElement<3>& ContinuumBoundaryElement<3>::AsContinuumBoundaryElement3D() const
-{
-    return *this;
-}
-
-template<>
-ContinuumBoundaryElement<1>& ContinuumBoundaryElement<1>::AsContinuumBoundaryElement1D()
-{
-    return *this;
-}
-
-template<>
-ContinuumBoundaryElement<2>& ContinuumBoundaryElement<2>::AsContinuumBoundaryElement2D()
-{
-    return *this;
-}
-
-template<>
-ContinuumBoundaryElement<3>& ContinuumBoundaryElement<3>::AsContinuumBoundaryElement3D()
-{
-    return *this;
 }
 
 } //namespace NuTo

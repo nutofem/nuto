@@ -25,6 +25,10 @@
 - fix serious problem with references to value-std::vectors
     - a reference to members in a `std::vector<NodeSimple>` are invalidated as soon as any reallocation is required. Currently, this is solved by reserving the container to 1e6, which is rubbish. A owning pointer container would solve this...
 
+- on my way to removing the structure from the elements, I had to remove the
+    functionality that the element can visualize its own id, section id and law
+    id; this should be reactivated later
+
 
 ## more or less trivial tasks
 

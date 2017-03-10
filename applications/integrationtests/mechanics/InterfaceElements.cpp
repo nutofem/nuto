@@ -221,7 +221,6 @@ int main(int argc, char* argv[])
         myStructure.GroupAddElementsTotal(visualizationGroup);
 
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::CONSTITUTIVE);
 
 
         std::cout << "***********************************" << std::endl;

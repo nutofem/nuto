@@ -97,7 +97,6 @@ std::vector<int> NuTo::Structure::ElementGetNodes(int rId)
 //! @param rVerboseLevel (Input) ... level of verbosity
 void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel) const
 {
-    std::cout << "element : " << rElement->ElementGetId() << std::endl;
     if (rVerboseLevel > 2)
     {
         std::cout << "\tenum::type=" << Element::ElementTypeToString(rElement->GetEnumType()) << std::endl;
@@ -263,11 +262,11 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
                 throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Please use approriate functions for element creation, this is IGA implementation.");
                 break;
             case NuTo::Interpolation::eShapeType::IGA1D:
-                ptrElement = new ContinuumElementIGA<1>(this, nodeVector, rKnots, rKnotIDs, interpolationType);
+                ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::IGA2D:
-                ptrElement = new ContinuumElementIGA<2>(this, nodeVector, rKnots, rKnotIDs, interpolationType);
+                ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
                 ptrElement->CheckElement();
                 break;
             default:
@@ -334,26 +333,26 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
 //            ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::TRUSS1D:
-                ptrElement = new ContinuumElement<1>(this, rNodes, interpolationType);
+                ptrElement = new ContinuumElement<1>(rNodes, interpolationType, GetDofStatus());
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::TRUSSXD:
-                ptrElement = new Element1DInXD(this, rNodes, interpolationType);
+                ptrElement = new Element1DInXD(rNodes, interpolationType, GetDofStatus(), mDimension);
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::TRIANGLE2D:
             case NuTo::Interpolation::eShapeType::QUAD2D:
-                ptrElement = new ContinuumElement<2>(this, rNodes, interpolationType);
+                ptrElement = new ContinuumElement<2>(rNodes, interpolationType, GetDofStatus());
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
             case NuTo::Interpolation::eShapeType::BRICK3D:
             case NuTo::Interpolation::eShapeType::PRISM3D:
-                ptrElement = new ContinuumElement<3>(this, rNodes, interpolationType);
+                ptrElement = new ContinuumElement<3>(rNodes, interpolationType, GetDofStatus());
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::INTERFACE:
-                ptrElement = new Element2DInterface(this, rNodes, interpolationType);
+                ptrElement = new Element2DInterface(rNodes, interpolationType, mDimension);
                 ptrElement->CheckElement();
                 break;
             case NuTo::Interpolation::eShapeType::IGA1D:
@@ -494,11 +493,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                     {
                         if(rControlNode == nullptr)
                         {
-                            boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
+                            boundaryElement = new ContinuumBoundaryElement<1>(*dynamic_cast<ContinuumElement<1>*>(elementPtr), surfaceId);
                         }
                         else
                         {
-                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(*dynamic_cast<ContinuumElement<1>*>(elementPtr), surfaceId,rControlNode);
                         }
                         integrationType = eIntegrationType::IntegrationType0DBoundary;
                         break;
@@ -507,11 +506,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                     {
                         if(rControlNode == nullptr)
                         {
-                            boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
+                            boundaryElement = new ContinuumBoundaryElement<2>(*dynamic_cast<ContinuumElement<2>*>(elementPtr), surfaceId);
                         }
                         else
                         {
-                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(*dynamic_cast<ContinuumElement<2>*>(elementPtr), surfaceId,rControlNode);
                         }
                         // check for 2D types
                         switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
@@ -555,11 +554,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                     {
                         if(rControlNode == nullptr)
                         {
-                            boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
+                            boundaryElement = new ContinuumBoundaryElement<3>(*dynamic_cast<ContinuumElement<3>*>(elementPtr), surfaceId);
                         }
                         else
                         {
-                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
+                            boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(*dynamic_cast<ContinuumElement<3>*>(elementPtr), surfaceId,rControlNode);
                         }
 
                         // check for 3D types
@@ -760,7 +759,7 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
 
                 }
             }
-            ElementDeleteInternal(itElement->second->ElementGetId());
+            ElementDeleteInternal(ElementGetId(itElement->second));
         } catch (NuTo::MechanicsException &e)
         {
             std::stringstream ss;

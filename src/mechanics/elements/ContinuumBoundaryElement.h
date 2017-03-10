@@ -138,25 +138,6 @@ public:
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
-    const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
-
-    const ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D() const override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
-
-    const ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D() const override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
-
-    ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
-
-    ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D() override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
-
-    ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D() override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
-
-
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize,
             const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;

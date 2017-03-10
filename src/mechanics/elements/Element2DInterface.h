@@ -35,8 +35,8 @@ class Element2DInterface: public ElementBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes,
-            const InterpolationType& rInterpolationType);
+    Element2DInterface(const std::vector<NuTo::NodeBase*>& rNodes,
+            const InterpolationType& rInterpolationType, int globalDimension);
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
@@ -122,6 +122,8 @@ protected:
     void CheckElement() override;
 
 private:
+    const int mGlobalDimension;
+
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput);
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData);
