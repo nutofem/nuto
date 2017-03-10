@@ -12,20 +12,16 @@
 #include <boost/serialization/split_member.hpp>
 #endif // ENABLE_SERIALIZATION
 
-// STL:
 #include <iostream>
 #include <fstream>
 #include <string>
-
-// INHERITANCE:
-#include "base/NuToObject.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, NU
 //! @date July 2011
 //! @brief ... logger class for redirecting output to different locations/files
-class Logger : public NuToObject
+class Logger
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -107,16 +103,8 @@ BOOST_SERIALIZATION_SPLIT_MEMBER()
         }
     }
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override
-    {
-        return std::string("Logger");
-    }
-
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-	void Info()const override
+    //! @brief Info routine that prints general information about the object (detail according to verbose level)
+	void Info() const
 	{
 		std::cout << "LogFileName " << mLogFileName << " is quiet " << mQuiet << std::endl;
 	}

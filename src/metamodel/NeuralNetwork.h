@@ -190,11 +190,6 @@ enum eTransferFunctions {
 	virtual void Save (const std::string &filename, std::string rType )const;
 #endif // ENABLE_SERIALIZATION
 
-	//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override;
-
 protected:                                                                 
     void ForwardPropagateInput(std::vector<double> &pA, std::vector<double> &pO)const;
     void GetAlphas (Eigen::VectorXd& rAlpha)const;               //calculate for each free parameter the corresponding alpha

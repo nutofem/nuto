@@ -15,16 +15,6 @@ public:
     //! @brief ... default constructor
     SparseDirectSolverPardiso(int rNumThreads, int rVerboseLevel = 1);
 
-    //! @brief ... print information about the class attributes
-    virtual void Info() const override
-    {
-    }
-
-    std::string GetTypeId() const override
-    {
-        return std::string("SparseDirectSolverPardiso");
-    }
-
 #ifdef HAVE_PARDISO
     //! @brief ... solve system of equations: rMatrix * rSolution = rRhs
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)

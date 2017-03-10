@@ -10,14 +10,11 @@ add_unit_test(EigenCompanion)
 
 add_unit_test(SparseMatrixCSRGeneral
     math/SparseMatrixCSR.cpp
-    math/SparseMatrix.cpp
     )
 
 add_unit_test(SparseMatrixCSRVector2General
-        math/SparseMatrixCSRVector2.cpp
         math/SparseMatrixCSRGeneral.cpp
         math/SparseMatrixCSR.cpp
-        math/SparseMatrix.cpp
     )
 
 

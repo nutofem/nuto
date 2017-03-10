@@ -26,7 +26,6 @@ def symmetric_solve():
 
     # solver
     solver = nuto.SparseDirectSolverMUMPS()
-    solver.SetVerboseLevel(3)
 
     print("\nsolving the symmetric problem")
     sol = np.zeros(5)
@@ -62,7 +61,6 @@ def nonsymmetric_solve():
 
     # solver
     solver = nuto.SparseDirectSolverMUMPS()
-    solver.SetVerboseLevel(3)
 
     # solve nonsymmetric problem
     print("\nsolving the nonsymmetric problem")

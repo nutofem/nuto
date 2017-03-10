@@ -307,19 +307,6 @@ void NuTo::RungeKuttaCashKarp::serialize(Archive & ar, const unsigned int versio
     #endif
 }
 
-#endif // ENABLE_SERIALIZATION
-
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name
-std::string NuTo::RungeKuttaCashKarp::GetTypeId()const
-{
-    return std::string("RungeKuttaCashKarp");
-}
-
-
-#ifdef ENABLE_SERIALIZATION
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT

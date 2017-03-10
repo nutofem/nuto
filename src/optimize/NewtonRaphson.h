@@ -76,10 +76,6 @@ public:
     //! @brief ... the routine performs Newton-Raphson integration
     void NewtonRaphsonIterator(Eigen::VectorXd &x, bool &check) const;
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines
-    //! @return    class name
-    virtual std::string GetTypeId()const override;
-
 protected:
     //pointer to the analytical derivative of the residual function (analytic Jacobi matrix)
     Eigen::MatrixXd (*mResidualDerivativeFunction)(const Eigen::VectorXd&,Eigen::VectorXd);

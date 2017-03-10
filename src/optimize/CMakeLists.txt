@@ -24,11 +24,6 @@ if(ENABLE_VISUALIZE)
     target_link_libraries(NuToOptimize NuToVisualize)
 endif()
 
-if(ENABLE_SHOW_TIME)
-    #add library for clock_gettime routines
-    target_link_libraries(NuToOptimize rt)
-endif()
-
 set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 
 # install library

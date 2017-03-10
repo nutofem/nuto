@@ -24,6 +24,8 @@ public:
         mMaxGradientCalls = INT_MAX, mMaxHessianCalls = INT_MAX, mMaxIterations = INT_MAX;
         mShowSteps = 1;
     }
+
+    virtual ~ConjugateGradientNonLinear() = default;
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class
@@ -71,13 +73,8 @@ public:
     void Restore(const std::string& filename, std::string rType);
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief Return the name of the class, this is important for the serialize routines, since this is stored in the
-    //! file in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return Class name
-    virtual std::string GetTypeId() const override;
-
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info() const override;
+    virtual void Info() const;
 
 protected:
     void CalcScalingFactors(int& numHessianCalls, Eigen::MatrixXd& hessianOrig, Eigen::VectorXd& scaleFactorsInv);

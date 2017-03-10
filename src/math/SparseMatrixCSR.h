@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #include <vector>
@@ -150,7 +148,7 @@ public:
     //! @param rValue ... value of the nonzero entry
     virtual void AddValue(int rRow, int rColumn, const T& rValue) override = 0;
 
-    //! @brief ... print info about the object
+    //! @brief Print info about the object
     void Info() const override
     {
         std::cout << "number of rows: " << this->mRowIndex.size() - 1  << std::endl;
@@ -209,11 +207,6 @@ public:
             this->mOneBasedIndexing = false;
         }
     }
-
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    virtual std::string GetTypeId() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

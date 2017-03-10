@@ -8,10 +8,6 @@
 #include <vector>
 #include <boost/ptr_container/ptr_map.hpp>
 
-
-// parent class
-#include "base/NuToObject.h"
-
 // member
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
@@ -36,7 +32,7 @@ namespace IpData
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all mechanical structures
-class TimeIntegrationBase : public NuToObject
+class TimeIntegrationBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -288,7 +284,11 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info()const override;
+    virtual void Info() const;
+
+    bool GetShowTime() const;
+
+    void SetShowTime(bool showTime);
 protected:
     //empty private construct required for serialization
 
@@ -386,6 +386,8 @@ protected:
 
     //! @brief Stores wich Dofs are active in which calculation step
     std::vector<std::set<Node::eDof>> mStepActiveDofs;
+
+    bool mShowTime;
 
 };
 } //namespace NuTo

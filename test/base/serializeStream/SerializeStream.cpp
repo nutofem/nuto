@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "base/Timer.h"
+#include "base/Exception.h"
 
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"

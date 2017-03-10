@@ -107,12 +107,6 @@ Eigen::VectorXd NuTo::PolynomialLeastSquaresFitting::GetPolynomialCoefficients()
     return mPolynomialCoeffs;
 }
 
-std::string NuTo::PolynomialLeastSquaresFitting::GetTypeId()const
-{
-    return std::string("PolynomialLeastSquaresFitting");
-}
-
-
 //! @brief ... Sets the degree of the polynom
 //! @param rDegree degree of the polynom
 void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)

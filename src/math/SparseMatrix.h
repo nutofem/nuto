@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -12,7 +10,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "base/NuToObject.h"
 #include <random>
 #include <eigen3/Eigen/Core>
 #include "math/MathException.h"
@@ -30,7 +27,7 @@ enum class eSparseMatrixType;
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices
 template <class T>
-class SparseMatrix : public NuToObject
+class SparseMatrix
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -42,6 +39,7 @@ public:
     {
         this->mOneBasedIndexing=false;
         this->mPositiveDefinite=false;
+        mVerboseLevel = 0;
     }
 
     SparseMatrix(const SparseMatrix<T>& rOther)
@@ -49,6 +47,8 @@ public:
         this->mOneBasedIndexing=rOther.mOneBasedIndexing;
         this->mPositiveDefinite=rOther.mPositiveDefinite;
     }
+
+    virtual void Info() const {};
 
     virtual ~SparseMatrix() = default;
 
@@ -227,11 +227,6 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    virtual std::string GetTypeId() const override;
-
     //! @brief Calculate the largest matrix entry
     //! @param rResultOutput ... largest matrix entry
     T Max() const
@@ -295,6 +290,8 @@ protected:
     bool mOneBasedIndexing;
     //! @brief ... definiteness of the matrix (true if positive definite / false if indefinite)
     bool mPositiveDefinite;
+
+    unsigned short mVerboseLevel;
 
     //! @brief ... resizes and fills the matrix rMatrix with rNumValues random values
     //! @param rMatrix ... Matrix<T>

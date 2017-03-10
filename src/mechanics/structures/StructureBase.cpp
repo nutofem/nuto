@@ -10,9 +10,7 @@
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
 #include <boost/ptr_container/ptr_list.hpp>
-
 
 # ifdef _OPENMP
 #include <omp.h>
@@ -88,11 +86,13 @@
 #endif // ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 
+using namespace NuTo;
 
-NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject(),
+NuTo::StructureBase::StructureBase(int rDimension) :
         mConstraintMatrix(mDofStatus, false),
         mConstraintMappingRHS(mDofStatus, false),
-        mConstraintRHS(mDofStatus)
+        mConstraintRHS(mDofStatus),
+        mShowTime(true)
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
     {
@@ -1191,6 +1191,26 @@ bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof 
     }
 
     return false;
+}
+
+bool StructureBase::GetShowTime() const
+{
+    return mShowTime;
+}
+
+void StructureBase::SetShowTime(bool showTime)
+{
+    mShowTime = showTime;
+}
+
+unsigned short StructureBase::GetVerboseLevel() const
+{
+    return mVerboseLevel;
+}
+
+void StructureBase::SetVerboseLevel(unsigned short verboseLevel)
+{
+    mVerboseLevel = verboseLevel;
 }
 
 #ifdef ENABLE_SERIALIZATION

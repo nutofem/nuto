@@ -1,5 +1,3 @@
-// $Id: SparseMatrixCSRVector2General_Def.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 
 #include "math/MathException.h"
@@ -43,11 +41,6 @@ public:
     //! @param rCSRVector2Symmetric ... input matrix (full storage)
     SparseMatrixCSRVector2General(const SparseMatrixCSRVector2Symmetric<T>& rCSRVector2Symmetric);
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId() const override;
-
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
     //! @param rNumColumns ... number of columns
@@ -60,6 +53,8 @@ public:
     //! @brief ... returns the number of columns
     //! @return number of columns
     int GetNumColumns() const override;
+
+    void Info() const override;
 
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
@@ -230,9 +225,6 @@ public:
     //! @brief ... Concatenate rows from another matrix
     //! @param rOther ... other matrix with same number of columns
     void ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther);
-
-    //! @brief ... print info about the object
-    void Info() const override;
 
     //! @brief ... returns a random matrix
     //! @param rNumRows ... number of rows
