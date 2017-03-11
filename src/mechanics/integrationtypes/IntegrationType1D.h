@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -14,9 +13,6 @@
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date November 2009
-//! @brief ... abstract class for all integration types in 1D (e.g truss elements or 2Dinterface elements)
 class IntegrationType1D : public IntegrationTypeBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -44,13 +40,7 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-
-    //! @brief ... check compatibility between element type and integration type
-    //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
-
-protected:
+    int GetDimension() const override { return 1; }
 };
 } // namespace nuto
 

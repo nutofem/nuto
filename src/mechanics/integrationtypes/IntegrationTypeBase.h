@@ -39,9 +39,6 @@ class IntegrationTypeBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-#ifndef SWIG
-#endif
-
     //! @brief constructor
     IntegrationTypeBase();
 
@@ -64,6 +61,8 @@ public:
 
     }
 #endif // ENABLE_SERIALIZATION
+
+    virtual int GetDimension() const = 0;
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -92,11 +91,6 @@ public:
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel)const;
-
-    //! @brief ... check compatibility between element type and integration type
-    //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
 
     //! @brief creates new integration-cells/order/area
     //! @param rArea (Input) polygonal surface of integration area

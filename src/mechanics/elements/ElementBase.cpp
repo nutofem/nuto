@@ -191,7 +191,7 @@ Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const E
 void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase& rIntegrationType)
 {
     //check compatibility between element type and constitutive law
-    if (rIntegrationType.CheckElementCompatibility(this->GetEnumType()))
+    if (GetLocalDimension() ==  rIntegrationType.GetDimension())
     {
         mIPData.SetIntegrationType(rIntegrationType);
     } else
