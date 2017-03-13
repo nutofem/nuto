@@ -14,6 +14,7 @@
 #include "mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "mechanics/cell/IntegrandLinearElastic.h"
 
+
 namespace Benchmark
 {
 
@@ -101,6 +102,96 @@ public:
         return c;
     }
 
+
+private:
+    std::vector<NuTo::NodeBase*> mNodes;
+};
+
+#define maxNumNodes 16
+#define maxDim 3
+
+class HardCodeElement8NDynamicStaticAlloc
+{
+
+public:
+
+    HardCodeElement8NDynamicStaticAlloc(const std::vector<NuTo::NodeBase*>& rNodes) : mNodes(rNodes) {}
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim*maxNumNodes,1> BuildInternalGradient() const
+    {
+        NuTo::IntegrationType2D4NGauss4Ip it;
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim*maxNumNodes,1> result = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim*maxNumNodes,1>::Zero(16,1);
+
+        for (int i = 0; i < it.GetNumIntegrationPoints(); ++i)
+        {
+            Eigen::Vector2d ip = it.GetLocalIntegrationPointCoordinates(i);
+
+            auto derivativeShapeFunctions = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(ip);
+            auto J = GetJacobian(derivativeShapeFunctions);
+
+            auto B = GetB(derivativeShapeFunctions, J);
+
+            result += B.transpose() * (C() * (B * GetDisp())) * J.determinant();
+        }
+        return result;
+    }
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim*maxNumNodes,1> GetDisp() const
+    {
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim*maxNumNodes,1> disp;
+        for (int i = 0; i < 8; ++i)
+        {
+            const auto& nodeValues = mNodes[i]->Get(NuTo::Node::eDof::DISPLACEMENTS);
+            disp(2*i) = nodeValues[0];
+            disp(2*i+1) = nodeValues[1];
+        }
+        return disp;
+    }
+
+    Eigen::Matrix2d GetJacobian(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxNumNodes,maxDim>& rDerivativeShapeFunctions) const
+    {
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxDim,maxNumNodes> coordinates;
+        for (int i = 0; i < 8; ++i)
+        {
+            const auto& nodeCoordinate = mNodes[i]->Get(NuTo::Node::eDof::COORDINATES);
+            coordinates(0,i) = nodeCoordinate[0];
+            coordinates(1,i) = nodeCoordinate[1];
+        }
+        return coordinates * rDerivativeShapeFunctions;
+    }
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,3,maxDim*maxNumNodes> GetB(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxNumNodes,maxDim>& rDerivativeShapeFunctions, const Eigen::Matrix<double, 2, 2>& J) const
+    {
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,maxNumNodes,maxDim> derivativeShapeFunctionsJ = rDerivativeShapeFunctions * J.inverse();
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,3,maxDim*maxNumNodes> B = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,Eigen::ColMajor,3,maxDim*maxNumNodes>::Zero(3,16);
+
+        for (int iNode = 0, iColumn = 0; iNode < 8; ++iNode, iColumn += 2)
+        {
+            double dNdX = derivativeShapeFunctionsJ(iNode, 0);
+            double dNdY = derivativeShapeFunctionsJ(iNode, 1);
+
+            B(0, iColumn) = dNdX;
+            B(1, iColumn + 1) = dNdY;
+            B(2, iColumn) = dNdY;
+            B(2, iColumn + 1) = dNdX;
+        }
+        return B;
+    }
+
+    Eigen::Matrix3d C() const
+    {
+        Eigen::Matrix3d c = Eigen::Matrix3d::Zero();
+
+        double C11, C12, C33;
+        std::tie(C11, C12, C33) = NuTo::EngineeringStressHelper::CalculateCoefficients2DPlaneStress(20000, 0.3);
+
+        c(0, 0) = C11;
+        c(1, 0) = C12;
+        c(0, 1) = C12;
+        c(1, 1) = C11;
+        c(2, 2) = C33;
+        return c;
+    }
 
 private:
     std::vector<NuTo::NodeBase*> mNodes;
@@ -242,6 +333,53 @@ BENCHMARK(BuildGradient, HardcodeFix, runner)
         e.BuildInternalGradient();
     }
 }
+
+BENCHMARK(BuildGradient, HardcodeDynamicStaticAlloc, runner)
+{
+    std::vector<NuTo::NodeBase*> nodes;
+
+    NuTo::NodeDofInfo info;
+    info.mDimension = 2;
+    info.mNumTimeDerivatives = 0;
+    info.mIsDof = true;
+
+    std::map<NuTo::Node::eDof, NuTo::NodeDofInfo> infos;
+    infos[NuTo::Node::eDof::COORDINATES] = info;
+    infos[NuTo::Node::eDof::DISPLACEMENTS] = info;
+
+    NuTo::NodeDof n0(infos);
+    NuTo::NodeDof n1(infos);
+    NuTo::NodeDof n2(infos);
+    NuTo::NodeDof n3(infos);
+    NuTo::NodeDof n4(infos);
+    NuTo::NodeDof n5(infos);
+    NuTo::NodeDof n6(infos);
+    NuTo::NodeDof n7(infos);
+    n0.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0}));
+    n1.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0}));
+    n2.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,1}));
+    n3.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,1}));
+    n4.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,0}));
+    n5.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1  ,0.5}));
+    n6.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5,1}));
+    n7.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0  ,0.5}));
+    nodes.push_back(&n0);
+    nodes.push_back(&n1);
+    nodes.push_back(&n2);
+    nodes.push_back(&n3);
+    nodes.push_back(&n4);
+    nodes.push_back(&n5);
+    nodes.push_back(&n6);
+    nodes.push_back(&n7);
+
+    Benchmark::HardCodeElement8NDynamicStaticAlloc e(nodes);
+
+    while(runner.KeepRunningIterations(1e6))
+    {
+        e.BuildInternalGradient();
+    }
+}
+
 
 BENCHMARK(BuildGradient, HardcodeDynamic, runner)
 {
