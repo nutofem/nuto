@@ -386,7 +386,7 @@ std::map<int, VectorXd> ComputeReferenceSolution()
     structure.GroupAddNodeRadiusRange(loadNodeGroup, nodeCoords, 0, 1.e-6);
     int loadId = structure.ConstraintLinearSetDisplacementNodeGroup(loadNodeGroup, directionY, 1);
 
-    AddVisualization(structure);
+//    AddVisualization(structure);
 
     structure.GetLogger() << "**********************************************" << "\n";
     structure.GetLogger() << "**  integration sheme                       **" << "\n";

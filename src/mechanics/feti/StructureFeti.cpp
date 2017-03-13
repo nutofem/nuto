@@ -215,6 +215,25 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
 
             break;
         }
+        case 3:
+        {
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[1], Eigen::Vector3d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector3d::UnitZ(), 0.);
+
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[3], Eigen::Vector3d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[4], Eigen::Vector3d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[5], Eigen::Vector3d::UnitZ(), 0.);
+
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Z \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[3] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[4] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[5] << "\t in Z \n\n";
+
+            break;
+        }
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for dimension: " + std::to_string(GetDimension()));
     }
@@ -290,6 +309,15 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
                 mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
                 mElements[i].mId         = elements["Indices"][i].asInt();
             }
+            else if (elementType == 5) // 8 node hexahedron
+            {
+                const int numNodes = 8;
+                mElements[i].mNodeIds.resize(numNodes);
+                for (int iNode = 0; iNode < numNodes; ++iNode)
+                    mElements[i].mNodeIds[iNode] = elements["NodalConnectivity"][i][iNode].asInt();
+
+                mElements[i].mId         = elements["Indices"][i].asInt();
+            }
             else
             {
                 throw MechanicsException(__PRETTY_FUNCTION__, "Import of element type not implemented. Element type id = " +std::to_string(elementType));
@@ -322,7 +350,7 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
     file.close();
 
     for (const auto& node : mNodes)
-        NodeCreate(node.mId, node.mCoordinates.head(2));
+        NodeCreate(node.mId, node.mCoordinates.head(GetDimension()));
 
     for (const auto& element : mElements)
         ElementCreate(element.mId,interpolationTypeId, element.mNodeIds);
@@ -344,86 +372,93 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
 
     switch (GetDimension())
     {
-    case 1:
-    {
-        mNumRigidBodyModes = 1;
-        mRigidBodyModes.setOnes(numTotalDofs,mNumRigidBodyModes);
-    }
-        break;
-    case 2:
-    {
-        mNumRigidBodyModes = 3;
-
-        mRigidBodyModes.setZero(numTotalDofs,mNumRigidBodyModes);
-
-        for (const auto& nodePair : mNodeMap)
+        case 1:
         {
-            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
+            mNumRigidBodyModes = 1;
+            mRigidBodyModes.setOnes(numTotalDofs,mNumRigidBodyModes);
+        }
+            break;
+        case 2:
+        {
+            mNumRigidBodyModes = 3;
 
-            const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(NuTo::Node::eDof::COORDINATES);
+            mRigidBodyModes.setZero(numTotalDofs,mNumRigidBodyModes);
 
-            if (IsActiveDofId(dofIds[0], displacements))
-                mRigidBodyModes.row(dofIds[0]) << 1.,   0., -coordinates[1];
-            else {
+            for (const auto& nodePair : mNodeMap)
+            {
+                const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
 
-                const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[0];
-                mRigidBodyModes.row(rowId) << 1.,   0., -coordinates[1];
+                const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(NuTo::Node::eDof::COORDINATES);
+
+                if (IsActiveDofId(dofIds[0], displacements))
+                    mRigidBodyModes.row(dofIds[0]) << 1.,   0., -coordinates[1];
+                else {
+
+                    const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[0];
+                    mRigidBodyModes.row(rowId) << 1.,   0., -coordinates[1];
+                }
+
+
+                if (IsActiveDofId(dofIds[1], displacements)) {
+                    mRigidBodyModes.row(dofIds[1]) << 0., 1., coordinates[0];
+                } else {
+                    const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[1];
+                    mRigidBodyModes.row(rowId) << 0.,   1., coordinates[0];
+
+                }
+
+
             }
-
-
-            if (IsActiveDofId(dofIds[1], displacements)) {
-                mRigidBodyModes.row(dofIds[1]) << 0., 1., coordinates[0];
-            } else {
-                const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[1];
-                mRigidBodyModes.row(rowId) << 0.,   1., coordinates[0];
-
-            }
-
 
         }
+            break;
+        case 3:
+        {
+            mNumRigidBodyModes = 6;
 
-//        mRigidBodyModesBlockMatrix.Resize(GetDofStatus().GetNumActiveDofsMap(), GetDofStatus().GetNumDependentDofsMap());
-//        mRigidBodyModesBlockMatrix.SetZero();
-//
-//        for (const auto& nodePair : mNodeMap)
-//        {
-//            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
-//
-//            const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(displacements);
-//
-//
-//            if (IsActiveDofId(dofIds[0], displacements))
-//            {
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 0, 1);
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 1, 0);
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[0], 2, -coordinates[1]);
-//            } else
-//            {
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 0, 1);
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 1, 0);
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[0] - GetNumActiveDofs(displacements), 2, -coordinates[1]);
-//            }
-//
-//            if (IsActiveDofId(dofIds[1], displacements))
-//            {
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 0, 0);
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 1, 1);
-//                mRigidBodyModesBlockMatrix.JJ(displacements, displacements).AddValue(dofIds[1], 2, -coordinates[0]);
-//            } else
-//            {
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 0, 0);
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 1, 1);
-//                mRigidBodyModesBlockMatrix.KK(displacements, displacements).AddValue(dofIds[1] - GetNumActiveDofs(displacements), 2, coordinates[0]);
-//            }
-//
-//
-//        }
+            mRigidBodyModes.setZero(numTotalDofs,mNumRigidBodyModes);
+
+            for (const auto& nodePair : mNodeMap)
+            {
+                const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, displacements);
+
+                const Eigen::Matrix<double, 3, 1> coordinates = nodePair.second->Get(NuTo::Node::eDof::COORDINATES);
+
+                const double x = coordinates[0];
+                const double y = coordinates[1];
+                const double z = coordinates[2];
+
+                if (IsActiveDofId(dofIds[0], displacements))
+                    mRigidBodyModes.row(dofIds[0]) << 1.,   0.,  0.,  0., -z, y;
+                else {
+
+                    const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[0];
+                    mRigidBodyModes.row(rowId) << 1.,   0.,  0.,  0., -z, y;
+                }
 
 
-    }
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+                if (IsActiveDofId(dofIds[1], displacements)) {
+                    mRigidBodyModes.row(dofIds[1]) << 0.,   1.,  0.,  z, 0, -x;
+                } else {
+                    const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[1];
+                    mRigidBodyModes.row(rowId) << 0.,   1.,  0.,  z, 0, -x;
+
+                }
+
+                if (IsActiveDofId(dofIds[2], displacements)) {
+                    mRigidBodyModes.row(dofIds[2]) << 0.,   0.,  1.,  -y, x, 0.;
+                } else {
+                    const int rowId = numTotalDofs - GetNumActiveDofs(displacements) - GetNumDependentDofs(displacements) + dofIds[2];
+                    mRigidBodyModes.row(rowId) << 0.,   0.,  1.,  -y, x, 0.;
+
+                }
+
+            }
+
+        }
+            break;
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
     }
 
 
@@ -432,6 +467,7 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
 
     GetLogger() << "Number of rigid body modes:        \t"        << mNumRigidBodyModes        << "\n\n";
     GetLogger() << "Total number of rigid body modes:  \t"        << mNumRigidBodyModesTotal   << "\n\n";
+    GetLogger() << "Rigid body modes:  \n"        << mRigidBodyModes   << "\n\n";
 
 
 

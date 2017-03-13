@@ -520,7 +520,9 @@ public:
         zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
         if( not (zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        {
             throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zeroVec.norm()));
+        }
 
 
         zeroVec = rigidBodyModes.transpose() * ( residual_mod - B.transpose() *deltaLambda );
@@ -548,7 +550,10 @@ public:
         //MPI_Barrier(MPI_COMM_WORLD);
         VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
         if( not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)) )
+        {
+            structure->GetLogger() << "G*alpha - (d- F*lambda) = 0 \n" << zeroVecTmp << "\n\n";
             throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
+        }
 
         VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
         if( not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)) )
@@ -604,7 +609,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    void Solve(double rTimeDelta)
+    void Solve(double rTimeDelta) override
     {
 
 
@@ -1003,7 +1008,7 @@ private:
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
-    const double    mCpgTolerance     = 1.0e-6;
+    const double    mCpgTolerance     = 1.0e-8;
     const int       mCpgMaxIterations = 1000;
 
 };
