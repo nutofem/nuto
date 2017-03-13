@@ -107,9 +107,6 @@ private:
     std::vector<NuTo::NodeBase*> mNodes;
 };
 
-#define maxNumNodes 16
-#define maxDim 3
-
 class HardCodeElement8NDynamicStaticAlloc
 {
 
