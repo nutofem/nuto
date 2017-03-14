@@ -13,36 +13,34 @@ public:
         : mE(rE)
         , mNu(rNu)
     {
-    }
-
-    Eigen::Vector3d Stress(const Eigen::VectorXd& rStrain) const
-    {
-        return C() * rStrain;
-    }
-
-    Eigen::Matrix3d C() const
-    {
-
         double factor = mE / (1.0 - (mNu * mNu));
         double C11    = factor;
         double C12    = factor * mNu;
         double C33    = factor * 0.5 * (1.0 - mNu);
 
-        Eigen::Matrix3d C = Eigen::Matrix3d::Zero();
+        mC = Eigen::Matrix3d::Zero();
+        mC(0, 0) = C11;
+        mC(1, 0) = C12;
 
-        C(0, 0) = C11;
-        C(1, 0) = C12;
+        mC(0, 1) = C12;
+        mC(1, 1) = C11;
 
-        C(0, 1) = C12;
-        C(1, 1) = C11;
+        mC(2, 2) = C33;
+    }
 
-        C(2, 2) = C33;
+    Eigen::Vector3d Stress(Eigen::Vector3d rStrain) const
+    {
+        return mC * rStrain;
+    }
 
-        return C;
+    const Eigen::Matrix3d& C() const
+    {
+        return mC;
     }
 
     double mE;
     double mNu;
+    Eigen::Matrix3d mC;
 };
 
 template <int TDim>
