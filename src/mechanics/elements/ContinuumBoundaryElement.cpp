@@ -694,7 +694,7 @@ namespace NuTo
 template <int TDim>
 int ContinuumBoundaryElement<TDim>::GetLocalDimension() const
 {
-    return mBaseElement.GetLocalDimension();
+    return TDim - 1;
 }
 
 template <int TDim>
