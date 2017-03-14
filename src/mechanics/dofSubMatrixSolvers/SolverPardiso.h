@@ -16,8 +16,10 @@ class SolverPardiso : public SolverBase
 public:
     SolverPardiso(int rNumProcessors, bool rShowTime = true)
         : SolverBase()
+#ifdef HAVE_PARDISO
         , mNumProcessors(rNumProcessors)
         , mShowTime(rShowTime)
+#endif // HAVE_PARDISO
     {
     }
 #ifdef HAVE_PARDISO
@@ -35,9 +37,9 @@ public:
 
         return BlockFullVector<double>(result, rMatrix.GetDofStatus());
     }
-#endif // HAVE_PARDISO
 private:
     int mNumProcessors;
     bool mShowTime;
+#endif // HAVE_PARDISO
 };
 } // namespace NuTo
