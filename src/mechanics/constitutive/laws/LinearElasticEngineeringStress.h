@@ -139,11 +139,6 @@ public:
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters() const override;
 
-    //! @brief ... check compatibility between element type and type of constitutive relationship
-    //! @param rElementType ... element type
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(Element::eElementType rElementType) const override;
-
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     //! @param rLogger stream for the output

@@ -29,18 +29,6 @@ bool NuTo::ShrinkageCapillaryStrainBased::CheckDofCombinationComputable(NuTo::No
     return false;
 }
 
-bool NuTo::ShrinkageCapillaryStrainBased::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-        return true;
-    default:
-        return false;
-    }
-}
 
 void NuTo::ShrinkageCapillaryStrainBased::CheckParameters() const
 {

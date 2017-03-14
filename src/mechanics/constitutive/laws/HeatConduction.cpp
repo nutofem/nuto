@@ -230,16 +230,6 @@ Constitutive::eConstitutiveType HeatConduction::GetType() const
     return Constitutive::eConstitutiveType::HEAT_CONDUCTION;
 }
 
-bool HeatConduction::CheckElementCompatibility(Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case Element::eElementType::CONTINUUMELEMENT:
-        return true;
-    default:
-        return false;
-    }
-}
 
 void HeatConduction::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {

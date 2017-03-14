@@ -18,8 +18,6 @@ public:
 
     bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const override;
 
-    bool CheckElementCompatibility( Element::eElementType rElementType) const override;
-
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                const InterpolationType& rInterpolationType) const override;
 

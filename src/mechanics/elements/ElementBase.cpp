@@ -111,14 +111,7 @@ NuTo::IPData& NuTo::ElementBase::GetIPData()
 
 void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw)
 {
-    //check compatibility between element type and constitutive law
-    if (rConstitutiveLaw.CheckElementCompatibility(this->GetEnumType()))
-    {
-        mIPData.SetConstitutiveLaw(rConstitutiveLaw);
-    } else
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law " + std::to_string(mStructure->ConstitutiveLawGetId(&rConstitutiveLaw)) + " does not match element type of element " + std::to_string(mStructure->ElementGetId(this)) + ".");
-    }
+    mIPData.SetConstitutiveLaw(rConstitutiveLaw);
 }
 
 

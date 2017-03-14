@@ -715,22 +715,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::GradientDamageEngineeringStress::Get
     return NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS;
 }
 
-//! @brief ... check compatibility between element type and type of constitutive relationship
-//! @param rElementType ... element type
-//! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-bool NuTo::GradientDamageEngineeringStress::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-        return true;
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
-        return true;
-
-    default:
-        return false;
-    }
-}
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information

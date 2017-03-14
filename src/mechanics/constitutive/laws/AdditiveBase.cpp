@@ -44,17 +44,6 @@ void NuTo::AdditiveBase::AddCalculableDofCombinations(NuTo::ConstitutiveBase& rC
 }
 
 
-bool NuTo::AdditiveBase::CheckElementCompatibility(Element::eElementType rElementType) const
-{
-    for (auto& sublaw : mSublaws)
-    {
-        if(!sublaw->CheckElementCompatibility(rElementType))
-            return false;
-    }
-    return true;
-}
-
-
 void NuTo::AdditiveBase::CheckParameters() const
 {
     for (auto& sublaw : mSublaws)
