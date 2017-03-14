@@ -1,5 +1,3 @@
-// $Id$
-
 #include <eigen3/Eigen/Core>
 #include "base/Timer.h"
 #include "math/MathException.h"

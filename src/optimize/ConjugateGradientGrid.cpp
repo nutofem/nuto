@@ -1,9 +1,7 @@
-// $Id $
-
-
 //! @author Andrea Keßler, ISM
 //! @brief ... conjugate gradient method without global matrix matrix-vector product
 
+#include <fstream>
 #include "optimize/ConjugateGradientGrid.h"
 #include "optimize/MisesWielandt.h"
 //#include "optimize/MultiGrid.h"
@@ -497,14 +495,6 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
     }
 }
 #endif // ENABLE_SERIALIZATION
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name ConjugateGradientGrid
-std::string NuTo::ConjugateGradientGrid::GetTypeId()const
-{
-    return std::string("ConjugateGradientGrid");
-}
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::ConjugateGradientGrid::Info () const

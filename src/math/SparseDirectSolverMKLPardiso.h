@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include "math/SparseDirectSolver.h"
@@ -16,16 +15,6 @@ class SparseDirectSolverMKLPardiso : public SparseDirectSolver
 public:
     //! @brief ... default constructor
     SparseDirectSolverMKLPardiso();
-
-    //! @brief ... print information about the class attributes
-    virtual void Info() const override
-    {
-    }
-
-    std::string GetTypeId() const override
-    {
-        return std::string("SparseDirectSolverMKLPardiso");
-    }
 
 #ifdef HAVE_MKL_PARDISO
     //! @brief ... solve system of equations: rMatrix * rSolution = rRhs

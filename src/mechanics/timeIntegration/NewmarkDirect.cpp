@@ -435,14 +435,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     } // while time steps
 }
 
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name
-std::string NuTo::NewmarkDirect::GetTypeId()const
-{
-    return std::string("NewmarkDirect");
-}
-
 
 void NuTo::NewmarkDirect::CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1, const StructureOutputBlockMatrix& rHessian_dt2) const
 {

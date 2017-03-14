@@ -50,15 +50,6 @@ public:
     }
 
     ///
-    /// \brief GetTypeId
-    /// \return
-    ///
-    std::string GetTypeId() const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented!");
-    }
-
-    ///
     /// \brief HasCriticalTimeStep
     /// \return
     ///

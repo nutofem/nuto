@@ -5,8 +5,6 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "base/NuToObject.h"
-
 #include <boost/function.hpp>
 #include <eigen3/Eigen/Core>
 
@@ -16,7 +14,7 @@ namespace NuTo
 //! @author Kindrachuk
 //! @date December 2015
 //! @brief ... standard abstract class for all solvers of nonlinear systems of equations
-class NonlinearSolverBase : public NuToObject
+class NonlinearSolverBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -104,7 +102,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info()const override;
+    virtual void Info() const;
 
 protected:
     //pointer to the residual function

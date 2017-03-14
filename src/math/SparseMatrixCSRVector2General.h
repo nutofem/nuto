@@ -1,5 +1,3 @@
-// $Id: SparseMatrixCSRVector2General.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 
 #include <algorithm>
@@ -7,7 +5,6 @@
 
 #include "math/SparseMatrixCSRVector2General_Def.h"
 
-//#include "math/SparseMatrixCSRGeneral_Def.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
 #include "math/MathException.h"

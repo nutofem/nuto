@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -57,11 +55,6 @@ public:
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const override;
-
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override;
 
     //! @brief ... return number of intermediate stages
     int GetNumStages()const override

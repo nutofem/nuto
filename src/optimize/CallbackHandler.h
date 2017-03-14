@@ -5,8 +5,6 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "base/NuToObject.h"
-
 #include <vector>
 #include "optimize/OptimizeException.h"
 #include <eigen3/Eigen/Core>
@@ -17,14 +15,15 @@ namespace NuTo
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief Abstract class to handle callback routines
-class CallbackHandler : public virtual NuToObject
+class CallbackHandler
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    CallbackHandler() : NuToObject() {}
+    CallbackHandler() = default;
+    virtual ~CallbackHandler() = default;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -64,13 +63,12 @@ public:
         throw OptimizeException(__PRETTY_FUNCTION__, "Hessian function not implemented in CallbackHandler object.");
     }
 
-    virtual void Info() const override = 0;
+    virtual void Info() const = 0;
 #ifdef ENABLE_SERIALIZATION
     virtual void Save(const std::string& filename, std::string rType) const {}
     virtual void Restore(const std::string& filename, std::string rType) {}
 #endif // ENABLE_SERIALIZATION
 
-    virtual std::string GetTypeId() const override { return std::string("CallbackHandler"); }
 };
 } // namespace NuTo
 #ifdef ENABLE_SERIALIZATION

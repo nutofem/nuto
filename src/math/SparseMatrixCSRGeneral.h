@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 #include "math/SparseMatrixCSRGeneral_Def.h"
 

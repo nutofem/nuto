@@ -12,11 +12,6 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
-// parent class
-#include "base/NuToObject.h"
-
-// class member
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
 
@@ -98,7 +93,7 @@ typedef ConstitutiveIOMap<Constitutive::eOutput> ConstitutiveOutputMap;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all mechanical structures
-class StructureBase : public NuToObject
+class StructureBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -1581,7 +1576,7 @@ public:
 	int GetNumTimeDerivatives()const;
 
 	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info()const override;
+    virtual void Info() const;
 
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
@@ -1748,6 +1743,14 @@ public:
     ///
     void DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints);
 
+    bool GetShowTime() const;
+
+    void SetShowTime(bool showTime);
+
+    unsigned short GetVerboseLevel() const;
+
+    void SetVerboseLevel(unsigned short verboseLevel);
+
 protected:
 
     //! @brief finds an unused ID in rMap
@@ -1857,6 +1860,10 @@ protected:
 
     //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
     mutable Logger mLogger;
+
+    bool mShowTime;
+
+    unsigned short mVerboseLevel;
 
 
 #ifdef ENABLE_SERIALIZATION

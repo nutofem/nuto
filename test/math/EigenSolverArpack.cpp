@@ -28,8 +28,6 @@ struct ArpackTestFixture
         mEigenValuesStandardRef = mEigenValuesStandard.block(8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
         mEigenValuesGeneralRef  = mEigenValuesGeneral.block (8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
 
-        mEigenSolver.SetShowTime(false);
-
     }
 
     static Eigen::MatrixXd GetA()

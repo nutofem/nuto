@@ -1,16 +1,9 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
-
-
-
-// parent
-#include "base/NuToObject.h"
-
 
 #include <boost/dynamic_bitset.hpp>
 #include "optimize/OptimizeException.h"
@@ -22,19 +15,21 @@ namespace NuTo
 //! @author Andrea Keszler, ISM
 //! @date July 2010
 //! @brief ... abstract class to handle callback routines
-class CallbackHandlerGrid : public virtual NuToObject
+class CallbackHandlerGrid
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:
-    CallbackHandlerGrid(): NuToObject()
+    CallbackHandlerGrid()
     {
     	mCallbackSetParameters = 0;
     	mCallbackGradient = 0;
     	mCallbackHessian = 0;
     }
+
+    virtual ~CallbackHandlerGrid() = default;
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -118,7 +113,7 @@ public:
 		throw OptimizeException("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
 
 	}
-	void Info() const override
+	void Info() const
 	{
 		std::cout << "CallbackHandlerGrid" << std::endl;
 	}
@@ -141,11 +136,6 @@ public:
 
 	}
 #endif // ENABLE_SERIALIZATION
-
-    virtual std::string GetTypeId() const override
-    {
-    	return std::string("CallbackHandlerGrid");
-    }
 
 private:
     const std::vector<double> *mCallbackSetParameters;

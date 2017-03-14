@@ -58,7 +58,6 @@ int main()
 
         // create solver
         NuTo::SparseDirectSolverMUMPS mumps;
-        mumps.SetVerboseLevel(3);
 
         // solve symmetric problem
         std::cout << std::endl << "solving the symmetric problem" << std::endl;

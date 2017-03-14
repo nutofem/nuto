@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef HAVE_MUMPS
@@ -27,16 +26,6 @@ class SparseDirectSolverMUMPS : public SparseDirectSolver
 public:
     //! @brief ... default constructor
     SparseDirectSolverMUMPS();
-
-    //! @brief ... print information about the class attributes
-    virtual void Info() const override
-    {
-    }
-
-    std::string GetTypeId() const override
-    {
-        return std::string("SparseDirectSolverMUMPS");
-    }
 
     //! @brief ... solve system of equations: rMatrix * rSolution = rRhs
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)

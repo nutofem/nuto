@@ -1,7 +1,4 @@
-// $Id: SparseMatrixCSRSymmetric.h 494 2011-03-27 19:15:08Z res2002 $
-
 #pragma once
-
 
 #include "math/SparseMatrixCSR.h"
 
@@ -39,6 +36,8 @@ public:
     //! @return number of columns
     int GetNumColumns() const override;
 
+    void Info() const override;
+
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
@@ -47,9 +46,6 @@ public:
 
     //! @brief ... return the matrix type
     NuTo::eSparseMatrixType GetSparseMatrixType()const override;
-
-    //! @brief ... print info about the object
-    void Info() const override;
 
     //! @brief ... write nonzero matrix entries into a matrix
     //! @return ... the matrix
@@ -84,12 +80,6 @@ public:
     //! @param rMatrix ... sparse matrix
     //! @return ... this
 	SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix) override;
-
-
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override;
 
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows

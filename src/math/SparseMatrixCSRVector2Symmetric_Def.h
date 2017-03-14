@@ -1,5 +1,3 @@
-// $Id: SparseMatrixCSRVector2Symmetric_Def.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 
 #include "math/SparseMatrixCSRVector2.h"
@@ -38,11 +36,7 @@ public:
     //! @param rCSRMatrix ... input matrix (full storage)
     SparseMatrixCSRVector2Symmetric(const SparseMatrixCSRSymmetric<T>& rCSRMatrix);
 
-
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override;
+    void Info() const override;
 
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
@@ -167,9 +161,6 @@ public:
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering) override;
-
-    //! @brief ... print info about the object
-    void Info() const override;
 
     //! @brief ... returns a random matrix
     //! @param rDimension ... number of rows, number of columns

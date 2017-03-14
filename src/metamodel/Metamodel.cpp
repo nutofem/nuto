@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -14,8 +12,13 @@
 #include "metamodel/MinMaxTransformation.h"
 #include "metamodel/ZeroMeanUnitVarianceTransformation.h"
 #include "metamodel/Metamodel.h"
-// constructor
-NuTo::Metamodel::Metamodel() : NuTo::NuToObject(), mRandomNumberGenerator(time (NULL)) // init random number generator with current time
+
+using namespace NuTo;
+
+// constructor; init random number generator with current time
+NuTo::Metamodel::Metamodel()
+    : mRandomNumberGenerator(time(NULL))
+    , mVerboseLevel(0)
 {
 }
 
@@ -348,6 +351,11 @@ void NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrixConfide
 		myException.AddMessage("[NuTo::Metamodel::GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval] error calculating confidence interval on the coefficients of Pearson's correlation matrix.");
 		throw myException;
 	}
+}
+
+void Metamodel::SetVerboseLevel(unsigned short verboseLevel)
+{
+    mVerboseLevel = verboseLevel;
 }
 
 #ifdef ENABLE_SERIALIZATION

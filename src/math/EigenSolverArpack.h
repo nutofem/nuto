@@ -1,9 +1,5 @@
-// $Id: SparseDirectSolverMKLDSS.h 625 2013-04-22 16:37:11Z unger3 $
-
 #pragma once
 
-
-#include "base/NuToObject.h"
 #include "math/MathException.h"
 #include <eigen3/Eigen/Core>
 
@@ -56,16 +52,11 @@ namespace EIGEN_SOLVER_ARPACK
 //! @author Jörg F. Unger
 //! @date Septemper 2013
 //! @brief ... interface for the arpack eigenvalue solver
-class EigenSolverArpack  : public NuToObject
+class EigenSolverArpack
 {
 public:
     //! @brief ... default constructor
     EigenSolverArpack();
-
-    //! @brief ... print information about the class attributes
-    void Info()const override
-    {
-    }
 
     void Save (const std::string &filename, std::string rType )const
 	{
@@ -76,11 +67,6 @@ public:
 	{
 		throw MathException("NuTo::EigenSolverArpack::Restore] To be implemented.");
 	}
-
-    std::string GetTypeId()const override
-    {
-        return std::string("EigenSolverArpack");
-    }
 
     //! @brief ... solve the eigenvalue problem of a single matrix
     void Solve(const NuTo::SparseMatrix<double> &rK,
@@ -142,7 +128,10 @@ public:
     //! @return pair<eValue, eVector>
     std::pair<double, Eigen::VectorXd> GetSmallest(const SparseMatrix<double>& rM);
 
-
+    bool GetShowTime()
+    {
+        return mShowTime;
+    }
 protected:
     //! @brief ... determines wether a refinement is enabled or disabled within the solution strategy
     NuTo::EIGEN_SOLVER_ARPACK::eDriver mDriver;
@@ -150,6 +139,6 @@ protected:
     double mTolerance; //tolerance, initially set to machine precision (relative eps)
     double mSigmaR; //real shift for Spectral transformation
     double mSigmaI; //imag shift for Spectral transformation
-
+    bool mShowTime;
 };
 }

@@ -32,10 +32,9 @@
 
 #include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
 
-
+using namespace NuTo;
 
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
-        NuTo::NuToObject::NuToObject(),
         mStructure(rStructure),
         mSolver(std::make_unique<SolverMUMPS>(false)),
         mTimeDependentConstraint(-1),
@@ -57,7 +56,8 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
         mMinTimeStepPlot(0),
         mLastTimePlot(-1e99),
         mIterationCount(0),
-        mCallback(nullptr)
+        mCallback(nullptr),
+        mShowTime(true)
 {
     ResetForNextLoad();
 }
@@ -625,4 +625,14 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
     }
 
 #endif //ENABLE_VISUALIZE
+}
+
+bool TimeIntegrationBase::GetShowTime() const
+{
+    return mShowTime;
+}
+
+void TimeIntegrationBase::SetShowTime(bool showTime)
+{
+    mShowTime = showTime;
 }

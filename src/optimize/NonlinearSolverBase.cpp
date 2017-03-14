@@ -15,7 +15,7 @@
 
 using namespace std;
 
-NuTo::NonlinearSolverBase::NonlinearSolverBase() : NuTo::NuToObject::NuToObject()
+NuTo::NonlinearSolverBase::NonlinearSolverBase()
 {
     mTolResidual = 1.0e-12;
     mTolSolution = numeric_limits<double>::epsilon();
