@@ -1243,7 +1243,6 @@ void NuTo::ElementBase::Info() const
 {
     mStructure->GetLogger() << "[" << __PRETTY_FUNCTION__ << "] \n";
     mStructure->GetLogger() << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
-    mStructure->GetLogger() << Element::ElementTypeToString(GetEnumType()) << "\n";
 
     for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
     {
@@ -1251,8 +1250,6 @@ void NuTo::ElementBase::Info() const
         mStructure->GetLogger() << "NodeInfo of local node " << iNode << ": \n";
         mStructure->GetLogger() << node->GetNodeTypeStr() << "\n";
     }
-//    mStructure->GetLogger() << "InterpolationTypeInfo: \n " << GetInterpolationType()->Info();
-
 }
 
 

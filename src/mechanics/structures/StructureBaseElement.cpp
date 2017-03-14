@@ -272,7 +272,7 @@ bool NuTo::StructureBase::ElementCheckHessian0(double rDelta, double rRelativeTo
 
         if (not isElementCorrect)
         {
-            GetLogger() << "[" << __FUNCTION__ << "] wrong hessian0 in " << Element::ElementTypeToString(elementIdPair.second->GetEnumType()) << " " << elementIdPair.first << "\n";
+            GetLogger() << "[" << __FUNCTION__ << "] wrong hessian0 in Element " << elementIdPair.first << "\n";
             GetLogger() << "################################################################################################\n";
         }
 

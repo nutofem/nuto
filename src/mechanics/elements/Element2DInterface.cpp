@@ -170,11 +170,6 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
     }
 }
 
-NuTo::Element::eElementType NuTo::Element2DInterface::GetEnumType() const
-{
-    return Element::eElementType::ELEMENT2DINTERFACE;
-}
-
 
 NuTo::NodeBase* NuTo::Element2DInterface::GetNode(int rLocalNodeNumber)
 {

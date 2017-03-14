@@ -41,12 +41,6 @@ NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const NuTo::StructureBase* 
 {}
 
 template<int TDim>
-NuTo::Element::eElementType NuTo::ContinuumElementIGA<TDim>::GetEnumType() const
-{
-    return Element::eElementType::CONTINUUMELEMENTIGA;
-}
-
-template<int TDim>
 Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElementIGA<TDim>::CalculateJacobianParametricSpaceIGA() const
 {
     Eigen::Matrix<double, TDim, TDim> jac;

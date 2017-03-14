@@ -30,10 +30,6 @@ public:
 
     virtual ~ContinuumElementIGA() = default;
 
-    //! @brief returns the enum (type of the element)
-    //! @return enum
-    NuTo::Element::eElementType GetEnumType() const override;
-
     //! @brief Calculates the the jacobian of the mapping between the refernce element and parametric space (knots)
     //! @param rKnots ... knots of the element
     //! @return the jacobian

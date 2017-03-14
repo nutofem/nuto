@@ -58,11 +58,6 @@ void NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     }
 }
 
-template <int TDim>
-NuTo::Element::eElementType NuTo::ContinuumBoundaryElement<TDim>::GetEnumType() const
-{
-    return Element::eElementType::CONTINUUMBOUNDARYELEMENT;
-}
 
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData)

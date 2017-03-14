@@ -36,7 +36,6 @@ set(NuToMechanicsConstraintSources
     constraints/ConstraintBase.cpp
     constraints/ConstraintEquationTerm.cpp
     constraints/ConstraintLinear.cpp
-    constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp
     constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
     constraints/ConstraintLinearEquation.cpp
     constraints/ConstraintLinearNodeDisplacements1D.cpp
@@ -74,7 +73,6 @@ list(APPEND NuToMechanicsElementsSources
     elements/Element1DInXD.cpp
     elements/Element2DInterface.cpp
     elements/ContinuumElementIGA.cpp
-    elements/ElementEnum.cpp
     elements/ElementOutputBase.cpp
     elements/ElementShapeFunctions.cpp
     elements/IpDataEnum.cpp
