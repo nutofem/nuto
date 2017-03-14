@@ -58,11 +58,6 @@ void NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     }
 }
 
-template <int TDim>
-NuTo::Element::eElementType NuTo::ContinuumBoundaryElement<TDim>::GetEnumType() const
-{
-    return Element::eElementType::CONTINUUMBOUNDARYELEMENT;
-}
 
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData)
@@ -694,7 +689,7 @@ namespace NuTo
 template <int TDim>
 int ContinuumBoundaryElement<TDim>::GetLocalDimension() const
 {
-    return mBaseElement.GetLocalDimension();
+    return TDim - 1;
 }
 
 template <int TDim>

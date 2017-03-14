@@ -111,14 +111,7 @@ NuTo::IPData& NuTo::ElementBase::GetIPData()
 
 void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw)
 {
-    //check compatibility between element type and constitutive law
-    if (rConstitutiveLaw.CheckElementCompatibility(this->GetEnumType()))
-    {
-        mIPData.SetConstitutiveLaw(rConstitutiveLaw);
-    } else
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law " + std::to_string(mStructure->ConstitutiveLawGetId(&rConstitutiveLaw)) + " does not match element type of element " + std::to_string(mStructure->ElementGetId(this)) + ".");
-    }
+    mIPData.SetConstitutiveLaw(rConstitutiveLaw);
 }
 
 
@@ -191,7 +184,7 @@ Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const E
 void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase& rIntegrationType)
 {
     //check compatibility between element type and constitutive law
-    if (rIntegrationType.CheckElementCompatibility(this->GetEnumType()))
+    if (GetLocalDimension() ==  rIntegrationType.GetDimension())
     {
         mIPData.SetIntegrationType(rIntegrationType);
     } else
@@ -1250,7 +1243,6 @@ void NuTo::ElementBase::Info() const
 {
     mStructure->GetLogger() << "[" << __PRETTY_FUNCTION__ << "] \n";
     mStructure->GetLogger() << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
-    mStructure->GetLogger() << Element::ElementTypeToString(GetEnumType()) << "\n";
 
     for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
     {
@@ -1258,8 +1250,6 @@ void NuTo::ElementBase::Info() const
         mStructure->GetLogger() << "NodeInfo of local node " << iNode << ": \n";
         mStructure->GetLogger() << node->GetNodeTypeStr() << "\n";
     }
-//    mStructure->GetLogger() << "InterpolationTypeInfo: \n " << GetInterpolationType()->Info();
-
 }
 
 

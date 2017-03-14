@@ -897,18 +897,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::MisesPlasticityEngineeringStress::Ge
 }
 
 
-bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
 void NuTo::MisesPlasticityEngineeringStress::CheckYieldStrength(std::vector<std::pair<double, double> > rSigma) const
 {
 	if (rSigma.size()==0)

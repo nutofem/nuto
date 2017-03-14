@@ -688,16 +688,6 @@ void NuTo::PhaseField::CheckParameters() const
 {
 }
 
-bool NuTo::PhaseField::CheckElementCompatibility(Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-        return true;
-    default:
-        return false;
-    }
-}
 
 void NuTo::PhaseField::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {

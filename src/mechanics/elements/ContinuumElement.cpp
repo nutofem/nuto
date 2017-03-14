@@ -64,12 +64,6 @@ void NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, 
 }
 
 template<int TDim>
-NuTo::Element::eElementType NuTo::ContinuumElement<TDim>::GetEnumType() const
-{
-    return Element::eElementType::CONTINUUMELEMENT;
-}
-
-template<int TDim>
 void NuTo::ContinuumElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataContinuum<TDim>& data)
 {
     // needs optimization,

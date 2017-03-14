@@ -91,11 +91,6 @@ public:
 
     virtual ~ElementBase() = default;
 
-    //! @brief returns the enum (type of the element)
-    //! @return enum
-    virtual NuTo::Element::eElementType GetEnumType() const=0;
-
-
     //! @brief returns the id number of the element
     //! @return id
     int ElementGetId() const;

@@ -80,11 +80,6 @@ public:
     //! @brief Check parameters of the constitutive relationship.
     void CheckParameters() const override;
 
-    //! @brief Check compatibility between element type and type of constitutive relationship.
-    //! @param rElementType Element type
-    //! @return `true` if the element is compatible with the constitutive relationship, `false` otherwise.
-    bool CheckElementCompatibility(Element::eElementType rElementType) const override;
-
     //! @brief Print information about the object.
     //! @param rVerboseLevel Verbosity of the information
     //! @param rLogger Stream for the output

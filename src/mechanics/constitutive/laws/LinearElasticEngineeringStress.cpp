@@ -474,21 +474,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::LinearElasticEngineeringStress::GetT
 }
 
 
-bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-    case NuTo::Element::eElementType::CONTINUUMELEMENTIGA:
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-    case NuTo::Element::eElementType::ELEMENT1DINXD:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
 void NuTo::LinearElasticEngineeringStress::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);

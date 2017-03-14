@@ -30,11 +30,6 @@ NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const 
     mRotationMatrix = CalculateRotationMatrix();
 }
 
-NuTo::Element::eElementType NuTo::Element1DInXD::GetEnumType() const
-{
-    return NuTo::Element::eElementType::ELEMENT1DINXD;
-}
-
 
 Eigen::MatrixXd NuTo::Element1DInXD::CalculateRotationMatrix()
 {

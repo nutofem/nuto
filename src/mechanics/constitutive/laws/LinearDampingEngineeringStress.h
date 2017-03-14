@@ -30,11 +30,6 @@ public:
                                                Node::eDof rDofCol,
                                                int rTimeDerivative) const override;
 
-    //! @brief ... check compatibility between element type and type of constitutive relationship
-    //! @param rElementType ... element type
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
-
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrown
     virtual void CheckParameters() const override;

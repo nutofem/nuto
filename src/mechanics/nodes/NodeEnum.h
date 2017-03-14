@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include <limits>
@@ -10,14 +9,6 @@ namespace NuTo
 {
 namespace Node
 {
-
-enum class eNodeType
-{
-    NodeCoordinates,
-    NodeCoordinatesDof,
-    NodeCoordinatesDofNonlocalData,
-};
-
 
 enum class eDof : unsigned char {COORDINATES,
                                  ROTATIONS,

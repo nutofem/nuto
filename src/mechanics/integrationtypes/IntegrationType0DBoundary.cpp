@@ -1,7 +1,7 @@
-
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 
+using namespace NuTo;
 
 Eigen::VectorXd NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
@@ -28,6 +28,12 @@ double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum)con
     default:
         throw MechanicsException("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
+}
+
+
+int IntegrationType0DBoundary::GetDimension() const
+{
+    return 0;
 }
 
 #ifdef ENABLE_VISUALIZE
@@ -61,21 +67,6 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(
 }
 
 #endif // ENABLE_VISUALIZE
-
-bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
-        NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case Element::eElementType::CONTINUUMBOUNDARYELEMENT:
-    case Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-        return true;
-
-    default:
-        return false;
-
-    }
-}
 
 #ifdef ENABLE_SERIALIZATION
     template<class Archive>

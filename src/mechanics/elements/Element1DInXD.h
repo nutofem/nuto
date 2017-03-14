@@ -51,10 +51,6 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    //! @brief returns the enum (type of the element)
-    //! @return enum
-    NuTo::Element::eElementType GetEnumType() const override;
-
     Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof) const override;
     const Eigen::VectorXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const;
 

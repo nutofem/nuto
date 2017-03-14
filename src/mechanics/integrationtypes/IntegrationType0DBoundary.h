@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -40,6 +39,7 @@ public:
     //! @return rCoordinates (result)
     Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
 
+    int GetDimension() const override;
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
@@ -56,11 +56,6 @@ public:
     {
         return eIntegrationType::IntegrationType0DBoundary;
     }
-
-    //! @brief ... check compatibility between element type and integration type
-    //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(

@@ -147,11 +147,6 @@ public:
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType GetType() const = 0;
 
-    //! @brief ... check compatibility between element type and type of constitutive relationship
-    //! @param rElementType ... element type
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const = 0;
-
     //! @brief ... returns whether the parameters of the constitutive relationship are valid or not
     //! @return ...  <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
     inline bool AreParametersValid() const

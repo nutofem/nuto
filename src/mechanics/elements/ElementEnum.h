@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include <map>
@@ -7,31 +6,6 @@ namespace NuTo
 {
 namespace Element
 {
-enum class eElementType
-{
-
-    BOUNDARYGRADIENTDAMAGE1D=0,                     //!< boundary element for gradient models
-    BOUNDARYMOISTURETRANSPORT1D,                    //!< boundary element for moisture transport
-    CONTINUUMBOUNDARYELEMENT,                       //!< boundary of continuum element
-    CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
-    CONTINUUMELEMENT,                               //!< continuum element, dimension should not matter
-    CONTINUUMELEMENTIGA,                            //!< continuum element iga, dimension should not matter
-    ELEMENT1DINXD,                                  //!< one dimensional element in 2D or 3D
-    ELEMENT1DSPRING,                                //!< one dimensional spring element
-    ELEMENT2D,                                      //!< two dimensional element
-    ELEMENT2DINTERFACE,                             //!< two dimensional element
-    CONTACTINTERFACE,                               //!< conatact interface element
-    ELEMENT3D,                                      //!< three dimensional element
-    PLANE2D4N,
-    PLANE2D3N,
-
-
-};
-
-const std::map<eElementType, std::string> GetElementTypeMap();
-std::string ElementTypeToString(eElementType rType);
-eElementType ElementTypeToEnum(std::string rType);
-
 
 enum class eUpdateType
 {

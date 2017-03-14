@@ -142,11 +142,6 @@ public:
         CheckValuePositive(__PRETTY_FUNCTION__,rBoundaryDiffusionCoefficientWV,true);
     }
 
-    //! @brief ... check compatibility between element type and type of constitutive relationship
-    //! @param rElementType ... element type
-    //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override;
-
 //    //! @brief ... checks if the constitutive law has a specific parameter
 //    //! @param rIdentifier ... Enum to identify the requested parameter
 //    //! @return ... true/false

@@ -109,20 +109,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::FibreMatrixBondStressSlip::GetType()
     return NuTo::Constitutive::eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP;
 }
 
-//! @brief ... check compatibility between element type and type of constitutive relationship
-bool NuTo::FibreMatrixBondStressSlip::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::ELEMENT2DINTERFACE:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
-
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
 void NuTo::FibreMatrixBondStressSlip::Info(unsigned short rVerboseLevel, Logger& rLogger) const

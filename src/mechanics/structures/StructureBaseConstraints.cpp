@@ -1,4 +1,3 @@
-// $Id$
 #include <eigen3/Eigen/Dense>
 #include "base/Timer.h"
 
@@ -12,7 +11,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
-#include "mechanics/constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.h"
 #include "mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "mechanics/constraints/ConstraintLinearEquation.h"
 #include "mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"

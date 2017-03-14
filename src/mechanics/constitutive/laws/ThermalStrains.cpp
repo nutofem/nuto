@@ -125,17 +125,6 @@ ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOut
     return constitutiveInputMap;
 }
 
-bool NuTo::ThermalStrains::CheckElementCompatibility(Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-        return true;
-    default:
-        return false;
-    }
-}
 
 void NuTo::ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {

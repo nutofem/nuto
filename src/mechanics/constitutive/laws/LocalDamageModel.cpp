@@ -122,18 +122,6 @@ eConstitutiveType NuTo::LocalDamageModel::GetType() const
     return eConstitutiveType::LOCAL_DAMAGE_MODEL;
 }
 
-//! @brief ... check compatibility between element type and type of constitutive relationship
-bool NuTo::LocalDamageModel::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-        return true;
-    default:
-        return false;
-    }
-}
-
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information

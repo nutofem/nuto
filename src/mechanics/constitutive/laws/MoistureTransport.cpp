@@ -692,23 +692,6 @@ bool NuTo::MoistureTransport::CheckDofCombinationComputable(NuTo::Node::eDof rDo
 }
 
 
-
-////! @brief ... check compatibility between element type and type of constitutive relationship
-////! @param rElementType ... element type
-////! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-bool                                        NuTo::MoistureTransport::CheckElementCompatibility                                  (Element::eElementType rElementType) const
-{
-    switch (rElementType)
-    {
-    case NuTo::Element::eElementType::CONTINUUMELEMENT:
-    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
 //! @brief ... check parameters of the constitutive relationship
 //! if one check fails, an exception is thrwon
 void                                        NuTo::MoistureTransport::CheckParameters() const

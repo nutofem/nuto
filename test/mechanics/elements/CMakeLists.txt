@@ -15,7 +15,6 @@ add_unit_test(IPData
     mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.cpp
     mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.cpp
     mechanics/integrationtypes/IntegrationTypeBase.cpp
-    mechanics/integrationtypes/IntegrationType1D.cpp
     mechanics/integrationtypes/IntegrationTypeEnum.cpp
     mechanics/constitutive/ConstitutiveEnum.cpp
     mechanics/timeIntegration/ImplExCallback.cpp
