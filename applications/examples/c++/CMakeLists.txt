@@ -1,11 +1,3 @@
-# TODO: these examples have been commented out at some point in time, we should
-# try to resurrect some of them:
-# - ConstraintsLagrange1D
-# - NonlocalDamagePlasticity
-# - NonlocalDamagePlasticityBeam
-# - NonlocalDamagePlasticityModel
-# - ImportGmsh
-
 # copy meshes
 foreach(mesh
         HeatedPlate
@@ -14,9 +6,6 @@ foreach(mesh
         )
     execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
 endforeach()
-
-
-
 
 # math/base tests
 foreach(test

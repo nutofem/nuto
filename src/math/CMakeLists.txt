@@ -4,11 +4,9 @@ set(NuToMathSources
     EigenSolverArpack.cpp
     Interpolation.cpp
     LinearInterpolation.cpp
-    SparseMatrix.cpp
     SparseMatrixCSR.cpp
     SparseMatrixCSRGeneral.cpp
     SparseMatrixCSRSymmetric.cpp
-    SparseMatrixCSRVector2.cpp
     SparseMatrixCSRVector2General.cpp
     SparseMatrixCSRVector2Symmetric.cpp
     SparseDirectSolverMKLDSS.cpp

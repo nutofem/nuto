@@ -51,16 +51,12 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "AngularVelocities";
     case eVisualizeWhat::BOND_STRESS:
         return "BondStress";
-    case eVisualizeWhat::CONSTITUTIVE:
-        return "ConstitutiveModel";
     case eVisualizeWhat::DAMAGE:
         return "Damage";
     case eVisualizeWhat::CRACK_PHASE_FIELD:
         return "CrackPhaseField";
     case eVisualizeWhat::DISPLACEMENTS:
         return "Displacements";
-    case eVisualizeWhat::ELEMENT:
-        return "Element";
     case eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
         return "EngineeringPlasticStrain";
     case eVisualizeWhat::ENGINEERING_STRAIN:
@@ -85,8 +81,6 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "RelativeHumidity";
     case eVisualizeWhat::ROTATION:
         return "Rotations";
-    case eVisualizeWhat::SECTION:
-        return "Section";
     case eVisualizeWhat::SHRINKAGE_STRAIN:
         return "ShrinkageStrains";
     case eVisualizeWhat::SLIP:

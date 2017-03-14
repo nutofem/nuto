@@ -11,6 +11,8 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "base/Timer.h"
 
+using namespace NuTo;
+
 //! @brief helper struct that defines the element surface by the element ptr and the surface id
 struct ElementSurface
 {
@@ -221,7 +223,7 @@ Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const Element
     Eigen::VectorXd ipCoordsNatural = it.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface);
 
     Eigen::MatrixXd derivativeShapeFunctionsNatural = it.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
-    const Eigen::Matrix3d jacobian = rElementSurface.mElement->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
+    const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(rElementSurface.mElement)->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
 
     Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = it.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface); // = [dXi / dAlpha]
     Eigen::Vector3d dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);

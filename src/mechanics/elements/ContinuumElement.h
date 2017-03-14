@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/elements/ElementBase.h"
-
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 namespace NuTo
 {
@@ -29,9 +29,9 @@ protected:
 
 public:
     ContinuumElement(
-            const NuTo::StructureBase* rStructure,
             const std::vector<NuTo::NodeBase* >& rNodes,
-            const InterpolationType& rInterpolationType);
+            const InterpolationType& rInterpolationType,
+            const DofStatus& dofStatus);
 
     ContinuumElement(const ContinuumElement& ) = default;
     ContinuumElement(      ContinuumElement&&) = default;
@@ -121,26 +121,8 @@ public:
             const Eigen::MatrixXd& rDerivativeShapeFunctions,
             const Eigen::Matrix<double, TDim, TDim> rInvJacobian) const;
 
-    const ContinuumElement<1>& AsContinuumElement1D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<1>.");}
-
-    const ContinuumElement<2>& AsContinuumElement2D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<2>.");}
-
-    const ContinuumElement<3>& AsContinuumElement3D() const override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<3>.");}
-
-    ContinuumElement<1>& AsContinuumElement1D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<1>.");}
-
-    ContinuumElement<2>& AsContinuumElement2D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<2>.");}
-
-    ContinuumElement<3>& AsContinuumElement3D() override
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<3>.");}
-
-
 protected:
+    const DofStatus& mDofStatus;
 
     std::vector<NodeBase*> mNodes;
 

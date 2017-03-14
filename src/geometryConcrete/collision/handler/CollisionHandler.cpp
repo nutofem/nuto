@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include "base/Timer.h"
+#include "base/Exception.h"
 
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/handler/CollisionHandler.h"

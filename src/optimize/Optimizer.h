@@ -8,8 +8,6 @@
 #include <string>
 #include <eigen3/Eigen/Core>
 
-#include "base/NuToObject.h"
-
 #include "optimize/CallbackHandler.h"
 #include "optimize/CallbackHandlerGrid.h"
 #include "optimize/OptimizeException.h"
@@ -21,7 +19,7 @@ namespace NuTo
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief ... standard abstract class for all optimizers in NuTo
-class Optimizer : public NuToObject
+class Optimizer
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
@@ -39,7 +37,7 @@ public:
         REACHINGMACHINEPRECISION  //machine precision is reached for the norm of the increment
     };
     
-    Optimizer(unsigned int rNumParameters,unsigned int rNumEqualConstraints,unsigned int rNumInEqualConstraints) : NuToObject()
+    Optimizer(unsigned int rNumParameters,unsigned int rNumEqualConstraints,unsigned int rNumInEqualConstraints)
     {
         mvParameters.resize(rNumParameters,1);
         mvEqualConstraints.resize(rNumEqualConstraints);
@@ -47,7 +45,11 @@ public:
         mMaxFunctionCalls = INT_MAX;
         mMinObjective = -DBL_MAX;
         mIsBuild = false;
+        mVerboseLevel = 0;
+        mShowTime = true;
 	}
+
+    virtual ~Optimizer() = default;
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class
@@ -145,6 +147,11 @@ public:
 		std::cout << "MaxFunctionCalls                 :" << mMaxFunctionCalls << std::endl;
 		std::cout << "MinObjective                     :" << mMinObjective << std::endl;
     }
+
+    void SetVerboseLevel(unsigned short verboseLevel)
+    {
+        mVerboseLevel = verboseLevel;
+    }
 	
 protected:
     CallbackHandler *mpCallbackHandler;
@@ -158,7 +165,8 @@ protected:
     bool mIsBuild;
     int mMaxFunctionCalls;
     double mMinObjective;
-        
+    unsigned short mVerboseLevel;
+    bool mShowTime;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

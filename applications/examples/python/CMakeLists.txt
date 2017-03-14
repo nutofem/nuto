@@ -1,9 +1,3 @@
-# TODO: these tests have been commented out at some point in time, we should
-# try to resurrect some of them:
-# - MisesPlasticity
-# - Plane2D_patchtest
-# - Temperature1D
-
 if(ENABLE_MECHANICS)
     add_test(examples::py::Brick8NCoupling ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8NCoupling.py)
     add_test(examples::py::DamageBar ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DamageBar.py --no-plot)

@@ -207,11 +207,7 @@ void run2d()
         std::cout << "***********************************" << std::endl;
 
         myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::CONSTITUTIVE);
-//        myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DAMAGE);
-
         myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::CONSTITUTIVE);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Solver                   **" << std::endl;
@@ -432,13 +428,9 @@ void run3d()
     std::cout << "***********************************" << std::endl;
 
     myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::CONSTITUTIVE);
-    myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::ELEMENT);
     myStructure.AddVisualizationComponent(groupIdMatrix, NuTo::eVisualizeWhat::DAMAGE);
 //
     myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::CONSTITUTIVE);
-    myStructure.AddVisualizationComponent(groupIdFiber, NuTo::eVisualizeWhat::ELEMENT);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Solver                   **" << std::endl;

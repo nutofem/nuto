@@ -3,7 +3,6 @@
 %{
 /* Put headers and other declarations here to be added in the wrapper files */
 #include "base/Exception.h"
-#include "base/NuToObject.h"
 #include <string>
 #include <iostream>
 %}
@@ -41,4 +40,3 @@ class exception
         SWIG_exception_fail(SWIG_UnknownError, "Unknown exception");
     }
 }
-%include "base/NuToObject.h"

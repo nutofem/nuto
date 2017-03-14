@@ -8,7 +8,7 @@
 #include "base/Timer.h"
 #include <memory>
 
-NuTo::EigenSolverArpack::EigenSolverArpack() : NuToObject()
+NuTo::EigenSolverArpack::EigenSolverArpack()
 {
 #ifdef HAVE_ARPACK
 	mDriver  = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
@@ -16,6 +16,7 @@ NuTo::EigenSolverArpack::EigenSolverArpack() : NuToObject()
     mTolerance = std::numeric_limits<double>::epsilon();//machine precision
     mSigmaR = 0.; //real shift used for spectral transformations
     mSigmaI = 0.; //imag shift used for spectral transformations
+    mShowTime = true;
 #else
     throw MathException(__PRETTY_FUNCTION__, "NuTo wasn't compiled with ARPACK.");
 #endif
@@ -93,8 +94,6 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 			throw MathException(__PRETTY_FUNCTION__, "which type not implemented for general matrices (LM, SM, LR, SR, LI, SI).");
 		}
     }
-    if (GetVerboseLevel()>5)
-        std::cout << "machine tolerance " << mTolerance << std::endl;
 
     int ido=0; //return value for the reverse communication loop
     char bmat; //standard 'I' or general 'G' eigenvalue problem
@@ -139,7 +138,6 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
     Eigen::VectorXd solution;
 
     SparseDirectSolverMUMPS solver;
-    solver.SetShowTime(GetShowTime());
 
     if (rK.IsSymmetric())
     {
@@ -407,7 +405,6 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
     {
     	solveMatrix->SetOneBasedIndexing();
     	solver.Factorization(*solveMatrix);
-        solver.SetShowTime(false);
     }
 
     do

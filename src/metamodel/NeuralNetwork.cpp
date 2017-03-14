@@ -1344,14 +1344,6 @@ void NuTo::NeuralNetwork::save(Archive & ar, const unsigned int version) const
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NeuralNetwork)
 #endif // ENABLE_SERIALIZATION
 
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name
-std::string NuTo::NeuralNetwork::GetTypeId()const
-{
-    return std::string("NeuralNetwork");
-}
-
 // get inverse covariance matrix
 void NuTo::NeuralNetwork::GetInverseNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rInverseCovariance)const
 {

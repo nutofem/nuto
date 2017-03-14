@@ -1,10 +1,7 @@
-// $Id $
-
-
 //! @author Andrea Keßler, ISM
 //! @brief ... von-Mises-Wielandt method to calculate max and min eigenvalues and vectors
 
-
+#include <fstream>
 #include "optimize/MisesWielandt.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
@@ -324,13 +321,6 @@ void NuTo::MisesWielandt::Restore ( const std::string &filename,  std::string rT
 }
 #endif // ENABLE_SERIALIZATION
 
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name MisesWielandt
-std::string NuTo::MisesWielandt::GetTypeId()const
-{
-    return std::string("MisesWielandt");
-}
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::MisesWielandt::Info () const

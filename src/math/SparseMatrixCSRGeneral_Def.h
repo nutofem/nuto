@@ -1,7 +1,4 @@
-// $Id: SparseMatrixCSRGeneral_Def.h 300 2010-07-22 19:21:39Z unger3 $
-
 #pragma once
-
 
 #include "math/SparseMatrixCSR.h"
 
@@ -38,11 +35,8 @@ public:
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
     SparseMatrixCSRGeneral(const NuTo::SparseMatrixCSRVector2General<T>& rCSR2Matrix);
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId()const override;
-
+    void Info() const override;
+    
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
     //! @param rNumColumns_ ... number of columns
@@ -64,9 +58,6 @@ public:
 
     //! @brief ... return the matrix type
     NuTo::eSparseMatrixType GetSparseMatrixType()const override;
-
-    //! @brief ... print info about the object
-    void Info() const override;
 
     //! @brief ... write nonzero matrix entries into a matrix
     //! @return ... the matrix

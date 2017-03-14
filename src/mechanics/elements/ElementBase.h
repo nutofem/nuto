@@ -29,16 +29,10 @@ class Lattice2D;
 class SectionBase;
 template<class T>
 class SparseMatrix;
-class Structure;
-class StructureBase;
 class VisualizeComponentBase;
 class VisualizeComponent;
 class ElementOutputBase;
 template<typename IOEnum> class ConstitutiveIOMap;
-template <int TDim> class ContinuumElement;
-template <int TDim> class ContinuumElementIGA;
-template <int TDim> class ContinuumBoundaryElement;
-template <int TDim> class ContinuumContactElement;
 
 #ifdef ENABLE_VISUALIZE
 class VisualizeUnstructuredGrid;
@@ -58,7 +52,6 @@ using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
 namespace Element
 {
-    enum class eElementType;
     enum class eOutput;
 }// namespace Element
 
@@ -75,13 +68,11 @@ class ElementBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class NuTo::Structure;
 
 public:
     //! @brief constructor
-    //! @param rStructure ... structure to which the element belongs
     //! @param rInterpolationType ... interpolation type
-    ElementBase(const StructureBase* rStructure, const InterpolationType& rInterpolationType);
+    ElementBase(const InterpolationType& rInterpolationType);
 
     ElementBase(const ElementBase& ) = default;
     ElementBase(      ElementBase&&) = default;
@@ -90,10 +81,6 @@ public:
     ElementBase& operator=(      ElementBase&&) = default;
 
     virtual ~ElementBase() = default;
-
-    //! @brief returns the id number of the element
-    //! @return id
-    int ElementGetId() const;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -308,79 +295,6 @@ public:
                 "Only implemented in ContinuumElementIGA.");
     }
 
-    virtual const ContinuumElement<1>& AsContinuumElement1D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
-
-    virtual const ContinuumElement<2>& AsContinuumElement2D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<2>.");}
-
-    virtual const ContinuumElement<3>& AsContinuumElement3D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
-
-    virtual ContinuumElement<1>& AsContinuumElement1D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
-
-    virtual ContinuumElement<2>& AsContinuumElement2D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<2>.");}
-
-    virtual ContinuumElement<3>& AsContinuumElement3D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
-
-    virtual const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<1>.");
-    }
-
-    virtual const ContinuumElementIGA<2>& AsContinuumElementIGA2D() const
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<2>.");
-    }
-
-    virtual const ContinuumElementIGA<3>& AsContinuumElementIGA3D() const
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<3>.");
-    }
-
-    virtual ContinuumElementIGA<1>& AsContinuumElementIGA1D()
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<1>.");
-    }
-
-    virtual ContinuumElementIGA<2>& AsContinuumElementIGA2D()
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<2>.");
-    }
-
-    virtual ContinuumElementIGA<3>& AsContinuumElementIGA3D()
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Element is not of type ContinuumElementIGA<3>.");
-    }
-
-
-    virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
-
-    virtual const ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
-
-    virtual const ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
-
-    virtual ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
-
-    virtual ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
-
-    virtual ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -421,12 +335,8 @@ public:
 
 #endif // ENABLE_VISUALIZE
 
-    //! @brief returns the structure
-    const StructureBase* GetStructure() const
-    {
-        return mStructure;
-    }
-
+    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    virtual void CheckElement() = 0;
 
 protected:
 
@@ -437,9 +347,6 @@ protected:
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes();
 
-    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
-    virtual void CheckElement() = 0;
-
     void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
@@ -448,9 +355,6 @@ protected:
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
     //virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
-
-    //the base class of the elements must not contain any data apart from a const pointer to the structure and a data pointer
-    const StructureBase* mStructure;
 
     const InterpolationType* mInterpolationType;
 

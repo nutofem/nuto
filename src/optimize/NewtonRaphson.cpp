@@ -210,14 +210,6 @@ void NuTo::NewtonRaphson::LineSearch(Eigen::VectorXd &rXold, const double rFold,
 	}
 }
 
-//! @brief ... Return the name of the class, this is important for the serialize routines
-//! @return    class name
-std::string NuTo::NewtonRaphson::GetTypeId()const
-{
-    return std::string("NewtonRaphson");
-}
-
-
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewtonRaphson)

@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #include "math/SparseDirectSolver.h"
@@ -18,16 +16,6 @@ class SparseDirectSolverMKLDSS  : public SparseDirectSolver
 public:
     //! @brief ... default constructor
     SparseDirectSolverMKLDSS();
-
-    //! @brief ... print information about the class attributes
-    void Info() const override
-    {
-    }
-
-    std::string GetTypeId() const override
-    {
-        return std::string("SparseDirectSolverMKLDSS");
-    }
 
     //! @brief ... solve the system of equations
     //! @param rMatrix ... sparse coefficient matrix stored in the CSR format

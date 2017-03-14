@@ -10,9 +10,7 @@
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
 #include <boost/ptr_container/ptr_list.hpp>
-
 
 # ifdef _OPENMP
 #include <omp.h>
@@ -88,11 +86,13 @@
 #endif // ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 
+using namespace NuTo;
 
-NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject(),
+NuTo::StructureBase::StructureBase(int rDimension) :
         mConstraintMatrix(mDofStatus, false),
         mConstraintMappingRHS(mDofStatus, false),
-        mConstraintRHS(mDofStatus)
+        mConstraintRHS(mDofStatus),
+        mShowTime(true)
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
     {
@@ -271,14 +271,10 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::ANGULAR_VELOCITY);
     else if (rVisualizeComponent == "BondStress")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::BOND_STRESS);
-    else if (rVisualizeComponent == "Constitutive")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::CONSTITUTIVE);
     else if (rVisualizeComponent == "Damage")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::DAMAGE);
     else if (rVisualizeComponent == "Displacements")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::DISPLACEMENTS);
-    else if (rVisualizeComponent == "Element")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ELEMENT);
     else if (rVisualizeComponent == "EngineeringPlasticStrain")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
     else if (rVisualizeComponent == "EngineeringStrain")
@@ -303,8 +299,6 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::RELATIVE_HUMIDITY);
     else if (rVisualizeComponent == "Rotations")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::ROTATION);
-    else if (rVisualizeComponent == "Section")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SECTION);
     else if (rVisualizeComponent == "ShrinkageStrain")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::SHRINKAGE_STRAIN);
     else if (rVisualizeComponent == "Slip")
@@ -427,11 +421,8 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         switch (it.get()->GetComponentEnum())
         {
 
-        case NuTo::eVisualizeWhat::SECTION:
-        case NuTo::eVisualizeWhat::CONSTITUTIVE:
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
-        case NuTo::eVisualizeWhat::ELEMENT:
         case NuTo::eVisualizeWhat::DAMAGE:
             rVisualize.DefineCellDataScalar(it.get()->GetComponentName());
             break;
@@ -1191,6 +1182,26 @@ bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof 
     }
 
     return false;
+}
+
+bool StructureBase::GetShowTime() const
+{
+    return mShowTime;
+}
+
+void StructureBase::SetShowTime(bool showTime)
+{
+    mShowTime = showTime;
+}
+
+unsigned short StructureBase::GetVerboseLevel() const
+{
+    return mVerboseLevel;
+}
+
+void StructureBase::SetVerboseLevel(unsigned short verboseLevel)
+{
+    mVerboseLevel = verboseLevel;
 }
 
 #ifdef ENABLE_SERIALIZATION

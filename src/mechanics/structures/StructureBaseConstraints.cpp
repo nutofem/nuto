@@ -599,14 +599,14 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
         switch (mDimension) {
             case 2: {
-                Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(
+                Eigen::Matrix2d invJacobian = dynamic_cast<ContinuumElement<2>*>(elementPtr)->CalculateJacobian(
                         derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
                 elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
             }
                 break;
             case 3: {
-                Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(
+                Eigen::Matrix3d invJacobian = dynamic_cast<ContinuumElement<3>*>(elementPtr)->CalculateJacobian(
                         derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
                 elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));

@@ -3,7 +3,8 @@ Language: Cpp
 
 AlignAfterOpenBracket: Align
 AlignOperands: true
-AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
 AlignTrailingComments: false
 AlwaysBreakTemplateDeclarations: true
 AllowShortFunctionsOnASingleLine: true

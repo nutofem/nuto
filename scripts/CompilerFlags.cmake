@@ -25,7 +25,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # prevent warnings from boost and eigen
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/")
     # prevent "suggest braces around initialization of subobject" warning
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces -Wno-zero-length-array")
 endif()
 
 # GCC specific options

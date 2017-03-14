@@ -1,5 +1,3 @@
-// $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
-
 #include <set>
 
 #include "mechanics/groups/Group.h"
@@ -39,7 +37,7 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
         try
         {
             //check if solid element
-            ContinuumElement<3>& elementPtr = itElement.second->AsContinuumElement3D();
+            auto& elementPtr = *dynamic_cast<ContinuumElement<3>*>(itElement.second);
             const InterpolationType& interpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces
@@ -57,13 +55,6 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
 
                 }
 
-//                for (const NodeBase* node : nodePtrSet)
-//                {
-//                    std::cout << elementPtr->GetStructure()->NodeGetId(node)  << " ";
-//                }
-//                std::cout << std::endl;
-//                std::cout << surfaceNodeIndices.transpose() << std::endl << std::endl;
-
                 //check, if all surface nodes are in the node group
                 for (unsigned int countNode = 0; countNode < surfaceNodes.size(); countNode++)
                 {
@@ -76,7 +67,6 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
 
                 if (addSurface)
                 {
-//                    std::cout << "Surface added!" << std::endl;
                     mVolumeElements.push_back(std::make_pair(&elementPtr, iSurface));
                 }
             }

@@ -28,14 +28,14 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
-#include "mechanics/structures/StructureBase.h"
-
-template<int TDim>
-NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure,
-        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType),
-        mNodes(rNodes)
-{}
+template <int TDim>
+NuTo::ContinuumElement<TDim>::ContinuumElement(const std::vector<NuTo::NodeBase*>& rNodes,
+                                               const InterpolationType& rInterpolationType, const DofStatus& dofStatus)
+    : NuTo::ElementBase::ElementBase(rInterpolationType)
+    , mDofStatus(dofStatus)
+    , mNodes(rNodes)
+{
+}
 
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
@@ -76,9 +76,9 @@ void NuTo::ContinuumElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataCont
 
     data.mNodalValues[Node::eDof::COORDINATES] = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    if (mStructure->GetNumTimeDerivatives() >= 1)
-        for (auto dof : dofs)
-            if (mInterpolationType->IsConstitutiveInput(dof))
+    for (auto dof : dofs)
+        if (mInterpolationType->IsConstitutiveInput(dof))
+            if (GetNode(0)->GetNumTimeDerivatives(dof) >= 1)
                 data.mNodalValues_dt1[dof] = ExtractNodeValues(1, dof);
 }
 
@@ -193,7 +193,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
         ConstitutiveOutputMap& rConstitutiveOutput,
         BlockFullVector<double>& rInternalGradient) const
 {
-    for (auto dofRow : mStructure->GetDofStatus().GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
     {
 
         if (not (mInterpolationType->IsDof(dofRow)))
@@ -241,9 +241,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 {
 
 
-    for (auto dofRow : mStructure->GetDofStatus().GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
     {
-        for (auto dofCol : mStructure->GetDofStatus().GetActiveDofTypes())
+        for (auto dofCol : mDofStatus.GetActiveDofTypes())
         {
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
@@ -332,9 +332,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian1) const
 {
-    for (auto dofRow : mStructure->GetDofStatus().GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
     {
-        for (auto dofCol : mStructure->GetDofStatus().GetActiveDofTypes())
+        for (auto dofCol : mDofStatus.GetActiveDofTypes())
         {
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
@@ -385,9 +385,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian2) const
 {
-    for (auto dofRow : mStructure->GetDofStatus().GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
     {
-        for (auto dofCol : mStructure->GetDofStatus().GetActiveDofTypes())
+        for (auto dofCol : mDofStatus.GetActiveDofTypes())
         {
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
@@ -466,7 +466,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const
 {
-    for (auto dof : mStructure->GetDofStatus().GetActiveDofTypes())
+    for (auto dof : mDofStatus.GetActiveDofTypes())
     {
 
         if (not (mInterpolationType->IsDof(dof)))
@@ -567,7 +567,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         }
         case Constitutive::eInput::TEMPERATURE_CHANGE:
         {
-            if (mStructure->GetNumTimeDerivatives() >= 1)
+            if (GetNode(0)->GetNumTimeDerivatives(Node::eDof::TEMPERATURE) >= 1)
             {
                 auto& temperatureChange = *static_cast<ConstitutiveScalar*>(it.second.get());
                 temperatureChange.AsScalar() = *(rData.GetNMatrix(Node::eDof::TEMPERATURE)) * rData.mNodalValues_dt1.at(Node::eDof::TEMPERATURE);
@@ -1301,14 +1301,8 @@ void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDa
     rData.mDetJacobian = jacobian.determinant();
     if (rData.mDetJacobian == 0)
     {
-        for (auto* node : mNodes)
-        {
-            std::cout << "ElementID " << mStructure->ElementGetId(this) << std::endl;
-            std::cout << "NodeID: " << mStructure->NodeGetId(node) << std::endl;
-            std::cout << node->Get(Node::eDof::COORDINATES) << std::endl << std::endl;
-        }
         std::cout << rData.mNodalValues[Node::eDof::COORDINATES] << std::endl;
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Determinant of the Jacobian is zero, no inversion possible.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Determinant of the Jacobian is zero, no inversion possible.");
     }
 
     Eigen::Matrix<double, TDim, TDim> invJacobian = jacobian.inverse();
@@ -1420,42 +1414,6 @@ template<>
 double NuTo::ContinuumElement<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP);
-}
-
-template<>
-const ContinuumElement<1>& ContinuumElement<1>::AsContinuumElement1D() const
-{
-    return *this;
-}
-
-template<>
-const ContinuumElement<2>& ContinuumElement<2>::AsContinuumElement2D() const
-{
-    return *this;
-}
-
-template<>
-const ContinuumElement<3>& ContinuumElement<3>::AsContinuumElement3D() const
-{
-    return *this;
-}
-
-template<>
-ContinuumElement<1>& ContinuumElement<1>::AsContinuumElement1D()
-{
-    return *this;
-}
-
-template<>
-ContinuumElement<2>& ContinuumElement<2>::AsContinuumElement2D()
-{
-    return *this;
-}
-
-template<>
-ContinuumElement<3>& ContinuumElement<3>::AsContinuumElement3D()
-{
-    return *this;
 }
 
 }  // namespace NuTo

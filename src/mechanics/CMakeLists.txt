@@ -266,11 +266,6 @@ sources_to_objects("${NuToMechanicsSources}" NuToMechanicsObjects)
 add_library(NuToMechanics ${NuToMechanicsObjects})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
 
-if(ENABLE_SHOW_TIME)
-    #add library for clock_gettime routines
-    target_link_libraries(NuToMechanics rt)
-endif()
-
 target_link_libraries(NuToMechanics jsoncpp)
 
 if(ENABLE_MPI)

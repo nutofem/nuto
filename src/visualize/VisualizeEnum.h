@@ -36,9 +36,6 @@ enum class eVisualizeWhat
     DAMAGE,                         //!< visualize damage
     CRACK_PHASE_FIELD,              //!< visualize crack phase-field
     ENGINEERING_PLASTIC_STRAIN,     //!< visualize engineering plastic strain
-    CONSTITUTIVE,                   //!< visualize constitutive id
-    SECTION,                        //!< visualize section id
-    ELEMENT,                        //!< visualize element id
     PRINCIPAL_ENGINEERING_STRESS,   //!< visualize principal stresses
     PARTICLE_RADIUS,                //!< visualize radius of particles/nodes
     LATTICE_STRAIN,                 //!< visualize strain of lattice models

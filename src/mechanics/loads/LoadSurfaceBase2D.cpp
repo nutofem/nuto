@@ -44,7 +44,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
         try
         {
             //check if plane element
-            ContinuumElement<2>& elementPtr = itElement.second->AsContinuumElement2D();
+            auto& elementPtr = *dynamic_cast<ContinuumElement<2>*>(itElement.second);
             const InterpolationType& interpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces

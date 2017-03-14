@@ -54,7 +54,6 @@ structure.ElementTotalSetConstitutiveLaw(damage)
 visualizationGroup = structure.GroupCreate("Elements")
 structure.GroupAddElementsTotal(visualizationGroup)
 
-structure.AddVisualizationComponent(visualizationGroup, "Constitutive")
 structure.AddVisualizationComponent(visualizationGroup, "Displacements")
 structure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain")
 structure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")

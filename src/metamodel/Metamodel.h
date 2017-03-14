@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "metamodel/MetamodelException.h"
-#include "base/NuToObject.h"
 #include "metamodel/SupportPoints.h"
 
 
@@ -19,7 +18,7 @@ namespace NuTo
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief ... standard abstract class for all metamodels in NuTo
-class Metamodel : public virtual NuToObject
+class Metamodel
 {
 #ifdef ENABLE_SERIALIZATION
 	friend class boost::serialization::access;
@@ -28,6 +27,7 @@ class Metamodel : public virtual NuToObject
 public:
 	//! @brief constructor
     Metamodel();
+    virtual ~Metamodel() = default;
     
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -67,7 +67,7 @@ public:
     void BuildTransformation();
     void InitRandomNumberGenerator(int rSeed);
     double RandomDouble();
-    virtual void Info()const override;
+    virtual void Info() const; 
     void Solve(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const;
     void SolveConfidenceInterval(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
             Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax)const;
@@ -127,10 +127,13 @@ public:
 	//! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's correlation matrix
 	//! @param rAlpha ... the confidence level is defined as (1-rAlpha)
     void GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(Eigen::MatrixXd& rCorrelationMatrix, Eigen::MatrixXd& rMinCorrelationMatrix, Eigen::MatrixXd& rMaxCorrelationMatrix, double rAlpha = 0.05) const;
+
+    void SetVerboseLevel(unsigned short verboseLevel);
 protected:
 
     NuTo::SupportPoints mSupportPoints;
     std::mt19937_64 mRandomNumberGenerator;
+    unsigned short mVerboseLevel;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -151,19 +151,6 @@ void NuTo::RungeKutta3::serialize(Archive & ar, const unsigned int version)
     #endif
 }
 
-#endif // ENABLE_SERIALIZATION
-
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name
-std::string NuTo::RungeKutta3::GetTypeId()const
-{
-    return std::string("RungeKutta3");
-}
-
-
-#ifdef ENABLE_SERIALIZATION
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT

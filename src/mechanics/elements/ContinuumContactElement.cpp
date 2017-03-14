@@ -12,7 +12,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -25,17 +24,11 @@
 template <int TDim>
 NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement,
                                                              int rSurfaceId,
-                                                             int rElementGroupId,
-                                                             int rNodeGroupId,
+                                                             const Group<ElementBase>* elementGroup,
+                                                             const Group<NodeBase>* nodeGroup,
                                                              const IntegrationTypeBase *rIntegrationType)
     : ContinuumBoundaryElement<TDim>(rSlaveElement, rSurfaceId), mIntegrationType(rIntegrationType)
 {
-    //get element group
-    const Group<ElementBase> *elementGroup = this->mStructure->GroupGetGroupPtr(rElementGroupId)->AsGroupElement();
-
-    //get node group
-    const Group<NodeBase> *nodeGroup = this->mStructure->GroupGetGroupPtr(rNodeGroupId)->AsGroupNode();
-
     //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
     for (Group<NodeBase>::const_iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); itNode++)
@@ -89,14 +82,12 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
         } catch (NuTo::MechanicsException &e)
         {
             std::stringstream ss;
-            assert(this->mStructure->ElementGetId(itElement.second) == itElement.first);
             ss << itElement.first;
             e.AddMessage("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
             throw;
         } catch (...)
         {
             std::stringstream ss;
-            assert(this->mStructure->ElementGetId(itElement.second) == itElement.first);
             ss << itElement.first;
             throw NuTo::MechanicsException("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
         }

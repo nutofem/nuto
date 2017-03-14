@@ -1,6 +1,3 @@
-// $Id$
-
-#include <boost/spirit/include/classic_core.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -12,25 +9,6 @@
 
 namespace NuTo
 {
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name FullMatrixDouble
-
-template<>
-std::string SparseMatrixCSRSymmetric<double>::GetTypeId()const
-{
-    return std::string("SparseMatrixCSRSymmetricDouble");
-}
-
-//! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-//!            in case of restoring from a file with the wrong object type, the file id is printed
-//! @return    class name FullMatrixInt
-template<>
-std::string SparseMatrixCSRSymmetric<int>::GetTypeId()const
-{
-    return std::string("SparseMatrixCSRSymmetricInt");
-}
-
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
 template<>

@@ -36,4 +36,4 @@
 
 * @ref SpatialContainer
 
-* @ref NuTo-codeStyle
+* @ref CodingStyle
