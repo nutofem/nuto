@@ -169,8 +169,8 @@ void AddBoundaryElements(NuTo::Structure& s, double rLength, int rNumExpectedBou
 void TestStructure1D(bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(__FUNCTION__);
-    const int numElements = 2;
-    const double length = 100;
+    const int numElements = 4;
+    const double length = 42;
     const double area = 10;
 
     NuTo::Structure s(1);
@@ -181,9 +181,9 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     AddInterpolationType(s, interpolationType);
 
     // create sections
-    const double xWeakSpot = 25;
-    const double lWeakSpot = 5;
-    const double alpha = 0.10;
+    const double xWeakSpot = 20;
+    const double lWeakSpot = 10;
+    const double alpha = 0.20;
 
     auto section = NuTo::SectionVariableTruss::Create(area, xWeakSpot, lWeakSpot, alpha);
 
