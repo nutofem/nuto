@@ -117,6 +117,7 @@ const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Co
         {eConstitutiveParameter::INITIAL_YIELD_STRENGTH,                    "INITIAL_YIELD_STRENGTH"},
         {eConstitutiveParameter::MACROSCOPIC_BULK_MODULUS,                  "MACROSCOPIC_BULK_MODULUS"},
         {eConstitutiveParameter::MASS_EXCHANGE_RATE,                        "MASS_EXCHANGE_RATE"},
+        {eConstitutiveParameter::MAX_OMEGA,                                 "MAX_OMEGA"},
         {eConstitutiveParameter::NONLOCAL_RADIUS,                           "NONLOCAL_RADIUS"},
         {eConstitutiveParameter::POISSONS_RATIO,                            "POISSONS_RATIO"},
         {eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION,        "POLYNOMIAL_COEFFICIENTS_ADSORPTION"},

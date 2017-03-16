@@ -121,6 +121,7 @@ enum class eConstitutiveParameter
     MACROSCOPIC_BULK_MODULUS,                   //!<
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
+    MAX_OMEGA,                                  //!<
     NONLOCAL_RADIUS,                            //!<
     NORMAL_STIFFNESS,                           //!<
     POISSONS_RATIO,                             //!<

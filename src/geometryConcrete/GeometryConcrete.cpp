@@ -43,7 +43,7 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
 
     SetParticles(spheres);
 
-    NuTo::SubBoxHandler subBoxes(*mParticleHandler, *mSpecimen, 10);
+    NuTo::SubBoxHandler subBoxes(*mParticleHandler, *mSpecimen, 1);
     NuTo::CollisionHandler handler(*mParticleHandler, subBoxes, "");
 
 

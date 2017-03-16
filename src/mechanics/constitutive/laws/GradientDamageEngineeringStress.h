@@ -174,6 +174,9 @@ protected:
 
     ImplExCallback* mImplExCallback;
 
+    //! @brief ... max omega, sometimes called alpha
+    double mMaxOmega;
+
 private:
 
     //! @brief calculates the tangent \f$ \frac{1}{\xi} - \frac{\varepsilon_{eq} - \bar{\varepsilon}_{eq}}{\xi^2}\frac{\partial \xi}{\partial \varepsilon_{eq}}   \f$
