@@ -1,9 +1,7 @@
 //
 // Created by Thomas Titscher on 10/24/16.
 //
-#define BOOST_TEST_MODULE RestartFilesTest
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include "BoostUnitTest.h"
 #include "mechanics/sections/SectionEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -15,16 +13,7 @@
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/elements/ElementBase.h"
-
-// necessary to build with clang when boost has been compiled by gcc
-std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
-{
-    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-}
-
-
-namespace RestartFilesTest
-{
+#include "mechanics/mesh/MeshGenerator.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {
@@ -49,19 +38,17 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
 {
     rS.SetShowTime(false);
     rS.SetNumTimeDerivatives(1);
-    int section = rS.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    int claw = rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
-    int interpolationType = rS.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    rS.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    rS.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    rS.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
-    NuTo::MeshGenerator::MeshRectangularPlane(rS, section, claw, interpolationType, {{2,2}}, {{42., 61.74}});
-    rS.ElementTotalConvertToInterpolationType(); //VIRTHAMTODO :) I would expect that this method is called within MeshGenerator... right?
+    auto meshInfo = NuTo::MeshGenerator::Grid(rS, {42., 6174.}, {2,2});
+    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    rS.ElementTotalSetSection(rS.SectionCreate(NuTo::eSectionType::PLANE_STRAIN));
+    rS.ElementTotalSetConstitutiveLaw(rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS));
+    rS.ElementTotalConvertToInterpolationType();
 
     // add a constraint --> dependent dof vector K
     rS.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitX(), 0.1337);
-
     rS.NodeBuildGlobalDofs();
 
     int gElementsTotal = rS.GroupGetElementsTotal();
@@ -169,5 +156,3 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDatasBinary)
     NuToSerializeStructure("NuToSerializeStructureDataBinary.dat" , true, a, b);
     CheckStaticData(a, b);
 }
-
-} // namespace RestartFilesTest

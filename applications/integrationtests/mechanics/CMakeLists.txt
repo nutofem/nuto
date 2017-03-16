@@ -48,6 +48,7 @@ foreach(test
     NewmarkPlane2D4N
     ParallelAssembly
     PlateWithHole
+    RestartFiles
     RungeKutta
     Shrinkage
     SpringDamperCombination
