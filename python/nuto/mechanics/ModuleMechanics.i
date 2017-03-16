@@ -34,6 +34,14 @@
 %shared_ptr(NuTo::SectionFibreMatrixBond)
 %shared_ptr(NuTo::SectionVariableTruss)
 
+%extend NuTo::Section {
+    std::string __str__() const {
+         std::ostringstream out;
+         out << *$self;
+         return out.str();
+    }
+}
+
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 %include "base/CallbackInterface.h"
 
