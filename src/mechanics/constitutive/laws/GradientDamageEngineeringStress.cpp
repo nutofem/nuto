@@ -19,8 +19,6 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionBase.h"
-#include "mechanics/sections/SectionEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 

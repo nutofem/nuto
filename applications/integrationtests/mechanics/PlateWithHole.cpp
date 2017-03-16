@@ -3,6 +3,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 
 #include "base/Exception.h"
 #include <boost/filesystem.hpp>
@@ -147,8 +148,7 @@ int main(int argc, char* argv[])
     s.ElementTotalConvertToInterpolationType();
 
     double thickness = 1.;
-    int section      = s.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    s.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, false);
     s.ElementTotalSetSection(section);
 
     using namespace NuTo::Constitutive;

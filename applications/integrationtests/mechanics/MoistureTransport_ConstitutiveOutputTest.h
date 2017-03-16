@@ -254,7 +254,7 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
     ConstitutiveOutputTest_SetupMoistureTransport(MT);
 
     SetupStructure<TDim>(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     std::pair<int, int> meshInfo;
 

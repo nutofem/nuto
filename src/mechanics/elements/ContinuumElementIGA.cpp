@@ -196,7 +196,7 @@ double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJ
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
     Eigen::VectorXd globalIPCoordinate = matrixN * this->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
+    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetArea(globalIPCoordinate(0, 0));
 }
 
 template<>

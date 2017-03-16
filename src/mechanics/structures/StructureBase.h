@@ -39,7 +39,7 @@ class InterpolationType;
 class LoadBase;
 class NewtonRaphsonAuxRoutinesBase;
 class NodeBase;
-class SectionBase;
+class Section;
 class SerializeStreamOut;
 class SerializeStreamIn;
 class StructureOutputBase;
@@ -60,7 +60,6 @@ template<class T> class SparseMatrixCSRVector2Symmetric;
 enum class eError;
 enum class eGroupId;
 enum class eIntegrationType;
-enum class eSectionType;
 enum class eStructureOutput;
 enum class eVisualizationType;
 enum class eVisualizeWhat;
@@ -590,25 +589,25 @@ public:
 
 #endif //SWIG
 
-     //! @brief modifies the section of a single element
-    //! @param rElementIdent element number
-    //! @param rSectionIdent identifier for the section
-    void ElementSetSection(int rElementId, int rSectionId);
+    //! @brief Modifies the section of a single element
+    //! @param elementId element number
+    //! @param section Section to add to the element
+    void ElementSetSection(int elementId, std::shared_ptr<Section> section);
 
-    //! @brief modifies the section of a group of elements
-    //! @param rGroupIdent identifier for the group of elements
-    //! @param rSectionId identifier for the section
-    void ElementGroupSetSection(int rGroupIdent, int rSectionId);
+    //! @brief Modifies the section of a group of elements
+    //! @param groupId Identifier for the group of elements
+    //! @param section Section to add to the elements
+    void ElementGroupSetSection(int rGroupIdent, std::shared_ptr<Section> section);
 
-    //! @brief modifies the section of a all elements
-    //! @param rSectionIdent identifier for the section
-    void ElementTotalSetSection(int rSectionId);
+    //! @brief Modifies the section of all elements
+    //! @param section Section to add to the elements
+    void ElementTotalSetSection(std::shared_ptr<Section> section);
 
 #ifndef SWIG
     //! @brief modifies the section of a single element
     //! @param rElement element pointer
     //! @param rSection section
-    void ElementSetSection(ElementBase* rElement, SectionBase* rSection);
+    void ElementSetSection(ElementBase* rElement, std::shared_ptr<Section> rSection);
 #endif //SWIG
 
     //! @brief modifies the interpolation type of a single element
@@ -1298,87 +1297,6 @@ public:
 #endif
 
     //*************************************************
-    //************ Section routines     ***************
-    //**  defined in structures/StructureBaseSection.cpp **
-    //*************************************************
-    //! @brief ... returns the number of sections
-    //! @return number of sections
-    inline int GetNumSections() const
-    {
-        return this->mSectionMap.size();
-    }
-
-    //! @brief ... create a new section
-    //! @param rIdent ... section identifier
-    //! @param rType ... section type
-    int SectionCreate(const std::string& rType);
-
-    //! @brief ... delete an existing section
-    //! @param rIdent ... section identifier
-    void SectionDelete(int rId);
-
-    //! @brief ... set section cross-section area
-    //! @param rIdent ... section identifier
-    //! @param rArea ... cross-section area
-    void SectionSetArea(int rId, double rArea);
-
-    //! @brief ... get section cross-section area
-    //! @param rIdent ... section identifier
-    //! @return section cross-section area
-    double SectionGetArea(int rId) const;
-
-    //! @brief ... set section thickness
-    //! @param rIdent ... section identifier
-    //! @param rThickness ... thickness
-    void SectionSetThickness(int rId, double rThickness);
-
-    //! @brief ... get section thickness
-    //! @param rIdent ... section identifier
-    //! @return section thickness
-    double SectionGetThickness(int rId) const;
-
-    //! @brief ... set section circumference for interface bewteen matrix and fibre
-    //! @param rIdent ... section identifier
-    //! @param rThickness ... circumference of the fibre
-    void SectionSetCircumference(int rId, double rCircumference);
-
-    //! @brief ... get section thickness
-    //! @param rIdent ... section identifier
-    //! @return section circumference of the fibre
-    double SectionGetCircumference(int rId) const;
-
-    //! @brief ... print information about all sections
-    //! @param rVerboseLevel ... controls the verbosity of the information
-    void SectionInfo(unsigned short rVerboseLevel) const;
-
-    //! @brief ... print information of a single section
-    //! @param rIdent ... section identifier
-    //! @param rVerboseLevel ... controls the verbosity of the information
-    void SectionInfo(int rId, unsigned short rVerboseLevel) const;
-
-#ifndef SWIG
-    //! @brief ... create a new section
-    //! @param rIdent ... section identifier
-    //! @param rType ... section type
-    int SectionCreate(eSectionType rType);
-
-    //! @brief ... get the pointer to a section from the section identifier
-    //! @param rIdent ... section identifier
-    //! @return ... pointer to the section
-    SectionBase* SectionGetSectionPtr(int rId);
-
-    //! @brief ... get the pointer to a section from the section identifier
-    //! @param rIdent ... section identifier
-    //! @return ... pointer to the section
-    const SectionBase* SectionGetSectionPtr(int rId) const;
-
-    //! @brief ... get the identifier of an section from the pointer to section object
-    //! @param rSectionPtr ... pointer to section object
-    //! @return ... section identifier
-    int SectionGetId(const SectionBase* rSectionPtr) const;
-#endif
-
-    //*************************************************
     //************ Group routines     ***************
     //**  defined in structures/StructureBaseGroup.cpp **
     //*************************************************
@@ -1797,10 +1715,6 @@ protected:
     //! @brief ... map storing the name and the pointer to the integration types
     //! @sa IntegrationTypeBase
     boost::ptr_map<std::string,IntegrationTypeBase> mIntegrationTypeMap;
-
-    //! @brief ... map storing the section name and the pointer to the section object
-    //! @sa SectionBase
-    boost::ptr_map<int,SectionBase> mSectionMap;
 
     //! @brief ... map storing the interpolation types
     //! @sa InterpolationType

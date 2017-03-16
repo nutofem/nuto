@@ -9,8 +9,7 @@ def OneDimensional(structure):
 
     # set section
     area = 1.0
-    section = structure.SectionCreate("Truss")
-    structure.SectionSetArea(section, area)
+    section = nuto.SectionTruss.Create(area)
     structure.ElementTotalSetSection(section)
 
     return structure
@@ -22,8 +21,7 @@ def TwoDimensional(structure):
 
     # create section
     thickness = 1.0
-    section = structure.SectionCreate("Plane_Strain")
-    structure.SectionSetThickness(section, thickness)
+    section = nuto.SectionPlane.Create(thickness, True)
     structure.ElementTotalSetSection(section)
 
     return structure
@@ -32,10 +30,6 @@ def TwoDimensional(structure):
 def ThreeDimensional(structure):
     _, ipType = nuto.MeshGenerator.Grid(structure, [2.0, 2.0, 2.0], [1, 1, 1])
     structure.InterpolationTypeAdd(ipType, "temperature", "equidistant1")
-
-    # create section
-    section = structure.SectionCreate("Volume")
-    structure.ElementTotalSetSection(section)
 
     return structure
 

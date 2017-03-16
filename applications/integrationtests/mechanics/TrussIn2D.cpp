@@ -16,7 +16,7 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 
@@ -80,8 +80,7 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     //          Section
     //**********************************************
 
-    int fibreSection = myStructure.SectionCreate(NuTo::eSectionType::TRUSS);
-    myStructure.SectionSetArea(fibreSection, ParametersGeometry2D::mCrossSection);
+    auto fibreSection = NuTo::SectionTruss::Create(ParametersGeometry2D::mCrossSection);
 
     //**********************************************
     //          Material

@@ -20,15 +20,14 @@ class TestResultForceDirection(unittest.TestCase):
         meshInfo = nuto.MeshGenerator.Grid(s, [L], [1])
         s.InterpolationTypeAdd(meshInfo[1], "Displacements", "Equidistant2")
     
-        sectionId = s.SectionCreate("truss")
-        s.SectionSetArea(sectionId, A)
+        section = nuto.SectionTruss.Create(A)
         lawId = s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
         s.ConstitutiveLawSetParameterDouble(lawId, "Youngs_Modulus", E)
         s.ConstitutiveLawSetParameterDouble(lawId, "Density", rho)
     
     
         s.ElementTotalConvertToInterpolationType()
-        s.ElementTotalSetSection(sectionId)
+        s.ElementTotalSetSection(section)
         s.ElementTotalSetConstitutiveLaw(lawId)
     
         nodeLeft = s.NodeGetIdAtCoordinate(np.array([0.0]), 1.e-10)

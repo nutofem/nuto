@@ -6,7 +6,6 @@
  */
 
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
-#include "mechanics/sections/SectionEnum.h"
 #include <iomanip>
 
 

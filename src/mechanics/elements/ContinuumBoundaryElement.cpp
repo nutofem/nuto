@@ -28,6 +28,8 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
+using namespace NuTo;
+
 template <int TDim>
 NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId)
 : ElementBase::ElementBase(rBaseElement.GetInterpolationType()),
@@ -744,7 +746,7 @@ const NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber, No
 }
 
 template <int TDim>
-const NuTo::SectionBase& NuTo::ContinuumBoundaryElement<TDim>::GetSection() const
+std::shared_ptr<const Section> ContinuumBoundaryElement<TDim>::GetSection() const
 {
     return mBaseElement.GetSection();
 }

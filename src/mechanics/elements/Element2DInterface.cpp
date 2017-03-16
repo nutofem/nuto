@@ -30,6 +30,7 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 #endif // ENABLE_VISUALIZE
 
+using namespace NuTo;
 
 NuTo::Element2DInterface::Element2DInterface(
         const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType, int globalDimension) :
@@ -824,14 +825,18 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
     }
 
 }
-void NuTo::Element2DInterface::SetSection(const NuTo::SectionBase& rSection)
+
+
+void Element2DInterface::SetSection(std::shared_ptr<const Section> section)
 {
-    mSection = &rSection;
+    mSection = section;
 }
-const NuTo::SectionBase& NuTo::Element2DInterface::GetSection() const
+
+
+std::shared_ptr<const Section> Element2DInterface::GetSection() const
 {
     if (mSection != nullptr)
-        return *mSection;
+        return mSection;
 
     Info();
     throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");

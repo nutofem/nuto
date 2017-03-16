@@ -25,9 +25,8 @@ def SetupGeometry(structure):
     structure.ElementTotalConvertToInterpolationType()
 
     # create and set section
-    sectionId = structure.SectionCreate("TRUSS")
-    structure.SectionSetArea(sectionId, Geometry.ly * Geometry.lz)
-    structure.ElementTotalSetSection(sectionId)
+    section = nuto.SectionTruss.Create(Geometry.ly * Geometry.lz)
+    structure.ElementTotalSetSection(section)
 
 
 def SetupMaterial(structure):

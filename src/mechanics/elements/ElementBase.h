@@ -26,7 +26,7 @@ class IntegrationTypeBase;
 class InterpolationType;
 class NodeBase;
 class Lattice2D;
-class SectionBase;
+class Section;
 template<class T>
 class SparseMatrix;
 class VisualizeComponentBase;
@@ -172,11 +172,11 @@ public:
 
     //! @brief sets the section of an element
     //! @param rSection reference to section
-    virtual void SetSection(const SectionBase& rSection);
+    virtual void SetSection(std::shared_ptr<const Section> section);
 
     //! @brief returns a reference to the section of an element
     //! @return pointer to section
-    virtual const SectionBase& GetSection() const;
+    virtual std::shared_ptr<const Section> GetSection() const;
 
     //! @brief sets the integration type of an element
     //! @param rIntegrationType reference to integration type

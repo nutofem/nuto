@@ -4,7 +4,6 @@
 
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/sections/SectionEnum.h"
 
 #include "mechanics/elements/ElementOutputBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
@@ -28,6 +27,8 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
+using namespace NuTo;
+
 template <int TDim>
 NuTo::ContinuumElement<TDim>::ContinuumElement(const std::vector<NuTo::NodeBase*>& rNodes,
                                                const InterpolationType& rInterpolationType, const DofStatus& dofStatus)
@@ -40,8 +41,8 @@ NuTo::ContinuumElement<TDim>::ContinuumElement(const std::vector<NuTo::NodeBase*
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
-    if (mSection == nullptr)
-        throw MechanicsException(__PRETTY_FUNCTION__, "no section allocated for element.");
+    if ((TDim == 1 || TDim == 2) && (mSection == nullptr))
+        throw MechanicsException(__PRETTY_FUNCTION__, "No section allocated for element.");
 
     EvaluateDataContinuum<TDim> data;
     ExtractAllNecessaryDofValues(data);
@@ -1212,16 +1213,16 @@ void NuTo::ContinuumElement<TDim>::ResizeNodes(int rNewNumNodes)
 }
 
 template <int TDim>
-void NuTo::ContinuumElement<TDim>::SetSection(const SectionBase& rSection)
+void NuTo::ContinuumElement<TDim>::SetSection(std::shared_ptr<const Section> section)
 {
-    mSection = &rSection;
+    mSection = section;
 }
 
 template <int TDim>
-const NuTo::SectionBase& NuTo::ContinuumElement<TDim>::GetSection() const
+std::shared_ptr<const Section> ContinuumElement<TDim>::GetSection() const
 {
     if (mSection != nullptr)
-        return *mSection;
+        return mSection;
 
     Info();
     throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
@@ -1400,7 +1401,7 @@ double NuTo::ContinuumElement<1>::CalculateDetJxWeightIPxSection(double rDetJaco
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).GetMatrixN(rTheIP);
     Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetArea(globalIPCoordinate(0, 0));
 }
 
 

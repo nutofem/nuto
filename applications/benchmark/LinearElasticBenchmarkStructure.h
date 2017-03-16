@@ -82,7 +82,6 @@ private:
         int lawId = mS.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         mS.ConstitutiveLawSetParameterDouble(lawId, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
         mS.ElementTotalSetConstitutiveLaw(lawId);
-        mS.ElementTotalSetSection(mS.SectionCreate(eSectionType::VOLUME));
     }
 
     static constexpr double lx = 25;

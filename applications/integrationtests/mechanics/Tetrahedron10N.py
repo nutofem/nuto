@@ -26,9 +26,6 @@ class Tetrahedron10NTestCase(unittest.TestCase):
         node9 = self.structure.NodeCreate(np.array([0.0, 0.5, 0.5]))
         node10 = self.structure.NodeCreate(np.array([0.5, 0.0, 0.5]))
 
-        # create section
-        section = self.structure.SectionCreate("Volume")
-
         interpolationType = self.structure.InterpolationTypeCreate("TETRAHEDRON3D")
         self.structure.InterpolationTypeAdd(interpolationType, "Coordinates", "EQUIDISTANT2")
         self.structure.InterpolationTypeAdd(interpolationType, "Displacements", "EQUIDISTANT2")
@@ -45,7 +42,6 @@ class Tetrahedron10NTestCase(unittest.TestCase):
 
         # assign constitutive law
         self.structure.ElementSetConstitutiveLaw(self.element, material)
-        self.structure.ElementSetSection(self.element, section)
 
         # make group of boundary nodes
         groupBoundaryNodes = self.structure.GroupCreate("Nodes")

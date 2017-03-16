@@ -6,6 +6,7 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "visualize/VisualizeEnum.h"
 
 int main()
@@ -23,8 +24,7 @@ int main()
     NuTo::Structure structure(1);
 
     // create section
-    auto Section1 = structure.SectionCreate("Truss");
-    structure.SectionSetArea(Section1, Area);
+    auto Section1 = NuTo::SectionTruss::Create(Area);
 
     // create material law
     auto Material1 = structure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");

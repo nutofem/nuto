@@ -13,6 +13,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 
 #include <math/EigenCompanion.h>
@@ -100,8 +101,7 @@ void SetStructureX(NuTo::Structure &structure, Properties properties, SimpleMesh
 	structure.ElementTotalConvertToInterpolationType();
 
     //section
-	int mySectionX = structure.SectionCreate("Plane_Stress");
-	structure.SectionSetThickness(mySectionX,properties.mt);
+	auto mySectionX = NuTo::SectionPlane::Create(properties.mt, false);
 	structure.ElementTotalSetSection(mySectionX);
 
     //create constitutive law

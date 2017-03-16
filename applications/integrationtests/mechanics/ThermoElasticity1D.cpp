@@ -6,6 +6,7 @@
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/sections/SectionTruss.h"
 
 using namespace NuTo;
 
@@ -16,8 +17,7 @@ public:
         : structure(1)
     {
         // create section
-        int section = structure.SectionCreate("Truss");
-        structure.SectionSetArea(section, 1.0);
+        auto section = SectionTruss::Create(1.0);
 
         auto additive_output = SetConstitutiveLaws();
 

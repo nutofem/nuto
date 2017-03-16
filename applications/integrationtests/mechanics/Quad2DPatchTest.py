@@ -20,8 +20,7 @@ def SetupStructure(stressState):
     structure.ConstitutiveLawSetParameterDouble(myMatLin, "Poissons_Ratio", v)
 
     # create section
-    mySection = structure.SectionCreate("Plane_Stress")
-    structure.SectionSetThickness(mySection, 1)
+    mySection = nuto.SectionPlane.Create(1.0, False)
 
     structure.NodesCreate(np.array([[0, 10,  2,  8,  4,  8,  0, 10],
                                     [0,  0,  2,  3,  7,  7, 10, 10]], dtype=float))

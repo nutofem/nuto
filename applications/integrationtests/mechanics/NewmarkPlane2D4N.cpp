@@ -7,6 +7,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include <iomanip>
@@ -104,8 +105,7 @@ try
 
     //section
 	double thickness(1);
-    int mySection = myStructure.SectionCreate("Plane_Stress");
-    myStructure.SectionSetThickness(mySection,thickness);
+    auto mySection = NuTo::SectionPlane::Create(thickness, false);
     myStructure.ElementTotalSetSection(mySection);
 
 	//constitutive

@@ -16,6 +16,7 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
@@ -85,8 +86,7 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
 
     s.ElementTotalConvertToInterpolationType();
 
-    int mySection = s.SectionCreate("Plane_Stress");
-    s.SectionSetThickness(mySection, lz);
+    auto mySection = NuTo::SectionPlane::Create(lz, false);
     s.ElementTotalSetSection(mySection);
     s.ElementTotalConvertToInterpolationType();
 
@@ -216,8 +216,7 @@ void CSDA2D()
     s.ElementSetConstitutiveLaw(2, CSDA);
 //    s.ElementSetConstitutiveLaw(3, CSDA);
 
-    int mySection = s.SectionCreate("Plane_Strain");
-    s.SectionSetThickness(mySection, lz);
+    auto mySection = NuTo::SectionPlane::Create(lz, true);
     s.ElementTotalSetSection(mySection);
     s.ElementTotalConvertToInterpolationType();
 
@@ -424,8 +423,6 @@ void CSDA3D()
     s.ElementSetConstitutiveLaw(1, LIN);
     s.ElementSetConstitutiveLaw(2, CSDA);
 
-    int mySection = s.SectionCreate("Volume");
-    s.ElementTotalSetSection(mySection);
     s.ElementTotalConvertToInterpolationType();
 
     std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;

@@ -66,8 +66,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
     outputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
 
-    SectionTruss area;
-    area.SetArea(1.0);
+    auto area = SectionTruss::Create(1.0);
     element.SetSection(area);
 
     HeatConduction law;

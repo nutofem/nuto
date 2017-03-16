@@ -18,7 +18,6 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
-#include "mechanics/sections/SectionEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"

@@ -6,6 +6,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"
 
@@ -51,8 +52,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
     //create section
-    int mySection = myStructure.SectionCreate("Plane_Strain");
-    myStructure.SectionSetThickness(mySection, 1);
+    auto mySection = NuTo::SectionPlane::Create(1.0, true);
 
     //assign constitutive law
     myStructure.ElementTotalSetConstitutiveLaw(myMatLin);

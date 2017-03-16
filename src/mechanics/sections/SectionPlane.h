@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -7,56 +5,54 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "mechanics/sections/SectionBase.h"
+#include <memory>
+#include "mechanics/sections/Section.h"
 
 namespace NuTo
 {
-//! @author Stefan Eckardt, ISM
-//! @date November 2009
-//! @brief ... section for two-dimensional elements
-class SectionPlane: public NuTo::SectionBase
+
+//! @brief Section for two-dimensional elements
+class SectionPlane : public NuTo::Section
 {
 #ifdef ENABLE_SERIALIZATION
-   friend class boost::serialization::access;
+    friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    //! @brief ... constructor
-    SectionPlane(eSectionType rSectionType);
+    //! @brief Create a new instance of the plane section
+    //! @param thickness Section thickness
+    //! @param isPlaneStrain `true` corresponds to plane strain, `false` to plane stress
+    static std::shared_ptr<SectionPlane> Create(double thickness, bool isPlaneStrain);
 
-    //! @brief ... get the section thickness
-    //! @return ... section thickness
-    virtual double GetThickness() const override;
+    //! @brief Get the section thickness
+    //! @return Section thickness
+    double GetThickness() const override;
 
-    //! @brief ... set the thickness of the section
-    //! @param rThickness ... section thickness
-    virtual void SetThickness(double rThickness) override;
+    //! @brief Print information about the section
+    void Info() const override;
 
-    //! @brief ... get the section type
-    //! @return ... section type
-    virtual eSectionType GetType() const override;
-
-    //! @brief ... print information about the section
-    //! @param rVerboseLevel ... verbosity of the information
-    virtual void Info(unsigned short rVerboseLevel) const override;
+    virtual bool IsPlaneStrain() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 private:
-    //! @brief just for serialization
-    SectionPlane(){}
-    //! @brief ... section thickness
-    double        mThickness;
-    eSectionType   mSectionType;
-};
+    //! @brief Constructor
+    //! @param thickness Section thickness
+    //! @param isPlaneStrain `true` corresponds to plane strain, `false` to plane stress
+    SectionPlane(double thickness, bool isPlaneStrain);
 
+    //! @brief Section thickness
+    double mThickness;
+
+    //! @brief **true** -> plane strain; **false** -> plane stress
+    bool mIsPlaneStrain;
+};
 }
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::SectionPlane)
 #endif // ENABLE_SERIALIZATION
-

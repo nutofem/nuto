@@ -827,7 +827,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         newElementPtr->SetIntegrationType(integrationType);
 
         //set section
-        const SectionBase& section = oldElementPtr->GetSection();
+        std::shared_ptr<const Section> section = oldElementPtr->GetSection();
         newElementPtr->SetSection(section);
 
         //set constitutive model

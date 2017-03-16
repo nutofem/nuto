@@ -39,12 +39,8 @@ class Brick8NTestCase(unittest.TestCase):
         self.structure.ConstitutiveLawSetParameterDouble(material, "Youngs_Modulus", 10)
         self.structure.ConstitutiveLawSetParameterDouble(material, "Poissons_Ratio", 0.25)
 
-        # create section
-        section = self.structure.SectionCreate("Volume")
-
         # assign constitutive law
         self.structure.ElementSetConstitutiveLaw(self.element, material)
-        self.structure.ElementSetSection(self.element, section)
 
         # make group of boundary nodes
         groupBoundaryNodes = self.structure.GroupCreate("Nodes")

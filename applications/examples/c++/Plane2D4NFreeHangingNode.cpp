@@ -4,6 +4,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsException.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/MechanicsEnums.h"
@@ -97,8 +98,7 @@ int main()
             myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.1);
 
     // create section
-    int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");
-    myStructure.SectionSetThickness(mySection1, 0.01);
+    auto mySection1 = NuTo::SectionPlane::Create(0.01, true);
 
     // assign material, section and integration type
     myStructure.ElementTotalConvertToInterpolationType();

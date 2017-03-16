@@ -4,7 +4,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
 #include "math/SparseDirectSolverMUMPS.h"
@@ -86,8 +86,7 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
     for (int iSurface = 0; iSurface < 3; ++iSurface)
         myStructure.LoadSurfacePressureCreate2D(0, elementGroup, surfaces[iSurface], pressure);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    myStructure.SectionSetThickness(section, 13.);
+    auto section = NuTo::SectionPlane::Create(13.0, false);
     myStructure.ElementTotalSetSection(section);
 
     CheckHydrostaticPressure(myStructure);
@@ -141,8 +140,7 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDis
     for (int iSurface = 0; iSurface < 4; ++iSurface)
         myStructure.LoadSurfacePressureCreate2D(0, elementGroup, surfaces[iSurface], pressure);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    myStructure.SectionSetThickness(section, 13.);
+    auto section = NuTo::SectionPlane::Create(13.0, false);
     myStructure.ElementTotalSetSection(section);
 
     CheckHydrostaticPressure(myStructure);
@@ -351,8 +349,7 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    myStructure.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, false);
     myStructure.ElementTotalSetSection(section);
 
     Eigen::Vector2d load({42., -M_PI});
@@ -396,8 +393,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    myStructure.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, false);
     myStructure.ElementTotalSetSection(section);
 
     Eigen::Vector2d load({42., -M_PI});
@@ -472,8 +468,7 @@ void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
                                elementKnots,
                                elementKnotIDs);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    myStructure.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, false);
     myStructure.ElementTotalSetSection(section);
 }
 

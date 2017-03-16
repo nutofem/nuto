@@ -4,8 +4,6 @@
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/sections/SectionBase.h"
-#include "mechanics/sections/SectionEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>

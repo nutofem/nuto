@@ -18,6 +18,8 @@
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/staticData/IPAdditiveOutput.h"
+#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionTruss.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "mechanics/groups/GroupEnum.h"
@@ -391,29 +393,29 @@ inline void SetupMultiProcessor(NuTo::Structure& rS)
 \*---------------------------------------------*/
 
 template <int TDim>
-inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
+std::shared_ptr<NuTo::Section> SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
 {
     switch (TDim)
     {
     case 1:
     {
-        int Sec = rS.SectionCreate("TRUSS");
-        rS.SectionSetArea(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionTruss::Create(rAreaThickness);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 2:
     {
-        int Sec = rS.SectionCreate("PLANE_STRESS");
-        rS.SectionSetThickness(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionPlane::Create(rAreaThickness, false);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 3:
     {
-        int Sec = rS.SectionCreate("VOLUME");
+        // there is no need to attach a section to 3D elements
+        // to make this function work with arbitrary dimensions, we just attach a dummy truss
+        auto Sec = NuTo::SectionTruss::Create(-42.0);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
@@ -422,7 +424,6 @@ inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
     }
 }
-
 
 /*---------------------------------------------*\
 |*                 structure                   *|
@@ -648,7 +649,7 @@ void ShrinkageTestStressBased(  std::vector<int> rN,
 
 
     SetupStructure(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
@@ -937,7 +938,7 @@ void ShrinkageTestStrainBased(  std::vector<int> rN,
     CL_AO_Ptr->AddConstitutiveLaw(*CL_AIE_Ptr);
 
     SetupStructure(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 

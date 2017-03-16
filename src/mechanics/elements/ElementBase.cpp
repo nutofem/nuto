@@ -29,10 +29,8 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/loads/LoadBase.h"
-#include "mechanics/sections/SectionBase.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/Section.h"
 #include "visualize/VisualizeEnum.h"
-
 
 #include <eigen3/Eigen/QR>
 #include <eigen3/Eigen/LU>
@@ -43,6 +41,8 @@
 #include "visualize/VisualizeComponent.h"
 #include "visualize/VisualizeException.h"
 #endif
+
+using namespace NuTo;
 
 NuTo::ElementBase::ElementBase(const InterpolationType& rInterpolationType) :
         mInterpolationType(&rInterpolationType),
@@ -111,12 +111,12 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
     return mIPData.HasConstitutiveLawAssigned(rIP);
 }
 
-void NuTo::ElementBase::SetSection(const SectionBase& rSection)
+void NuTo::ElementBase::SetSection(std::shared_ptr<const Section> section)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
-const NuTo::SectionBase& NuTo::ElementBase::GetSection() const
+std::shared_ptr<const Section> NuTo::ElementBase::GetSection() const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
@@ -1043,12 +1043,12 @@ void NuTo::ElementBase::ReorderNodes()
 void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveInput) const
 {
     auto planeState = NuTo::Constitutive::eInput::PLANE_STATE;
-    if (GetSection().GetType() == NuTo::eSectionType::PLANE_STRESS)
+    if (!GetSection()->IsPlaneStrain())
     {
         // plane stress is default
         constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
     }
-    if (GetSection().GetType() == NuTo::eSectionType::PLANE_STRAIN)
+    else
     {
         constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
         auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());

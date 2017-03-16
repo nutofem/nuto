@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
-#include "mechanics/sections/SectionEnum.h"
 #include <eigen3/Eigen/Dense>
 
 using namespace NuTo;

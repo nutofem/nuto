@@ -14,7 +14,6 @@
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
 
 
 using namespace NuTo;

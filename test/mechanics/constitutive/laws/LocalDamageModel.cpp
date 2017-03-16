@@ -4,7 +4,6 @@
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/sections/SectionEnum.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"

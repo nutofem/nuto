@@ -5,6 +5,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "visualize/VisualizeEnum.h"
 
 void CreateMesoscaleGeometryMesh(std::string rGmshFile, double rLX, double rLY)
@@ -70,8 +71,7 @@ int main(int argc, char* argv[])
     // Define and set sections and constitutive laws
     double thickness = 17;
 
-    int mySection = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRAIN);
-    myStructure.SectionSetThickness(mySection, thickness);
+    auto mySection = NuTo::SectionPlane::Create(thickness, true);
 
     int myConstitutiveLawAggreg =
             myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);

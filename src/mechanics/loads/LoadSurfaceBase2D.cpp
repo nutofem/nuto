@@ -1,10 +1,9 @@
-// $Id: LoadLoadSurfaceBase2D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
 #include <set>
 
 #include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionBase.h"
+#include "mechanics/sections/Section.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/loads/LoadSurfaceBase2D.h"
@@ -234,7 +233,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
             shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
 
             //calculate weighting factor
-            double thickness = elementPtr->GetSection().GetThickness();
+            double thickness = elementPtr->GetSection()->GetThickness();
             double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
 
             //calculate surface load
