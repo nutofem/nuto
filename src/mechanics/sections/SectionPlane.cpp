@@ -31,13 +31,13 @@ double SectionPlane::GetThickness() const
 }
 
 
-void SectionPlane::Info() const
+void SectionPlane::Info(std::ostream& out) const
 {
-    std::cout << "    Plane section with thickness: " << mThickness << std::endl;
+    out << "    Plane section with thickness: " << mThickness << "\n";
     if (mIsPlaneStrain)
-        std::cout << "    Section type is plane strain." << std::endl;
+        out << "    Section type is plane strain.\n";
     else
-        std::cout << "    Section type is plane stress." << std::endl;
+        out << "    Section type is plane stress.\n";
 }
 
 

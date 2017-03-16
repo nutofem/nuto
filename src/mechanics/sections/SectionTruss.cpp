@@ -24,9 +24,9 @@ double SectionTruss::GetArea(double) const
 }
 
 
-void SectionTruss::Info() const
+void SectionTruss::Info(std::ostream& out) const
 {
-    std::cout << "    Truss section with area " << mArea << std::endl;
+    out << "    Truss section with area " << mArea << "\n";
 }
 
 #ifdef ENABLE_SERIALIZATION

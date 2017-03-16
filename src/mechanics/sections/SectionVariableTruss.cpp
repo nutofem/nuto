@@ -37,7 +37,7 @@ double SectionVariableTruss::GetArea(double coordinate) const
 }
 
 
-void SectionVariableTruss::Info() const
+void SectionVariableTruss::Info(std::ostream& out) const
 {
-    std::cout << "    Variable truss section." << std::endl;
+    out << "    Variable truss section.\n";
 }

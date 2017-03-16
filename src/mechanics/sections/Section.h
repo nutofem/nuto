@@ -6,6 +6,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <cfloat>
+#include <iosfwd>
 
 namespace NuTo
 {
@@ -21,7 +22,7 @@ public:
     virtual ~Section() = 0;
 
     //! @brief Print information about the section
-    virtual void Info() const;
+    friend std::ostream& operator<<(std::ostream& out, const Section& section);
 
     //! @brief Get the cross-section area of a 1D section
     //! @param coordinate Global coordinate at which to get the area
@@ -35,6 +36,9 @@ public:
 
     //! @brief Check if section is plane strain (if false, it's plane stress)
     virtual bool IsPlaneStrain() const;
+
+protected:
+    virtual void Info(std::ostream& out) const;
 #ifdef ENABLE_SERIALIZATION
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version)
@@ -44,5 +48,11 @@ public:
     BOOST_CLASS_EXPORT_KEY(NuTo::SectionBase)
 #endif // ENABLE_SERIALIZATION
 };
+
+inline std::ostream& operator<<(std::ostream& out, const Section& section)
+{
+    section.Info(out);
+    return out;
+}
 
 } // namespace NuTo

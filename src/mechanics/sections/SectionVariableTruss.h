@@ -18,9 +18,9 @@ public:
 
     virtual double GetArea(double coordinate) const override;
 
-    virtual void Info() const override;
-
 private:
+    virtual void Info(std::ostream& out) const override;
+
     SectionVariableTruss(double area, double location, double extent, double reductionRatio);
 
     //! Global coordinate where the weak spot is located

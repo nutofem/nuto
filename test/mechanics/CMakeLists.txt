@@ -7,6 +7,7 @@ add_subdirectory(groups)
 add_subdirectory(interpolation)
 add_subdirectory(mesh)
 add_subdirectory(nodes)
+add_subdirectory(sections)
 add_subdirectory(tools)
 
 if(NOT DEFINED ENV{TRAVIS}) 

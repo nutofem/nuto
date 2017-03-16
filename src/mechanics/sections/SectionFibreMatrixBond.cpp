@@ -25,27 +25,27 @@ std::shared_ptr<SectionFibreMatrixBond> SectionFibreMatrixBond::Create(double ci
 }
 
 
-double NuTo::SectionFibreMatrixBond::GetCircumference() const
+double SectionFibreMatrixBond::GetCircumference() const
 {
     return mCircumference;
 }
 
 
-void NuTo::SectionFibreMatrixBond::Info() const
+void SectionFibreMatrixBond::Info(std::ostream& out) const
 {
-    std::cout << "    Fibre matric bond section with circumference: " << mCircumference << std::endl;
+    out << "    Fibre matrix bond section with circumference: " << mCircumference << "\n";
 }
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::SectionFibreMatrixBond::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void SectionFibreMatrixBond::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::SectionFibreMatrixBond::serialize(Archive & ar, const unsigned int version)
+void SectionFibreMatrixBond::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize SectionFibreMatrixBond" << std::endl;
@@ -56,5 +56,5 @@ void NuTo::SectionFibreMatrixBond::serialize(Archive & ar, const unsigned int ve
     std::cout << "finish serialize SectionFibreMatrixBond" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SectionFibreMatrixBond)
+BOOST_CLASS_EXPORT_IMPLEMENT(SectionFibreMatrixBond)
 #endif // ENABLE_SERIALIZATION

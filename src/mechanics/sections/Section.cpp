@@ -9,6 +9,7 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/Section.h"
+#include <ostream>
 
 using namespace NuTo;
 
@@ -41,9 +42,11 @@ bool Section::IsPlaneStrain() const
 }
 
 
-void Section::Info() const
+void Section::Info(std::ostream& out) const
 {
 }
+
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

@@ -24,8 +24,6 @@ public:
     //! @brief Get the circumference of the fibre
     virtual double GetCircumference() const override;
 
-    virtual void Info() const override;
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -35,6 +33,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 private:
+    virtual void Info(std::ostream& out) const override;
+
     //! @brief Constructor
     //! @param circumference Circumference of the fibre
     SectionFibreMatrixBond(double circumference);

@@ -28,8 +28,6 @@ public:
 
     virtual double GetArea(double coordinate) const override;
 
-    virtual void Info() const override;
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -39,6 +37,8 @@ public:
 
 #endif // ENABLE_SERIALIZATION
 protected:
+    virtual void Info(std::ostream& out) const override;
+
     //! @brief Constructor
     //! @param area Cross-section area
    SectionTruss(double area);

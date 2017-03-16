@@ -27,9 +27,6 @@ public:
     //! @return Section thickness
     double GetThickness() const override;
 
-    //! @brief Print information about the section
-    void Info() const override;
-
     virtual bool IsPlaneStrain() const override;
 
 #ifdef ENABLE_SERIALIZATION
@@ -41,6 +38,9 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 private:
+    //! @brief Print information about the section
+    void Info(std::ostream& out) const override;
+
     //! @brief Constructor
     //! @param thickness Section thickness
     //! @param isPlaneStrain `true` corresponds to plane strain, `false` to plane stress
