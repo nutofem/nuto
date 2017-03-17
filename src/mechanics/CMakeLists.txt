@@ -179,11 +179,10 @@ set(NuToMechanicsNodesSources
     )
 
 set(NuToMechanicsSectionSources
-    sections/SectionBase.cpp
+    sections/Section.cpp
     sections/SectionTruss.cpp
+    sections/SectionVariableTruss.cpp
     sections/SectionPlane.cpp
-    sections/SectionVolume.cpp
-    sections/SectionSpring.cpp
     sections/SectionFibreMatrixBond.cpp
     )
 
@@ -198,7 +197,6 @@ set(NuToMechanicsStructuresSources
     structures/StructureBaseLoad.cpp
     structures/StructureBaseLogger.cpp
     structures/StructureBaseNode.cpp
-    structures/StructureBaseSection.cpp
     structures/StructureOutputBase.cpp
     structures/StructureOutputBlockMatrix.cpp
     structures/StructureOutputBlockVector.cpp

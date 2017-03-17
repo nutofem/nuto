@@ -27,6 +27,8 @@
 
 #include "mechanics/groups/GroupEnum.h"
 
+#include "mechanics/sections/SectionPlane.h"
+
 #include <boost/filesystem.hpp>
 
 #ifdef ENABLE_VISUALIZE
@@ -112,8 +114,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
 #endif
 
     /** create section **/
-    int mySection = myStructure->SectionCreate("Plane_Stress");
-    myStructure->SectionSetThickness(mySection,Thickness);
+    auto mySection = NuTo::SectionPlane::Create(Thickness, false);
 
     /** create constitutive law **/
     int myMatLin = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
@@ -312,8 +313,7 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     /** create section **/
     double Thickness = 1.;
-    int mySection = myStructure->SectionCreate("Plane_Stress");
-    myStructure->SectionSetThickness(mySection,Thickness);
+    auto mySection = NuTo::SectionPlane::Create(Thickness, false);
 
     /** create constitutive law **/
     double YoungsModulus = 1.e5;
@@ -534,11 +534,9 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
     myStructure.InterpolationTypeInfo(0);
 
     myStructure.NodeBuildGlobalDofs();
-    int section = myStructure.SectionCreate("PLANE_STRESS");
 
     double Thickness = 1.;
-    myStructure.SectionSetThickness(section, Thickness);
-
+    auto section = NuTo::SectionPlane::Create(Thickness, false);
     myStructure.ElementTotalSetSection(section);
 
     int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
@@ -687,9 +685,7 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
     myStructure.InterpolationTypeInfo(0);
 
     myStructure.NodeBuildGlobalDofs();
-    int section = myStructure.SectionCreate("PLANE_STRESS");
-    myStructure.SectionSetThickness(section, 1.);
-
+    auto section = NuTo::SectionPlane::Create(1.0, false);
     myStructure.ElementTotalSetSection(section);
 
     int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");

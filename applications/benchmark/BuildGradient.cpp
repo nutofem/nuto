@@ -13,7 +13,7 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "mechanics/cell/IntegrandLinearElastic.h"
-
+#include "mechanics/sections/SectionPlane.h"
 
 namespace Benchmark
 {
@@ -346,7 +346,7 @@ public:
     Eigen::VectorXd GetDisp() const
     {
         Eigen::VectorXd disp(mNodes.size() * TDim);
-        for (int i = 0; i < mNodes.size(); ++i)
+        for (unsigned i = 0; i < mNodes.size(); ++i)
             disp.segment<2>(2 * i) = mNodes[i]->Get();
         return disp;
     }
@@ -354,7 +354,7 @@ public:
     Eigen::Matrix<double, TDim, Eigen::Dynamic> GetCoordinatesModified() const
     {
         Eigen::Matrix<double, TDim, Eigen::Dynamic> coordinates(TDim, mNodes.size());
-        for (auto i = 0; i < mNodes.size(); ++i)
+        for (unsigned i = 0; i < mNodes.size(); ++i)
             coordinates.template block<TDim, 1>(0, i) = mNodes[i]->Get();
         return coordinates;
     }
@@ -375,7 +375,7 @@ public:
         Eigen::Matrix<double, 3, Eigen::Dynamic> B =
                 Eigen::Matrix<double, 3, Eigen::Dynamic>::Zero(3, mNodes.size() * TDim);
 
-        for (auto iNode = 0, iColumn = 0; iNode < mNodes.size(); ++iNode, iColumn += 2)
+        for (unsigned iNode = 0, iColumn = 0; iNode < mNodes.size(); ++iNode, iColumn += 2)
         {
             const double dNdX = derivativeShapeFunctionsJ(iNode, 0);
             const double dNdY = derivativeShapeFunctionsJ(iNode, 1);
@@ -575,8 +575,7 @@ BENCHMARK(BuildGradient, NuTo, runner)
 
     s.ElementSetConstitutiveLaw(elementID, 0);
 
-    int section = s.SectionCreate("Plane_Stress");
-    s.SectionSetThickness(section, 3);
+    auto section = NuTo::SectionPlane::Create(3., true);
     s.ElementTotalSetSection(section);
 
     s.ElementTotalConvertToInterpolationType();

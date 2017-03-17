@@ -21,6 +21,7 @@
 #include "mechanics/timeIntegration/RungeKutta38.h"
 #include "mechanics/timeIntegration/NystroemQinZhu.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "mechanics/MechanicsEnums.h"
 
 #include "base/Exception.h"
@@ -104,8 +105,7 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     myStructure.ElementTotalConvertToInterpolationType();
 
     // create section
-    int mySection = myStructure.SectionCreate("TRUSS");
-    myStructure.SectionSetArea(mySection, mA);
+    auto mySection = NuTo::SectionTruss::Create(mA);
     myStructure.ElementTotalSetSection(mySection);
 
     // create constitutive law

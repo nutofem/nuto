@@ -6,11 +6,8 @@ myStructure = nuto.Structure(3)
 
 # create material law
 Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", 20000.)
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"Poissons_Ratio", 0.2)
-
-# create section
-Section1 = myStructure.SectionCreate("Volume")
+myStructure.ConstitutiveLawSetParameterDouble(Material1, "Youngs_Modulus", 20000.)
+myStructure.ConstitutiveLawSetParameterDouble(Material1, "Poissons_Ratio", 0.2)
 
 # create nodes
 myStructure.NodeCreate( 1, np.array([0.0, 0.0, 0.0]))
@@ -65,7 +62,6 @@ myStructure.ElementCreate(interpolationType, [ 14, 15, 18, 17, 23, 24, 27, 26])
 myStructure.ElementCreate(interpolationType, [  3, 28, 29,  9, 21, 30, 31, 27])
 
 myStructure.ElementTotalSetConstitutiveLaw(Material1)
-myStructure.ElementTotalSetSection(Section1)
 myStructure.ElementTotalConvertToInterpolationType()
 
 # boundary conditions
@@ -83,15 +79,15 @@ myStructure.ConstraintLinearEquationCreate(22, "x_displacement", 1, 0)
 myStructure.ConstraintLinearEquationCreate(25, "x_displacement", 1, 0)
 
 # coupling conditions
-id = myStructure.ConstraintLinearEquationCreate( 6, "x_displacement", -1, 0)
+id = myStructure.ConstraintLinearEquationCreate(6, "x_displacement", -1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id,  3, "x_displacement", 0.5)
 myStructure.ConstraintLinearEquationAddTerm(id,  9, "x_displacement", 0.5)
 
-id = myStructure.ConstraintLinearEquationCreate( 6, "y_displacement", -1, 0)
+id = myStructure.ConstraintLinearEquationCreate(6, "y_displacement", -1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id,  3, "y_displacement", 0.5)
 myStructure.ConstraintLinearEquationAddTerm(id,  9, "y_displacement", 0.5)
 
-id = myStructure.ConstraintLinearEquationCreate( 6, "z_displacement", -1, 0)
+id = myStructure.ConstraintLinearEquationCreate(6, "z_displacement", -1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id,  3, "z_displacement", 0.5)
 myStructure.ConstraintLinearEquationAddTerm(id,  9, "z_displacement", 0.5)
 
@@ -152,16 +148,16 @@ myStructure.ConstraintLinearEquationAddTerm(id, 27, "z_displacement", 0.25)
 # forces
 myStructure.SetNumLoadCases(1)
 direction = np.array([1.0, 0.0, 0.0])
-myStructure.LoadCreateNodeForce(0,28, direction, 1)
-myStructure.LoadCreateNodeForce(0,29, direction, 1)
-myStructure.LoadCreateNodeForce(0,30, direction, 1)
-myStructure.LoadCreateNodeForce(0,31, direction, 1)
+myStructure.LoadCreateNodeForce(0, 28, direction, 1)
+myStructure.LoadCreateNodeForce(0, 29, direction, 1)
+myStructure.LoadCreateNodeForce(0, 30, direction, 1)
+myStructure.LoadCreateNodeForce(0, 31, direction, 1)
 
 # start analysis
 myStructure.NodeBuildGlobalDofs()
 
 # Calculate maximum independent sets for parallelization (openmp)
-myStructure.CalculateMaximumIndependentSets();
+myStructure.CalculateMaximumIndependentSets()
 myStructure.SolveGlobalSystemStaticElastic(0)
 
 # calculate residual
@@ -180,10 +176,10 @@ residual = intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(i
 print("residual: " + str(np.linalg.norm(residual)))
 
 # visualize results
-visualizationGroup = myStructure.GroupCreate("Elements");
+visualizationGroup = myStructure.GroupCreate("Elements")
 myStructure.GroupAddElementsTotal(visualizationGroup)
 
-myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 myStructure.ExportVtkDataFileElements("Brick8NCoupling.vtk")

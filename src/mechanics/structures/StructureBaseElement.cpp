@@ -34,6 +34,8 @@
 
 #include "visualize/VisualizeEnum.h"
 
+using namespace NuTo;
+
 NuTo::BlockFullVector<double> NuTo::StructureBase::ElementBuildInternalGradient(ElementBase& rElement)
 {
     std::map<Element::eOutput,std::shared_ptr<ElementOutputBase>> elementOutputMap;
@@ -350,20 +352,7 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 }
 
 
-void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-
-    boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
-    if (itSection==mSectionMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Section with the given identifier does not exist.");
-
-    ElementSetSection(elementPtr,itSection->second);
-}
-
-void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId)
+void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, std::shared_ptr<Section> section)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -375,49 +364,37 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-	boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
-    if (itSection==mSectionMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Section with the given identifier does not exist.");
-
     for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
-        ElementSetSection(itElement->second,itSection->second);
+        ElementSetSection(itElement->second, section);
     }
 }
 
-void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
+void NuTo::StructureBase::ElementTotalSetSection(std::shared_ptr<Section> section)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    boost::ptr_map<int,SectionBase>::iterator itSection = mSectionMap.find(rSectionId);
-    if (itSection==mSectionMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Section with the given identifier does not exist.");
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
     for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
     {
-        ElementSetSection(elementVector[countElement],itSection->second);
+        ElementSetSection(elementVector[countElement], section);
     }
 }
 
-void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* rSection)
+
+void StructureBase::ElementSetSection(int rElementId, std::shared_ptr<Section> section)
 {
-    try
-    {
-        rElement->SetSection(*rSection);
-    }
-    catch(NuTo::MechanicsException &e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error setting section for element " + std::to_string(ElementGetId(rElement)) + ".");
-        throw;
-    }
-    catch(...)
-    {
-        throw NuTo::MechanicsException
-            (__PRETTY_FUNCTION__, "Error setting section for element " + std::to_string(ElementGetId(rElement)) + ".");
-    }
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+    ElementSetSection(elementPtr, section);
 }
+
+
+void StructureBase::ElementSetSection(ElementBase* rElement, std::shared_ptr<Section> section)
+{
+    rElement->SetSection(section);
+}
+
 
 void NuTo::StructureBase::ElementSetInterpolationType(int rElementId, int rInterpolationTypeId)
 {

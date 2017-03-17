@@ -18,6 +18,8 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/sections/SectionTruss.h"
+#include "mechanics/sections/SectionPlane.h"
 
 #include "mechanics/timeIntegration/RungeKutta4.h"
 #include "visualize/VisualizeEnum.h"
@@ -54,8 +56,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
 #endif
 
     /** create section **/
-    int Section = myStructure->SectionCreate("Truss");
-    myStructure->SectionSetArea(Section, Area);
+    auto Section = NuTo::SectionTruss::Create(Area);
 
     /** create material law **/
     int Material = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
@@ -254,11 +255,10 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
 
-    /** create section **/
     myStructure->ElementTotalConvertToInterpolationType(1.e-6,10);
-    //myStructure->InterpolationTypeSetIntegrationType(myInterpolationType, rIntegrationTypeIdent, NuTo::IpData::STATICDATA);
-    int mySection = myStructure->SectionCreate("Plane_Stress");
-    myStructure->SectionSetThickness(mySection,Thickness);
+
+    // create section
+    auto mySection = NuTo::SectionPlane::Create(Thickness, false);
 
     /** assign constitutive law **/
     myStructure->ElementTotalSetConstitutiveLaw(myMatLin);

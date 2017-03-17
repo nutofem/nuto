@@ -13,10 +13,10 @@
 #include "boost/filesystem.hpp"
 
 #include "mechanics/groups/GroupEnum.h"
-#include "mechanics/sections/SectionEnum.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
@@ -27,7 +27,6 @@ using NuTo::Interpolation::eTypeOrder;
 using NuTo::Interpolation::eShapeType;
 using NuTo::eGroupId;
 using NuTo::eVisualizeWhat;
-using NuTo::eSectionType;
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -275,8 +274,7 @@ void AssignSection(NuTo::Structure& structure)
     structure.GetLogger() << "**      Section                  **" << "\n";
     structure.GetLogger() << "***********************************" << "\n\n";
 
-    int section00 = structure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    structure.SectionSetThickness(section00, thickness);
+    auto section00 = NuTo::SectionPlane::Create(thickness, false);
 
     structure.ElementTotalSetSection(section00);
 }

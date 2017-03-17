@@ -8,6 +8,7 @@
 #define BOOST_TEST_MODULE LinearInterpolation
 #define BOOST_TEST_DYN_LINK
 
+#include "mechanics/sections/SectionTruss.h"
 #include "ElementUniaxialTest.h"
 
 using namespace NuTo::Interpolation;
@@ -23,9 +24,7 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, int rDiv)
     s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
     s.ElementTotalConvertToInterpolationType();
 
-    int section = s.SectionCreate(NuTo::eSectionType::TRUSS);
-    s.SectionSetArea(section, test.lY * test.lZ);
-
+    auto section = NuTo::SectionTruss::Create(test.lY * test.lZ);
     s.ElementTotalSetSection(section);
 
     test.Run(s, "Uniaxial1D");

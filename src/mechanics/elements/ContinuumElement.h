@@ -90,11 +90,11 @@ public:
 
     //! @brief sets the section of an element
     //! @param rSection reference to section
-    void SetSection(const SectionBase& rSection) override;
+    void SetSection(std::shared_ptr<const Section> section) override;
 
     //! @brief returns a reference to the section of an element
     //! @return pointer to section
-    const SectionBase& GetSection() const override;
+    std::shared_ptr<const Section> GetSection() const override;
 
 
     //! @brief calculates the volume of an integration point (weight * detJac)
@@ -127,7 +127,7 @@ protected:
     std::vector<NodeBase*> mNodes;
 
     // the base class of the sections
-    const SectionBase *mSection;
+    std::shared_ptr<const Section> mSection;
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;

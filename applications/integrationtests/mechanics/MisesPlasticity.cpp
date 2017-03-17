@@ -13,7 +13,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
@@ -71,8 +71,7 @@ void Mises2D(const std::string& rDir)
 
     SetConstitutiveLaw(myStructure);
 
-    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRAIN);
-    myStructure.SectionSetThickness(section, 3.1415);
+    auto section = NuTo::SectionPlane::Create(3.1415, true);
     myStructure.ElementTotalSetSection(section);
 
     // boundary conditions
@@ -151,7 +150,6 @@ void Mises3D(const std::string& rDir)
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
-    myStructure.ElementTotalSetSection(myStructure.SectionCreate(NuTo::eSectionType::VOLUME));
 
     // boundary conditions
     int nOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector3d::Zero(), 1.e-6);

@@ -14,7 +14,8 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionVariableTruss.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/ImplEx.h"
 
@@ -171,8 +172,8 @@ void AddBoundaryElements(NuTo::Structure& s, double rLength, int rNumExpectedBou
 void TestStructure1D(bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(__FUNCTION__);
-    const int numElements = 2;
-    const double length = 100;
+    const int numElements = 4;
+    const double length = 42;
     const double area = 10;
 
     NuTo::Structure s(1);
@@ -183,25 +184,15 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     AddInterpolationType(s, interpolationType);
 
     // create sections
-    int sectionId = s.SectionCreate("Truss");
-    s.SectionSetArea(sectionId, area);
+    const double xWeakSpot = 20;
+    const double lWeakSpot = 10;
+    const double alpha = 0.20;
 
-    // set function for area reduction
-    NuTo::SectionTruss* secTruss = s.SectionGetSectionPtr(sectionId)->AsSectionTruss();
-    const double xWeakSpot = 25;
-    const double lWeakSpot = 5;
-    const double alpha = 0.10;
-    const double exponent = 4;
-    double areaParameters[4];
-    areaParameters[0] = xWeakSpot;
-    areaParameters[1] = lWeakSpot;
-    areaParameters[2] = alpha;
-    areaParameters[3] = exponent;
-    secTruss->SetAreaParameters(areaParameters);
+    auto section = NuTo::SectionVariableTruss::Create(area, xWeakSpot, lWeakSpot, alpha);
 
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
-    s.ElementTotalSetSection(sectionId);
+    s.ElementTotalSetSection(section);
 
     if (rUseRobinBoundaryElements)
     {
@@ -213,7 +204,7 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
 
 
 
-void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType rSection, bool rUseRobinBoundaryElements)
+void TestStructure2D(NuTo::Interpolation::eShapeType rShape, bool isPlaneStrain, bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
 
@@ -232,12 +223,11 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
     int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY}, {numElementsX, numElementsY}, rShape).second;
     AddInterpolationType(s, interpolationType);
 
-    int sectionId = s.SectionCreate(rSection);
-    s.SectionSetThickness(sectionId, lZ);
+    auto section = NuTo::SectionPlane::Create(lZ, isPlaneStrain);
 
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
-    s.ElementTotalSetSection(sectionId);
+    s.ElementTotalSetSection(section);
 
     if (rUseRobinBoundaryElements)
     {
@@ -261,12 +251,8 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
     int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY, lZ}, {1,1,1}, rShape).second;
     AddInterpolationType(s, interpolationType);
 
-    int sectionId = s.SectionCreate("VOLUME");
-
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
-    s.ElementTotalSetSection(sectionId);
-
 
     if (rUseRobinBoundaryElements)
     {
@@ -355,16 +341,11 @@ void Check1D2D3D()
     s2D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s2D));
     s3D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s3D));
 
-    int mySection1D  = s1D.SectionCreate("Truss");
-    int mySection2D  = s2D.SectionCreate("Plane_Stress");
-    int mySection3D  = s3D.SectionCreate("Volume");
-
-    s1D.SectionSetArea(mySection1D, lz*ly);
-    s2D.SectionSetThickness(mySection2D, lz);
+    auto mySection1D = NuTo::SectionTruss::Create(lz*ly);
+    auto mySection2D = NuTo::SectionPlane::Create(lz, false);
 
     s1D.ElementTotalSetSection(mySection1D);
     s2D.ElementTotalSetSection(mySection2D);
-    s3D.ElementTotalSetSection(mySection3D);
 
     int weakElementId = numElements / 2;
     double kappa = 0.001;
@@ -489,11 +470,11 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
 BOOST_AUTO_TEST_CASE(GradientDamage2D)
 {
     BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D,
-                                         NuTo::eSectionType::PLANE_STRESS,
+                                         false,
                                          useRobinBoundaryElements));
 
     BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D,
-                                         NuTo::eSectionType::PLANE_STRAIN,
+                                         true,
                                          useRobinBoundaryElements));
 }
 

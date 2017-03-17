@@ -1,5 +1,4 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "mechanics/sections/SectionEnum.h"
 
 template <int TDim>
 NuTo::EngineeringStrain<TDim>::EngineeringStrain(std::initializer_list<double> rList)

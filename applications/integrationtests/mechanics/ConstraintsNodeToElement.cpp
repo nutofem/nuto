@@ -16,7 +16,8 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
@@ -94,11 +95,8 @@ void run2d()
         std::cout << "**      Section                  **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        int matrixSection = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-        myStructure.SectionSetThickness(matrixSection, Parameters::mMatrixThickness);
-
-        int fibreSection = myStructure.SectionCreate(NuTo::eSectionType::TRUSS);
-        myStructure.SectionSetArea(fibreSection, Parameters::mFibreCrossSection);
+        auto matrixSection = NuTo::SectionPlane::Create(Parameters::mMatrixThickness, false);
+        auto fibreSection = NuTo::SectionTruss::Create(Parameters::mFibreCrossSection);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Material                 **" << std::endl;
@@ -306,10 +304,7 @@ void run3d()
     std::cout << "**      Section                  **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    int matrixSection = myStructure.SectionCreate(NuTo::eSectionType::VOLUME);
-
-    int fibreSection = myStructure.SectionCreate(NuTo::eSectionType::TRUSS);
-    myStructure.SectionSetArea(fibreSection, Parameters::mFibreCrossSection);
+    auto fibreSection = NuTo::SectionTruss::Create(Parameters::mFibreCrossSection);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Material                 **" << std::endl;
@@ -354,7 +349,6 @@ void run3d()
     myStructure.ElementGroupSetInterpolationType(groupIdMatrix, matrixInterpolationType);
     myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip);
     myStructure.ElementConvertToInterpolationType(groupIdMatrix);
-    myStructure.ElementGroupSetSection(groupIdMatrix, matrixSection);
     myStructure.ElementGroupSetConstitutiveLaw(groupIdMatrix, matrixMaterial);
 
     std::cout << "***********************************" << std::endl;

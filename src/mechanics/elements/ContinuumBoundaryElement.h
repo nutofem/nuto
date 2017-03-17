@@ -107,7 +107,7 @@ public:
 
     //! @brief returns a reference to the section of an element
     //! @return pointer to section
-    const SectionBase& GetSection() const override;
+    std::shared_ptr<const Section> GetSection() const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)

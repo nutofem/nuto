@@ -14,6 +14,8 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionTruss.h"
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
@@ -375,29 +377,29 @@ inline void SetupMultiProcessor(NuTo::Structure& rS)
 \*---------------------------------------------*/
 
 template <int TDim>
-inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
+std::shared_ptr<NuTo::Section> SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
 {
     switch (TDim)
     {
     case 1:
     {
-        int Sec = rS.SectionCreate("TRUSS");
-        rS.SectionSetArea(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionTruss::Create(rAreaThickness);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 2:
     {
-        int Sec = rS.SectionCreate("PLANE_STRESS");
-        rS.SectionSetThickness(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionPlane::Create(rAreaThickness, false);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 3:
     {
-        int Sec = rS.SectionCreate("VOLUME");
+        // there is no need to attach a section to 3D elements
+        // to make this function work with arbitrary dimensions, we just attach a dummy truss
+        auto Sec = NuTo::SectionTruss::Create(-42.0);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
@@ -632,7 +634,7 @@ void AdditiveOutputTest(std::vector<int> rN,
 
 
     SetupStructure(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
@@ -851,7 +853,7 @@ void AdditiveInputImplicitTest(std::vector<int> rN,
     tCtrl.delta_t = tCtrl.t_final / 5.0;
 
     SetupStructure(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 

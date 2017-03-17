@@ -20,10 +20,8 @@ alpha = 0.1
 n_elements = 100
 delta_l = length / n_elements
 
-totalSection = structure.SectionCreate("Truss")
-structure.SectionSetArea(totalSection, area)
-weakenedSection = structure.SectionCreate("Truss")
-structure.SectionSetArea(weakenedSection, (1.0 - alpha)*area)
+totalSection = nuto.SectionTruss.Create(area)
+weakenedSection = nuto.SectionTruss.Create((1.0 - alpha)*area)
 
 nodeIDs = list(range(2))
 nodeIDs[0] = structure.NodeCreate(coordinates)
@@ -66,7 +64,7 @@ structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 structure.LoadCreateNodeForce(0, nodeIDs[0], direction, 100.0)
 
 newmark = nuto.NewmarkDirect(structure)
-loadFactor = np.array([[0.0, 0.0],[1.0, 0.4]])
+loadFactor = np.array([[0.0, 0.0], [1.0, 0.4]])
 newmark.SetTimeStep(0.1)
 newmark.SetTimeDependentLoadCase(0, loadFactor)
 newmark.SetResultDirectory("damage_bar_results", True)

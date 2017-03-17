@@ -68,7 +68,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/MechanicsException.h"
-#include "mechanics/sections/SectionBase.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
@@ -183,8 +182,6 @@ void NuTo::StructureBase::Info()const
 
     mLogger << "num dofs : " << GetNumTotalDofs() << "\n";
     mLogger << "num active dofs : " << GetNumTotalActiveDofs() << "\n";
-    // print info for sections
-    SectionInfo(mVerboseLevel);
 
     // print info for groups
     GroupInfo(mVerboseLevel);

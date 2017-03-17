@@ -8,6 +8,5 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionEnum.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"

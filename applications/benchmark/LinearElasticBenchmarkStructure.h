@@ -19,7 +19,7 @@ public:
         mS.SetShowTime(false);
         mS.SetNumTimeDerivatives(2);
         SetupMesh(rNumElements);
-        SetupSectionAndLaw();
+        SetupLaw();
     }
 
     void SetupVisualization()
@@ -77,12 +77,11 @@ private:
         mS.ElementTotalConvertToInterpolationType();
     }
 
-    void SetupSectionAndLaw()
+    void SetupLaw()
     {
         int lawId = mS.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         mS.ConstitutiveLawSetParameterDouble(lawId, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
         mS.ElementTotalSetConstitutiveLaw(lawId);
-        mS.ElementTotalSetSection(mS.SectionCreate(eSectionType::VOLUME));
     }
 
     static constexpr double lx = 25;

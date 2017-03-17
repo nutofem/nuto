@@ -55,8 +55,6 @@ int main()
     s.InterpolationTypeAdd(ids[1].second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     s.InterpolationTypeAdd(prism.second,  NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
-    int mySection = s.SectionCreate("Volume");
-    s.ElementTotalSetSection(mySection);
     s.ElementTotalConvertToInterpolationType();
 
     std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;

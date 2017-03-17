@@ -23,15 +23,14 @@ class MassMatrix:
         self.s.InterpolationTypeAdd(meshInfo[1], "Displacements", GetInterpolationType(interpolationOrder)) 
         self.s.InterpolationTypeSetIntegrationType(meshInfo[1], GetIntegrationType(integrationOrder))
 
-        sectionId = self.s.SectionCreate("Truss")
-        self.s.SectionSetArea(sectionId, self.ly*self.lz)
+        section = nuto.SectionTruss.Create(self.ly * self.lz)
 
         lawId = self.s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
         self.s.ConstitutiveLawSetParameterDouble(lawId, "Youngs_Modulus", 41)
         self.s.ConstitutiveLawSetParameterDouble(lawId, "Density", self.rho)
 
         self.s.ElementTotalConvertToInterpolationType()
-        self.s.ElementTotalSetSection(sectionId)
+        self.s.ElementTotalSetSection(section)
         self.s.ElementTotalSetConstitutiveLaw(lawId)
 
     def GetMassMatrix(self):

@@ -8,6 +8,7 @@
 #define BOOST_TEST_MODULE LinearInterpolation
 #define BOOST_TEST_DYN_LINK
 
+#include "mechanics/sections/SectionPlane.h"
 #include "ElementUniaxialTest.h"
 
 using namespace NuTo::Interpolation;
@@ -23,8 +24,7 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, std::vector<int> rDiv)
     s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
     s.ElementTotalConvertToInterpolationType();
 
-    int section = s.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-    s.SectionSetThickness(section, test.lZ);
+    auto section = NuTo::SectionPlane::Create(test.lZ, false);
     s.ElementTotalSetSection(section);
 
     test.Run(s, "Uniaxial2D");

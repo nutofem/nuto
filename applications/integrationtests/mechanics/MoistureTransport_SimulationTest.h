@@ -166,7 +166,7 @@ void SimulationTest(std::vector<int> rN,
     std::string resultDir = std::string("./ConstitutiveLawMoistureTransport_") + testName;
 
     SetupStructure<TDim>(S,testName);
-    int SEC = SetupSection<TDim>(S);
+    auto SEC = SetupSection<TDim>(S);
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 

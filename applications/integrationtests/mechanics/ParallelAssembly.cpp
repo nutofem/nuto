@@ -33,7 +33,6 @@ void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)
                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     rStructure.ElementTotalConvertToInterpolationType();
-    rStructure.ElementTotalSetSection(rStructure.SectionCreate(NuTo::eSectionType::VOLUME));
 
     rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     rStructure.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10024);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mechanics/sections/SectionEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -12,6 +11,8 @@
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
+#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionTruss.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
@@ -312,29 +313,29 @@ inline void SetupMultiProcessor(NuTo::Structure& rS)
 \*---------------------------------------------*/
 
 template <int TDim>
-inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
+std::shared_ptr<NuTo::Section> SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
 {
     switch (TDim)
     {
     case 1:
     {
-        int Sec = rS.SectionCreate(NuTo::eSectionType::TRUSS);
-        rS.SectionSetArea(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionTruss::Create(rAreaThickness);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 2:
     {
-        int Sec = rS.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
-        rS.SectionSetThickness(Sec,rAreaThickness);
+        auto Sec = NuTo::SectionPlane::Create(rAreaThickness, false);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }
 
     case 3:
     {
-        int Sec = rS.SectionCreate(NuTo::eSectionType::VOLUME);
+        // there is no need to attach a section to 3D elements
+        // to make this function work with arbitrary dimensions, we just attach a dummy truss
+        auto Sec = NuTo::SectionTruss::Create(-42.0);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }

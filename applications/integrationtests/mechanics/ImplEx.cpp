@@ -108,12 +108,11 @@ void ImplEx()
     s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create sections
-    int sectionId = s.SectionCreate("Truss");
-    s.SectionSetArea(sectionId, area);
+    auto section = NuTo::SectionTruss::Create(area);
 
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
-    s.ElementTotalSetSection(sectionId);
+    s.ElementTotalSetSection(section);
     s.DofTypeSetIsSymmetric(NuTo::Node::eDof::DISPLACEMENTS, true);
     s.DofTypeSetIsSymmetric(NuTo::Node::eDof::NONLOCALEQSTRAIN, true);
 

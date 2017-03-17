@@ -13,8 +13,11 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/mesh/MeshGenerator.h"
+
+using namespace NuTo;
 
 int main()
 {
@@ -31,45 +34,44 @@ int main()
     double conductivity = 1.0;
 
     //! create one-dimensional structure
-    NuTo::Structure myStructure(1);
+    Structure structure(1);
 
-    int interpolationType = NuTo::MeshGenerator::Grid(myStructure, {length}, {num_elements}).second;
+    int interpolationType = MeshGenerator::Grid(structure, {length}, {num_elements}).second;
 
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::TEMPERATURE,
-                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, "IntegrationType1D2NGauss2Ip");
-    myStructure.ElementTotalConvertToInterpolationType();
+    structure.InterpolationTypeAdd(interpolationType, Node::eDof::TEMPERATURE,
+                                     Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeSetIntegrationType(interpolationType, "IntegrationType1D2NGauss2Ip");
+    structure.ElementTotalConvertToInterpolationType();
 
     // create section
-    auto truss = myStructure.SectionCreate("Truss");
-    myStructure.SectionSetArea(truss, area);
-    myStructure.ElementTotalSetSection(truss);
+    auto truss = SectionTruss::Create(area);
+    structure.ElementTotalSetSection(truss);
 
     // create material law
-    auto material = myStructure.ConstitutiveLawCreate("Heat_Conduction");
-    myStructure.ConstitutiveLawSetParameterDouble(material, 
-        NuTo::Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
-    myStructure.ElementTotalSetConstitutiveLaw(material);
+    auto material = structure.ConstitutiveLawCreate("Heat_Conduction");
+    structure.ConstitutiveLawSetParameterDouble(material, 
+        Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
+    structure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads
     Eigen::VectorXd direction(1);
     direction(0) = 1.0;
-    myStructure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
-    myStructure.SetNumLoadCases(1);
-    myStructure.LoadCreateNodeHeatFlux(0, num_elements, direction, boundary_flux);
+    structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
+    structure.SetNumLoadCases(1);
+    structure.LoadCreateNodeHeatFlux(0, num_elements, direction, boundary_flux);
 
     // start analysis
-    myStructure.SolveGlobalSystemStaticElastic(0);
-    auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(0);
+    structure.SolveGlobalSystemStaticElastic(0);
+    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector(0);
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
     // visualize results
-    int visualizationGroup = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    myStructure.GroupAddElementsTotal(visualizationGroup);
+    int visualizationGroup = structure.GroupCreate(eGroupId::Elements);
+    structure.GroupAddElementsTotal(visualizationGroup);
 
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::TEMPERATURE);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::HEAT_FLUX);
-    myStructure.ExportVtkDataFileElements("Temperature1D.vtk");
+    structure.AddVisualizationComponent(visualizationGroup, eVisualizeWhat::TEMPERATURE);
+    structure.AddVisualizationComponent(visualizationGroup, eVisualizeWhat::HEAT_FLUX);
+    structure.ExportVtkDataFileElements("Temperature1D.vtk");
 
     return 0;
 }

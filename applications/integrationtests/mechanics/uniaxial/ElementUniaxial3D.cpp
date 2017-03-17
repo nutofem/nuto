@@ -23,8 +23,6 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, std::vector<int> rDiv)
     s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
     s.ElementTotalConvertToInterpolationType();
 
-    s.ElementTotalSetSection(s.SectionCreate(NuTo::eSectionType::VOLUME));
-
     test.Run(s, "Uniaxial3D");
 }
 

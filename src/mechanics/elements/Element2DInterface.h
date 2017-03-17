@@ -86,13 +86,13 @@ public:
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override;
 
-    //! @brief sets the section of an element
-    //! @param rSection reference to section
-    void SetSection(const SectionBase& rSection) override;
+    //! @brief Sets the section of an element
+    //! @param section Pointer to a section
+    void SetSection(std::shared_ptr<const Section> section) override;
 
-    //! @brief returns a reference to the section of an element
-    //! @return pointer to section
-    const SectionBase& GetSection() const override;
+    //! @brief Returns a pointer to the section of an element
+    //! @return Pointer to the section
+    std::shared_ptr<const Section> GetSection() const override;
 
 
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
@@ -108,8 +108,7 @@ protected:
 
     std::vector<NodeBase*> mNodes;
 
-    // the base class of the sections
-    const SectionBase *mSection;
+    std::shared_ptr<const Section> mSection;
 
     Eigen::MatrixXd mTransformationMatrix;
 

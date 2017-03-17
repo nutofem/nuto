@@ -2,7 +2,6 @@
 // Created by Thomas Titscher on 10/24/16.
 //
 #include "BoostUnitTest.h"
-#include "mechanics/sections/SectionEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -14,6 +13,7 @@
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/sections/SectionPlane.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {
@@ -43,7 +43,7 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
-    rS.ElementTotalSetSection(rS.SectionCreate(NuTo::eSectionType::PLANE_STRAIN));
+    rS.ElementTotalSetSection(NuTo::SectionPlane::Create(.42, true));
     rS.ElementTotalSetConstitutiveLaw(rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS));
     rS.ElementTotalConvertToInterpolationType();
 

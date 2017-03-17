@@ -14,6 +14,7 @@
 
 #include "mechanics/mesh/MeshGenerator.h"
 
+#include "mechanics/sections/SectionPlane.h"
 /*
  *  TT:
  *  This is just a test to see if the time integration scheme compiles/runs. I highly doubt the
@@ -46,8 +47,7 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
 
     //section
     double thickness(1);
-    int mySection = myStructure.SectionCreate("Plane_Stress");
-    myStructure.SectionSetThickness(mySection, thickness);
+    auto mySection = NuTo::SectionPlane::Create(thickness, false);
     myStructure.ElementTotalSetSection(mySection);
 
     //constitutive
