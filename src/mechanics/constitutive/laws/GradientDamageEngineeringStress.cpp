@@ -35,7 +35,7 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
     , mCompressiveStrength(0.)
     , mFractureEnergy(0.)
     , mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING)
-    , mImplExCallback()
+    , mImplExCallback(std::make_shared<ImplExCallback>())
     , mMaxOmega(0.999)
 {
 }

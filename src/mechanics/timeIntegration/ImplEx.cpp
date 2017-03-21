@@ -28,7 +28,7 @@
 NuTo::ImplEx::ImplEx(StructureBase* rStructure)
     : ImplicitExplicitBase(rStructure)
     , mExtrapolationErrorThreshold(-1)
-    , mImplExCallback()
+    , mImplExCallback(std::make_shared<ImplExCallback>())
 {
 }
 
