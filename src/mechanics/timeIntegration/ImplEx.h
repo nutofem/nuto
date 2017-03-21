@@ -34,7 +34,7 @@ public:
     ImplEx(StructureBase* rStructure);
 
 
-    virtual ~ImplEx();
+    virtual ~ImplEx() = default;
 
     double GetExtrapolationErrorThreshold() const
     {
@@ -46,7 +46,7 @@ public:
         mExtrapolationErrorThreshold = rExtrapolationErrorThreshold;
     }
 
-    void SetImplExCallback(ImplExCallback* r);
+    void SetImplExCallback(std::shared_ptr<ImplExCallback> r);
 
 protected:
 
@@ -62,7 +62,7 @@ private:
 
     double mExtrapolationErrorThreshold;
 
-    ImplExCallback* mImplExCallback;
+    std::shared_ptr<ImplExCallback> mImplExCallback;
 
 };
 

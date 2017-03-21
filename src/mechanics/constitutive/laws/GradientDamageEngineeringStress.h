@@ -120,7 +120,7 @@ public:
     //! @return ... isotropic damage variable
     double CalculateDerivativeDamage(double rKappa) const;
 
-    void SetExtrapolation(ImplExCallback* rCallback);
+    void SetExtrapolation(std::shared_ptr<ImplExCallback> rCallback);
 
 protected:
 
@@ -172,7 +172,7 @@ protected:
     //! @brief ... damage law type
     Constitutive::eDamageLawType mDamageLawType;
 
-    ImplExCallback* mImplExCallback;
+    std::shared_ptr<ImplExCallback> mImplExCallback;
 
     //! @brief ... max omega, sometimes called alpha
     double mMaxOmega;

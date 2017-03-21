@@ -35,7 +35,7 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
     , mCompressiveStrength(0.)
     , mFractureEnergy(0.)
     , mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING)
-    , mImplExCallback(new ImplExCallback())
+    , mImplExCallback()
     , mMaxOmega(0.999)
 {
 }
@@ -918,9 +918,7 @@ void NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::ConstitutiveInp
     EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
 }
 
-void NuTo::GradientDamageEngineeringStress::SetExtrapolation(NuTo::ImplExCallback* rCallback)
+void NuTo::GradientDamageEngineeringStress::SetExtrapolation(std::shared_ptr<ImplExCallback> rCallback)
 {
-    if (mImplExCallback != nullptr)
-        delete mImplExCallback;
     mImplExCallback = rCallback;
 }
