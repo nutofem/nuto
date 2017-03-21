@@ -1,6 +1,6 @@
 #include <eigen3/Eigen/Eigenvalues>
 
-#include <assert.h>
+#include <cassert>
 #include <boost/tokenizer.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 

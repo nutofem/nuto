@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <fstream>
 

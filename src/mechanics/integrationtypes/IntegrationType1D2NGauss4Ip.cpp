@@ -1,12 +1,8 @@
-// $Id$
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif //ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
-#include <assert.h>
-
 
 // constructor
 NuTo::IntegrationType1D2NGauss4Ip::IntegrationType1D2NGauss4Ip()

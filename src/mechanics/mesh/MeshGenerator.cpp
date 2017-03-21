@@ -1,6 +1,6 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/mesh/MeshGenerator.h"
-#include <assert.h>
+#include <cassert>
 
 #include "mechanics/structures/unstructured/Structure.h"
 

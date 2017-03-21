@@ -1,7 +1,5 @@
-// $Id: IntegrationType3D8NGauss2x2x2Ip.cpp 139 2009-12-02 10:05:37Z eckardt4 $
-
 #include "mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
-#include <assert.h>
+#include <cassert>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

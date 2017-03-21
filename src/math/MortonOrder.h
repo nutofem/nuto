@@ -1,7 +1,5 @@
-// $Id$
 #pragma once
 
-#include <stdint.h>
 #include <limits>
 namespace NuTo
 {

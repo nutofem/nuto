@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <cassert>
 #include <typeinfo>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>

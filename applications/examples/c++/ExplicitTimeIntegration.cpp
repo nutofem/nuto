@@ -1,7 +1,5 @@
-#include <stdlib.h>
 #include <iostream>
 #include <boost/filesystem.hpp>
-#include <math.h>
 #include <boost/tokenizer.hpp>
 
 #ifdef _OPENMP

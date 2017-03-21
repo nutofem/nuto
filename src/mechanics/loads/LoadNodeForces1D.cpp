@@ -1,5 +1,4 @@
-// $Id$
-#include <assert.h>
+#include <cassert>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"

@@ -8,7 +8,6 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <time.h>
 #include "metamodel/MinMaxTransformation.h"
 #include "metamodel/ZeroMeanUnitVarianceTransformation.h"
 #include "metamodel/Metamodel.h"

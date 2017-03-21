@@ -1,7 +1,4 @@
-// $Id$
-
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
-#include <assert.h>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

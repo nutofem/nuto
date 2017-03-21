@@ -1,9 +1,7 @@
-// $Id: SparseMatrixCSRVector2.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 #include <vector>
 #include <string>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <fstream>  //for file acces
 

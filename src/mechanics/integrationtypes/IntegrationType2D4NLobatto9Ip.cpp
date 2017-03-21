@@ -1,5 +1,3 @@
-// $Id: IntegrationType2D4NLobatto9Ip.cpp 331 2010-10-06 09:32:11Z arnold2 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,7 +13,6 @@
 
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include <assert.h>
 
 
 //! @brief constructor

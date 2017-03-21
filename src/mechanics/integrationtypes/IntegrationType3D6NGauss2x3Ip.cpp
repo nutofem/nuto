@@ -1,5 +1,5 @@
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
-#include <assert.h>
+#include <cassert>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

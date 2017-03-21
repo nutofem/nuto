@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,7 +13,6 @@
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
 #include "math/DelaunayVoronoi.h"
-#include <assert.h>
 
 //! @brief constructor
 NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()

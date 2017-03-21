@@ -2,7 +2,7 @@
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 #include "mechanics/nodes/NodeEnum.h"
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 

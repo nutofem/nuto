@@ -1,7 +1,5 @@
-// $Id: IntegrationType3D4NGauss4Ip.cpp 344 2010-10-19 07:48:41Z arnold2 $
-
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include <assert.h>
+#include <cassert>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

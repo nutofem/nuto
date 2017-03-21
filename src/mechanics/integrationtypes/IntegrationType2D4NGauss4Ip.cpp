@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -14,7 +12,7 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-#include <assert.h>
+#include <cassert>
 
 
 //! @brief constructor

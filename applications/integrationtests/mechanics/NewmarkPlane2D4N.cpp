@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <sstream>
 #include <math/EigenCompanion.h>
 #include "boost/filesystem.hpp"

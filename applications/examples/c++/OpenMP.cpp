@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <math.h>
 #include <eigen3/Eigen/Core>
 #include "math/EigenCompanion.h"
 

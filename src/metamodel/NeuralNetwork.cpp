@@ -9,13 +9,11 @@
 #endif  // ENABLE_SERIALIZATION
 
 
-#include <stdio.h>
 #include <vector>
 #include "metamodel/NeuralNetwork.h"
 #include "optimize/ConjugateGradientNonLinear.h"
 #include "metamodel/TransferFunction.h"
 #include <eigen3/Eigen/LU>
-#include <ctime>
 
 
 // constructor

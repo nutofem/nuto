@@ -1,5 +1,3 @@
-// $Id: IntegrationType2D3NGauss13Ip.cpp 309 2010-09-22 22:21:24Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -14,7 +12,7 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include <assert.h>
+#include <cassert>
 
 
 //! @brief constructor

@@ -1,10 +1,9 @@
-// $Id$
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "visualize/VisualizeComponent.h"
 #include "visualize/VisualizeEnum.h"
 #include "visualize/VisualizeUnstructuredGrid.h"
-#include <assert.h>
+#include <cassert>
 
 #ifdef ENABLE_VISUALIZE
 

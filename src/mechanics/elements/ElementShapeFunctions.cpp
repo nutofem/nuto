@@ -4,7 +4,7 @@
  *  Created on: 30 Mar 2015
  *      Author: ttitsche
  */
-#include <assert.h>
+#include <cassert>
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/MechanicsException.h"
 

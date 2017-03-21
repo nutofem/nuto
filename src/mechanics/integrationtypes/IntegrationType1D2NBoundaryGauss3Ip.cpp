@@ -1,7 +1,4 @@
-// $Id: IntegrationType1D2NBoundaryGauss3Ip.cpp 345 2010-10-19 07:50:21Z arnold2 $
-
 #include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include <assert.h>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

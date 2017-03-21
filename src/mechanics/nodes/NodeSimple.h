@@ -1,7 +1,7 @@
 #pragma once
 
 #include <eigen3/Eigen/Dense>
-#include <assert.h>
+#include <cassert>
 
 namespace NuTo
 {

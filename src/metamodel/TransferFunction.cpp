@@ -1,10 +1,7 @@
-// $Id$
-
 /*******************************************************************************
  Bauhaus-Universitaet Weimar
  Author: Joerg F. Unger,  September 2009
 *******************************************************************************/
-#include <stdio.h>
 #include "metamodel/TransferFunction.h"
 #include "metamodel/MetamodelException.h"
 #include <cmath>

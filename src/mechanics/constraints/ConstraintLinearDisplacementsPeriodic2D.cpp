@@ -7,7 +7,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <math.h>
 #include <iostream>
 
 #include "math/SparseMatrixCSRGeneral.h"

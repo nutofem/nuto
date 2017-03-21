@@ -12,7 +12,6 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto6Ip.h"
-#include <assert.h>
 
 // constructor
 NuTo::IntegrationType1D2NLobatto6Ip::IntegrationType1D2NLobatto6Ip():
