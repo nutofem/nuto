@@ -1114,11 +1114,11 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structu
         return knotIDsA(0) < knotIDsB(0) ? true : false;
     });
 
-    masterElements.resize(ElementsVec.size(), 1);
+    masterElements.resize(1, ElementsVec.size());
     for(int i = 0; i < masterElements.rows(); i++)
     {
 //        masterElements(i,0) = std::make_pair(&ElementsVec[i].first->AsContinuumElementIGA1D(), ElementsVec[i].second);
-        masterElements(i,0) = std::make_pair(this->ElementGetId(ElementsVec[i].first), ElementsVec[i].second);
+        masterElements(0, i) = std::make_pair(this->ElementGetId(ElementsVec[i].first), ElementsVec[i].second);
     }
 
     return masterElements;
@@ -1314,7 +1314,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
         nodePtrSet.insert(itNode.second);
     }
 
-    int groupContactElement  = GroupCreate("Elements");
+//    int groupContactElement  = GroupCreate("Elements");
 
     std::vector<std::pair<const ElementBase*, int> > elementsSlave;
 
@@ -1377,7 +1377,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
 
     mElementMap.insert(elementId, contactElement);
 
-    GroupAddElement(groupContactElement, elementId);
+//    GroupAddElement(groupContactElement, elementId);
 
     if (rIntegrationType == eIntegrationType::NotSet)
         throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
@@ -1386,7 +1386,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
     contactElement->SetConstitutiveLaw(itConstitutive->second);
     //                contactElement->SetConstitutiveLaw(constitutiveLaw);
 
-    return groupContactElement;
+    return elementId;
 }
 
 template int NuTo::Structure::ContactElementsCreate<3,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);

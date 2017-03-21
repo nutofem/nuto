@@ -74,6 +74,9 @@ public:
 
     void CalculateElementOutputsLocalForce(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
     void CalculateElementOutputsLocalForceDerivative(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
+    void CalculateElementOutputsLocalGapMatrix(const EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                               const std::pair<const ContinuumElement<TDimSlave>*,int>  &rElementAndSurfaceId,
+                                               Eigen::MatrixXd& D, Eigen::MatrixXd& M);
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput) const;
 
@@ -87,7 +90,19 @@ public:
                                                            Eigen::VectorXd &rParamsIPSlave,
                                                            const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId) const;
 
-    const Eigen::MatrixXd& ComputeContactMatrix();
+    void ComputeGapMatrix(Eigen::MatrixXd& D, Eigen::MatrixXd& M);
+
+    const ContinuumContactElement<1,1>& AsContinuumContactElement11() const override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    ContinuumContactElement<1,1>& AsContinuumContactElement11() override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    const ContinuumContactElement<2,1>& AsContinuumContactElement21() const override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    ContinuumContactElement<2,1>& AsContinuumContactElement21() override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
 
 protected:
     std::vector<std::pair<const ContinuumElement<TDimSlave>*, int> > mElementsSlave;
@@ -101,20 +116,28 @@ protected:
 
     std::unordered_map<int, int> mMappingGlobal2LocalDof;
 
+    std::unordered_map<int, int> mMappingGlobal2LocalSlaveNodes;
+
     int mNumDofs;
     int mNumSlaveDofs;
     int mNumMasterDofs;
+    int mNumSlaveNodes;
     bool mDofMappingComputed;
+    bool mSlaveNodesMappingComputed;
 
     const ConstitutiveBase* mConstitutiveContactLaw;
 
     int mContactType;
 
+
     Eigen::VectorXd mContactForce;
+    Eigen::VectorXd mMortarGap;
 
     Eigen::MatrixXd mDerivativeContactForce;
 
-    void FillMappingGlobalLocal();
+    void FillMappingGlobalLocalDofs();
+
+    void FillMappingGlobalLocalSlaveNodes();
 };
 } /* namespace NuTo */
 

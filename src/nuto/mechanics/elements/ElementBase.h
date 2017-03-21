@@ -489,6 +489,18 @@ public:
     virtual ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D()
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
 
+    virtual const ContinuumContactElement<1,1>& AsContinuumContactElement11() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    virtual ContinuumContactElement<1,1>& AsContinuumContactElement11()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    virtual const ContinuumContactElement<2,1>& AsContinuumContactElement21() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
+    virtual ContinuumContactElement<2,1>& AsContinuumContactElement21()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

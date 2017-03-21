@@ -55,6 +55,8 @@
 
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
+#include "nuto/mechanics/elements/ContinuumContactElement.h"
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -897,7 +899,7 @@ void AddIGALayer2(NuTo::Structure *myStructure,
     coordinatesAndIDs.block(0, 0, coordinates.rows(), coordinates.cols()) = coordinates;
 
     for(int i = 0; i < coordinates.rows(); i++)
-        coordinatesAndIDs(i,coordinates.cols()) = idsFENodes(i);
+        coordinatesAndIDs(i, coordinates.cols()) = idsFENodes(i);
 
     coordinatesAndIDs.SortRow(0);
 
@@ -1053,8 +1055,9 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
     int groupElementsIGA = myStructure.GroupCreate("Elements");
 
     Eigen::VectorXi nodeIDs;
-    Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER", nodeIDs);
-
+    // master side fixed
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster =
+    curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER", nodeIDs);
 
     int countDBC = 0;
 
@@ -1097,7 +1100,7 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
     std::function<double(double)> constitutiveContactLaw  =
             [rPenalty](double rGap) -> double
     {
-        if(rGap<0)
+        if(rGap < 0.)
             return rPenalty*rGap;
         else
             return 0.;
@@ -1106,7 +1109,7 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
     std::function<double(double)> constitutiveContactLawDerivative =
             [rPenalty](double rGap) -> double
     {
-        if(rGap<=0)
+        if(rGap < 0.)
             return rPenalty;
         else
             return 0.;
@@ -1115,6 +1118,7 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
     myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLaw);
     myStructure.ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivative);
 
+    // contact
     myStructure.NuTo::Structure::ContactElementsCreate<1,1>(groupElementsIGAlayer, groupNodesIGAlayer, elementsMaster, rIntegrationType, rContactAlgo, constitutiveLawPC);
 
     ///////////////////
@@ -1134,6 +1138,18 @@ void ContactTestOneElementLayerSlave(const std::string &resultDir,
 
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
+
+    // layer tying
+//    int cceID = myStructure.NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower, groupNodesSlaveLower,
+//                                                                        rElements,
+//                                                                        rIntegrationType, rContactAlgo, constitutiveLawPC);
+
+//    NuTo::ElementBase* elementBase = myStructure.ElementGetElementPtr(cceID);
+//    NuTo::ContinuumContactElement<2,1> &contactElement = elementBase->AsContinuumContactElement21();
+
+//    Eigen::MatrixXd D, M;
+//    contactElement.ComputeGapMatrix(D, M);
+    // end- layer tying
 
     NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
     double timeStep = 1.;
@@ -1844,7 +1860,8 @@ void ContactTestRigidIGA(const std::string &resultDir,
     int groupElementsIGA = myStructure.GroupCreate("Elements");
 
     Eigen::VectorXi nodeIDs;
-    Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> elementsMaster = curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER", nodeIDs);
+    Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> elementsMaster =
+            curve.buildIGAStructure(myStructure, setOfDOFS, groupElementsIGA, groupNodesIGA, "IGA1DLAYER", nodeIDs);
 
     int countDBC;
 //    SetDBC(myStructure, groupNodesSlave, groupNodesIGA,  countDBC);
@@ -2882,10 +2899,8 @@ int main()
                                     1.e6,
                                     NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 2, 1);
 
-    return 0;
-
     resultDir = "./ResultsStaticFE_IGA_L_RigidLobatto2";
-    int factor = 1;
+    int factor = 2;
 
     ContactTestRigidIGA(resultDir,
                         NuTo::Interpolation::eTypeOrder::LOBATTO2,
