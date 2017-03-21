@@ -12,12 +12,6 @@
 #include "base/Logger.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "base/CallbackInterface.h"
-
-#include "mechanics/sections/SectionFibreMatrixBond.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/sections/SectionVariableTruss.h"
-
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
@@ -26,23 +20,11 @@
 #include "mechanics/mesh/MeshGenerator.h"
 %}
 
-%include <std_shared_ptr.i>
-
-%shared_ptr(NuTo::Section)
-%shared_ptr(NuTo::SectionTruss)
-%shared_ptr(NuTo::SectionPlane)
-%shared_ptr(NuTo::SectionFibreMatrixBond)
-%shared_ptr(NuTo::SectionVariableTruss)
-
-%extend NuTo::Section {
-    std::string __str__() const {
-         std::ostringstream out;
-         out << *$self;
-         return out.str();
-    }
-}
 
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
+
+%include "mechanics/Sections.i"
+
 %include "base/CallbackInterface.h"
 
 %include "mechanics/structures/StructureBase.h"
@@ -57,12 +39,6 @@
 %include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 
 %include "mechanics/nodes/NodeEnum.h"
-
-%include "mechanics/sections/Section.h"
-%include "mechanics/sections/SectionFibreMatrixBond.h"
-%include "mechanics/sections/SectionPlane.h"
-%include "mechanics/sections/SectionTruss.h"
-%include "mechanics/sections/SectionVariableTruss.h"
 
 %include "mechanics/structures/StructureOutputBase.h"
 %include "mechanics/structures/StructureOutputBlockMatrix.h"

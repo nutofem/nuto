@@ -19,6 +19,7 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/StructureOutputBlockVector.h
 
     ${CMAKE_SOURCE_DIR}/external/eigen.i
+    ${CMAKE_CURRENT_SOURCE_DIR}/Sections.i
     )
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
