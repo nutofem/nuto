@@ -149,7 +149,7 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     myStructure.Info();
 
     // chose TimeIntegration
-    NuTo::TimeIntegrationBase* myIntegrationScheme(0);
+    NuTo::TimeIntegrationBase* myIntegrationScheme(nullptr);
     std::cout << "timeIntegrationScheme " << timeIntegrationScheme << std::endl;
     switch (timeIntegrationScheme)
     {

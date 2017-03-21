@@ -72,9 +72,9 @@ double CallbackHandlerPython::Objective() const
 {
     double objective;
     // call external python function
-    PyObject* result = PyEval_CallObject(mCallbackObjective, 0);
+    PyObject* result = PyEval_CallObject(mCallbackObjective, nullptr);
 
-    if (result == 0)
+    if (result == nullptr)
     {
         throw(OptimizeException(__PRETTY_FUNCTION__, "Objective error calling callback mObjective."));
     }
@@ -90,9 +90,9 @@ void CallbackHandlerPython::Gradient(Eigen::MatrixXd& rGradient) const
 {
     // Variant with the creation of lists, better directly wrap a full matrix
     // call external python function
-    PyObject* result = PyEval_CallObject(mCallbackGradient, 0);
+    PyObject* result = PyEval_CallObject(mCallbackGradient, nullptr);
 
-    if (result == 0)
+    if (result == nullptr)
     {
         throw(OptimizeException(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Gradient."));
     }
@@ -118,9 +118,9 @@ void CallbackHandlerPython::Hessian(Eigen::MatrixXd& rHessian) const
 {
     // Variant with the creation of list - better wrap directly a full matrix
     // call external python function
-    PyObject* result = PyEval_CallObject(mCallbackHessian, 0);
+    PyObject* result = PyEval_CallObject(mCallbackHessian, nullptr);
 
-    if (result == 0)
+    if (result == nullptr)
     {
         throw(OptimizeException(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Hessian."));
     }

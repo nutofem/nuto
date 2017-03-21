@@ -22,7 +22,7 @@
 NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
 {
 	mCheckNewtonRaphson = false;
-    mResidualDerivativeFunction = 0;
+    mResidualDerivativeFunction = nullptr;
     mAssignResidualResidualDerivative = false;
 }
 
@@ -52,7 +52,7 @@ NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
 
 void NuTo::NewtonRaphson::Solve(Eigen::VectorXd &rUnknown)
 {
-	if (not mAssignResidual && mResidualFunction == 0) {
+	if (not mAssignResidual && mResidualFunction == nullptr) {
 		throw OptimizeException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
 	}
 
@@ -87,7 +87,7 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd &rX, bool &rChec
 
 	for (its=0;its<MAXITS;its++) {
 //   		std::cout<< "===== Iteration =====" << its <<std::endl;   // Test
-		if (this->mResidualDerivativeFunction != 0 || this->mAssignResidualResidualDerivative == true) {
+		if (this->mResidualDerivativeFunction != nullptr || this->mAssignResidualResidualDerivative == true) {
 			// if analytical Jacobi is given
 //			fjac = (*mResidualDerivativeFunction)(this->mParameter,rX);
 			fjac = (mResidualDerivativeFunctionBoost)(this->mParameter,rX);

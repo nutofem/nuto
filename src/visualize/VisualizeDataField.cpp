@@ -16,14 +16,14 @@ NuTo::VisualizeDataField::VisualizeDataField(unsigned int rNumData) : mNumData(r
     }
     else
     {
-        this->mData = 0;
+        this->mData = nullptr;
     }
 }
 
 // destructor
 NuTo::VisualizeDataField::~VisualizeDataField()
 {
-    if (this->mData != 0)
+    if (this->mData != nullptr)
     {
         delete[] this->mData;
     }

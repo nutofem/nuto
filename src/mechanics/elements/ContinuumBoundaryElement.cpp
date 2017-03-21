@@ -108,11 +108,11 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::eOutput::UPDATE_STATIC_DATA:
-            constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+            constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = nullptr;
             break;
 
         case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-            constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+            constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
 
         case Element::eOutput::IP_DATA:

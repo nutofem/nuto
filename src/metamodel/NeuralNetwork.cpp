@@ -37,7 +37,7 @@ NuTo::NeuralNetwork::NeuralNetwork(std::vector<int> rvNumNeurons) :
 	mNumLayers = mvNumNeurons.size()+1;
 	mvNumNeurons.resize(mNumLayers);  //output layer is included
 	mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
-	mvTransferFunction.resize(mNumLayers,0);
+	mvTransferFunction.resize(mNumLayers,nullptr);
 }
 
 //! constructor required for serialization (private)
@@ -58,7 +58,7 @@ NuTo::NeuralNetwork::NeuralNetwork () :
 	mNumLayers = 1;
 	mvNumNeurons.resize(mNumLayers);  //output layer is included
 	mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
-	mvTransferFunction.resize(mNumLayers,0);
+	mvTransferFunction.resize(mNumLayers,nullptr);
 }
 
 
@@ -465,7 +465,7 @@ void NuTo::NeuralNetwork::BuildDerived()
         mvBias[currentLayer].resize(mvNumNeurons[currentLayer+1],0);
         mNumBiases += mvNumNeurons[currentLayer+1];
         //check if all transfer functions are set
-        if (mvTransferFunction[currentLayer]==0)
+        if (mvTransferFunction[currentLayer]==nullptr)
             throw MetamodelException("NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
     }
 
@@ -788,47 +788,47 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
     switch (rTransferFunction)
     {
     case Empty:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new EmptyTransferFunction();
         break;
     case HardLim:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new HardLimTransferFunction();
         break;
     case HardLims:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new HardLimsTransferFunction();
         break;
     case PureLin:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new PureLinTransferFunction();
         break;
     case SatLin:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new SatLinTransferFunction();
         break;
     case SatLins:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new SatLinsTransferFunction();
         break;
     case LogSig:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new LogSigTransferFunction();
         break;
     case TanSig:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new TanSigTransferFunction();
         break;
     case PosLin:
-        if (mvTransferFunction[rLayer]!=0)
+        if (mvTransferFunction[rLayer]!=nullptr)
             delete mvTransferFunction[rLayer];
         mvTransferFunction[rLayer] = new PosLinTransferFunction();
         break;

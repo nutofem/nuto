@@ -756,7 +756,7 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
 int main()
 {
     double solution = 0;
-    NuTo::Structure* myStructure = NULL;
+    NuTo::Structure* myStructure = nullptr;
 
     std::string resultDir = "./ResultsIGA";
 

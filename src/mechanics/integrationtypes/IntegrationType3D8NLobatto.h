@@ -29,7 +29,7 @@ namespace NuTo
 	    NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
 	    NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
 
-	    NuTo::IntegrationType1D* integrationType1D(0);
+	    NuTo::IntegrationType1D* integrationType1D(nullptr);
 		switch(T)
 		{
 	    case 3:

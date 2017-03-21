@@ -93,7 +93,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	mSolver.irn = &matrixRows[0];                        // rows
 	mSolver.jcn = const_cast<int*>(&matrixColumns[0]);   // columns
 	mSolver.a   = const_cast<double*>(&matrixValues[0]); // values
-	mSolver.rhs = 0;                                     // right hand side vector is set befor solution
+	mSolver.rhs = nullptr;                                     // right hand side vector is set befor solution
 	// define mSolver specific parameters
 	mSolver.icntl[0] = 0; // output stream for error messages
 	mSolver.icntl[1] = 0; // output stream for diagnostic printing, statistics, and warning messages
@@ -270,7 +270,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     mSolver.irn = &matrixRows[0];                        // rows
     mSolver.jcn = const_cast<int*>(&matrixColumns[0]);   // columns
     mSolver.a   = const_cast<double*>(&matrixValues[0]); // values
-    mSolver.rhs = 0;
+    mSolver.rhs = nullptr;
     mSolver.size_schur = rSchurIndices.rows();
     mSolver.listvar_schur = const_cast<int*>(rSchurIndices.data()); //variables of the schur matrix (the 1..size_schur)
     mSolver.schur = rSchurComplementTranspose.data();

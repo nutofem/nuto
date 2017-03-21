@@ -91,7 +91,7 @@ bool NuTo::ElementOutputBase::GetConstant()const
 
 NuTo::ElementOutputBase* NuTo::ElementOutputBase::Clone() const
 {
-	return 0;
+	return nullptr;
 }
 
 

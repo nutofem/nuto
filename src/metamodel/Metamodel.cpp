@@ -17,7 +17,7 @@ using namespace NuTo;
 
 // constructor; init random number generator with current time
 NuTo::Metamodel::Metamodel()
-    : mRandomNumberGenerator(time(NULL))
+    : mRandomNumberGenerator(time(nullptr))
     , mVerboseLevel(0)
 {
 }

@@ -235,7 +235,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                        "COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) +
                                                " nodes. " + std::to_string(nodeVector.size()) + " are provided.");
 
-    ElementBase* ptrElement = 0;
+    ElementBase* ptrElement = nullptr;
 
     if (not interpolationType.HasIntegrationType())
     {
@@ -319,7 +319,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                                                     std::to_string(numNodesCoordinates) + " nodes. " +
                                                                     std::to_string(rNodes.size()) + " are provided.");
 
-    ElementBase* ptrElement = 0;
+    ElementBase* ptrElement = nullptr;
 
     if (not interpolationType.HasIntegrationType())
     {

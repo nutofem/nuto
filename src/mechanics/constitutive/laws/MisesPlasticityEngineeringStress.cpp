@@ -491,7 +491,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     {
         // elastic regime
     	factor = bulk_modulus*trace_epsilon;
-        if (rNewStress!=0)
+        if (rNewStress!=nullptr)
         {
         	(*rNewStress)[0] = factor+sigma_trial[0];
         	(*rNewStress)[1] = factor+sigma_trial[1];
@@ -500,7 +500,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         	(*rNewStress)[4] = 	   sigma_trial[4];
         	(*rNewStress)[5] = 	   sigma_trial[5];
         }
-        if (rNewTangent!=0)
+        if (rNewTangent!=nullptr)
         {
             factor = mE/(1.+mNu)/(1.-2.*mNu);
 
@@ -596,7 +596,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     df_dsigma[5]  = xi_trial[5]/norm_dev;
 
     //update static data
-    if (rNewStaticData!=0)
+    if (rNewStaticData!=nullptr)
     {
     	//update equivalent plastic strain
         double newEquivalentPlasticStrain = oldStaticData.GetEquivalentPlasticStrain() + sqrt_2div3 * delta_gamma;
@@ -625,7 +625,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     }
 
     //update stress
-    if (rNewStress!=0)
+    if (rNewStress!=nullptr)
     {
 		factor  = 2.*mu*delta_gamma;
 		factor2 = bulk_modulus*trace_epsilon;
@@ -638,7 +638,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     }
 
     //update stiffness
-    if (rNewTangent!=0)
+    if (rNewTangent!=nullptr)
     {
         double theta     = 1.-2.*mu*delta_gamma/norm_dev;
         double theta_bar = 1./(1.+(d_sigma+d_H)/(3.*mu))-(1.-theta);

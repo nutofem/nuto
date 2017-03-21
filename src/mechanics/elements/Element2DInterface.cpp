@@ -63,10 +63,10 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(s
         case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
             break;
         case Element::eOutput::UPDATE_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = nullptr;
             break;
         case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
         case Element::eOutput::IP_DATA:
         {

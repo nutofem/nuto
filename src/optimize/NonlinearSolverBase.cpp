@@ -20,7 +20,7 @@ NuTo::NonlinearSolverBase::NonlinearSolverBase()
     mTolResidual = 1.0e-12;
     mTolSolution = numeric_limits<double>::epsilon();
     mMaxIterationsNumber = 100;
-    mResidualFunction = 0;
+    mResidualFunction = nullptr;
     mAssignResidual = false;
 }
 
@@ -31,7 +31,7 @@ Eigen::MatrixXd NuTo::NonlinearSolverBase::DResidualNum(Eigen::VectorXd rUnknown
     Eigen::MatrixXd deriv(n, n);
     Eigen::VectorXd xh = rUnknown;
 
-    if (mResidualFunction == 0 && mAssignResidual == false)
+    if (mResidualFunction == nullptr && mAssignResidual == false)
     {
         throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
     }
@@ -54,7 +54,7 @@ Eigen::MatrixXd NuTo::NonlinearSolverBase::DResidualNum(Eigen::VectorXd rUnknown
 
 double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd& rFvec) const
 {
-    if (mResidualFunction == 0 && mAssignResidual == false)
+    if (mResidualFunction == nullptr && mAssignResidual == false)
     {
         throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
     }

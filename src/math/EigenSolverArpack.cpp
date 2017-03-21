@@ -180,7 +180,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 			bmat = 'G';
 			iParam[6] = 2; //dsdrv3
 			solverRequired = true;
-			if (rM==0)
+			if (rM==nullptr)
 				throw MathException(__PRETTY_FUNCTION__, "second matrix (M) required.");
 			switch (rM->GetSparseMatrixType())
 			{
@@ -204,7 +204,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 			bmat = 'G';
 			iParam[6] = 3; //dsdrv4
 			solverRequired = true;
-			if (rM==0)
+			if (rM==nullptr)
 				throw MathException(__PRETTY_FUNCTION__, "second matrix (M) required.");
 
 			switch (rK.GetSparseMatrixType())
@@ -247,7 +247,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 			bmat = 'G';
 			iParam[6] = 4; //dsdrv5
 			solverRequired = true;
-			if (rM==0)
+			if (rM==nullptr)
 				throw MathException(__PRETTY_FUNCTION__, "second matrix (M) required.");
 
 			switch (rK.GetSparseMatrixType())
@@ -290,7 +290,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 			bmat = 'G';
 			iParam[6] = 5; //dsdrv6
 			solverRequired = true;
-			if (rM==0)
+			if (rM==nullptr)
 				throw MathException(__PRETTY_FUNCTION__, "second matrix (M) required.");
 
 			switch (rK.GetSparseMatrixType())

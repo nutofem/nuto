@@ -54,7 +54,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     double mAccuracyGradientScaled = mAccuracyGradient*sqrt(GetNumParameters());
 
     //check, if callback handler is set
-    if (mpCallbackHandler==0)
+    if (mpCallbackHandler==nullptr)
         throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine mObjective function and derivatives.");
 
     // calculate mObjective

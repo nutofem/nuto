@@ -189,7 +189,7 @@ public:
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
-		if (rOtherT==0)
+		if (rOtherT==nullptr)
 			throw MechanicsException("[NuTo::Group::Unite] Groups do not have the same type.");
 		std::insert_iterator<NuTo::Group<T> > returnGroupInsertIterator (*returnGroup, returnGroup->begin ());
 		std::set_union (this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
@@ -202,7 +202,7 @@ public:
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
-		if (rOtherT==0)
+		if (rOtherT==nullptr)
 			throw MechanicsException("[NuTo::Group::Difference] Groups do not have the same type.");
 		std::insert_iterator<NuTo::Group<T> > returnGroupInsertIterator (*returnGroup, returnGroup->begin ());
 		std::set_difference (this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
@@ -215,7 +215,7 @@ public:
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
-		if (rOtherT==0)
+		if (rOtherT==nullptr)
 			throw MechanicsException("[NuTo::Group::Intersection] Groups do not have the same type.");
 		std::insert_iterator<NuTo::Group<T> > returnGroupInsertIterator (*returnGroup, returnGroup->begin ());
 		std::set_intersection (this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
@@ -228,7 +228,7 @@ public:
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
-		if (rOtherT==0)
+		if (rOtherT==nullptr)
 			throw MechanicsException("[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
 		std::insert_iterator<NuTo::Group<T> > returnGroupInsertIterator (*returnGroup, returnGroup->begin ());
 		std::set_symmetric_difference (this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);

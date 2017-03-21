@@ -19,10 +19,10 @@ class CallbackHandlerPython : public CallbackHandler
 public:
     CallbackHandlerPython() : CallbackHandler()
     {
-        mCallbackSetParameters = 0;
-        mCallbackObjective = 0;
-        mCallbackGradient = 0;
-        mCallbackHessian = 0;
+        mCallbackSetParameters = nullptr;
+        mCallbackObjective = nullptr;
+        mCallbackGradient = nullptr;
+        mCallbackHessian = nullptr;
     }
 
 #ifdef ENABLE_SERIALIZATION

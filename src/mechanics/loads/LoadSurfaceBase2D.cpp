@@ -120,7 +120,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
         const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS);
         const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
 
-        IntegrationTypeBase* integrationType(0);
+        IntegrationTypeBase* integrationType(nullptr);
         switch (interpolationTypeDisps.GetTypeOrder())
         {
         case Interpolation::eTypeOrder::EQUIDISTANT1:

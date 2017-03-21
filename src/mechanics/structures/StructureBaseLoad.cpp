@@ -144,7 +144,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent
 
     // cast to node group (type check)
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
-    if (nodeGroup == NULL)
+    if (nodeGroup == nullptr)
     {
         throw MechanicsException("[NuTo::Structure::LoadCreateNodeGroupForce] Group is not a node group.");
     }

@@ -24,9 +24,9 @@ class CallbackHandlerGrid
 public:
     CallbackHandlerGrid()
     {
-    	mCallbackSetParameters = 0;
-    	mCallbackGradient = 0;
-    	mCallbackHessian = 0;
+    	mCallbackSetParameters = nullptr;
+    	mCallbackGradient = nullptr;
+    	mCallbackHessian = nullptr;
     }
 
     virtual ~CallbackHandlerGrid() = default;

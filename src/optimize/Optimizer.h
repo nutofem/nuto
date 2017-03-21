@@ -130,7 +130,7 @@ public:
             return mObjective;
         else
         {
-            if (mpCallbackHandler!=0)
+            if (mpCallbackHandler!=nullptr)
                 return mpCallbackHandler->Objective();
             else
                 throw OptimizeException(__PRETTY_FUNCTION__, "No callback functions defined.");
