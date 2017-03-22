@@ -79,10 +79,10 @@ void CheckStaticData(NuTo::Structure& rSA, NuTo::Structure& rSB)
     // set some static data values
     int gElementsTotal = rSA.GroupGetElementsTotal();
     auto elementIds = rSA.GroupGetMemberIds(gElementsTotal);
-    for (unsigned int i = 0; i < elementIds.size(); ++i)
+    for (int elementId : elementIds)
     {
-        auto& eA = *rSA.ElementGetElementPtr(elementIds[i]);
-        auto& eB = *rSB.ElementGetElementPtr(elementIds[i]);
+        auto& eA = *rSA.ElementGetElementPtr(elementId);
+        auto& eB = *rSB.ElementGetElementPtr(elementId);
         for (int ip = 0; ip < eA.GetNumIntegrationPoints(); ++ip)
         {
             auto& dataA = eA.GetIPData().GetIPConstitutiveLaw(ip).GetData<NuTo::GradientDamageEngineeringStress>();

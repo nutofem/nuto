@@ -226,8 +226,8 @@ void NuTo::CollidableParticleSphere::Print(std::ostream& rReturnStream) const
 
 void NuTo::CollidableParticleSphere::GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const
 {
-	for (unsigned int iEvent = 0; iEvent < mLocalEvents.size(); ++iEvent) {
-		rEventsToDelete.push_back(mLocalEvents[iEvent]);
+	for (auto mLocalEvent : mLocalEvents) {
+		rEventsToDelete.push_back(mLocalEvent);
 	}
 }
 

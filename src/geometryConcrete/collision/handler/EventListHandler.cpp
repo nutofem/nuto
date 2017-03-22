@@ -151,12 +151,12 @@ double NuTo::EventListHandler::SetTimeBarrier(double rTimeBarrier, SubBoxHandler
 
 	// rebuild the event list
 	auto& boxes = rSubBoxes.GetSubBoxes();
-	for (unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
+	for (auto & box : boxes)
 	{
-		auto& collidables = boxes[iBox].GetCollidables();
-		for (unsigned int iCollidable = 0; iCollidable < collidables.size(); ++iCollidable)
+		auto& collidables = box.GetCollidables();
+		for (auto collidable : collidables)
 		{
-			boxes[iBox].CreateEvents(*this, *collidables[iCollidable]);
+			box.CreateEvents(*this, *collidable);
 		}
 	}
 

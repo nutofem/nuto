@@ -20,9 +20,10 @@ NuTo::SubBox::SubBox(int rIndex)
 
 NuTo::SubBox::~SubBox()
 {
-	for (auto it = mWalls.begin(); it != mWalls.end(); ++it)
-		delete *it;
+    for (auto& wall : mWalls)
+        delete wall;
 }
+
 void NuTo::SubBox::AddSphere(CollidableParticleSphere& rSphere)
 {
 	mCollidables.push_back(&rSphere);

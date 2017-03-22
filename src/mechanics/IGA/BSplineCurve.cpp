@@ -256,10 +256,10 @@ void NuTo::BSplineCurve::BezierElementExtractionOperators()
     int numKnots = GetNumKnots();
 
     mBezierOperators.resize(GetNumIGAElements());
-    for(std::vector<Eigen::MatrixXd>::iterator it = mBezierOperators.begin(); it != mBezierOperators.end(); it++)
+    for (auto& bezierOperator : mBezierOperators)
     {
-        (*it).resize(mDegree+1, mDegree+1);
-        (*it).setIdentity();
+        bezierOperator.resize(mDegree + 1, mDegree + 1);
+        bezierOperator.setIdentity();
     }
 
     for(int currentKnotIndex = formerKnotIndex + 1; currentKnotIndex < numKnots; )

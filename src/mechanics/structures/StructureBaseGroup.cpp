@@ -1,5 +1,3 @@
-// $Id$
-
 #include <set>
 #include "base/Timer.h"
 
@@ -147,15 +145,15 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     std::vector<std::pair<int, NodeBase*> > nodeVector;
     this->GetNodesTotal(nodeVector);
 
-    for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+    for (auto& node : nodeVector)
     {
-        NodeBase* nodePtr(nodeVector[countNode].second);
+        NodeBase* nodePtr(node.second);
         if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
         double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[rDirection];
 
         if (coordinate >= rMin && coordinate <= rMax)
-            itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+            itGroup->second->AddMember(node.first, nodePtr);
     }
 }
 
@@ -203,11 +201,11 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bo
     std::vector<std::pair<int, NodeBase*> > nodeVector;
     this->GetNodesTotal(nodeVector);
 
-    for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+    for (auto& node : nodeVector)
     {
-        NodeBase* nodePtr(nodeVector[countNode].second);
+        NodeBase* nodePtr(node.second);
         if (rFunction(nodePtr))
-            itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+            itGroup->second->AddMember(node.first, nodePtr);
     }
 }
 
@@ -232,16 +230,16 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, Eigen::Vector
     double rMin2 = rMin * rMin;
     double rMax2 = rMax * rMax;
 
-    for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+    for (auto& node : nodeVector)
     {
-        NodeBase* nodePtr(nodeVector[countNode].second);
+        NodeBase* nodePtr(node.second);
         if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
         Eigen::VectorXd dCoordinates = nodePtr->Get(Node::eDof::COORDINATES) - rCenter;
         double r2 = dCoordinates.dot(dCoordinates);
 
         if (r2 >= rMin2 && r2 <= rMax2)
-            itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+            itGroup->second->AddMember(node.first, nodePtr);
     }
 }
 
@@ -275,9 +273,9 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
         double rMin2 = rMin * rMin;
         double rMax2 = rMax * rMax;
 
-        for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+        for (auto& node : nodeVector)
         {
-            NodeBase* nodePtr(nodeVector[countNode].second);
+            NodeBase* nodePtr(node.second);
             if (nodePtr->GetNum(Node::eDof::COORDINATES) != 2)
                 continue;
             double r2(0.);
@@ -288,7 +286,7 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
 
             if (r2 >= rMin2 && r2 <= rMax2)
             {
-                itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+                itGroup->second->AddMember(node.first, nodePtr);
             }
         }
         break;
@@ -307,16 +305,16 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
         //normalize Diretion Vector
         rDirection *= 1. / rDirection.norm();
 
-        for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+        for (auto& node : nodeVector)
         {
-            NodeBase* nodePtr(nodeVector[countNode].second);
+            NodeBase* nodePtr(node.second);
             if (nodePtr->GetNum(Node::eDof::COORDINATES) != 3)
                 continue;
             double r2(0.);
             coordinates = nodePtr->Get(Node::eDof::COORDINATES);
             vecPtrCenter = coordinates - rCenter;
 
-            //get projection onto axis
+            // get projection onto axis
             double s = rDirection.transpose() * vecPtrCenter;
             vecPtrProjection = rCenter + rDirection * s;
             vecDelta = coordinates - vecPtrProjection;
@@ -325,7 +323,7 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
 
             if (r2 >= rMin2 && r2 <= rMax2)
             {
-                itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+                itGroup->second->AddMember(node.first, nodePtr);
             }
         }
         break;
@@ -348,64 +346,48 @@ void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNo
 
     //since the search is done via the id's, the element nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
-    for (Group<NodeBase>::const_iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); itNode++)
+    for (auto node : *nodeGroup)
     {
-        nodePtrSet.insert(itNode->second);
+        nodePtrSet.insert(node.second);
     }
 
     std::vector<std::pair<int, ElementBase*> > elementVector;
     this->GetElementsTotal(elementVector);
     std::vector<const NodeBase*> elementNodes;
-    for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
+    for (auto& element : elementVector)
     {
-        try
+        if (!elementGroup->Contain(element.first))
         {
-            if (!elementGroup->Contain(elementVector[countElement].first))
+            bool addElement;
+            if (rHaveAllNodes == true)
             {
-                bool addElement;
-                if (rHaveAllNodes == true)
+                addElement = true;
+                int countNode;
+                for (countNode = 0; (countNode < element.second->GetNumNodes()) && (addElement == true); countNode++)
                 {
-                    addElement = true;
-                    int countNode;
-                    for (countNode = 0; (countNode < elementVector[countElement].second->GetNumNodes()) && (addElement == true); countNode++)
+                    if (nodePtrSet.find(element.second->GetNode(countNode)) == nodePtrSet.end())
                     {
-                        if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode)) == nodePtrSet.end())
-                        {
-                            addElement = false;
-                        }
+                        addElement = false;
                     }
-                }
-                else
-                {
-                    addElement = false;
-                    int countNode;
-                    for (countNode = 0; (countNode < elementVector[countElement].second->GetNumNodes()) && (addElement == false); countNode++)
-                    {
-                        if (nodePtrSet.find(elementVector[countElement].second->GetNode(countNode)) != nodePtrSet.end())
-                        {
-                            addElement = true;
-                        }
-                    }
-                }
-                if (addElement)
-                {
-                    //add the element;
-                    elementGroup->AddMember(elementVector[countElement].first, elementVector[countElement].second);
                 }
             }
-        } catch (NuTo::MechanicsException &e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(elementVector[countElement].second) == elementVector[countElement].first);
-            ss << elementVector[countElement].first;
-            e.AddMessage("[NuTo::StructureBase::GroupAddElementsFromNodes] Error for element " + ss.str() + ".");
-            throw;
-        } catch (...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(elementVector[countElement].second) == elementVector[countElement].first);
-            ss << elementVector[countElement].first;
-            throw NuTo::MechanicsException("[NuTo::StructureBase::GroupAddElementsFromNodes] Error for element " + ss.str() + ".");
+            else
+            {
+                addElement = false;
+                int countNode;
+                for (countNode = 0; (countNode < element.second->GetNumNodes()) && (addElement == false); countNode++)
+                {
+                    if (nodePtrSet.find(element.second->GetNode(countNode)) != nodePtrSet.end())
+                    {
+                        addElement = true;
+                    }
+                }
+            }
+            if (addElement)
+            {
+                // add the element;
+                elementGroup->AddMember(element.first, element.second);
+            }
         }
     }
 }

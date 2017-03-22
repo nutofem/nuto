@@ -27,9 +27,9 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 
     //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
-    for (Group<NodeBase>::const_iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); itNode++)
+    for (auto node : *nodeGroup)
     {
-        nodePtrSet.insert(itNode->second);
+        nodePtrSet.insert(node.second);
     }
 
 //    std::cout << "number of loaded nodes " << nodeGroup->GetNumMembers() << std::endl;
@@ -60,11 +60,11 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
                 }
 
                 //check, if all surface nodes are in the node group
-                for (unsigned int countNode = 0; countNode < surfaceNodes.size(); countNode++)
+                for (auto& surfaceNode : surfaceNodes)
                 {
-                    if (nodePtrSet.find(surfaceNodes[countNode]) == nodePtrSet.end())
+                    if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
                     {
-                        //this surface has at least one node that is not in the list, continue
+                        // this surface has at least one node that is not in the list, continue
                         addSurface = false;
                     }
                 }

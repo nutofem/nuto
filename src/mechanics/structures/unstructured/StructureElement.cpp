@@ -473,9 +473,9 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
             }
 
             // check, if all surface nodes are in the node group
-            for (unsigned int countNode = 0; countNode < surfaceNodes.size(); countNode++)
+            for (auto& surfaceNode : surfaceNodes)
             {
-                if (nodePtrSet.find(surfaceNodes[countNode]) == nodePtrSet.end())
+                if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
                 {
                     // this surface has at least one node that is not in the list, continue
                     elementSurfaceNodesMatchBoundaryNodes = false;
@@ -723,37 +723,18 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
     Group<ElementBase> copyOfElementGroup = Group<ElementBase>(*(itGroup->second->AsGroupElement()));
 
     std::set<NodeBase*> potentialNodesToBeRemoved;
-    for (Group<ElementBase>::iterator itElement = copyOfElementGroup.begin(); itElement != copyOfElementGroup.end();
-         itElement++)
+    for (auto& elementPtr : copyOfElementGroup)
     {
-        try
+        // save the nodes, which are eventually to be removed
+        if (deleteNodes)
         {
-            // save the nodes, which are eventually to be removed
-            if (deleteNodes)
+            for (int countNode = 0; countNode < elementPtr.second->GetNumNodes(); countNode++)
             {
-                for (int countNode = 0; countNode < itElement->second->GetNumNodes(); countNode++)
-                {
-                    NodeBase* nodePtr = itElement->second->GetNode(countNode);
-                    potentialNodesToBeRemoved.insert(nodePtr);
-                }
+                NodeBase* nodePtr = elementPtr.second->GetNode(countNode);
+                potentialNodesToBeRemoved.insert(nodePtr);
             }
-            ElementDeleteInternal(ElementGetId(itElement->second));
         }
-        catch (NuTo::MechanicsException& e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupDelete] Error deleting element " + ss.str() + ".");
-            throw;
-        }
-        catch (...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error deleting element " + ss.str() + ".");
-        }
+        ElementDeleteInternal(ElementGetId(elementPtr.second));
     }
 
     // check all the other elements and see, if they have one of the potential Nodes To Be Removed as valid node

@@ -22,8 +22,8 @@ NuTo::CollidableWallVirtual::CollidableWallVirtual(
 bool NuTo::CollidableWallVirtual::IsInOutsideBox(const CollidableParticleSphere& rSphere) const
 {
 	const auto& boxes = rSphere.GetSubBoxes();
-	for(unsigned int iBox = 0; iBox < boxes.size(); ++iBox)
-		if(boxes[iBox] == this->mOutsideBox)
+	for(auto box : boxes)
+		if(box == mOutsideBox)
 			return true;
 	return false;
 }

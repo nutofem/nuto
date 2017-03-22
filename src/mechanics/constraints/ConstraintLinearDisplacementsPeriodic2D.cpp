@@ -160,18 +160,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
     //calculate master nodes left boundary (green)
     mMasterNodesLeftBoundary.resize(0);
     mMasterNodesLeftBoundary.reserve(mGroupLeft->GetNumMembers());
-    for (Group<NodeBase>::const_iterator itNode=mGroupLeft->begin(); itNode!=mGroupLeft->end();itNode++)
+    for (auto node : *mGroupLeft)
     {
-        mMasterNodesLeftBoundary.push_back(itNode->second);
+        mMasterNodesLeftBoundary.push_back(node.second);
     }
     sort(mMasterNodesLeftBoundary.begin(), mMasterNodesLeftBoundary.end(), less_YCoordinate2D());
 
     //calculate master nodes bottom boundary (yellow-orange-blue)
     mMasterNodesBottomBoundary.resize(0);
     mMasterNodesBottomBoundary.reserve(mGroupBottom->GetNumMembers());
-    for (Group<NodeBase>::const_iterator itNode=mGroupBottom->begin(); itNode!=mGroupBottom->end();itNode++)
+    for (auto node : *mGroupBottom)
     {
-        mMasterNodesBottomBoundary.push_back(itNode->second);
+        mMasterNodesBottomBoundary.push_back(node.second);
     }
     sort(mMasterNodesBottomBoundary.begin(), mMasterNodesBottomBoundary.end(), less_XCoordinate2D());
 
@@ -182,14 +182,14 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         double crackShift;
         crackShift = length*tan((90-mAngle)*PI/180.);
         mSlaveNodesRightBoundary.reserve(mGroupRight->GetNumMembers());
-        for (Group<NodeBase>::const_iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
+        for (auto node : *mGroupRight)
         {
-            double coordinate = itNode->second->Get(Node::eDof::COORDINATES)[1];
+            double coordinate = node.second->Get(Node::eDof::COORDINATES)[1];
             double DeltaX((length-crackShift)*0.5);
             double DeltaY(length-coordinate);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesRightBoundary.push_back(itNode->second);
+                mSlaveNodesRightBoundary.push_back(node.second);
         }
     }
     else
@@ -198,13 +198,13 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         crackShift = length*tan((mAngle)*PI/180.);
         mSlaveNodesRightBoundary.reserve(mGroupRight->GetNumMembers()-1);
 
-        for (Group<NodeBase>::const_iterator itNode=mGroupRight->begin(); itNode!=mGroupRight->end();itNode++)
+        for (auto node : *mGroupRight)
         {
-            if (itNode->second!=mRightLowerCorner)
+            if (node.second!=mRightLowerCorner)
             {
-                double coordinate = itNode->second->Get(Node::eDof::COORDINATES)[1];
+                double coordinate = node.second->Get(Node::eDof::COORDINATES)[1];
                 if (std::abs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
-                    mSlaveNodesRightBoundary.push_back(itNode->second);
+                    mSlaveNodesRightBoundary.push_back(node.second);
             }
         }
     }
@@ -218,11 +218,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         double crackShift;
         crackShift = length*tan((90-mAngle)*PI/180.);
         mSlaveNodesTopBoundary.reserve(mGroupTop->GetNumMembers()-1);
-        for (Group<NodeBase>::const_iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
+        for (auto node : *mGroupTop)
         {
-            if (itNode->second!=mLeftUpperCorner)
+            if (node.second!=mLeftUpperCorner)
             {
-                NodeBase* nodePtr = itNode->second;
+                NodeBase* nodePtr = node.second;
                 double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[0];
                 if (std::abs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
                     mSlaveNodesTopBoundary.push_back(nodePtr);
@@ -234,15 +234,15 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
         double crackShift;
         crackShift = length*tan((mAngle)*PI/180.);
         mSlaveNodesTopBoundary.reserve(mGroupTop->GetNumMembers());
-        for (Group<NodeBase>::const_iterator itNode=mGroupTop->begin(); itNode!=mGroupTop->end();itNode++)
+        for (auto node : *mGroupTop)
         {
-            NodeBase* nodePtr = itNode->second;
+            NodeBase* nodePtr = node.second;
             double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[0];
             double DeltaX(coordinate-(length+crackShift)*0.5);
             double DeltaY((length-crackShift)*0.5);
 
             if (DeltaX*DeltaX + DeltaY*DeltaY >=mRadiusToCrackWithoutConstraints * mRadiusToCrackWithoutConstraints)
-                mSlaveNodesTopBoundary.push_back(itNode->second);
+                mSlaveNodesTopBoundary.push_back(node.second);
         }
 
     }
@@ -274,10 +274,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
                 std::cout << "mSlaveNodesTopBoundary " << std::endl;
                 break;
             }
-            for (unsigned int countNodes=0; countNodes<(*nodeVectorPtr).size(); countNodes++)
+            for (auto& countNodes : *nodeVectorPtr)
             {
-                Eigen::Matrix<double, 2, 1> coordinates = (*nodeVectorPtr)[countNodes]->Get(Node::eDof::COORDINATES);
-                std::cout << "  " << mStructure->NodeGetId((*nodeVectorPtr)[countNodes]) << ": " << coordinates[0] << " " << coordinates[1] << std::endl;
+                Eigen::Matrix<double, 2, 1> coordinates = countNodes->Get(Node::eDof::COORDINATES);
+                std::cout << "  " << mStructure->NodeGetId(countNodes) << ": " << coordinates[0] << " "
+                          << coordinates[1] << std::endl;
             }
         }
     }
@@ -314,10 +315,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
         Eigen::Matrix<double, 2, 1> coordinatesNextMaster = nextMasterNodePtr->Get(Node::eDof::COORDINATES);
 
         //double deltaDisp[2];
-        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesRightBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideY = coordinatesSlave[1];
 
@@ -380,10 +380,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 
         double crackPosX((length-crackShift)*0.5);
 
-        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesTopBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideX = coordinatesSlave[0]-crackShift;
             double deltaRHS[2];
@@ -499,10 +498,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
         Eigen::Matrix<double, 2, 1> coordinatesNextMaster = nextMasterNodePtr->Get(Node::eDof::COORDINATES);
 
         //double deltaDisp[2];
-        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesTopBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideX;
             coordinatesSlaveonMasterSideX = coordinatesSlave[0];
@@ -566,10 +564,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 
         double crackPosY((length-crackShift)*0.5);
 
-        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesRightBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideY;
             coordinatesSlaveonMasterSideY = coordinatesSlave[1]-crackShift;
@@ -698,10 +695,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
         Eigen::Matrix<double, 2, 1> coordinatesNextMaster = nextMasterNodePtr->Get(Node::eDof::COORDINATES);
 
         double deltaDisp[2];
-        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesRightBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideY;
             coordinatesSlaveonMasterSideY = coordinatesSlave[1];
@@ -744,10 +740,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
         double crackPosX((length-crackShift)*0.5);
 
-        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesTopBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideX;
             coordinatesSlaveonMasterSideX = coordinatesSlave[0]-crackShift;
@@ -844,10 +839,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
         Eigen::Matrix<double, 2, 1> coordinatesNextMaster = nextMasterNodePtr->Get(Node::eDof::COORDINATES);
 
         double deltaDisp[2];
-        for (unsigned int countNode=0; countNode<mSlaveNodesTopBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesTopBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesTopBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideX;
             coordinatesSlaveonMasterSideX = coordinatesSlave[0];
@@ -890,10 +884,9 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
         double crackPosY((length-crackShift)*0.5);
 
-        for (unsigned int countNode=0; countNode<mSlaveNodesRightBoundary.size(); countNode++)
+        for (auto curSlaveNodePtr : mSlaveNodesRightBoundary)
         {
-        	NodeBase* curSlaveNodePtr(mSlaveNodesRightBoundary[countNode]);
-            Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
+        	Eigen::Matrix<double, 2, 1> coordinatesSlave = curSlaveNodePtr->Get(Node::eDof::COORDINATES);
 
             double coordinatesSlaveonMasterSideY;
             coordinatesSlaveonMasterSideY = coordinatesSlave[1]-crackShift;

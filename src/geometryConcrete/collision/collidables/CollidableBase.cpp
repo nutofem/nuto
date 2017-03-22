@@ -30,8 +30,8 @@ int NuTo::CollidableBase::GetIndex() const
 
 void NuTo::CollidableBase::PrintLocalEvents() const
 {
-	for (auto it = mLocalEvents.begin(); it != mLocalEvents.end(); ++it) {
-		std::cout << *(*it) << std::endl;
+	for (auto localEvent : mLocalEvents) {
+		std::cout << *localEvent << std::endl;
 	}
 }
 

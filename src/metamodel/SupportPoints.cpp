@@ -46,20 +46,20 @@ void NuTo::SupportPoints::Info()const
 
 void NuTo::SupportPoints::BuildTransformation()
 {
-	mSPTransInput = mSPOrigInput;
-	for (boost::ptr_list<Transformation>::iterator it = mlTransformationInput.begin(); it!=mlTransformationInput.end();it++)
-	{
-		it->Build(mSPTransInput);
-        it->TransformForward(mSPTransInput);
+    mSPTransInput = mSPOrigInput;
+    for (auto& transformation : mlTransformationInput)
+    {
+        transformation.Build(mSPTransInput);
+        transformation.TransformForward(mSPTransInput);
     }
-    
-	mSPTransOutput = mSPOrigOutput;
-	for (boost::ptr_list<Transformation>::iterator it = mlTransformationOutput.begin(); it!=mlTransformationOutput.end();it++)
-	{
-		it->Build(mSPTransOutput);
-        it->TransformForward(mSPTransOutput);
+
+    mSPTransOutput = mSPOrigOutput;
+    for (auto& transformation : mlTransformationOutput)
+    {
+        transformation.Build(mSPTransOutput);
+        transformation.TransformForward(mSPTransOutput);
     }
-	mTransformationBuild = true;
+    mTransformationBuild = true;
 }
 
 
@@ -93,8 +93,8 @@ void NuTo::SupportPoints::SetSupportPoints(const Eigen::MatrixXd& rSPOrigInput, 
 //! @brief perform forward transformation for inputs (from orig to transformed)
 void NuTo::SupportPoints::TransformForwardInput(Eigen::MatrixXd& rCoordinates)const
 {
-    for (boost::ptr_list<Transformation>::const_iterator it=mlTransformationInput.begin();it!=mlTransformationInput.end(); it++)
-        it->TransformForward(rCoordinates);
+    for (const auto& transformation : mlTransformationInput)
+        transformation.TransformForward(rCoordinates);
 }
 
 //! @brief perform backward transformation for inputs  (from transformed to orig)
@@ -117,8 +117,8 @@ void NuTo::SupportPoints::TransformForwardOutput(Eigen::MatrixXd& rCoordinates)c
 //! @brief attention, this is exactly the backwards order, since transformations for given in revers order
 void NuTo::SupportPoints::TransformBackwardOutput(Eigen::MatrixXd& rCoordinates)const
 {
-    for (boost::ptr_list<Transformation>::const_iterator it=mlTransformationOutput.begin();it!=mlTransformationOutput.end(); it++)
-        it->TransformForward(rCoordinates);
+    for (const auto& transformation : mlTransformationOutput)
+        transformation.TransformForward(rCoordinates);
 }
 
 //! @brief Clears all the transformations for input and output

@@ -455,9 +455,9 @@ void NuTo::NeuralNetwork::BuildDerived()
         mvWeights[currentLayer].resize(mvNumNeurons[currentLayer]*mvNumNeurons[currentLayer+1]);
 
         double b = sqrt(3./mvNumNeurons[currentLayer]);
-        for (int count=0; count<(int)mvWeights[currentLayer].size(); count++)
+        for (double& weight : mvWeights[currentLayer])
         {
-            mvWeights[currentLayer][count] = 2*b*RandomDouble()-b;
+            weight = 2*b*RandomDouble()-b;
         }
         mNumWeights+=mvNumNeurons[currentLayer]*mvNumNeurons[currentLayer+1];
         mvBias[currentLayer].resize(mvNumNeurons[currentLayer+1],0);
@@ -1081,9 +1081,9 @@ void NuTo::NeuralNetwork::GetRefsPerAlpha (std::vector<int>& rRefsPerAlpha)const
     std::vector<int> posInAlphaVector;
     GetPosInAlphaVector (posInAlphaVector);
     rRefsPerAlpha.resize(mvAlpha.size());
-    for (unsigned int count=0; count<posInAlphaVector.size(); count++)
+    for (int pos : posInAlphaVector)
     {
-        rRefsPerAlpha[posInAlphaVector[count]]++;
+        rRefsPerAlpha[pos]++;
     }
 }
 

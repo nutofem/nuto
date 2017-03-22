@@ -1,5 +1,3 @@
-// $Id$
-
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -35,13 +33,13 @@ void NuTo::LoadNodeGroupForces2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen
     	return;
     assert(rActiceDofsLoadVector.cols()==1);
     assert(rDependentDofsLoadVector.cols()==1);
-    for (Group<NodeBase>::const_iterator itNode=this->mGroup->begin(); itNode!=this->mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
         try
         {
             for (int dofCount = 0; dofCount < 2; dofCount++)
             {
-                int dof = itNode->second->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
+                int dof = node.second->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
                 assert(dof >= 0);
                 if (dof < rActiceDofsLoadVector.rows())
                 {

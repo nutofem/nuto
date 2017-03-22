@@ -101,9 +101,9 @@ void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStruct
     if (rVerboseLevel>2)
     {
     	std::cout << "    members :" <<std::endl;
-    	for (Group<NodeBase>::const_iterator it=this->begin(); it!= this->end(); it++)
+    	for (auto member : *this)
     	{
-    		std::cout << "      " << it->first << std::endl;
+    		std::cout << "      " << member.first << std::endl;
     	}
     }
 }
@@ -119,9 +119,9 @@ void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStr
     if (rVerboseLevel>2)
     {
     	std::cout << "    members :" <<std::endl;
-    	for (Group<ElementBase>::const_iterator it=this->begin(); it!= this->end(); it++)
+    	for (auto member : *this)
     	{
-    		std::cout << "      " << it->first << std::endl;
+    		std::cout << "      " << member.first << std::endl;
     	}
     }
 }

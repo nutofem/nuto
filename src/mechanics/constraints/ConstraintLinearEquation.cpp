@@ -46,18 +46,14 @@ void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eDof r
     }
 }
 
-// add constraint equation to constraint matrix
-void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinearEquation,
-		NuTo::SparseMatrix<double>& rConstraintMatrix) const
-{
-    // loop over constraint terms
-    for (unsigned int termCount = 0; termCount < this->mTerms.size(); termCount++)
-    {
-        // add terms to constraint matrix
-        this->mTerms[termCount].AddToConstraintMatrix(rConstraintLinearEquation, rConstraintMatrix);
-    }
 
-    // increase constraint equation number
+void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinearEquation,
+                                                           NuTo::SparseMatrix<double>& rConstraintMatrix) const
+{
+    for (const auto& term : mTerms)
+    {
+        term.AddToConstraintMatrix(rConstraintLinearEquation, rConstraintMatrix);
+    }
     rConstraintLinearEquation++;
 }
 

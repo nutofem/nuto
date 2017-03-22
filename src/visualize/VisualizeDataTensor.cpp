@@ -1,14 +1,12 @@
-// $Id$
-
 #include "visualize/VisualizeDataTensor.h"
 #include "visualize/VisualizeDataType.h"
 
 // constructor
 NuTo::VisualizeDataTensor::VisualizeDataTensor()
 {
-    for (unsigned int count = 0; count < 9; count++)
+    for (double& data : mData)
     {
-        this->mData[count] = 0.0;
+        data = 0.0;
     }
 }
 
@@ -27,7 +25,7 @@ unsigned int NuTo::VisualizeDataTensor::GetNumData() const
 // get data
 const double* NuTo::VisualizeDataTensor::GetData() const
 {
-    return this->mData;
+    return mData;
 }
 
 // set data
@@ -35,17 +33,17 @@ void NuTo::VisualizeDataTensor::SetData(const double* rData)
 {
     for (unsigned int count = 0; count < 9; count++)
     {
-        this->mData[count] = rData[count];
+        mData[count] = rData[count];
     }
 }
 
 // output stream
 std::ostream& NuTo::VisualizeDataTensor::Output(std::ostream& os) const
 {
-    os << this->mData[0];
+    os << mData[0];
     for (unsigned int count = 1; count < 9; count++)
     {
-        os << " " << this->mData[count];
+        os << " " << mData[count];
     }
     return os;
 }

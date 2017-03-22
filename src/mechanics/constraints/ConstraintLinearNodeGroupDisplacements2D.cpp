@@ -62,15 +62,15 @@ double NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS()const
 void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& curConstraintEquation,
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
-    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)==0)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)==0)
             throw MechanicsException(__PRETTY_FUNCTION__,"Node does not have displacements");
 
         if (std::abs(mDirection[0])>1e-18)
-            rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 0),mDirection[0]);
+            rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 0),mDirection[0]);
         if (std::abs(mDirection[1])>1e-18)
-            rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 1),mDirection[1]);
+            rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 1),mDirection[1]);
 
         curConstraintEquation++;
     }
@@ -82,10 +82,10 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& 
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
-    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
         rRHS(curConstraintEquation,0) = mRHS;
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)==0)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)==0)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix] Node does not have displacements or has more than two displacement components.");
 
         curConstraintEquation++;

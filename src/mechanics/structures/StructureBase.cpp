@@ -1065,22 +1065,23 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 
         //Get the neighboring elements (always referring to the location in the vector elementVector)
         std::vector< std::vector<int> > NeighborElements(elementVector.size());
-        for (auto itNode = elementsPerNode.begin(); itNode!=elementsPerNode.end(); itNode++)
+        for (auto& node : elementsPerNode)
         {
-            for (unsigned int elementCount1 = 0; elementCount1 < itNode->second.size(); elementCount1++)
+            for (unsigned int elementCount1 = 0; elementCount1 < node.second.size(); elementCount1++)
             {
-                for (unsigned int elementCount2 = elementCount1+1; elementCount2 < itNode->second.size(); elementCount2++)
+                for (unsigned int elementCount2 = elementCount1 + 1; elementCount2 < node.second.size();
+                     elementCount2++)
                 {
-                    NeighborElements[itNode->second[elementCount1]].push_back(itNode->second[elementCount2]);
-                    NeighborElements[itNode->second[elementCount2]].push_back(itNode->second[elementCount1]);
+                    NeighborElements[node.second[elementCount1]].push_back(node.second[elementCount2]);
+                    NeighborElements[node.second[elementCount2]].push_back(node.second[elementCount1]);
                 }
             }
         }
 
         //build the maximum independent sets
         std::vector<int> elementState(elementVector.size());
-        for (unsigned int count=0; count<elementState.size(); count++)
-            elementState[count] = UNDONE;
+        for (int& entry : elementState)
+            entry = UNDONE;
 
         unsigned int numDeleted=0;
         unsigned int curMIS = 0;
@@ -1101,10 +1102,10 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
                 numDeleted++;
 
                 //mark all the neighboring elements as selected, which prevents them to being added to this set
-                for (unsigned int theNeighborCount=0; theNeighborCount<NeighborElements[countElement].size(); theNeighborCount++)
+                for (int theNeighborCount : NeighborElements[countElement])
                 {
-                    if (elementState[NeighborElements[countElement][theNeighborCount]]==UNDONE)
-                        elementState[NeighborElements[countElement][theNeighborCount]] = SELECTED;
+                    if (elementState[theNeighborCount]==UNDONE)
+                        elementState[theNeighborCount] = SELECTED;
                 }
             }
             //reset the selected elements to be undone

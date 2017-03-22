@@ -211,9 +211,8 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
 
                 // check for overlap with all the ellipses in that box
                 bool noSeparation(true);
-                for (unsigned int indexOther = 0; indexOther < subBox[theBox].size(); indexOther++)
+                for (int other : subBox[theBox])
                 {
-                    int other     = subBox[theBox][indexOther];
                     double deltaX = rParticles(countParticle, 0) - rParticles(other, 0);
                     double deltaY = rParticles(countParticle, 1) - rParticles(other, 1);
                     double deltaZ = rParticles(countParticle, 2) - rParticles(other, 2);

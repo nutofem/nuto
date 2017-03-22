@@ -65,17 +65,17 @@ double NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS()const
 void NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix(int& curConstraintEquation,
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
-    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=3)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)!=3)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix] Node does not have displacements or has more than three displacement components.");
 
         if (std::abs(mDirection[0])>1e-18)
-            rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 0),mDirection[0]);
+            rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 0),mDirection[0]);
         if (std::abs(mDirection[1])>1e-18)
-            rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 1),mDirection[1]);
+            rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 1),mDirection[1]);
         if (std::abs(mDirection[2])>1e-18)
-            rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 2),mDirection[2]);
+            rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 2),mDirection[2]);
 
         curConstraintEquation++;
     }
@@ -87,9 +87,9 @@ void NuTo::ConstraintLinearNodeGroupDisplacements3D::AddToConstraintMatrix(int& 
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
-	for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+	for (auto node : *mGroup)
 	{
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=3)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)!=3)
 			throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::GetRHS] Node does not have exactly 3 displacement components.");
 		rRHS(curConstraintEquation,0) = mRHS;
 		curConstraintEquation++;

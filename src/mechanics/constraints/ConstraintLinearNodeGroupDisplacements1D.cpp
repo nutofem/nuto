@@ -51,15 +51,15 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     // loop over nodes
-    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
         // add constraint to constrain matrix
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
         {
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
 
-        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 0),1);
+        rConstraintMatrix.AddValue(curConstraintEquation,node.second->GetDof(Node::eDof::DISPLACEMENTS, 0),1);
 
         // increase constraint equation number
         curConstraintEquation++;
@@ -73,10 +73,10 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
 void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     // loop over nodes
-    for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
+    for (auto node : *mGroup)
     {
         // add constraint to constrain matrix
-        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
+        if (node.second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
         {
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }

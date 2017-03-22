@@ -70,9 +70,9 @@ bool IsSurface(ElementSurface rElementSurface, const NodeTree& rNodeTree)
     std::vector<NuTo::NodeBase *> surfaceNodes = GetSurfaceNodes(rElementSurface);
 
     //check, if all surface nodes are in the node tree
-    for (unsigned int iNode = 0; iNode < surfaceNodes.size(); iNode++)
+    for (auto& surfaceNode : surfaceNodes)
     {
-        Eigen::VectorXd coordinate = surfaceNodes[iNode]->Get(NuTo::Node::eDof::COORDINATES);
+        Eigen::VectorXd coordinate = surfaceNode->Get(NuTo::Node::eDof::COORDINATES);
         if (not rNodeTree.HasEntryAtCoordinate(coordinate, 1.e-10))
             return false;
     }

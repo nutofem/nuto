@@ -290,13 +290,13 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
     }
     std::map<int, int> newNodeNumbers;
-    for (unsigned int nodeCount = 0; nodeCount < rGmshNodes.size(); nodeCount++)
+    for (const auto& gmshNode : rGmshNodes)
     {
-        coordinates(0) = rGmshNodes[nodeCount].Coordinates[0];
-        coordinates(1) = rGmshNodes[nodeCount].Coordinates[1];
+        coordinates(0) = gmshNode.Coordinates[0];
+        coordinates(1) = gmshNode.Coordinates[1];
         if (rS.GetDimension() == 3)
-            coordinates(2) = rGmshNodes[nodeCount].Coordinates[2];
-        newNodeNumbers[rGmshNodes[nodeCount].id] = rS.NodeCreate(coordinates);
+            coordinates(2) = gmshNode.Coordinates[2];
+        newNodeNumbers[gmshNode.id] = rS.NodeCreate(coordinates);
     }
     return newNodeNumbers;
 }
@@ -343,15 +343,15 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     std::map<int, std::set<int>> groupInterpolationIds;
 
     std::vector<int> nodeNumbers;
-    for (unsigned int elementCount = 0; elementCount < elements.size(); elementCount++)
+    for (auto& element : elements)
     {
-        nodeNumbers.resize(elements[elementCount].nodes.size());
-        for (unsigned int countNode = 0; countNode < elements[elementCount].nodes.size(); countNode++)
-            nodeNumbers[countNode] = newNodeNumber[elements[elementCount].nodes[countNode]];
+        nodeNumbers.resize(element.nodes.size());
+        for (unsigned int countNode = 0; countNode < element.nodes.size(); countNode++)
+            nodeNumbers[countNode] = newNodeNumber[element.nodes[countNode]];
         Interpolation::eShapeType shapeType;
         Interpolation::eTypeOrder typeOrder;
 
-        switch (elements[elementCount].type)
+        switch (element.type)
         {
         case 1: // 	2-node line in 2d/3d
             shapeType = Interpolation::eShapeType::TRUSSXD;
@@ -540,12 +540,12 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
 //    	case 93: //	125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges, 54 with the faces, 27 in the volume)
 
         default:
-            std::cout << "element type in gmsh " << elements[elementCount].type << std::endl;
+            std::cout << "element type in gmsh " << element.type << std::endl;
             throw MechanicsException(__PRETTY_FUNCTION__, "Element type not implemented in the import routine.");
         }
 
         // get gmsh group id and create a corresponding nuto group if needed
-        int groupId = elements[elementCount].tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist before the gmsh import.
+        int groupId = element.tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist before the gmsh import.
 
         // there is one interpolation type for each group. Else: throw
         TmpGroup& tmpGroup = groups[groupId];

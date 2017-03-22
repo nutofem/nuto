@@ -1,5 +1,3 @@
-// $Id$
-
 #include <boost/spirit/include/classic_core.hpp>
 #include <fstream>
 #include <iostream>
@@ -82,11 +80,11 @@ void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<in
 
     // calculate tolerance
     double tolerance = 0;
-    for (unsigned int valCount = 0; valCount < this->mValues.size(); valCount++)
+    for (double value : mValues)
     {
-        if (std::abs(this->mValues[valCount]) > tolerance)
+        if (std::abs(value) > tolerance)
         {
-            tolerance = std::abs(this->mValues[valCount]);
+            tolerance = std::abs(value);
         }
     }
     tolerance *= rRelativeTolerance;
@@ -283,11 +281,11 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 
     // calculate tolerance
     double tolerance = 0;
-    for (unsigned int valCount = 0; valCount < this->mValues.size(); valCount++)
+    for (double value : mValues)
     {
-        if (std::abs(this->mValues[valCount]) > tolerance)
+        if (std::abs(value) > tolerance)
         {
-            tolerance = std::abs(this->mValues[valCount]);
+            tolerance = std::abs(value);
         }
     }
     tolerance *= rRelativeTolerance;

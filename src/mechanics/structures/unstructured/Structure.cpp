@@ -773,12 +773,12 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
 
     std::vector<NodeBase*> nodeVector;
     GetNodesTotal(nodeVector);
-    for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+    for (auto& node : nodeVector)
     {
-        NodeBase* newNode = nodeVector[countNode]->Clone();
-        rOld2NewNodePointer[nodeVector[countNode]] = newNode;
+        NodeBase* newNode = node->Clone();
+        rOld2NewNodePointer[node] = newNode;
 
-        //find unused integer id
+        // find unused integer id
         int id(mNodeMap.size());
         boost::ptr_map<int, NodeBase>::iterator it = mNodeMap.find(id);
         while (it != mNodeMap.end())
@@ -790,8 +790,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         // add node to map
         this->mNodeMap.insert(id, newNode);
 
-        newNode->Set(Node::eDof::COORDINATES, nodeVector[countNode]->Get(Node::eDof::COORDINATES) + rOffset);
-
+        newNode->Set(Node::eDof::COORDINATES, node->Get(Node::eDof::COORDINATES) + rOffset);
     }
     //renumbering of dofs for global matrices required
     this->mNodeNumberingRequired = true;
@@ -799,9 +798,8 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
     std::vector<ElementBase*> elements;
     GetElementsTotal(elements);
     std::set<ConstitutiveBase*> constitutiveWithNonlocalData;
-    for (unsigned int countElement = 0; countElement < elements.size(); countElement++)
+    for (auto oldElementPtr : elements)
     {
-        ElementBase* oldElementPtr = elements[countElement];
         int numNodes = oldElementPtr->GetNumNodes();
         std::vector<NodeBase*> nodeVector(numNodes);
         for (int countNode = 0; countNode < numNodes; countNode++)

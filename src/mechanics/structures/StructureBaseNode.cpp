@@ -1,5 +1,3 @@
-// $Id$
-
 #include <boost/assign/ptr_map_inserter.hpp>
 
 #include "base/Timer.h"
@@ -125,24 +123,12 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const Eigen
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
 
-    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    for (auto& node : *nodeGroup)
     {
-        try
-        {
-            if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-                throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
+        if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
+            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
-            itNode->second->Set(Node::eDof::DISPLACEMENTS, rDisplacements);
-        }
-        catch(NuTo::MechanicsException & b)
-        {
-            b.AddMessage("[NuTo::StructureBase::NodeGroupSetDisplacements] Error setting displacements.");
-            throw;
-        }
-        catch(...)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Error setting displacements of node (unspecified exception).");
-        }
+        node.second->Set(Node::eDof::DISPLACEMENTS, rDisplacements);
     }
 }
 
@@ -161,27 +147,15 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
 
-    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    for (auto& node : *nodeGroup)
     {
-        try
-        {
-            if (itNode->second->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS)<rTimeDerivative)
-                throw MechanicsException(__PRETTY_FUNCTION__, "does not have a sufficient number of time derivatives.");
+        if (node.second->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < rTimeDerivative)
+            throw MechanicsException(__PRETTY_FUNCTION__, "does not have a sufficient number of time derivatives.");
 
-            if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-                throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
+        if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
+            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
-            itNode->second->Set(Node::eDof::DISPLACEMENTS, rTimeDerivative, rDisplacements);
-        }
-        catch(NuTo::MechanicsException & b)
-        {
-            b.AddMessage("[NuTo::StructureBase::NodeGroupSetDisplacements] Error setting displacements.");
-            throw;
-        }
-        catch(...)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Error setting displacements of node (unspecified exception).");
-        }
+        node.second->Set(Node::eDof::DISPLACEMENTS, rTimeDerivative, rDisplacements);
     }
 }
 
@@ -520,24 +494,14 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
     rNodeForce.resize(nodeGroup->begin()->second->GetNum(Node::eDof::DISPLACEMENTS));
     rNodeForce.setZero();
 
-    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    for (auto node : *nodeGroup)
     {
-        try
-        {
-            NodeInternalForce(itNode->second, nodeForceLocal);
-            if (nodeForceLocal.rows()!=rNodeForce.rows())
-                throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is not equal for all members of the group.");
-            rNodeForce+=nodeForceLocal;
-        }
-        catch(NuTo::MechanicsException & b)
-        {
-            b.AddMessage("[NuTo::StructureBase::NodeGroupInternalForce] Error getting gradient of internal potential.");
-            throw;
-        }
-        catch(...)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Error getting gradient of internal potential (unspecified exception).");
-        }
+        NodeInternalForce(node.second, nodeForceLocal);
+        if (nodeForceLocal.rows() != rNodeForce.rows())
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "The number of displacement components is not equal for all members of the group.");
+        rNodeForce += nodeForceLocal;
     }
 }
 
@@ -608,22 +572,23 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
     double distance;
 
     int nodeId = -1;
-    for (unsigned int countNode=0; countNode<nodeVector.size(); countNode++)
+    for (auto& node : nodeVector)
     {
-        NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNum(Node::eDof::COORDINATES)<1)
+        NodeBase* nodePtr(node.second);
+        if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
 
-        distance = (nodePtr->Get(Node::eDof::COORDINATES)-rCoordinates).norm();
+        distance = (nodePtr->Get(Node::eDof::COORDINATES) - rCoordinates).norm();
 
-        if (distance<rRange)
+        if (distance < rRange)
         {
-            if (nodeId==-1)
+            if (nodeId == -1)
             {
-                nodeId = nodeVector[countNode].first;
+                nodeId = node.first;
             }
             else
-                throw MechanicsException(__PRETTY_FUNCTION__, "there is more than one node at that coordinate position.");
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "there is more than one node at that coordinate position.");
         }
     }
     if (nodeId==-1)
@@ -644,9 +609,9 @@ void NuTo::StructureBase::NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVi
 
 void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<const NodeBase*>& rNodes) const
 {
-    for (unsigned int nodeCount = 0; nodeCount < rNodes.size(); nodeCount++)
+    for (auto node : rNodes)
     {
-        rNodes[nodeCount]->Visualize(rVisualize, rVisualizationList);
+        node->Visualize(rVisualize, rVisualizationList);
     }
 }
 #endif //ENABLE_VISUALIZE
