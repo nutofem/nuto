@@ -63,6 +63,7 @@ enum class eIntegrationType;
 enum class eStructureOutput;
 enum class eVisualizationType;
 enum class eVisualizeWhat;
+enum class eDirection;
 
 namespace Constitutive
 {
@@ -1375,6 +1376,14 @@ public:
     //! @param rMin ... minimum value
     //! @param rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
+
+    //! @brief Adds all nodes to a group whose coordinates are in the specified range
+    //! @param rIdentGroup identifier for the group
+    //! @param rDirection either X, Y, Z
+    //! @param rMin ... minimum value
+    //! @param rMax ... maximum value
+    virtual void GroupAddNodeCoordinateRange(int rIdentGroup, eDirection rDirection, double rMin, double rMax);
+
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param rIdentGroup identifier for the group

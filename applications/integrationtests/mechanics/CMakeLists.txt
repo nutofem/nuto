@@ -85,17 +85,23 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
             COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh" "${CMAKE_CURRENT_BINARY_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh"
     )
 
-    add_executable(Feti Feti.cpp)
-    target_link_libraries(Feti NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(Feti NuToVisualize)
-    endif()
-    if(MUMPS_FOUND)
-        target_link_libraries(Feti ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-    set(MPIEXEC_NUMPROC_FLAG -np 2)
-    set(MPIEXEC mpirun)
-    add_test(NAME integration::mechanics::Feti.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/Feti)
+    foreach(test
+            Feti
+            )
+        add_executable(${test} ${test}.cpp)
+        target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+        if(ENABLE_VISUALIZE)
+            target_link_libraries(${test} NuToVisualize)
+        endif()
+        if(MUMPS_FOUND)
+            target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        endif()
+        set(MPIEXEC_NUMPROC_FLAG -np 2)
+        set(MPIEXEC mpirun)
+        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+
+    endforeach()
+
 endif()
 
 

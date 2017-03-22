@@ -199,30 +199,31 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
             nodeIdsVirtualConstraints.push_back(nodePair.first);
         }
     }
-
+    const int lastNodeId = nodeIdsVirtualConstraints.size()-1;
     switch (GetDimension())
     {
         case 2:
         {
+
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[1], Eigen::Vector2d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector2d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[lastNodeId], Eigen::Vector2d::UnitY(), 0.);
 
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[lastNodeId] << "\t in Y \n\n";
 
             break;
         }
         case 3:
         {
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[1], Eigen::Vector3d::UnitY(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector3d::UnitZ(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitZ(), 0.);
 
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[3], Eigen::Vector3d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[4], Eigen::Vector3d::UnitY(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[5], Eigen::Vector3d::UnitZ(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[lastNodeId], Eigen::Vector3d::UnitX(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[lastNodeId], Eigen::Vector3d::UnitY(), 0.);
+            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector3d::UnitZ(), 0.);
 
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in Y \n\n";
@@ -354,7 +355,7 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
     for (const auto& element : mElements)
         ElementCreate(element.mId,interpolationTypeId, element.mNodeIds);
 
-    ElementTotalConvertToInterpolationType();
+    ElementTotalConvertToInterpolationType(1.e-15, 1.);
 
     NodeBuildGlobalDofs();
 
@@ -466,7 +467,7 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
 
     GetLogger() << "Number of rigid body modes:        \t"        << mNumRigidBodyModes        << "\n\n";
     GetLogger() << "Total number of rigid body modes:  \t"        << mNumRigidBodyModesTotal   << "\n\n";
-    GetLogger() << "Rigid body modes:  \n"        << mRigidBodyModes   << "\n\n";
+//    GetLogger() << "Rigid body modes:  \n"        << mRigidBodyModes   << "\n\n";
 
 
 
@@ -709,6 +710,46 @@ throw MechanicsException(__PRETTY_FUNCTION__, "Not yet implemented.");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const std::vector<int>& dofIds)
+{
+    boost::mpi::communicator world;
+
+    mBoundaryDofIds = dofIds;
+
+    // determine the global ids for the constraints
+
+    // recvCount:
+    // Contains the number of elements that are received from each process.
+    std::vector<int> recvCount(mNumProcesses, 0);
+
+    boost::mpi::all_gather<int>(world,mBoundaryDofIds.size(),recvCount);
+
+    // displs:
+    // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
+    std::vector<int> displs;
+    displs.resize(mNumProcesses, 0);
+    for (int i = 1; i < mNumProcesses; ++i)
+        displs[i] = displs[i-1] + recvCount[i-1];
+
+
+    int numLocalBoundaryDofIds = mBoundaryDofIds.size();
+    MPI_Allreduce(&numLocalBoundaryDofIds,
+                  &mNumTotalBoundaryDofIds,
+                  1,
+                  MPI_INT,
+                  MPI_SUM,
+                  MPI_COMM_WORLD);
+
+
+
+    GetLogger() << "Number of boundary dof ids:       \t" << mBoundaryDofIds.size() << "\n \n";
+    GetLogger() << "Total number of boundary dof ids: \t" << mNumTotalBoundaryDofIds << "\n \n";
+
+
+    mGlobalStartIndexBoundaryDofIds = displs[mRank];
+
+}
 
 void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const int nodeGroupId)
 {

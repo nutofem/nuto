@@ -7,6 +7,7 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/DirectionEnum.h"
 
 void NuTo::StructureBase::GroupInfo(int rVerboseLevel) const
 {
@@ -155,6 +156,11 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
         if (coordinate >= rMin && coordinate <= rMax)
             itGroup->second->AddMember(node.first, nodePtr);
     }
+}
+
+void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, NuTo::eDirection rDirection, double rMin, double rMax)
+{
+    GroupAddNodeCoordinateRange(rIdentGroup, static_cast<int>(rDirection), rMin, rMax);
 }
 
 void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction)

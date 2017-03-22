@@ -299,7 +299,18 @@ public:
 
 
 
+    ///
+    /// \brief Constraints all degrees of freedom of nodes in node group
+    /// \param nodeGroupId
+    ///
     void ApplyConstraintsTotalFeti(const int nodeGroupId);
+
+    ///
+    /// \brief Constraints all degrees of freedom
+    /// \param dofIds to be constrained
+    ///
+    void ApplyConstraintsTotalFeti(const std::vector<int>& dofIds);
+
     void ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap);
 
     void CalculateProjectionMatrix();
