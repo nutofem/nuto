@@ -835,9 +835,6 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const auto& B       = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d       = rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD);
 
-            if (mStructure->GetNumTimeDerivatives() < 1)
-                throw MechanicsException(__PRETTY_FUNCTION__, "Phase-field model requires first time derivative");
-
             const auto& d_dt    = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
 
             const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
