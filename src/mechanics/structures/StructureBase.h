@@ -15,11 +15,7 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
 
-
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
-
+#include "mechanics/structures/Assembler.h"
 
 #include "mechanics/MechanicsException.h"
 #include "StructureOutputBlockVector.h"
@@ -48,8 +44,6 @@ class StructureOutputBlockVector;
 class TimeIntegrationBase;
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
-template<typename T> class BlockFullMatrix;
-template<typename T> class BlockFullVector;
 template<typename IOEnum> class ConstitutiveIOMap;
 template<class T> class Group;
 template<class T> class SparseMatrixCSRSymmetric;
@@ -1678,6 +1672,7 @@ public:
 
     void SetVerboseLevel(unsigned short verboseLevel);
 
+
 protected:
 
     //! @brief finds an unused ID in rMap
@@ -1708,10 +1703,6 @@ protected:
     //! @sa ConstitutiveBase
     boost::ptr_map<int,ConstitutiveBase> mConstitutiveLawMap;
 
-    //! @brief ... map storing the constraints
-    //! @sa ConstraintBase
-    boost::ptr_map<int,ConstraintBase> mConstraintMap;
-
     //! @brief ... map storing node loads
     //! @sa LoadBase
     int mNumLoadCases;        //number of load cases to be considered
@@ -1738,31 +1729,14 @@ protected:
     //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
     DofStatus mDofStatus;
 
+public:
+#ifndef SWIG
+    Assembler mAssembler;
+#endif
+protected:
+
     //!brief ... renumbering of nodal DOFs required or not
     bool mNodeNumberingRequired;
-
-    //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
-    BlockSparseMatrix mConstraintMatrix;
-
-    //! @brief mapping matrix of the rhs to relate the rhs before the gauss elimination to the constraint matrix after
-    // (mConstraintRHS (after elimination) = mConstraintMappingRHS *  mConstraintRHS (before elimination)
-    // (the values of the RHS before elimination are stored at the individual constraints
-    //the initial system is e.g.
-    //[1 1 0]* [d1 d2 d3]^T = [rhs1]
-    //[0 0 2]                 [rhs2]
-    //this is replaced by
-    //[1 1 0]* [d1 d2 d3]^T = rhs1 *[1] + rhs2 *[0]
-    //[0 0 2]                       [0]         [1]
-    //after gauss elimination and reordering this gives
-    //[1 0 1]* [d1 d3 d2]^T = rhs1 *[1] + rhs2 *[0]
-    //[0 1 0]                       [0]         [0.5]
-    //as a consequence, the gauss elimination has only to be performed for a change of the constraint matrix
-    //for a change of the rhs it is sufficient to recalculate the rhs from the above vectors
-    //the mapping matrix [1,0; 0,0.5] is stored and the rhs is calculated from mConstraintMappingRHS*mConstraintRHSBeforGaussElimination
-    BlockSparseMatrix mConstraintMappingRHS;
-
-    //! @brief right hand side of the constraint equations
-    BlockFullVector<double> mConstraintRHS;
 
     //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
     bool mHaveTmpStaticData;

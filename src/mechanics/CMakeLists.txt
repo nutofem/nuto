@@ -205,6 +205,7 @@ set(NuToMechanicsStructuresSources
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
     structures/unstructured/StructureNode.cpp
+    structures/Assembler.cpp
     )
 
 

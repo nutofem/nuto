@@ -88,9 +88,7 @@
 using namespace NuTo;
 
 NuTo::StructureBase::StructureBase(int rDimension) :
-        mConstraintMatrix(mDofStatus, false),
-        mConstraintMappingRHS(mDofStatus, false),
-        mConstraintRHS(mDofStatus),
+        mAssembler(mDofStatus), 
         mShowTime(true)
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
@@ -932,7 +930,7 @@ void NuTo::StructureBase::UpdateDofStatus()
     mDofStatus.SetDofTypes(dofTypes);
     mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-    mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
+    mDofStatus.SetHasInteractingConstraints(mAssembler.mConstraintMatrix.GetNumActiveEntires() != 0);
 }
 
 
@@ -1010,7 +1008,7 @@ int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
 
 const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
 {
-    return mConstraintMatrix;
+    return mAssembler.mConstraintMatrix;
 }
 
 void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)

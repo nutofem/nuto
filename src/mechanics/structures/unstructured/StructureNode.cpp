@@ -452,9 +452,9 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
             it.second->SetGlobalDofsNumbers(numDofsMap);
 
 
-        mConstraintMatrix.AllocateSubmatrices();
-        mConstraintMappingRHS.AllocateSubmatrices();
-        mConstraintRHS.AllocateSubvectors();
+        mAssembler.mConstraintMatrix.AllocateSubmatrices();
+        mAssembler.mConstraintMappingRHS.AllocateSubmatrices();
+        mAssembler.mConstraintRHS.AllocateSubvectors();
 
 
         for (auto dof : DofTypesGet())
@@ -466,18 +466,18 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
 
         // build constraint matrix for all dofs
-        mConstraintMatrix = ConstraintGetConstraintMatrixBeforeGaussElimination();
+        mAssembler.mConstraintMatrix = ConstraintGetConstraintMatrixBeforeGaussElimination();
 
         for (auto dof : DofTypesGet())
         {
-            auto& constraintMatrix = mConstraintMatrix(dof, dof);
+            auto& constraintMatrix = mAssembler.mConstraintMatrix(dof, dof);
 
             const int numActiveDofs = GetNumActiveDofs(dof);
             const int numDependentDofs = GetNumDependentDofs(dof);
             const int numDofs = GetNumDofs(dof);
 
             //init RHSMatrix as a diagonal identity matrix
-            auto& constraintMappingRHS = mConstraintMappingRHS(dof, dof);
+            auto& constraintMappingRHS = mAssembler.mConstraintMappingRHS(dof, dof);
 
             constraintMappingRHS.Resize(numDependentDofs, numDependentDofs);
             for (int i = 0; i < numDependentDofs ; ++i)
@@ -534,11 +534,11 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
         // since only the diagonals were set, the off-diagonal submatrices have to be resized
         // to guarantee the right dimensions in arithmetic operations
-        mConstraintMatrix.FixOffDiagonalDimensions();
-        mConstraintMappingRHS.FixOffDiagonalDimensions();
+        mAssembler.mConstraintMatrix.FixOffDiagonalDimensions();
+        mAssembler.mConstraintMappingRHS.FixOffDiagonalDimensions();
 
-        mConstraintMatrix.CheckDimensions();
-        mConstraintMappingRHS.CheckDimensions();
+        mAssembler.mConstraintMatrix.CheckDimensions();
+        mAssembler.mConstraintMappingRHS.CheckDimensions();
 
 
         // number Lagrange multipliers in constraint equations defined in StructureBase
@@ -633,7 +633,7 @@ NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(c
     if (this->mNodeNumberingRequired)
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
-    return this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
+    return this->mAssembler.mConstraintRHS - this->mAssembler.mConstraintMatrix * rActiveDofValues;
 }
 
 
@@ -729,7 +729,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     }
 
     //in constraints
-    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mConstraintMap.begin();constraintIt!=mConstraintMap.end(); ++constraintIt)
+    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mAssembler.mConstraintMap.begin();constraintIt!=mAssembler.mConstraintMap.end(); ++constraintIt)
     {
         constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
     }
