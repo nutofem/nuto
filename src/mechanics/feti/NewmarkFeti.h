@@ -783,6 +783,7 @@ public:
                     if (mStructure->GetNumTimeDerivatives() >= 1)
                         hessian0.AddScal(hessian1, mGamma / (mBeta * timeStep));
 
+
                     // K_{JJ}^{-1}
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
@@ -797,10 +798,10 @@ public:
 
                     // lumped preconditioner
                     auto K = hessian0.JJ.ExportToEigenSparseMatrix();
-                    K.conservativeResize(numActiveDofs, numActiveDofs);
+                    K.conservativeResize(numTotalDofs, numTotalDofs);
+
                     mLocalPreconditioner = B * K * Btrans;
-
-
+                    
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
 
