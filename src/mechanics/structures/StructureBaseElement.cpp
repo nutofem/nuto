@@ -1061,8 +1061,8 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 	{
 
 	    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-        elementOutput[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
-        elementOutput[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+        elementOutput[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+        elementOutput[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
 
 		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> > eigenSolver;
 

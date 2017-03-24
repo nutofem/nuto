@@ -64,6 +64,21 @@ public:
         mHasInteractingConstraints = rHasInteractingConstraints;
     }
 
+    int GetNumActiveDofs(Node::eDof dof) const
+    {
+        return mNumActiveDofs.at(dof);
+    }
+
+    int GetNumDependentDofs(Node::eDof dof) const
+    {
+        return mNumDependentDofs.at(dof);
+    }
+
+    int GetNumDofs(Node::eDof dof) const
+    {
+        return GetNumActiveDofs(dof) + GetNumDependentDofs(dof);
+    }
+
     const std::map<Node::eDof, int>& GetNumActiveDofsMap() const
     {
         return mNumActiveDofs;

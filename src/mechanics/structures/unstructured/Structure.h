@@ -6,7 +6,6 @@
 
 
 #include "mechanics/structures/StructureBase.h"
-#include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 
 

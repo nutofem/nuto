@@ -337,13 +337,13 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
 Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) const
 {
     assert(IsDof(Node::eDof::COORDINATES));
-    const InterpolationBase& interpolationType = Get(Node::eDof::COORDINATES);
+    const InterpolationBase& interpolation = Get(Node::eDof::COORDINATES);
 
-    Interpolation::eTypeOrder order = interpolationType.GetTypeOrder();
+    Interpolation::eTypeOrder order = interpolation.GetTypeOrder();
 
     if(order !=  Interpolation::eTypeOrder::SPLINE)
     {
-        const auto& surfaceEdgesCoordinates = interpolationType.GetSurfaceEdgesCoordinates(rSurface);
+        const auto& surfaceEdgesCoordinates = interpolation.GetSurfaceEdgesCoordinates(rSurface);
 
         Eigen::VectorXi surfaceNodeIndices(surfaceEdgesCoordinates.size());
 
@@ -351,7 +351,7 @@ Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) con
         {
             const Eigen::VectorXd& naturalSurfaceEdgeCoordinate = surfaceEdgesCoordinates[i];
     //        std::cout << naturalSurfaceEdgeCoordinate << std::endl;
-            Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(naturalSurfaceEdgeCoordinate);
+            Eigen::VectorXd shapeFunctions = interpolation.CalculateShapeFunctions(naturalSurfaceEdgeCoordinate);
     //        std::cout << shapeFunctions << std::endl;
             assert(std::abs(shapeFunctions.norm() - 1) < 1.e-8);
             int indexNodeCoordinate;                                        // index in the coordinate interpolation
@@ -362,13 +362,13 @@ Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) con
     #else
             shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
     #endif
-            surfaceNodeIndices(i) = interpolationType.GetNodeIndex(indexNodeCoordinate); // index in the Element::mNodes vector
+            surfaceNodeIndices(i) = interpolation.GetNodeIndex(indexNodeCoordinate); // index in the Element::mNodes vector
         }
         return surfaceNodeIndices;
     }
     else
     {
-        return interpolationType.GetSurfaceNodeIndices(rSurface);
+        return interpolation.GetSurfaceNodeIndices(rSurface);
     }
 }
 

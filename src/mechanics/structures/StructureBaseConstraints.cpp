@@ -33,7 +33,7 @@
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
 
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
@@ -57,7 +57,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, co
 
 int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
 
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
@@ -80,7 +80,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double
 
 int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -101,7 +101,7 @@ int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const 
 
 int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -122,7 +122,7 @@ int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rVa
 
 int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
     switch (mDimension)
@@ -140,7 +140,7 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode
 
 int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -162,7 +162,7 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, dou
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
@@ -181,7 +181,7 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, dou
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -203,7 +203,7 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double r
 
 int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
@@ -226,7 +226,7 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rN
 
 int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
     NodeBase* nodePtr;
     try
     {
@@ -248,7 +248,7 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(int rIdent, 
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
     switch (mDimension)
@@ -270,7 +270,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase
 
 int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
     switch (mDimension)
@@ -293,7 +293,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* r
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetDisplacementNodeGroup] Group with the given identifier does not exist.");
@@ -307,7 +307,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIden
 
 int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetRotationNodeGroup] Group with the given identifier does not exist.");
@@ -321,7 +321,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, d
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetTemperatureNodeGroup] Group with the given identifier does not exist.");
@@ -336,149 +336,20 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
     mAssembler.mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupTemperature(rGroup,rValue));
     return id;
 }
 
-int NuTo::StructureBase::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
-{
-    int numLinearConstraints = 0;
-    BOOST_FOREACH(auto itConstraint, mAssembler.mConstraintMap)
-    {
-        const auto& constraint = itConstraint.second;
-        if (constraint->GetDofType() == rDof)
-            numLinearConstraints += constraint->GetNumLinearConstraints();
-    }
-    return numLinearConstraints;
-}
-
-
-NuTo::BlockSparseMatrix NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination() const
-{
-    if (mNodeNumberingRequired)
-    {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] build global numbering first");
-    }
-
-    BlockSparseMatrix constraintMatrix(GetDofStatus(), false);
-
-    for (auto dofType : DofTypesGet())
-    {
-        int numLinearConstraints = ConstraintGetNumLinearConstraints(dofType);
-        int curConstraintEquations = 0;
-
-        constraintMatrix(dofType, dofType).Resize(numLinearConstraints,GetNumDofs(dofType));
-
-        BOOST_FOREACH(auto itConstraint, mAssembler.mConstraintMap)
-        {
-            if (itConstraint->second->GetNumLinearConstraints()>0)
-            {
-                try
-                {
-                    if (itConstraint->second->GetDofType() == dofType)
-                        itConstraint->second->AsConstraintLinear()->AddToConstraintMatrix(curConstraintEquations, constraintMatrix(dofType, dofType));
-                }
-                catch (MechanicsException& e)
-                {
-                    e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] mechanics exception while building constraint matrix for constraint with nonzero number of linear components.");
-                    throw;
-                }
-                catch (...)
-                {
-                    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] error building constraint matrix for constraint with nonzero number of linear components.");
-                }
-            }
-
-        }
-
-        if (curConstraintEquations != numLinearConstraints)
-        {
-            std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
-            std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
-            throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussEliminationDof] Internal error, there is something wrong with the constraint equations.");
-        }
-    }
-    return constraintMatrix;
-}
-
 const NuTo::BlockFullVector<double>& NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination() const
 {
-    if (mNodeNumberingRequired)
-    {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] build global numbering first");
-    }
-    return mAssembler.mConstraintRHS;
-}
-
-
-NuTo::BlockFullVector<double> NuTo::StructureBase::ConstraintGetRHSBeforeGaussElimination()
-{
-    if (mNodeNumberingRequired)
-    {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] build global numbering first");
-    }
-
-    NuTo::BlockFullVector<double> rhsBeforeGaussElimination(GetDofStatus());
-
-    for (auto dof : DofTypesGet())
-    {
-
-        int numLinearConstraints = ConstraintGetNumLinearConstraints(dof);
-
-        rhsBeforeGaussElimination[dof].resize(numLinearConstraints);
-
-        //calculate the rhs vector of the constraint equations before the Gauss elimination
-        int curConstraintEquations = 0;
-        BOOST_FOREACH(auto itConstraint, mAssembler.mConstraintMap)
-        {
-            if (itConstraint.second->GetNumLinearConstraints()>0)
-            {
-                try
-                {
-                    if (itConstraint.second->GetDofType() == dof)
-                        itConstraint.second->AsConstraintLinear()->GetRHS(curConstraintEquations, rhsBeforeGaussElimination[dof]);
-                }
-                catch (MechanicsException& e)
-                {
-                    e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] mechanics exception while building rhs vector after gauss elimination.");
-                    throw;
-                }
-                catch (...)
-                {
-                    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] mechanics exception while building rhs vector after gauss elimination.");
-                }
-            }
-        }
-
-        if (curConstraintEquations!=numLinearConstraints)
-        {
-            std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
-            std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Internal error, there is something wrong with the constraint equations.");
-        }
-    }
-    return rhsBeforeGaussElimination;
-}
-
-void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
-{
-    if (mNodeNumberingRequired)
+    if (mAssembler.mNodeNumberingRequired)
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
     }
-
-    BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRHSBeforeGaussElimination();
-
-    if (mAssembler.mConstraintMappingRHS.GetNumColumns()!=rhsBeforeGaussElimination.GetNumRows())
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "here is something wrong in the implementation.");
-    }
-
-    //calculate the rhs vector of the constraint equations after the Gauss elimination using the mapping matrix
-    mAssembler.mConstraintRHS = mAssembler.mConstraintMappingRHS * rhsBeforeGaussElimination;
+    return mAssembler.mConstraintRHS;
 }
 
 
@@ -492,23 +363,13 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     it->second->SetRHS(rRHS);
 
     //since the rhs before Gauss elimination has changed, update the rhs after Gauss elimination using the mapping matrix
-    ConstraintUpdateRHSAfterGaussElimination();
-}
-
-double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
-{
-    boost::ptr_map<int,ConstraintBase>::const_iterator it = mAssembler.mConstraintMap.find(rConstraintEquation);
-    if (it==mAssembler.mConstraintMap.end())
-    {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
-    }
-    return it->second->GetRHS();
+    mAssembler.ConstraintUpdateRHSAfterGaussElimination();
 }
 
 // create a constraint equation
 int NuTo::StructureBase::ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     int id = GetUnusedId(mAssembler.mConstraintMap);
 
     // create constraint
@@ -521,7 +382,7 @@ int NuTo::StructureBase::ConstraintLinearEquationCreate(int rNode, const std::st
 // create a constraint equation
 void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     try
     {
         // convert dof string
@@ -542,7 +403,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
 // create a constraint equation
 void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRHS)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     // check if constraint equation already exists
     if(this->mAssembler.mConstraintMap.find(rConstraint) != this->mAssembler.mConstraintMap.end())
     {
@@ -572,7 +433,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
                                                                       const double rTolerance,
                                                                       Eigen::Vector3d rNodeCoordOffset)
 {
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 
     const int dim = GetDimension();
 
@@ -685,7 +546,7 @@ void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int r
 // add a term to a constraint equation
 void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient)
 {
-	this->mNodeNumberingRequired = true;
+	mAssembler.mNodeNumberingRequired = true;
     // get iterator
     boost::ptr_map<int,ConstraintBase>::iterator it = this->mAssembler.mConstraintMap.find(rConstraint);
     if(it == this->mAssembler.mConstraintMap.end())
@@ -794,7 +655,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     //check dimension of the structure
     if (mDimension!=2)
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] only implemented for 2D");
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 
     //find unused integer id
     int id = GetUnusedId(mAssembler.mConstraintMap);
@@ -878,14 +739,9 @@ void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
         throw MechanicsException("[NuTo::StructureBase::ConstraintDelete] Constraint equation does not exist.");
     }
     mAssembler.mConstraintMap.erase(it);
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 }
 
-
-int NuTo::StructureBase::ConstraintGetNumLinearConstraints(std::string rDof) const
-{
-    return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));
-}
 
 NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
 {
@@ -895,7 +751,7 @@ NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
         throw MechanicsException("[NuTo::StructureBase::ConstraintRelease] Constraint equation does not exist.");
     }
     boost::ptr_map<int,ConstraintBase>::auto_type ptr = mAssembler.mConstraintMap.release(it);
-    this->mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
     return ptr.release();
 }
 
@@ -933,5 +789,5 @@ void NuTo::StructureBase::ConstraintAdd(int rConstraintId, NuTo::ConstraintBase*
     if (it!=mAssembler.mConstraintMap.end())
     	throw MechanicsException("[NuTo::StructureBase::ConstraintAdd] Id already exists in constraint map.");
     mAssembler.mConstraintMap.insert(rConstraintId, rConstraint);
-    mNodeNumberingRequired = true;
+    mAssembler.mNodeNumberingRequired = true;
 }

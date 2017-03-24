@@ -12,10 +12,10 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "mechanics/structures/Assembler.h"
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
 
-#include "mechanics/structures/Assembler.h"
 
 #include "mechanics/MechanicsException.h"
 #include "StructureOutputBlockVector.h"
@@ -885,48 +885,15 @@ public:
     // ##                                  ##
     // ######################################
 
-#ifndef SWIG
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(Node::eDof rDof) const;
-
-#endif
-
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(std::string rDof) const;
-
-
-    //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
-    //! @param rConstraintMatrix constraint matrix
-    NuTo::BlockSparseMatrix ConstraintGetConstraintMatrixBeforeGaussElimination() const;
-
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @return rhs
     const NuTo::BlockFullVector<double>& ConstraintGetRHSAfterGaussElimination() const;
 
-    //! @brief returns the constraint vector after gauss elimination
-    //! rConstraintMatrix*DOFS = RHS
-    NuTo::BlockFullVector<double> ConstraintGetRHSBeforeGaussElimination();
-
-
-    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
-    //! the result is stored internally in mConstraintRHS
-    void ConstraintUpdateRHSAfterGaussElimination();
-
     //!@brief sets/modifies the right hand side of the constraint equations
     //!@param rRHS new right hand side
     //!@param rRHS new right hand side
     void ConstraintSetRHS(int rConstraintEquation, double rRHS);
-
-    //!@brief gets the right hand side of the constraint equations
-    //!@param rConstraintEquation constraint equation
-    //!@return rRHS
-    double ConstraintGetRHS(int rConstraintEquation)const;
-
 
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
@@ -1672,6 +1639,9 @@ public:
 
     void SetVerboseLevel(unsigned short verboseLevel);
 
+#ifndef SWIG
+    NuTo::Assembler mAssembler;
+#endif
 
 protected:
 
@@ -1725,18 +1695,6 @@ protected:
 
     //! @brief ... map storing the type of visualization for the output (VTK) file
     std::map<int, eVisualizationType> mGroupVisualizationType;
-
-    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
-    DofStatus mDofStatus;
-
-public:
-#ifndef SWIG
-    Assembler mAssembler;
-#endif
-protected:
-
-    //!brief ... renumbering of nodal DOFs required or not
-    bool mNodeNumberingRequired;
 
     //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
     bool mHaveTmpStaticData;

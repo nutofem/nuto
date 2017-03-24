@@ -5,6 +5,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/constraints/ConstraintBase.h"
+#include "mechanics/nodes/NodeBase.h"
 
 namespace NuTo
 {
@@ -12,13 +13,49 @@ namespace NuTo
 class Assembler
 {
 public:
-    Assembler(const DofStatus& rDofStatus)
-        : mConstraintMatrix(rDofStatus, false)
-        , mConstraintMappingRHS(rDofStatus, false)
-        , mConstraintRHS(rDofStatus)
-    {
-    }
+    Assembler();
 
+#ifndef SWIG
+    void BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes);
+
+    //! @brief returns the number of constraint equations for a specific dof type
+    //! @return number of constraints
+    //! @param rDofType  dof type
+    int ConstraintGetNumLinearConstraints(Node::eDof rDof) const;
+
+#endif
+
+    //! @brief returns the number of constraint equations for a specific dof type
+    //! @return number of constraints
+    //! @param rDofType  dof type
+    int ConstraintGetNumLinearConstraints(std::string rDof) const;
+
+    //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
+    //! @param rConstraintMatrix constraint matrix
+    NuTo::BlockSparseMatrix ConstraintGetConstraintMatrixBeforeGaussElimination() const;
+
+    //! @brief returns the constraint vector after gauss elimination
+    //! rConstraintMatrix*DOFS = RHS
+    NuTo::BlockFullVector<double> ConstraintGetRHSBeforeGaussElimination();
+
+
+    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
+    //! the result is stored internally in mConstraintRHS
+    void ConstraintUpdateRHSAfterGaussElimination();
+
+    //!@brief gets the right hand side of the constraint equations
+    //!@param rConstraintEquation constraint equation
+    //!@return rRHS
+    double ConstraintGetRHS(int rConstraintEquation)const;
+
+    
+
+    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
+    DofStatus mDofStatus;
+    
+    //!brief ... renumbering of nodal DOFs required or not
+    bool mNodeNumberingRequired;
+    
     //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
     BlockSparseMatrix mConstraintMatrix;
 
@@ -43,11 +80,9 @@ public:
     //! @brief right hand side of the constraint equations
     BlockFullVector<double> mConstraintRHS;
 
-
     //! @brief ... map storing the constraints
     //! @sa ConstraintBase
     boost::ptr_map<int,ConstraintBase> mConstraintMap;
-
 };
 
 } /* NuTo */

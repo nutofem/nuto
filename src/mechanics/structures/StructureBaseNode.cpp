@@ -510,8 +510,8 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     try
     {
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-        elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
-        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
+        elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
         std::vector<ElementBase*> elements;
         this->NodeGetElements(rNodePtr, elements);
