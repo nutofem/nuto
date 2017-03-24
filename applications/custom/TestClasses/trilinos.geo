@@ -1,0 +1,14 @@
+mesh_size = 1;
+Point(1) = {0, 0, 0,  mesh_size};
+Point(2) = {8, 0, 0, mesh_size};
+Point(3) = {8, 4, 0, mesh_size};
+Point(4) = {0, 4, 0,  mesh_size};
+Line(1) = {1, 2};
+Line(2) = {2, 3};
+Line(3) = {3, 4};
+Line(4) = {4, 1};
+Line Loop(6) = {1, 2, 3, 4};
+Plane Surface(6) = {6};
+Transfinite Surface {6};
+Recombine Surface {6};
+Physical Surface(999) = {6};
