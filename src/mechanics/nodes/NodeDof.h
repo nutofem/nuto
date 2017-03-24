@@ -34,20 +34,6 @@ public:
     //! @param dofNumber ... dof number
     void SetDofNumber(Node::eDof dof, int domponent, int dofNumber) override;
 
-    //! @brief write dof values to the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) override;
-
-    //! @brief extract dof values from the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const override;
-
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
     //! @return number of derivatives
@@ -103,20 +89,6 @@ public:
 
 
 private:
-
-    //! @brief extracts the appropriate dof value from the active dof vector or the dependent dof vector
-    //! @param rDofNumber ... dof number
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    //! @return dof value that corresponds to the rDofNumber
-    inline double GetDofValueFromVector(int rDofNumber, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) const;
-
-    //! @brief writes the appropriate dof value to the active dof vector or the dependent dof vector
-    //! @param rDofNumber ... dof number
-    //! @param rDofValue ... dof value
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    inline void WriteNodeValueToVector(int rDofNumber, double rDofValue, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const;
 
     //! @brief stores the dof values (std::vector for time derivatives, VectorXd for values)
     std::map<Node::eDof, std::vector<Eigen::VectorXd>> mDofValues;

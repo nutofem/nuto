@@ -473,13 +473,24 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
         auto& actDofValues = dofValues.J[dofType];
         auto& depDofValues = dofValues.K[dofType];
 
-        // extract dof values from nodes
-        BOOST_FOREACH(auto it, mNodeMap)
-            it->second->GetGlobalDofValues(rTimeDerivative, dofType, actDofValues, depDofValues);
+        int numActiveDofs = GetNumActiveDofs(dofType);
 
-        //extract dof values of additional DOFs
-        // NodeExtractAdditionalGlobalDofValues(rTimeDerivative, rActiveDofValues[dof],rDependentDofValues[dof]);
-        // I do not get this method. But obviously, it is not implemented at the moment. - TT
+        for (auto it : mNodeMap)
+        {
+            const NodeBase& node = *it->second;
+            if (not node.IsDof(dofType))
+                continue;
+
+            const auto& values = node.Get(dofType, rTimeDerivative);
+            for (int i = 0; i < values.rows(); ++i)
+            {
+                int dofNumber = node.GetDof(dofType, i); 
+                if (dofNumber < numActiveDofs)
+                    actDofValues[dofNumber] = values[i]; 
+                else
+                    depDofValues[dofNumber - numActiveDofs] = values[i];
+            }
+        }
     }
     return dofValues;
 }
@@ -487,27 +498,39 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
 void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues)
 {
     if (mAssembler.mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+        throw MechanicsException(__PRETTY_FUNCTION__, "a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
     for (auto dofType : DofTypesGetActive())
     {
         if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of active dof vector for " + Node::DofToString(dofType));
+            throw MechanicsException(__PRETTY_FUNCTION__,  "invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
         if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
+            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
-        // write dof values to the nodes
-        BOOST_FOREACH(auto it, mNodeMap)
-            it->second->SetGlobalDofValues(rTimeDerivative, dofType, rActiveDofValues[dofType], rDependentDofValues[dofType]);
+        auto& actDofValues = rActiveDofValues[dofType];
+        auto& depDofValues = rDependentDofValues[dofType];
+        int numActiveDofs = GetNumActiveDofs(dofType);
 
+        for (auto it : mNodeMap)
+        {
+            NodeBase& node = *it->second;
+            if (not node.IsDof(dofType))
+                continue;
 
-        //write the dof values of the Lagrange multipliers
-//        ConstraintMergeGlobalDofValues(rActiveDofValues, rDependentDofValues);
+            int numValues = node.GetNum(dofType);
+            Eigen::VectorXd values(numValues);
+            for (int i = 0; i < numValues; ++i)
+            {
+                int dofNumber = node.GetDof(dofType, i); 
+                if (dofNumber < numActiveDofs)
+                    values[i] = actDofValues[dofNumber]; 
+                else
+                    values[i] = depDofValues[dofNumber - numActiveDofs];
+            }
+            node.Set(dofType, rTimeDerivative, values);
+        }
 
-        //write dof values of additional DOFs
-//        NodeMergeAdditionalGlobalDofValues(rTimeDerivative,rActiveDofValues,rDependentDofValues);
-        // I do not get this method. But obviously, it is not implemented at the moment. - TT
     }
     this->mUpdateTmpStaticDataRequired=true;
 }

@@ -63,26 +63,6 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }
 
-    //! @brief write dof values to the node (based on global dof number) for a specific dof type
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
-    }
-
-    //! @brief extract dof values from the node (based on global dof number) for a specific dof type
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
-    }
-
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
     //! @return number of derivatives

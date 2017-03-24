@@ -37,45 +37,6 @@ void NuTo::NodeDof::SetDofNumber(Node::eDof dof, int component, int dofNumber)
     mDofNumbers[dof][component] = dofNumber;
 }
 
-void NuTo::NodeDof::SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType,
-                                       const Eigen::VectorXd& rActiveDofValues,
-                                       const Eigen::VectorXd& rDependentDofValues)
-{
-    auto it = mDofValues.find(rDofType);
-
-    if (mDofValues.find(rDofType) == mDofValues.end())
-        return; // the node does not have the requested dof type
-
-    assert(GetNumTimeDerivatives(rDofType) >= rTimeDerivative);
-
-    auto& values = it->second[rTimeDerivative];
-
-    for (int i = 0; i < values.rows(); ++i)
-    {
-        double dofValueToSet = GetDofValueFromVector(mDofNumbers[rDofType][i], rActiveDofValues, rDependentDofValues);
-        values[i] = dofValueToSet;
-    }
-}
-
-void NuTo::NodeDof::GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, Eigen::VectorXd& rActiveDofValues,
-                                       Eigen::VectorXd& rDependentDofValues) const
-{
-    const auto& it = mDofValues.find(rDofType);
-
-    if (it == mDofValues.end())
-        return; // the node does not have the requested dof type
-
-    assert(GetNumTimeDerivatives(rDofType) >= rTimeDerivative);
-
-    auto& values = it->second[rTimeDerivative];
-
-    for (int i = 0; i < values.rows(); ++i)
-    {
-        double dofValueToWrite = values[i];
-        WriteNodeValueToVector(mDofNumbers.at(rDofType)[i], dofValueToWrite, rActiveDofValues, rDependentDofValues);
-    }
-}
-
 int NuTo::NodeDof::GetNumTimeDerivatives(Node::eDof rDof) const
 {
     const auto& it = mDofValues.find(rDof);
@@ -172,36 +133,6 @@ std::string NuTo::NodeDof::GetNodeTypeStr() const
 NuTo::NodeBase* NuTo::NodeDof::Clone() const
 {
     return new NodeDof(*this);
-}
-
-double NuTo::NodeDof::GetDofValueFromVector(int rDofNumber, const Eigen::VectorXd& rActiveDofValues,
-                                            const Eigen::VectorXd& rDependentDofValues) const
-{
-    if (rDofNumber < rActiveDofValues.rows())
-    {
-        return rActiveDofValues(rDofNumber);
-    }
-    else
-    {
-        rDofNumber -= rActiveDofValues.rows();
-        assert(rDofNumber < rDependentDofValues.rows());
-        return rDependentDofValues(rDofNumber);
-    }
-}
-
-void NuTo::NodeDof::WriteNodeValueToVector(int rDofNumber, double rDofValue, Eigen::VectorXd& rActiveDofValues,
-                                           Eigen::VectorXd& rDependentDofValues) const
-{
-    if (rDofNumber < rActiveDofValues.rows())
-    {
-        rActiveDofValues(rDofNumber) = rDofValue;
-    }
-    else
-    {
-        rDofNumber -= rActiveDofValues.rows();
-        assert(rDofNumber < rDependentDofValues.rows());
-        rDependentDofValues(rDofNumber) = rDofValue;
-    }
 }
 
 #ifdef ENABLE_SERIALIZATION
