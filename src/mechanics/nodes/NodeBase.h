@@ -17,8 +17,6 @@
 #include <eigen3/Eigen/Dense>
 #include <map>
 #include <set>
-#include <vector>
-
 
 namespace NuTo
 {
@@ -56,9 +54,11 @@ public:
     //! @brief assignment operator
     NodeBase& operator=(NodeBase const& rOther) = default;
 
-    //! @brief sets the global dofs numbers for each dof type
-    //! @param rDofNumbers ... map containing the dof type and the current number
-    virtual void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
+    //! @brief sets the global dof number for a specific dof type and a component
+    //! @param dof ... specific dof type
+    //! @param component ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
+    //! @param dofNumber ... dof number
+    virtual void SetDofNumber(Node::eDof rDof, int rComponent, int dofNumber)
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }
@@ -82,14 +82,6 @@ public:
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }
-
-    //! @brief renumber the global dofs according to predefined ordering
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    virtual void RenumberGlobalDofs(Node::eDof rDof, std::vector<int>& rMappingInitialToNewOrdering)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
-    }
-
 
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type

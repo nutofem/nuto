@@ -27,8 +27,18 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     //
 
     for (auto it : rNodes)
-        it.second->SetGlobalDofsNumbers(numDofsMap);
-
+    {
+        NodeBase& node = *it->second;
+        for(auto dof : node.GetDofTypes())
+        {
+            if (not node.IsDof(dof))
+                continue;
+            for (int i = 0; i < node.GetNum(dof); ++i)
+            {
+                node.SetDofNumber(dof, i, numDofsMap[dof]++);
+            }
+        }
+    }
 
     mConstraintMatrix.AllocateSubmatrices();
     mConstraintMappingRHS.AllocateSubmatrices();
@@ -106,7 +116,13 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
 
         for (auto it : rNodes)
         {
-            it->second->RenumberGlobalDofs(dof, mappingInitialToNewOrdering);
+            NodeBase& node = *it->second;
+            for (int i = 0; i < node.GetNum(dof); ++i)
+            {
+                int initialDofNumber = node.GetDof(dof, i);
+                int newDofNumber = mappingInitialToNewOrdering[initialDofNumber];
+                node.SetDofNumber(dof, i, newDofNumber);
+            }
         }
     }
 
