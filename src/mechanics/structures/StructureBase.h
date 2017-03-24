@@ -6,23 +6,24 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 #include <eigen3/Eigen/Core>
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "mechanics/structures/Assembler.h"
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
 
-
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/MechanicsException.h"
 #include "StructureOutputBlockVector.h"
 
 
 namespace NuTo
 {
+class Assembler;
 class ConstitutiveBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ConstraintBase;
@@ -45,6 +46,8 @@ class TimeIntegrationBase;
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
 template<typename IOEnum> class ConstitutiveIOMap;
+template<class T> class BlockFullMatrix;
+template<class T> class BlockFullVector;
 template<class T> class Group;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
@@ -1640,7 +1643,14 @@ public:
     void SetVerboseLevel(unsigned short verboseLevel);
 
 #ifndef SWIG
-    NuTo::Assembler mAssembler;
+    const Assembler& GetAssembler() const
+    {
+        return *mAssembler;
+    }
+    Assembler& GetAssembler()
+    {
+        return *mAssembler;
+    }
 #endif
 
 protected:
@@ -1668,6 +1678,8 @@ protected:
 	int mNumTimeDerivatives;
 
     int mDimension;
+
+    std::unique_ptr<NuTo::Assembler> mAssembler;
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase

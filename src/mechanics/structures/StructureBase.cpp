@@ -77,6 +77,7 @@
 #include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/structures/Assembler.h"
 
 
 #ifdef ENABLE_VISUALIZE
@@ -88,7 +89,8 @@
 using namespace NuTo;
 
 NuTo::StructureBase::StructureBase(int rDimension) :
-        mShowTime(true)
+    mAssembler(std::make_unique<Assembler>()),
+    mShowTime(true)
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
     {
@@ -894,7 +896,7 @@ void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, boo
 
 void NuTo::StructureBase::DofTypeSetIsSymmetric(Node::eDof rDofType, bool rIsSymmetric)
 {
-    mAssembler.mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
+    GetAssembler().mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
 }
 
 bool NuTo::StructureBase::DofTypeIsSymmetric(Node::eDof rDofType) const
@@ -904,7 +906,7 @@ bool NuTo::StructureBase::DofTypeIsSymmetric(Node::eDof rDofType) const
 
 const NuTo::DofStatus& NuTo::StructureBase::GetDofStatus() const
 {
-    return mAssembler.mDofStatus;
+    return GetAssembler().mDofStatus;
 }
 
 void NuTo::StructureBase::UpdateDofStatus()
@@ -923,16 +925,16 @@ void NuTo::StructureBase::UpdateDofStatus()
     dofTypes.erase(Node::eDof::COORDINATES);
     activeDofTypes.erase(Node::eDof::COORDINATES);
 
-    mAssembler.mDofStatus.SetDofTypes(dofTypes);
-    mAssembler.mDofStatus.SetActiveDofTypes(activeDofTypes);
+    GetAssembler().mDofStatus.SetDofTypes(dofTypes);
+    GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-    mAssembler.mDofStatus.SetHasInteractingConstraints(mAssembler.mConstraintMatrix.GetNumActiveEntires() != 0);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().mConstraintMatrix.GetNumActiveEntires() != 0);
 }
 
 
 void NuTo::StructureBase::DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints)
 {
-    mAssembler.mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
 }
 
 
@@ -1004,7 +1006,7 @@ int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
 
 const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
 {
-    return mAssembler.mConstraintMatrix;
+    return GetAssembler().mConstraintMatrix;
 }
 
 void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)

@@ -6,6 +6,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/nodes/NodeBase.h"
+#include "mechanics/constraints/Constraints.h"
 
 namespace NuTo
 {
@@ -83,6 +84,8 @@ public:
     //! @brief ... map storing the constraints
     //! @sa ConstraintBase
     boost::ptr_map<int,ConstraintBase> mConstraintMap;
+
+    Constraint::Constraints mConstraints; 
 };
 
 } /* NuTo */

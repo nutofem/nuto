@@ -54,6 +54,7 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
+#include "mechanics/structures/Assembler.h"
 
 #include <ANN/ANN.h>
 #include <set>
@@ -792,7 +793,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         newNode->Set(Node::eDof::COORDINATES, node->Get(Node::eDof::COORDINATES) + rOffset);
     }
     //renumbering of dofs for global matrices required
-    mAssembler.mNodeNumberingRequired = true;
+    GetAssembler().mNodeNumberingRequired = true;
 
     std::vector<ElementBase*> elements;
     GetElementsTotal(elements);

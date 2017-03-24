@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-namespace Constaint
+namespace Constraint
 {
 
 class Term
@@ -12,7 +12,8 @@ class Term
 public:
     Term(const NodeBase& node, int component, double coefficient)
         : mNode(node)
-        , mComponent(component), mCoefficient(coefficient)
+        , mComponent(component)
+        , mCoefficient(coefficient)
     {
     }
 
@@ -32,7 +33,7 @@ public:
     }
 
 private:
-    const NodeBase& mNode;
+    std::reference_wrapper<const NodeBase> mNode;
     int mComponent;
     double mCoefficient;
 };
@@ -45,6 +46,11 @@ public:
     {
     }
 
+    Equation(const Equation&) = default;
+    Equation(Equation&&) = default;
+
+    Equation& operator=(const Equation&) = default;
+    Equation& operator=(Equation&&) = default;
     void AddTerm(Term term)
     {
         mTerms.push_back(term);
@@ -73,6 +79,11 @@ public:
     void AddEquation(NuTo::Node::eDof dof, Equation equation)
     {
         mEquations[dof].push_back(equation);
+    }
+
+    void AddEquations(NuTo::Node::eDof dof, std::vector<Equation> equations)
+    {
+        mEquations[dof].insert(mEquations[dof].end(), equations.begin(), equations.end());
     }
 
     Eigen::VectorXd GetRhs(NuTo::Node::eDof dof) const

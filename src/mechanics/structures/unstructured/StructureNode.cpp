@@ -13,6 +13,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/Assembler.h"
 
 int NuTo::Structure::GetNumNodes() const
 {
@@ -150,7 +151,7 @@ int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Nod
     this->mNodeMap.insert(id, nodePtr);
 
     //renumbering of dofs for global matrices required
-    mAssembler.mNodeNumberingRequired  = true;
+    GetAssembler().mNodeNumberingRequired  = true;
 
     //return int identifier of the new node
     return id;
@@ -262,7 +263,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
     //renumbering of dofs for global matrices required
-    mAssembler.mNodeNumberingRequired  = true;
+    GetAssembler().mNodeNumberingRequired  = true;
 }
 
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
@@ -319,7 +320,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
     //renumbering of dofs for global matrices required
-    mAssembler.mNodeNumberingRequired  = true;
+    GetAssembler().mNodeNumberingRequired  = true;
 
 }
 
@@ -359,7 +360,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
     //renumbering of dofs for global matrices required
-    mAssembler.mNodeNumberingRequired  = true;
+    GetAssembler().mNodeNumberingRequired  = true;
 }
 
 
@@ -423,21 +424,21 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
         // delete element from map
         this->mNodeMap.erase(itNode);
 
-        mAssembler.mNodeNumberingRequired = true;
+        GetAssembler().mNodeNumberingRequired = true;
     }
 }
 
 
 void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 {
-    if (not mAssembler.mNodeNumberingRequired)
+    if (not GetAssembler().mNodeNumberingRequired)
         return;
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     try
     {
         UpdateDofStatus();
-        mAssembler.BuildGlobalDofs(mNodeMap); 
+        GetAssembler().BuildGlobalDofs(mNodeMap); 
         UpdateDofStatus();
     }
     catch (MathException& e)
@@ -463,7 +464,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
 NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTimeDerivative) const
 {
-    if (mAssembler.mNodeNumberingRequired)
+    if (GetAssembler().mNodeNumberingRequired)
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
     StructureOutputBlockVector dofValues(GetDofStatus(), true); // with resize
@@ -497,7 +498,7 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
 
 void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues)
 {
-    if (mAssembler.mNodeNumberingRequired)
+    if (GetAssembler().mNodeNumberingRequired)
         throw MechanicsException(__PRETTY_FUNCTION__, "a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
     for (auto dofType : DofTypesGetActive())
@@ -540,10 +541,10 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
 NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const
 {
-    if (mAssembler.mNodeNumberingRequired)
+    if (GetAssembler().mNodeNumberingRequired)
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
-    return this->mAssembler.mConstraintRHS - this->mAssembler.mConstraintMatrix * rActiveDofValues;
+    return this->GetAssembler().mConstraintRHS - this->GetAssembler().mConstraintMatrix * rActiveDofValues;
 }
 
 
@@ -639,7 +640,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     }
 
     //in constraints
-    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mAssembler.mConstraintMap.begin();constraintIt!=mAssembler.mConstraintMap.end(); ++constraintIt)
+    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=GetAssembler().mConstraintMap.begin();constraintIt!=GetAssembler().mConstraintMap.end(); ++constraintIt)
     {
         constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
     }
