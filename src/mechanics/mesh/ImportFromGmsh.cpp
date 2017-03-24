@@ -301,7 +301,35 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
     return newNodeNumbers;
 }
 
+
+std::map<int, int> GmshNodes(const std::vector<GmshNode>& rGmshNodes)
+{
+    std::map<int, int> newNodeNumbers;
+    for (unsigned int nodeCount = 0; nodeCount < rGmshNodes.size(); nodeCount++)
+    {
+//        newNodeNumbers[rGmshNodes[nodeCount].id] = rGmshNodes[nodeCount].id;
+        newNodeNumbers[nodeCount] = rGmshNodes[nodeCount].id;
+    }
+    return newNodeNumbers;
+}
+
+
 std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string &rFileName)
+{
+    return ImportFromGmsh(rS, rFileName, true);
+}
+
+
+std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string &rFileName, bool useNewNumbers)
+{
+    std::map<int, int> nn;
+    std::map<int, int> gn;
+
+    return ImportFromGmsh(rS, rFileName, useNewNumbers, nn, gn);
+}
+
+
+std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string &rFileName, bool useNewNumbers, std::map<int, int>& newNodes, std::map<int, int>& gmshNodes)
 {
     std::ifstream file(rFileName.c_str(), std::ios::in);
     if (not file.is_open())
@@ -337,7 +365,21 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         elements = ReadElementsASCII(file);
     }
 
-    auto newNodeNumber = CreateNodes(rS, nodes);
+    std::map<int, int> newNodeNumber;
+    std::map<int, int> gmshNodeNumber;
+    if (useNewNumbers)
+    {
+        //auto newNodeNumber = CreateNodes(rS, nodes);
+        newNodeNumber = CreateNodes(rS, nodes);
+        gmshNodeNumber = GmshNodes(nodes);
+    }
+    else
+    {
+        newNodeNumber = GmshNodes(nodes);
+    }
+
+    newNodes = newNodeNumber;
+    gmshNodes = gmshNodeNumber;
 
     // allocate data structure for group id and interpolation type id
     std::map<int, std::set<int>> groupInterpolationIds;

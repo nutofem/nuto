@@ -741,8 +741,20 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
 
 std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
-    return MeshCompanion::ImportFromGmsh(*this, rFileName);
+    return MeshCompanion::ImportFromGmsh(*this, rFileName, true);
 }
+
+
+std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::string& rFileName, bool useNewNumbers)
+{
+    return MeshCompanion::ImportFromGmsh(*this, rFileName, useNewNumbers);
+}
+
+std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::string &rFileName, bool useNewNumbers, std::map<int, int>& newNodes, std::map<int, int>& gmshNodes)
+{
+    return MeshCompanion::ImportFromGmsh(*this, rFileName, useNewNumbers, newNodes, gmshNodes);
+}
+
 
 
 void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)

@@ -233,6 +233,7 @@ endif()
 
 # find pardiso solver
 if(ENABLE_PARDISO)
+    SET(PARDISO_ROOT /home/briedel/install/PARDISO)
     if(NOT PARDISO_ROOT AND NOT DEFINED $ENV{PARDISO_ROOT})
         if(NUTO_EXTERNAL_LIBRARIES_ROOT)
             set(PARDISO_ROOT ${NUTO_EXTERNAL_LIBRARIES_ROOT})

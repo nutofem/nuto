@@ -421,6 +421,8 @@ public:
     //! @param rFileName File name
     //! @return Vector of pair, with element.first containing the group id, and element.second the interpolation type id
     std::vector<std::pair<int, int>> ImportFromGmsh(const std::string& rFileName);
+    std::vector<std::pair<int, int>> ImportFromGmsh(const std::string& rFileName, bool useNewNumbers);
+    std::vector<std::pair<int, int>> ImportFromGmsh(const std::string &rFileName, bool useNewNumbers, std::map<int, int>& newNodes, std::map<int, int>& gmshNodes);
 
     //*************************************************
     //**      InterpolationType routines             **
@@ -598,6 +600,7 @@ protected:
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements) override;
 
+public:
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const override;
@@ -615,6 +618,7 @@ protected:
     void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes) override;
 #endif
 
+protected:
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
     //! @param checkElements ... check the elements, if set to false, make sure that the node is not part of any element

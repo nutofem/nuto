@@ -23,6 +23,8 @@ namespace MeshCompanion
 //! @param rFileName File name
 //! @return Vector of pair, with element.first containing the group id, and element.second the interpolation type id
 std::vector<std::pair<int, int>> ImportFromGmsh(Structure& rS, const std::string &rFileName);
+std::vector<std::pair<int, int>> ImportFromGmsh(Structure& rS, const std::string &rFileName, bool useNewNumbers);
+std::vector<std::pair<int, int>> ImportFromGmsh(Structure& rS, const std::string &rFileName, bool useNewNumbers, std::map<int, int> &newNodes, std::map<int, int> &gmshNodes);
 
 //! @brief changes the node structure to match the interpolation type for all elements
 //! the node merge distance and the box size are calculated from the element sizes
