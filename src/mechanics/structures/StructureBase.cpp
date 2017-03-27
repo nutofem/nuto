@@ -806,26 +806,9 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
         auto& vectorJ = externalLoad.J[Node::eDof::DISPLACEMENTS];
         auto& vectorK = externalLoad.K[Node::eDof::DISPLACEMENTS];
 
-
-        // loop over all loads
-        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
-        while (loadIter != this->mLoadMap.end())
+        for (const auto& load : mLoadMap)
         {
-            loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
-            loadIter++;
-        }
-    }
-    if (DofTypeIsActive(Node::eDof::TEMPERATURE))
-    {
-        auto& vectorJ = externalLoad.J[Node::eDof::TEMPERATURE];
-        auto& vectorK = externalLoad.K[Node::eDof::TEMPERATURE];
-
-        // loop over all loads
-        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
-        while (loadIter != this->mLoadMap.end())
-        {
-            loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
-            loadIter++;
+            load.second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
         }
     }
     return externalLoad;
