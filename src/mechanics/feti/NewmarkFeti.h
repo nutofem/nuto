@@ -36,8 +36,13 @@ template <class EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen
 class NewmarkFeti : public NewmarkDirect
 {
 public:
-    using VectorXd     = Eigen::VectorXd;
-    using MatrixXd     = Eigen::MatrixXd;
+    enum class eIterativeSolver
+    {
+        ConjugateGradient,
+        BiconjugateGradientStabilized
+    };
+    using VectorXd = Eigen::VectorXd;
+    using MatrixXd = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
     ///
     /// \brief NewmarkFeti
@@ -81,7 +86,7 @@ public:
         std::vector<int> displ;
         MpiGatherRecvCountAndDispls(recvCount, displ, interfaceRigidBodyModes.size());
 
-        const int numInterfaceEqs              = interfaceRigidBodyModes.rows();
+        const int numInterfaceEqs = interfaceRigidBodyModes.rows();
         MatrixXd interfaceRigidBodyModesGlobal = MatrixXd::Zero(numInterfaceEqs, numRigidBodyModesGlobal);
 
         MPI_Allgatherv(interfaceRigidBodyModes.data(), interfaceRigidBodyModes.size(), MPI_DOUBLE,
@@ -133,7 +138,7 @@ public:
         // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
         displs.clear();
         displs.resize(numProcesses, 0);
-        for (int i    = 1; i < numProcesses; ++i)
+        for (int i = 1; i < numProcesses; ++i)
             displs[i] = displs[i - 1] + recvCount[i - 1];
     }
 
@@ -147,38 +152,38 @@ public:
 
         boost::mpi::communicator world;
 
-        StructureFeti* structure  = static_cast<StructureFeti*>(mStructure);
-        const SparseMatrix& B     = structure->GetConnectivityMatrix();
+        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
+        const SparseMatrix& B = structure->GetConnectivityMatrix();
         const SparseMatrix Btrans = B.transpose();
 
         world.barrier();
 
 
-        const int numActiveDofs     = mStructure->GetNumTotalActiveDofs();
+        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
         const int numRigidBodyModes = structure->GetNumRigidBodyModes();
 
         // solve the linear system Ax = b
         VectorXd tmp;
         tmp.setZero(numActiveDofs + numRigidBodyModes);
         tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax             = B * tmp;
+        VectorXd Ax = B * tmp;
         MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         VectorXd Ay = Ax;
         VectorXd Az = Ax;
 
         const int n = rhs.rows();
-        VectorXd r  = rhs - Ax;
+        VectorXd r = rhs - Ax;
         //    VectorXd r0 = r;
 
-        VectorXd rProj  = projection * r;
+        VectorXd rProj = projection * r;
         VectorXd rProj0 = rProj;
 
         double rProj0_sqnorm = rProj0.squaredNorm();
-        double rhs_sqnorm    = rhs.squaredNorm();
-        double rho           = 1.;
-        double alpha         = 1.;
-        double w             = 1.;
+        double rhs_sqnorm = rhs.squaredNorm();
+        double rho = 1.;
+        double alpha = 1.;
+        double w = 1.;
 
         VectorXd v = VectorXd::Zero(n);
         VectorXd p = VectorXd::Zero(n);
@@ -189,7 +194,7 @@ public:
 
         const double tol2 = 1.0e-7 * rhs_sqnorm;
 
-        int i        = 0;
+        int i = 0;
         int restarts = 0;
 
         const int maxIters = mCpgMaxIterations;
@@ -213,12 +218,12 @@ public:
                 // Let's restart with a new r0:
 
                 tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-                Ax.noalias()            = B * tmp;
+                Ax.noalias() = B * tmp;
 
                 MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 
-                rProj  = projection * (rhs - Ax);
+                rProj = projection * (rhs - Ax);
                 rProj0 = rProj;
                 rho = rProj0_sqnorm = rProj.squaredNorm();
                 if (restarts++ == 0)
@@ -234,7 +239,7 @@ public:
             //                        y = p;
 
             tmp.head(numActiveDofs) = mSolver.solve((Btrans * y).head(numActiveDofs));
-            Ay.noalias()            = B * tmp;
+            Ay.noalias() = B * tmp;
 
             MPI_Allreduce(MPI_IN_PLACE, Ay.data(), Ay.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
@@ -249,7 +254,7 @@ public:
             //                        z = s;
 
             tmp.head(numActiveDofs) = mSolver.solve((Btrans * z).head(numActiveDofs));
-            Az.noalias()            = B * tmp;
+            Az.noalias() = B * tmp;
 
             MPI_Allreduce(MPI_IN_PLACE, Az.data(), Az.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
@@ -287,18 +292,18 @@ public:
 
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
-        const SparseMatrix& B     = structure->GetConnectivityMatrix();
+        const SparseMatrix& B = structure->GetConnectivityMatrix();
         const SparseMatrix Btrans = B.transpose();
 
         world.barrier();
 
-        const int numActiveDofs     = mStructure->GetNumTotalActiveDofs();
+        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
         const int numRigidBodyModes = structure->GetNumRigidBodyModes();
 
         VectorXd tmp;
         tmp.setZero(numActiveDofs + numRigidBodyModes);
         tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax             = B * tmp;
+        VectorXd Ax = B * tmp;
 
         world.barrier();
 
@@ -322,7 +327,7 @@ public:
         //    p = w;
 
         const double rhs_sqnorm = rhs.squaredNorm();
-        const double threshold  = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
+        const double threshold = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
 
         double absNew = w.dot(p);
         int iteration = 0;
@@ -332,7 +337,7 @@ public:
             world.barrier();
 
             tmp.head(numActiveDofs) = mSolver.solve((Btrans * p).head(numActiveDofs));
-            Ap.noalias()            = B * tmp;
+            Ap.noalias() = B * tmp;
 
             world.barrier();
             MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -356,9 +361,9 @@ public:
 
 
             double absOld = absNew;
-            absNew        = w.dot(z); // update the absolute value of r
-            double beta   = absNew / absOld; // calculate the Gram-Schmidt value used to create the new search direction
-            p             = z + beta * p; // update search direction
+            absNew = w.dot(z); // update the absolute value of r
+            double beta = absNew / absOld; // calculate the Gram-Schmidt value used to create the new search direction
+            p = z + beta * p; // update search direction
 
             structure->GetLogger() << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
                                    << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
@@ -392,18 +397,16 @@ public:
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
 
-        const SparseMatrix& B     = structure->GetConnectivityMatrix();
+        const SparseMatrix& B = structure->GetConnectivityMatrix();
         const SparseMatrix Btrans = B.transpose();
 
-        const int numRigidBodyModesLocal  = structure->GetNumRigidBodyModes();
+        const int numRigidBodyModesLocal = structure->GetNumRigidBodyModes();
         const int numRigidBodyModesGlobal = structure->GetNumRigidBodyModesTotal();
 
         const int numTotalActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numTotalDofs       = mStructure->GetNumTotalDofs();
+        const int numTotalDofs = mStructure->GetNumTotalDofs();
 
         const MatrixXd& rigidBodyModes = structure->GetRigidBodyModes();
-
-
 
 
         // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
@@ -417,7 +420,6 @@ public:
         VectorXd rigidBodyForceVectorLocal = rigidBodyModes.transpose() * residual_mod;
 
 
-
         //
         //     | R_1^T f        |
         // e = |     :          |
@@ -427,11 +429,8 @@ public:
                 mFetiSolver.GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
 
 
-
-
         // initial guess for lambda
         deltaLambda = G * GtransGinv * rigidBodyForceVectorGlobal;
-
 
 
         //*****************************************
@@ -444,13 +443,10 @@ public:
         pseudoInvVec.setZero(numTotalDofs);
 
 
-
         pseudoInvVec.head(numTotalActiveDofs) = mSolver.solve(residual_mod.head(numTotalActiveDofs));
 
 
-        VectorXd displacementGap              = B * pseudoInvVec;
-
-
+        VectorXd displacementGap = B * pseudoInvVec;
 
 
         boost::mpi::all_reduce(world, boost::mpi::inplace(displacementGap.data()), displacementGap.size(),
@@ -462,8 +458,6 @@ public:
         displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
 
 
-        //        //MPI_Barrier(MPI_COMM_WORLD);
-
         VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
 
@@ -473,23 +467,36 @@ public:
 
         mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
-        //        //MPI_Barrier(MPI_COMM_WORLD);
 
-        structure->GetLogger() << "\n*************************************\n";
-        structure->GetLogger() << "       Start Interface Problem           ";
-        structure->GetLogger() << "\n*************************************\n\n";
+        structure->GetLogger() << "*********************************** \n"
+                               << "**      Start Interface Problem  ** \n"
+                               << "*********************************** \n\n";
 
-        ////MPI_Barrier(MPI_COMM_WORLD);
+        int iterations = 0;
 
-        //        int iteration = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
-        int iteration = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+        switch (mIterativeSolver)
+        {
+            case eIterativeSolver::ConjugateGradient :
+            {
+                int iterations = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+                break;
+            }
 
-        if (iteration >= mCpgMaxIterations)
+            case eIterativeSolver::BiconjugateGradientStabilized :
+            {
+                int iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+                break;
+            }
+        }
+
+
+
+        if (iterations >= mCpgMaxIterations)
             throw MechanicsException(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
 
-        structure->GetLogger() << "\n*************************************\n";
-        structure->GetLogger() << "       End Interface Problem             ";
-        structure->GetLogger() << "\n*************************************\n\n";
+        structure->GetLogger() << "*********************************** \n"
+                               << "**      End   Interface Problem  ** \n"
+                               << "*********************************** \n\n";
 
 
         // MPI_Barrier(MPI_COMM_WORLD);
@@ -508,7 +515,6 @@ public:
             throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
-        // MPI_Barrier(MPI_COMM_WORLD);
 
         //*****************************************
         //
@@ -524,7 +530,7 @@ public:
         boost::mpi::all_reduce(world, boost::mpi::inplace(tmp.data()), tmp.size(), std::plus<double>());
 
         VectorXd alphaGlobal = VectorXd::Zero(numRigidBodyModesGlobal);
-        alphaGlobal          = GtransGinv * G.transpose() * (displacementGap - tmp);
+        alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
 
 
         // MPI_Barrier(MPI_COMM_WORLD);
@@ -610,7 +616,7 @@ public:
                                     << "******************************************** \n\n";
 
             structure->AssembleConnectivityMatrix();
-            const SparseMatrix& B     = structure->GetConnectivityMatrix();
+            const SparseMatrix& B = structure->GetConnectivityMatrix();
             const SparseMatrix Btrans = B.transpose();
 
             mStructure->GetLogger() << "******************************************** \n"
@@ -630,14 +636,14 @@ public:
             structure->CheckProjectionOfCoarseGrid();
 
             const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-            const int numTotalDofs  = mStructure->GetNumTotalDofs();
+            const int numTotalDofs = mStructure->GetNumTotalDofs();
 
 
-            VectorXd deltaLambda          = VectorXd::Zero(B.rows());
-            VectorXd lambda               = VectorXd::Zero(B.rows());
+            VectorXd deltaLambda = VectorXd::Zero(B.rows());
+            VectorXd lambda = VectorXd::Zero(B.rows());
             VectorXd lastConverged_lambda = VectorXd::Zero(B.rows());
 
-            double curTime  = mTime;
+            double curTime = mTime;
             double timeStep = mTimeStep;
 
 
@@ -705,16 +711,16 @@ public:
             std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluateInternalGradientHessian0Hessian1;
             std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluateHessian0Hessian1;
 
-            evaluateInternalGradient[eStructureOutput::INTERNAL_GRADIENT]                 = &intForce;
+            evaluateInternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
             evaluateInternalGradientHessian0Hessian1[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
-            evaluateInternalGradientHessian0Hessian1[eStructureOutput::HESSIAN0]          = &hessian0;
-            evaluateHessian0Hessian1[eStructureOutput::HESSIAN0]                          = &hessian0;
+            evaluateInternalGradientHessian0Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
+            evaluateHessian0Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
 
             if (mStructure->GetNumTimeDerivatives() >= 1 and mMuDampingMass == 0.)
             {
                 hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
                 evaluateInternalGradientHessian0Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
-                evaluateHessian0Hessian1[eStructureOutput::HESSIAN1]                 = &hessian1;
+                evaluateHessian0Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
             }
 
             //********************************************
@@ -768,13 +774,13 @@ public:
                     mStructure->GetLogger() << "intForce norm: \t"
                                             << intForce.J.Export().norm() + intForce.K.Export().norm() << "\n\n";
 
-                    residual   = extForce - intForce;
+                    residual = extForce - intForce;
                     residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs),
                                                          dofStatus);
 
                     VectorXd rhs;
                     rhs.setZero(numTotalDofs);
-                    rhs.head(numActiveDofs)     = residual.J.Export();
+                    rhs.head(numActiveDofs) = residual.J.Export();
                     rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
 
                     mStructure->GetLogger() << "Rhs norm: \t" << rhs.norm() << "\n\n";
@@ -788,8 +794,10 @@ public:
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
 
-//                    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> qr(hessian0.JJ.ExportToEigenSparseMatrix());
-//                    mStructure->GetLogger() << "qr.rows() - qr.rank();: \t" << qr.rows() - qr.rank() << "\n\n";
+                    //                    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>
+                    //                    qr(hessian0.JJ.ExportToEigenSparseMatrix());
+                    //                    mStructure->GetLogger() << "qr.rows() - qr.rank();: \t" << qr.rows() -
+                    //                    qr.rank() << "\n\n";
 
                     mLocalPreconditioner.resize(B.rows(), B.rows());
                     //                                        mLocalPreconditioner.setIdentity();
@@ -801,7 +809,7 @@ public:
                     K.conservativeResize(numTotalDofs, numTotalDofs);
 
                     mLocalPreconditioner = B * K * Btrans;
-                    
+
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
 
@@ -826,13 +834,13 @@ public:
                     mStructure->Evaluate(inputMap, evaluateInternalGradient);
                     // ******************************************************
 
-                    residual   = extForce - intForce;
+                    residual = extForce - intForce;
                     residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs),
                                                          dofStatus);
 
 
                     rhs.setZero(numTotalDofs);
-                    rhs.head(numActiveDofs)     = residual.J.Export();
+                    rhs.head(numActiveDofs) = residual.J.Export();
                     rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
 
                     normResidual = residual.J.CalculateInfNorm();
@@ -849,8 +857,6 @@ public:
                     int iteration = 0;
                     while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
                     {
-
-
 
 
                         // ******************************************************
@@ -875,12 +881,12 @@ public:
                         // ******************************************************
 
 
-                        residual   = extForce - intForce;
+                        residual = extForce - intForce;
                         residual.J = BlockFullVector<double>(
                                 residual.J.Export() - (Btrans * lambda).head(numActiveDofs), dofStatus);
 
                         rhs.setZero(numTotalDofs);
-                        rhs.head(numActiveDofs)     = residual.J.Export();
+                        rhs.head(numActiveDofs) = residual.J.Export();
                         rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
 
                         normResidual = residual.J.CalculateInfNorm();
@@ -905,7 +911,7 @@ public:
 
                         // store converged step
                         lastConverged_dof_dt0 = dof_dt0;
-                        lastConverged_lambda  = lambda;
+                        lastConverged_lambda = lambda;
 
                         prevResidual = residual;
 
@@ -985,20 +991,16 @@ public:
         // extract the two data points
         const double loadFactor1 = mTimeDependentLoadFactor(0, 1);
         const double loadFactor2 = mTimeDependentLoadFactor(1, 1);
-        const double time1       = mTimeDependentLoadFactor(0, 0);
-        const double time2       = mTimeDependentLoadFactor(1, 0);
+        const double time1 = mTimeDependentLoadFactor(0, 0);
+        const double time2 = mTimeDependentLoadFactor(1, 0);
 
         return loadFactor1 + (loadFactor2 - loadFactor1) / (time2 - time1) * (rTime - time1);
     }
 
-    void TestPreconditionedBiCgStab()
+
+    void SetIterativeSolver(eIterativeSolver iterativeSolver)
     {
-
-        VectorXd x;
-        const MatrixXd projection;
-        const VectorXd rhs;
-
-        BiCgStab(projection, x, rhs);
+        mIterativeSolver = iterativeSolver;
     }
 
 private:
@@ -1006,7 +1008,8 @@ private:
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
-    const double mCpgTolerance  = 1.0e-4;
+    const double mCpgTolerance = 1.0e-4;
     const int mCpgMaxIterations = 1000;
+    eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
 };
 } // namespace NuTo
