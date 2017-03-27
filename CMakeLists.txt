@@ -34,8 +34,8 @@ include(CompilerFlags)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
-include_directories(external/jsoncpp/dist/)
-include_directories(external/)
+include_directories(SYSTEM external/jsoncpp/dist/)
+include_directories(SYSTEM external/)
 
 if(ENABLE_MPI)
 
