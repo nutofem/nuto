@@ -11,6 +11,7 @@
 
 #include "math/MathException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -320,7 +321,7 @@ void run3d()
     myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, Parameters::mMatrixTensileStrength);
     myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, Parameters::mMatrixCompressiveStrength);
     myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, Parameters::mMatrixNonlocalRadius);
-    myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, Parameters::mMatrixFractureEnergy);
+    myStructure.ConstitutiveLawSetDamageLaw(matrixMaterial, NuTo::Constitutive::DamageLawExponential::Create(Parameters::mMatrixTensileStrength / Parameters::mMatrixYoungsModulus, Parameters::mMatrixTensileStrength / Parameters::mMatrixFractureEnergy));
 
     int fibreMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mFibreYoungsModulus);

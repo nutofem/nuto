@@ -24,6 +24,7 @@
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 
 %include "mechanics/Sections.i"
+%include "mechanics/DamageLaws.i"
 
 %include "base/CallbackInterface.h"
 

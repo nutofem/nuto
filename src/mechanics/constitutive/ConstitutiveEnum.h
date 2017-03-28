@@ -66,28 +66,11 @@ enum class eSolutionPhaseType
 	NONLINEAR_CRACKED           //!< nonlinear with crack enrichment
 };
 
-enum class eDamageLawType
-{
-    ISOTROPIC_NO_SOFTENING,                         //!< constant post peak behaviour
-    ISOTROPIC_LINEAR_SOFTENING,                     //!< linear
-    ISOTROPIC_EXPONENTIAL_SOFTENING,                //!< exponential
-    ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD,       //!< exponential with residual loading capacity
-    ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
-};
-
-const std::map<eDamageLawType, std::string> GetDamageLawMap();
-std::string DamageLawToString(eDamageLawType rDamageLaw);
-eDamageLawType DamageLawToEnum(std::string rDamageLaw);
-
-
 enum class ePhaseFieldEnergyDecomposition
 {
     ISOTROPIC,                                              //!< isotropic degradation
     ANISOTROPIC_SPECTRAL_DECOMPOSITION,                     //!< spectral decompostion of the elastic strain tensor proposed by Miehe et al.
 };
-
-
-
 
 enum class eConstitutiveParameter
 {
@@ -121,7 +104,6 @@ enum class eConstitutiveParameter
     MACROSCOPIC_BULK_MODULUS,                   //!<
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
-    MAX_OMEGA,                                  //!<
     NONLOCAL_RADIUS,                            //!<
     NORMAL_STIFFNESS,                           //!<
     POISSONS_RATIO,                             //!<

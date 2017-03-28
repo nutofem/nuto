@@ -23,9 +23,9 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
+#include "mechanics/constitutive/damageLaws/DamageLaw.h"
 
 
-using NuTo::Constitutive::eDamageLawType;
 using NuTo::Constitutive::eConstitutiveParameter;
 using NuTo::Constitutive::eOutput;
 using NuTo::Constitutive::eInput;
@@ -39,8 +39,7 @@ NuTo::LocalDamageModel::LocalDamageModel()
     , mPoissonsRatio(0.)
     , mTensileStrength(0.)
     , mCompressiveStrength(0.)
-    , mFractureEnergy(0.)
-    , mDamageLawType(eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD)
+    , mDamageLaw()
 {
 }
 
@@ -63,14 +62,8 @@ double NuTo::LocalDamageModel::GetParameterDouble(eConstitutiveParameter rIdenti
     case eConstitutiveParameter::TENSILE_STRENGTH:
         return mTensileStrength;
 
-    case eConstitutiveParameter::FRACTURE_ENERGY:
-        return mFractureEnergy;
-
     case eConstitutiveParameter::COMPRESSIVE_STRENGTH:
         return mCompressiveStrength;
-
-    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-        return static_cast<double>(mDamageLawType);
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
@@ -83,10 +76,6 @@ void NuTo::LocalDamageModel::SetParameterDouble(eConstitutiveParameter rIdentifi
     {
     case eConstitutiveParameter::COMPRESSIVE_STRENGTH:
         mCompressiveStrength = rValue;
-        break;
-
-    case eConstitutiveParameter::FRACTURE_ENERGY:
-        mFractureEnergy = rValue;
         break;
 
     case eConstitutiveParameter::DENSITY:
@@ -103,10 +92,6 @@ void NuTo::LocalDamageModel::SetParameterDouble(eConstitutiveParameter rIdentifi
 
     case eConstitutiveParameter::TENSILE_STRENGTH:
         mTensileStrength = rValue;
-        break;
-
-    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-        mDamageLawType = (Constitutive::eDamageLawType)rValue;
         break;
 
     default:
@@ -155,7 +140,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
                                          mPoissonsRatio, planeState.GetPlaneState());
     double localEqStrain = eeq.Get();
 
-    double omega = CalculateDamage(kappa);
+    double omega = mDamageLaw->CalculateDamage(kappa);
 
     bool performUpdateAtEnd = false;
 
@@ -201,7 +186,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3, 3>(itOutput.first, __PRETTY_FUNCTION__);
 
-            double dDamageDKappa       = CalculateDerivativeDamage(kappa);
+            double dDamageDKappa = mDamageLaw->CalculateDerivative(kappa);
             auto dLocalEqStrainDStrain = eeq.GetDerivative();
 
             auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
@@ -247,7 +232,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
         case eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
-            error[0]                  = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
             break;
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
@@ -291,7 +276,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
                                          planeState.GetPlaneState());
     double localEqStrain = eeq.Get();
 
-    double omega = CalculateDamage(kappa);
+    double omega = mDamageLaw->CalculateDamage(kappa);
 
     bool performUpdateAtEnd = false;
 
@@ -334,7 +319,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
         {
             Eigen::Matrix3d& tangent = dynamic_cast<Eigen::Matrix3d&>(*itOutput.second);
 
-            double dDamageDKappa       = CalculateDerivativeDamage(kappa);
+            double dDamageDKappa = mDamageLaw->CalculateDerivative(kappa);
             auto dLocalEqStrainDStrain = eeq.GetDerivative();
 
             auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
@@ -377,7 +362,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
         case eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
-            error[0]                  = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
             break;
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
@@ -409,7 +394,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
                                          const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     double kappa = GetCurrentStaticData<3>(rStaticData, rConstitutiveInput);
-    double omega = CalculateDamage(kappa);
+    double omega = mDamageLaw->CalculateDamage(kappa);
 
     // get constitutive inputs
     const auto& strainEl = rConstitutiveInput.at(eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
@@ -421,7 +406,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
 
     // calculate coefficients
     double C11 = 0, C12 = 0, C44 = 0;
-    std::tie(C11, C12, C44)      = EngineeringStressHelper::CalculateCoefficients3D(mYoungsModulus, mPoissonsRatio);
+    std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(mYoungsModulus, mPoissonsRatio);
 
     /////////////////////////////////////////////////
     //         LOOP OVER OUTPUT REQUESTS           //
@@ -450,7 +435,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
         {
             Eigen::Matrix<double, 6, 6>& tangent = dynamic_cast<Eigen::Matrix<double, 6, 6>&>(*itOutput.second);
 
-            double dDamageDKappa       = CalculateDerivativeDamage(kappa);
+            double dDamageDKappa = mDamageLaw->CalculateDerivative(kappa);
             auto dLocalEqStrainDStrain = eeq.GetDerivative();
 
             auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
@@ -521,7 +506,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
         case eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
-            error[0]                  = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(rStaticData, rConstitutiveInput);
             break;
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
@@ -602,7 +587,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
         }
 
 
-        int index       = calculateStaticData.GetIndexOfPreviousStaticData();
+        int index = calculateStaticData.GetIndexOfPreviousStaticData();
         double oldKappa = rStaticData.GetData(index);
         return std::max(localEqStrain, oldKappa);
     }
@@ -642,82 +627,10 @@ NuTo::LocalDamageModel::CalculateStaticDataExtrapolationError(Data& rStaticData,
     double localEqStrain = eeq.Get();
     //    double k_n_t = rStaticData.GetData(0);
     double k_nn = rStaticData.GetData(1);
-    double k_n  = std::max(localEqStrain, k_nn); // calculate kappa implicitly
+    double k_n = std::max(localEqStrain, k_nn); // calculate kappa implicitly
 
     return (k_n - k_nn) / k_n;
-
-    // other option:
-    return (k_n - k_nn) * CalculateDerivativeDamage(k_n + mTensileStrength / mYoungsModulus);
 }
-
-
-double NuTo::LocalDamageModel::CalculateDamage(double rKappa) const
-{
-    double omega = 0;
-    double e_0   = mTensileStrength / mYoungsModulus;
-    double e_f   = mFractureEnergy / mTensileStrength;
-
-    switch (mDamageLawType)
-    {
-    case eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
-    {
-        if (rKappa > e_0)
-        {
-            omega = 1 - (1 - mMaxDamage) -
-                    mMaxDamage * e_0 / rKappa * (1 - mAlpha + mAlpha * std::exp((e_0 - rKappa) / e_f));
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            omega = 1 - e_0 / rKappa * std::exp((e_0 - rKappa) / e_f);
-        }
-        break;
-    }
-
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "The required damage law is not implemented. ");
-    }
-
-    return omega;
-}
-
-double NuTo::LocalDamageModel::CalculateDerivativeDamage(double rKappa) const
-{
-    double DomegaDkappa = 0;
-
-    double e_0 = mTensileStrength / mYoungsModulus;
-    double e_f = mFractureEnergy / mTensileStrength;
-
-    switch (mDamageLawType)
-    {
-    case eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
-    {
-        if (rKappa > e_0)
-        {
-            DomegaDkappa = mMaxDamage * e_0 / rKappa *
-                           ((1 / rKappa + 1 / e_f) * mAlpha * std::exp((e_0 - rKappa) / e_f) + (1 - mAlpha) / rKappa);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            DomegaDkappa = e_0 / rKappa * (1 / rKappa + 1 / e_f) * exp((e_0 - rKappa) / e_f);
-        }
-        break;
-    }
-
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "The required damage law is not implemented. ");
-    }
-
-    return DomegaDkappa;
-}
-
 
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class

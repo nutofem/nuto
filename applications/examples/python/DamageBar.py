@@ -44,8 +44,7 @@ structure.ConstitutiveLawSetParameterDouble(damage, "POISSONS_RATIO", 0.2)
 structure.ConstitutiveLawSetParameterDouble(damage, "NONLOCAL_RADIUS", 1)
 structure.ConstitutiveLawSetParameterDouble(damage, "TENSILE_STRENGTH", 4.)
 structure.ConstitutiveLawSetParameterDouble(damage, "COMPRESSIVE_STRENGTH", 4. * 10)
-structure.ConstitutiveLawSetParameterDouble(damage, "FRACTURE_ENERGY", 0.021)
-structure.ConstitutiveLawSetDamageLaw(damage, "ISOTROPIC_EXPONENTIAL_SOFTENING")
+structure.ConstitutiveLawSetDamageLaw(damage, nuto.DamageLawExponential.Create(4./20000, 4./0.021))
 
 structure.ElementTotalSetConstitutiveLaw(damage)
 

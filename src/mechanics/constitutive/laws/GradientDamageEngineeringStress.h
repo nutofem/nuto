@@ -106,21 +106,17 @@ public:
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override {return false;}
 
-    //! @brief ... calculate the isotropic damage variable from the nonlocal eq strain history variable
-    //! kappa and the damage law parameters (class members)
-    //! \f$ \omega = 1 - \frac{\varepsilon_0}{\kappa} \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
-    //! @param rKappa ... history variable
-    //! @return isotropic damage variable
-    double CalculateDamage(double rKappa) const;
-
-    //! @brief ... calculate the D_Omega_D_Kappa from the nonlocal eq strain history variable
-    //! kappa and the damage law parameters (class members)
-    //! \f$ \frac{\partial \omega}{\partial \kappa} = \frac{\varepsilon_0}{\kappa} \left(\frac{1}{\kappa} + \frac{1}{\varepsilon_f} \right) \exp \left(\frac{\varepsilon_0 - \kappa}{\varepsilon_f} \right) \f$
-    //! @param rKappa ... history variable
-    //! @return ... isotropic damage variable
-    double CalculateDerivativeDamage(double rKappa) const;
-
     void SetExtrapolation(std::shared_ptr<ImplExCallback> rCallback);
+
+    void SetDamageLaw(std::shared_ptr<Constitutive::DamageLaw> damageLaw) override
+    {
+        mDamageLaw = damageLaw;
+    }
+
+    Constitutive::DamageLaw& GetDamageLaw()
+    {
+        return *mDamageLaw;
+    }
 
 protected:
 
@@ -166,24 +162,10 @@ protected:
     //! @brief ... uniaxial compressive strength
     double mCompressiveStrength;
 
-    //! @brief ... fracture energy
-    double mFractureEnergy;
-
     //! @brief ... damage law type
-    Constitutive::eDamageLawType mDamageLawType;
+    std::shared_ptr<Constitutive::DamageLaw> mDamageLaw;
 
     std::shared_ptr<ImplExCallback> mImplExCallback;
-
-    //! @brief ... max omega, sometimes called alpha
-    double mMaxOmega;
-
-private:
-
-    //! @brief calculates the tangent \f$ \frac{1}{\xi} - \frac{\varepsilon_{eq} - \bar{\varepsilon}_{eq}}{\xi^2}\frac{\partial \xi}{\partial \varepsilon_{eq}}   \f$
-    double CalculateLocalEqStrainXiFactor(double rLocalEqStrain, double rNonlocalEqStrain) const;
-
-    //! @brief calculates \f$ \xi = c_0 + (c-c_0)\left(\frac{\varepsilon_{eq}}{e_{\xi}} \right) \f$
-    double CalculateXi(double rLocalEqStrain) const;
 
 };
 }

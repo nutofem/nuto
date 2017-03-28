@@ -307,27 +307,18 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
 }
 
 
-void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw)
+void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int lawId, std::shared_ptr<Constitutive::DamageLaw> damageLaw)
 {
     try
     {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        constitutiveLawPtr->SetParameterDouble(Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(rDamageLaw));
+        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(lawId);
+        constitutiveLawPtr->SetDamageLaw(damageLaw);
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting damage law.");
         throw;
     }
 }
-
-
-
-void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, std::string rDamageLaw)
-{
-    ConstitutiveLawSetDamageLaw(rIdent, Constitutive::DamageLawToEnum(rDamageLaw));
-}
-
-//****************************
 
 double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, Eigen::VectorXd rCoeffs) const
 {

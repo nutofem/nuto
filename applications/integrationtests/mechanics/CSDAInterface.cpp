@@ -22,6 +22,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 
@@ -99,8 +100,7 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
     s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::POISSONS_RATIO,       0.0);
     s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
     s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4.);
-    s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / rInterfaceThickness);
-    s.ConstitutiveLawSetDamageLaw(0, eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+    s.ConstitutiveLawSetDamageLaw(0, DamageLawExponential::Create(4./20000., 4. * rInterfaceThickness / fractureEnergy));
 
     s.ElementSetConstitutiveLaw(0, 0);
 
@@ -208,8 +208,7 @@ void CSDA2D()
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO,       0.0);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / (thickness2*2.));
-    s.ConstitutiveLawSetDamageLaw(CSDA, eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+    s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4./20000., 4. * 2. * thickness2 / fractureEnergy));
 
     s.ElementSetConstitutiveLaw(0, LIN);
     s.ElementSetConstitutiveLaw(1, LIN);
@@ -415,8 +414,7 @@ void CSDA3D()
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO,       0.0);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / thickness);
-    s.ConstitutiveLawSetDamageLaw(CSDA, eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+    s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4./200., 4. * thickness / fractureEnergy));
 
 
     s.ElementSetConstitutiveLaw(0, LIN);

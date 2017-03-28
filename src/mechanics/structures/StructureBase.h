@@ -67,9 +67,9 @@ enum class eDirection;
 
 namespace Constitutive
 {
+    class DamageLaw;
     enum class eConstitutiveParameter;
     enum class eConstitutiveType;
-    enum class eDamageLawType;
     enum class eInput;
     enum class eOutput;
 }// namespace Constitutive
@@ -1239,18 +1239,12 @@ public:
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd  rValue);
-
-    //! @brief ... set damage law
-    //! @param rDamageLaw ... damage law
-    void ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw);
 #endif
-
+    
     //! @brief ... set damage law
-    //! @param rDamageLaw ... damage law
-    void ConstitutiveLawSetDamageLaw(int rIdent, std::string rDamageLaw);
-
-
-
+    //! @param lawId ... lawId
+    //! @param damageLaw ... damage law
+    void ConstitutiveLawSetDamageLaw(int lawId, std::shared_ptr<Constitutive::DamageLaw> damageLaw);
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rIdent ... constitutive law identifier

@@ -2,6 +2,7 @@
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/damageLaws/DamageLaw.h"
 
 double NuTo::GradientDamageFatigueEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -15,8 +16,6 @@ double NuTo::GradientDamageFatigueEngineeringStress::GetParameterDouble(NuTo::Co
         case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
         case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
         case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-            return GradientDamageEngineeringStress::GetParameterDouble(rIdentifier);
         case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
             return mEnduranceStress;
         case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
@@ -38,8 +37,6 @@ void NuTo::GradientDamageFatigueEngineeringStress::SetParameterDouble(NuTo::Cons
         case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
         case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
         case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-            GradientDamageEngineeringStress::SetParameterDouble(rIdentifier, rValue);
         case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
             mEnduranceStress = rValue;
             break;
@@ -114,7 +111,7 @@ std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurre
         {
             ++iterations;
             kappa_old = kappa;
-            sigmaEq = (1. - CalculateDamage(kappa)) * mE * strain;
+            sigmaEq = (1. - mDamageLaw->CalculateDamage(kappa)) * mE * strain;
             kappa = k(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
         }
         if (iterations>900)

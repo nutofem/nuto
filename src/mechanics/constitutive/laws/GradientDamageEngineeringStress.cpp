@@ -21,6 +21,7 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "mechanics/constitutive/damageLaws/DamageLaw.h"
 
 #include "mechanics/timeIntegration/ImplExCallback.h"
 
@@ -33,10 +34,8 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
     , mThermalExpansionCoefficient(0.)
     , mTensileStrength(0.)
     , mCompressiveStrength(0.)
-    , mFractureEnergy(0.)
-    , mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING)
+    , mDamageLaw()
     , mImplExCallback(std::make_shared<ImplExCallback>())
-    , mMaxOmega(0.999)
 {
 }
 
@@ -152,7 +151,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(const Constitut
     const auto& engineeringStrain =
             rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
 
-    double omega = CalculateDamage(rKappa);
+    double omega = mDamageLaw->CalculateDamage(rKappa);
 
     EquivalentStrainModifiedMises<1> eeq(engineeringStrain, mCompressiveStrength / mTensileStrength, mNu);
     double localEqStrain = eeq.Get();
@@ -197,7 +196,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(const Constitut
                 tangent.SetZero();
                 break;
             }
-            tangent(0, 0) = -rKappaTangent * CalculateDerivativeDamage(rKappa) * mE * engineeringStrain[0];
+            tangent(0, 0) = -rKappaTangent * mDamageLaw->CalculateDerivative(rKappa) * mE * engineeringStrain[0];
             break;
         }
 
@@ -267,7 +266,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(const Constitut
     const auto& planeState =
             *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
 
-    double omega = CalculateDamage(rKappa);
+    double omega = mDamageLaw->CalculateDamage(rKappa);
 
     EquivalentStrainModifiedMises<2> eeq(engineeringStrain, mCompressiveStrength / mTensileStrength, mNu,
                                          planeState.GetPlaneState());
@@ -339,7 +338,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(const Constitut
                 tangent.SetZero();
                 break;
             }
-            double damageDerivative = rKappaTangent * CalculateDerivativeDamage(rKappa);
+            double damageDerivative = rKappaTangent * mDamageLaw->CalculateDerivative(rKappa);
             tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
             tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
             tangent[2] = -damageDerivative * (C33 * engineeringStrain[2]);
@@ -423,7 +422,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(const Constitut
     const auto& engineeringStrain =
             rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
 
-    double omega = CalculateDamage(rKappa);
+    double omega = mDamageLaw->CalculateDamage(rKappa);
 
     EquivalentStrainModifiedMises<3> eeq(engineeringStrain, mCompressiveStrength / mTensileStrength, mNu);
     double localEqStrain = eeq.Get();
@@ -502,7 +501,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(const Constitut
                 tangent.SetZero();
                 break;
             }
-            double damageDerivative = rKappaTangent * CalculateDerivativeDamage(rKappa);
+            double damageDerivative = rKappaTangent * mDamageLaw->CalculateDerivative(rKappa);
             tangent[0] = -damageDerivative *
                          (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2]);
             tangent[1] = -damageDerivative *
@@ -649,8 +648,6 @@ NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eC
         return mCompressiveStrength;
     case Constitutive::eConstitutiveParameter::DENSITY:
         return mRho;
-    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
-        return mFractureEnergy;
     case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
         return mNonlocalRadius;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
@@ -659,12 +656,8 @@ NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eC
         return mTensileStrength;
     case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
         return mThermalExpansionCoefficient;
-    case Constitutive::eConstitutiveParameter::MAX_OMEGA:
-        return mMaxOmega;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return mE;
-    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-        return static_cast<double>(mDamageLawType);
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
@@ -681,9 +674,6 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
     case Constitutive::eConstitutiveParameter::DENSITY:
         mRho = rValue;
         break;
-    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
-        mFractureEnergy = rValue;
-        break;
     case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
         mNonlocalRadius = rValue;
         break;
@@ -696,14 +686,8 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
     case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
         mThermalExpansionCoefficient = rValue;
         break;
-    case Constitutive::eConstitutiveParameter::MAX_OMEGA:
-        mMaxOmega = rValue;
-        break;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         mE = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-        mDamageLawType = (Constitutive::eDamageLawType)rValue;
         break;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
@@ -734,7 +718,6 @@ void NuTo::GradientDamageEngineeringStress::Info(unsigned short rVerboseLevel, L
     rLogger << "    nonlocal radius         : " << mNonlocalRadius << "\n";
     rLogger << "    tensile strength        : " << mTensileStrength << "\n";
     rLogger << "    compressive strength    : " << mCompressiveStrength << "\n";
-    rLogger << "    fracture energy         : " << mFractureEnergy << "\n";
 }
 
 // check parameters
@@ -745,154 +728,9 @@ void NuTo::GradientDamageEngineeringStress::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, mNu);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, mNonlocalRadius);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, mTensileStrength);
-    ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, mFractureEnergy);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT,
                                            mThermalExpansionCoefficient);
 }
-
-double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa) const
-{
-    double omega = 0;
-
-    double e_0 = mTensileStrength / mE;
-    double e_f = mFractureEnergy / mTensileStrength;
-    double e_c = 2 * e_f; // or something
-
-    switch (mDamageLawType)
-    {
-    case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            omega = 1 - e_0 / rKappa;
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            omega = e_c / rKappa * (rKappa - e_0) / (e_c - e_0);
-            omega = std::min(omega, mMaxOmega);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            omega = 1 - e_0 / rKappa * std::exp((e_0 - rKappa) / e_f);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
-    {
-        if (rKappa > e_0)
-        {
-            omega = 1 - e_0 / rKappa * (1 - mMaxOmega + mMaxOmega * std::exp((e_0 - rKappa) / e_f));
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
-    {
-        if (rKappa > e_0)
-        {
-            if (rKappa < e_c)
-            {
-                double kappa_scaled = (rKappa - e_0) / (e_c - e_0);
-                omega = 1 -
-                        e_0 / rKappa *
-                                (2 * kappa_scaled * kappa_scaled * kappa_scaled - 3 * kappa_scaled * kappa_scaled + 1);
-            }
-            else
-            {
-                omega = 1.;
-            }
-        }
-        break;
-    }
-    default:
-        throw NuTo::MechanicsException(std::string("[NuTo::GradientDamageEngineeringStress::CalculateDamage] ") +
-                                       std::string("The required damage law is not implemented. "));
-
-        break;
-    }
-
-    return omega;
-}
-
-double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double rKappa) const
-{
-    double DomegaDkappa = 0;
-
-    double e_0 = mTensileStrength / mE;
-    double e_f = mFractureEnergy / mTensileStrength;
-    double e_c = 2 * e_f; // or something
-
-    switch (mDamageLawType)
-    {
-    case Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            DomegaDkappa = e_0 / (rKappa * rKappa);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
-    {
-        double termA = e_c / mMaxOmega / (e_c - e_0);
-        double kappa_max = termA * e_0 / (termA - 1);
-
-        if (rKappa > kappa_max)
-            std::cout << CalculateDamage(kappa_max) << std::endl;
-
-        if (rKappa > e_0 && rKappa < kappa_max)
-        {
-            DomegaDkappa = e_c * e_0 / (rKappa * rKappa * (e_c - e_0));
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
-    {
-        if (rKappa > e_0)
-        {
-            DomegaDkappa = e_0 / rKappa * (1 / rKappa + 1 / e_f) * std::exp((e_0 - rKappa) / e_f);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
-    {
-        if (rKappa > e_0)
-        {
-            DomegaDkappa = e_0 / rKappa * ((1 / rKappa + 1 / e_f) * mMaxOmega * std::exp((e_0 - rKappa) / e_f) +
-                                           (1 - mMaxOmega) / rKappa);
-        }
-        break;
-    }
-    case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
-    {
-        if (rKappa > e_0 && rKappa < e_c)
-        {
-            double kappa_scaled = (rKappa - e_0) / (e_c - e_0);
-            DomegaDkappa = -6 * e_0 / rKappa / (e_c - e_0) * (kappa_scaled * kappa_scaled - kappa_scaled) +
-                           e_0 / (rKappa * rKappa) * (2 * kappa_scaled * kappa_scaled * kappa_scaled -
-                                                      3 * kappa_scaled * kappa_scaled + 1);
-        }
-        break;
-    }
-    default:
-        throw NuTo::MechanicsException(
-                std::string("[NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage] ") +
-                std::string("The required damage law is not implemented. "));
-
-        break;
-    }
-
-    return DomegaDkappa;
-}
-
-
 template void
 NuTo::GradientDamageEngineeringStress::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                    const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,

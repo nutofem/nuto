@@ -13,10 +13,6 @@
 
 namespace NuTo
 {
-namespace Constitutive
-{
-    enum class eDamageLawType;
-}// namespace Constitutive
 class ConstitutivePlaneState;
 
 class LocalDamageModel: public ConstitutiveBase
@@ -116,12 +112,12 @@ public:
         return false;
     }
 
+    void SetDamageLaw(std::shared_ptr<Constitutive::DamageLaw> damageLaw) override
+    {
+        mDamageLaw = damageLaw;
+    }
+
 private:
-    //! @brief Calculates the damage
-    double CalculateDamage(double rKappa) const;
-
-    double CalculateDerivativeDamage(double rKappa) const;
-
     //! @brief Density \f$ \rho \f$
     double mDensity;
 
@@ -137,18 +133,8 @@ private:
     //! @brief Compressive strength \f$ \sigma_c \f$
     double mCompressiveStrength;
 
-    //! @brief Fracture energy \f$ G_c \f$
-    double mFractureEnergy;
-
-    //! @brief Damage law type
-    Constitutive::eDamageLawType mDamageLawType;
-
-    //! @brief Maximum damage
-    static constexpr double mMaxDamage = 0.90;
-
-    //! @brief Parameter for the exponential damage function
-    static constexpr double mAlpha = 0.99;
-
+    //! @brief Damage law 
+    std::shared_ptr<NuTo::Constitutive::DamageLaw> mDamageLaw;
 };
 
 }

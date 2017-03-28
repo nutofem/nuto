@@ -65,6 +65,11 @@ void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<doubl
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
 }
 
+void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::DamageLaw> damageLaw)
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no damage law.");
+}
+
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable

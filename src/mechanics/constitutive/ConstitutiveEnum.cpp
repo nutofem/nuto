@@ -55,39 +55,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::Constitutive::ConstitutiveTypeToEnum
     throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
 }
 
-const std::map<NuTo::Constitutive::eDamageLawType, std::string> NuTo::Constitutive::GetDamageLawMap()
-{
-    const std::map<eDamageLawType, std::string> map =
-       {{eDamageLawType::ISOTROPIC_NO_SOFTENING,                    "ISOTROPIC_NO_SOFTENING"},
-        {eDamageLawType::ISOTROPIC_LINEAR_SOFTENING,                "ISOTROPIC_LINEAR_SOFTENING"},
-        {eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING,           "ISOTROPIC_EXPONENTIAL_SOFTENING"},
-        {eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD,  "ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD"},
-        {eDamageLawType::ISOTROPIC_CUBIC_HERMITE,                   "ISOTROPIC_CUBIC_HERMITE"}};
-    return map;
-}
-
-std::string NuTo::Constitutive::DamageLawToString(NuTo::Constitutive::eDamageLawType rDamageLaw)
-{
-    try
-    {
-        return GetDamageLawMap().at(rDamageLaw);
-    }
-    catch (const std::out_of_range& e)
-    {
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
-    }
-}
-
-NuTo::Constitutive::eDamageLawType NuTo::Constitutive::DamageLawToEnum(std::string rDamageLaw)
-{
-    std::transform(rDamageLaw.begin(), rDamageLaw.end(),rDamageLaw.begin(), ::toupper);
-
-    for(auto entry : GetDamageLawMap())
-        if (entry.second == rDamageLaw)
-            return entry.first;
-    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
-}
-
 const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Constitutive::GetConstitutiveParameterMap()
 {
     const std::map<eConstitutiveParameter, std::string> map =
@@ -117,7 +84,6 @@ const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Co
         {eConstitutiveParameter::INITIAL_YIELD_STRENGTH,                    "INITIAL_YIELD_STRENGTH"},
         {eConstitutiveParameter::MACROSCOPIC_BULK_MODULUS,                  "MACROSCOPIC_BULK_MODULUS"},
         {eConstitutiveParameter::MASS_EXCHANGE_RATE,                        "MASS_EXCHANGE_RATE"},
-        {eConstitutiveParameter::MAX_OMEGA,                                 "MAX_OMEGA"},
         {eConstitutiveParameter::NONLOCAL_RADIUS,                           "NONLOCAL_RADIUS"},
         {eConstitutiveParameter::POISSONS_RATIO,                            "POISSONS_RATIO"},
         {eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION,        "POLYNOMIAL_COEFFICIENTS_ADSORPTION"},

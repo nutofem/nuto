@@ -7,6 +7,7 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/groups/GroupBase.h"
@@ -25,52 +26,6 @@
 #include "math/SparseMatrixCSRVector2General.h"
 #include "visualize/VisualizeEnum.h"
 
-void CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
-{
-    double epsilon = 1.e-8;
-    double E = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
-    double e0 = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) / E;
-    double step = e0 / 5;
-    for (int i = 1; i < 100; ++i)
-    {
-        double kappa = i * step + epsilon;
-//        kappa = i*step;
-        double sigma1 = (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E * kappa;
-        double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa + epsilon)) * E * (kappa + epsilon);
-
-        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa) * E * kappa + (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E;
-        double DsigmaDkappa_CDF = (sigma2 - sigma1) / epsilon;
-
-        BOOST_CHECK_SMALL(DsigmaDkappa - DsigmaDkappa_CDF, 1.e-3);
-    }
-}
-
-void CheckDamageLaws()
-{
-    NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-}
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
@@ -82,12 +37,7 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::MAX_OMEGA, 0.925);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
-
-    BOOST_CHECK_CLOSE(rStructure.ConstitutiveLawGetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::MAX_OMEGA), 0.925, 1.e-10);
-
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::DamageLawExponential::Create(4./30000., 4. / 0.021));
     return lawId;
 }
 
@@ -453,11 +403,6 @@ void Check1D2D3D()
         BOOST_CHECK_CLOSE_FRACTION(damage1D, damage3D, 1.e-3);
     }
     timer.Reset(std::string(__FUNCTION__) + " Cleanup");
-}
-
-BOOST_AUTO_TEST_CASE(GradientDamageDmgLaws)
-{
-    CheckDamageLaws();
 }
 
 bool useRobinBoundaryElements = true;

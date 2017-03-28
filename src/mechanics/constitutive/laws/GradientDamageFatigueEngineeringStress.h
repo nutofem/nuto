@@ -61,7 +61,6 @@ public:
     //! @sa eConstitutiveType
     Constitutive::eConstitutiveType GetType() const override;
 
-
 private:
 
     double F(double s) const

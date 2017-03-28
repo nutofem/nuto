@@ -4,6 +4,7 @@
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
@@ -23,7 +24,7 @@ void EvaluateLocalDamageModelModel(NuTo::EngineeringStrain<TDim> rStrain, NuTo::
 {
     auto iplaw = rLocalDamageModel.CreateIPLaw();
     iplaw->GetData<NuTo::LocalDamageModel>().SetData(rKappa);
-    NuTo::Test::ConstitutiveTangentTester<TDim> tester(*iplaw.get(), 1.e-8, 1.e-5);
+    NuTo::Test::ConstitutiveTangentTester<TDim> tester(*iplaw.get(), 1.e-8, 2.e-5);
 
     NuTo::ConstitutiveInputMap input;
     input.Add<TDim>(eInput::ENGINEERING_STRAIN);
@@ -57,7 +58,7 @@ void EvaluateLocalDamageModelModel(NuTo::EngineeringStrain<TDim> rStrain, NuTo::
     }
 }
 
-BOOST_AUTO_TEST_CASE(check_d_stress_d_strain2D)
+auto GetLocalDamageModel()
 {
     constexpr double youngsModulus          = 4e4;
     constexpr double poissonsRatio          = 0.2;
@@ -65,15 +66,19 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain2D)
     constexpr double compressiveStrength    = 30;
     constexpr double fractureEnergy         = 0.01;
 
-
     NuTo::LocalDamageModel localDamageModel;
     localDamageModel.SetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS,       youngsModulus);
     localDamageModel.SetParameterDouble(eConstitutiveParameter::POISSONS_RATIO,       poissonsRatio);
     localDamageModel.SetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH,     tensileStrength);
     localDamageModel.SetParameterDouble(eConstitutiveParameter::COMPRESSIVE_STRENGTH, compressiveStrength);
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy);
+    localDamageModel.SetDamageLaw(NuTo::Constitutive::DamageLawExponential::Create(tensileStrength/youngsModulus, tensileStrength/fractureEnergy));
+    return localDamageModel;
+}
 
-    double kappa_0 = tensileStrength / youngsModulus;
+BOOST_AUTO_TEST_CASE(check_d_stress_d_strain2D)
+{
+    NuTo::LocalDamageModel localDamageModel = GetLocalDamageModel();
+    double kappa_0 = 3. / 4e4; 
     double kappa = kappa_0/3.;
     EvaluateLocalDamageModelModel<2>({    0.,     0.,     0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<2>({ 1.e-5,     0.,     0.}, localDamageModel , kappa);
@@ -110,21 +115,8 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain2D)
 
 BOOST_AUTO_TEST_CASE(check_d_stress_d_strain3D)
 {
-    constexpr double youngsModulus          = 4e4;
-    constexpr double poissonsRatio          = 0.2;
-    constexpr double tensileStrength        = 3;
-    constexpr double compressiveStrength    = 30;
-    constexpr double fractureEnergy         = 0.01;
-
-
-    NuTo::LocalDamageModel localDamageModel;
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS,       youngsModulus);
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::POISSONS_RATIO,       poissonsRatio);
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH,     tensileStrength);
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::COMPRESSIVE_STRENGTH, compressiveStrength);
-    localDamageModel.SetParameterDouble(eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy);
-
-    double kappa_0 = tensileStrength / youngsModulus;
+    NuTo::LocalDamageModel localDamageModel = GetLocalDamageModel();
+    double kappa_0 = 3./4e4; 
     double kappa = kappa_0/3.;
     EvaluateLocalDamageModelModel<3>({    0.,     0.,     0., 0., 0., 0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<3>({ 1.e-5,     0.,     0., 0., 0., 0.}, localDamageModel , kappa);
@@ -161,6 +153,7 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain3D)
 BOOST_AUTO_TEST_CASE(LocalDamageModelVisualize3D)
 {
     NuTo::LocalDamageModel localDamageModel;
+    localDamageModel.SetDamageLaw(NuTo::Constitutive::DamageLawExponential::Create(1, 2));
     auto law = localDamageModel.CreateIPLaw();
     NuTo::ConstitutiveInputMap input;
     input.Add<3>(eInput::ENGINEERING_STRAIN);

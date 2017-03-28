@@ -17,21 +17,22 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 #include "visualize/VisualizeEnum.h"
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
+    using namespace NuTo::Constitutive;
     // create a damage law
-    int lawId = rStructure.ConstitutiveLawCreate("Gradient_Damage_Engineering_Stress");
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+    int lawId = rStructure.ConstitutiveLawCreate(eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::NONLOCAL_RADIUS, 1);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4./30000, 4./0.021));
 
     return lawId;
 }

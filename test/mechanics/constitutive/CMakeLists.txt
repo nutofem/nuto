@@ -18,5 +18,6 @@ add_unit_test(IPConstitutiveLaw
     mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp
     )
 
+add_subdirectory(damageLaws)
 add_subdirectory(inputoutput)
 add_subdirectory(laws)

@@ -9,6 +9,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 #include "visualize/VisualizeEnum.h"
 
@@ -39,8 +40,7 @@ int main()
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO,       0.0);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::FRACTURE_ENERGY,      fractureEnergy / thickness);
-    s.ConstitutiveLawSetDamageLaw(CSDA, eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
+    s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4./200., 4. * thickness / fractureEnergy));
 
     std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;
 

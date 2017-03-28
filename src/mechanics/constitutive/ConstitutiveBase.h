@@ -32,6 +32,7 @@ namespace Element
 
 namespace Constitutive
 {
+    class DamageLaw;
     enum class eConstitutiveParameter;
     enum class eConstitutiveType;
     enum class eInput;
@@ -117,6 +118,8 @@ public:
 
     virtual void SetParameterFunction(std::function<std::array<double, 2>(double)>);
 
+    virtual void SetDamageLaw(std::shared_ptr<Constitutive::DamageLaw> damageLaw);
+
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
@@ -139,6 +142,7 @@ public:
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
     virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const;
+
 
     ///////////////////////////////////////////////////////////////////////////
 
