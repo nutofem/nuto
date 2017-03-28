@@ -156,7 +156,7 @@ public:
         const SparseMatrix& B = structure->GetConnectivityMatrix();
         const SparseMatrix Btrans = B.transpose();
 
-//        world.barrier();
+        //        world.barrier();
 
 
         const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
@@ -295,7 +295,7 @@ public:
         const SparseMatrix& B = structure->GetConnectivityMatrix();
         const SparseMatrix Btrans = B.transpose();
 
-//        world.barrier();
+        //        world.barrier();
 
         const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
         const int numRigidBodyModes = structure->GetNumRigidBodyModes();
@@ -305,11 +305,11 @@ public:
         tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
         VectorXd Ax = B * tmp;
 
-//        world.barrier();
+        //        world.barrier();
 
         MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-//        world.barrier();
+        //        world.barrier();
         // initial residual
         VectorXd r = rhs - Ax;
         VectorXd z;
@@ -334,12 +334,12 @@ public:
         while (iteration < mCpgMaxIterations)
         {
             // at every iteration i the r has to be recomputed which is quite expensive
-//            world.barrier();
+            //            world.barrier();
 
             tmp.head(numActiveDofs) = mSolver.solve((Btrans * p).head(numActiveDofs));
             Ap.noalias() = B * tmp;
 
-//            world.barrier();
+            //            world.barrier();
             MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
             // step size
@@ -476,19 +476,18 @@ public:
 
         switch (mIterativeSolver)
         {
-            case eIterativeSolver::ConjugateGradient :
-            {
-                iterations = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
-                break;
-            }
-
-            case eIterativeSolver::BiconjugateGradientStabilized :
-            {
-                iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
-                break;
-            }
+        case eIterativeSolver::ConjugateGradient:
+        {
+            iterations = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            break;
         }
 
+        case eIterativeSolver::BiconjugateGradientStabilized:
+        {
+            iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            break;
+        }
+        }
 
 
         if (iterations >= mCpgMaxIterations)
@@ -795,21 +794,21 @@ public:
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
 
-                    //                    Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>
-                    //                    qr(hessian0.JJ.ExportToEigenSparseMatrix());
-                    //                    mStructure->GetLogger() << "qr.rows() - qr.rank();: \t" << qr.rows() -
-                    //                    qr.rank() << "\n\n";
+//                                        Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>
+//                                        qr(hessian0.JJ.ExportToEigenSparseMatrix());
+//                                        mStructure->GetLogger() << "qr.rows() - qr.rank();: \t" << qr.rows() -
+//                                        qr.rank() << "\n\n";
 
                     mLocalPreconditioner.resize(B.rows(), B.rows());
-                    mLocalPreconditioner.setIdentity();
-                    mLocalPreconditioner /= structure->mNumProcesses;
+//                                        mLocalPreconditioner.setIdentity();
+//                                        mLocalPreconditioner /= structure->mNumProcesses;
 
 
-                    //                    // lumped preconditioner
-                    //                    auto K = hessian0.JJ.ExportToEigenSparseMatrix();
-                    //                    K.conservativeResize(numTotalDofs, numTotalDofs);
-                    //
-                    //                    mLocalPreconditioner = B * K * Btrans;
+                    // lumped preconditioner
+                    auto K = hessian0.JJ.ExportToEigenSparseMatrix();
+                    K.conservativeResize(numTotalDofs, numTotalDofs);
+
+                    mLocalPreconditioner = B * K * Btrans;
 
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
@@ -853,7 +852,7 @@ public:
                     mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
 
 
-//                    MPI_Barrier(MPI_COMM_WORLD);
+                    //                    MPI_Barrier(MPI_COMM_WORLD);
 
 
                     int iteration = 0;
@@ -904,7 +903,7 @@ public:
                     } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
 
 
-//                    world.barrier();
+                    //                    world.barrier();
 
                     if (normResidual < mToleranceResidual)
                     {

@@ -204,7 +204,7 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
     {
         case 2:
         {
-            int id2 = 100e3;
+            int id2 = lastNodeId;
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitX(), 0.);
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitY(), 0.);
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[id2], Eigen::Vector2d::UnitY(), 0.);
@@ -237,11 +237,11 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
             ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector3d::UnitZ(), 0.);
 
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[1] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in Z \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[lastNodeId] << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[lastNodeId] << "\t in Y \n\n";
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Z \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[3] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[4] << "\t in Y \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[5] << "\t in Z \n\n";
 
             break;
         }
