@@ -10,6 +10,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeBase.h"
+#include "mechanics/sections/SectionPlane.h"
 //#include "mechanics/feti/StructureFeti.h"
 
 #include <Epetra_CrsMatrix.h>
@@ -290,8 +291,9 @@ int main(int argc, char** argv)
 
 
     double thickness = 10.;
-    int section = s.SectionCreate("Plane_Strain");
-    s.SectionSetThickness(section, thickness);
+//    int section = s.SectionCreate("Plane_Strain");
+//    s.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, true);
 
 
     s.ElementTotalSetSection(section);

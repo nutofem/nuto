@@ -19,6 +19,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/sections/SectionPlane.h"
 
 #include "MyHeatedPlate.h"
 
@@ -126,7 +127,7 @@ void SetVisualization(NuTo::Structure& structure)
     int visualizationGroup = structure.GroupCreate(NuTo::eGroupId::Elements);
     structure.GroupAddElementsTotal(visualizationGroup);
 
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::CONSTITUTIVE);
+//    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::CONSTITUTIVE);
     structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::TEMPERATURE);
     structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
@@ -146,8 +147,9 @@ void MyHeatedPlate::Run()
 
     // create section
     double thickness = 20.0;
-    auto section = structure.SectionCreate("Plane_Strain");
-    structure.SectionSetThickness(section, thickness);
+//    auto section = structure.SectionCreate("Plane_Strain");
+//    structure.SectionSetThickness(section, thickness);
+    auto section = NuTo::SectionPlane::Create(thickness, true);
     structure.ElementTotalSetSection(section);
 
     auto matrix_group = groupIndices[0].first;

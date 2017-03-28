@@ -7,6 +7,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/sections/SectionTruss.h"
 
 #include "MyTruss1D2N.h"
 
@@ -27,8 +28,9 @@ void MyTruss1D2N::Run()
     NuTo::Structure structure(1);
 
     // create section
-    auto Section1 = structure.SectionCreate("Truss");
-    structure.SectionSetArea(Section1, Area);
+//    auto Section1 = structure.SectionCreate("Truss");
+//    structure.SectionSetArea(Section1, Area);
+    auto Section1 = NuTo::SectionTruss::Create(Area);
 
     // create material law
     auto Material1 = structure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");

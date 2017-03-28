@@ -8,7 +8,9 @@ endforeach()
 
 
 foreach(myTestFiles
-    nuto_trilinos)
+    nuto_trilinos
+    1D_Test)
+
     add_executable(${myTestFiles} ${myTestFiles}.cpp)
     target_link_libraries(${myTestFiles} NuToMechanics NuToMath NuToVisualize ${MPI_Libraries})
 
@@ -25,8 +27,14 @@ INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
 
 
 foreach(myTestFiles
-    nuto_trilinos)
+    nuto_trilinos
+    1D_Test)
+
     target_link_libraries(${myTestFiles} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
 
 endforeach()
 
+
+add_library(ConversionTools ConversionTools.cpp)
+add_library(PrintTools PrintTools.cpp)
+target_link_libraries(1D_Test ConversionTools PrintTools)
