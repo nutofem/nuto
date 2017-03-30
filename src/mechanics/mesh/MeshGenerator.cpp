@@ -202,7 +202,7 @@ std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double>
 
     for (int i = 0; i < dimension; ++i)
     {
-        assert(rStart[i] > rEnd[i]);
+        assert(rStart[i] < rEnd[i]);
 
         numNodes[i] = rNumDivisions[i] + 1;
         delta[i] = (rEnd[i] - rStart[i]) / rNumDivisions[i];

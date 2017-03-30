@@ -41,6 +41,14 @@ public:
         ConjugateGradient,
         BiconjugateGradientStabilized
     };
+
+    enum class eFetiPreconditioner
+    {
+        None,
+        Lumped,
+        Dirichlet
+    };
+
     using VectorXd = Eigen::VectorXd;
     using MatrixXd = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
@@ -588,6 +596,56 @@ public:
     }
 
 
+    void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
+    {
+        const int numTotalDofs = mStructure->GetNumTotalDofs();
+        const auto& B = static_cast<StructureFeti*>(mStructure)->GetConnectivityMatrix();
+
+        mLocalPreconditioner.resize(B.rows(), B.rows());
+
+        switch (mFetiPreconditioner)
+        {
+        case eFetiPreconditioner::None:
+        {
+            mLocalPreconditioner.setIdentity();
+            break;
+        }
+        case eFetiPreconditioner::Lumped:
+        {
+            auto K = hessian.JJ.ExportToEigenSparseMatrix();
+            K.conservativeResize(numTotalDofs, numTotalDofs);
+
+            mLocalPreconditioner = B * K * B.transpose();
+
+            break;
+        }
+        case eFetiPreconditioner::Dirichlet:
+        {
+            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemneted yet.");
+            break;
+        }
+        }
+    }
+
+    void CheckRankOfBlockSparseMatrix(const BlockSparseMatrix& blockSparseMatrix)
+    {
+        if (mStructure->GetVerboseLevel() > 10)
+        {
+            mStructure->GetLogger() << "Start QR factorization to check the rank of the matrix"
+                                    << "\n\n";
+
+            Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> qr(
+                    blockSparseMatrix.ExportToEigenSparseMatrix());
+
+            mStructure->GetLogger() << "Number of rows:  \t" << qr.rows() << "\n\n";
+            mStructure->GetLogger() << "Rank:            \t" << qr.rank() << "\n\n";
+            mStructure->GetLogger() << "Rank deficiency: \t" << qr.rows() - qr.rank() << "\n\n";
+        } else
+        {
+            mStructure->GetLogger() << "If you want to check the rank of a matrix, set verbose level >10" << "\n\n";
+        }
+    }
+
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
     void Solve(double rTimeDelta) override
@@ -789,37 +847,23 @@ public:
                         hessian0.AddScal(hessian1, mGamma / (mBeta * timeStep));
 
 
-
                     Timer timerBenchmark("Time for factorization and solving", structure->GetShowTime());
 
                     // K_{JJ}^{-1}
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
+                    CheckRankOfBlockSparseMatrix(hessian0.JJ);
 
-//                                        Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>
-//                                        qr(hessian0.JJ.ExportToEigenSparseMatrix());
-//                                        mStructure->GetLogger() << "qr.rows() - qr.rank();: \t" << qr.rows() -
-//                                        qr.rank() << "\n\n";
+                    CalculateLocalPreconditioner(hessian0);
 
-                    mLocalPreconditioner.resize(B.rows(), B.rows());
-//                                        mLocalPreconditioner.setIdentity();
-//                                        mLocalPreconditioner /= structure->mNumProcesses;
-
-
-                    // lumped preconditioner
-                    auto K = hessian0.JJ.ExportToEigenSparseMatrix();
-                    K.conservativeResize(numTotalDofs, numTotalDofs);
-
-                    mLocalPreconditioner = B * K * Btrans;
 
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
                     if (structure->mRank == 0)
                     {
-                        std::cout << "Time for factorization and FETI solve: \t\t" << timerBenchmark.GetTimeDifference() << std::endl;
-
+                        std::cout << "Time for factorization and FETI solve: \t\t" << timerBenchmark.GetTimeDifference()
+                                  << std::endl;
                     }
-
 
 
                     dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
@@ -1021,9 +1065,9 @@ private:
     FetiSolver mFetiSolver;
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
-    SparseMatrix mTangentStiffnessMatrix;
     double mCpgTolerance = 1.0e-4;
     const int mCpgMaxIterations = 1000;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
+    eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
 };
 } // namespace NuTo
