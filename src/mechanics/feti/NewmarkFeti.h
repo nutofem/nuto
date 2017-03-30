@@ -391,7 +391,7 @@ public:
                                          VectorXd& deltaLambda, const double timeStep)
     {
 
-        NuTo::Timer timer("Time for FetiSolve");
+        NuTo::Timer timer("Time for FetiSolve", mStructure->GetShowTime());
         boost::mpi::communicator world;
 
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
@@ -789,7 +789,9 @@ public:
                         hessian0.AddScal(hessian1, mGamma / (mBeta * timeStep));
 
 
-                    Timer timerBenchmark("Time for factorization and solving");
+
+                    Timer timerBenchmark("Time for factorization and solving", structure->GetShowTime());
+
                     // K_{JJ}^{-1}
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
@@ -812,7 +814,13 @@ public:
 
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
-                    timerBenchmark.Reset();
+                    if (structure->mRank == 0)
+                    {
+                        std::cout << "Time for factorization and FETI solve: \t\t" << timerBenchmark.GetTimeDifference() << std::endl;
+
+                    }
+
+
 
                     dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
 

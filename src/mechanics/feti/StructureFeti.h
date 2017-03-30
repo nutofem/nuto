@@ -9,11 +9,11 @@
 #include <cstring>
 #include <fstream>
 #include <set>
-
+#include <mechanics/MechanicsEnums.h>
+#include "mechanics/mesh/MeshGenerator.h"
 
 namespace NuTo
 {
-
 
 
 /**     \author Philip Huschke
@@ -26,7 +26,8 @@ namespace NuTo
  *
  *      \f[
  *      \begin{bmatrix}
- *      \sum_{s=1}^{N_s} \boldsymbol{B}_s \boldsymbol{K}_s^+ \boldsymbol{B}_s^T & \boldsymbol{B}_{1} \boldsymbol{R}_{1} & \dots & \boldsymbol{B}_{{N_s}} \boldsymbol{R}_{{N_s}}
+ *      \sum_{s=1}^{N_s} \boldsymbol{B}_s \boldsymbol{K}_s^+ \boldsymbol{B}_s^T & \boldsymbol{B}_{1} \boldsymbol{R}_{1}
+ * & \dots & \boldsymbol{B}_{{N_s}} \boldsymbol{R}_{{N_s}}
  *      \\
  *      \boldsymbol{R}_{1}^T \boldsymbol{B}_{1}^T  & \boldsymbol{0} & \dots & \boldsymbol{0}
  *      \\
@@ -78,7 +79,7 @@ namespace NuTo
  *
  *
  */
-class StructureFeti: public Structure
+class StructureFeti : public Structure
 {
 private:
     ///
@@ -112,13 +113,13 @@ private:
         int mValue;
     };
 
-    using NodeList          = std::vector<Node>;
-    using ElementList       = std::vector<Element>;
-    using BoundaryList      = std::vector<Boundary>;
-    using InterfaceList     = std::vector<Interface>;
-    using Matrix            = Eigen::MatrixXd;
-    using SparseMatrix      = Eigen::SparseMatrix<double>;
-    using SparseMatrixMap   = std::map<NuTo::Node::eDof, SparseMatrix>;
+    using NodeList = std::vector<Node>;
+    using ElementList = std::vector<Element>;
+    using BoundaryList = std::vector<Boundary>;
+    using InterfaceList = std::vector<Interface>;
+    using Matrix = Eigen::MatrixXd;
+    using SparseMatrix = Eigen::SparseMatrix<double>;
+    using SparseMatrixMap = std::map<NuTo::Node::eDof, SparseMatrix>;
 
 
 public:
@@ -143,34 +144,55 @@ public:
     /// \param file
     /// \param keyword
     ///
-    void FindKeywordInFile(std::ifstream &file, std::string keyword);
+    void FindKeywordInFile(std::ifstream& file, std::string keyword);
 
     ///
     /// \brief GetRigidBodyModes
     /// \return mRigidBodyModes
     ///
-    Matrix&                      GetRigidBodyModes()           {return mRigidBodyModes;}
+    Matrix& GetRigidBodyModes()
+    {
+        return mRigidBodyModes;
+    }
 
-    const int                    GetNumRigidBodyModes()        {return mNumRigidBodyModes;}
-    const int                    GetNumRigidBodyModesTotal()        {return mNumRigidBodyModesTotal;}
+    const int GetNumRigidBodyModes()
+    {
+        return mNumRigidBodyModes;
+    }
+    const int GetNumRigidBodyModesTotal()
+    {
+        return mNumRigidBodyModesTotal;
+    }
 
     ///
     /// \brief GetInterfaceRigidBodyModes
     /// \return
     ///
-    Matrix&                      GetInterfaceRigidBodyModes()  {return mInterfaceRigidBodyModes;}
+    Matrix& GetInterfaceRigidBodyModes()
+    {
+        return mInterfaceRigidBodyModes;
+    }
 
 
-    Matrix&                      GetG()  {return mG;}
+    Matrix& GetG()
+    {
+        return mG;
+    }
 
     ///
     /// \brief GetConnectivityMatrix
     /// \return mConnectivityMatrix
     ///
-    SparseMatrix&                GetConnectivityMatrix()       {return mConnectivityMatrix;}
+    SparseMatrix& GetConnectivityMatrix()
+    {
+        return mConnectivityMatrix;
+    }
 
 
-    Matrix&                GetProjectionMatrix()       {return mProjectionMatrix;}
+    Matrix& GetProjectionMatrix()
+    {
+        return mProjectionMatrix;
+    }
 
     ///
     /// \brief AssembleConnectivityMatrix
@@ -198,8 +220,7 @@ public:
     /// \brief ApplyVirtualConstraints
     /// \param nodeIdsBoundaries
     /// \param nodeIdsLoads
-    void ApplyVirtualConstraints(const std::vector<int>& nodeIdsBoundaries,
-                                                      const std::vector<int>& nodeIdsLoads);
+    void ApplyVirtualConstraints(const std::vector<int>& nodeIdsBoundaries, const std::vector<int>& nodeIdsLoads);
 
 
     ///
@@ -217,13 +238,19 @@ public:
     /// \brief IsFloating
     /// \return
     ///
-    bool IsFloating() { return mIsFloating;}
+    bool IsFloating()
+    {
+        return mIsFloating;
+    }
 
     ///
     /// \brief SetIsFloating
     /// \param isFloating
     ///
-    void SetIsFloating(const bool isFloating) {mIsFloating = isFloating;}
+    void SetIsFloating(const bool isFloating)
+    {
+        mIsFloating = isFloating;
+    }
 
     /**
     *   \brief CalculateRigidBodyModes
@@ -269,14 +296,14 @@ public:
     ///
     /// Checks if the calculated rigid body modes are in the null space of \f$ \boldsymbol{K}_s \f$
     ///
-    void CheckRigidBodyModes(const StructureOutputBlockMatrix hessian0,
-                             const double tolerance = 1.e-9) const;
+    void CheckRigidBodyModes(const StructureOutputBlockMatrix hessian0, const double tolerance = 1.e-9) const;
 
     ///
     /// \brief CheckProjectionMatrix
     /// \param tolerance
     ///
-    /// Checks if the calculated projection matrix satisfies \f$ \boldsymbol{P} -\boldsymbol{P} \boldsymbol{P} = \boldsymbol{0} \f$
+    /// Checks if the calculated projection matrix satisfies \f$ \boldsymbol{P} -\boldsymbol{P} \boldsymbol{P} =
+    /// \boldsymbol{0} \f$
     ///
     void CheckProjectionMatrix(const double tolerance = 1.e-9) const;
 
@@ -298,7 +325,6 @@ public:
     void CalculateInterfaceRigidBodyModes();
 
 
-
     ///
     /// \brief Constraints all degrees of freedom of nodes in node group
     /// \param nodeGroupId
@@ -318,16 +344,96 @@ public:
 
     void CalculateAndAppyVirtualConstraints();
 
-    const Eigen::VectorXd & GetPrescribedDofVector() {return mPrescribedDofVector;}
-protected:
+    void AddNodeIdsToInterface(const std::vector<double>& interfaceCoordinates, int& globalNodeId, int& interfaceId,
+                               const double connectivityValue)
+    {
+        const int groupNodesInterface = GroupCreate(eGroupId::Nodes);
+        GroupAddNodeCoordinateRange(groupNodesInterface, eDirection::X, interfaceCoordinates[0] - 1.e-6, interfaceCoordinates[0] + 1.e-6);
 
+
+        std::vector<int> nodeIdsInterface = GroupGetMemberIds(groupNodesInterface);
+
+        for (const auto nodeId : nodeIdsInterface)
+            GetLogger() << nodeId << "\n";
+
+        mInterfaces[interfaceId].mValue = connectivityValue;
+
+
+        for (size_t i = 0; i < nodeIdsInterface.size(); ++i)
+        {
+            mInterfaces[interfaceId].mNodeIdsMap.emplace(globalNodeId, nodeIdsInterface[i]);
+            ++globalNodeId;
+        }
+    }
+
+    void CreateRectangularMesh2D(const std::vector<double>& meshDimensions, const std::vector<int>& numElements)
+    {
+
+        assert(GetDimension() == static_cast<int>(meshDimensions.size()) and "Dimensions mismatch");
+        assert(GetDimension() == static_cast<int>(numElements.size()) and "Dimensions mismatch");
+
+        mNumInterfaceNodesTotal = (mNumProcesses - 1) * (numElements[1] + 1);
+
+        double deltaX = meshDimensions[0] / mNumProcesses;
+
+        std::vector<double> endPoints;
+        endPoints.push_back((mRank + 1) * deltaX);
+        endPoints.push_back(meshDimensions[1]);
+
+        std::vector<double> startPoints;
+        startPoints.push_back(mRank * deltaX);
+        startPoints.push_back(0);
+
+        // create local meshes
+        auto importContainer = NuTo::MeshGenerator::Grid(*this, startPoints, endPoints, numElements,
+                                                         NuTo::Interpolation::eShapeType::QUAD2D);
+
+        const int interpolationTypeId = importContainer.second;
+        InterpolationTypeAdd(interpolationTypeId, NuTo::Node::eDof::DISPLACEMENTS,
+                             NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        ElementTotalConvertToInterpolationType();
+
+
+        int numInterfaces;
+        int globalNodeId = mRank == 0 ? 0 : (mRank - 1) * (numElements[1] + 1);
+
+        if (mRank == 0 or mRank == mNumProcesses - 1)
+        {
+            numInterfaces = 1;
+        }
+        else
+        {
+            numInterfaces = 2;
+        }
+
+        mInterfaces.resize(numInterfaces);
+        int interfaceId = 0;
+        if (mRank > 0)
+        {
+            AddNodeIdsToInterface(startPoints, globalNodeId, interfaceId, -1);
+
+            ++interfaceId;
+        }
+
+        if (mRank < mNumProcesses - 1)
+        {
+            AddNodeIdsToInterface(endPoints, globalNodeId, interfaceId, 1);
+        }
+    }
+
+    const Eigen::VectorXd& GetPrescribedDofVector()
+    {
+        return mPrescribedDofVector;
+    }
+
+protected:
     bool mIsFloating = true;
 
-    NodeList                    mNodes;
-    ElementList                 mElements;
-    BoundaryList                mBoundaries;
-    InterfaceList               mInterfaces;
-    std::set<int>               mSubdomainBoundaryNodeIds;
+    NodeList mNodes;
+    ElementList mElements;
+    BoundaryList mBoundaries;
+    InterfaceList mInterfaces;
+    std::set<int> mSubdomainBoundaryNodeIds;
 
 
     /**
@@ -351,7 +457,7 @@ protected:
      *  \f]
      *
      */
-    Matrix                      mG;
+    Matrix mG;
 
 
     /**
@@ -366,26 +472,26 @@ protected:
      *   \f]
      *
      */
-    Matrix                      mProjectionMatrix;
+    Matrix mProjectionMatrix;
 
 
-    int                         mNumRigidBodyModes      = -1337;
-    int                         mNumRigidBodyModesTotal = -1337;
-    int                         mNumInterfaceNodesTotal = -1337;
+    int mNumRigidBodyModes = -1337;
+    int mNumRigidBodyModesTotal = -1337;
+    int mNumInterfaceNodesTotal = -1337;
 
     ///
     /// \brief mBoundaryDofIds
     ///
     /// An array of ids of all the degrees of freedom that are constraint in the subdomain
     ///
-    std::vector<int>            mBoundaryDofIds;
+    std::vector<int> mBoundaryDofIds;
 
-    Eigen::VectorXd             mPrescribedDofVector;
+    Eigen::VectorXd mPrescribedDofVector;
 
     ///
     /// \brief mPrescribedDisplacementDofIds
     ///
-    std::vector<int>            mPrescribedDisplacementDofIds;
+    std::vector<int> mPrescribedDisplacementDofIds;
 
     ///
     /// \brief mGlobalStartIndexBoundaryDofIds
@@ -397,10 +503,10 @@ protected:
     /// Subdomain 1:  mBoundaryDofIds.size() = 6: =>  mGlobalStartIndexBoundaryDofIds = 3:
     /// Subdomain 2:  mBoundaryDofIds.size() = 2: =>  mGlobalStartIndexBoundaryDofIds = 9:
     ///
-    int                         mGlobalStartIndexBoundaryDofIds = -1337;
+    int mGlobalStartIndexBoundaryDofIds = -1337;
 
 
-    int                         mGlobalStartIndexPrescribedDisplacementDofIds = -1337;
+    int mGlobalStartIndexPrescribedDisplacementDofIds = -1337;
 
     ///
     /// \brief mNumTotalBoundaryDofIds
@@ -414,7 +520,7 @@ protected:
     ///                 MPI_SUM,
     ///                 MPI_COMM_WORLD);
     ///
-    int                         mNumTotalBoundaryDofIds = -1337;
+    int mNumTotalBoundaryDofIds = -1337;
 
     ///
     /// \brief mNumTotalPrescribedDisplacementDofIds
@@ -422,7 +528,7 @@ protected:
     /// The total number of degrees of freedom that have a prescribed displacement
     ///
     ///
-    int                         mNumTotalPrescribedDisplacementDofIds = 0;
+    int mNumTotalPrescribedDisplacementDofIds = 0;
 
     ///
     /// \brief mRigidBodyModes
@@ -434,9 +540,9 @@ protected:
     /// R_s \in \mathbb{R}^{\text{number of DOFs} \times \text{number of rigid body modes}}
     /// \f]
     ///
-    Matrix                      mRigidBodyModes;
+    Matrix mRigidBodyModes;
 
-    StructureOutputBlockMatrix  mRigidBodyModesBlockMatrix;
+    StructureOutputBlockMatrix mRigidBodyModesBlockMatrix;
 
     ///
     /// \brief mInterfaceRigidBodyModes
@@ -445,7 +551,7 @@ protected:
     /// B_s R_s \in \mathbb{R}^{\text{number of Lagrange multipliers} \times \text{number of rigid body modes}}
     /// \f]
     ///
-    Matrix                      mInterfaceRigidBodyModes;
+    Matrix mInterfaceRigidBodyModes;
 
     ///
     /// \brief mConnectivityMatrix
@@ -456,9 +562,6 @@ protected:
     /// B_s \in \mathbb{R}^{\text{number of Lagrange multipliers} \times \text{number of degrees of freedom}  }
     /// \f]
     ///
-    SparseMatrix                mConnectivityMatrix;
-
-
+    SparseMatrix mConnectivityMatrix;
 };
-} //namespace NuTo
-
+} // namespace NuTo
