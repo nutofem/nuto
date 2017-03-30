@@ -32,7 +32,7 @@ protected:
     //!        the case kappa <= kappa0 is already covered in the public interface
     //! @param kappa history variable
     //! @return damage
-    double Damage(const double kappa) const
+    double Damage(const double kappa) const override
     {
         if (kappa >= mKappaC)
             return 1;
@@ -44,7 +44,7 @@ protected:
     //!        the case kappa <= kappa0 is already covered in the public interface
     //! @param kappa history variable
     //! @return damage derivative
-    double Derivative(const double kappa) const
+    double Derivative(const double kappa) const override
     {
         if (kappa >= mKappaC)
             return 0.;

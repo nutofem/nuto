@@ -197,8 +197,8 @@ void NuTo::GeometryConcrete::SetGradingCurve(eGradingCurve rGradingCurveEnum, in
             break;
     }
 
-    if (rNumClasses <= 1 || rNumClasses > 6)
-        throw NuTo::Exception("[NuTo::GeometryConcrete::SetGradingCurve] 1 <= rNumClasses <= 6 !");
+    if (rNumClasses < 1 || rNumClasses > 6)
+        throw NuTo::Exception("[NuTo::GeometryConcrete::SetGradingCurve] 1 < rNumClasses <= 6 !");
 
     mGradingCurve = fullGradingCurve.block(0,0,rNumClasses, 3);
     std::cout << "[NuTo::GeometryConcrete::SetGradingCurve] Used grading curve: \n" << mGradingCurve << std::endl;

@@ -33,7 +33,7 @@ protected:
     //!        the case kappa <= kappa0 is already covered in the public interface
     //! @param kappa history variable
     //! @return damage
-    double Damage(const double kappa) const
+    double Damage(const double kappa) const override
     {
         return 1 - mKappa0 / kappa * (1 - mAlpha + mAlpha * std::exp(mBeta * (mKappa0 - kappa)));
     }
@@ -42,7 +42,7 @@ protected:
     //!        the case kappa <= kappa0 is already covered in the public interface
     //! @param kappa history variable
     //! @return damage derivative
-    double Derivative(const double kappa) const
+    double Derivative(const double kappa) const override
     {
 
         return mKappa0 / kappa *

@@ -391,7 +391,7 @@ Eigen::VectorXi NuTo::ParticleHandler::GetSubBoxDivisions(Specimen& rSpecimen, c
 
     for (int i = 0; i < 3; ++i)
     {
-        divs[i] = std::ceil(rSpecimen.GetLength(i) / lengthSubBox);
+        divs[i] = std::max(static_cast<int>(std::ceil(rSpecimen.GetLength(i) / lengthSubBox)), 1);
     }
 
 	return divs;
