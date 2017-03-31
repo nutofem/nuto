@@ -1,8 +1,10 @@
 #include "ConversionTools.h"
+#include "PrintTools.h"
 
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Vector.h>
+#include <Epetra_CrsGraph.h>
 
 #include <eigen3/Eigen/Core>
 
@@ -35,52 +37,64 @@ std::map<int, int> ConversionTools::invertMap_int(std::map<int, int> rMap)
 
 Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_Map rRowMap, Epetra_Map rColMap)
 {
+    int rowCount = rEigenMatrix.rows();
     int columnCount = rEigenMatrix.cols();
 
     int numMyElements_Row = rRowMap.NumMyElements();
-//    int* myGlobalNodeIndices_Row = rRowMap.MyGlobalElements();
-
+    int* myGlobalIndices_Row = rRowMap.MyGlobalElements();
+    int numMyElements_Col = rColMap.NumMyElements();
+    int* myGlobalIndices_Col = rColMap.MyGlobalElements();
 
     Epetra_CrsMatrix convMatrix(Copy, rRowMap, rColMap, 0);
 
 
-    std::vector<int> indicesVector;
-    int* indices;
+    std::vector<int> localIndicesVector;
+    std::vector<int> globalIndicesVector;
+    int* localIndices;
+    int* globalIndices;
     int numEntries = 0;
     std::vector<double> entriesVector;
     double* entries;
-    double eigenValue = 0.;
+    double value = 0.;
 
+    int epetraErr = -1;
 
-    for (int i = 0; i < numMyElements_Row; ++i)
+//    for (int i = 0; i < numMyElements_Row; ++i)
+    for (int i = 0; i < rowCount; ++i)
     {
         numEntries = 0;
         for (int j = 0; j < columnCount; ++j)
         {
-            eigenValue = rEigenMatrix.coeff(i, j);
-            if (eigenValue != 0)
+            value = rEigenMatrix.coeff(i, j);
+            if (value != 0)
             {
                 ++numEntries;
-                entriesVector.push_back(eigenValue);
-                indicesVector.push_back(j);
+                entriesVector.push_back(value);
+//                localIndicesVector.push_back(j);
+                globalIndicesVector.push_back(myGlobalIndices_Col[j]);
             }
         }
 
         entries = &entriesVector[0];
-        indices = &indicesVector[0];
+//        localIndices = &localIndicesVector[0];
+        globalIndices = &globalIndicesVector[0];
 
-//        convMatrix.InsertGlobalValues(myGlobalNodeIndices_Row[i], numEntries, entries, indices);
-        convMatrix.InsertMyValues(i, numEntries, entries, indices);
+        convMatrix.InsertGlobalValues(myGlobalIndices_Row[i], numEntries, entries, globalIndices);
+//        convMatrix.InsertMyValues(i, numEntries, entries, indices);
 
         entriesVector.clear();
-        indicesVector.clear();
+        localIndicesVector.clear();
+        globalIndicesVector.clear();
         numEntries = 0;
     }
 
 //    convMatrix.FillComplete();
-    convMatrix.FillComplete(rColMap, rRowMap);
+//    convMatrix.FillComplete(rColMap, rRowMap);
+//    convMatrix.FillComplete(rRowMap, rRowMap);
 
-
+//    delete localIndices;
+//    delete globalIndices;
+//    delete entries;
 
     return convMatrix;
 }
@@ -88,25 +102,28 @@ Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatr
 
 Epetra_Vector ConversionTools::convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Epetra_Map rMap)
 {
-    int oldVectorSize = int(rEigenVector.rows());
+    int vectorSize = int(rEigenVector.rows());
     Epetra_Vector newVector(rMap);
-//    int* myGlobalNodeIndices = rMap.MyGlobalElements();
+    int* myGlobalIndices = rMap.MyGlobalElements();
     int numMyElements_Row = rMap.NumMyElements();
 
 
-    double* vals = new double[1];
-    int* indices = new int[1];
-    for (int i = 0; i < oldVectorSize; ++i)
+    double* values = new double[1];
+    int* globalIndices = new int[1];
+    int* localIndices = new int[1];
+    for (int i = 0; i < vectorSize; ++i)
     {
-        vals[0] = rEigenVector(i, 0);
-//        indices[0] = myGlobalNodeIndices[i];
-        indices[0] = i;
-//        newVector.ReplaceGlobalValues(1, vals, indices);
-        newVector.ReplaceMyValues(1, vals, indices);
+        values[0] = rEigenVector(i, 0);
+        globalIndices[0] = myGlobalIndices[i];
+//        localIndices[0] = i;
+
+        newVector.ReplaceGlobalValues(1, values, globalIndices);
+//        newVector.ReplaceMyValues(1, values, localIndices);
     }
 
-    delete[] vals;
-    delete[] indices;
+    delete[] values;
+    delete[] localIndices;
+    delete[] globalIndices;
 
     return newVector;
 
