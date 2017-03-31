@@ -240,14 +240,13 @@ public:
     NuTo::StructureOutputBlockVector BuildGlobalInternalGradient();
 
     //! @brief ... build global external load vector (currently for displacements only)
-    //! @param rLoadCase ... load case
     //! @return  ... StructureOutputBlockVector containing the external loads
-    NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector(int rLoadCase = 0);
+    NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector();
 
     NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix, const NuTo::BlockFullVector<double>& rVector) const;
 
 
-    void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
+    void SolveGlobalSystemStaticElastic();
 
     void Contact(const std::vector<int> &rElementGroups);
 
@@ -1026,21 +1025,14 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
+    int LoadCreateNodeForce(int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node group
     //! @param rGroupIdent ... identifier for node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue);
-
-    //! @brief Adds a heat flux to a node.
-    //! @param rNodeIdent Identifier for node
-    //! @param rDirection Direction of the flux
-    //! @param rValue Value of the flux
-    //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a surface load to 2D plane elements (2D)
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1048,7 +1040,7 @@ public:
     // surface is considered to be loaded
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
-    int LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
+    int LoadSurfaceConstDirectionCreate2D(int rElementGroupId, int rNodeGroupId,
     		const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load to 3D solid elements
@@ -1057,7 +1049,7 @@ public:
     // surface is considered to be loaded
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
-    int LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
+    int LoadSurfaceConstDirectionCreate3D(int rElementGroupId, int rNodeGroupId,
     		const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
@@ -1066,14 +1058,14 @@ public:
     // surface is considered to be loaded
     //! @param rPressure value ... normal to the surface, positive for compression
     //! @return integer id to delete or modify the load
-    int LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure);
+    int LoadSurfacePressureCreate2D(int rElementGroupId, int rNodeGroupId, double rPressure);
 
     //! @brief adds a surface load pressure-function to 2D elements
     //! @param rElementGroupId ... specifies the elements with surface loads
     //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the surface is considered to be loaded
     //! @param rLoadFunction ... pressure function on the boundary
     //! @return integer id to delete or modify the load
-    int LoadSurfacePressureFunctionCreate2D(int rLoadCase,
+    int LoadSurfacePressureFunctionCreate2D(
                                             int rElementGroupId,
                                             int rNodeGroupId,
                                             const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction);
@@ -1084,23 +1076,7 @@ public:
     // surface is considered to be loaded
     //! @param rPressure value ... normal to the surface, positive for compression
     //! @return integer id to delete or modify the load
-    int LoadSurfacePressureCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure);
-
-    //! @brief delete load
-    //! @param rIdent ... load identifier
-    void LoadDelete(int rIdent);
-
-    //! @brief returns the number of load cases
-    void SetNumLoadCases(int rNumLoadCases)
-    {
-    	mNumLoadCases = rNumLoadCases;
-    }
-
-    //! @brief returns the number of load cases
-    int GetNumLoadCases()const
-    {
-    	return mNumLoadCases;
-    }
+    int LoadSurfacePressureCreate3D(int rElementGroupId, int rNodeGroupId, double rPressure);
 
 #ifndef SWIG
     //! @brief adds a force for a node
@@ -1108,21 +1084,21 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
+    int LoadCreateNodeForce(const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief Adds a heat flux to a node.
     //! @param rNode Pointer to node
     //! @param rDirection Direction of the heat flux
     //! @param rValue Value of the flux
     //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
+    int LoadCreateNodeHeatFlux(const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node grpup
     //! @param rNodeGroup ... pointer to node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief ... get the pointer to a load from the load identifier
     //! @param rIdent ... load identifier
@@ -1708,7 +1684,6 @@ protected:
 
     //! @brief ... map storing node loads
     //! @sa LoadBase
-    int mNumLoadCases;        //number of load cases to be considered
     boost::ptr_map<int,LoadBase> mLoadMap;
 
     //! @brief ... map storing the groups and a pointer to the objects

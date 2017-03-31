@@ -42,26 +42,23 @@ class Brick8NTestCase(unittest.TestCase):
         # assign constitutive law
         self.structure.ElementSetConstitutiveLaw(self.element, material)
 
-        # make group of boundary nodes
-        groupBoundaryNodes = self.structure.GroupCreate("Nodes")
-        self.structure.GroupAddNode(groupBoundaryNodes, node1)
-        self.structure.GroupAddNode(groupBoundaryNodes, node4)
-        self.structure.GroupAddNode(groupBoundaryNodes, node5)
-        self.structure.GroupAddNode(groupBoundaryNodes, node8)
-
-        # make group of boundary elements (in this case it is just one
-        groupBoundaryElements = self.structure.GroupCreate("Elements")
-        self.structure.GroupAddElementsFromNodes(groupBoundaryElements, groupBoundaryNodes, False)
-
-        # create surface loads (0 - pressure on X, 1-const-direction Y)
-        self.structure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.)
-        self.structure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, np.array((0.0, 5.0, 0.0)))
-
         # set displacements of right node
         self.structure.NodeSetDisplacements(node2, np.array([0.2, 0.2, 0.2]))
         self.structure.NodeSetDisplacements(node3, np.array([0.2, 0.2, 0.2]))
         self.structure.NodeSetDisplacements(node6, np.array([0.2, 0.2, 0.2]))
         self.structure.NodeSetDisplacements(node7, np.array([0.2, 0.2, 0.2]))
+
+        # make group of boundary nodes
+        self.groupBoundaryNodes = self.structure.GroupCreate("Nodes")
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node1)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node4)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node5)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node8)
+
+        # make group of boundary elements (in this case it is just one
+        self.groupBoundaryElements = self.structure.GroupCreate("Elements")
+        self.structure.GroupAddElementsFromNodes(self.groupBoundaryElements, self.groupBoundaryNodes, False)
+
 
     def testStiffness(self):
         # calculate element stiffness matrix
@@ -119,21 +116,27 @@ class Brick8NTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(engineeringStress, engineeringStressCorrect))
 
     def testExternalForce(self):
+        # create surface loads - pressure on X
+        self.structure.LoadSurfacePressureCreate3D(self.groupBoundaryElements, self.groupBoundaryNodes, 2.)
+
         # calculate external force vector for the first load case (pressure)
-        Fe = self.structure.BuildGlobalExternalLoadVector(0)
+        Fe = self.structure.BuildGlobalExternalLoadVector()
 
         # correct external force for pressure load vector (sum up the load in
         # x direction; everything else should be zero)
         sumX = np.sum(Fe.J.Get("Displacements"))
         self.assertAlmostEqual(sumX, 8.0)
 
+        # create surface load - const-direction Y
+        self.structure.LoadSurfaceConstDirectionCreate3D(self.groupBoundaryElements, self.groupBoundaryNodes, np.array((0.0, 5.0, 0.0)))
+
         # calculate external force vector for the second load cases (constDirection)
-        Fe = self.structure.BuildGlobalExternalLoadVector(1)
+        Fe = self.structure.BuildGlobalExternalLoadVector()
 
         # correct external force for pressure load vector (sum up the load in
         # y direction; everything else should be zero)
         sumY = np.sum(Fe.J.Get("Displacements"))
-        self.assertAlmostEqual(sumY, 20.0)
+        self.assertAlmostEqual(sumY, 28.0)
 
 
 if __name__ == '__main__':

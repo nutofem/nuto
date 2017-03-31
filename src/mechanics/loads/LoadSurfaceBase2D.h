@@ -1,4 +1,3 @@
-// $Id: LoadSurface3D.h 178 2009-12-11 20:53:12Z eckardt4 $
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -18,12 +17,10 @@
 namespace NuTo
 {
 class IntegrationTypeBase;
-class NodeBase;
 template<int TDim> class ContinuumElement;
 class StructureBase;
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... abstract class for all surface loads in 3D
+
+//! @brief Abstract class for all surface loads in 2D
 class LoadSurfaceBase2D : public LoadBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -32,21 +29,17 @@ class LoadSurfaceBase2D : public LoadBase
 
 public:
     //! @brief constructor
-    LoadSurfaceBase2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId);
+    LoadSurfaceBase2D(StructureBase* rStructure, int rElementGroupId, int rNodeGroupId);
 
-    //! @brief just for serialization
-    LoadSurfaceBase2D(){ }
-
-    //! @brief adds the load to global sub-vectors
-    //! @param rLoadCase number of the current load case
-    //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
-    //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const override;
+    //! @brief Adds the load to global sub-vectors
+    //! @param rActiceDofsLoadVector Global load vector which correspond to the active dofs
+    //! @param rDependentDofsLoadVector Global load vector which correspond to the dependent dofs
+    void AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const override;
 
     //! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
-    //! @param rCoordinates ... global coordinates
-    //! @param rNormal ... normal to the surface (pointing outwards)
-    //! @param rLoadVector ... load vector
+    //! @param rCoordinates Global coordinates
+    //! @param rNormal Normal to the surface (pointing outwards)
+    //! @param rLoadVector Load vector
     virtual void CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
                                       Eigen::Vector2d& rLoadVector)const=0;
 
@@ -138,6 +131,8 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    LoadSurfaceBase2D(){ }
+
     std::vector<std::pair<const ContinuumElement<2>*, int> > mElements2D;
     IntegrationTypeBase* mIntegrationType2NPtr;
     IntegrationTypeBase* mIntegrationType3NPtr;

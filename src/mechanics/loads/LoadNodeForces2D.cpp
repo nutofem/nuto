@@ -1,66 +1,53 @@
-// $Id$
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeForces2D.h"
 
-#include "math/SparseMatrixCSRGeneral.h"
+using namespace NuTo;
 
-// constructor
-NuTo::LoadNodeForces2D::LoadNodeForces2D(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue) :
-        LoadNode(rLoadCase,rNode)
+LoadNodeForces2D::LoadNodeForces2D(const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue)
+    : LoadNode(rNode)
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=2)
-        throw MechanicsException("[NuTo::LoadNodeForces2D::LoadNodeForces2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
+    if (rDirection.cols() != 1 || rDirection.rows() != 2)
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                                 "Dimension of the direction matrix must be equal to the dimension of the structure.");
 
-    memcpy(mDirection,rDirection.data(),2*sizeof(double));
-    //normalize the direction
-    double norm = sqrt(mDirection[0]*mDirection[0]+mDirection[1]*mDirection[1]);
+    memcpy(mDirection, rDirection.data(), 2 * sizeof(double));
+    // normalize the direction
+    double norm = sqrt(mDirection[0] * mDirection[0] + mDirection[1] * mDirection[1]);
     if (norm < 1e-14)
     {
-        throw MechanicsException("[NuTo::LoadNodeForces2D::LoadNodeForces2D] direction vector has zero length");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length");
     }
-    double invNorm = 1./norm;
-    mDirection[0]*=invNorm;
-    mDirection[1]*=invNorm;
+    double invNorm = 1. / norm;
+    mDirection[0] *= invNorm;
+    mDirection[1] *= invNorm;
     mValue = rValue;
 }
 
-// adds the load to global sub-vectors
-void NuTo::LoadNodeForces2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const
+
+void LoadNodeForces2D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector,
+                                                 Eigen::VectorXd& rDependentDofsLoadVector) const
 {
-    if (rLoadCase!=mLoadCase)
-    	return;
-	assert(rActiceDofsLoadVector.cols()==1);
-    assert(rDependentDofsLoadVector.cols()==1);
-    try
+    assert(rActiceDofsLoadVector.cols() == 1);
+    assert(rDependentDofsLoadVector.cols() == 1);
+    for (int dofCount = 0; dofCount < 2; dofCount++)
     {
-        for (int dofCount = 0; dofCount < 2; dofCount++)
+        int dof = mNode->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
+        assert(dof >= 0);
+        if (dof < rActiceDofsLoadVector.rows())
         {
-            int dof = mNode->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
-            assert(dof >= 0);
-            if (dof < rActiceDofsLoadVector.rows())
-            {
-                rActiceDofsLoadVector(dof,0) += this->mValue*mDirection[dofCount];
-            }
-            else
-            {
-                dof -= rActiceDofsLoadVector.rows();
-                assert(dof < rDependentDofsLoadVector.rows());
-                rDependentDofsLoadVector(dof,0) += this->mValue*mDirection[dofCount];
-            }
+            rActiceDofsLoadVector(dof, 0) += this->mValue * mDirection[dofCount];
         }
-    }
-    catch (std::bad_cast & b)
-    {
-        throw MechanicsException("[NuTo::LoadNodeGroupForces2D::AddLoad] Node has no displacements or its dimension is not equivalent to the 1.");
-    }
-    catch (...)
-    {
-        throw MechanicsException("[NuTo::LoadNodeGroupForces2D::AddLoad] Error getting displacements of node (unspecified exception).");
+        else
+        {
+            dof -= rActiceDofsLoadVector.rows();
+            assert(dof < rDependentDofsLoadVector.rows());
+            rDependentDofsLoadVector(dof, 0) += this->mValue * mDirection[dofCount];
+        }
     }
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadNodeForces2D)
-BOOST_CLASS_TRACKING(NuTo::LoadNodeForces2D, track_always)
+BOOST_CLASS_EXPORT_IMPLEMENT(LoadNodeForces2D)
+BOOST_CLASS_TRACKING(LoadNodeForces2D, track_always)
 #endif

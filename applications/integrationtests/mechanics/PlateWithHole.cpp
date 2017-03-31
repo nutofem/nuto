@@ -89,13 +89,11 @@ void ApplyBCs(NuTo::Structure& rS)
     rS.GroupAddElementsFromNodes(groupElementBCRight, groupNodeBCRight, false);
     rS.GroupAddElementsFromNodes(groupElementBCUpper, groupNodeBCUpper, false);
 
-    rS.SetNumLoadCases(1);
-
     std::function<Eigen::Vector2d(Eigen::Vector2d)> pressureRight = GetPressureRight;
     std::function<Eigen::Vector2d(Eigen::Vector2d)> pressureUpper = GetPressureUpper;
 
-    rS.LoadSurfacePressureFunctionCreate2D(0, groupElementBCRight, groupNodeBCRight, pressureRight);
-    rS.LoadSurfacePressureFunctionCreate2D(0, groupElementBCUpper, groupNodeBCUpper, pressureUpper);
+    rS.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, groupNodeBCRight, pressureRight);
+    rS.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, groupNodeBCUpper, pressureUpper);
 }
 
 bool CheckSolution(NuTo::Structure& rS)

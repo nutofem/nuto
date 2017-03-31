@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -17,9 +16,6 @@
 namespace NuTo
 {
 
-//! @author Daniel Arnold, ISM
-//! @date June 2010
-//! @brief ... abstract class for all forces applied to a single node
 class LoadNodeForces2D : public LoadNode
 {
 #ifdef ENABLE_SERIALIZATION
@@ -27,15 +23,15 @@ class LoadNodeForces2D : public LoadNode
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    //! @brief constructor
-    //! @param rDirection ... direction of the force
-    //! @param rValue ... value of the force
-    LoadNodeForces2D(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
+    //! @brief Constructor
+    //! @param Irection Direction of the force
+    //! @param value Value of the force
+    LoadNodeForces2D(const NodeBase* node, const Eigen::MatrixXd& direction, double value);
 
-    //! @brief adds the load to global sub-vectors
-    //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
-    //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const override;
+    //! @brief Adds the load to global sub-vectors
+    //! @param rActiceDofsLoadVector Global load vector which correspond to the active dofs
+    //! @param rDependentDofsLoadVector Global load vector which correspond to the dependent dofs
+    void AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -55,7 +51,7 @@ protected:
     double mDirection[2]; //!< direction of the applied force (normalized)
 
 private:
-    LoadNodeForces2D(){}
+    LoadNodeForces2D() = default;
 };
 }//namespace NuTo
 

@@ -1,11 +1,11 @@
-// $Id$
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/loads/LoadNode.h"
 
-
-//! @brief constructor
-NuTo::LoadNode::LoadNode(int rLoadCase, const NodeBase* rNode) : LoadBase(rLoadCase), mNode(rNode)
-{}
+NuTo::LoadNode::LoadNode(const NodeBase* rNode)
+    : LoadBase()
+    , mNode(rNode)
+{
+}
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadNode)

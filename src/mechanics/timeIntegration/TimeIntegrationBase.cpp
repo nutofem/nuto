@@ -178,32 +178,22 @@ void NuTo::TimeIntegrationBase::SetToleranceResidual(NuTo::Node::eDof rDof, doub
 }
 
 
-
-
-
-//! @brief calculate the external force vector (mStatic and m) as a function of time delta
 void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
 {
-    mLoadVectorStatic        = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
+    mLoadVectorStatic = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
     mLoadVectorTimeDependent = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
 
-    for (int iLoadCase = 0; iLoadCase< mStructure->GetNumLoadCases(); ++iLoadCase)
+    auto tmp = mStructure->BuildGlobalExternalLoadVector();
+    if (mTimeDependentLoadCase == 0)
     {
-        auto tmp = mStructure->BuildGlobalExternalLoadVector(iLoadCase);
-        mStructure->GetLogger()<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << "\n";
-        if (iLoadCase == mTimeDependentLoadCase)
-        {
-            mStructure->GetLogger() << "TIB TimeDependent \n";
-            mLoadVectorTimeDependent += tmp;
-        }
-        else
-        {
-            mStructure->GetLogger() << "TIB Static \n";
-            mLoadVectorStatic += tmp;
-        }
-        mStructure->GetLogger() << "sum of loads for loadcase " << iLoadCase << " is " << 
-            tmp.J.Export().colwise().sum() + tmp.K.Export().colwise().sum() << "\n";
+        mLoadVectorTimeDependent += tmp;
     }
+    else
+    {
+        mLoadVectorStatic += tmp;
+    }
+    mStructure->GetLogger() << "Sum of loads is " << tmp.J.Export().colwise().sum() + tmp.K.Export().colwise().sum()
+                            << "\n";
 }
 
 //! @brief calculate the current external force as a function of time delta

@@ -4,54 +4,41 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/loads/LoadNodeGroupForces1D.h"
 
-#include "math/SparseMatrixCSRGeneral.h"
+using namespace NuTo;
 
-//! @brief constructor
-NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(int rLoadCase, const Group<NodeBase>* rGroup, double rDirection, double rValue) :
-        LoadNodeGroup(rLoadCase,rGroup)
+LoadNodeGroupForces1D::LoadNodeGroupForces1D(const Group<NodeBase>* rGroup, double rDirection, double rValue)
+    : LoadNodeGroup(rGroup)
 {
     // set direction
     if (std::abs(rDirection) < 1e-14)
     {
-        throw MechanicsException("[NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D] direction vector has zero length.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length.");
     }
-    this->mDirection = rDirection/std::abs(rDirection);
+    mDirection = rDirection / std::abs(rDirection);
 
     // set value
-    this->mValue = rValue;
+    mValue = rValue;
 }
 
-// adds the load to global sub-vectors
-void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const
+
+void LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector,
+                                                      Eigen::VectorXd& rDependentDofsLoadVector) const
 {
-    if (rLoadCase!=mLoadCase)
-    	return;
-    assert(rActiceDofsLoadVector.cols()==1);
-    assert(rDependentDofsLoadVector.cols()==1);
+    assert(rActiceDofsLoadVector.cols() == 1);
+    assert(rDependentDofsLoadVector.cols() == 1);
     for (auto node : *mGroup)
     {
-        try
+        int dof = node.second->GetDof(Node::eDof::DISPLACEMENTS, 0);
+        assert(dof >= 0);
+        if (dof < rActiceDofsLoadVector.rows())
         {
-            int dof = node.second->GetDof(Node::eDof::DISPLACEMENTS, 0);
-            assert(dof >= 0);
-            if (dof < rActiceDofsLoadVector.rows())
-            {
-                rActiceDofsLoadVector(dof,0) += this->mDirection * this->mValue;
-            }
-            else
-            {
-                dof -= rActiceDofsLoadVector.rows();
-                assert(dof < rDependentDofsLoadVector.rows());
-                rDependentDofsLoadVector(dof,0) += this->mDirection * this->mValue;
-            }
+            rActiceDofsLoadVector(dof, 0) += mDirection * mValue;
         }
-        catch (std::bad_cast & b)
+        else
         {
-            throw MechanicsException("[NuTo::LoadNodeForces1D::AddLoad] Node has no displacements or its dimension is not equivalent to the 1.");
-        }
-        catch (...)
-        {
-            throw MechanicsException("[NuTo::LoadNodeForces1D::AddLoad] Error getting displacements of node (unspecified exception).");
+            dof -= rActiceDofsLoadVector.rows();
+            assert(dof < rDependentDofsLoadVector.rows());
+            rDependentDofsLoadVector(dof, 0) += mDirection * mValue;
         }
     }
 }

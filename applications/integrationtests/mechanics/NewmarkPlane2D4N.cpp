@@ -218,7 +218,7 @@ try
 	//myStructure.NodeGroupSetVelocities(grpNodes_All,velocity);
 
 	//create a unit load on all the nodes on the left side
-	myStructure.LoadCreateNodeGroupForce(0,groupLeftBottomSupport,DirectionX, 1);
+	myStructure.LoadCreateNodeGroupForce(groupLeftBottomSupport,DirectionX, 1);
 
 	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 

@@ -173,9 +173,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
         myStructure->GroupAddElement(groupNumberElementsLeft, i*surface.GetNumIGAElements(0) - 1);
     }
 
-    myStructure->SetNumLoadCases(1);
-
-    myStructure->LoadSurfacePressureCreate2D(0, groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
+    myStructure->LoadSurfacePressureCreate2D(groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
 
     myStructure->CalculateMaximumIndependentSets();
     myStructure->NodeBuildGlobalDofs();
@@ -454,20 +452,18 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     }
 
 
-    myStructure->SetNumLoadCases(1);
-
     if(BC == 0)
     {
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
 
-        myStructure->LoadSurfacePressureFunctionCreate2D(0, groupElementsLeft,  groupNodesLeft, stress_left);
-        myStructure->LoadSurfacePressureFunctionCreate2D(0, groupElementsUpper, groupNodesUpper, stress_upper);
+        myStructure->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  groupNodesLeft, stress_left);
+        myStructure->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, groupNodesUpper, stress_upper);
     }
     else
     {
         double Stress = -10.;
-        myStructure->LoadSurfacePressureCreate2D(0, groupElementsLeft, groupNodesLeft, Stress);
+        myStructure->LoadSurfacePressureCreate2D(groupElementsLeft, groupNodesLeft, Stress);
     }
 
     countDBC++;
@@ -635,20 +631,18 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
     myStructure.GroupAddElementsFromNodes(groupelementBCLeft, groupNodeBCLeft, false);
     myStructure.GroupAddElementsFromNodes(groupelementBCUpper, groupNodeBCUpper, false);
 
-    myStructure.SetNumLoadCases(1);
-
     if(BC == 0)
     {
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
 
-        myStructure.LoadSurfacePressureFunctionCreate2D(0, groupelementBCLeft,  groupNodeBCLeft, stress_left);
-        myStructure.LoadSurfacePressureFunctionCreate2D(0, groupelementBCUpper, groupNodeBCUpper, stress_upper);
+        myStructure.LoadSurfacePressureFunctionCreate2D(groupelementBCLeft,  groupNodeBCLeft, stress_left);
+        myStructure.LoadSurfacePressureFunctionCreate2D(groupelementBCUpper, groupNodeBCUpper, stress_upper);
     }
     else
     {
         double Stress = -10.;
-        myStructure.LoadSurfacePressureCreate2D(0, groupelementBCLeft, groupNodeBCLeft, Stress);
+        myStructure.LoadSurfacePressureCreate2D(groupelementBCLeft, groupNodeBCLeft, Stress);
     }
 
     myStructure.CalculateMaximumIndependentSets();

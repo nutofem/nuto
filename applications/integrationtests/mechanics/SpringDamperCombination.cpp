@@ -131,8 +131,7 @@ void AddSurfaceLoad(NuTo::Structure& rS,
     int GRPNodesSurfaceLoad = rS.GroupCreate("Nodes");
     rS.GroupAddNodeFunction(GRPNodesSurfaceLoad,rGetNodeFunction);
 
-    rS.LoadCreateNodeGroupForce(0,
-                                GRPNodesSurfaceLoad,
+    rS.LoadCreateNodeGroupForce(GRPNodesSurfaceLoad,
                                 Eigen::Matrix<double, TDim, 1>::UnitX(),
                                 SURFACELOAD);
 }

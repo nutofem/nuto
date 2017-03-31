@@ -190,10 +190,9 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     myIntegrationScheme->SetTimeStep(timeStep);
 
     // set unit load
-    myStructure.SetNumLoadCases(1);
     Eigen::VectorXd directionL(1);
     directionL[0] = 1;
-    myStructure.LoadCreateNodeGroupForce(0, grpNodes_Load, directionL, 1);
+    myStructure.LoadCreateNodeGroupForce(grpNodes_Load, directionL, 1);
 
     // set load
     Eigen::Matrix<double, 4, 2> forceRHS;

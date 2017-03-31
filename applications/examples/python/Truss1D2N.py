@@ -50,14 +50,13 @@ def SetupBoundaryConditions(structure, BCType):
     if BCType == "DisplacmentBC":
         structure.ConstraintLinearSetDisplacementNode(nodeRight, xDirection, BoundaryCondition.displacement)
     if BCType == "ForceBC":
-        structure.SetNumLoadCases(1)
-        structure.LoadCreateNodeForce(0, nodeRight, xDirection, BoundaryCondition.force)
+        structure.LoadCreateNodeForce(nodeRight, xDirection, BoundaryCondition.force)
 
 
 def Solve(structure):
-    structure.SolveGlobalSystemStaticElastic(0)
+    structure.SolveGlobalSystemStaticElastic()
     intGradient = structure.BuildGlobalInternalGradient()
-    extGradient = structure.BuildGlobalExternalLoadVector(0)
+    extGradient = structure.BuildGlobalExternalLoadVector()
     residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
     print("residual: {0}".format(np.linalg.norm(residual)))
     print("(should be _very_ close to zero.)")

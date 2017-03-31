@@ -416,7 +416,7 @@ int main()
             std::cout << "loadvaluePGD " << loadvaluePGD << std::endl;
 
             Eigen::Vector2d Load({1.0,0.0});
-            myStructureX.LoadSurfaceConstDirectionCreate2D(0,elemGroupLoad,nodeGroupLoad,Load);
+            myStructureX.LoadSurfaceConstDirectionCreate2D(elemGroupLoad,nodeGroupLoad,Load);
             Eigen::Matrix<double, 2, 2> forceRHS;
 //            forceRHS << 0, loadvaluePGD, simulationTime, loadvaluePGD;
             forceRHS << 0, 0, simulationTime, loadvaluePGD;
@@ -473,7 +473,7 @@ int main()
 			double alpha3=NewX.transpose()* (stiffX * NewX);
 
 			//\int_boundaryX R n_1(x) dboundary_x
-			auto ExternalLoad = myStructureX.BuildGlobalExternalLoadVector(0);
+			auto ExternalLoad = myStructureX.BuildGlobalExternalLoadVector();
 //			std::cout << "External Load Vector " << ExternalLoad.J << std::endl;
 			Eigen::VectorXd ExLoad = ExternalLoad.J.Export();
 			double beta3 = loadvalue* NewX.transpose()* ExLoad;

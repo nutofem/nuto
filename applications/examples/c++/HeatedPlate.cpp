@@ -189,8 +189,6 @@ int main()
     structure.ConstraintLinearSetDisplacementNodeGroup(nodesNorth, Eigen::Vector2d::UnitY(), 0.0);
 
     // temperature BC
-    structure.SetNumLoadCases(1);
-    //structure.ConstraintLinearSetTemperatureNode(0, 50.0);
     structure.ConstraintLinearSetTemperatureNodeGroup(nodesWest, 0.0);
     auto east_bc = structure.ConstraintLinearSetTemperatureNodeGroup(nodesEast, 0.0);
 

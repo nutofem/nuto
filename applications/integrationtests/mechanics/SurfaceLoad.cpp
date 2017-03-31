@@ -17,7 +17,7 @@ double pressure = 42.;
 
 void CheckHydrostaticPressure(NuTo::Structure& rStructure)
 {
-    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector(0).J[NuTo::Node::eDof::DISPLACEMENTS];
+    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector().J[NuTo::Node::eDof::DISPLACEMENTS];
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
@@ -84,7 +84,7 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 3; ++iSurface)
-        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, surfaces[iSurface], pressure);
+        myStructure.LoadSurfacePressureCreate2D(elementGroup, surfaces[iSurface], pressure);
 
     auto section = NuTo::SectionPlane::Create(13.0, false);
     myStructure.ElementTotalSetSection(section);
@@ -138,7 +138,7 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDis
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
-        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, surfaces[iSurface], pressure);
+        myStructure.LoadSurfacePressureCreate2D(elementGroup, surfaces[iSurface], pressure);
 
     auto section = NuTo::SectionPlane::Create(13.0, false);
     myStructure.ElementTotalSetSection(section);
@@ -202,7 +202,7 @@ void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpola
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
-        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, surfaces[iSurface], pressure);
+        myStructure.LoadSurfacePressureCreate3D(elementGroup, surfaces[iSurface], pressure);
 
     CheckHydrostaticPressure(myStructure);
     std::cout << "[SurfaceLoad::HydrostaticPressureTetrahedron3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
@@ -279,7 +279,7 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDi
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 6; ++iSurface)
-        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, surfaces[iSurface], pressure);
+        myStructure.LoadSurfacePressureCreate3D(elementGroup, surfaces[iSurface], pressure);
 
 
     CheckHydrostaticPressure(myStructure);
@@ -288,7 +288,7 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDi
 
 void CheckSurfaceLoad(NuTo::Structure& rStructure, const Eigen::VectorXd& rLoad, double rSurfaceArea)
 {
-    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector(0).J[NuTo::Node::eDof::DISPLACEMENTS];
+    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector().J[NuTo::Node::eDof::DISPLACEMENTS];
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
@@ -354,7 +354,7 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 
     Eigen::Vector2d load({42., -M_PI});
 
-    myStructure.LoadSurfaceConstDirectionCreate2D(0, elementGroup, s, load);
+    myStructure.LoadSurfaceConstDirectionCreate2D(elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
     std::cout << "[SurfaceLoad::SurfaceLoadTriangle2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
@@ -398,7 +398,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 
     Eigen::Vector2d load({42., -M_PI});
 
-    myStructure.LoadSurfaceConstDirectionCreate2D(0, elementGroup, s, load);
+    myStructure.LoadSurfaceConstDirectionCreate2D(elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
     std::cout << "[SurfaceLoad::SurfaceLoadQuad2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
@@ -516,7 +516,7 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp
 
     Eigen::Vector3d load({42., -M_PI, 1.e3});
 
-    myStructure.LoadSurfaceConstDirectionCreate3D(0, elementGroup, s, load);
+    myStructure.LoadSurfaceConstDirectionCreate3D(elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
     std::cout << "[SurfaceLoad::SurfaceLoadTetrahedron3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
@@ -567,7 +567,7 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 
     Eigen::Vector3d load({42., -M_PI, 4.2e6});
 
-    myStructure.LoadSurfaceConstDirectionCreate3D(0, elementGroup, s, load);
+    myStructure.LoadSurfaceConstDirectionCreate3D(elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
     std::cout << "[SurfaceLoad::SurfaceLoadBrick3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;

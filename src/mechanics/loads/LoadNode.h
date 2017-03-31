@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -12,15 +11,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadBase.h"
 
 namespace NuTo
 {
 class NodeBase;
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... abstract class for all constraints applied to a single node
+
+//! @brief Abstract class for all constraints applied to a single node
 class LoadNode : public LoadBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -28,11 +25,8 @@ class LoadNode : public LoadBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    //! @brief constructor
-    LoadNode(){}
-
-    //! @brief constructor
-    LoadNode(int rLoadCase, const NodeBase* rNode);
+    //! @brief Constructor
+    LoadNode(const NodeBase* rNode);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes (saves) the class
@@ -89,6 +83,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
+    LoadNode() = default;
     const NodeBase* mNode;
 };
 }//namespace NuTo

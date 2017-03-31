@@ -127,8 +127,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     direction(0) = 1;
     // first node is fixed
     myStructure->ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-    myStructure->SetNumLoadCases(1);
-    myStructure->LoadCreateNodeForce(0, numNodes-1, direction, Force);
+    myStructure->LoadCreateNodeForce(numNodes-1, direction, Force);
 
     /** start analysis **/
 
@@ -316,10 +315,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
         if(PRINTRESULT) std::cout << elementId  << std::endl;
     }
 
-    //NuTo::FullVector<double, 2> ForceVecRight({Force,0.});
-    myStructure->SetNumLoadCases(1);
-    //myStructure->LoadSurfaceConstDirectionCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, ForceVecRight);
-    myStructure->LoadSurfacePressureCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, -Stress);
+    myStructure->LoadSurfacePressureCreate2D(groupNumberElementsRight, groupNumberNodesRight, -Stress);
 
     myStructure->Info();
 

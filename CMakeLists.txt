@@ -42,7 +42,7 @@ if(ENABLE_MPI)
     message(STATUS "Find MPI")
 
     find_package(MPI REQUIRED)
-    include_directories(${MPI_INCLUDE_PATH})
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
     # These variables are set by FindMPI
     message(STATUS "MPI_CXX_FOUND:              ${MPI_CXX_FOUND}" )

@@ -128,7 +128,7 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     //          Loads
     //**********************************************
 
-    int load = myStructure.LoadCreateNodeForce(0, node2, rDirectionAligned, 1);
+    int load = myStructure.LoadCreateNodeForce(node2, rDirectionAligned, 1);
 
     Eigen::Matrix2d timeDependentLoad;
     timeDependentLoad(0, 0) = 0;

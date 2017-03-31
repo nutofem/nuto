@@ -44,21 +44,17 @@ class Tetrahedron10NTestCase(unittest.TestCase):
         self.structure.ElementSetConstitutiveLaw(self.element, material)
 
         # make group of boundary nodes
-        groupBoundaryNodes = self.structure.GroupCreate("Nodes")
-        self.structure.GroupAddNode(groupBoundaryNodes, node1)
-        self.structure.GroupAddNode(groupBoundaryNodes, node3)
-        self.structure.GroupAddNode(groupBoundaryNodes, node4)
-        self.structure.GroupAddNode(groupBoundaryNodes, node7)
-        self.structure.GroupAddNode(groupBoundaryNodes, node8)
-        self.structure.GroupAddNode(groupBoundaryNodes, node9)
+        self.groupBoundaryNodes = self.structure.GroupCreate("Nodes")
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node1)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node3)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node4)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node7)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node8)
+        self.structure.GroupAddNode(self.groupBoundaryNodes, node9)
 
         # make group of boundary elements (in this case it is just one)
-        groupBoundaryElements = self.structure.GroupCreate("Elements")
-        self.structure.GroupAddElementsFromNodes(groupBoundaryElements, groupBoundaryNodes, False)
-
-        # create surface loads (0 - pressure on X, 1-const-direction Y)
-        self.structure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.)
-        self.structure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, np.array([0., 5., 0.]))
+        self.groupBoundaryElements = self.structure.GroupCreate("Elements")
+        self.structure.GroupAddElementsFromNodes(self.groupBoundaryElements, self.groupBoundaryNodes, False)
 
         # set displacements of right node
         self.structure.NodeSetDisplacements(node2, np.array([0.2, 0.2, 0.2]))
@@ -117,18 +113,27 @@ class Tetrahedron10NTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(engineeringStress, engineeringStressCorrect))
 
     def testExternalForce(self):
+        # create surface loads - pressure on X
+        self.structure.LoadSurfacePressureCreate3D(self.groupBoundaryElements, self.groupBoundaryNodes, 2.)
+
         # calculate external force vector for the first load case (pressure)
-        Fe = self.structure.BuildGlobalExternalLoadVector(0)
+        Fe = self.structure.BuildGlobalExternalLoadVector()
+
+        # correct external force for pressure load vector (sum up the load in
+        # x direction; everything else should be zero)
         sumX = np.sum(Fe.J.Get("Displacements"))
         self.assertAlmostEqual(sumX, 1.0)
 
-        # calculate external force vector for the second load cases (constDirection)
-        Fe = self.structure.BuildGlobalExternalLoadVector(1)
+        # create surface load - const-direction Y
+        self.structure.LoadSurfaceConstDirectionCreate3D(self.groupBoundaryElements, self.groupBoundaryNodes, np.array((0.0, 5.0, 0.0)))
 
-        # correct external force for pressure load vector
-        # (sum up the load in x direction eveything else should be zero)
+        # calculate external force vector for the second load cases (constDirection)
+        Fe = self.structure.BuildGlobalExternalLoadVector()
+
+        # correct external force for pressure load vector (sum up the load in
+        # y direction; everything else should be zero)
         sumY = np.sum(Fe.J.Get("Displacements"))
-        self.assertAlmostEqual(sumY, 2.5)
+        self.assertAlmostEqual(sumY, 3.5)
 
 
 if __name__ == '__main__':

@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
 
-    int loadId = structure.LoadCreateNodeGroupForce(0, loadNodeGroup, directionY, 0);
+    int loadId = structure.LoadCreateNodeGroupForce(loadNodeGroup, directionY, 0);
 
 
     structure.GetLogger() << "***********************************"

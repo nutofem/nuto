@@ -137,8 +137,8 @@ int main()
     myStructure.ConstraintLinearSetDisplacementNode(10, direction, BoundaryDisplacement);
 
     // start analysis
-    myStructure.SolveGlobalSystemStaticElastic(1);
-    auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(1);
+    myStructure.SolveGlobalSystemStaticElastic();
+    auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector();
 
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 

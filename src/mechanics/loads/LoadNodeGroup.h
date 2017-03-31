@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -8,7 +7,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
+#endif // ENABLE_SERIALIZATION
 
 #include "mechanics/loads/LoadBase.h"
 
@@ -16,33 +15,31 @@ namespace NuTo
 {
 template <class T>
 class Group;
+class NodeBase;
 
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... abstract class for all loads applied to a node group
+//! @brief Abstract class for all loads applied to a node group
 class LoadNodeGroup : public LoadBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
+#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
-    LoadNodeGroup(int rLoadCase, const Group<NodeBase>* rGroup);
+    LoadNodeGroup(const Group<NodeBase>* rGroup);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    int GetNumConstraintEquations()const;
+    int GetNumConstraintEquations() const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
-        & BOOST_SERIALIZATION_NVP(mGroup);
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase) & BOOST_SERIALIZATION_NVP(mGroup);
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -50,4 +47,4 @@ public:
 protected:
     const Group<NodeBase>* mGroup;
 };
-}//namespace NuTo
+} // namespace NuTo

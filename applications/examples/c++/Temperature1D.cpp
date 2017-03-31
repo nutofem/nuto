@@ -28,7 +28,6 @@ int main()
 
     // boundaries
     double boundary_temperature = 20.0;
-    double boundary_flux = 10.0;
 
     // material
     double conductivity = 1.0;
@@ -57,12 +56,11 @@ int main()
     Eigen::VectorXd direction(1);
     direction(0) = 1.0;
     structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
-    structure.SetNumLoadCases(1);
-    structure.LoadCreateNodeHeatFlux(0, num_elements, direction, boundary_flux);
+    structure.ConstraintLinearSetTemperatureNode(structure.GetNumNodes()-1, boundary_temperature + 20);
 
     // start analysis
-    structure.SolveGlobalSystemStaticElastic(0);
-    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector(0);
+    structure.SolveGlobalSystemStaticElastic();
+    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector();
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
     // visualize results

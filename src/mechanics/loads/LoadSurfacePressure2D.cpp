@@ -1,29 +1,23 @@
-// $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
-
 #include "mechanics/loads/LoadSurfacePressure2D.h"
 
+using namespace NuTo;
 
-//! @brief constructor
-NuTo::LoadSurfacePressure2D::LoadSurfacePressure2D(int rLoadCase, StructureBase* rStructure,int rElementGroupId,int rNodeGroupId,
-		double rPressure) :
-		LoadSurfaceBase2D(rLoadCase,rStructure,rElementGroupId,rNodeGroupId)
+LoadSurfacePressure2D::LoadSurfacePressure2D(StructureBase* rStructure, int rElementGroupId, int rNodeGroupId,
+                                             double rPressure)
+    : LoadSurfaceBase2D(rStructure, rElementGroupId, rNodeGroupId)
 {
-	mPressure = rPressure;
+    mPressure = rPressure;
 }
 
-//! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
-//! @param rCoordinates ... global coordinates
-//! @param rNormal ... normal to the surface (pointing outwards)
-//! @param rLoadVector ... load vector
-void NuTo::LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates,
-													   Eigen::Vector2d& rNormal,
-													   Eigen::Vector2d& rLoadVector)const
+
+void LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+                                                 Eigen::Vector2d& rLoadVector) const
 {
-	assert(std::abs(rNormal.norm()-1.)<1e-5);
-	rLoadVector = rNormal*(-mPressure);
+    assert(std::abs(rNormal.norm() - 1.) < 1e-5);
+    rLoadVector = rNormal * (-mPressure);
 }
 
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadSurfacePressure2D)
+BOOST_CLASS_EXPORT_IMPLEMENT(LoadSurfacePressure2D)
 #endif

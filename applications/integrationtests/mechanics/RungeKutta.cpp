@@ -86,7 +86,7 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector2d::UnitY(), 0);
     myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left, Eigen::Vector2d::UnitX(), 0);
 
-    myStructure.LoadCreateNodeGroupForce(0, grpNodes_Right, Eigen::Vector2d::UnitX(), 1000);
+    myStructure.LoadCreateNodeGroupForce(grpNodes_Right, Eigen::Vector2d::UnitX(), 1000);
 
     myStructure.Info();
     NuTo::RungeKutta4 myIntegrationScheme(&myStructure);

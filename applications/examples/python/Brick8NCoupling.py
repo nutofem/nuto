@@ -146,25 +146,24 @@ myStructure.ConstraintLinearEquationAddTerm(id, 21, "z_displacement", 0.25)
 myStructure.ConstraintLinearEquationAddTerm(id, 27, "z_displacement", 0.25)
 
 # forces
-myStructure.SetNumLoadCases(1)
 direction = np.array([1.0, 0.0, 0.0])
-myStructure.LoadCreateNodeForce(0, 28, direction, 1)
-myStructure.LoadCreateNodeForce(0, 29, direction, 1)
-myStructure.LoadCreateNodeForce(0, 30, direction, 1)
-myStructure.LoadCreateNodeForce(0, 31, direction, 1)
+myStructure.LoadCreateNodeForce(28, direction, 1)
+myStructure.LoadCreateNodeForce(29, direction, 1)
+myStructure.LoadCreateNodeForce(30, direction, 1)
+myStructure.LoadCreateNodeForce(31, direction, 1)
 
 # start analysis
 myStructure.NodeBuildGlobalDofs()
 
 # Calculate maximum independent sets for parallelization (openmp)
 myStructure.CalculateMaximumIndependentSets()
-myStructure.SolveGlobalSystemStaticElastic(0)
+myStructure.SolveGlobalSystemStaticElastic()
 
 # calculate residual
 print("calculate residual")
 # start analysis
 intGradient = myStructure.BuildGlobalInternalGradient()
-extGradient = myStructure.BuildGlobalExternalLoadVector(0)
+extGradient = myStructure.BuildGlobalExternalLoadVector()
 extGradientJ = extGradient.J.Get("Displacements")
 intGradientJ = intGradient.J.Get("Displacements")
 intGradientK = intGradient.K.Get("Displacements")

@@ -100,8 +100,6 @@ NuTo::StructureBase::StructureBase(int rDimension)
     mDimension = rDimension;
     mNodeNumberingRequired = true;
 
-    mNumLoadCases = 1;
-
     mNumTimeDerivatives = 0;
 
     mHaveTmpStaticData = false;
@@ -737,17 +735,15 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
 }
 
 
-void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
+void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     if (GetNumTimeDerivatives() > 0)
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
-                                       "] Only use this method for a system with 0 time derivatives.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only use this method for a system with 0 time derivatives.");
 
     if (mNodeNumberingRequired)
         NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
-
 
     StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
     deltaDof_dt0.J.SetZero();
@@ -755,7 +751,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 
     auto hessian0 = BuildGlobalHessian0();
 
-    auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
+    auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector() + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetConstraintMatrix());
     residual.ApplyCMatrix(GetConstraintMatrix());
@@ -793,7 +789,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 
     matrixForSolver->SetOneBasedIndexing();
 
-// allocate solver
+    // allocate solver
 #if defined(HAVE_PARDISO) && defined(_OPENMP)
     NuTo::SparseDirectSolverPardiso mySolver(GetNumProcessors(), GetVerboseLevel()); // note: not the MKL version
 #else
@@ -809,7 +805,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 }
 
 
-NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVector(int rLoadCase)
+NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVector()
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     if (mNodeNumberingRequired)
@@ -824,7 +820,7 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
 
         for (const auto& load : mLoadMap)
         {
-            load.second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
+            load.second->AddLoadToGlobalSubVectors(vectorJ, vectorK);
         }
     }
     return externalLoad;

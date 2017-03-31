@@ -64,7 +64,6 @@ int main()
     Eigen::VectorXd direction(1);
     direction(0) = 1;
     structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-    structure.SetNumLoadCases(1);
     if (EnableDisplacementControl)
     {
         std::cout << "Displacement control" << std::endl;
@@ -73,12 +72,12 @@ int main()
     else
     {
         std::cout << "Load control" << std::endl;
-        structure.LoadCreateNodeForce(0, NumElements, direction, Force);
+        structure.LoadCreateNodeForce( NumElements, direction, Force);
     }
 
     // start analysis
-    structure.SolveGlobalSystemStaticElastic(1);
-    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector(1);
+    structure.SolveGlobalSystemStaticElastic();
+    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector();
 
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
