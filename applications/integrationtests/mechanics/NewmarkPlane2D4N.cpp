@@ -328,6 +328,7 @@ try
     std::cout << "result_time \n" << result_time << std::endl;
 
     Eigen::Vector2d result_timeRef;
+    result_timeRef.setZero();
     result_timeRef(1,0) = 10;
 
     if ((result_timeRef-result_time).cwiseAbs().maxCoeff()>1e-4)
