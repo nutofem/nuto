@@ -216,6 +216,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
         case Node::eDof::DISPLACEMENTS:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRESS];
             break;
+        case Node::eDof::ELECTRICPOTENTIAL:
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT];
+            break;
         case Node::eDof::NONLOCALEQSTRAIN:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
             rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_RADIUS];
@@ -324,6 +327,19 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN];
+                break;
+
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT];
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD];
+                break;
+
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN];
+                break;
+
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::ELECTRICPOTENTIAL):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD];
                 break;
 
             default:
@@ -463,6 +479,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
             it.second.resize(3, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::HEAT_FLUX];
             break;
+        case NuTo::IpData::eIpStaticDataType::ELECTRIC_FIELD:
+            it.second.resize(3, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::ELECTRIC_FIELD];
+            break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
         }
@@ -596,6 +616,12 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         {
             auto& waterVolumeFractionGrad = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());
             waterVolumeFractionGrad.AsVector() = rData.mB.at(Node::eDof::WATERVOLUMEFRACTION) * rData.mNodalValues.at(Node::eDof::WATERVOLUMEFRACTION);
+            break;
+        }
+        case Constitutive::eInput::ELECTRIC_FIELD:
+        {
+            auto& electricField = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());
+            electricField.AsVector() = rData.mB.at(Node::eDof::ELECTRICPOTENTIAL) * rData.mNodalValues.at(Node::eDof::ELECTRICPOTENTIAL);
             break;
         }
         case Constitutive::eInput::TIME:
@@ -900,11 +926,28 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * N + c * B.transpose() * B);
                 break;
             }
-
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
             {
                 const auto& tangentHeatFluxTemperatureGradient = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
                 hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentHeatFluxTemperatureGradient * rData.mB.at(dofRow);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
+            {
+                const auto& tangentD_E = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD).get());
+                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_E * rData.mB.at(dofRow);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentD_strain = *static_cast<ConstitutiveMatrix<TDim, VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN).get());
+                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_strain * rData.mB.at(dofCol);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::ELECTRICPOTENTIAL):
+            {
+                const auto& tangentStress_E = *static_cast<ConstitutiveMatrix<VoigtDim, TDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD).get());
+                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStress_E * rData.mB.at(dofCol);
                 break;
             }
                 //VHIRTHAMTODO get references to shape functions ---> no double find for the same value
@@ -1142,6 +1185,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
             break;
         case NuTo::IpData::eIpStaticDataType::HEAT_FLUX:
             it.second.col(rTheIP) = static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::HEAT_FLUX).get())->ConvertTo3DVector();
+            break;
+        case NuTo::IpData::eIpStaticDataType::ELECTRIC_FIELD:
+            it.second.col(rTheIP) = static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ELECTRIC_FIELD).get())->ConvertTo3DVector();
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");

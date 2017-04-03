@@ -3,6 +3,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/loads/LoadNode.h"
+#include "mechanics/loads/LoadNodeScalarSource.h"
 #include "mechanics/loads/LoadNodeForces1D.h"
 #include "mechanics/loads/LoadNodeForces2D.h"
 #include "mechanics/loads/LoadNodeForces3D.h"
@@ -16,6 +17,52 @@
 #include "mechanics/loads/LoadSurfacePressure2D.h"
 #include "mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "mechanics/loads/LoadSurfacePressure3D.h"
+
+
+
+int NuTo::StructureBase::LoadCreateScalarSource(int rLoadCase, int rNodeIdent, double rValue)
+{
+    // find node
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rNodeIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+        throw;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+    }
+
+    return this->LoadCreateScalarSource(rLoadCase,nodePtr, rValue);
+}
+
+
+int NuTo::StructureBase::LoadCreateScalarSource(int rLoadCase, const NodeBase* rNode, double rValue)
+{
+    if (rLoadCase>=mNumLoadCases)
+        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadNode* loadPtr;
+    loadPtr = new NuTo::LoadNodeScalarSource(rLoadCase, rNode, rValue);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
 
 // adds a force for a node
 int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue)

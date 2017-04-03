@@ -889,6 +889,18 @@ public:
     //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
     int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue);
 
+#ifndef SWIG
+    //! @brief adds a ElectricPotential constraint equation for a group of nodes
+    //! @param rNode pointer to group of nodes
+    //! @param rValue prescribed value (e.g. zero for conducting boundaries)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetElectricPotentialNodeGroup(Group<NodeBase>* rGroup, double rValue);
+#endif
+
+    //! @brief adds a constraint equation for a group of nodes
+    //! @param rGroupIdent identifier for group of nodes
+    //! @param rValue prescribed value (e.g. zero for conducting boundaries)
+    int ConstraintLinearSetElectricPotentialNodeGroup(int rGroupIdent, double rValue);
 
     // ######################################
     // ##                                  ##
@@ -1026,6 +1038,12 @@ public:
     //***  defined in structures/StructureBaseLoad.cpp  ***
     //*************************************************
 
+    //! @brief adds a scalar source for a node
+    //! @param rNodeIdent ... identifier for node
+    //! @param rValue ... source value
+    //! @return integer id to delete or modify the load
+    int LoadCreateScalarSource(int rLoadCase, int rNodeIdent, double rValue);
+
     //! @brief adds a force for a node
     //! @param rNodeIdent ... identifier for node
     //! @param rDirection ... direction of the force
@@ -1108,6 +1126,13 @@ public:
     }
 
 #ifndef SWIG
+
+    //! @brief adds a scalar source for a node
+    //! @param rNode ... pointer to node
+    //! @param rValue ... source value
+    //! @return integer id to delete or modify the load
+    int LoadCreateScalarSource(int rLoadCase, const NodeBase* rNode, double rValue);
+
     //! @brief adds a force for a node
     //! @param rNode ... pointer to node
     //! @param rDirection ... direction of the force

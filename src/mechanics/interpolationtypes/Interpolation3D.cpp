@@ -25,6 +25,8 @@ int NuTo::Interpolation3D::GetNumDofsPerNode() const
         return 3;
     case NuTo::Node::eDof::TEMPERATURE:
         return 1;
+    case NuTo::Node::eDof::ELECTRICPOTENTIAL:
+        return 1;
     case NuTo::Node::eDof::NONLOCALEQSTRAIN:
         return 1;
     case NuTo::Node::eDof::RELATIVEHUMIDITY:

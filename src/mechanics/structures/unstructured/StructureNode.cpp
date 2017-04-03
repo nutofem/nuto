@@ -175,6 +175,7 @@ int NuTo::Structure::GetDofDimension(Node::eDof rDof)
     case Node::eDof::WATERVOLUMEFRACTION:
     case Node::eDof::RELATIVEHUMIDITY:
     case Node::eDof::CRACKPHASEFIELD:
+    case Node::eDof::ELECTRICPOTENTIAL:
         return 1;
 
     // **************************************

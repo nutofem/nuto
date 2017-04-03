@@ -15,6 +15,7 @@ enum class eIpStaticDataType
 {
     BOND_STRESS,                    //!< bond stress
     DAMAGE,                         //!< isotropic damage variable
+    ELECTRIC_FIELD,                 //!< electric field calculated from potential
     ELASTIC_ENERGY,                 //!< elastic energy
     ENGINEERING_PLASTIC_STRAIN,     //!< plastic strain
     ENGINEERING_STRAIN,             //!< engineering strain

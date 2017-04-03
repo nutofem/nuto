@@ -17,7 +17,10 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/PhaseField.cpp
     constitutive/laws/HeatConduction.cpp
     constitutive/laws/LinearDampingEngineeringStress.cpp
+    constitutive/laws/LinearDielectric.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
+    constitutive/laws/LinearElasticAnisotropic.cpp
+    constitutive/laws/LinearPiezoelectric.cpp
     constitutive/laws/LocalDamageModel.cpp
     constitutive/laws/MisesPlasticityEngineeringStress.cpp
     constitutive/laws/MoistureTransport.cpp
@@ -47,6 +50,7 @@ set(NuToMechanicsConstraintSources
     constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
     constraints/ConstraintLinearNodeGroupRotations2D.cpp
     constraints/ConstraintLinearNodeGroupTemperature.cpp
+    constraints/ConstraintLinearNodeGroupElectricPotential.cpp
     constraints/ConstraintLinearNodeRelativeHumidity.cpp
     constraints/ConstraintLinearNodeRotations2D.cpp
     constraints/ConstraintLinearNodeTemperature.cpp
@@ -156,6 +160,7 @@ set(NuToMechanicsLoadsSources
     loads/LoadNodeForces1D.cpp
     loads/LoadNodeForces2D.cpp
     loads/LoadNodeForces3D.cpp
+    loads/LoadNodeScalarSource.cpp
     loads/LoadNodeGroupForces1D.cpp
     loads/LoadNodeGroupForces2D.cpp
     loads/LoadNodeGroupForces3D.cpp

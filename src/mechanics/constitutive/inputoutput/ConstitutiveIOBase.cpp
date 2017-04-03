@@ -55,6 +55,8 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
         case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
         case eOutput::HEAT_FLUX:
+        case eOutput::ELECTRIC_DISPLACEMENT:
+        case eOutput::ELECTRIC_FIELD:
             return std::make_unique<ConstitutiveVector<TDim>>();
         // vectors voigtdim
         case eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
@@ -84,6 +86,12 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1:
             return std::make_unique<ConstitutiveMatrix<VoigtDim, VoigtDim>>();
+        case eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
+            return std::make_unique<ConstitutiveMatrix<TDim, TDim>>();
+        case eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
+            return std::make_unique<ConstitutiveMatrix<TDim, VoigtDim>>();
+        case eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
+            return std::make_unique<ConstitutiveMatrix<VoigtDim,TDim>>();
         case eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
             return std::make_unique<ConstitutiveMatrix<TDim, TDim>>();
         case eOutput::BOND_STRESS:
@@ -128,6 +136,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eInput::RELATIVE_HUMIDITY_GRADIENT:
         case eInput::WATER_VOLUME_FRACTION_GRADIENT:
         case eInput::TEMPERATURE_GRADIENT:
+        case eInput::ELECTRIC_FIELD:
             return std::make_unique<ConstitutiveVector<TDim>>();
         // other
         case eInput::ENGINEERING_STRAIN:

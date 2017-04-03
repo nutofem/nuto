@@ -101,6 +101,10 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "Velocities";
     case eVisualizeWhat::WATER_VOLUME_FRACTION:
         return "WaterVolumeFraction";
+    case eVisualizeWhat::ELECTRIC_POTENTIAL:
+        return "ElectricPotential";
+    case eVisualizeWhat::ELECTRIC_FIELD:
+        return "ElectricField";
     default:
         throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component not implemented.");
     }

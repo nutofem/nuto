@@ -71,8 +71,8 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
+    if (mStructure->GetDofStatus().HasInteractingConstraints() and !(mMapTimeDependentConstraint.empty()) )
+        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for time dependent constraints including multiple dofs.");
 
     if (mTimeStep==0.)
     {
@@ -105,6 +105,9 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2Lumped();
 
     //invert the mass matrix
+    auto cmat = mStructure->GetConstraintMatrix();
+    hessian2.ApplyCMatrix(cmat);
+
     hessian2.CwiseInvert();
 
     double curTime  = 0;
@@ -117,6 +120,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     std::vector<double> stageDerivativeFactor(this->GetNumStages()-1);
     while (curTime < rTimeDelta)
     {
+        std::cout << curTime/rTimeDelta << std::endl;
         //calculate for delta_t = 0
         auto dof_dt0_new = dof_dt0;
         auto dof_dt1_new = dof_dt1;
@@ -169,7 +173,11 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
             //update derivatives (ydot or k1,k2,k3,k4) for Runge Kutta
             d_dof_dt0_tmp[countStage] = dof_dt1_tmp*mTimeStep;
             //std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
-            d_dof_dt1_tmp[countStage]  = hessian2*(extLoad-intForce)*mTimeStep;
+            auto forceVector = extLoad - intForce;
+            auto res = forceVector.J*0.;
+            forceVector.ApplyCMatrix(res,cmat);
+            forceVector.J = res;
+            d_dof_dt1_tmp[countStage]  = hessian2*(forceVector)*mTimeStep;
             //std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
             //std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 

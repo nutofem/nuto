@@ -52,7 +52,9 @@ enum class eVisualizeWhat
     TEMPERATURE,                    //!< visualize temperature
     HEAT_FLUX,                      //!< visualize heat flux
     RELATIVE_HUMIDITY,              //!< visualize relative humidity
-    WATER_VOLUME_FRACTION           //!< visualize water volume fraction
+    WATER_VOLUME_FRACTION,          //!< visualize water volume fraction
+    ELECTRIC_FIELD,                 //!<
+    ELECTRIC_POTENTIAL              //!<
 };
 
 

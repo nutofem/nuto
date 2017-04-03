@@ -442,6 +442,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::eVisualizeWhat::LATTICE_STRESS:
         case NuTo::eVisualizeWhat::LATTICE_STRAIN:
         case NuTo::eVisualizeWhat::LATTICE_PLASTIC_STRAIN:
+        case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
             rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
 
@@ -458,6 +459,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
@@ -734,8 +736,6 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
     return isSubmatrixCorrect;
 }
 
-
-
 void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -831,6 +831,19 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
     {
         auto& vectorJ = externalLoad.J[Node::eDof::TEMPERATURE];
         auto& vectorK = externalLoad.K[Node::eDof::TEMPERATURE];
+
+        // loop over all loads
+        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+        while (loadIter != this->mLoadMap.end())
+        {
+            loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
+            loadIter++;
+        }
+    }
+    if (DofTypeIsActive(Node::eDof::ELECTRICPOTENTIAL) and (not DofTypeIsActive(Node::eDof::DISPLACEMENTS))  )
+    {
+        auto& vectorJ = externalLoad.J[Node::eDof::ELECTRICPOTENTIAL];
+        auto& vectorK = externalLoad.K[Node::eDof::ELECTRICPOTENTIAL];
 
         // loop over all loads
         boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();

@@ -10,7 +10,10 @@
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
 #include "mechanics/constitutive/laws/LinearDampingEngineeringStress.h"
+#include "mechanics/constitutive/laws/LinearDielectric.h"
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
+#include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
+#include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
@@ -107,6 +110,18 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::THERMAL_STRAINS:
             ConstitutiveLawPtr = new NuTo::ThermalStrains();
+            break;
+
+        case eConstitutiveType::LINEAR_ELASTIC_ANISOTROPIC:
+            ConstitutiveLawPtr = new NuTo::LinearElasticAnisotropic();
+            break;
+
+        case eConstitutiveType::LINEAR_DIELECTRIC:
+            ConstitutiveLawPtr = new NuTo::LinearDielectric();
+            break;
+
+        case eConstitutiveType::LINEAR_PIEZOELECTRIC:
+            ConstitutiveLawPtr = new NuTo::LinearPiezoelectric();
             break;
 
          default:

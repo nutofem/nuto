@@ -23,6 +23,7 @@
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
+#include "mechanics/constraints/ConstraintLinearNodeGroupElectricPotential.h"
 #include "mechanics/constraints/ConstraintLinearNodeRelativeHumidity.h"
 #include "mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "mechanics/constraints/ConstraintLinearNodeTemperature.h"
@@ -335,6 +336,20 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent
     return ConstraintLinearSetTemperatureNodeGroup(nodeGroup, rValue);
 }
 
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNodeGroup(int rGroupIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetElectricPotentialNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetElectricPotentialNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    return ConstraintLinearSetElectricPotentialNodeGroup(nodeGroup, rValue);
+}
+
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
@@ -342,6 +357,15 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>
     int id = GetUnusedId(mConstraintMap);
 
     mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupTemperature(rGroup,rValue));
+    return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNodeGroup(Group<NodeBase>* rGroup, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    int id = GetUnusedId(mConstraintMap);
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupElectricPotential(rGroup,rValue));
     return id;
 }
 
