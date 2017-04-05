@@ -60,20 +60,23 @@ structure.AddVisualizationComponent(visualizationGroup, "NonlocalEqStrain")
 direction = np.array([1.0])
 structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 
-structure.LoadCreateNodeForce(nodeIDs[0], direction, 100.0)
+rightBC = structure.ConstraintLinearSetDisplacementNode(nodeIDs[0], direction, 1.0)
 
 newmark = nuto.NewmarkDirect(structure)
-loadFactor = np.array([[0.0, 0.0], [1.0, 0.4]])
+constraintMatrix = np.array([[0.0, 0.0], [1.0, 0.05]])
+newmark.AddTimeDependentConstraint(rightBC, constraintMatrix)
 newmark.SetTimeStep(0.1)
-newmark.SetTimeDependentLoadCase(0, loadFactor)
 newmark.SetResultDirectory("damage_bar_results", True)
+newmark.SetAutomaticTimeStepping(True)
+newmark.AddResultNodeDisplacements("TopDisplacement", nodeIDs[0])
+groupID = structure.GroupCreate("Nodes")
+structure.GroupAddNode(groupID, nodeIDs[0])
+newmark.AddResultGroupNodeForce("TopForce", groupID)
 newmark.Solve(1.0)
 
-hessian = structure.BuildGlobalHessian0()
-f = structure.BuildGlobalExternalLoadVector()
-sol = structure.SolveBlockSystem(hessian.JJ, f.J)
+sol = structure.NodeExtractDofValues(0)
 
-nonlocaleqstrain = sol.Get("Nonlocaleqstrain")
+nonlocaleqstrain = sol.J.Get("Nonlocaleqstrain")
 
 # don't plot during testing
 if len(sys.argv) != 2:

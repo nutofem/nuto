@@ -7,6 +7,7 @@ if(ENABLE_PYTHON)
         GlobalDofs
         HeatConduction
         MassMatrixIntegration
+        NonlinearLoad
         Quad2DPatchTest
         Tetrahedron10N
         TimeIntegrationResultForce

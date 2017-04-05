@@ -349,7 +349,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     mStructure->Evaluate(inputMap, evaluate_InternalGradient);
                     // ******************************************************
 
-                    residual = CalculateResidual(intForce, prevExtForce, hessian2, trial_dof_dt1, trial_dof_dt2);
+                    residual = CalculateResidual(intForce, extForce, hessian2, trial_dof_dt1, trial_dof_dt2);
                     residual.ApplyCMatrix(residual_mod, cmat);
 
                     trialNormResidual = residual_mod.CalculateInfNorm();
