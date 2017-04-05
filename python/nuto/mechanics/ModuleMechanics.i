@@ -23,6 +23,22 @@
 
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 
+%include "stl.i"
+%include "exception.i"
+
+%exception {
+    try
+    {
+        $action
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+}
+
+%include "mechanics/MechanicsException.h"
+
 %include "mechanics/Sections.i"
 %include "mechanics/DamageLaws.i"
 

@@ -44,13 +44,13 @@ public:
     {}
 
     //! @brief Destructor.
-    virtual ~Exception() throw() {}
+    virtual ~Exception() {}
 
     Exception(const Exception& ) = default;
 
     //! @brief Return error message of the exception.
     //! @return Error message.
-    virtual std::string ErrorMessage() const throw()
+    virtual std::string ErrorMessage() const
     {
         return mMessage;
     }

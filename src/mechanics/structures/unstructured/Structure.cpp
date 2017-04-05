@@ -514,6 +514,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     }
 
 #ifdef _OPENMP
+    std::string exceptionMessage = "";
     if (mNumProcessors!=0)
     {
         omp_set_num_threads(mNumProcessors);
@@ -582,21 +583,30 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     }
     elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
     elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
+
+    // calculate element contribution
 #ifdef _OPENMP
     for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
     {
 #pragma omp single nowait
         {
             ElementBase* elementPtr = *elementIter;
+            // in OpenMP, exceptions may not leave the parallel region
+            try
+            {
+                elementPtr->Evaluate(rInput, elementOutputMap);
+            }
+            catch (std::exception& e)
+            {
+                exceptionMessage = e.what();
+            }
 
 #else
     for (auto elementIter : this->mElementMap)
     {
         ElementBase* elementPtr = elementIter->second;
-#endif
-
-        // calculate element contribution
         elementPtr->Evaluate(rInput, elementOutputMap);
+#endif
 
         const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
         const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
@@ -660,6 +670,9 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 }   // end loop over elements
 }   // end parallel region
 }   // end loop over independent sets
+
+    if (exceptionMessage != "")
+        throw MechanicsException(exceptionMessage);
 #else
     }   // end loop over elements
 #endif

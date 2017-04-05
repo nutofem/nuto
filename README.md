@@ -37,7 +37,7 @@ Once this ran without errors, you can issue make (`-j4` for parallel building)
 If you want to use the python module, and run all the tests, you need to add 
 the module path to your environment
 
-    export PYTHONPATH=<path/to/nuto/build>:$PYTHONPATH
+    export PYTHONPATH=<path/to/nuto/build/python>:$PYTHONPATH
 
 In the end, run the test suite to see if all went well
 

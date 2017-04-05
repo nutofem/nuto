@@ -33,12 +33,12 @@ public:
     {}
 
     //! @brief ...destructor
-    virtual ~MechanicsException() throw()
+    virtual ~MechanicsException()
     {}
 
     //! @brief ... return error message of the exception
     //! @return ... error message
-    virtual std::string ErrorMessage() const throw() override
+    virtual std::string ErrorMessage() const override
     {
         return "Exception in Module Mechanics\n" + mMessage;
     }
