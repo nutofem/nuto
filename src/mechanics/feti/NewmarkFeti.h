@@ -501,6 +501,9 @@ public:
         if (iterations >= mCpgMaxIterations)
             throw MechanicsException(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
 
+        if (structure->mRank == 0)
+            std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
+
         structure->GetLogger() << "*********************************** \n"
                                << "**      End   Interface Problem  ** \n"
                                << "*********************************** \n\n";
@@ -598,6 +601,12 @@ public:
 
     void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
     {
+        mStructure->GetLogger() << "******************************************** \n"
+                                << "**        calculate local preconditioner  ** \n"
+                                << "******************************************** \n\n";
+
+        Timer timer("Time to calculate the local preconditioner", mStructure->GetShowTime(), mStructure->GetLogger());
+
         const int numTotalDofs = mStructure->GetNumTotalDofs();
         const auto& B = static_cast<StructureFeti*>(mStructure)->GetConnectivityMatrix();
 
@@ -621,10 +630,89 @@ public:
         }
         case eFetiPreconditioner::Dirichlet:
         {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemneted yet.");
+
+//            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
+//            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
+            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
+//            mStructure->GetLogger() << "H \n" << H << "\n\n";
+
+//            mStructure->GetLogger() << "Searching for seg fault \n\n";
+
+            std::vector<int> lagrangeMultiplierDofIds =
+                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+
+            std::vector<int> internalDofIds;
+
+            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
+                internalDofIds.push_back(j);
+
+            for (const auto& id : lagrangeMultiplierDofIds)
+                internalDofIds.erase(internalDofIds.begin() + id);
+
+//            mStructure->NodeInfo(10);
+            for (const auto& i : lagrangeMultiplierDofIds)
+                mStructure->GetLogger() << i << "\n";
+
+            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() << "\n\n";
+            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() << "\n\n";
+            //
+            //            mStructure->GetLogger() << "\n\n";
+            //
+            //            for (const auto& i : internalDofIds)
+            //                mStructure->GetLogger() << i << "\n";
+
+
+            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
+            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIds, internalDofIds);
+            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIds);
+            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIds, lagrangeMultiplierDofIds);
+
+
+//            mStructure->GetLogger() << "Searching for seg fault \n\n";
+//            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
+//            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
+//            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
+//            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
+
+            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
+//            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
+
+            //
+            //     | 0  0   |
+            // S = | 0  Sbb |
+            //
+            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
+
+
+            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
+                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
+                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) = Sbb.coeff(rowId, colId);
+
+
+            mLocalPreconditioner = B * S * B.transpose();
+
+//            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
+
+
             break;
         }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Preconditioner is not implemented yet.");
         }
+    }
+
+    template <class A, class B>
+    Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
+                                                 const B& colIds)
+    {
+        Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
+
+        for (size_t rowId = 0; rowId < rowIds.size(); ++rowId)
+            for (size_t colId = 0; colId < colIds.size(); ++colId)
+                subMatrix.insert(rowId, colId) = mat.coeff(rowIds[rowId], colIds[colId]);
+
+        return subMatrix;
     }
 
     void CheckRankOfBlockSparseMatrix(const BlockSparseMatrix& blockSparseMatrix)
@@ -640,9 +728,11 @@ public:
             mStructure->GetLogger() << "Number of rows:  \t" << qr.rows() << "\n\n";
             mStructure->GetLogger() << "Rank:            \t" << qr.rank() << "\n\n";
             mStructure->GetLogger() << "Rank deficiency: \t" << qr.rows() - qr.rank() << "\n\n";
-        } else
+        }
+        else
         {
-            mStructure->GetLogger() << "If you want to check the rank of a matrix, set verbose level >10" << "\n\n";
+            mStructure->GetLogger() << "If you want to check the rank of a matrix, set verbose level >10"
+                                    << "\n\n";
         }
     }
 
@@ -819,6 +909,10 @@ public:
                 {
                     mStructure->DofTypeSetIsActive(activeDofSet);
 
+                    mStructure->DofStatusSetHasInteractingConstraints(true);
+                    //                    std::cout << mStructure->GetDofStatus().HasInteractingConstraints() <<
+                    //                    std::endl;
+
                     // ******************************************************
                     mStructure->Evaluate(inputMap, evaluateInternalGradientHessian0Hessian1);
                     // ******************************************************
@@ -826,10 +920,6 @@ public:
                     //                structure->CheckRigidBodyModes(hessian0);
                     structure->CheckStiffnessPartitioning(hessian0);
 
-                    mStructure->GetLogger() << "extForce norm: \t"
-                                            << extForce.J.Export().norm() + extForce.K.Export().norm() << "\n\n";
-                    mStructure->GetLogger() << "intForce norm: \t"
-                                            << intForce.J.Export().norm() + intForce.K.Export().norm() << "\n\n";
 
                     residual = extForce - intForce;
                     residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs),
@@ -861,23 +951,14 @@ public:
 
                     if (structure->mRank == 0)
                     {
-                        std::cout << "Time for factorization and FETI solve: \t\t" << timerBenchmark.GetTimeDifference()
-                                  << std::endl;
+                        std::cout << "Time for factorization and FETI solve for " << structure->mNumProcesses
+                                  << " processes: \t\t" << timerBenchmark.GetTimeDifference() << std::endl;
                     }
 
 
                     dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
 
                     lambda = lastConverged_lambda + deltaLambda;
-
-                    //                mStructure->GetLogger() << "active dofs disp: \n" <<
-                    //                mStructure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) << "\n\n";
-                    //                mStructure->GetLogger() << "depe dofs disp: \n" <<
-                    //                mStructure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS) << "\n\n";
-                    //                mStructure->GetLogger() << "active dofs nl eq strain: \n" <<
-                    //                mStructure->GetNumActiveDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
-                    //                mStructure->GetLogger() << "depe dofs nl eq strain: \n" <<
-                    //                mStructure->GetNumDependentDofs(Node::eDof::NONLOCALEQSTRAIN) << "\n\n";
 
 
                     mStructure->NodeMergeDofValues(dof_dt0);
@@ -902,9 +983,6 @@ public:
 
                     mStructure->GetLogger() << "Residual J: \t" << normResidual << "\n\n";
                     mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
-
-
-                    //                    MPI_Barrier(MPI_COMM_WORLD);
 
 
                     int iteration = 0;
@@ -1059,6 +1137,11 @@ public:
     void SetToleranceIterativeSolver(const double tolerance)
     {
         mCpgTolerance = tolerance;
+    }
+
+    void SetFetiPreconditioner(eFetiPreconditioner fetiPreconditioner)
+    {
+        mFetiPreconditioner = fetiPreconditioner;
     }
 
 private:

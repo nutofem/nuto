@@ -12,6 +12,7 @@
 #include <mechanics/MechanicsEnums.h>
 #include "mechanics/mesh/MeshGenerator.h"
 
+
 namespace NuTo
 {
 
@@ -100,22 +101,14 @@ private:
         std::vector<int> mNodeIds;
     };
 
-    struct Boundary
-    {
-        std::map<int, int> mNodeIdsMap;
-        std::vector<int> mValues;
-    };
-
     struct Interface
     {
         std::map<int, int> mNodeIdsMap;
-        std::vector<int> mNodeIds;
         int mValue;
     };
 
     using NodeList = std::vector<Node>;
     using ElementList = std::vector<Element>;
-    using BoundaryList = std::vector<Boundary>;
     using InterfaceList = std::vector<Interface>;
     using Matrix = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
@@ -353,8 +346,8 @@ public:
 
         std::vector<int> nodeIdsInterface = GroupGetMemberIds(groupNodesInterface);
 
-        for (const auto nodeId : nodeIdsInterface)
-            GetLogger() << nodeId << "\n";
+//        for (const auto nodeId : nodeIdsInterface)
+//            GetLogger() << nodeId << "\n";
 
         mInterfaces[interfaceId].mValue = connectivityValue;
 
@@ -426,12 +419,44 @@ public:
         return mPrescribedDofVector;
     }
 
+
+
+
+    std::vector<int> CalculateLagrangeMultiplierIds()
+    {
+
+        std::vector<int> lagrangeMultiplierDofIds;
+
+        // add lagrange multipliers from interfaces
+        for (const auto& interface : mInterfaces)
+            for(const auto& nodeIdPair : interface.mNodeIdsMap)
+            {
+                /// \todo Think about other DOFs. They must be added too!
+                auto dofIds = NodeGetDofIds(nodeIdPair.second, NuTo::Node::eDof::DISPLACEMENTS);
+
+                for (const auto& id : dofIds)
+                    lagrangeMultiplierDofIds.push_back(id);
+            }
+
+        lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mBoundaryDofIds.begin(), mBoundaryDofIds.end());
+
+        lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
+                                        mPrescribedDisplacementDofIds.end());
+
+
+
+
+
+        return lagrangeMultiplierDofIds;
+
+
+    }
+
 protected:
     bool mIsFloating = true;
 
     NodeList mNodes;
     ElementList mElements;
-    BoundaryList mBoundaries;
     InterfaceList mInterfaces;
     std::set<int> mSubdomainBoundaryNodeIds;
 
@@ -485,6 +510,7 @@ protected:
     /// An array of ids of all the degrees of freedom that are constraint in the subdomain
     ///
     std::vector<int> mBoundaryDofIds;
+
 
     Eigen::VectorXd mPrescribedDofVector;
 

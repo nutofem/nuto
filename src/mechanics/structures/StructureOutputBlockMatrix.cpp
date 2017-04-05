@@ -10,26 +10,26 @@
 #include "mechanics/elements/ElementBase.h"
 
 
-NuTo::StructureOutputBlockMatrix::StructureOutputBlockMatrix(const DofStatus &rDofStatus, bool rAutomaticResize)
-    : StructureOutputBase(),
-      JJ(rDofStatus, true),
-      JK(rDofStatus, false),
-      KJ(rDofStatus, false),
-      KK(rDofStatus, true)
+NuTo::StructureOutputBlockMatrix::StructureOutputBlockMatrix(const DofStatus& rDofStatus, bool rAutomaticResize)
+    : StructureOutputBase()
+    , JJ(rDofStatus, true)
+    , JK(rDofStatus, false)
+    , KJ(rDofStatus, false)
+    , KK(rDofStatus, true)
 {
     if (rAutomaticResize)
         Resize(rDofStatus.GetNumActiveDofsMap(), rDofStatus.GetNumDependentDofsMap());
 }
 
 NuTo::StructureOutputBlockMatrix::~StructureOutputBlockMatrix()
-{}
+{
+}
 
-void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
-        const ElementBase* rElementPtr,
-        const NuTo::BlockFullMatrix<double>& rElementMatrix,
-        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
-        const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
-        double rAddValueTolerance, bool rAssembleKJKK)
+void NuTo::StructureOutputBlockMatrix::AddElementMatrix(const ElementBase* rElementPtr,
+                                                        const NuTo::BlockFullMatrix<double>& rElementMatrix,
+                                                        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
+                                                        const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
+                                                        double rAddValueTolerance, bool rAssembleKJKK)
 {
     const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
     const auto& numActiveDofTypeMap = JJ.GetDofStatus().GetNumActiveDofsMap();
@@ -37,7 +37,9 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
     for (auto dofRow : activeDofTypes)
         for (auto dofCol : activeDofTypes)
         {
-            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the constitutive law of the corresponding element. What if an element has multiple constitutive laws assigned?
+            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the
+            // constitutive law of the corresponding element. What if an element has multiple constitutive laws
+            // assigned?
             if (not rElementPtr->GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow, dofCol, 0))
                 continue;
 
@@ -48,10 +50,10 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
             int numActiveDofsRow = numActiveDofTypeMap.at(dofRow);
             int numActiveDofsCol = numActiveDofTypeMap.at(dofCol);
 
-//            std::cout << "elementMatrix.rows()    " << elementMatrix.rows()    << std::endl;
-//            std::cout << "globalRowDofs.rows()    " << globalRowDofs.rows()    << std::endl;
-//            std::cout << "elementMatrix.cols() " << elementMatrix.cols() << std::endl;
-//            std::cout << "globalColDofs.rows()    " << globalColDofs.rows()    << std::endl;
+            //            std::cout << "elementMatrix.rows()    " << elementMatrix.rows()    << std::endl;
+            //            std::cout << "globalRowDofs.rows()    " << globalRowDofs.rows()    << std::endl;
+            //            std::cout << "elementMatrix.cols() " << elementMatrix.cols() << std::endl;
+            //            std::cout << "globalColDofs.rows()    " << globalColDofs.rows()    << std::endl;
 
 
             assert(elementMatrix.rows() == globalRowDofs.rows());
@@ -68,7 +70,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                     for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
                     {
                         double value = elementMatrix(iRow, iCol);
-                        if (std::abs(value - rAddValueTolerance) > 0. )
+                        if (std::abs(value - rAddValueTolerance) > 0.)
                         {
                             int globalColDof = globalColDofs[iCol];
                             if (globalColDof < numActiveDofsCol)
@@ -96,7 +98,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                         for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
                         {
                             double value = elementMatrix(iRow, iCol);
-                            if (std::abs(value - rAddValueTolerance) > 0. )
+                            if (std::abs(value - rAddValueTolerance) > 0.)
                             {
                                 int globalColDof = globalColDofs[iCol];
                                 if (globalColDof < numActiveDofsCol)
@@ -106,7 +108,8 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                                 else
                                 {
                                     if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
-                                        continue; // entry would be in lower triangle --> not valid for symmetric matrices
+                                        continue; // entry would be in lower triangle --> not valid for symmetric
+                                                  // matrices
                                     dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
                                 }
                             }
@@ -114,14 +117,12 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                     }
                 }
             }
-
         }
 }
 
-void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(
-        const NuTo::BlockFullVector<double>& rElementVector,
-        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
-        double rAddValueTolerance)
+void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(const NuTo::BlockFullVector<double>& rElementVector,
+                                                                const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
+                                                                double rAddValueTolerance)
 {
     const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
     const auto& numActiveDofTypeMap = JJ.GetDofStatus().GetNumActiveDofsMap();
@@ -140,7 +141,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(
         for (int iRow = 0; iRow < globalRowDofs.rows(); ++iRow)
         {
             double value = elementVector[iRow];
-            if (std::abs(value - rAddValueTolerance) > 0. )
+            if (std::abs(value - rAddValueTolerance) > 0.)
             {
                 int globalRowDof = globalRowDofs[iRow];
                 if (globalRowDof < numActiveDofsRow)
@@ -156,13 +157,15 @@ void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(
 }
 
 
-
-//! @brief adds \f$(\boldsymbol{M}_{JJ} - \boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KJ} - \boldsymbol{M}_{JK}\,\boldsymbol{C}_{mat} + \boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KK}\,\boldsymbol{C}_{mat})\,c\f$ to rHessian
+//! @brief adds \f$(\boldsymbol{M}_{JJ} - \boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KJ} -
+//! \boldsymbol{M}_{JK}\,\boldsymbol{C}_{mat} + \boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KK}\,\boldsymbol{C}_{mat})\,c\f$
+//! to rHessian
 //! @remark only calculates active dof types
 //! @param rHessian ... global hessian
 //! @param rCmat ... constraint matrix
 //! @param rScalar ... option to scale the terms
-void NuTo::StructureOutputBlockMatrix::ApplyCMatrixScal(BlockSparseMatrix& rHessian, const BlockSparseMatrix& rCmat, double rScalar) const
+void NuTo::StructureOutputBlockMatrix::ApplyCMatrixScal(BlockSparseMatrix& rHessian, const BlockSparseMatrix& rCmat,
+                                                        double rScalar) const
 {
 
     rHessian.AddScal(JJ, rScalar);
@@ -176,8 +179,8 @@ void NuTo::StructureOutputBlockMatrix::ApplyCMatrixScal(BlockSparseMatrix& rHess
     {
         for (auto j : activeDofTypes)
         {
-            rHessian(i,j).Sub_TransA_B_Plus_C_D_Scal( rCmat(i,i), KJ(i,j), JK(i,j), rCmat(j,j), rScalar);
-            rHessian(i,j).Add_TransA_B_C_Scal(        rCmat(i,i), KK(i,j),          rCmat(j,j), rScalar);
+            rHessian(i, j).Sub_TransA_B_Plus_C_D_Scal(rCmat(i, i), KJ(i, j), JK(i, j), rCmat(j, j), rScalar);
+            rHessian(i, j).Add_TransA_B_C_Scal(rCmat(i, i), KK(i, j), rCmat(j, j), rScalar);
         }
     }
 }
@@ -194,25 +197,27 @@ void NuTo::StructureOutputBlockMatrix::ApplyCMatrix(const BlockSparseMatrix& rCm
     {
         for (auto j : activeDofTypes)
         {
-            JJ(i,j).Sub_TransA_B_Plus_C_D_Scal( rCmat(i,i), KJ(i,j), JK(i,j), rCmat(j,j), 1);
-            JJ(i,j).Add_TransA_B_C_Scal(        rCmat(i,i), KK(i,j),          rCmat(j,j), 1);
+            JJ(i, j).Sub_TransA_B_Plus_C_D_Scal(rCmat(i, i), KJ(i, j), JK(i, j), rCmat(j, j), 1);
+            JJ(i, j).Add_TransA_B_C_Scal(rCmat(i, i), KK(i, j), rCmat(j, j), 1);
         }
     }
 }
 
 
-void NuTo::StructureOutputBlockMatrix::Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap, const std::map<Node::eDof, int>& rNumDependentDofsMap)
+void NuTo::StructureOutputBlockMatrix::Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap,
+                                              const std::map<Node::eDof, int>& rNumDependentDofsMap)
 {
     assert(rNumActiveDofsMap.size() == rNumDependentDofsMap.size());
 
-    JJ.Resize(rNumActiveDofsMap,    rNumActiveDofsMap   );
-    JK.Resize(rNumActiveDofsMap,    rNumDependentDofsMap);
-    KJ.Resize(rNumDependentDofsMap, rNumActiveDofsMap   );
+    JJ.Resize(rNumActiveDofsMap, rNumActiveDofsMap);
+    JK.Resize(rNumActiveDofsMap, rNumDependentDofsMap);
+    KJ.Resize(rNumDependentDofsMap, rNumActiveDofsMap);
     KK.Resize(rNumDependentDofsMap, rNumDependentDofsMap);
 }
 
 
-NuTo::StructureOutputBlockVector NuTo::StructureOutputBlockMatrix::operator *(const StructureOutputBlockVector& rRhs) const
+NuTo::StructureOutputBlockVector NuTo::StructureOutputBlockMatrix::
+operator*(const StructureOutputBlockVector& rRhs) const
 {
     StructureOutputBlockVector result(rRhs.J.GetDofStatus(), true);
 
@@ -233,21 +238,20 @@ void NuTo::StructureOutputBlockMatrix::CheckDimensions() const
     KJ.CheckDimensions();
     KK.CheckDimensions();
 
-    if (!(JJ.GetNumRows()    == JK.GetNumRows()    &&
-          KJ.GetNumRows()    == KK.GetNumRows()    &&
-          JJ.GetNumColumns() == KJ.GetNumColumns() &&
-          JK.GetNumColumns() == KK.GetNumColumns()))
+    if (!(JJ.GetNumRows() == JK.GetNumRows() && KJ.GetNumRows() == KK.GetNumRows() &&
+          JJ.GetNumColumns() == KJ.GetNumColumns() && JK.GetNumColumns() == KK.GetNumColumns()))
     {
-        throw NuTo::MechanicsException(std::string( "[") + __PRETTY_FUNCTION__ + "] Mismatch in Block dimensions! \n\n" +
-                                                    "| JJ | JK | \n" +
-                                                    "|----+----| \n" +
-                                                    "| KJ | KK | \n \n" +
-                                                    "Submatrix | Rows / Cols \n" +
-                                                    "----------------------- \n" +
-                                                    "JJ        | " + std::to_string(JJ.GetNumRows()) + " / " + std::to_string(JJ.GetNumColumns()) + "\n"
-                                                    "JK        | " + std::to_string(JK.GetNumRows()) + " / " + std::to_string(JK.GetNumColumns()) + "\n"
-                                                    "KJ        | " + std::to_string(KJ.GetNumRows()) + " / " + std::to_string(KJ.GetNumColumns()) + "\n"
-                                                    "KK        | " + std::to_string(KK.GetNumRows()) + " / " + std::to_string(KK.GetNumColumns()) + "\n");
+        throw NuTo::MechanicsException(
+                std::string("[") + __PRETTY_FUNCTION__ + "] Mismatch in Block dimensions! \n\n" + "| JJ | JK | \n" +
+                "|----+----| \n" + "| KJ | KK | \n \n" + "Submatrix | Rows / Cols \n" + "----------------------- \n" +
+                "JJ        | " + std::to_string(JJ.GetNumRows()) + " / " + std::to_string(JJ.GetNumColumns()) +
+                "\n"
+                "JK        | " +
+                std::to_string(JK.GetNumRows()) + " / " + std::to_string(JK.GetNumColumns()) + "\n"
+                                                                                               "KJ        | " +
+                std::to_string(KJ.GetNumRows()) + " / " + std::to_string(KJ.GetNumColumns()) + "\n"
+                                                                                               "KK        | " +
+                std::to_string(KK.GetNumRows()) + " / " + std::to_string(KK.GetNumColumns()) + "\n");
     }
 }
 
@@ -295,7 +299,7 @@ void NuTo::StructureOutputBlockMatrix::CwiseInvert()
 
 namespace NuTo
 {
-std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
+std::ostream& operator<<(std::ostream& rOut, const NuTo::StructureOutputBlockMatrix& rStructureOutputBlockMatrix)
 {
     rOut << "Active Dofs --- Active Dofs" << std::endl;
     rOut << rStructureOutputBlockMatrix.JJ << std::endl;
@@ -307,4 +311,40 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMat
     rOut << rStructureOutputBlockMatrix.KK << std::endl;
     return rOut;
 }
+}
+
+NuTo::StructureOutputBlockMatrix::SparseMatrix NuTo::StructureOutputBlockMatrix::ExportToEigenSparseMatrix() const
+{
+    SparseMatrix jj = JJ.ExportToEigenSparseMatrix();
+    SparseMatrix jk = JK.ExportToEigenSparseMatrix();
+    SparseMatrix kj = KJ.ExportToEigenSparseMatrix();
+    SparseMatrix kk = KK.ExportToEigenSparseMatrix();
+
+    const int numRows = jj.rows() + kk.rows();
+    const int numCols = jj.cols() + kk.cols();
+
+    SparseMatrix mat(numRows, numCols);
+
+    InsertSubMatrix(mat, jj, 0, 0);
+    InsertSubMatrix(mat, jk, 0, jj.cols());
+    InsertSubMatrix(mat, kj, jj.rows(), 0);
+    InsertSubMatrix(mat, kk, jj.rows(), jj.cols());
+
+    return mat;
+}
+
+void NuTo::StructureOutputBlockMatrix::InsertSubMatrix(NuTo::StructureOutputBlockMatrix::SparseMatrix& rMat,
+                                                       const NuTo::StructureOutputBlockMatrix::SparseMatrix& subMat,
+                                                       const int startRowId, const int startColId) const
+{
+    assert(rMat.rows() >= startRowId + subMat.rows() and "Matrix needs to be resized before insertion");
+    assert(rMat.cols() >= startColId + subMat.cols() and "Matrix needs to be resized before insertion");
+
+    for (int k = 0; k < subMat.outerSize(); ++k)
+        for (typename Eigen::SparseMatrix<double>::InnerIterator it(subMat, k); it; ++it)
+        {
+            long int row = it.row();
+            long int col = it.col();
+            rMat.insert(startRowId + row, startColId + col) = it.value();
+        }
 }
