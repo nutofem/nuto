@@ -109,8 +109,6 @@ public:
 
     }
 private:
-    const double    mCpgTolerance     = 1.0e-6;
-    const int       mCpgMaxIterations = 1000;
 
     MatrixXd mG;
     MatrixXd mGtransGinv;
