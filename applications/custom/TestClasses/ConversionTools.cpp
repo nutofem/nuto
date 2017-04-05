@@ -3,7 +3,9 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
+//#include <Epetra_FECrsMatrix.h>
 #include <Epetra_Vector.h>
+//#include <Epetra_FEVector.h>
 #include <Epetra_CrsGraph.h>
 
 #include <eigen3/Eigen/Core>
@@ -44,6 +46,8 @@ Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatr
     int* myGlobalIndices_Row = rRowMap.MyGlobalElements();
     int numMyElements_Col = rColMap.NumMyElements();
     int* myGlobalIndices_Col = rColMap.MyGlobalElements();
+
+
 
     Epetra_CrsMatrix convMatrix(Copy, rRowMap, rColMap, 0);
 
@@ -99,33 +103,76 @@ Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatr
     return convMatrix;
 }
 
+//only for square matrices
+Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_CrsGraph rGraph)
+{
+    Epetra_CrsMatrix convertedMatrix(Copy, rGraph);
+    convertedMatrix.FillComplete();
+    convertedMatrix.PutScalar(0.0);
+
+    int rowCount = rEigenMatrix.rows();
+    int columnCount = rEigenMatrix.cols();
+    int* myGlobalIndices_Row = rGraph.Map().MyGlobalElements();
+    int* myGlobalIndices_Col = rGraph.Map().MyGlobalElements();
+    std::vector<int> globalIndicesVector;
+    int* globalIndices;
+    int numEntries = 0;
+    std::vector<double> entriesVector;
+    double* entries;
+    double value = 0.;
+
+
+    for (int i = 0; i < rowCount; ++i)
+    {
+        numEntries = 0;
+        for (int j = 0; j < columnCount; ++j)
+        {
+            value = rEigenMatrix.coeff(i, j);
+            if (value != 0)
+            {
+                ++numEntries;
+                entriesVector.push_back(value);
+                globalIndicesVector.push_back(myGlobalIndices_Col[j]);
+            }
+        }
+
+        entries = &entriesVector[0];
+        globalIndices = &globalIndicesVector[0];
+
+        convertedMatrix.SumIntoGlobalValues(myGlobalIndices_Row[i], numEntries, entries, globalIndices);
+
+        entriesVector.clear();
+        globalIndicesVector.clear();
+        numEntries = 0;
+    }
+
+    return convertedMatrix;
+}
+
 
 Epetra_Vector ConversionTools::convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Epetra_Map rMap)
 {
     int vectorSize = int(rEigenVector.rows());
-    Epetra_Vector newVector(rMap);
+    Epetra_Vector convertedVector(rMap);
+    convertedVector.PutScalar(0.0);
     int* myGlobalIndices = rMap.MyGlobalElements();
-    int numMyElements_Row = rMap.NumMyElements();
 
 
     double* values = new double[1];
     int* globalIndices = new int[1];
-    int* localIndices = new int[1];
     for (int i = 0; i < vectorSize; ++i)
     {
         values[0] = rEigenVector(i, 0);
         globalIndices[0] = myGlobalIndices[i];
-//        localIndices[0] = i;
 
-        newVector.ReplaceGlobalValues(1, values, globalIndices);
-//        newVector.ReplaceMyValues(1, values, localIndices);
+        convertedVector.SumIntoGlobalValues(1, values, globalIndices);
     }
 
     delete[] values;
-    delete[] localIndices;
     delete[] globalIndices;
+//    delete myGlobalIndices;
 
-    return newVector;
+    return convertedVector;
 
 }
 

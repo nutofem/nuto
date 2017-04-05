@@ -16,6 +16,8 @@
 #include <Amesos_Mumps.h>
 #include <Amesos_ConfigDefs.h>
 #include <Teuchos_GlobalMPISession.hpp>
+#include <EpetraExt_VectorOut.h>
+#include <EpetraExt_MultiVectorOut.h>
 
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureBase.h"
@@ -31,30 +33,36 @@
 #include "PrintTools.h"
 
 
+//#define SHOW_INTERMEDIATE_RESULTS
 
 
-Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_Vector rLhs, Epetra_Vector rRhs)
+Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epetra_MultiVector rRhs, bool iterative = true)
 {
     Epetra_LinearProblem problem(&rA, &rLhs, &rRhs);
+
+    if (iterative)
+    {
     AztecOO Solver(problem);
 
-    Solver.SetAztecOption(AZ_precond, AZ_dom_decomp);
+//    Solver.SetAztecOption(AZ_precond, AZ_dom_decomp);
 //    Solver.SetAztecOption(AZ_subdomain_solve, AZ_ilu);
 //    Solver.SetAztecOption(AZ_graph_fill, 1);
 //    Solver.SetAztecOption(AZ_overlap, 1);
-
-
     Solver.Iterate(1000,1e-8);
+
 //    double condest = 1e5;
 //    Solver.ConstructPreconditioner(condest);
 //    Solver.AdaptiveIterate(1000, 30, 1e-8);
-//    Amesos Factory;
-//    Amesos_BaseSolver* solver;
-//    std::string solverType = "Mumps";
+    }
+    else
+    {
+    Amesos Factory;
+    Amesos_BaseSolver* solver;
+    std::string solverType = "Mumps";
 //    std::string solverType = "Klu";
-//    solver = Factory.Create(solverType, problem);
-//    solver->Solve();
-
+    solver = Factory.Create(solverType, problem);
+    solver->Solve();
+    }
 
     Epetra_MultiVector* lhs = problem.GetLHS();
     return *lhs;
@@ -77,15 +85,27 @@ int main(int argc, char** argv)
 
     int numSubDomains = size;
     int* numElementsPerSubDomain = new int[numSubDomains];
+    int* numElementsTillSubDomain_inclusive = new int[numSubDomains];
     int numElementsTotal = 0;
+    bool setTotalLength = true;
     double* lengthPerSubDomain = new double[numSubDomains];
-    double lengthTotal = 0.;
+    double lengthTotal = (setTotalLength ? 10. : 0.);
+
+
     for (int i = 0; i < numSubDomains; ++i)
     {
         numElementsPerSubDomain[i] = 1;
         numElementsTotal += numElementsPerSubDomain[i];
-        lengthPerSubDomain[i] = 5;
-        lengthTotal += lengthPerSubDomain[i];
+        numElementsTillSubDomain_inclusive[i] = numElementsTotal;
+        if (setTotalLength)
+        {
+            lengthPerSubDomain[i] = lengthTotal/numSubDomains;
+        }
+        else
+        {
+            lengthPerSubDomain[i] = 5;
+            lengthTotal += lengthPerSubDomain[i];
+        }
     }
 
     double area = 10.;
@@ -193,44 +213,46 @@ int main(int argc, char** argv)
     NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector(0) + structure.BuildGlobalInternalGradient();
 
     Eigen::SparseMatrix<double> hessian0_eigen = hessian0.JJ.ExportToEigenSparseMatrix();
-    std::cout << "Hessian0: \n" << hessian0.JJ.ExportToFullMatrix() << std::endl;
-    std::cout << "residual: \n" << residual << std::endl;
+    Eigen::MatrixXd residual_eigen = residual.J.Export();
 
 
-    int currNumDOFs;
+    int ownedNumActiveDOFs = -1;
+    ownedNumActiveDOFs = numElementsPerSubDomain[rank];
+
+    int localNumActiveDOFs = -1;
     if (rank == 0)
     {
-        currNumDOFs = numElementsPerSubDomain[rank];
+        localNumActiveDOFs = numElementsPerSubDomain[rank];
     }
     else
     {
-        currNumDOFs = numElementsPerSubDomain[rank] + 1;
+        localNumActiveDOFs = numElementsPerSubDomain[rank] + 1;
     }
 
-    int* local2GlobalMapping = new int[currNumDOFs];
+    int* local2GlobalMapping = new int[localNumActiveDOFs];
 
     bool leftNodeIDFound = false;
     bool overlappingNodeIDFound = false;
     std::vector<int> overlapNodeIDs;
-//    std::vector<int> overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[0]);
-    if (rank > 0)
-        overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[rank-1]);
-    else
-        overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[0]);
-    //TODO: Prepare for all centers!!!!
+    if (size > 1)
+    {
+        if (rank == 0)
+            overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[rank]);
+        else
+            overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[rank-1]);
+    }
+
 
 
     std::vector<int> leftNodeIDs = structure.GroupGetMemberIds(nodeBCLeft);
-//    std::vector<int> overlapNodeIDs = structure.GroupGetMemberIds(nodeCenter);
     int leftNodeCount = leftNodeIDs.size();
     int overlappingNodeCount = overlapNodeIDs.size();
 
-//    int internDofCounter = 1;   //0 is reserved for overlapping node
     int internDofCounter = -1;
-    if (rank > 0)
-        internDofCounter = rank;
+    if (rank == 0)
+        internDofCounter = 0;
     else
-        internDofCounter = rank;
+        internDofCounter = numElementsTillSubDomain_inclusive[rank-1];
 
 
     for (int i = 0; i < structure.GetNumNodes(); ++i)
@@ -254,7 +276,6 @@ int main(int argc, char** argv)
             }
         }
 
-
         if (!leftNodeIDFound && !overlappingNodeIDFound)
         {
             std::vector<int> dofIDs = structure.NodeGetDofIds(i, NuTo::Node::eDof::DISPLACEMENTS);
@@ -273,107 +294,100 @@ int main(int argc, char** argv)
         }
     }
 
-    //Just one DOF ID
-    std::vector<int> overlapDofIDs = structure.NodeGetDofIds(overlapNodeIDs[0], NuTo::Node::eDof::DISPLACEMENTS);
-//    local2GlobalMapping[overlapDofIDs[0]] = 0;
-    if (rank > 0)
-        local2GlobalMapping[overlapDofIDs[0]] = rank-1;
-    else
-        local2GlobalMapping[overlapDofIDs[0]] = 0;
+    if (size > 1)
+    {
+        //Just one DOF ID
+        std::vector<int> overlapDofIDs = structure.NodeGetDofIds(overlapNodeIDs[0], NuTo::Node::eDof::DISPLACEMENTS);
+        if (rank == 0)
+            local2GlobalMapping[overlapDofIDs[0]] = numElementsTillSubDomain_inclusive[0]-1;
+        else
+            local2GlobalMapping[overlapDofIDs[0]] = numElementsTillSubDomain_inclusive[rank-1]-1;
+    }
 
 
-    Epetra_Map colMap(-1, currNumDOFs, 0, Comm);
-    Epetra_Map rowMap(-1, currNumDOFs, local2GlobalMapping, 0, Comm);
-//    rowMap.Print(std::cout);
+    Epetra_Map owningMap(-1, ownedNumActiveDOFs, 0, Comm);
+    Epetra_Map overlappingMap(-1, localNumActiveDOFs, local2GlobalMapping, 0, Comm);
+    Epetra_Export exporter(overlappingMap, owningMap);
+
+
+    Epetra_CrsGraph overlappingGraph(Copy, overlappingMap, 0);
+    Epetra_CrsGraph owningGraph(Copy, owningMap, 0);
+
+    for (int i = 0; i < numElementsPerSubDomain[rank]+1; ++i)
+    {
+        for (int j = 0; j < numElementsPerSubDomain[rank]+1; ++j)
+        {
+            overlappingGraph.InsertGlobalIndices(local2GlobalMapping[i], 1, &local2GlobalMapping[j]);
+        }
+    }
+
+    overlappingGraph.FillComplete();
+    owningGraph.Export(overlappingGraph, exporter, Insert);
+    owningGraph.FillComplete();
+
+    Epetra_CrsMatrix globalMatrix(Copy, owningGraph);
+    globalMatrix.FillComplete();
+    Epetra_Vector globalRhsVector(owningMap);
+    globalRhsVector.PutScalar(0.0);
 
     ConversionTools converter;
-    Epetra_CrsMatrix mat = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, rowMap, rowMap);
-    mat.FillComplete();
-    mat.Print(std::cout);
+    Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
+    Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
 
-    Epetra_Vector vec = converter.convertEigen2EpetraVector(residual.J.Export(), rowMap);
-    vec.Print(std::cout);
+    globalMatrix.PutScalar(0.0);
+    globalMatrix.Export(localMatrix, exporter, Add);
+    globalRhsVector.Export(localRhsVector, exporter, Add);
 
-    int* targetMapping;
-    int numTargetIndices = 0;
-    int offset = 0;
-    if (rank == 0)
-    {
-        numTargetIndices = 0;
-    }
-    else if(rank < size-1)
-    {
-        offset = 1;
-        numTargetIndices = numElementsPerSubDomain[rank];
-//        numTargetIndices = 1;
-//        numTargetIndices = 2;
-    }
-    else
-    {
-        numTargetIndices = numElementsPerSubDomain[rank]+1;
-//        numTargetIndices = 2;
-//        numTargetIndices = numElementsTotal;
+#ifdef SHOW_INTERMEDIATE_RESULTS
+    std::ostream& os = std::cout;
 
-    }
+    os << "Hessian0 by NuTo:\n------------------\n" << hessian0.JJ.ExportToFullMatrix() << "\n\n";
+    os << "residual by NuTo:\n------------------\n" << residual << "\n\n";
+    os << "Overlap Map:\n-------------\n";
+    overlappingMap.Print(os);
+    os << "Owning Map:\n-------------\n";
+    owningMap.Print(os);
+    os << "Local matrix on proc " << rank << ":\n-----------------\n";
+    localMatrix.Print(std::cout);
+    os << "Global matrix:\n-------------\n";
+    globalMatrix.Print(std::cout);
+    os << "Local RHS on proc " << rank << ":\n-----------------\n";
+    localRhsVector.Print(std::cout);
+    os << "Global RHS:\n-------------\n";
+    globalRhsVector.Print(std::cout);
 
-    targetMapping = new int[numTargetIndices];
-    for (int i = 0; i < numTargetIndices; ++i)
-    {
-        targetMapping[i] = rank - (numTargetIndices - i - 1 + offset);
-    }
+#endif
 
-    PrintTools printer;
-    printer.printArray_int(targetMapping, numTargetIndices, "target Mapping", rank);
-
-    Epetra_Map targetMap(-1, numTargetIndices, targetMapping, 0, Comm);
-
-    targetMap.Print(std::cout);
-    Epetra_Export exporter(rowMap, targetMap);
-    Epetra_CrsMatrix mat2(Copy, targetMap, targetMap, 0);
-    Epetra_Vector vec2(targetMap);
-    mat2.Export(mat, exporter, Add);
-    mat2.FillComplete();
-    vec2.Export(vec, exporter, Add);
-    mat2.Print(std::cout);
-    vec2.Print(std::cout);
-
-
-    Epetra_Vector lhs2(targetMap);
-    Epetra_Vector lhs(rowMap);
-//    Epetra_MultiVector sol = solveSystem(mat, lhs, vec);
-    Epetra_MultiVector sol = solveSystem(mat2, lhs2, vec2);
+    Epetra_Vector lhs(owningMap);
+    lhs.PutScalar(0.0);
+    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector);
     sol.Scale(-1);
-    sol.Print(std::cout);
+    EpetraExt::MultiVectorToMatrixMarketFile("1D_Test_Results/soluition Vector", sol, "Solution", "describes displacements");
 
 
-    Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
-    solver.compute(hessian0_eigen);
-    Eigen::VectorXd displ = solver.solve(residual.J.Export());
-    displ *= -1;
+    if (size == 1)
+    {
+        Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
+        solver.compute(hessian0_eigen);
+        Eigen::VectorXd displ = solver.solve(residual.J.Export());
+        displ *= -1;
 
-    std::cout << "displ:\n" << displ << std::endl;
-
-
-    Eigen::VectorXd newCoordinates(numElementsTotal+1);
-    std::vector<NuTo::NodeBase*> nodes;
-    structure.GetNodesTotal(nodes);
-
-    //not numElements + 1, because one node (the 0th) is constrained to the left side
-//    newCoordinates(0) = nodes[0]->Get(NuTo::Node::eDof::COORDINATES)(0);
-//    for (int i = 0; i < numElements; ++i)
-//    {
-//        newCoordinates(i+1) = displ(i) + nodes[i+1]->Get(NuTo::Node::eDof::COORDINATES)(0);
-//    }
-//    std::cout << "newCoordinates:\n" << newCoordinates << std::endl;
+        std::cout << "displ:\n" << displ << std::endl;
 
 
-    int visualGroup = structure.GroupCreate(NuTo::eGroupId::Elements);
-    structure.GroupAddElementsTotal(visualGroup);
+        Eigen::VectorXd newCoordinates(numElementsTotal+1);
+        std::vector<NuTo::NodeBase*> nodes;
+        structure.GetNodesTotal(nodes);
 
-    structure.AddVisualizationComponent(visualGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    structure.AddVisualizationComponent(visualGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    structure.AddVisualizationComponent(visualGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-    structure.ExportVtkDataFileElements("1D_Test_Results/result.vtk");
+        //not numElements + 1, because one node (the 0th) is constrained to the left side
+        newCoordinates(0) = nodes[0]->Get(NuTo::Node::eDof::COORDINATES)(0);
+        for (int i = 0; i < numElementsTotal; ++i)
+        {
+            newCoordinates(i+1) = displ(i) + nodes[i+1]->Get(NuTo::Node::eDof::COORDINATES)(0);
+        }
+        std::cout << "newCoordinates:\n" << newCoordinates << std::endl;
+    }
+
 
     return 0;
 }
