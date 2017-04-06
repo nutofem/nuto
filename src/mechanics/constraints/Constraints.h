@@ -78,15 +78,18 @@ class Constraints
     using Equations = std::vector<Equation>;
 
 public:
-    int AddEquation(Node::eDof dof, Equation equation)
+    void AddEquation(Node::eDof dof, Equation equation)
     {
         mEquations[dof].push_back(equation);
-        return mEquations.size() - 1;
     }
 
     Eigen::VectorXd GetRhs(Node::eDof dof, double time) const
     {
-        const Equations& equations = mEquations.at(dof);
+        const auto it = mEquations.find(dof);
+        if (it == mEquations.end())
+            return Eigen::VectorXd::Zero(0); // no equations for this dof type
+
+        const Equations& equations = it->second;
         int numEquations = equations.size();
         Eigen::VectorXd rhs(numEquations);
         for (int iEquation = 0; iEquation < numEquations; ++iEquation)
@@ -96,7 +99,11 @@ public:
 
     void BuildConstraintMatrix(SparseMatrix<double>& rConstraintMatrix, Node::eDof dof) const
     {
-        const Equations& equations = mEquations.at(dof);
+        const auto it = mEquations.find(dof);
+        if (it == mEquations.end())
+            return; // no equations for this dof type
+
+        const Equations& equations = it->second; 
         int numEquations = equations.size();
 
         for (int iEquation = 0; iEquation < numEquations; ++iEquation)
@@ -114,7 +121,11 @@ public:
 
     int GetNumEquations(Node::eDof dof) const
     {
-        return mEquations.size();
+        auto it = mEquations.find(dof);
+        if (it == mEquations.end())
+            return 0;
+
+        return it->second.size();
     }
 
 private:
