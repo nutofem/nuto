@@ -33,5 +33,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "5")
         # warns if override is missing
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override")
+        # prevent override warnings from mpi
+        if (ENABLE_MPI)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-override")
+        endif ()
+
     endif()
 endif()

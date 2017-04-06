@@ -87,6 +87,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
 
     foreach(test
             Feti
+            FetiGradientDamage
             )
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})

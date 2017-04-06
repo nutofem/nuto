@@ -631,68 +631,71 @@ public:
         case eFetiPreconditioner::Dirichlet:
         {
 
-////            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
-////            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
-//            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-////            mStructure->GetLogger() << "H \n" << H << "\n\n";
-//
-////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-//
-//            std::vector<int> lagrangeMultiplierDofIds =
-//                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
-//
-//            std::vector<int> internalDofIds;
-//
-//            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-//                internalDofIds.push_back(j);
-//
-//            for (const auto& id : lagrangeMultiplierDofIds)
-//                internalDofIds.erase(internalDofIds.begin() + id);
-//
-////            mStructure->NodeInfo(10);
-//            for (const auto& i : lagrangeMultiplierDofIds)
-//                mStructure->GetLogger() << i << "\n";
-//
-//            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() << "\n\n";
-//            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() << "\n\n";
-//            //
-//            //            mStructure->GetLogger() << "\n\n";
-//            //
-//            //            for (const auto& i : internalDofIds)
-//            //                mStructure->GetLogger() << i << "\n";
-//
-//
-//            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-//            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIds, internalDofIds);
-//            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIds);
-//            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIds, lagrangeMultiplierDofIds);
-//
-//
-////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-////            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
-////            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
-////            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
-////            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
-//
-//            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
-//            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
-////            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
-//
-//            //
-//            //     | 0  0   |
-//            // S = | 0  Sbb |
-//            //
-//            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-//
-//
-//            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-//                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-//                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) = Sbb.coeff(rowId, colId);
-//
-//
-//            mLocalPreconditioner = B * S * B.transpose();
-//
-////            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
+            ////            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
+            ////            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
+            //            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
+            ////            mStructure->GetLogger() << "H \n" << H << "\n\n";
+            //
+            ////            mStructure->GetLogger() << "Searching for seg fault \n\n";
+            //
+            //            std::vector<int> lagrangeMultiplierDofIds =
+            //                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+            //
+            //            std::vector<int> internalDofIds;
+            //
+            //            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
+            //                internalDofIds.push_back(j);
+            //
+            //            for (const auto& id : lagrangeMultiplierDofIds)
+            //                internalDofIds.erase(internalDofIds.begin() + id);
+            //
+            ////            mStructure->NodeInfo(10);
+            //            for (const auto& i : lagrangeMultiplierDofIds)
+            //                mStructure->GetLogger() << i << "\n";
+            //
+            //            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() <<
+            //            "\n\n";
+            //            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() <<
+            //            "\n\n";
+            //            //
+            //            //            mStructure->GetLogger() << "\n\n";
+            //            //
+            //            //            for (const auto& i : internalDofIds)
+            //            //                mStructure->GetLogger() << i << "\n";
+            //
+            //
+            //            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
+            //            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIds, internalDofIds);
+            //            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIds);
+            //            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIds, lagrangeMultiplierDofIds);
+            //
+            //
+            ////            mStructure->GetLogger() << "Searching for seg fault \n\n";
+            ////            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
+            ////            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
+            ////            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
+            ////            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
+            //
+            //            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            //            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
+            ////            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
+            //
+            //            //
+            //            //     | 0  0   |
+            //            // S = | 0  Sbb |
+            //            //
+            //            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
+            //
+            //
+            //            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
+            //                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
+            //                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
+            //                    Sbb.coeff(rowId, colId);
+            //
+            //
+            //            mLocalPreconditioner = B * S * B.transpose();
+            //
+            ////            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
 
 
             throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
@@ -717,6 +720,8 @@ public:
         return subMatrix;
     }
 
+    //! \brief Check the rank of a BlockSparseMatrix using a QR factorization
+    //! \param blockSparseMatrix
     void CheckRankOfBlockSparseMatrix(const BlockSparseMatrix& blockSparseMatrix)
     {
         if (mStructure->GetVerboseLevel() > 10)
@@ -758,7 +763,6 @@ public:
 
             structure->CalculateRigidBodyModesTotalFETI();
             const int numRigidBodyModes = structure->GetNumRigidBodyModes();
-
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate connectivity matrix   ** \n"
@@ -979,6 +983,8 @@ public:
                     rhs.head(numActiveDofs) = residual.J.Export();
                     rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
 
+
+
                     normResidual = residual.J.CalculateInfNorm();
                     for (const auto& dof : activeDofSet)
                         boost::mpi::all_reduce(world, boost::mpi::inplace(normResidual[dof]), std::plus<double>());
@@ -1117,6 +1123,13 @@ public:
         }
     }
 
+
+    //! @brief Calculates the right hand side of the system
+    //! rhs = extForce - intForce - Btrans*lambda
+    void CalculateRhs()
+    {
+
+    }
 
     double CalculateLoadFactor(double rTime)
     {

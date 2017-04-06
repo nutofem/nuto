@@ -359,7 +359,7 @@ public:
         }
     }
 
-    void CreateRectangularMesh2D(const std::vector<double>& meshDimensions, const std::vector<int>& numElements)
+    std::pair<int,int> CreateRectangularMesh2D(const std::vector<double>& meshDimensions, const std::vector<int>& numElements)
     {
 
         assert(GetDimension() == static_cast<int>(meshDimensions.size()) and "Dimensions mismatch");
@@ -381,10 +381,7 @@ public:
         auto importContainer = NuTo::MeshGenerator::Grid(*this, startPoints, endPoints, numElements,
                                                          NuTo::Interpolation::eShapeType::QUAD2D);
 
-        const int interpolationTypeId = importContainer.second;
-        InterpolationTypeAdd(interpolationTypeId, NuTo::Node::eDof::DISPLACEMENTS,
-                             NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        ElementTotalConvertToInterpolationType();
+
 
 
         int numInterfaces;
@@ -412,6 +409,8 @@ public:
         {
             AddNodeIdsToInterface(endPoints, globalNodeId, interfaceId, 1);
         }
+
+        return importContainer;
     }
 
     const Eigen::VectorXd& GetPrescribedDofVector()
