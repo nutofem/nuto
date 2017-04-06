@@ -34,6 +34,8 @@
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
+    auto equation = Constraint::FixDof(*rNode, Node::eDof::DISPLACEMENTS, rDirection, rValue);
+    GetAssembler().AddEquation(Node::eDof::DISPLACEMENTS, equation);
 	GetAssembler().mNodeNumberingRequired = true;
 
     int id = GetUnusedId(GetAssembler().mConstraintMap);

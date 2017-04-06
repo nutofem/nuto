@@ -76,14 +76,10 @@ class Constraints
     using Equations = std::vector<Equation>;
 
 public:
-    void AddEquation(NuTo::Node::eDof dof, Equation equation)
+    int AddEquation(NuTo::Node::eDof dof, Equation equation)
     {
         mEquations[dof].push_back(equation);
-    }
-
-    void AddEquations(NuTo::Node::eDof dof, std::vector<Equation> equations)
-    {
-        mEquations[dof].insert(mEquations[dof].end(), equations.begin(), equations.end());
+        return mEquations.size() - 1;
     }
 
     Eigen::VectorXd GetRhs(NuTo::Node::eDof dof) const

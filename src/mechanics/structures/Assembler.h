@@ -49,7 +49,9 @@ public:
     //!@return rRHS
     double ConstraintGetRHS(int rConstraintEquation)const;
 
-    
+    void AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation);
+
+    void AddEquations(NuTo::Node::eDof dof, std::vector<Constraint::Equation> equations);
 
     //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
     DofStatus mDofStatus;
@@ -84,6 +86,9 @@ public:
     //! @brief ... map storing the constraints
     //! @sa ConstraintBase
     boost::ptr_map<int,ConstraintBase> mConstraintMap;
+
+
+private:
 
     Constraint::Constraints mConstraints; 
 };

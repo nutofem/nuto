@@ -29,7 +29,7 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     for (auto it : rNodes)
     {
         NodeBase& node = *it->second;
-        for(auto dof : node.GetDofTypes())
+        for (auto dof : node.GetDofTypes())
         {
             if (not node.IsDof(dof))
                 continue;
@@ -294,4 +294,16 @@ double NuTo::Assembler::ConstraintGetRHS(int rConstraintEquation) const
         throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
     }
     return it->second->GetRHS();
+}
+
+void NuTo::Assembler::AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation)
+{
+    mConstraints.AddEquation(dof, equation);
+    mNodeNumberingRequired = true;
+}
+
+void NuTo::Assembler::AddEquations(NuTo::Node::eDof dof, std::vector<Constraint::Equation> equations)
+{
+    for (auto& equation : equations)
+        AddEquation(dof, equation);
 }
