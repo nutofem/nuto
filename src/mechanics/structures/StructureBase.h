@@ -244,7 +244,7 @@ public:
     NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix, const NuTo::BlockFullVector<double>& rVector) const;
 
 
-    void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
+    void SolveGlobalSystemStaticElastic(int loadcase = 0);
 
     void Contact(const std::vector<int> &rElementGroups);
 
@@ -891,12 +891,11 @@ public:
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @return rhs
-    const NuTo::BlockFullVector<double>& ConstraintGetRHSAfterGaussElimination() const;
+    const NuTo::BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const;
 
     //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    //!@param rRHS new right hand side
-    void ConstraintSetRHS(int rConstraintEquation, double rRHS);
+    //!@param time global time
+    void ConstraintSetRhs(double time);
 
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term

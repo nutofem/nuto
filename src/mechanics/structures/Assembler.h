@@ -31,23 +31,20 @@ public:
     //! @param rDofType  dof type
     int ConstraintGetNumLinearConstraints(std::string rDof) const;
 
-    //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
-    //! @param rConstraintMatrix constraint matrix
-    NuTo::BlockSparseMatrix ConstraintGetConstraintMatrixBeforeGaussElimination() const;
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
-    NuTo::BlockFullVector<double> ConstraintGetRHSBeforeGaussElimination();
+    NuTo::BlockFullVector<double> ConstraintGetRhsBeforeGaussElimination(double time) const;
 
 
     //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
     //! the result is stored internally in mConstraintRHS
-    void ConstraintUpdateRHSAfterGaussElimination();
+    const NuTo::BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const
+    {
+        return mConstraintRhs;
+    }
 
-    //!@brief gets the right hand side of the constraint equations
-    //!@param rConstraintEquation constraint equation
-    //!@return rRHS
-    double ConstraintGetRHS(int rConstraintEquation)const;
+    void ConstraintUpdateRhs(double time);
 
     void AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation);
 
@@ -78,10 +75,10 @@ public:
     // for a change of the rhs it is sufficient to recalculate the rhs from the above vectors
     // the mapping matrix [1,0; 0,0.5] is stored and the rhs is calculated from
     // mConstraintMappingRHS*mConstraintRHSBeforGaussElimination
-    BlockSparseMatrix mConstraintMappingRHS;
+    BlockSparseMatrix mConstraintMappingRhs;
 
     //! @brief right hand side of the constraint equations
-    BlockFullVector<double> mConstraintRHS;
+    BlockFullVector<double> mConstraintRhs;
 
     //! @brief ... map storing the constraints
     //! @sa ConstraintBase

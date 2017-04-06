@@ -38,10 +38,12 @@ private:
     double mCoefficient;
 };
 
+using RhsFunction = std::function<double(double)>;
+
 class Equation
 {
 public:
-    Equation(double rhs)
+    Equation(RhsFunction rhs)
         : mRhs(rhs)
     {
     }
@@ -61,13 +63,13 @@ public:
         return mTerms;
     }
 
-    double GetRhs() const
+    double GetRhs(double time) const
     {
-        return mRhs;
+        return mRhs(time);
     }
 
 private:
-    double mRhs;
+    RhsFunction mRhs;
     std::vector<Term> mTerms;
 };
 
@@ -76,23 +78,23 @@ class Constraints
     using Equations = std::vector<Equation>;
 
 public:
-    int AddEquation(NuTo::Node::eDof dof, Equation equation)
+    int AddEquation(Node::eDof dof, Equation equation)
     {
         mEquations[dof].push_back(equation);
         return mEquations.size() - 1;
     }
 
-    Eigen::VectorXd GetRhs(NuTo::Node::eDof dof) const
+    Eigen::VectorXd GetRhs(Node::eDof dof, double time) const
     {
         const Equations& equations = mEquations.at(dof);
         int numEquations = equations.size();
         Eigen::VectorXd rhs(numEquations);
         for (int iEquation = 0; iEquation < numEquations; ++iEquation)
-            rhs[iEquation] = equations[iEquation].GetRhs();
+            rhs[iEquation] = equations[iEquation].GetRhs(time);
         return rhs;
     }
 
-    void GetConstraintMatrix(NuTo::SparseMatrix<double>& rConstraintMatrix, NuTo::Node::eDof dof) const
+    void BuildConstraintMatrix(SparseMatrix<double>& rConstraintMatrix, Node::eDof dof) const
     {
         const Equations& equations = mEquations.at(dof);
         int numEquations = equations.size();
@@ -110,8 +112,13 @@ public:
         }
     }
 
+    int GetNumEquations(Node::eDof dof) const
+    {
+        return mEquations.size();
+    }
+
 private:
-    std::map<NuTo::Node::eDof, Equations> mEquations;
+    std::map<Node::eDof, Equations> mEquations;
 };
 
 } /* Constaint */

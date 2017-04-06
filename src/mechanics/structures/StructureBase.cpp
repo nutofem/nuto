@@ -721,7 +721,7 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
 
 
 
-void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
+void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int loadcase)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -732,11 +732,11 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 
     StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
     deltaDof_dt0.J.SetZero();
-    deltaDof_dt0.K = ConstraintGetRHSAfterGaussElimination();
+    deltaDof_dt0.K = ConstraintGetRhsAfterGaussElimination();
 
     auto hessian0 = BuildGlobalHessian0();
 
-    auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
+    auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(loadcase) + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetConstraintMatrix());
     residual.ApplyCMatrix(GetConstraintMatrix());

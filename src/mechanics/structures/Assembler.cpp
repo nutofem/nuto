@@ -8,8 +8,8 @@
 NuTo::Assembler::Assembler()
     : mNodeNumberingRequired(false)
     , mConstraintMatrix(mDofStatus, false)
-    , mConstraintMappingRHS(mDofStatus, false)
-    , mConstraintRHS(mDofStatus)
+    , mConstraintMappingRhs(mDofStatus, false)
+    , mConstraintRhs(mDofStatus)
 {
 }
 
@@ -41,41 +41,39 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     }
 
     mConstraintMatrix.AllocateSubmatrices();
-    mConstraintMappingRHS.AllocateSubmatrices();
-    mConstraintRHS.AllocateSubvectors();
-
+    mConstraintMappingRhs.AllocateSubmatrices();
+    mConstraintRhs.AllocateSubvectors();
 
     for (auto dof : mDofStatus.GetDofTypes())
     {
-        int numConstraints = ConstraintGetNumLinearConstraints(dof);
+        int numConstraints = mConstraints.GetNumEquations(dof);
         mDofStatus.SetNumDependentDofs(dof, numConstraints);
         mDofStatus.SetNumActiveDofs(dof, numDofsMap[dof] - numConstraints);
     }
 
 
-    // build constraint matrix for all dofs
-    mConstraintMatrix = ConstraintGetConstraintMatrixBeforeGaussElimination();
 
     for (auto dof : mDofStatus.GetDofTypes())
     {
         auto& constraintMatrix = mConstraintMatrix(dof, dof);
+        mConstraints.BuildConstraintMatrix(constraintMatrix, dof);
 
         const int numActiveDofs = mDofStatus.GetNumActiveDofs(dof);
         const int numDependentDofs = mDofStatus.GetNumDependentDofs(dof);
         const int numDofs = numActiveDofs + numDependentDofs;
 
-        // init RHSMatrix as a diagonal identity matrix
-        auto& constraintMappingRHS = mConstraintMappingRHS(dof, dof);
+        // init RhsMatrix as a diagonal identity matrix
+        auto& constraintMappingRhs = mConstraintMappingRhs(dof, dof);
 
-        constraintMappingRHS.Resize(numDependentDofs, numDependentDofs);
+        constraintMappingRhs.Resize(numDependentDofs, numDependentDofs);
         for (int i = 0; i < numDependentDofs; ++i)
-            constraintMappingRHS.AddValue(i, i, 1.);
+            constraintMappingRhs.AddValue(i, i, 1.);
 
         // perform gauss algorithm
         std::vector<int> mappingInitialToNewOrdering;
         std::vector<int> mappingNewToInitialOrdering;
 
-        constraintMatrix.Gauss(constraintMappingRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
+        constraintMatrix.Gauss(constraintMappingRhs, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
 
         // move dependent dofs at the end
         // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
@@ -129,10 +127,10 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     // since only the diagonals were set, the off-diagonal submatrices have to be resized
     // to guarantee the right dimensions in arithmetic operations
     mConstraintMatrix.FixOffDiagonalDimensions();
-    mConstraintMappingRHS.FixOffDiagonalDimensions();
+    mConstraintMappingRhs.FixOffDiagonalDimensions();
 
     mConstraintMatrix.CheckDimensions();
-    mConstraintMappingRHS.CheckDimensions();
+    mConstraintMappingRhs.CheckDimensions();
 
 
     // number Lagrange multipliers in constraint equations defined in StructureBase
@@ -141,7 +139,6 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     //        ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);
 
     // calculate current rhs matrix
-    ConstraintUpdateRHSAfterGaussElimination();
     mNodeNumberingRequired = false;
 }
 
@@ -164,136 +161,29 @@ int NuTo::Assembler::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
     return numLinearConstraints;
 }
 
-NuTo::BlockSparseMatrix NuTo::Assembler::ConstraintGetConstraintMatrixBeforeGaussElimination() const
+
+NuTo::BlockFullVector<double> NuTo::Assembler::ConstraintGetRhsBeforeGaussElimination(double time) const
 {
     if (mNodeNumberingRequired)
-    {
         throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
-    }
-
-    BlockSparseMatrix constraintMatrix(mDofStatus, false);
-
-    for (auto dofType : mDofStatus.GetDofTypes())
-    {
-        int numLinearConstraints = ConstraintGetNumLinearConstraints(dofType);
-        int curConstraintEquations = 0;
-
-        constraintMatrix(dofType, dofType).Resize(numLinearConstraints, mDofStatus.GetNumDofs(dofType));
-
-        for (auto itConstraint : mConstraintMap)
-        {
-            if (itConstraint->second->GetNumLinearConstraints() > 0)
-            {
-                try
-                {
-                    if (itConstraint->second->GetDofType() == dofType)
-                        itConstraint->second->AsConstraintLinear()->AddToConstraintMatrix(
-                                curConstraintEquations, constraintMatrix(dofType, dofType));
-                }
-                catch (MechanicsException& e)
-                {
-                    e.AddMessage(__PRETTY_FUNCTION__, "mechanics exception while building constraint matrix for "
-                                                      "constraint with nonzero number of linear components.");
-                    throw;
-                }
-                catch (...)
-                {
-                    throw MechanicsException(__PRETTY_FUNCTION__, "error building constraint matrix for constraint "
-                                                                  "with nonzero number of linear components.");
-                }
-            }
-        }
-
-        if (curConstraintEquations != numLinearConstraints)
-        {
-            std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
-            std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "Internal error, there is something wrong with the constraint equations.");
-        }
-    }
-    return constraintMatrix;
-}
-
-NuTo::BlockFullVector<double> NuTo::Assembler::ConstraintGetRHSBeforeGaussElimination()
-{
-    if (mNodeNumberingRequired)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
-    }
 
     NuTo::BlockFullVector<double> rhsBeforeGaussElimination(mDofStatus);
 
     for (auto dof : mDofStatus.GetDofTypes())
-    {
-
-        int numLinearConstraints = ConstraintGetNumLinearConstraints(dof);
-
-        rhsBeforeGaussElimination[dof].resize(numLinearConstraints);
-
-        // calculate the rhs vector of the constraint equations before the Gauss elimination
-        int curConstraintEquations = 0;
-        for (auto itConstraint : mConstraintMap)
-        {
-            if (itConstraint.second->GetNumLinearConstraints() > 0)
-            {
-                try
-                {
-                    if (itConstraint.second->GetDofType() == dof)
-                        itConstraint.second->AsConstraintLinear()->GetRHS(curConstraintEquations,
-                                                                          rhsBeforeGaussElimination[dof]);
-                }
-                catch (MechanicsException& e)
-                {
-                    e.AddMessage(__PRETTY_FUNCTION__,
-                                 "mechanics exception while building rhs vector after gauss elimination.");
-                    throw;
-                }
-                catch (...)
-                {
-                    throw MechanicsException(__PRETTY_FUNCTION__,
-                                             "mechanics exception while building rhs vector after gauss elimination.");
-                }
-            }
-        }
-
-        if (curConstraintEquations != numLinearConstraints)
-        {
-            std::cout << "curConstraintEquations " << curConstraintEquations << std::endl;
-            std::cout << "numConstraintEquations " << numLinearConstraints << std::endl;
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "Internal error, there is something wrong with the constraint equations.");
-        }
-    }
+        rhsBeforeGaussElimination[dof] = mConstraints.GetRhs(dof, time);
+    
     return rhsBeforeGaussElimination;
 }
 
-void NuTo::Assembler::ConstraintUpdateRHSAfterGaussElimination()
+void NuTo::Assembler::ConstraintUpdateRhs(double time)
 {
     if (mNodeNumberingRequired)
-    {
         throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
-    }
 
-    BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRHSBeforeGaussElimination();
-
-    if (mConstraintMappingRHS.GetNumColumns() != rhsBeforeGaussElimination.GetNumRows())
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "here is something wrong in the implementation.");
-    }
+    BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRhsBeforeGaussElimination(time);
 
     // calculate the rhs vector of the constraint equations after the Gauss elimination using the mapping matrix
-    mConstraintRHS = mConstraintMappingRHS * rhsBeforeGaussElimination;
-}
-
-double NuTo::Assembler::ConstraintGetRHS(int rConstraintEquation) const
-{
-    auto it = mConstraintMap.find(rConstraintEquation);
-    if (it == mConstraintMap.end())
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
-    }
-    return it->second->GetRHS();
+    mConstraintRhs = mConstraintMappingRhs * rhsBeforeGaussElimination;
 }
 
 void NuTo::Assembler::AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation)

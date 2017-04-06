@@ -544,7 +544,7 @@ NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(c
     if (GetAssembler().mNodeNumberingRequired)
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
 
-    return this->GetAssembler().mConstraintRHS - this->GetAssembler().mConstraintMatrix * rActiveDofValues;
+    return this->GetAssembler().ConstraintGetRhsAfterGaussElimination() - GetConstraintMatrix() * rActiveDofValues;
 }
 
 

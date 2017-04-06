@@ -34,8 +34,8 @@
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
-    auto equation = Constraint::FixDof(*rNode, Node::eDof::DISPLACEMENTS, rDirection, rValue);
-    GetAssembler().AddEquation(Node::eDof::DISPLACEMENTS, equation);
+    //auto equation = Constraint::FixDof(*rNode, Node::eDof::DISPLACEMENTS, rDirection, rValue);
+    //GetAssembler().AddEquation(Node::eDof::DISPLACEMENTS, equation);
 	GetAssembler().mNodeNumberingRequired = true;
 
     int id = GetUnusedId(GetAssembler().mConstraintMap);
@@ -346,27 +346,15 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>
     return id;
 }
 
-const NuTo::BlockFullVector<double>& NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination() const
+const NuTo::BlockFullVector<double>& NuTo::StructureBase::ConstraintGetRhsAfterGaussElimination() const
 {
-    if (GetAssembler().mNodeNumberingRequired)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
-    }
-    return GetAssembler().mConstraintRHS;
+    return GetAssembler().ConstraintGetRhsAfterGaussElimination();
 }
 
 
-void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
+void NuTo::StructureBase::ConstraintSetRhs(double time)
 {
-    auto  it = GetAssembler().mConstraintMap.find(rConstraintEquation);
-
-    if (it == GetAssembler().mConstraintMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
-
-    it->second->SetRHS(rRHS);
-
-    //since the rhs before Gauss elimination has changed, update the rhs after Gauss elimination using the mapping matrix
-    GetAssembler().ConstraintUpdateRHSAfterGaussElimination();
+    GetAssembler().ConstraintUpdateRhs(time);
 }
 
 // create a constraint equation
