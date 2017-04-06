@@ -34,27 +34,9 @@
 
 int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
-    //auto equation = Constraint::FixDof(*rNode, Node::eDof::DISPLACEMENTS, rDirection, rValue);
-    //GetAssembler().AddEquation(Node::eDof::DISPLACEMENTS, equation);
-	GetAssembler().mNodeNumberingRequired = true;
-
-    int id = GetUnusedId(GetAssembler().mConstraintMap);
-
-    switch (mDimension)
-    {
-    case 1:
-        GetAssembler().mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements1D(rNode,rDirection(0,0),rValue));
-        break;
-    case 2:
-        GetAssembler().mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements2D(rNode,rDirection,rValue));
-        break;
-    case 3:
-        GetAssembler().mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeDisplacements3D(rNode,rDirection,rValue));
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
-    }
-    return id;
+    auto equation = Constraint::FixVector(*rNode, Node::eDof::DISPLACEMENTS, rDirection, Constraint::RhsConstant(rValue));
+    GetAssembler().AddEquation(Node::eDof::DISPLACEMENTS, equation);
+    return 0;
 }
 
 

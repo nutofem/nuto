@@ -51,11 +51,12 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
         mDofStatus.SetNumActiveDofs(dof, numDofsMap[dof] - numConstraints);
     }
 
-
+    std::cout << mDofStatus << std::endl;
 
     for (auto dof : mDofStatus.GetDofTypes())
     {
         auto& constraintMatrix = mConstraintMatrix(dof, dof);
+        constraintMatrix.Resize(mConstraints.GetNumEquations(dof), mDofStatus.GetNumDofs(dof));
         mConstraints.BuildConstraintMatrix(constraintMatrix, dof);
 
         const int numActiveDofs = mDofStatus.GetNumActiveDofs(dof);

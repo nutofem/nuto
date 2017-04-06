@@ -5,8 +5,6 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
 
-#define PRINTRESULT false
-
 void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
     //create structure
@@ -68,7 +66,6 @@ int main()
 {
     try
     {
-        std::string s = "Stuff";
         CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     }
     catch (NuTo::Exception& e)

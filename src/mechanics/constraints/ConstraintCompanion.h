@@ -44,6 +44,16 @@ std::vector<Equation> FixScalar(const GroupBase& nodes, Node::eDof dof, RhsFunct
     return FixVector(nodes, dof, Eigen::VectorXd::Ones(1), rhs);
 }
 
+RhsFunction RhsConstant(double value)
+{
+    return [=](double){return value;};
+}
+
+RhsFunction RhsRamp(double timeEnd, double valueEnd)
+{
+    return [=](double time){return valueEnd * time / timeEnd;};
+}
+
 
 } /* Constraint */
 } /* NuTo */
