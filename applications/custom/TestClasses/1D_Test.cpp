@@ -69,7 +69,29 @@ Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epe
 }
 
 
+void saveMultiVector(Epetra_MultiVector rVector, const std::string rFileName, const std::string description)
+{
+    std::ofstream file(rFileName.c_str());
 
+    if (!file.is_open())
+    {
+        std::cout << "ERROR: Unable to open file \"" + rFileName + "\"";
+    }
+    else
+    {
+        file << description;
+        file << "\n\n";
+        file << "\tLID\t\tGID\t\tValue";
+        rVector.Print(std::cout);
+        rVector.Print(file);
+    }
+    file.close();
+}
+
+
+//!
+//! \brief Calculates strain of a rod with one fixed (left) and  one loaded (right) boundary
+//!
 int main(int argc, char** argv)
 {
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
@@ -81,9 +103,13 @@ int main(int argc, char** argv)
     rank = Comm.MyPID();
     size = Comm.NumProc();
 
+    // one-dimensional problem
     const int dim = 1;
 
-    int numSubDomains = size;
+    // --------------------
+    // | DOMAIN VARIABLES |
+    // --------------------
+    int numSubDomains = size;   //number of sub domains equals number of processes
     int* numElementsPerSubDomain = new int[numSubDomains];
     int* numElementsTillSubDomain_inclusive = new int[numSubDomains];
     int numElementsTotal = 0;
@@ -91,10 +117,9 @@ int main(int argc, char** argv)
     double* lengthPerSubDomain = new double[numSubDomains];
     double lengthTotal = (setTotalLength ? 10. : 0.);
 
-
     for (int i = 0; i < numSubDomains; ++i)
     {
-        numElementsPerSubDomain[i] = 1;
+        numElementsPerSubDomain[i] = 5;
         numElementsTotal += numElementsPerSubDomain[i];
         numElementsTillSubDomain_inclusive[i] = numElementsTotal;
         if (setTotalLength)
@@ -108,10 +133,13 @@ int main(int argc, char** argv)
         }
     }
 
+    // ------------------------
+    // | MECHANICAL VARIABLES |
+    // ------------------------
     double area = 10.;
-    double YoungsModulus = 20000.;
+    double YoungsModulus = 2.e4;
     double force = 1000.;
-
+    std::cout << YoungsModulus << std::endl;
     double fixedDisplacement = 0.;
     Eigen::VectorXd directionX(1);
     directionX(0) = 1;
@@ -129,7 +157,7 @@ int main(int argc, char** argv)
     auto material = structure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     structure.ConstitutiveLawSetParameterDouble(material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
-
+    //CREATE NODES
     Eigen::VectorXd nodeCoords(1);
     double currLength = 0.;
     for (int i = 0; i < numSubDomains; ++i)
@@ -148,11 +176,12 @@ int main(int argc, char** argv)
         }
     }
 
-
+    //DEFINE INTERPOLATION
     int interpolationType = structure.InterpolationTypeCreate("Truss1D");
     structure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
+    //CREATE ELEMENTS
     std::vector<int> elementNodes(2);
     for (int i = 0; i < numSubDomains; ++i)
     {
@@ -171,13 +200,15 @@ int main(int argc, char** argv)
     structure.ElementTotalSetConstitutiveLaw(material);
     structure.ElementTotalConvertToInterpolationType();
 
-
+    // ----------------------------------------
+    // | DEFINE BOUNDARY AND OVERLAPPING AREAS|
+    // ----------------------------------------
     int nodeBCLeft = structure.GroupCreate(NuTo::eGroupId::Nodes);
     int nodeBCRight = structure.GroupCreate(NuTo::eGroupId::Nodes);
     structure.GroupAddNodeCoordinateRange(nodeBCLeft, 0, -1e-6, 1e-6);
     structure.GroupAddNodeCoordinateRange(nodeBCRight, 0, lengthTotal-1e-6, lengthTotal+1e-6);
 
-
+    //COMPUTE OVERLAPPING AREAS
     int numOverlapping = numSubDomains - 1;
     int* nodeGroupsOverlap = new int[numOverlapping];
     for (int i = 0; i < numOverlapping; ++i)
@@ -191,9 +222,11 @@ int main(int argc, char** argv)
     }
 
 
+    //FIX LEFT BOUNDARY
 //    structure.ConstraintLinearSetDisplacementNode(0, directionX, 0.0);
     structure.ConstraintLinearSetDisplacementNodeGroup(nodeBCLeft, directionX, fixedDisplacement);
 
+    //SET LOAD ON RIGHT BOUNDARY
     structure.SetNumLoadCases(1);
     if (enableDisplacementControl)
     {
@@ -205,6 +238,7 @@ int main(int argc, char** argv)
         structure.LoadCreateNodeGroupForce(0, nodeBCRight, directionX, force);
     }
 
+    //COMPUTE (LOCAL) HESSIAN AND RESIDUAL
     NuTo::StructureOutputBlockMatrix hessian0 = structure.BuildGlobalHessian0();
     NuTo::StructureOutputBlockVector dofs(structure.GetDofStatus(), true);
     dofs.J.SetZero();
@@ -229,8 +263,8 @@ int main(int argc, char** argv)
         localNumActiveDOFs = numElementsPerSubDomain[rank] + 1;
     }
 
-    int* local2GlobalMapping = new int[localNumActiveDOFs];
 
+    //GET IDS OF OVERLAPPING NODES AND LEFT (FIXED) BOUNDARY
     bool leftNodeIDFound = false;
     bool overlappingNodeIDFound = false;
     std::vector<int> overlapNodeIDs;
@@ -241,8 +275,6 @@ int main(int argc, char** argv)
         else
             overlapNodeIDs = structure.GroupGetMemberIds(nodeGroupsOverlap[rank-1]);
     }
-
-
 
     std::vector<int> leftNodeIDs = structure.GroupGetMemberIds(nodeBCLeft);
     int leftNodeCount = leftNodeIDs.size();
@@ -255,6 +287,8 @@ int main(int argc, char** argv)
         internDofCounter = numElementsTillSubDomain_inclusive[rank-1];
 
 
+    //DEFINE LOCAL-TO-GLOBAL DOF MAPPING
+    int* local2GlobalMapping = new int[localNumActiveDOFs];
     for (int i = 0; i < structure.GetNumNodes(); ++i)
     {
         leftNodeIDFound = false;
@@ -305,40 +339,44 @@ int main(int argc, char** argv)
     }
 
 
+    //DEFINE MAPS FOR LOCAL OWNED DOFS AND OVERLAPPING DOFS
     Epetra_Map owningMap(-1, ownedNumActiveDOFs, 0, Comm);
     Epetra_Map overlappingMap(-1, localNumActiveDOFs, local2GlobalMapping, 0, Comm);
     Epetra_Export exporter(overlappingMap, owningMap);
 
-
+    //CREATE CORRESPONDING GRAPHS (FOR MATRIX STRUCTURE)
     Epetra_CrsGraph overlappingGraph(Copy, overlappingMap, 0);
     Epetra_CrsGraph owningGraph(Copy, owningMap, 0);
 
-    for (int i = 0; i < numElementsPerSubDomain[rank]+1; ++i)
+    for (int i = 0; i < localNumActiveDOFs; ++i)
     {
-        for (int j = 0; j < numElementsPerSubDomain[rank]+1; ++j)
+        for (int j = 0; j < localNumActiveDOFs; ++j)
         {
             overlappingGraph.InsertGlobalIndices(local2GlobalMapping[i], 1, &local2GlobalMapping[j]);
         }
     }
 
     overlappingGraph.FillComplete();
-    owningGraph.Export(overlappingGraph, exporter, Insert);
+    owningGraph.Export(overlappingGraph, exporter, Insert); //inter-process communication of matrix structure
     owningGraph.FillComplete();
 
+    //CREATE (GLOBAL) MATRIX AND VECTOR WITH KNOWN GRAPH STRUCTURE
     Epetra_CrsMatrix globalMatrix(Copy, owningGraph);
     globalMatrix.FillComplete();
     Epetra_Vector globalRhsVector(owningMap);
     globalRhsVector.PutScalar(0.0);
 
+    //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
     ConversionTools converter;
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
 
     globalMatrix.PutScalar(0.0);
-    globalMatrix.Export(localMatrix, exporter, Add);
-    globalRhsVector.Export(localRhsVector, exporter, Add);
+    globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
+    globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
 
 #ifdef SHOW_INTERMEDIATE_RESULTS
+    //PRINT SOME INTERMEDIATE RESULTS
     std::ostream& os = std::cout;
 
     os << "Hessian0 by NuTo:\n------------------\n" << hessian0.JJ.ExportToFullMatrix() << "\n\n";
@@ -358,13 +396,19 @@ int main(int argc, char** argv)
 
 #endif
 
+    // --------------------------------
+    // | SOLVE GLOBAL SYSTEM PARALLEL |
+    // --------------------------------
     Epetra_Vector lhs(owningMap);
     lhs.PutScalar(0.0);
     Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector);
     sol.Scale(-1);
-    EpetraExt::MultiVectorToMatrixMarketFile("1D_Test_Results/soluition Vector", sol, "Solution", "describes displacements");
+    //save solution
+    EpetraExt::MultiVectorToMatrixMarketFile("1D_Test_Results/solution_vector.market", sol, "Solution", "describes displacements");
+//    saveMultiVector(sol, "1D_Test_Results/solution_vector", "Solution, describes displacements");
 
 
+    //solve system serial (for comparison only)
     if (size == 1)
     {
         Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
