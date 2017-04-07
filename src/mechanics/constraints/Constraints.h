@@ -38,7 +38,7 @@ private:
     double mCoefficient;
 };
 
-using RhsFunction = std::function<double(double)>;
+typedef std::function<double(double)> RhsFunction;
 
 class Equation
 {

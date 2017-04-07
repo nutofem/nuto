@@ -18,7 +18,9 @@
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
 #include "mechanics/mesh/MeshGenerator.h"
-/*#include "mechanics/structures/Assembler.h"*/
+#include "mechanics/constraints/Constraints.h" 
+#include "mechanics/structures/Assembler.h"
+using namespace NuTo;
 %}
 
 
@@ -44,7 +46,8 @@
 %include "mechanics/structures/StructureOutputBase.h"
 %include "mechanics/structures/StructureOutputBlockMatrix.h"
 %include "mechanics/structures/StructureOutputBlockVector.h"
-/*%include "mechanics/structures/Assembler.h"*/
+%include "mechanics/constraints/Constraints.h" 
+%include "mechanics/structures/Assembler.h"
 
 %include "mechanics/timeIntegration/TimeIntegrationBase.h"
 %include "mechanics/timeIntegration/NewmarkBase.h"
@@ -57,7 +60,3 @@
 %template(DoubleBlockFullMatrix) NuTo::BlockFullMatrix<double>;
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
 %template(IntBlockFullVector) NuTo::BlockFullVector<int>;
-
-
-
-

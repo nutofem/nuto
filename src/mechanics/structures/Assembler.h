@@ -34,12 +34,12 @@ public:
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
-    NuTo::BlockFullVector<double> ConstraintGetRhsBeforeGaussElimination(double time) const;
+    BlockFullVector<double> ConstraintGetRhsBeforeGaussElimination(double time) const;
 
 
     //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
     //! the result is stored internally in mConstraintRHS
-    const NuTo::BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const
+    const BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const
     {
         return mConstraintRhs;
     }

@@ -3,6 +3,7 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/unstructured/Structure.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/elements/ElementEnum.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/dofSubMatrixStorage/BlockStorageBase.h
+    ${CMAKE_SOURCE_DIR}/src/mechanics/structures/Assembler.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/dofSubMatrixStorage/DofStatus.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/dofSubMatrixStorage/BlockScalar.h
