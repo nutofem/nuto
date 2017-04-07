@@ -32,6 +32,12 @@ public:
         return mCoefficient;
     }
 
+    void ExchangeNode(const NodeBase& oldNode, const NodeBase& newNode)
+    {
+        if (&mNode.get() == &oldNode)
+            mNode = newNode;
+    }
+
 private:
     std::reference_wrapper<const NodeBase> mNode;
     int mComponent;
@@ -59,6 +65,11 @@ public:
     }
 
     const std::vector<Term>& GetTerms() const
+    {
+        return mTerms;
+    }
+    
+    std::vector<Term>& GetTerms()
     {
         return mTerms;
     }
@@ -126,6 +137,19 @@ public:
             return 0;
 
         return it->second.size();
+    }
+
+    void ExchangeNodePtr(const NodeBase& oldNode, const NodeBase& newNode)
+    {
+        for (auto& mapPair : mEquations)
+        {
+            auto& equations = mapPair.second;
+            for (auto& equation : equations)
+            {
+                for (auto& term : equation.GetTerms()) 
+                    term.ExchangeNode(oldNode, newNode);
+            }
+        }
     }
 
 private:

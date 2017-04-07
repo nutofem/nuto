@@ -189,7 +189,7 @@ set(NuToMechanicsSectionSources
 set(NuToMechanicsStructuresSources
     structures/StructureBase.cpp
     structures/StructureBaseConstitutiveLaw.cpp
-    structures/StructureBaseConstraints.cpp
+    #structures/StructureBaseConstraints.cpp
     structures/StructureBaseElement.cpp
     structures/StructureBaseEnum.cpp
     structures/StructureBaseGroup.cpp

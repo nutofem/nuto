@@ -438,7 +438,9 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
     try
     {
         UpdateDofStatus();
-        GetAssembler().BuildGlobalDofs(mNodeMap); 
+        std::vector<NodeBase*> nodes;
+        this->GetNodesTotal(nodes);
+        GetAssembler().BuildGlobalDofs(nodes); 
         UpdateDofStatus();
     }
     catch (MathException& e)
@@ -640,8 +642,5 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     }
 
     //in constraints
-    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=GetAssembler().mConstraintMap.begin();constraintIt!=GetAssembler().mConstraintMap.end(); ++constraintIt)
-    {
-        constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
-    }
+    GetAssembler().GetConstraints().ExchangeNodePtr(*rOldPtr, *rNewPtr);
 }

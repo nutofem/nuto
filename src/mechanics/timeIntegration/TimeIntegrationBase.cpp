@@ -31,6 +31,7 @@
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
+#include "mechanics/structures/Assembler.h"
 
 using namespace NuTo;
 
@@ -92,7 +93,7 @@ const NuTo::BlockScalar& NuTo::TimeIntegrationBase::GetToleranceResidual() const
 
 void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
 {
-    mStructure->ConstraintSetRhs(rCurrentTime);
+    mStructure->GetAssembler().ConstraintUpdateRhs(rCurrentTime);
 }
 
 
@@ -218,7 +219,7 @@ NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExte
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetConstraintRHS(double rCurrentTime)
 {
     UpdateConstraints(rCurrentTime);
-    return mStructure->ConstraintGetRhsAfterGaussElimination();
+    return mStructure->GetAssembler().ConstraintGetRhsAfterGaussElimination();
 }
 
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0)
@@ -230,7 +231,7 @@ const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndM
     mStructure->NodeMergeDofValues(0, rDof_dt0);
 
     mStructure->ElementTotalUpdateTmpStaticData();
-    return mStructure->ConstraintGetRhsAfterGaussElimination();
+    return mStructure->GetAssembler().ConstraintGetRhsAfterGaussElimination();
 }
 
 //! @brief monitor the displacements of a node

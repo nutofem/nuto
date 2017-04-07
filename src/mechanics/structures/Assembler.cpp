@@ -13,7 +13,7 @@ NuTo::Assembler::Assembler()
 {
 }
 
-void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
+void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
 {
     mNodeNumberingRequired = false;
     std::map<Node::eDof, int> numDofsMap;
@@ -26,16 +26,15 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
     // ConstraintNumberGlobalDofs(this->mNumDofs);
     //
 
-    for (auto it : rNodes)
+    for (auto node : rNodes)
     {
-        NodeBase& node = *it->second;
-        for (auto dof : node.GetDofTypes())
+        for (auto dof : node->GetDofTypes())
         {
-            if (not node.IsDof(dof))
+            if (not node->IsDof(dof))
                 continue;
-            for (int i = 0; i < node.GetNum(dof); ++i)
+            for (int i = 0; i < node->GetNum(dof); ++i)
             {
-                node.SetDofNumber(dof, i, numDofsMap[dof]++);
+                node->SetDofNumber(dof, i, numDofsMap[dof]++);
             }
         }
     }
@@ -113,14 +112,13 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
 
         // renumber dofs
 
-        for (auto it : rNodes)
+        for (auto node : rNodes)
         {
-            NodeBase& node = *it->second;
-            for (int i = 0; i < node.GetNum(dof); ++i)
+            for (int i = 0; i < node->GetNum(dof); ++i)
             {
-                int initialDofNumber = node.GetDof(dof, i);
+                int initialDofNumber = node->GetDof(dof, i);
                 int newDofNumber = mappingInitialToNewOrdering[initialDofNumber];
-                node.SetDofNumber(dof, i, newDofNumber);
+                node->SetDofNumber(dof, i, newDofNumber);
             }
         }
     }
@@ -145,21 +143,13 @@ void NuTo::Assembler::BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes)
 
 
 int NuTo::Assembler::ConstraintGetNumLinearConstraints(std::string rDof) const
-
 {
     return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));
 }
 
 int NuTo::Assembler::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
 {
-    int numLinearConstraints = 0;
-    for (auto itConstraint : mConstraintMap)
-    {
-        const auto& constraint = itConstraint.second;
-        if (constraint->GetDofType() == rDof)
-            numLinearConstraints += constraint->GetNumLinearConstraints();
-    }
-    return numLinearConstraints;
+    return mConstraints.GetNumEquations(rDof);
 }
 
 

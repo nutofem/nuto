@@ -1,10 +1,8 @@
 #pragma once
-#include <boost/ptr_container/ptr_map.hpp>
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/constraints/Constraints.h"
 
@@ -17,7 +15,7 @@ public:
     Assembler();
 
 #ifndef SWIG
-    void BuildGlobalDofs(boost::ptr_map<int, NodeBase>& rNodes);
+    void BuildGlobalDofs(const std::vector<NodeBase*>& rNodes);
 
     //! @brief returns the number of constraint equations for a specific dof type
     //! @return number of constraints
@@ -80,10 +78,15 @@ public:
     //! @brief right hand side of the constraint equations
     BlockFullVector<double> mConstraintRhs;
 
-    //! @brief ... map storing the constraints
-    //! @sa ConstraintBase
-    boost::ptr_map<int,ConstraintBase> mConstraintMap;
+    Constraint::Constraints& GetConstraints()
+    {
+        return mConstraints;
+    }
 
+    const Constraint::Constraints& GetConstraints() const
+    {
+        return mConstraints;
+    }
 
 private:
 

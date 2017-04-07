@@ -744,20 +744,29 @@ public:
     //*************************************************
     //! @brief deletes a constraint equation
     //! @param ConstraintId constraint id
-    void ConstraintDelete(int ConstraintId);
+    void ConstraintDelete(int ConstraintId)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief adds a constraint to the map
     //! @param ConstraintId constraint id
     //! @param
-    void ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint);
+    void ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief releases a constraint, (remove from the list but don't delete it)
     //!@param rConstraintEquation id of the constraint equation
     //! @return ptr to constraint
     //! @brief releases a constraint, (remove from the list but don't delete it)
-    NuTo::ConstraintBase* ConstraintRelease(int rConstraintId);
+    NuTo::ConstraintBase* ConstraintRelease(int rConstraintId)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
 
@@ -766,7 +775,10 @@ public:
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, double rValue);
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
@@ -774,70 +786,103 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode identifier for node
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a relative humidity constraint equation for node
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue);
+    int ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a relative humidity constraint for a node
     //! @param rIdent identifier for node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue);
+    int ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a node
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue);
+    int ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief adds a rotation constraint equation for a node
     //! @param rNode identifier for node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
+    int  ConstraintLinearSetRotationNode(int rIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief Adds a temperature constraint equation for node.
     //! @param rNode Pointer to node
     //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
     //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue);
+    int ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief Adds a relative humidity constraint for a node.
     //! @param rIdent Identifier for node
     //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
     //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNode(int rIdent, double rValue);
+    int ConstraintLinearSetTemperatureNode(int rIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a water volume fraction constraint for a node
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue);
+    int ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief adds a water volume fraction constraint for a node
     //! @param rIdent identifier for node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue);
+    int ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
@@ -845,7 +890,10 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
@@ -853,33 +901,48 @@ public:
     //! @param rDof displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a group of node
     //! @param rNode pointer to group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a rotation to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue);
+    int ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
     //! @param rGroupIdent identifier for group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue);
+    int ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief adds a temperature constraint equation for a group of nodes
     //! @param rNode pointer to group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue);
+    int ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
+    {
+        throw "Deprecated...";
+    }
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
     //! @param rGroupIdent identifier for group of nodes
     //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
-    int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue);
+    int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue)
+    {
+        throw "Deprecated...";
+    }
 
 
     // ######################################
@@ -888,22 +951,16 @@ public:
     // ##                                  ##
     // ######################################
 
-    //! @brief returns the constraint vector after gauss elimination
-    //! rConstraintMatrix*DOFS = RHS
-    //! @return rhs
-    const NuTo::BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const;
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param time global time
-    void ConstraintSetRhs(double time);
-
     //! @brief ... create a constraint equation
     //! @param rNode ... node id in the first constraint equation term
     //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
     //! @return integer id of the constraint
-    int ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
+    int ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief ... create a constraint equation
     //! @param rConstraint ... constraint id
@@ -911,7 +968,10 @@ public:
     //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
+    void ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief ... create a constraint equation
@@ -921,7 +981,10 @@ public:
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
+    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRHS = 0)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an element
     //! @param rNode ... node id in the first constraint equation term
@@ -932,7 +995,10 @@ public:
                                                      int rElementGroup,
                                                      NuTo::Node::eDof rDofType,
                                                      const double rTolerance = 1.e-6,
-                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
+                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero())
+    {
+        throw "Deprecated...";
+    }
 
 
 
@@ -944,7 +1010,10 @@ public:
     //! @param rNode ... node id
     //! @param rDof ... dof (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
+    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
     //! @param rAngle... angle in deg
@@ -955,7 +1024,10 @@ public:
     //! @param rNodeGroupRight...  all nodes on the right boundary
     int ConstraintLinearDisplacementsSetPeriodic2D(double angle, Eigen::MatrixXd rStrain,
             double rRadiusToCrackWithoutConstraints,
-            int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
+            int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight)
+    {
+        throw "Deprecated...";
+    }
 
 #ifndef SWIG
     //! @brief ... add a term to a constraint equation
@@ -964,10 +1036,16 @@ public:
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient);
+    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient)
+    {
+        throw "Deprecated...";
+    }
 
     //! @brief info about the nodes in the Structure
-    void ConstraintInfo(int mVerboseLevel)const;
+    void ConstraintInfo(int mVerboseLevel)const
+    {
+        throw "Deprecated...";
+    }
 
 #endif
 
@@ -976,7 +1054,10 @@ private:
     //! @brief rDof ... input string
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
-    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eDof& rDofType, int& rDofComponent);
+    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eDof& rDofType, int& rDofComponent)
+    {
+        throw "Deprecated...";
+    }
 
 public:
     //*************************************************

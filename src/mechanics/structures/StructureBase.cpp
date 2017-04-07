@@ -732,7 +732,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int loadcase)
 
     StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
     deltaDof_dt0.J.SetZero();
-    deltaDof_dt0.K = ConstraintGetRhsAfterGaussElimination();
+    deltaDof_dt0.K = GetAssembler().ConstraintGetRhsAfterGaussElimination();
 
     auto hessian0 = BuildGlobalHessian0();
 
