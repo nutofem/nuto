@@ -34,6 +34,7 @@ set(NuToMechanicsConstitutiveSources
 
 set(NuToMechanicsConstraintSources
     constraints/Constraints.cpp
+    constraints/ConstraintCompanion.cpp
     )
 
 set(NuToMechanicsDofSubMatrixStorageSources

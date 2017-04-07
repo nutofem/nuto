@@ -59,7 +59,7 @@ structure.AddVisualizationComponent(visualizationGroup, "PrincipalEngineeringStr
 structure.AddVisualizationComponent(visualizationGroup, "NonlocalEqStrain")
 
 firstNode = structure.NodeGetNodePtr(0)
-structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Fix(firstNode, [nuto.eDirection_X]))
+structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(firstNode, [nuto.eDirection_X]))
 
 direction = np.array([1.0])
 structure.LoadCreateNodeForce(0, nodeIDs[0], direction, 100.0)

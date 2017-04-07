@@ -58,7 +58,7 @@ def SetupStructure(stressState):
     directionY = np.array([0.0, 1.0])
 
     if stressState == "XX":
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Fix(LoadNodesXNeg, [nuto.eDirection_X]))
         structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
         structure.ConstraintLinearSetDisplacementNode(0, directionY, 0)
     elif stressState == "YY":

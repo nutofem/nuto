@@ -229,8 +229,8 @@ void CSDA2D()
 
     using namespace NuTo::Constraint;
     using NuTo::Node::eDof;
-    s.Constraints().Add(eDof::DISPLACEMENTS, Fix(*s.NodeGetNodePtr(nodeFixXY), {NuTo::eDirection::X, NuTo::eDirection::Y}));
-    s.Constraints().Add(eDof::DISPLACEMENTS, Fix(*s.NodeGetNodePtr(nodeFixY), {NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(*s.NodeGetNodePtr(nodeFixXY), {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(*s.NodeGetNodePtr(nodeFixY), {NuTo::eDirection::Y}));
     double deltaD = -.5;
     s.Constraints().Add(eDof::DISPLACEMENTS, Direction(*s.NodeGetNodePtr(nodeBC), Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
     
@@ -433,8 +433,8 @@ void CSDA3D()
     auto groupZ = s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
 
     using namespace NuTo::Constraint;
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Fix(*nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Fix(*nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(*nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(*nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
     double deltaD = -.5;
     s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Direction(*groupZ, Eigen::Vector3d::UnitZ(), RhsRamp(1, deltaD))) ;
 

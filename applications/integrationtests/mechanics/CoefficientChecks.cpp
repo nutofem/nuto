@@ -49,7 +49,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.ElementTotalSetSection(mySection);
 
     // add a rather random constraint to get some dependent dofs
-    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Fix(*myStructure.NodeGetNodePtr(0)));
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Value(*myStructure.NodeGetNodePtr(0)));
     myStructure.CalculateMaximumIndependentSets();
 
     bool isCorrectStiffnessStructure = myStructure.CheckHessian0(1.e-6, 1.e-4);
