@@ -1,5 +1,4 @@
 #include "mechanics/constitutive/ConstitutiveBase.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupEnum.h"

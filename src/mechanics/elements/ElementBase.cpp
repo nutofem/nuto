@@ -20,7 +20,6 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/IpDataEnum.h"

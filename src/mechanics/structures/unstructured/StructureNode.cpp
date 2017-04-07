@@ -4,7 +4,6 @@
 #include "base/Timer.h"
 
 
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"

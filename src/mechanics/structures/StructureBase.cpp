@@ -74,7 +74,6 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/structures/Assembler.h"

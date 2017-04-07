@@ -3,7 +3,6 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "math/SparseMatrixCSRVector2General.h"
-#include "mechanics/constraints/ConstraintLinear.h"
 
 NuTo::Assembler::Assembler()
     : mNodeNumberingRequired(false)
