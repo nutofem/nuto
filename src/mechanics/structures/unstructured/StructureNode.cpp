@@ -149,8 +149,7 @@ int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Nod
     // add node to map
     this->mNodeMap.insert(id, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    GetAssembler().mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 
     //return int identifier of the new node
     return id;
@@ -261,8 +260,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    GetAssembler().mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 }
 
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
@@ -318,9 +316,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    GetAssembler().mNodeNumberingRequired  = true;
-
+    GetAssembler().SetNodeVectorChanged();
 }
 
 
@@ -358,8 +354,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    GetAssembler().mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 }
 
 
@@ -423,14 +418,14 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
         // delete element from map
         this->mNodeMap.erase(itNode);
 
-        GetAssembler().mNodeNumberingRequired = true;
+        GetAssembler().SetNodeVectorChanged();
     }
 }
 
 
 void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 {
-    if (not GetAssembler().mNodeNumberingRequired)
+    if (not GetAssembler().RenumberingRequired())
         return;
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -465,8 +460,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
 NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTimeDerivative) const
 {
-    if (GetAssembler().mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
     StructureOutputBlockVector dofValues(GetDofStatus(), true); // with resize
 
@@ -499,8 +493,7 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
 
 void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues)
 {
-    if (GetAssembler().mNodeNumberingRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
     for (auto dofType : DofTypesGetActive())
     {
@@ -542,8 +535,7 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
 NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const
 {
-    if (GetAssembler().mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
     return this->GetAssembler().ConstraintGetRhsAfterGaussElimination() - GetConstraintMatrix() * rActiveDofValues;
 }

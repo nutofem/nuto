@@ -211,6 +211,15 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
     }
 }
 
+const NuTo::Constraint::Constraints& NuTo::StructureBase::Constraints() const
+{
+    return GetAssembler().GetConstraints();
+}
+
+NuTo::Constraint::Constraints& NuTo::StructureBase::Constraints()
+{
+    return GetAssembler().GetConstraints();
+}
 
 // add visualization components for an element group
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualizeWhat rVisualizeComponent)

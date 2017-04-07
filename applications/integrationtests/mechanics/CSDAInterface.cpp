@@ -228,13 +228,11 @@ void CSDA2D()
     int nodeBC = s.NodeGetIdAtCoordinate(Eigen::Vector2d({thickness2, ly}), 1.e-5);
 
     using namespace NuTo::Constraint;
-    std::vector<Equation> eqs;
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixXY), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector2d::UnitX(), RhsConstant(0)));
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixXY), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector2d::UnitY(), RhsConstant(0)));
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixY), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector2d::UnitY(), RhsConstant(0)));
+    using NuTo::Node::eDof;
+    s.Constraints().Add(eDof::DISPLACEMENTS, Fix(*s.NodeGetNodePtr(nodeFixXY), {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Fix(*s.NodeGetNodePtr(nodeFixY), {NuTo::eDirection::Y}));
     double deltaD = -.5;
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeBC), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
-    s.GetAssembler().AddEquations(NuTo::Node::eDof::DISPLACEMENTS, eqs);
+    s.Constraints().Add(eDof::DISPLACEMENTS, Direction(*s.NodeGetNodePtr(nodeBC), Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
     
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
@@ -427,24 +425,18 @@ void CSDA3D()
     s.ElementInfo(10);
     s.NodeInfo(10);
 
-    using namespace NuTo::Constraint;
-    std::vector<Equation> eqs;
-    int nodeFixXYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({-lx, 0, 0}), 1.e-5);
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixXYZ), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitX(), RhsConstant(0)));
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixXYZ), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitY(), RhsConstant(0)));
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixXYZ), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitZ(), RhsConstant(0)));
-
-    int nodeFixYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx, 0, 0}), 1.e-5);
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixYZ), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitY(), RhsConstant(0)));
-    eqs.push_back(FixVector(*s.NodeGetNodePtr(nodeFixYZ), NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitZ(), RhsConstant(0)));
-    s.GetAssembler().AddEquations(NuTo::Node::eDof::DISPLACEMENTS, eqs);
-
+    auto nodeFixXYZ = s.NodeGetNodePtr(s.NodeGetIdAtCoordinate(Eigen::Vector3d({-lx, 0, 0}), 1.e-5));
+    auto nodeFixYZ = s.NodeGetNodePtr(s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx, 0, 0}), 1.e-5));
+    
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, lz}), 0, 2*thickness);
-    NuTo::GroupBase* groupZ = s.GroupGetGroupPtr(groupNodeFixZ);
-    s.GetAssembler().AddEquations(NuTo::Node::eDof::DISPLACEMENTS, FixVector(*groupZ, NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitY(), RhsConstant(0))) ;
+    auto groupZ = s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
+
+    using namespace NuTo::Constraint;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Fix(*nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Fix(*nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
     double deltaD = -.5;
-    s.GetAssembler().AddEquations(NuTo::Node::eDof::DISPLACEMENTS, FixVector(*groupZ, NuTo::Node::eDof::DISPLACEMENTS, Eigen::Vector3d::UnitZ(), RhsRamp(1, deltaD))) ;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Direction(*groupZ, Eigen::Vector3d::UnitZ(), RhsRamp(1, deltaD))) ;
 
     s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
 

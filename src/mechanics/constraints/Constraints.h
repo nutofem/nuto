@@ -54,6 +54,12 @@ public:
     {
     }
 
+    Equation(RhsFunction rhs, std::vector<Term> terms)
+        : mRhs(rhs)
+        , mTerms(terms)
+    {
+    }
+
     Equation(const Equation&) = default;
     Equation(Equation&&) = default;
 
@@ -68,7 +74,7 @@ public:
     {
         return mTerms;
     }
-    
+
     std::vector<Term>& GetTerms()
     {
         return mTerms;
@@ -89,9 +95,27 @@ class Constraints
     using Equations = std::vector<Equation>;
 
 public:
-    void AddEquation(Node::eDof dof, Equation equation)
+    void Add(Node::eDof dof, Equation equation)
     {
         mEquations[dof].push_back(equation);
+        mHasNewConstraints = true;
+    }
+
+    void Add(Node::eDof dof, std::vector<Equation> equations)
+    {
+        Equations& dofEquations = mEquations[dof];
+        dofEquations.insert(dofEquations.begin(), equations.begin(), equations.end());
+        mHasNewConstraints = true;
+    }
+
+    void SetHasNewConstraints(bool value)
+    {
+        mHasNewConstraints = value;
+    }
+
+    bool HasNewConstraints() const
+    {
+        return mHasNewConstraints;
     }
 
     Eigen::VectorXd GetRhs(Node::eDof dof, double time) const
@@ -114,7 +138,7 @@ public:
         if (it == mEquations.end())
             return; // no equations for this dof type
 
-        const Equations& equations = it->second; 
+        const Equations& equations = it->second;
         int numEquations = equations.size();
 
         for (int iEquation = 0; iEquation < numEquations; ++iEquation)
@@ -122,6 +146,11 @@ public:
             const auto& equation = equations[iEquation];
             for (const auto& term : equation.GetTerms())
             {
+                if (term.GetNode().GetNum(dof) < term.GetComponent())
+                    throw MechanicsException(__PRETTY_FUNCTION__,
+                                             "Cannot access component " + std::to_string(term.GetComponent()) +
+                                                     " from NuTo::NodeBase " + term.GetNode().GetNodeTypeStr());
+
                 double coefficient = term.GetCoefficient();
                 int globalDofNumber = term.GetNode().GetDof(dof, term.GetComponent());
                 if (std::abs(coefficient > 1.e-18))
@@ -146,7 +175,7 @@ public:
             auto& equations = mapPair.second;
             for (auto& equation : equations)
             {
-                for (auto& term : equation.GetTerms()) 
+                for (auto& term : equation.GetTerms())
                     term.ExchangeNode(oldNode, newNode);
             }
         }
@@ -154,6 +183,7 @@ public:
 
 private:
     std::map<Node::eDof, Equations> mEquations;
+    bool mHasNewConstraints = false;
 };
 
 } /* Constaint */

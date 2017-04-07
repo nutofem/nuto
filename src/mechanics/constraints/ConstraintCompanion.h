@@ -3,57 +3,97 @@
 #include "mechanics/constraints/Constraints.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/Group.h"
+#include "mechanics/DirectionEnum.h"
 
 namespace NuTo
 {
 namespace Constraint
 {
 
-
-Equation FixVector(const NodeBase& node, Node::eDof dof, Eigen::VectorXd direction, RhsFunction rhs)
+RhsFunction RhsConstant(double value)
 {
-    int numComponents = node.GetNum(dof);
-    if (numComponents != direction.rows())
+    return [=](double) { return value; };
+}
+
+RhsFunction RhsRamp(double timeEnd, double valueEnd)
+{
+    return [=](double time) { return valueEnd * time / timeEnd; };
+}
+
+std::vector<Equation> Fix(const NodeBase& node, std::vector<eDirection> directions)
+{
+    std::vector<Equation> eqs;
+    for (auto direction : directions)
+    {
+        int component = ToComponentIndex(direction);
+        if (node.GetNumDofs() < component)
+            // TODO This check is not meaningful at the moment, since this method returns the
+            // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
+            // if you try to constrain the Z component of the temperature. Which would be wrong.
+            throw MechanicsException(__PRETTY_FUNCTION__, "Dimension mismatch");
+
+        eqs.push_back(Equation(RhsConstant(0.), {Term(node, component, 1)}));
+    }
+    return eqs;
+}
+
+std::vector<Equation> Fix(const Group<NodeBase>& nodes, std::vector<eDirection> directions)
+{
+    std::vector<Equation> eqs;
+    for (auto& nodePair : nodes)
+    {
+        auto tmpEqs = Fix(*nodePair.second, directions);
+        eqs.insert(eqs.end(), tmpEqs.begin(), tmpEqs.end());
+    }
+    return eqs;
+}
+
+Equation Fix(const NodeBase& node)
+{
+    return Equation(RhsConstant(0.), {Term(node, 0, 1)});
+}
+
+std::vector<Equation> Fix(const Group<NodeBase>& nodes)
+{
+    std::vector<Equation> eqs;
+    for (auto& nodePair : nodes)
+        eqs.push_back(Fix(*nodePair.second));
+    return eqs;
+}
+
+Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction rhs)
+{
+    if (node.GetNumDofs() != direction.rows())
+        // TODO This check is not meaningful at the moment, since this method returns the
+        // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
+        // if you try to constrain the Z component of the temperature. Which would be wrong.
         throw MechanicsException(__PRETTY_FUNCTION__, "Dimension mismatch");
 
     direction.normalize();
     Equation e(rhs);
-    for (int iComponent = 0; iComponent < numComponents; ++iComponent)
+    for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
         e.AddTerm(Term(node, iComponent, direction[iComponent]));
 
     return e;
 }
 
-Equation FixScalar(const NodeBase& node, Node::eDof dof, RhsFunction rhs)
+std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 {
-    return FixVector(node, dof, Eigen::VectorXd::Ones(1), rhs);
+    std::vector<Equation> eqs;
+    for (auto& nodePair : nodes)
+        eqs.push_back(Direction(*nodePair.second, direction, rhs));
+    return eqs;
 }
 
-//! @remark This should certainly be a Group<NodeBase>! However, this caused some wierd compilation problems, maybe
-//! caused by foward declarations. So, this currently works and the groups need a cleanup anyways
-std::vector<Equation> FixVector(const GroupBase& nodes, Node::eDof dof, Eigen::VectorXd direction, RhsFunction rhs)
+Equation Value(const NodeBase& node, RhsFunction rhs)
 {
-    std::vector<Equation> equations;
-    for (auto nodePair : *nodes.AsGroupNode())
-        equations.push_back(FixVector(*nodePair.second, dof, direction, rhs));
-    return equations;
+    return Direction(node, Eigen::VectorXd::Ones(1), rhs);
 }
 
-std::vector<Equation> FixScalar(const GroupBase& nodes, Node::eDof dof, RhsFunction rhs)
+std::vector<Equation> Value(const Group<NodeBase>& nodes, RhsFunction rhs)
 {
-    return FixVector(nodes, dof, Eigen::VectorXd::Ones(1), rhs);
+    return Direction(nodes, Eigen::VectorXd::Ones(1), rhs);
 }
-
-RhsFunction RhsConstant(double value)
-{
-    return [=](double){return value;};
-}
-
-RhsFunction RhsRamp(double timeEnd, double valueEnd)
-{
-    return [=](double time){return valueEnd * time / timeEnd;};
-}
-
 
 } /* Constraint */
 } /* NuTo */

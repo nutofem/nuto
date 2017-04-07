@@ -25,8 +25,8 @@ namespace NuTo
 {
 class Assembler;
 class ConstitutiveBase;
-class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ConstraintBase;
+class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ElementBase;
 class EngineeringStrain2D;
 class GroupBase;
@@ -71,6 +71,10 @@ namespace Constitutive
     enum class eOutput;
 }// namespace Constitutive
 
+namespace Constraint
+{
+    class Constraints;
+}
 
 namespace Element
 {
@@ -1721,6 +1725,9 @@ public:
     unsigned short GetVerboseLevel() const;
 
     void SetVerboseLevel(unsigned short verboseLevel);
+
+    const Constraint::Constraints& Constraints() const;
+    Constraint::Constraints& Constraints();
 
 #ifndef SWIG
     const Assembler& GetAssembler() const

@@ -5,7 +5,7 @@
 #include "math/SparseMatrixCSRVector2General.h"
 
 NuTo::Assembler::Assembler()
-    : mNodeNumberingRequired(false)
+    : mNodeVectorChanged(false)
     , mConstraintMatrix(mDofStatus, false)
     , mConstraintMappingRhs(mDofStatus, false)
     , mConstraintRhs(mDofStatus)
@@ -14,7 +14,6 @@ NuTo::Assembler::Assembler()
 
 void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
 {
-    mNodeNumberingRequired = false;
     std::map<Node::eDof, int> numDofsMap;
 
     // build initial node numbering
@@ -137,7 +136,8 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     //        ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);
 
     // calculate current rhs matrix
-    mNodeNumberingRequired = false;
+    mNodeVectorChanged = false;
+    mConstraints.SetHasNewConstraints(false);
 }
 
 
@@ -154,21 +154,19 @@ int NuTo::Assembler::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
 
 NuTo::BlockFullVector<double> NuTo::Assembler::ConstraintGetRhsBeforeGaussElimination(double time) const
 {
-    if (mNodeNumberingRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
+    ThrowIfRenumberingRequred();
 
     NuTo::BlockFullVector<double> rhsBeforeGaussElimination(mDofStatus);
 
     for (auto dof : mDofStatus.GetDofTypes())
         rhsBeforeGaussElimination[dof] = mConstraints.GetRhs(dof, time);
-    
+
     return rhsBeforeGaussElimination;
 }
 
 void NuTo::Assembler::ConstraintUpdateRhs(double time)
 {
-    if (mNodeNumberingRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
+    ThrowIfRenumberingRequred();
 
     BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRhsBeforeGaussElimination(time);
 
@@ -176,14 +174,8 @@ void NuTo::Assembler::ConstraintUpdateRhs(double time)
     mConstraintRhs = mConstraintMappingRhs * rhsBeforeGaussElimination;
 }
 
-void NuTo::Assembler::AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation)
+void NuTo::Assembler::ThrowIfRenumberingRequred() const
 {
-    mConstraints.AddEquation(dof, equation);
-    mNodeNumberingRequired = true;
-}
-
-void NuTo::Assembler::AddEquations(NuTo::Node::eDof dof, std::vector<Constraint::Equation> equations)
-{
-    for (auto& equation : equations)
-        AddEquation(dof, equation);
+    if (RenumberingRequired())
+        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
 }

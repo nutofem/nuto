@@ -793,7 +793,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         newNode->Set(Node::eDof::COORDINATES, node->Get(Node::eDof::COORDINATES) + rOffset);
     }
     //renumbering of dofs for global matrices required
-    GetAssembler().mNodeNumberingRequired = true;
+    GetAssembler().SetNodeVectorChanged();
 
     std::vector<ElementBase*> elements;
     GetElementsTotal(elements);

@@ -4,6 +4,8 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
@@ -47,7 +49,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.ElementTotalSetSection(mySection);
 
     // add a rather random constraint to get some dependent dofs
-    myStructure.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitX(), 0.0);
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Fix(*myStructure.NodeGetNodePtr(0)));
     myStructure.CalculateMaximumIndependentSets();
 
     bool isCorrectStiffnessStructure = myStructure.CheckHessian0(1.e-6, 1.e-4);

@@ -44,15 +44,23 @@ public:
 
     void ConstraintUpdateRhs(double time);
 
-    void AddEquation(NuTo::Node::eDof dof, Constraint::Equation equation);
+    void ThrowIfRenumberingRequred() const;
 
-    void AddEquations(NuTo::Node::eDof dof, std::vector<Constraint::Equation> equations);
+    void SetNodeVectorChanged()
+    {
+        mNodeVectorChanged = true;
+    }
+
+    bool RenumberingRequired() const
+    {
+        return (mConstraints.HasNewConstraints() or mNodeVectorChanged);
+    }
 
     //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
     DofStatus mDofStatus;
     
     //!brief ... renumbering of nodal DOFs required or not
-    bool mNodeNumberingRequired;
+    bool mNodeVectorChanged = false;
     
     //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
     BlockSparseMatrix mConstraintMatrix;
