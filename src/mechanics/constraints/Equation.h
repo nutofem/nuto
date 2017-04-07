@@ -12,6 +12,11 @@ typedef std::function<double(double)> RhsFunction;
 class Equation
 {
 public:
+    Equation(double rhs = 0)
+        : mRhs([=](double){return rhs;})
+    {
+    }
+
     Equation(RhsFunction rhs)
         : mRhs(rhs)
     {

@@ -10,7 +10,7 @@ namespace NuTo
 namespace Constraint
 {
 
-RhsFunction RhsRamp(double timeEnd, double valueEnd)
+inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
 {
     return [=](double time) { return valueEnd * time / timeEnd; };
 }

@@ -829,12 +829,10 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
    
-    std::vector<Constraint::Equation> equations;
+    std::vector<Constraint::Equation> equations(dim);
     for (int iDim = 0; iDim < dim; ++iDim)
     {
-        Constraint::Equation e(Constraint::RhsConstant(0.));
-        e.AddTerm(Constraint::Term(*NodeGetNodePtr(rNode), iDim, 1.));
-        equations.push_back(e);
+        equations[iDim].AddTerm(Constraint::Term(*NodeGetNodePtr(rNode), iDim, 1.));
     }
 
 
@@ -848,7 +846,6 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         for (int iDim = 0; iDim < dim; ++iDim)
             equations[iDim].AddTerm(Constraint::Term(*globalNode, iDim, coefficient));
     }
-
     Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
 }
 
