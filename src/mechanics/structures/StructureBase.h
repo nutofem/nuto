@@ -1350,7 +1350,6 @@ public:
     //! @param rVerboseLevel describes how detailed the information is
     void GroupInfo(int rVerboseLevel)const;
 
-#ifndef SWIG
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
@@ -1366,6 +1365,7 @@ public:
     //! @return ... pointer to the group
     const GroupBase* GroupGetGroupPtr(int rIdent) const;
 
+#ifndef SWIG
     //! @brief ... Creates a group for the structure
     //! @param rType  type of the group, e.g. "NODES" or "ELEMENTS"
     //! @return ... rIdent identifier for the group

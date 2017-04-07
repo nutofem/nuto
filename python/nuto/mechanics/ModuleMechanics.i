@@ -9,6 +9,8 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/DirectionEnum.h"
+#include "mechanics/groups/GroupBase.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeDof.h"
@@ -90,6 +92,9 @@ using namespace NuTo::Constraint;
 
 %include "mechanics/DirectionEnum.h"
 
+%include "mechanics/groups/GroupBase.h"
+%include "mechanics/groups/Group.h"
+
 %include "mechanics/nodes/NodeEnum.h"
 %include "mechanics/nodes/NodeBase.h"
 %include "mechanics/nodes/NodeDof.h"
@@ -151,4 +156,7 @@ namespace std {
     %ignore vector<NuTo::Constraint::Equation>::vector(size_type);
     %ignore vector<NuTo::Constraint::Equation>::resize;
     %template(EquationVector) vector<NuTo::Constraint::Equation>;
+
 }
+
+%template(NodeGroup) NuTo::Group<NuTo::NodeBase>;
