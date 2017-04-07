@@ -1669,9 +1669,6 @@ public:
     //! @param rIsConstitutiveInput ... is/is not constitutive input
     void DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput);
 
-    //! @brief returns the a reference to the constraint matrix
-    const NuTo::BlockSparseMatrix& GetConstraintMatrix() const;
-
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* currently no members to serialize */};

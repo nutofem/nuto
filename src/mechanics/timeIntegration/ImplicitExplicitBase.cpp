@@ -20,6 +20,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "mechanics/structures/Assembler.h"
 
 NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure)
     : TimeIntegrationBase(rStructure)
@@ -171,11 +172,12 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
                     residual = (extForce - intForce) + prevExtForce + extForce;
                     residual -= hessian0 * delta_dof_dt0;
-                    residual.ApplyCMatrix(mStructure->GetConstraintMatrix());
-                    hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+                    const auto& CMat = mStructure->GetAssembler().GetConstraintMatrix();
+                    residual.ApplyCMatrix(CMat);
+                    hessian0.ApplyCMatrix(CMat);
 
                     delta_dof_dt0.J = mSolver->Solve(hessian0.JJ, residual.J);
-                    delta_dof_dt0.K = deltaBRHS - mStructure->GetConstraintMatrix() * delta_dof_dt0.J;
+                    delta_dof_dt0.K = deltaBRHS - CMat * delta_dof_dt0.J;
 
                     dof_dt0 += delta_dof_dt0;
                 }

@@ -21,6 +21,8 @@
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/constraints/Term.h"
+#include "mechanics/constraints/Equation.h"
 #include "mechanics/constraints/Constraints.h"
 #include "mechanics/constraints/ConstraintCompanion.h" 
 #include "mechanics/structures/Assembler.h"
@@ -118,6 +120,8 @@ using namespace NuTo::Constraint;
     $1 = PyList_Check($input) ? 1 : 0;
 %}
 
+%include "mechanics/constraints/Term.h"
+%include "mechanics/constraints/Equation.h"
 %include "mechanics/constraints/Constraints.h"
 %include "mechanics/constraints/ConstraintCompanion.h" 
 %include "mechanics/structures/Assembler.h"

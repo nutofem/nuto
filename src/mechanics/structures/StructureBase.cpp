@@ -746,8 +746,8 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int loadcase)
 
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(loadcase) + BuildGlobalInternalGradient();
 
-    hessian0.ApplyCMatrix(GetConstraintMatrix());
-    residual.ApplyCMatrix(GetConstraintMatrix());
+    hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+    residual.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
 
     // reuse deltaDof_dt0
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
@@ -936,7 +936,7 @@ void NuTo::StructureBase::UpdateDofStatus()
     GetAssembler().mDofStatus.SetDofTypes(dofTypes);
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().mConstraintMatrix.GetNumActiveEntires() != 0);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0);
 }
 
 
@@ -1009,12 +1009,6 @@ int NuTo::StructureBase::GetNumActiveDofs(std::string rDofType) const
 int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
 {
     return GetNumDependentDofs(Node::DofToEnum(rDofType));
-}
-
-
-const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
-{
-    return GetAssembler().mConstraintMatrix;
 }
 
 void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)

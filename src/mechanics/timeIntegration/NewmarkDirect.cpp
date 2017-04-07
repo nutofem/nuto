@@ -27,6 +27,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
+#include "mechanics/structures/Assembler.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -128,7 +129,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     BlockFullVector<double> bRHS(dofStatus);
     BlockFullVector<double> deltaBRHS(dofStatus);
 
-    const auto& cmat = mStructure->GetConstraintMatrix();
+    const auto& cmat = mStructure->GetAssembler().GetConstraintMatrix();
 
     /*---------------------------------*\
     |    Declare and fill Output Maps   |
@@ -670,7 +671,7 @@ NuTo::NewmarkDirect::BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& r
         if (mStructure->GetNumTimeDerivatives() >= 2)
             rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
 
-        rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+        rHessian_dt0.ApplyCMatrix(mStructure->GetAssembler().GetConstraintMatrix());
 
         auto result = mSolver->Solve(rHessian_dt0.JJ, rResidualMod);
         return result;

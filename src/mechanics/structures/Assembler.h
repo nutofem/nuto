@@ -59,6 +59,26 @@ public:
     //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
     DofStatus mDofStatus;
     
+
+    Constraint::Constraints& GetConstraints()
+    {
+        return mConstraints;
+    }
+
+    const Constraint::Constraints& GetConstraints() const
+    {
+        return mConstraints;
+    }
+
+    const BlockSparseMatrix& GetConstraintMatrix() const
+    {
+        return mConstraintMatrix;
+    }
+
+private:
+
+    Constraint::Constraints mConstraints; 
+    
     //!brief ... renumbering of nodal DOFs required or not
     bool mNodeVectorChanged = false;
     
@@ -85,20 +105,6 @@ public:
 
     //! @brief right hand side of the constraint equations
     BlockFullVector<double> mConstraintRhs;
-
-    Constraint::Constraints& GetConstraints()
-    {
-        return mConstraints;
-    }
-
-    const Constraint::Constraints& GetConstraints() const
-    {
-        return mConstraints;
-    }
-
-private:
-
-    Constraint::Constraints mConstraints; 
 };
 
 } /* NuTo */
