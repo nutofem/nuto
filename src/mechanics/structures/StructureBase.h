@@ -268,12 +268,12 @@ public:
     //! @return number of nodes
     virtual int GetNumNodes() const =0;
 
-#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
     virtual NodeBase* NodeGetNodePtr(int rIdent)=0;
 
+#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node

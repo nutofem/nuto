@@ -113,12 +113,12 @@ public:
     //! @return number of nodes
     int GetNumNodes() const override;
 
-#ifndef SWIG
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
     NodeBase* NodeGetNodePtr(int rIdent) override;
 
+#ifndef SWIG
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node

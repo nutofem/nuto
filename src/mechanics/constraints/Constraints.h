@@ -85,6 +85,8 @@ public:
         return mRhs(time);
     }
 
+    ~Equation() = default;
+
 private:
     RhsFunction mRhs;
     std::vector<Term> mTerms;
