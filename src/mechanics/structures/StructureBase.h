@@ -999,10 +999,7 @@ public:
                                                      int rElementGroup,
                                                      NuTo::Node::eDof rDofType,
                                                      const double rTolerance = 1.e-6,
-                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero())
-    {
-        throw "Deprecated...";
-    }
+                                                     Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
 
 
 

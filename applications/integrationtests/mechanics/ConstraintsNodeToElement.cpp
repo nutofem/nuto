@@ -21,6 +21,8 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>

@@ -31,6 +31,7 @@
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/elements/ElementBase.h"
+#include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
@@ -64,6 +65,8 @@
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
+#include "mechanics/interpolationtypes/InterpolationBase.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -77,7 +80,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/structures/Assembler.h"
-
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeUnstructuredGrid.h"
@@ -754,6 +757,99 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int loadcase)
 
     deltaDof_dt0.K = NodeCalculateDependentDofValues(deltaDof_dt0.J);
     NodeMergeDofValues(0, deltaDof_dt0);
+}
+
+
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
+                                                                      NuTo::Node::eDof rDofType,
+                                                                      const double rTolerance,
+                                                                      Eigen::Vector3d rNodeCoordOffset)
+{
+    const int dim = GetDimension();
+
+    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
+    queryNodeCoords = queryNodeCoords +  rNodeCoordOffset.head(dim);
+
+
+    std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
+
+    ElementBase* elementPtr = nullptr;
+    Eigen::VectorXd elementNaturalNodeCoords;
+    bool nodeInElement = false;
+    for (auto const& eleId : elementGroupIds) {
+        elementPtr = ElementGetElementPtr(eleId);
+
+        // Coordinate interpolation must be linear so the shape function derivatives are constant!
+        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
+               Interpolation::eTypeOrder::EQUIDISTANT1);
+        const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
+                Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+
+        // real coordinates of every node in rElement
+        Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+
+        switch (mDimension) {
+            case 2: {
+                Eigen::Matrix2d invJacobian = dynamic_cast<ContinuumElement<2>*>(elementPtr)->CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
+            }
+                break;
+            case 3: {
+                Eigen::Matrix3d invJacobian = dynamic_cast<ContinuumElement<3>*>(elementPtr)->CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
+
+
+            }
+                break;
+
+            default:
+                throw NuTo::MechanicsException(
+                        std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
+
+        }
+
+
+        if ( (elementNaturalNodeCoords.array() > -rTolerance).all() and elementNaturalNodeCoords.sum() <= 1. + rTolerance)
+        {
+            nodeInElement = true;
+            break;
+        }
+
+    }
+
+    if (not nodeInElement)
+    {
+        GetLogger() << "Natural node coordinates: \n" << elementNaturalNodeCoords << "\n";
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
+    }
+
+    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
+   
+    std::vector<Constraint::Equation> equations;
+    for (int iDim = 0; iDim < dim; ++iDim)
+    {
+        Constraint::Equation e(Constraint::RhsConstant(0.));
+        e.AddTerm(Constraint::Term(*NodeGetNodePtr(rNode), iDim, 1.));
+        equations.push_back(e);
+    }
+
+
+    for (int iNode = 0; iNode < shapeFunctions.rows(); ++iNode)
+    {
+        int localNodeId = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
+        auto globalNode = elementPtr->GetNode(localNodeId, Node::eDof::DISPLACEMENTS);
+//        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
+        double coefficient = -shapeFunctions(iNode, 0);
+
+        for (int iDim = 0; iDim < dim; ++iDim)
+            equations[iDim].AddTerm(Constraint::Term(*globalNode, iDim, coefficient));
+    }
+
+    Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
 }
 
 void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)

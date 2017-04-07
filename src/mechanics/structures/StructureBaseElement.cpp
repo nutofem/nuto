@@ -31,7 +31,6 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
-
 #include "visualize/VisualizeEnum.h"
 
 using namespace NuTo;
