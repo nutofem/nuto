@@ -54,7 +54,8 @@ enum class eVisualizeWhat
     RELATIVE_HUMIDITY,              //!< visualize relative humidity
     WATER_VOLUME_FRACTION,          //!< visualize water volume fraction
     ELECTRIC_FIELD,                 //!<
-    ELECTRIC_POTENTIAL              //!<
+    ELECTRIC_POTENTIAL,             //!<
+    ELECTRIC_DISPLACEMENT           //!<
 };
 
 

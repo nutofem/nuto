@@ -54,6 +54,7 @@ set(NuToMechanicsConstraintSources
     constraints/ConstraintLinearNodeRelativeHumidity.cpp
     constraints/ConstraintLinearNodeRotations2D.cpp
     constraints/ConstraintLinearNodeTemperature.cpp
+    constraints/ConstraintLinearNodeElectricPotential.cpp
     constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
     constraints/ConstraintNode.cpp
     constraints/ConstraintNodeGroup.cpp

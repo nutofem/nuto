@@ -27,6 +27,7 @@
 #include "mechanics/constraints/ConstraintLinearNodeRelativeHumidity.h"
 #include "mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "mechanics/constraints/ConstraintLinearNodeTemperature.h"
+#include "mechanics/constraints/ConstraintLinearNodeElectricPotential.h"
 #include "mechanics/constraints/ConstraintLinearNodeWaterVolumeFraction.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
@@ -180,6 +181,46 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, dou
         throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
     }
     return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNode(NodeBase* rNode, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+
+    int id = GetUnusedId(mConstraintMap);
+
+    switch (mDimension)
+    {
+    case 1:
+    case 2:
+    case 3:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeElectricPotential(rNode,rValue));
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNode(int rIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+        throw;
+    }
+    catch (...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetElectricPotentialNode(nodePtr, rValue);
 }
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double rValue)
@@ -953,6 +994,9 @@ int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
 
     case Node::eDof::TEMPERATURE:
         return ConstraintLinearSetTemperatureNode(rNode, rValue);
+
+    case Node::eDof::ELECTRICPOTENTIAL:
+        return ConstraintLinearSetElectricPotentialNode(rNode, rValue);
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,std::string("not implemented for dof ")+Node::DofToString(rDOFType));

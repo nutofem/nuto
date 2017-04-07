@@ -835,6 +835,18 @@ public:
     //! @return Integer id to delete or modify the constraint
     int ConstraintLinearSetTemperatureNode(int rIdent, double rValue);
 
+    //! @brief Adds a electric potential constraint equation for node.
+    //! @param rNode Pointer to node
+    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return Integer id to delete or modify the constraint
+    int ConstraintLinearSetElectricPotentialNode(NodeBase* rNode, double rValue);
+
+    //! @brief Adds a electric potential constraint equation for node.
+    //! @param rIdent Identifier for node
+    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return Integer id to delete or modify the constraint
+    int ConstraintLinearSetElectricPotentialNode(int rIdent, double rValue);
+
     //! @brief adds a water volume fraction constraint for a node
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)

@@ -440,6 +440,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
             elementIpDataMap[IpData::eIpStaticDataType::ELECTRIC_FIELD];
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+            elementIpDataMap[IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT];
             break;
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
             elementIpDataMap[IpData::eIpStaticDataType::LOCAL_EQ_STRAIN];
@@ -840,6 +842,22 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 eField[2] = electricField(2, theIp);
 
                 rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(),eField);
+            }
+            }
+            break;
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+            {
+            const auto& electricD = elementIpDataMap.at(IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                double eD[3];
+                eD[0] = electricD(0, theIp);
+                eD[1] = electricD(1, theIp);
+                eD[2] = electricD(2, theIp);
+
+                rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(),eD);
             }
             }
             break;

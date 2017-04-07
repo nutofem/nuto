@@ -14,6 +14,8 @@ const std::map<NuTo::IpData::eIpStaticDataType, std::string> NuTo::IpData::GetIp
         {eIpStaticDataType::ENGINEERING_STRESS, "ENGINEERING_STRESS"},
         {eIpStaticDataType::EXTRAPOLATION_ERROR, "EXTRAPOLATION_ERROR"},
         {eIpStaticDataType::HEAT_FLUX, "HEAT_FLUX"},
+        {eIpStaticDataType::ELECTRIC_DISPLACEMENT, "ELECTRIC_DISPLACEMENT"},
+        {eIpStaticDataType::ELECTRIC_FIELD, "ELECTRIC_FIELD"},
         {eIpStaticDataType::INTERNAL_ENERGY, "INTERNAL_ENERGY"},
         {eIpStaticDataType::LATTICE_PLASTIC_STRAIN, "LATTICE_PLASTIC_STRAIN"},
         {eIpStaticDataType::LATTICE_STRAIN, "LATTICE_STRAIN"},

@@ -483,6 +483,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
             it.second.resize(3, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ELECTRIC_FIELD];
             break;
+        case NuTo::IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT:
+            it.second.resize(3, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT];
+            break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
         }
@@ -621,7 +625,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         case Constitutive::eInput::ELECTRIC_FIELD:
         {
             auto& electricField = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());
-            electricField.AsVector() = rData.mB.at(Node::eDof::ELECTRICPOTENTIAL) * rData.mNodalValues.at(Node::eDof::ELECTRICPOTENTIAL);
+            electricField.AsVector() = -rData.mB.at(Node::eDof::ELECTRICPOTENTIAL) * rData.mNodalValues.at(Node::eDof::ELECTRICPOTENTIAL);
             break;
         }
         case Constitutive::eInput::TIME:
@@ -848,6 +852,12 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const auto& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::HEAT_FLUX).get());
             const auto& heatChange = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::HEAT_CHANGE).get());
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * ((rData.GetNMatrix(dofRow))->transpose() * heatChange - rData.mB.at(dofRow).transpose() * heatFlux);
+            break;
+        }
+        case Node::eDof::ELECTRICPOTENTIAL:
+        {
+            const auto& electricD = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ELECTRIC_DISPLACEMENT).get());
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * electricD;
             break;
         }
         case Node::eDof::WATERVOLUMEFRACTION:
@@ -1188,6 +1198,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
             break;
         case NuTo::IpData::eIpStaticDataType::ELECTRIC_FIELD:
             it.second.col(rTheIP) = static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ELECTRIC_FIELD).get())->ConvertTo3DVector();
+            break;
+        case NuTo::IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT:
+            it.second.col(rTheIP) = static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ELECTRIC_DISPLACEMENT).get())->ConvertTo3DVector();
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");

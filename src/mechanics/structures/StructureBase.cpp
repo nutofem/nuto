@@ -443,6 +443,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::eVisualizeWhat::LATTICE_STRAIN:
         case NuTo::eVisualizeWhat::LATTICE_PLASTIC_STRAIN:
         case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
             rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
 

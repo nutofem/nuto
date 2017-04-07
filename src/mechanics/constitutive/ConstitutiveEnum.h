@@ -133,7 +133,6 @@ enum class eConstitutiveParameter
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
     PORE_VOLUME_FRACTION,                       //!<
     RESIDUAL_BOND_STRESS,                       //!<
-    RELATIVE_ELECTRIC_PERMITTIVITY,             //!< \f$\epsilon_r\f$ Equal to 1 for vacuum \f$ D = \epsilon_0 \epsilon_r E\f$
     DENSITY_SATURATED_WATER_VAPOR,              //!<
     SLIP_AT_MAX_BOND_STRESS,                    //!<
     SLIP_AT_RESIDUAL_BOND_STRESS,               //!<

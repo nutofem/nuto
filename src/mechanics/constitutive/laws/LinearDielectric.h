@@ -58,12 +58,12 @@ public:
     //! @brief Gets a parameter of the constitutive law which is selected by an enum.
     //! @param rIdentifier Enum to identify the requested parameter
     //! @return Value of the requested variable
-    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief Sets a parameter of the constitutive law which is selected by an enum.
     //! @param rIdentifier Enum to identify the requested parameter
     //! @param rValue New value for requested variable
-    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
 
     //! @brief Gets a set of all constitutive output enums that are compatible with the constitutive law.
     //! @return Set of all constitutive output enums that are compatible with the constitutive law
@@ -103,8 +103,8 @@ public:
 
 
 protected:
-    //! @brief Relative permittivity \f$ \epsilon_r \f$
-    double mEps;
+
+    Eigen::Matrix3d mPermittivity;
 
     template <int TDim>
     struct InputData

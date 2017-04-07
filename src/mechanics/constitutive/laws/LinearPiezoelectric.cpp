@@ -34,19 +34,19 @@ NuTo::LinearPiezoelectric::LinearPiezoelectric() :
 {
     mStiffness << 0, 0, 0, 0, 0, 0,
                   0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 1,
+                  0, 0, 0, 0, 0, 0,
                   0, 0, 0, 0, 0, 0,
                   0, 0, 0, 0, 0, 0,
                   0, 0, 0, 0, 0, 0;
     mRho = 0.;
 
-    mPermittivity << 1, 0, 0,
-                     0, 1, 0,
-                     0, 0, 1;
+    mPermittivity << 0, 0, 0,
+                     0, 0, 0,
+                     0, 0, 0;
 
-    mPiezo <<  1, 0, 0,
-               0, 1, 0,
-               0, 0, 1,
+    mPiezo <<  0, 0, 0,
+               0, 0, 0,
+               0, 0, 0,
                0, 0, 0,
                0, 0, 0,
                0, 0, 0;
@@ -183,7 +183,7 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
                     engStrain(ii) = engineeringStrain[ii];
                 }
 
-                engStress = this->mStiffness * engStrain - this->mPiezo * electricField;
+                engStress = this->mStiffness * engStrain - (this->mPiezo).transpose() * electricField;
 
                 for (int ii=0; ii<6; ii++) {
                     engineeringStress[ii] = engStress(ii);
@@ -191,10 +191,16 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
 
                 break;
             }
+        case NuTo::Constitutive::eOutput::ELECTRIC_FIELD:
+        {
+            Eigen::Matrix<double, 3, 1>& electricField = *static_cast<ConstitutiveVector<3>*>(itOutput.second.get());
+            electricField = inputData.mElectricField;
+            break;
+        }
         case NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
         {
             ConstitutiveIOBase& electricDisplacement = *itOutput.second;
-            electricDisplacement.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+            electricDisplacement.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain =
                 rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
@@ -211,7 +217,7 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
                 engStrain(ii) = engineeringStrain[ii];
             }
 
-            elDispl = (this->mPiezo).transpose() * engStrain + this->mPermittivity * electricField;
+            elDispl = this->mPiezo * engStrain + this->mPermittivity * electricField;
 
             for (int ii=0; ii<3; ii++) {
                 electricDisplacement[ii] = elDispl(ii);
@@ -239,7 +245,7 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
 
                 for (int ii=0; ii<6; ii++) {
                     for (int jj=0; jj<3; jj++) {
-                        tangent(ii,jj) = this->mPiezo(ii,jj);
+                        tangent(ii,jj) = ((this->mPiezo).transpose())(ii,jj);
                     }
                 }
 
@@ -252,7 +258,20 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
 
                 for (int ii=0; ii<3; ii++) {
                     for (int jj=0; jj<6; jj++) {
-                        tangent(ii,jj) = (this->mPiezo).transpose()(ii,jj);
+                        tangent(ii,jj) = this->mPiezo(ii,jj);
+                    }
+                }
+
+                break;
+            }
+            case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
+            {
+                ConstitutiveIOBase& tangent = *itOutput.second;
+                tangent.AssertIsMatrix<3, 3>(itOutput.first, __PRETTY_FUNCTION__);
+
+                for (int ii=0; ii<3; ii++) {
+                    for (int jj=0; jj<3; jj++) {
+                        tangent(ii,jj) = this->mPermittivity(ii,jj);
                     }
                 }
 
@@ -266,12 +285,12 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
             }
             case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
                 break;
-//            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
-//            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
-//            {
-//                //nothing to be done for update routine
-//                continue;
-//            }
+            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+            {
+                //nothing to be done for update routine
+                continue;
+            }
             default:
                 continue;
         }
@@ -296,6 +315,7 @@ bool NuTo::LinearPiezoelectric::CheckDofCombinationComputable(NuTo::Node::eDof r
         case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
         case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::DISPLACEMENTS):
         case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::ELECTRICPOTENTIAL):
+        case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
             return true;
         default:
             return false;
@@ -385,8 +405,8 @@ Eigen::VectorXd NuTo::LinearPiezoelectric::GetParameterFullVectorDouble(NuTo::Co
     {
         Eigen::VectorXd piezoelectricTensorFlattened(18);
         int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 3; jj++) {
+        for (int ii=0; ii< 3; ii++) {
+            for (int jj=0; jj< 6; jj++) {
                 piezoelectricTensorFlattened(count) = this->mPiezo(ii,jj);
                 count++;
             }
@@ -428,8 +448,8 @@ void NuTo::LinearPiezoelectric::SetParameterFullVectorDouble(NuTo::Constitutive:
     case Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR:
     {
         int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 3; jj++) {
+        for (int ii=0; ii< 3; ii++) {
+            for (int jj=0; jj< 6; jj++) {
                 this->mPiezo(ii,jj) = rValue(count);
                 count++;
             }
@@ -452,6 +472,8 @@ bool NuTo::LinearPiezoelectric::CheckOutputTypeCompatibility(NuTo::Constitutive:
     case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
     case Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
     case Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
+    case Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
+    case Constitutive::eOutput::ELECTRIC_FIELD:
 //    case Constitutive::eOutput::UPDATE_STATIC_DATA:
 //    case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
     {

@@ -25,7 +25,9 @@ using namespace NuTo;
 
 LinearDielectric::LinearDielectric() : ConstitutiveBase()
 {
-    mEps = 1.0;
+//    mPermittivity << 1, 0, 0,
+//                     0, 1, 0,
+//                     0, 0, 1;
     SetParametersValid();
 }
 
@@ -86,7 +88,17 @@ template <int TDim>
 void LinearDielectric::Evaluate(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
+    Eigen::Matrix<double,3,TDim> cropMatrix;
+    for(int ii=0; ii<3; ii++) {
+        for (int jj=0; jj <TDim; jj++) {
+            if (ii == jj) {
+                cropMatrix(ii,jj) = 1;
+            } else {
+                cropMatrix(ii,jj) = 0;
+            }
+        }
+    }
+    auto perm = cropMatrix.transpose() * mPermittivity * cropMatrix;
 
     InputData<TDim> inputData;
     for (auto& itInput : rConstitutiveInput)
@@ -115,14 +127,14 @@ void LinearDielectric::Evaluate(
         case Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
         {
             Eigen::Matrix<double, TDim, 1>& electricDisplacement = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
-            electricDisplacement = mEps * eye * inputData.mElectricField;
+            electricDisplacement = perm * inputData.mElectricField;
             break;
         }
         case Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
         {
             Eigen::Matrix<double, TDim, TDim>& permittivity =
                     *static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get());
-            permittivity = mEps * eye;
+            permittivity = perm;
             break;
         }
 
@@ -133,11 +145,16 @@ void LinearDielectric::Evaluate(
     }
 }
 
+void NuTo::LinearDielectric::CheckParameters() const
+{
+
+}
+
 bool LinearDielectric::CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch (rIdentifier)
     {
-    case Constitutive::eConstitutiveParameter::RELATIVE_ELECTRIC_PERMITTIVITY:
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
         return true;
     }
@@ -148,25 +165,43 @@ bool LinearDielectric::CheckHaveParameter(Constitutive::eConstitutiveParameter r
     }
 }
 
-double LinearDielectric::GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::LinearDielectric::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch (rIdentifier)
+    switch(rIdentifier)
     {
-    case Constitutive::eConstitutiveParameter::RELATIVE_ELECTRIC_PERMITTIVITY:
-        return this->mEps;
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
+    {
+        Eigen::VectorXd permittivityFlattened(9);
+        int count = 0;
+        for (int ii=0; ii< 3; ii++) {
+            for (int jj=0; jj< 3; jj++) {
+                permittivityFlattened(count) = this->mPermittivity(ii,jj);
+                count++;
+            }
+        }
+        return permittivityFlattened;
+    }
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-void LinearDielectric::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::LinearDielectric::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
-//    ConstitutiveBase::CheckParameterDouble(rIdentifier, rValue);
-    switch (rIdentifier)
+    //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
+    switch(rIdentifier)
     {
-    case Constitutive::eConstitutiveParameter::RELATIVE_ELECTRIC_PERMITTIVITY:
-        this->mEps = rValue;
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
+    {
+        int count = 0;
+        for (int ii=0; ii< 3; ii++) {
+            for (int jj=0; jj< 3; jj++) {
+                this->mPermittivity(ii,jj) = rValue(count);
+                count++;
+            }
+        }
         break;
+    }
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
@@ -206,12 +241,7 @@ bool LinearDielectric::CheckElementCompatibility(Element::eElementType rElementT
 void LinearDielectric::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-    rLogger << "    Relative electric permittivity          : " << this->mEps << "\n";
-}
-
-void LinearDielectric::CheckParameters() const
-{
-    ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::RELATIVE_ELECTRIC_PERMITTIVITY, mEps);
+    rLogger << "    Relative electric permittivity          : " << this->mPermittivity << "\n";
 }
 
 template void LinearDielectric::Evaluate<1>(

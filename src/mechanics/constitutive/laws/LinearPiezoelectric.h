@@ -123,7 +123,7 @@ public:
 
 protected:
     //! @brief ... Piezoelectric tensor components in Voigt notation
-    Eigen::Matrix<double,6,3> mPiezo;
+    Eigen::Matrix<double,3,6> mPiezo;
     Eigen::Matrix<double,6,6> mStiffness;
     Eigen::Matrix<double,3,3> mPermittivity;
 

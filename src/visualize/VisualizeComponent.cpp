@@ -105,6 +105,8 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "ElectricPotential";
     case eVisualizeWhat::ELECTRIC_FIELD:
         return "ElectricField";
+    case eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+        return "ElectricDisplacement";
     default:
         throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component not implemented.");
     }
