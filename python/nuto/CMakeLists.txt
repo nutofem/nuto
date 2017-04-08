@@ -32,7 +32,7 @@ if(SWIG_VERSION VERSION_LESS "3.0")
   message(FATAL_ERROR "Insufficient swig version (at least 3.0)")
 endif()
 include(${SWIG_USE_FILE})
-set(NuTo_SWIG_FLAGS "-Wall;-fvirtual;${NuTo_SWIG_FLAGS}")
+set(NuTo_SWIG_FLAGS "-fvirtual;${NuTo_SWIG_FLAGS}")
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 include_directories(${CMAKE_SOURCE_DIR}/src)

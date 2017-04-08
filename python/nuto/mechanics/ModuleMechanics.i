@@ -1,4 +1,5 @@
 %module(package="nuto") ModuleMechanics
+#pragma SWIG nowarn=401
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
@@ -28,6 +29,7 @@
 #include "mechanics/constraints/Constraints.h"
 #include "mechanics/constraints/ConstraintCompanion.h" 
 #include "mechanics/structures/Assembler.h"
+
 
 #include <stdexcept>
 

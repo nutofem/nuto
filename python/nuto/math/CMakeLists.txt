@@ -19,8 +19,6 @@ include(${SWIG_USE_FILE})
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-set(CMAKE_SWIG_FLAGS "")
-
 # build python modules
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 foreach(NuToMath_SWIG_MODULE ${NuToMath_SWIG_MODULES})
