@@ -37,15 +37,13 @@ def SetupMaterial(structure):
 
 
 def SetupBoundaryConditions(structure, BCType):
-    nodeSelectionTolerance = 1.e-6
-
     # fix left node at x = [0]
-    nodeLeft = structure.NodeGetAtCoordinate(np.array([0.]), nodeSelectionTolerance)
+    nodeLeft = structure.NodeGetAtCoordinate(np.array([0.]))
     structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeLeft))
 
     # apply nonzero BC at x = length
-    nodeRight = structure.NodeGetAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
-    nodeRightId = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
+    nodeRight = structure.NodeGetAtCoordinate(np.array([Geometry.lx]))
+    nodeRightId = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]))
     if BCType == "DisplacmentBC":
         structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeRight, BoundaryCondition.displacement))
     if BCType == "ForceBC":

@@ -293,7 +293,7 @@ public:
     //! @param rCoordinates
     //! @param rRange
     //! @return ... node id
-    int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange);
+    int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange = 1.e-6);
 
     //! @brief ... returns the (first) node that has the specified coordinates within the range
     //! @param coordinate node coordinates
