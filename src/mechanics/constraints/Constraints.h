@@ -1,7 +1,8 @@
 #pragma once
+#include <map>
+#include <iosfwd>
 #include "math/SparseMatrix.h"
 #include "mechanics/constraints/Equation.h"
-#include <map>
 
 namespace NuTo
 {
@@ -27,7 +28,8 @@ public:
     int GetNumEquations(Node::eDof dof) const;    
 
     void ExchangeNodePtr(const NodeBase& oldNode, const NodeBase& newNode);
-   
+
+    friend std::ostream& operator<<(std::ostream& out, const Constraints& constraints);
 
 private:
     std::map<Node::eDof, Equations> mEquations;

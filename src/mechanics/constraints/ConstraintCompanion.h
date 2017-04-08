@@ -14,6 +14,11 @@ inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
     return [=](double time) { return valueEnd * time / timeEnd; };
 }
 
+inline RhsFunction RhsConstant(double constantValue)
+{
+    return [=](double time) { return constantValue; }; 
+}
+
 std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> directions, double value = 0.0);
 
 std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions, double value = 0.0);

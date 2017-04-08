@@ -1014,7 +1014,7 @@ void NuTo::StructureBase::UpdateDofStatus()
 {
     std::set<Node::eDof> dofTypes;
     std::set<Node::eDof> activeDofTypes;
-    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    for(auto interpolationTypePair : mInterpolationTypeMap)
     {
         const std::set<Node::eDof>& dofs = interpolationTypePair.second->GetDofs();
         dofTypes.insert(dofs.begin(), dofs.end());
@@ -1030,6 +1030,7 @@ void NuTo::StructureBase::UpdateDofStatus()
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
     GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0);
+    std::cout << "Has interacting constraints? " << GetAssembler().mDofStatus.HasInteractingConstraints() << std::endl;
 }
 
 

@@ -10,17 +10,13 @@
  *
  *
  */
-
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
+#include <boost/filesystem.hpp>
+#include "mechanics/MechanicsEnums.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 
-#include <boost/filesystem.hpp>
 
 class ParametersMaterial
 {
@@ -104,11 +100,11 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     //**********************************************
 
     // Nodes
-    int node0 = myStructure.NodeCreate(rNodeCoords0);
-    int node1 = myStructure.NodeCreate(rNodeCoords1);
-    int node2 = myStructure.NodeCreate(rNodeCoords2);
+    int nodeId0 = myStructure.NodeCreate(rNodeCoords0);
+    int nodeId1 = myStructure.NodeCreate(rNodeCoords1);
+    int nodeId2 = myStructure.NodeCreate(rNodeCoords2);
 
-    std::vector<int> nodeIndices({node0, node1, node2});
+    std::vector<int> nodeIndices({nodeId0, nodeId1, nodeId2});
     myStructure.ElementCreate(fibreInterpolationType, nodeIndices);
 
     myStructure.ElementTotalConvertToInterpolationType(1e-6, 10);
@@ -118,17 +114,21 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     //**********************************************
     //          Boundary Conditions
     //**********************************************
-    myStructure.ConstraintLinearSetDisplacementNode(node0, ParametersGeometry2D::mDirectionX, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node0, ParametersGeometry2D::mDirectionY, 0);
-
-    myStructure.ConstraintLinearSetDisplacementNode(node1, rDirectionOrthogonal, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node2, rDirectionOrthogonal, 0);
+    const auto& node0 = *myStructure.NodeGetNodePtr(nodeId0);
+    const auto& node1 = *myStructure.NodeGetNodePtr(nodeId1);
+    const auto& node2 = *myStructure.NodeGetNodePtr(nodeId2);
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(node0, {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node1, rDirectionOrthogonal, NuTo::Constraint::RhsConstant(0)));
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node2, rDirectionOrthogonal, NuTo::Constraint::RhsConstant(0)));
 
     //**********************************************
     //          Loads
     //**********************************************
 
-    int load = myStructure.LoadCreateNodeForce(0, node2, rDirectionAligned, 1);
+    int load = myStructure.LoadCreateNodeForce(0, nodeId2, rDirectionAligned, 1);
 
     Eigen::Matrix2d timeDependentLoad;
     timeDependentLoad(0, 0) = 0;
@@ -150,10 +150,15 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     Eigen::VectorXd displacements;
     boost::filesystem::remove_all(resultPath);
 
-    myStructure.NodeGetDisplacements(node2, displacements);
+    myStructure.NodeGetDisplacements(nodeId2, displacements);
 
-    if (std::abs(displacements.norm() - std::sqrt(2)) > 1e-8)
+    if (std::abs(displacements.norm() - std::sqrt(2)) > 2e-8)
+    {
+        std::cout << myStructure.Constraints() << std::endl;
+        std::cout << "Direction: " << rDirectionAligned.transpose() << std::endl;
+        std::cout << "Displacements: " << displacements.transpose() << std::endl;
         throw NuTo::Exception("The calculated displacements do not agree with the analytical solution!");
+    }
 }
 
 int main(int argc, char* argv[])

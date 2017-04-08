@@ -1,5 +1,6 @@
+#include <ostream>
 #include "mechanics/constraints/Constraints.h"
-
+#include "mechanics/nodes/NodeEnum.h"
 
 void NuTo::Constraint::Constraints::Add(Node::eDof dof, Equation equation)
 {
@@ -86,3 +87,30 @@ void NuTo::Constraint::Constraints::ExchangeNodePtr(const NodeBase& oldNode, con
         }
     }
 }
+
+namespace NuTo
+{
+namespace Constraint
+{
+std::ostream& operator<<(std::ostream& out, const Constraints& constraints)
+{
+    for (const auto& dofEquationPair : constraints.mEquations)
+    {
+        out << "Equations for dof type " << Node::DofToString(dofEquationPair.first) << ":\n";
+        const auto& equations = dofEquationPair.second;
+        for (const auto& equation : equations)
+        {
+            out << "Rhs(TODO) = ";
+            for (const auto& term : equation.GetTerms())
+            {
+                out << term.GetCoefficient() << " * (dof " 
+                    << term.GetNode().GetDof(dofEquationPair.first, term.GetComponent()) 
+                    << " [comp " << term.GetComponent() << "]) + ";
+            }
+            out << '\n';
+        }
+    }
+    return out;
+}
+} /* Constraint */
+} /* NuTo */
