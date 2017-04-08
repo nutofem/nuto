@@ -1,10 +1,10 @@
+#include "BoostUnitTest.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/constraints/Constraints.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 
 void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rTypeOrder)
@@ -49,32 +49,19 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.ElementTotalSetSection(mySection);
 
     // add a rather random constraint to get some dependent dofs
-    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Value(*myStructure.NodeGetNodePtr(0)));
+    const auto& node = *myStructure.NodeGetNodePtr(0);
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node, {NuTo::eDirection::X}));
     myStructure.CalculateMaximumIndependentSets();
 
-    bool isCorrectStiffnessStructure = myStructure.CheckHessian0(1.e-6, 1.e-4);
-    bool isCorrectStiffnessElements  = myStructure.ElementCheckHessian0(1.e-6, 1.e-4);
-
-
-    if (!isCorrectStiffnessStructure)
-        throw NuTo::MechanicsException("Global stiffness matrix is incorrect.");
-
-    if (!isCorrectStiffnessElements)
-        throw NuTo::MechanicsException("Element stiffness matrices are incorrect.");
-
+    BOOST_CHECK(myStructure.CheckHessian0(1.e-6, 1.e-4));
+    BOOST_CHECK(myStructure.ElementCheckHessian0(1.e-6, 1.e-4));
 }
 
-int main()
+BOOST_AUTO_TEST_CASE(CoeffsOrder1)
 {
-    try
-    {
         CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    }
-    catch (NuTo::Exception& e)
-    {
-        std::cout << e.ErrorMessage() << std::endl;
-        return -1;
-    }
-
-    return 0;
+}
+BOOST_AUTO_TEST_CASE(CoeffsOrder2)
+{
+        CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 }

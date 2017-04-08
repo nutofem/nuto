@@ -1,13 +1,16 @@
 ﻿#include <iostream>
+#include <boost/filesystem.hpp>
+
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
-
-#include <eigen3/Eigen/Core>
 
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseDirectSolverPardiso.h"
+
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
@@ -16,26 +19,13 @@
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-
 #include "mechanics/IGA/BSplineCurve.h"
 #include "mechanics/IGA/BSplineSurface.h"
 
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-
-#include "mechanics/groups/GroupEnum.h"
-
 #include "mechanics/sections/SectionPlane.h"
 
-#include <boost/filesystem.hpp>
+#include "mechanics/constraints/ConstraintCompanion.h"
 
-#ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeEnum.h"
-#endif
-
-#define PRINTRESULT true
 
 /*  ||>*----*----*----*----*
        |    |    |    |    | -->
@@ -90,36 +80,36 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
 }
 
 
-NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, const std::string &resultDir)
+NuTo::Structure* constantStress(double& displacementCorrect, int refinements, const std::string &resultDir)
 {
     /** parameters **/
     double  YoungsModulus = 20000.;
     double  PoissonRatio = 0.3;
     double  Height = 5.;
     // there should be no dependency, because the pressure at the boundary is predefined
-    double  Thickness = 2.123548;
+    double  thickness = 2.123548;
     double  Length = 10;
     double  Stress = 10.;
 
-    DisplacementCorrect = (Stress*Length)/YoungsModulus;
+    displacementCorrect = (Stress*Length)/YoungsModulus;
 
     NuTo::BSplineSurface surface = buildRect2D(0, 0, Height, Length);
 
     /** Structure 2D **/
-    NuTo::Structure* myStructure = new NuTo::Structure(2);
+    NuTo::Structure* s = new NuTo::Structure(2);
 
 #ifdef _OPENMP
     int numThreads = 1;
-    myStructure->SetNumProcessors(numThreads);
+    s->SetNumProcessors(numThreads);
 #endif
 
     /** create section **/
-    auto mySection = NuTo::SectionPlane::Create(Thickness, false);
+    auto mySection = NuTo::SectionPlane::Create(thickness, false);
 
     /** create constitutive law **/
-    int myMatLin = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
+    int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
+    s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
+    s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
 
     for(int i = 0; i < refinements; i++)
     {
@@ -131,58 +121,53 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    int groupNodes  = myStructure->GroupCreate("Nodes");
-    int groupElements = myStructure->GroupCreate("Elements");
+    int groupNodes  = s->GroupCreate("Nodes");
+    int groupElements = s->GroupCreate("Elements");
 
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
+    surface.buildIGAStructure(*s, setOfDOFS, groupElements, groupNodes);
 
-    myStructure->Info();
+    s->Info();
 
     /** assign constitutive law **/
-    myStructure->ElementTotalSetConstitutiveLaw(myMatLin);
-    myStructure->ElementTotalSetSection(mySection);
+    s->ElementTotalSetConstitutiveLaw(myMatLin);
+    s->ElementTotalSetSection(mySection);
 
     /** Boundary condition **/
-
-    // Dirichlet
-    Eigen::VectorXd direction(2);
-
-    direction << 1, 0;
     for(int i = 0; i < surface.GetNumControlPoints(1); i++)
     {
-        myStructure->ConstraintLinearSetDisplacementNode(i*surface.GetNumControlPoints(0), direction, 0.0);
+        const auto& node = *s->NodeGetNodePtr(i*surface.GetNumControlPoints(0));
+        s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node, {NuTo::eDirection::X}));
     }
 
-    direction << 0, 1;
     for(int i = 0; i <  surface.GetNumControlPoints(0); i++)
     {
-        myStructure->ConstraintLinearSetDisplacementNode(i, direction, 0.0);
+        const auto& node = *s->NodeGetNodePtr(i);
+        s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node, {NuTo::eDirection::Y}));
     }
 
     // right boundary
-    int groupNumberNodesLeft = myStructure->GroupCreate("NODES");
-
+    int groupNumberNodesLeft = s->GroupCreate("NODES");
     for(int i = 1; i <=  surface.GetNumControlPoints(1); i++)
     {
-        myStructure->GroupAddNode(groupNumberNodesLeft, i*surface.GetNumControlPoints(0) - 1);
+        s->GroupAddNode(groupNumberNodesLeft, i*surface.GetNumControlPoints(0) - 1);
     }
 
-    int groupNumberElementsLeft = myStructure->GroupCreate("ELEMENTS");
+    int groupNumberElementsLeft = s->GroupCreate("ELEMENTS");
     for(int i = 1; i <= surface.GetNumIGAElements(1); i++)
     {
-        myStructure->GroupAddElement(groupNumberElementsLeft, i*surface.GetNumIGAElements(0) - 1);
+        s->GroupAddElement(groupNumberElementsLeft, i*surface.GetNumIGAElements(0) - 1);
     }
 
-    myStructure->SetNumLoadCases(1);
+    s->SetNumLoadCases(1);
 
-    myStructure->LoadSurfacePressureCreate2D(0, groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
+    s->LoadSurfacePressureCreate2D(0, groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
 
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeBuildGlobalDofs();
+    s->CalculateMaximumIndependentSets();
+    s->NodeBuildGlobalDofs();
 
-    myStructure->NodeInfo(10);
+    s->NodeInfo(10);
 
-    return myStructure;
+    return s;
 }
 
 Eigen::VectorXd exact_plate_hole_disp(Eigen::VectorXd pt)
@@ -251,7 +236,7 @@ Eigen::Vector2d exact_plate_hole_upper(Eigen::VectorXd pt)
 
 NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int refine, int BC)
 {
-    NuTo::Structure* myStructure = new NuTo::Structure(2);
+    NuTo::Structure* s = new NuTo::Structure(2);
 
     /*********/
     // Mesh  //
@@ -306,72 +291,72 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    int groupNodes  = myStructure->GroupCreate("Nodes");
-    int groupElements = myStructure->GroupCreate("Elements");
+    int groupNodes  = s->GroupCreate("Nodes");
+    int groupElements = s->GroupCreate("Elements");
 
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
+    surface.buildIGAStructure(*s, setOfDOFS, groupElements, groupNodes);
 
     /** create section **/
-    double Thickness = 1.;
-    auto mySection = NuTo::SectionPlane::Create(Thickness, false);
+    double thickness = 1.;
+    auto mySection = NuTo::SectionPlane::Create(thickness, false);
 
     /** create constitutive law **/
     double YoungsModulus = 1.e5;
     double PoissonRatio  = 0.3;
-    int myMatLin = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonRatio);
+    int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonRatio);
 
-    myStructure->ElementTotalSetConstitutiveLaw(myMatLin);
-    myStructure->ElementTotalSetSection(mySection);
+    s->ElementTotalSetConstitutiveLaw(myMatLin);
+    s->ElementTotalSetSection(mySection);
 
     /**********************/
     // Boundary condition //
     /**********************/
 
-    int groupElementsLeft  = myStructure->GroupCreate("ELEMENTS");
-    int groupElementsUpper = myStructure->GroupCreate("ELEMENTS");
+    int groupElementsLeft  = s->GroupCreate("ELEMENTS");
+    int groupElementsUpper = s->GroupCreate("ELEMENTS");
 
     int start = (surface.GetNumIGAElements(1)-1) * surface.GetNumIGAElements(0);
     for(int i = start; i < start + surface.GetNumIGAElements(0)/2; i++)
     {
-        myStructure->GroupAddElement(groupElementsLeft, i);
+        s->GroupAddElement(groupElementsLeft, i);
     }
 
     start += surface.GetNumIGAElements(0)/2;
     for(int i = start; i < surface.GetNumIGAElements(); i++)
     {
-        myStructure->GroupAddElement(groupElementsUpper, i);
+        s->GroupAddElement(groupElementsUpper, i);
     }
 
-    auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= -4 - Tol && x <= -4 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
-
-    auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 4 - Tol && y <= 4 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
-
+    //auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
+    //                            {
+    //                                double Tol = 1.e-6;
+    //                                if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+    //                                {
+    //                                    double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+    //                                    if ((x >= -4 - Tol && x <= -4 + Tol))
+    //                                    {
+    //                                        return true;
+    //                                    }
+    //                                }
+    //                                return false;
+    //                            };  // GetBoundaryNodesLambda
+    //
+    //auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
+    //                            {
+    //                                double Tol = 1.e-6;
+    //                                if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+    //                                {
+    //                                    double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+    //                                    if ((y >= 4 - Tol && y <= 4 + Tol))
+    //                                    {
+    //                                        return true;
+    //                                    }
+    //                                }
+    //                                return false;
+    //                            };  // GetBoundaryNodesLambda
+    //
 
     auto LambdaGetBoundaryNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
@@ -416,95 +401,73 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
                                     return false;
                                 };  // GetBoundaryNodesLambda
 
-    int groupNodesLeft  = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodesUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesLeft  = s->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesUpper = s->GroupCreate(NuTo::eGroupId::Nodes);
 
-    int groupNodesLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodesRight = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesLower = s->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesRight = s->GroupCreate(NuTo::eGroupId::Nodes);
 
-    int groupNodesCorner = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesCorner = s->GroupCreate(NuTo::eGroupId::Nodes);
 
-    myStructure->GroupAddNodeFunction(groupNodesLower, LambdaGetBoundaryNodesLower);
-    myStructure->GroupAddNodeFunction(groupNodesRight, LambdaGetBoundaryNodesRight);
-
-    myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetBoundaryNodesLeft);
-    myStructure->GroupAddNodeFunction(groupNodesUpper, LambdaGetBoundaryNodesUpper);
-
-    myStructure->GroupAddNodeFunction(groupNodesCorner, LambdaGetBoundaryNodesCorner);
-
-    std::vector<int> members;
-
-    myStructure->NodeGroupGetMembers(groupNodesLower, members);
-
-    int countDBC = 0;
-    Eigen::VectorXd direction(2);
-    direction << 0 ,1;
-    for (int memberId : members)
-    {
-        countDBC = myStructure->ConstraintLinearSetDisplacementNode(memberId, direction, 0.0);
-    }
+    s->GroupAddNodeFunction(groupNodesLower, LambdaGetBoundaryNodesLower);
+    s->GroupAddNodeFunction(groupNodesRight, LambdaGetBoundaryNodesRight);
 
 
-    myStructure->NodeGroupGetMembers(groupNodesRight, members);
+    s->GroupAddNodeFunction(groupNodesCorner, LambdaGetBoundaryNodesCorner);
 
-    direction << 1, 0;
-    for (int memberId : members)
-    {
-        countDBC = myStructure->ConstraintLinearSetDisplacementNode(memberId, direction, 0.0);
-    }
+    const auto& groupLower = *s->GroupGetGroupPtr(groupNodesLower)->AsGroupNode();
+    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
 
+    const auto& groupRight = *s->GroupGetGroupPtr(groupNodesRight)->AsGroupNode();
+    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}));
 
-    myStructure->SetNumLoadCases(1);
+    s->SetNumLoadCases(1);
 
     if(BC == 0)
     {
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
 
-        myStructure->LoadSurfacePressureFunctionCreate2D(0, groupElementsLeft,  groupNodesLeft, stress_left);
-        myStructure->LoadSurfacePressureFunctionCreate2D(0, groupElementsUpper, groupNodesUpper, stress_upper);
+        s->LoadSurfacePressureFunctionCreate2D(0, groupElementsLeft,  groupNodesLeft, stress_left);
+        s->LoadSurfacePressureFunctionCreate2D(0, groupElementsUpper, groupNodesUpper, stress_upper);
     }
     else
     {
         double Stress = -10.;
-        myStructure->LoadSurfacePressureCreate2D(0, groupElementsLeft, groupNodesLeft, Stress);
+        s->LoadSurfacePressureCreate2D(0, groupElementsLeft, groupNodesLeft, Stress);
     }
 
-    countDBC++;
 
-//    myStructure->NodeGroupGetMembers(groupNodesCorner, members);
+//    s->NodeGroupGetMembers(groupNodesCorner, members);
 //    std::cout << "Node Members group Corner: \n" << members << std::endl;
 //    for(int dof = 0; dof < 1; dof++)
 //    {
-//        myStructure->ConstraintLinearEquationCreate (countDBC, members(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
-//        myStructure->ConstraintLinearEquationAddTerm(countDBC, members(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
-//        countDBC++;
+//        int id = s->ConstraintLinearEquationCreate (members(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
+//        s->ConstraintLinearEquationAddTerm(id, members(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
 //    }
 
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeBuildGlobalDofs();
+    s->CalculateMaximumIndependentSets();
+    s->NodeBuildGlobalDofs();
 
-    myStructure->NodeInfo(10);
+    s->NodeInfo(10);
 
-    return myStructure;
+    return s;
 }
 
 
-void solve(NuTo::Structure *myStructure, double solution, const std::string &resultDir, const std::string &name, bool exc, double tol = 1.e-6)
+void solve(NuTo::Structure *s, double solution, const std::string &resultDir, const std::string &name, bool exc, double tol = 1.e-6)
 {
-    myStructure->SolveGlobalSystemStaticElastic();
+    s->SolveGlobalSystemStaticElastic();
 
-    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+    double nodeDisp = s->NodeGetNodePtr(s->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
 
-#ifdef ENABLE_VISUALIZE
-    int visualizationGroup = myStructure->GroupGetElementsTotal();
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    int visualizationGroup = s->GroupGetElementsTotal();
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    myStructure->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
-    myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
-#endif
+    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
+    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
 
     if(exc)
     {
@@ -520,31 +483,31 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 //! @brief Imports a mesh file and builds the hessian and the internal gradient.
 void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
-    NuTo::Structure myStructure(2);
-    auto groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    NuTo::Structure s(2);
+    auto groupIndices = s.ImportFromGmsh(path + fileName);
 
     int interpolationType = groupIndices[0].second;
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
-    myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
+    s.SetVerboseLevel(10);
+    s.ElementConvertToInterpolationType(groupIndices[0].first);
 
-//    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
+//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
-    myStructure.InterpolationTypeInfo(0);
+    s.InterpolationTypeInfo(0);
 
-    myStructure.NodeBuildGlobalDofs();
+    s.NodeBuildGlobalDofs();
 
-    double Thickness = 1.;
-    auto section = NuTo::SectionPlane::Create(Thickness, false);
-    myStructure.ElementTotalSetSection(section);
+    double thickness = 1.;
+    auto section = NuTo::SectionPlane::Create(thickness, false);
+    s.ElementTotalSetSection(section);
 
-    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
+    int constitutiveLaw = s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
+    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
+    s.ElementTotalSetConstitutiveLaw(constitutiveLaw);
 
-    myStructure.CalculateMaximumIndependentSets();
+    s.CalculateMaximumIndependentSets();
 
     auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
@@ -604,159 +567,114 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 
 
 
-    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCUpper = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCRightSymmetry = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCLowerSymmetry  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCLeft  = s.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCUpper = s.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCRightSymmetry = s.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCLowerSymmetry  = s.GroupCreate(NuTo::eGroupId::Nodes);
 
-    myStructure.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
-    myStructure.GroupAddNodeFunction(groupNodeBCUpper, LambdaGetBoundaryNodesUpper);
-    myStructure.GroupAddNodeFunction(groupNodeBCLowerSymmetry, LambdaGetBoundaryNodesLowerSymmetry);
-    myStructure.GroupAddNodeFunction(groupNodeBCRightSymmetry, LambdaGetBoundaryNodesRightSymmetry);
+    s.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
+    s.GroupAddNodeFunction(groupNodeBCUpper, LambdaGetBoundaryNodesUpper);
+    s.GroupAddNodeFunction(groupNodeBCLowerSymmetry, LambdaGetBoundaryNodesLowerSymmetry);
+    s.GroupAddNodeFunction(groupNodeBCRightSymmetry, LambdaGetBoundaryNodesRightSymmetry);
 
     // Dirichlet symmetry //
     std::vector<int> members;
 
-    myStructure.NodeGroupGetMembers(groupNodeBCLowerSymmetry, members);
-    for (int memberId : members)
-    {
-        myStructure.ConstraintLinearSetDisplacementNode(memberId, Eigen::Vector2d::UnitY(), 0.0);
-    }
+    const auto& groupBCLowerSymmetry= *s.GroupGetGroupPtr(groupNodeBCLowerSymmetry)->AsGroupNode();
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBCLowerSymmetry, {NuTo::eDirection::Y}));
+    
+    const auto& groupBCRightSymmetry= *s.GroupGetGroupPtr(groupNodeBCRightSymmetry)->AsGroupNode();
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBCRightSymmetry, {NuTo::eDirection::X}));
+    
+    int groupelementBCLeft = s.GroupCreate("ELEMENTS");
+    int groupelementBCUpper = s.GroupCreate("ELEMENTS");
 
-    myStructure.NodeGroupGetMembers(groupNodeBCRightSymmetry, members);
-    for (int memberId : members)
-    {
-        myStructure.ConstraintLinearSetDisplacementNode(memberId, Eigen::Vector2d::UnitX(), 0.0);
-    }
+    s.GroupAddElementsFromNodes(groupelementBCLeft, groupNodeBCLeft, false);
+    s.GroupAddElementsFromNodes(groupelementBCUpper, groupNodeBCUpper, false);
 
-    int groupelementBCLeft = myStructure.GroupCreate("ELEMENTS");
-    int groupelementBCUpper = myStructure.GroupCreate("ELEMENTS");
-
-    myStructure.GroupAddElementsFromNodes(groupelementBCLeft, groupNodeBCLeft, false);
-    myStructure.GroupAddElementsFromNodes(groupelementBCUpper, groupNodeBCUpper, false);
-
-    myStructure.SetNumLoadCases(1);
+    s.SetNumLoadCases(1);
 
     if(BC == 0)
     {
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
         std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
 
-        myStructure.LoadSurfacePressureFunctionCreate2D(0, groupelementBCLeft,  groupNodeBCLeft, stress_left);
-        myStructure.LoadSurfacePressureFunctionCreate2D(0, groupelementBCUpper, groupNodeBCUpper, stress_upper);
+        s.LoadSurfacePressureFunctionCreate2D(0, groupelementBCLeft,  groupNodeBCLeft, stress_left);
+        s.LoadSurfacePressureFunctionCreate2D(0, groupelementBCUpper, groupNodeBCUpper, stress_upper);
     }
     else
     {
         double Stress = -10.;
-        myStructure.LoadSurfacePressureCreate2D(0, groupelementBCLeft, groupNodeBCLeft, Stress);
+        s.LoadSurfacePressureCreate2D(0, groupelementBCLeft, groupNodeBCLeft, Stress);
     }
 
-    myStructure.CalculateMaximumIndependentSets();
-    myStructure.NodeBuildGlobalDofs();
+    s.CalculateMaximumIndependentSets();
+    s.NodeBuildGlobalDofs();
 
-    myStructure.SolveGlobalSystemStaticElastic();
+    s.SolveGlobalSystemStaticElastic();
 
-#ifdef ENABLE_VISUALIZE
-    int visualizationGroup = myStructure.GroupGetElementsTotal();
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    int visualizationGroup = s.GroupGetElementsTotal();
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
-    myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
-#endif
+    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
+    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
 }
 
 
 //! @brief Imports a mesh file and builds the hessian and the internal gradient.
 void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
 {
-    NuTo::Structure myStructure(2);
-    auto groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    NuTo::Structure s(2);
+    auto groupIndices = s.ImportFromGmsh(path + fileName);
 
     int interpolationType = groupIndices[0].second;
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
-    myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
+    s.SetVerboseLevel(10);
+    s.ElementConvertToInterpolationType(groupIndices[0].first);
 
-//    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
+//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
-    myStructure.InterpolationTypeInfo(0);
+    s.InterpolationTypeInfo(0);
 
-    myStructure.NodeBuildGlobalDofs();
+    s.NodeBuildGlobalDofs();
     auto section = NuTo::SectionPlane::Create(1.0, false);
-    myStructure.ElementTotalSetSection(section);
+    s.ElementTotalSetSection(section);
 
-    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
-    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
+    int constitutiveLaw = s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
+    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
+    s.ElementTotalSetConstitutiveLaw(constitutiveLaw);
 
-    myStructure.CalculateMaximumIndependentSets();
+    auto& groupLeft = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, -4);
+    auto& groupRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 4);
 
-    auto LambdaGetBoundaryNodesRight = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= 4.0 - Tol && x <= 4.0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLeft, {NuTo::eDirection::X}, -0.01));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}, 0.01));
 
-    auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= -4 - Tol && x <= -4 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(*s.NodeGetNodePtr(0), {NuTo::eDirection::Y}));
 
+    s.CalculateMaximumIndependentSets();
+    s.NodeBuildGlobalDofs();
 
+    s.SolveGlobalSystemStaticElastic();
 
-    int groupNodeBCRight = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int visualizationGroup = s.GroupGetElementsTotal();
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    myStructure.GroupAddNodeFunction(groupNodeBCRight, LambdaGetBoundaryNodesRight);
-    myStructure.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
-
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft,  Eigen::Vector2d::UnitX(), -0.01);
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCRight, Eigen::Vector2d::UnitX(),  0.01);
-
-    myStructure.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
-
-    myStructure.CalculateMaximumIndependentSets();
-    myStructure.NodeBuildGlobalDofs();
-
-    myStructure.SolveGlobalSystemStaticElastic();
-
-#ifdef ENABLE_VISUALIZE
-    int visualizationGroup = myStructure.GroupGetElementsTotal();
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-
-    myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
-    myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
-#endif
+    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
+    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
 }
 
 
 int main()
 {
     double solution = 0;
-    NuTo::Structure* myStructure = nullptr;
+    NuTo::Structure* s = nullptr;
 
     std::string resultDir = "./ResultsIGA";
 
@@ -772,16 +690,16 @@ int main()
     boost::filesystem::create_directory(resultDir);
 
     // 2D constant stress
-    myStructure = constantStress(solution, 1, resultDir);
-    solve(myStructure, solution, resultDir, "Rectangle1", true);
+    s = constantStress(solution, 1, resultDir);
+    solve(s, solution, resultDir, "Rectangle1", true);
 
     // plate with hole
 
 //    Eigen::VectorXd vec = exact_plate_hole(Eigen::Vector2d(0.,1.));
 //    std::cout << "Vector: " << vec << std::endl;
 
-    myStructure = buildPlateWithHole2DNeumann(resultDir, 5, 0);
-    solve(myStructure, solution, resultDir, "Hole5", false);
+    s = buildPlateWithHole2DNeumann(resultDir, 5, 0);
+    solve(s, solution, resultDir, "Hole5", false);
 
     std::string path = "./";
 
