@@ -105,6 +105,18 @@ using namespace NuTo::Constraint;
 %include "mechanics/structures/StructureOutputBlockMatrix.h"
 %include "mechanics/structures/StructureOutputBlockVector.h"
 
+%typemap(in) std::function<double(double)>
+%{
+    {
+    $1 = PyCallback($input);
+    }
+%}
+
+%typemap(typecheck, precedence=147) std::function<double(double)>
+%{
+    $1 = PyCallable_Check($input) ? 1 : 0;
+%}
+
 %typemap(in) std::vector<NuTo::eDirection>
 %{
     {
@@ -145,13 +157,27 @@ using namespace NuTo::Constraint;
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
 %template(IntBlockFullVector) NuTo::BlockFullVector<int>;
 
-%extend NuTo::Constraint::Equation
-{
-    Equation(PyObject* callback)
-    {
-        return new Equation(std::function<double(double)>(PyCallback(callback)));
-    }
-};
+//%extend NuTo::Constraint::Equation
+//{
+//    Equation(PyObject* callback)
+//    {
+//        return new Equation(std::function<double(double)>(PyCallback(callback)));
+//    }
+//};
+//
+//%inline %{
+//
+//namespace NuTo
+//{
+//namespace Constraint
+//{
+//NuTo::Constraint::Equation Value(const NuTo::NodeBase& node, PyObject* callback)
+//{
+//    return Value(node, std::function<double(double)>(PyCallback(callback)));
+//}
+//}
+//}
+//%}
 
 namespace std {
     // these are necessary for vectors of types with no default constructor
