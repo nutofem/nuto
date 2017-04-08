@@ -1435,6 +1435,31 @@ public:
     //! @param rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, eDirection rDirection, double rMin, double rMax);
 
+    //! @brief creates a new node group and selects all nodes whose coordinates are in the specified range [min .. max]
+    //! @param direction either X, Y, Z
+    //! @param min minimum value
+    //! @param max maximum value
+    //! return reference to the node group
+    //! @remark This should be rewritten in a method that returns a Group by value without storing it
+    //! at all. But this collides with some other features (mainly postprocessing) that rely on a
+    //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
+    Group<NodeBase>& GroupGetNodeCoordinateRange(eDirection direction, double min, double max);
+    
+    
+    //! @brief creates a new node group and selects all nodes whose coordinates at value (+- tolerance)
+    //! Equal to GroupGetNodeCoordinateRange(direction, value - tolerance, value + tolerance)
+    //! Example: direction = Y, value = 42. --> selects all nodes with Y = 42
+    //! @param direction either X, Y, Z
+    //! @param value specific coordinate value
+    //! @param tolerance tolerance -+ 
+    //! return reference to the node group
+    //! @remark This should be rewritten in a method that returns a Group by value without storing it
+    //! at all. But this collides with some other features (mainly postprocessing) that rely on a
+    //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
+    Group<NodeBase>& GroupGetNodesAtCoordinate(eDirection direction, double value, double tolerance = 1.e-6);
+
+    
+
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param rIdentGroup identifier for the group

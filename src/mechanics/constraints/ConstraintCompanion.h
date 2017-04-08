@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/constraints/Constraints.h"
-#include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/DirectionEnum.h"
 

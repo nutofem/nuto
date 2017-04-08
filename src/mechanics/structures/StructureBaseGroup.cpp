@@ -158,9 +158,21 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     }
 }
 
+NuTo::Group<NuTo::NodeBase>& NuTo::StructureBase::GroupGetNodeCoordinateRange(eDirection direction, double min, double max)
+{
+    int groupId = GroupCreate(eGroupId::Nodes);
+    GroupAddNodeCoordinateRange(groupId, direction, min, max);
+    return *GroupGetGroupPtr(groupId)->AsGroupNode();  
+}
+
+NuTo::Group<NuTo::NodeBase>& NuTo::StructureBase::GroupGetNodesAtCoordinate(eDirection direction, double value, double tolerance)
+{
+    return GroupGetNodeCoordinateRange(direction, value - tolerance, value + tolerance);
+}
+
 void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, NuTo::eDirection rDirection, double rMin, double rMax)
 {
-    GroupAddNodeCoordinateRange(rIdentGroup, static_cast<int>(rDirection), rMin, rMax);
+    GroupAddNodeCoordinateRange(rIdentGroup, ToComponentIndex(rDirection), rMin, rMax);
 }
 
 void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction)
