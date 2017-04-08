@@ -562,6 +562,27 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
 }
 
 
+NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance)
+{
+    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    std::vector<NodeBase*> nodeVector;
+    this->GetNodesTotal(nodeVector);
+
+    double toleranceSquared = tolerance * tolerance;
+
+    for (auto* node : nodeVector)
+    {
+        if (node->GetNum(Node::eDof::COORDINATES) < 1)
+            continue;
+        if ((node->Get(Node::eDof::COORDINATES) - coordinate).squaredNorm() < toleranceSquared)
+            return *node;
+    }
+    std::stringstream coordStream;
+    coordStream << '(' << coordinate.transpose() << ')';
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no node at " + coordStream.str() + " within tolerance " + std::to_string(tolerance));
+}
+
 int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange)
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());

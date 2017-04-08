@@ -295,6 +295,12 @@ public:
     //! @return ... node id
     int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange);
 
+    //! @brief ... returns the (first) node that has the specified coordinates within the range
+    //! @param coordinate node coordinates
+    //! @param tolerance spherical search range
+    //! @return reference to the node
+    NodeBase& NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance = 1.e-6);
+
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output) ... vector of element ids

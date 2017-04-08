@@ -223,16 +223,16 @@ void CSDA2D()
     s.ElementTotalConvertToInterpolationType();
 
 
-    int nodeFixXY = s.NodeGetIdAtCoordinate(Eigen::Vector2d({-lx2, 0}), 1.e-5);
-    int nodeFixY = s.NodeGetIdAtCoordinate(Eigen::Vector2d({lx2, 0}), 1.e-5);
-    int nodeBC = s.NodeGetIdAtCoordinate(Eigen::Vector2d({thickness2, ly}), 1.e-5);
+    const auto& nodeFixXY = s.NodeGetAtCoordinate(Eigen::Vector2d({-lx2, 0}));
+    const auto& nodeFixY = s.NodeGetAtCoordinate(Eigen::Vector2d({lx2, 0}));
+    const auto& nodeBC = s.NodeGetAtCoordinate(Eigen::Vector2d({thickness2, ly}));
 
+    double deltaD = -.5;
     using namespace NuTo::Constraint;
     using NuTo::Node::eDof;
-    s.Constraints().Add(eDof::DISPLACEMENTS, Component(*s.NodeGetNodePtr(nodeFixXY), {NuTo::eDirection::X, NuTo::eDirection::Y}));
-    s.Constraints().Add(eDof::DISPLACEMENTS, Component(*s.NodeGetNodePtr(nodeFixY), {NuTo::eDirection::Y}));
-    double deltaD = -.5;
-    s.Constraints().Add(eDof::DISPLACEMENTS, Direction(*s.NodeGetNodePtr(nodeBC), Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixXY, {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixY, {NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Direction(nodeBC, Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
     
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
@@ -255,12 +255,6 @@ void CSDA2D()
 
     bool deleteDirectory = true;
     newmark.SetResultDirectory("./CSDA2D", deleteDirectory);
-
-    newmark.AddResultNodeDisplacements("Displ", nodeBC);
-    int groupNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNode(groupNodeBC, nodeBC);
-    newmark.AddResultGroupNodeForce("Force", groupNodeBC);
-
     newmark.Solve(1);
 }
 
@@ -425,16 +419,16 @@ void CSDA3D()
     s.ElementInfo(10);
     s.NodeInfo(10);
 
-    auto nodeFixXYZ = s.NodeGetNodePtr(s.NodeGetIdAtCoordinate(Eigen::Vector3d({-lx, 0, 0}), 1.e-5));
-    auto nodeFixYZ = s.NodeGetNodePtr(s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx, 0, 0}), 1.e-5));
+    const auto& nodeFixXYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({-lx, 0, 0}));
+    const auto& nodeFixYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({lx, 0, 0}));
     
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, lz}), 0, 2*thickness);
     auto groupZ = s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
 
     using namespace NuTo::Constraint;
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(*nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(*nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
     double deltaD = -.5;
     s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Direction(*groupZ, Eigen::Vector3d::UnitZ(), RhsRamp(1, deltaD))) ;
 
