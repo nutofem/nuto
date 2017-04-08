@@ -53,7 +53,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     for (auto dof : mDofStatus.GetDofTypes())
     {
         auto& constraintMatrix = mConstraintMatrix(dof, dof);
-        constraintMatrix.Resize(mConstraints.GetNumEquations(dof), mDofStatus.GetNumDofs(dof));
+        constraintMatrix.Resize(mDofStatus.GetNumDependentDofs(dof), mDofStatus.GetNumDofs(dof));
         mConstraints.BuildConstraintMatrix(constraintMatrix, dof);
 
         const int numActiveDofs = mDofStatus.GetNumActiveDofs(dof);
@@ -109,7 +109,6 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
         constraintMatrix.RemoveLastColumns(numDependentDofs);
 
         // renumber dofs
-
         for (auto node : rNodes)
         {
             for (int i = 0; i < node->GetNum(dof); ++i)
@@ -130,14 +129,15 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     mConstraintMappingRhs.CheckDimensions();
 
 
-    // number Lagrange multipliers in constraint equations defined in StructureBase
-    // currently removed
-    // renumber DOFS in constraints (Lagrange multiplier)
-    //        ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);
-
-    // calculate current rhs matrix
     mNodeVectorChanged = false;
     mConstraints.SetHasNewConstraints(false);
+
+    // Build the Rhs once at the global time 0. 
+    // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS. 
+    // This is required for static solutions that do not use a time integration 
+    // scheme. In those cases the RHS is not continuously updated and needs to
+    // be calculated at some point. This point is here.
+    ConstraintUpdateRhs(0); 
 }
 
 

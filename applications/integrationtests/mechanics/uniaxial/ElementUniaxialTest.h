@@ -6,27 +6,24 @@
  */
 
 #pragma once
+#include "BoostUnitTest.h"
 
 #include <iomanip>
-
-#include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
-#include "mechanics/mesh/MeshGenerator.h"
-
 #include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
-#include "math/SparseDirectSolverMUMPS.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "visualize/VisualizeEnum.h"
+#include "mechanics/mesh/MeshGenerator.h"
 
 /*
  *    Interface for displacement controlled uni-axial tensile test
@@ -148,13 +145,8 @@ private:
         std::cout << "sigma_xx: " << analyticStressX << std::endl;
         std::cout << "force_x : " << analyticForce << std::endl;
 
-        std::cout << s.ElementGetEngineeringStrain(0) << std::endl;
-
         // get element stresses
-        int allElements = s.GroupCreate(NuTo::eGroupId::Elements);
-        int allNodes    = s.GroupCreate(NuTo::eGroupId::Nodes);
-        s.GroupAddNodeCoordinateRange(allNodes, 0, -0.1, lX+0.1);
-        s.GroupAddElementsFromNodes(allElements, allNodes, true);
+        int allElements = s.GroupGetElementsTotal();
         for (int elementId : s.GroupGetMemberIds(allElements))
         {
             auto stress = s.ElementGetEngineeringStress(elementId);
@@ -170,9 +162,8 @@ private:
 
         // sum up reaction forces in x direction of all nodes on x = 0
         double numericForce = 0;
-        int nodesX0 = s.GroupCreate(NuTo::eGroupId::Nodes);
-        s.GroupAddNodeCoordinateRange(nodesX0, 0, lX-1.e-6, lX+1.e-6);
-        for (int nodeId : s.GroupGetMemberIds(nodesX0))
+        const auto& nodesX0 = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lX);
+        for (int nodeId : nodesX0.GetMemberIds())
         {
             Eigen::VectorXd force;
             s.NodeInternalForce(nodeId, force);
@@ -220,20 +211,9 @@ private:
         boost::filesystem::path directory(rVisualizationDirectory);
         boost::filesystem::create_directory(directory);
 
-        // get a random element
-        const NuTo::ElementBase* element = nullptr;
-        int elementID = 0;
-        while (element == nullptr)
-        {
-            try
-            {
-                element = s.ElementGetElementPtr(elementID);
-            }
-            catch (...){}
-            elementID++;
-        }
-        std::string fileName = NuTo::Interpolation::ShapeTypeToString(element->GetInterpolationType().GetShapeType());
-        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType().Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
+        const auto& interpolationType = *s.InterpolationTypeGet(0);
+        std::string fileName = NuTo::Interpolation::ShapeTypeToString(interpolationType.GetShapeType());
+        fileName += NuTo::Interpolation::TypeOrderToString(interpolationType.Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
         fileName += ".vtu";
         directory /= fileName;
 
@@ -245,12 +225,8 @@ private:
         s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
         s.ExportVtkDataFileElements(directory.string(),true);
-
 #endif
     }
-
-
 };
-
 }//namespace NuToTest
 
