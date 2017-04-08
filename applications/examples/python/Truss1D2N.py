@@ -38,20 +38,20 @@ def SetupMaterial(structure):
 
 def SetupBoundaryConditions(structure, BCType):
     nodeSelectionTolerance = 1.e-6
-    xDirection = np.array([1.0])
 
     # fix left node at x = [0]
-    nodeLeft = structure.NodeGetIdAtCoordinate(np.array([0.]), nodeSelectionTolerance)
-    prescribedDisplacement = 0.
-    structure.ConstraintLinearSetDisplacementNode(nodeLeft, xDirection, prescribedDisplacement)
+    nodeLeft = structure.NodeGetAtCoordinate(np.array([0.]), nodeSelectionTolerance)
+    structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeLeft))
 
     # apply nonzero BC at x = length
-    nodeRight = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
+    nodeRight = structure.NodeGetAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
+    nodeRightId = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
     if BCType == "DisplacmentBC":
-        structure.ConstraintLinearSetDisplacementNode(nodeRight, xDirection, BoundaryCondition.displacement)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeRight, BoundaryCondition.displacement))
     if BCType == "ForceBC":
+        xDirection = np.array([1.0])
         structure.SetNumLoadCases(1)
-        structure.LoadCreateNodeForce(0, nodeRight, xDirection, BoundaryCondition.force)
+        structure.LoadCreateNodeForce(0, nodeRightId, xDirection, BoundaryCondition.force)
 
 
 def Solve(structure):
