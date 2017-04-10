@@ -301,6 +301,9 @@ public:
     //! @return reference to the node
     NodeBase& NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance = 1.e-6);
 
+    //! @brief see NodeGetAtCoordinate(Vector, tolerance) for 1D
+    NodeBase& NodeGetAtCoordinate(double coordinate, double tolerance = 1.e-6);
+
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output) ... vector of element ids

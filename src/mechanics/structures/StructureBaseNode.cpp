@@ -561,6 +561,12 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
     throw MechanicsException(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }
 
+NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(double coordinate, double tolerance)
+{
+    if (GetDimension() != 1)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Only valid for 1D structure!");
+    return NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Constant(coordinate), tolerance);
+}
 
 NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance)
 {

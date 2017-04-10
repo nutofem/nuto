@@ -49,7 +49,7 @@ std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirec
 
 Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction rhs)
 {
-    if (node.GetNumDofs() != direction.rows())
+    if (node.GetNumDofs() < direction.rows())
         // TODO This check is not meaningful at the moment, since this method returns the
         // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
         // if you try to constrain the Z component of the temperature. Which would be wrong.
