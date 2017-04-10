@@ -242,9 +242,8 @@ BOOST_AUTO_TEST_CASE(run2d)
         std::cout << "dispInFiber \n" << dispInFiber << std::endl;
         std::cout << "coordsInFiber \n" << coordsInFiber << std::endl;
 
-        BoostUnitTest::CheckVector(dispInFiber, dispInMatrix, 3);
-        BoostUnitTest::CheckVector(coordsInFiber, coordsInMatrix, 3);
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Displacements and/or coordinates of fiber and matrix do not match!");
+        BoostUnitTest::CheckVector(dispInFiber, dispInMatrix, 2, 1.e-6);
+        BoostUnitTest::CheckVector(coordsInFiber, coordsInMatrix, 2, 1.e-6);
 
         std::cout << "Results written to " + resultDir.string() << std::endl;
 }

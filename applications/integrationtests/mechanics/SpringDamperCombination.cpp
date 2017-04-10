@@ -12,6 +12,7 @@
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
 
 #include <boost/foreach.hpp>
@@ -102,7 +103,7 @@ struct TimeControl
 
 
 template<int TDim>
-int AddConstraint(NuTo::Structure& rS,
+void AddConstraint(NuTo::Structure& rS,
                   NuTo::NewmarkDirect& rTI,
                   std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
                   unsigned int rDirection,
@@ -112,9 +113,8 @@ int AddConstraint(NuTo::Structure& rS,
     int GRPNodesConstraint = rS.GroupCreate("Nodes");
     rS.GroupAddNodeFunction(GRPNodesConstraint,rGetNodeFunction);
 
-    return rS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, Eigen::Matrix<double, TDim, 1>::UnitX(), rValue);
-
-
+    const auto& group = *rS.GroupGetGroupPtr(GRPNodesConstraint)->AsGroupNode();
+    rS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(group, {NuTo::eDirection::X}, rValue));
 }
 
 

@@ -7,7 +7,7 @@ namespace Constraint
 
 std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> directions, double value)
 {
-    return Component(node, directions, [=](double){return value;});
+    return Component(node, directions, RhsConstant(value));
 }
 
 
@@ -31,7 +31,7 @@ std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> di
 
 std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions, double value)
 {
-    return Component(nodes, directions, [=](double){return value;});
+    return Component(nodes, directions, RhsConstant(value));
 }
 
 
@@ -63,6 +63,10 @@ Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction 
     return e;
 }
 
+Equation Direction(const NodeBase& node, Eigen::VectorXd direction, double value)
+{
+    return Direction(node, direction, RhsConstant(value));
+}
 
 std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 {
@@ -70,6 +74,11 @@ std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd di
     for (auto& nodePair : nodes)
         eqs.push_back(Direction(*nodePair.second, direction, rhs));
     return eqs;
+}
+
+std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, double value)
+{
+    return Direction(nodes, direction, RhsConstant(value));
 }
 
 Equation Value(const NodeBase& node, double value)
@@ -84,7 +93,7 @@ Equation Value(const NodeBase& node, RhsFunction rhs)
 
 std::vector<Equation> Value(const Group<NodeBase>& nodes, double value)
 {
-    return Direction(nodes, Eigen::VectorXd::Ones(1), [=](double){ return value; });
+    return Direction(nodes, Eigen::VectorXd::Ones(1), RhsConstant(value));
 }
 
 std::vector<Equation> Value(const Group<NodeBase>& nodes, RhsFunction rhs)

@@ -1030,7 +1030,6 @@ void NuTo::StructureBase::UpdateDofStatus()
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
     GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0);
-    std::cout << "Has interacting constraints? " << GetAssembler().mDofStatus.HasInteractingConstraints() << std::endl;
 }
 
 

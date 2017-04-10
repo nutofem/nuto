@@ -29,7 +29,11 @@ std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirec
 
 Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction rhs);
 
+Equation Direction(const NodeBase& node, Eigen::VectorXd direction, double value = 0.0);
+
 std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
+
+std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, double value = 0.0);
 
 Equation Value(const NodeBase& node, double value = 0.0);
 

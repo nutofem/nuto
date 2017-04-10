@@ -144,20 +144,9 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
                 curTime=prevCurTime+deltaTimeStage;
                 mTime=prevTime+deltaTimeStage;
 
-                //to be implemented mStructure->SetCurrentTime(mTime);
-                //an update of the external load factor and the time dependent constraint is only
-                //necessary for a modified global time
-                if (!(mMapTimeDependentConstraint.empty()))
-                {
-                    //throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-                    //double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-                    //mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-                    //mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
-                    UpdateConstraints(mTime);
-                }
-                //calculate external force
+                UpdateConstraints(mTime);
+               
                 extLoad = CalculateCurrentExternalLoad(curTime);
-
             }
             dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
             mStructure->NodeMergeDofValues(0,dof_dt0_tmp);

@@ -2,9 +2,7 @@
 // Created by Thomas Titscher on 10/24/16.
 //
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/MechanicsEnums.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -14,6 +12,7 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/sections/SectionPlane.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {
@@ -48,7 +47,7 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     rS.ElementTotalConvertToInterpolationType();
 
     // add a constraint --> dependent dof vector K
-    rS.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitX(), 0.1337);
+    rS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(*rS.NodeGetNodePtr(0), {NuTo::eDirection::X}));
     rS.NodeBuildGlobalDofs();
 
     int gElementsTotal = rS.GroupGetElementsTotal();
