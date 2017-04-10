@@ -102,15 +102,15 @@ std::ostream& operator<<(std::ostream& out, const Constraints& constraints)
         const auto& equations = dofEquationPair.second;
         for (const auto& equation : equations)
         {
-            out << "Rhs [ " << equation.GetRhs(rhsEvaluateTime0) 
-                << " ... " << equation.GetRhs(rhsEvaluateTime1) << " ] = ";
+            out << "Rhs [ " << equation.GetRhs(rhsEvaluateTime0) << " ... " << equation.GetRhs(rhsEvaluateTime1)
+                << " ] = ";
             for (const auto& term : equation.GetTerms())
             {
-                out << term.GetCoefficient() << " * (dof " 
-                    << term.GetNode().GetDof(dofEquationPair.first, term.GetComponent()) 
-                    << " [comp " << term.GetComponent() << "]) + ";
+                out << term.GetCoefficient() << " * (dof "
+                    << term.GetNode().GetDof(dofEquationPair.first, term.GetComponent()) << " [component "
+                    << term.GetComponent() << "]) + ";
             }
-            out << '\n';
+            out << "\b\b  \n"; // overrides the last "+" by moving the cursor left twice(\b) and override with blanks
         }
     }
     return out;

@@ -45,6 +45,8 @@ BOOST_AUTO_TEST_CASE(ConstraintXandY)
     expected(0,1) = 1;
     expected(1,2) = 1;
     BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), expected); 
+    
+    std::cout << c << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintDirection)
