@@ -1,5 +1,5 @@
 %module(package="nuto") ModuleMechanics
-/*#pragma SWIG nowarn=401*/
+#pragma SWIG nowarn=362
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
@@ -76,6 +76,17 @@ using namespace NuTo::Constraint;
 
 
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
+
+namespace std {
+    // these are necessary for vectors of types with no default constructor
+    %ignore vector<NuTo::Constraint::Equation>::vector(size_type);
+    %ignore vector<NuTo::Constraint::Equation>::resize;
+    %template(EquationVector) vector<NuTo::Constraint::Equation>;
+
+    %ignore vector<NuTo::Constraint::Term>::vector(size_type);
+    %ignore vector<NuTo::Constraint::Term>::resize;
+    %template(TermVector) vector<NuTo::Constraint::Term>;
+}
 
 %include "mechanics/Sections.i"
 
@@ -179,12 +190,5 @@ using namespace NuTo::Constraint;
 //}
 //%}
 
-namespace std {
-    // these are necessary for vectors of types with no default constructor
-    %ignore vector<NuTo::Constraint::Equation>::vector(size_type);
-    %ignore vector<NuTo::Constraint::Equation>::resize;
-    %template(EquationVector) vector<NuTo::Constraint::Equation>;
-
-}
 
 %template(NodeGroup) NuTo::Group<NuTo::NodeBase>;

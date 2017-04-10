@@ -1754,7 +1754,6 @@ public:
     const Constraint::Constraints& Constraints() const;
     Constraint::Constraints& Constraints();
 
-#ifndef SWIG
     const Assembler& GetAssembler() const
     {
         return *mAssembler;
@@ -1763,7 +1762,6 @@ public:
     {
         return *mAssembler;
     }
-#endif
 
 protected:
 

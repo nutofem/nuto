@@ -13,7 +13,13 @@ class Equation
 {
 public:
     Equation(double rhs = 0)
-        : mRhs([=](double){return rhs;})
+        : mRhs([=](double) { return rhs; })
+    {
+    }
+
+    Equation(std::vector<Term> terms, double rhs = 0)
+        : mRhs([=](double) { return rhs; })
+        , mTerms(terms)
     {
     }
 

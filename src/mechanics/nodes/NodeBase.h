@@ -10,8 +10,6 @@
 #include <memory>
 #endif // ENABLE_VISUALIZE
 
-
-
 #include "mechanics/MechanicsException.h"
 
 #include <eigen3/Eigen/Dense>
@@ -185,53 +183,7 @@ private:
 
 protected:
     //the base class of the nodes must not contain any data
-
-
-
 };
-
-class less_XCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
-{
-public:
-
-    //! @brief sorts the nodes in increasing x-direction
-    less_XCoordinate2D()
-    {
-    }
-
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
-};
-
-class greater_XCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
-{
-public:
-    greater_XCoordinate2D()
-    {
-    }
-
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
-};
-
-class less_YCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
-{
-public:
-    less_YCoordinate2D()
-    {
-    }
-
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
-};
-
-class greater_YCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
-{
-public:
-    greater_YCoordinate2D()
-    {
-    }
-
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
-};
-
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION

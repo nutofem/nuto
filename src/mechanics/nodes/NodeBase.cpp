@@ -104,26 +104,6 @@ void NuTo::NodeBase::serialize(Archive & ar, const unsigned int version)
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
 
-bool NuTo::less_XCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
-{
-    return nodePtr1->Get(Node::eDof::COORDINATES)(0) < nodePtr2->Get(Node::eDof::COORDINATES)(0);
-}
-
-bool NuTo::greater_XCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
-{
-    return nodePtr1->Get(Node::eDof::COORDINATES)(0) > nodePtr2->Get(Node::eDof::COORDINATES)(0);
-}
-
-bool NuTo::less_YCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
-{
-    return nodePtr1->Get(Node::eDof::COORDINATES)(1) < nodePtr2->Get(Node::eDof::COORDINATES)(1);
-}
-
-bool NuTo::greater_YCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
-{
-    return nodePtr1->Get(Node::eDof::COORDINATES)(1) > nodePtr2->Get(Node::eDof::COORDINATES)(1);
-}
-
 int NuTo::NodeBase::GetDof(NuTo::Node::eDof rDof) const
 {
     assert(GetNum(rDof) == 1);

@@ -10,7 +10,7 @@ namespace Constraint
 {
 class Constraints
 {
-    using Equations = std::vector<Equation>;
+    typedef std::vector<Equation> Equations;
 
 public:
     void Add(Node::eDof dof, Equation equation);
