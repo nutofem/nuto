@@ -1,16 +1,7 @@
-#include <iostream>
+#include "BoostUnitTest.h"
 #include <boost/filesystem.hpp>
-#include <boost/tokenizer.hpp>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif //_OPENMP
-
-#include "base/Logger.h"
-#include <math/EigenCompanion.h>
-#include "math/SparseMatrixCSRVector2General.h"
-#include "math/SparseMatrixCSRSymmetric.h"
-#include "math/EigenSolverArpack.h"
+#include "math/EigenCompanion.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
@@ -21,15 +12,12 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/MechanicsEnums.h"
-
-#include "base/Exception.h"
-
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseMatrixCSRVector2General.h"
+#include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 // Test of explicit time integration schemes (Kunge Kutta 4, Velocity Verlet and Nystroem Qin Zhu)
 // Dynamic simulation of a 1D elastic bar under shock load
-int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
+void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
 {
     std::string resultDir = boost::filesystem::initial_path().string() + std::string("/ResultsExplicitTimeIntegration");
     // delete result directory
@@ -68,116 +56,42 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     double timePeriod(1 / mFreq);
 
     // set number of time derivatives to 2 (nodes have disp, vel and accelerations)
-    myStructure.SetNumTimeDerivatives(2);
+    s.SetNumTimeDerivatives(2);
 
-    // set interpolation order
-    int myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
-    myStructure.InterpolationTypeAdd(
-            myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(
-            myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-
-    // create nodes
-    int theNode(0);
-    int numNodesX = 1 * numElements + 1;
-    double deltaX = mL / numElements;
-
-    for (int countX = 0; countX < numNodesX; countX++)
-    {
-        Eigen::VectorXd coordinates(1);
-        coordinates[0] = countX * deltaX;
-        myStructure.NodeCreate(theNode, coordinates);
-        theNode++;
-    }
-
-    // create elements
-    std::vector<int> nodes(2);
-    for (int countX = 0; countX < numElements; countX++)
-    {
-        nodes[0] = countX;
-        nodes[1] = (countX + 1);
-        myStructure.ElementCreate(myInterpolationType, nodes);
-    }
-
-    // set interpolation type to nodes
-    myStructure.ElementTotalConvertToInterpolationType();
+    auto meshInfo = NuTo::MeshGenerator::Grid(s, {mL}, {numElements});
+    s.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    s.ElementTotalConvertToInterpolationType();
 
     // create section
     auto mySection = NuTo::SectionTruss::Create(mA);
-    myStructure.ElementTotalSetSection(mySection);
+    s.ElementTotalSetSection(mySection);
 
     // create constitutive law
-    int myMaterial = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, youngsModulus);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, poissonRatio);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myMaterial, NuTo::Constitutive::eConstitutiveParameter::DENSITY, density);
-    myStructure.ElementTotalSetConstitutiveLaw(myMaterial);
+    using namespace NuTo::Constitutive;
+    int myMaterial = s.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    s.ConstitutiveLawSetParameterDouble(myMaterial, eConstitutiveParameter::YOUNGS_MODULUS, youngsModulus);
+    s.ConstitutiveLawSetParameterDouble(myMaterial, eConstitutiveParameter::POISSONS_RATIO, poissonRatio);
+    s.ConstitutiveLawSetParameterDouble(myMaterial, eConstitutiveParameter::DENSITY, density);
+    s.ElementTotalSetConstitutiveLaw(myMaterial);
 
     // create NodeGroups
-    // locate Load: Node origin
-    int grpNodes_Load = myStructure.GroupCreate("Nodes");
-    double direction = 0; // X
-    double min = 0. - 0.01 * (mL / numElements);
-    double max = 0. + 0.01 * (mL / numElements);
-    myStructure.GroupAddNodeCoordinateRange(grpNodes_Load, direction, min, max);
-    std::vector<int> Group1 = myStructure.GroupGetMemberIds(grpNodes_Load);
-    std::cout << "nodes in Group Load\n";
-    for (int i : Group1) std::cout << i << '\t';
-    std::cout << std::endl;
+    auto& nodeLeft = s.NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Constant(0));
+    auto& nodeRight = s.NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Constant(mL));
 
-
-    // locate results: Node x=mL
-    int grpNodes_Disp = myStructure.GroupCreate("Nodes");
-    direction = 0; // X
-    min = mL - 0.01 * (mL / numElements);
-    max = mL + 0.01 * (mL / numElements);
-    myStructure.GroupAddNodeCoordinateRange(grpNodes_Disp, direction, min, max);
-    std::vector<int> Group2 = myStructure.GroupGetMemberIds(grpNodes_Disp);
-    for (int i : Group2) std::cout << i << '\t';
-    std::cout << std::endl;
-
-
-    myStructure.CalculateMaximumIndependentSets();
+    s.CalculateMaximumIndependentSets();
 
     // Info
-    myStructure.SetShowTime(false);
-    myStructure.Info();
-
-    // chose TimeIntegration
-    NuTo::TimeIntegrationBase* myIntegrationScheme(nullptr);
-    std::cout << "timeIntegrationScheme " << timeIntegrationScheme << std::endl;
-    switch (timeIntegrationScheme)
-    {
-    case 0:
-    {
-        NuTo::RungeKutta4* tmp = new NuTo::RungeKutta4(&myStructure);
-        myIntegrationScheme = tmp;
-        break;
-    }
-    case 1:
-    {
-        NuTo::VelocityVerlet* tmp = new NuTo::VelocityVerlet(&myStructure);
-        myIntegrationScheme = tmp;
-        break;
-    }
-    case 2:
-    {
-        NuTo::NystroemQinZhu* tmp = new NuTo::NystroemQinZhu(&myStructure);
-        myIntegrationScheme = tmp;
-        break;
-    }
-    }
+    s.SetShowTime(false);
+    s.Info();
 
     // time step (explicit method)
     double minTimeStepAccuracy(timePeriod / 100); // to cover the external wave
     // calculate critical time step
     double criticalTimeStep(minTimeStepAccuracy);
-    if (myIntegrationScheme->HasCriticalTimeStep())
+    if (timeIntegrationScheme.HasCriticalTimeStep())
     {
-        double criticalTimeStepMethod = myIntegrationScheme->CalculateCriticalTimeStep();
+        double criticalTimeStepMethod = timeIntegrationScheme.CalculateCriticalTimeStep();
         if (criticalTimeStepMethod < minTimeStepAccuracy)
         {
             criticalTimeStep = criticalTimeStepMethod;
@@ -187,13 +101,7 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     {
         timeStep = criticalTimeStep;
     }
-    myIntegrationScheme->SetTimeStep(timeStep);
-
-    // set unit load
-    myStructure.SetNumLoadCases(1);
-    Eigen::VectorXd directionL(1);
-    directionL[0] = 1;
-    myStructure.LoadCreateNodeGroupForce(0, grpNodes_Load, directionL, 1);
+    timeIntegrationScheme.SetTimeStep(timeStep);
 
     // set load
     Eigen::Matrix<double, 4, 2> forceRHS;
@@ -207,35 +115,36 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     forceRHS(3, 1) = 0.0;
 
     // apply load
-    myIntegrationScheme->SetTimeDependentLoadCase(0, forceRHS);
+    s.SetNumLoadCases(1);
+    double unitLoad = 1.;
+    s.LoadCreateNodeForce(0, s.NodeGetId(&nodeRight), Eigen::Matrix<double, 1, 1>::Constant(1), unitLoad);
+    timeIntegrationScheme.SetTimeDependentLoadCase(0, forceRHS);
 
     // fixed displacement at origin
-    Eigen::VectorXd directionD(1);
-    directionD(0) = 1;
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Disp, directionD, 0.0);
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Value(nodeLeft));
 
     // set output
-    myStructure.SetShowTime(false);
-    myStructure.SetNumProcessors(1);
+    s.SetShowTime(false);
+    s.SetNumProcessors(1);
 
-    myIntegrationScheme->AddResultTime("Time");
-    std::vector<int> GroupNodesLoad = myStructure.GroupGetMemberIds(grpNodes_Load);
-    int RightNode = GroupNodesLoad[0];
-    myIntegrationScheme->AddResultNodeDisplacements("DisplacementsNodeRight", RightNode);
-    int plotElement = myStructure.GetNumElements()/2;
-    myIntegrationScheme->AddResultElementIpData("StressCenterElement",plotElement,NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+    timeIntegrationScheme.AddResultTime("Time");
+    timeIntegrationScheme.AddResultNodeDisplacements("DisplacementsNodeRight", s.NodeGetId(&nodeRight));
+    int plotElement = s.GetNumElements() / 2;
+    timeIntegrationScheme.AddResultElementIpData("StressCenterElement", plotElement,
+                                                 NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     // only plot at every 5%
-    myIntegrationScheme->SetMinTimeStepPlot(simulationTime * 0.05);
+    timeIntegrationScheme.SetMinTimeStepPlot(simulationTime * 0.05);
 
     // set result directory
     bool deleteDirectory(false);
-    myIntegrationScheme->SetResultDirectory(resultDir, deleteDirectory);
+    timeIntegrationScheme.SetResultDirectory(resultDir, deleteDirectory);
 
-    myStructure.NodeBuildGlobalDofs();
+    s.NodeBuildGlobalDofs();
 
     // solve (perform explicit time integration)
-    myIntegrationScheme->Solve(simulationTime);
+    timeIntegrationScheme.SetShowTime(false);
+    timeIntegrationScheme.Solve(simulationTime);
 
     // analytical solution
     double uanal = mAmplS * waveSpeedL * TSchlag / (youngsModulus * mA);
@@ -246,52 +155,29 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
 
     Eigen::MatrixXd result = NuTo::EigenCompanion::ReadFromFile(resultFile.string());
     int EndR = result.rows();
-    std::cout << "difference " << fabs(result(EndR - 1) - uanal) << "\n";
+    double difference = result(EndR - 1) - uanal;
 
-    if (fabs(result(EndR - 1) - uanal) > 1e-4)
-    {
-        std::cout << "difference " << fabs(result(EndR - 1) - uanal) << "\n";
-        std::cout << "[ExplicitTimeIntegration] result is not correct." << std::endl;
-        return EXIT_FAILURE;
-    }
-    else
-    {
-        return EXIT_SUCCESS;
-    }
+    BOOST_CHECK_SMALL(difference, 1.e-4);
 }
 
-int main()
-{
-    try
-    {
-        {
-            NuTo::Structure myStructure(1);
-            int error1 = Run(myStructure, 0);
-            return error1;
-        }
-        {
-            NuTo::Structure myStructure(1);
-            int error2 = Run(myStructure, 1);
-            return error2;
-        }
-        {
-            NuTo::Structure myStructure(1);
-            int error3 = Run(myStructure, 2);
-            return error3;
-        }
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "Error executing ExplicitTimeIntegration " << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (NuTo::Exception& e)
-    {
-        std::cout << "Error executing ExplicitTimeIntegration " << std::endl;
-        std::cout << e.ErrorMessage() << std::endl;
-        return EXIT_FAILURE;
-    }
 
-    return EXIT_SUCCESS;
+BOOST_AUTO_TEST_CASE(ExplicitTIRK)
+{
+    NuTo::Structure s(1);
+    NuTo::RungeKutta4 ti(&s);
+    Run(s, ti);
+}
+
+BOOST_AUTO_TEST_CASE(ExplcitVelocityVerlet)
+{
+    NuTo::Structure s(1);
+    NuTo::VelocityVerlet ti(&s);
+    Run(s, ti);
+}
+
+BOOST_AUTO_TEST_CASE(ExplicitNystroemQinZhu)
+{
+    NuTo::Structure s(1);
+    NuTo::NystroemQinZhu ti(&s);
+    Run(s, ti);
 }
