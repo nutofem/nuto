@@ -60,7 +60,7 @@ void NuTo::Constraint::Constraints::BuildConstraintMatrix(SparseMatrix<double>& 
 
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetNode().GetDof(dof, term.GetComponent());
-            if (std::abs(coefficient > 1.e-18))
+            if (std::abs(coefficient) > 1.e-18)
                 rConstraintMatrix.AddValue(iEquation, globalDofNumber, coefficient);
         }
     }
@@ -94,13 +94,16 @@ namespace Constraint
 {
 std::ostream& operator<<(std::ostream& out, const Constraints& constraints)
 {
+    constexpr double rhsEvaluateTime0 = 0;
+    constexpr double rhsEvaluateTime1 = 1;
     for (const auto& dofEquationPair : constraints.mEquations)
     {
         out << "Equations for dof type " << Node::DofToString(dofEquationPair.first) << ":\n";
         const auto& equations = dofEquationPair.second;
         for (const auto& equation : equations)
         {
-            out << "Rhs(TODO) = ";
+            out << "Rhs [ " << equation.GetRhs(rhsEvaluateTime0) 
+                << " ... " << equation.GetRhs(rhsEvaluateTime1) << " ] = ";
             for (const auto& term : equation.GetTerms())
             {
                 out << term.GetCoefficient() << " * (dof " 

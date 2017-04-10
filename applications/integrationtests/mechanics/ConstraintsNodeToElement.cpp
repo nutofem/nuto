@@ -7,7 +7,7 @@
 //
 //
 //============================================================================
-
+#include "BoostUnitTest.h"
 
 #include "math/MathException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
@@ -64,7 +64,7 @@ public:
 //  RUN 2D
 //////////////////////////////////////////////////////////
 
-void run2d()
+BOOST_AUTO_TEST_CASE(run2d)
 {
         constexpr int dimension = 2;
 
@@ -242,13 +242,11 @@ void run2d()
         std::cout << "dispInFiber \n" << dispInFiber << std::endl;
         std::cout << "coordsInFiber \n" << coordsInFiber << std::endl;
 
-
-        if ( (dispInMatrix - dispInFiber).norm() > 1e-6 or (coordsInMatrix - coordsInFiber).norm() > 1e-6)
+        BoostUnitTest::CheckVector(dispInFiber, dispInMatrix, 3);
+        BoostUnitTest::CheckVector(coordsInFiber, coordsInMatrix, 3);
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Displacements and/or coordinates of fiber and matrix do not match!");
 
-
         std::cout << "Results written to " + resultDir.string() << std::endl;
-
 }
 
 
@@ -256,7 +254,7 @@ void run2d()
 //  RUN 3D
 //////////////////////////////////////////////////////////
 
-void run3d()
+BOOST_AUTO_TEST_CASE(run3d)
 {
     constexpr int dimension = 3;
 
@@ -353,21 +351,11 @@ void run3d()
     std::cout << "**      Boundary Conditions      **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    int groupNodeBCLeft = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNodeCoordinateRange(groupNodeBCLeft, 0, 0.0 - 1e-6, 0.0 + 1e-6);
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Eigen::Vector3d::UnitX(), 0);
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Eigen::Vector3d::UnitZ(), 0);
+    const auto& groupNodeBCLeft = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupNodeBCLeft, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
-
-    Eigen::Vector3d nodeCoords;
-
-    nodeCoords[0] = 10.0;
-    nodeCoords[1] = 0.0;
-    nodeCoords[2] = 0.0;
-    int nodeRight = s.NodeGetIdAtCoordinate(nodeCoords, 1e-6);
-    s.ConstraintLinearSetDisplacementNode(nodeRight, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeRight, Eigen::Vector3d::UnitZ(), 0);
+    const auto& nodeRight = s.NodeGetAtCoordinate(Eigen::Vector3d(10, 0, 0));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(nodeRight, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Constraints              **" << std::endl;
@@ -398,10 +386,10 @@ void run3d()
     std::cout << "**      Loads                    **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    int groupNodeLoadRight = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNodeCoordinateRange(groupNodeLoadRight, 0, 10.0 - 1e-6, 10.0 + 1e-6);
-
-    int timeDependentConstraint = s.ConstraintLinearSetDisplacementNodeGroup(groupNodeLoadRight, Eigen::Vector3d::UnitX(), 1);
+    const auto& groupNodeLoadRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 10);
+    const auto& timeDependentConstraint = NuTo::Constraint::RhsRamp(Parameters::mSimulationTime, Parameters::mLoad);
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, 
+            NuTo::Constraint::Component(groupNodeLoadRight, {NuTo::eDirection::X}, timeDependentConstraint));
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Visualization            **" << std::endl;
@@ -416,22 +404,8 @@ void run3d()
     std::cout << "**      Solver                   **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    s.NodeBuildGlobalDofs();
     s.CalculateMaximumIndependentSets();
-
-
-    Eigen::Matrix2d timeDependentLoad;
-    timeDependentLoad(0, 0) = 0;
-    timeDependentLoad(1, 0) = Parameters::mSimulationTime;
-
-    timeDependentLoad(0, 1) = 0;
-    timeDependentLoad(1, 1) = Parameters::mLoad;
-
-    myIntegrationScheme.AddTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
-
     myIntegrationScheme.Solve(Parameters::mSimulationTime);
-
-
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Postprocessing           **" << std::endl;
@@ -441,6 +415,7 @@ void run3d()
     auto elementPtrMatrix = s.ElementGetElementPtr(0);
 
     // natural coordinates of (2.5, 0.20, 0.25) in tetrahedron 0
+    Eigen::Vector3d nodeCoords;
     nodeCoords[0] = 0.125;
     nodeCoords[1] = 0.20;
     nodeCoords[2] = 0.125;
@@ -460,27 +435,9 @@ void run3d()
     std::cout << "dispInFiber \n" << dispInFiber << std::endl;
     std::cout << "coordsInFiber \n" << coordsInFiber << std::endl;
 
-    if ( (dispInMatrix - dispInFiber).norm() > 1e-6 or (coordsInMatrix - coordsInFiber).norm() > 1e-6)
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Displacements and/or coordinates of fiber and matrix do not match!");
-
+    BoostUnitTest::CheckVector(dispInFiber, dispInMatrix, 3);
+    BoostUnitTest::CheckVector(coordsInFiber, coordsInMatrix, 3);
 
     std::cout << "Results written to " + resultDir.string() << std::endl;
-
-
-}
-
-
-//////////////////////////////////////////////////////////
-//  MAIN
-//////////////////////////////////////////////////////////
-
-int main()
-{
-    run2d();
-    run3d();
-
-    std::cout << "***********************************" << std::endl;
-    std::cout << "**      End                      **" << std::endl;
-    std::cout << "***********************************" << std::endl;
 }
 

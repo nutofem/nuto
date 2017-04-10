@@ -1,5 +1,6 @@
 #pragma once
 #include "mechanics/nodes/NodeBase.h"
+#include <iosfwd>
 
 namespace NuTo
 {
