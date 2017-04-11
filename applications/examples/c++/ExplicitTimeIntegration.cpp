@@ -41,7 +41,7 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     double poissonRatio = 0.; // Poisson ratio
     double density = 2824; // density [kg/m3]
 
-    double TSchlag = 0.001; // time of shock
+    double THit = 0.001; // time of shock
     double mFreq = 1; // in this load case only because of time step computation
     double mAmplS = -1e6;
 
@@ -107,9 +107,9 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     Eigen::Matrix<double, 4, 2> forceRHS;
     forceRHS(0, 0) = 0;
     forceRHS(0, 1) = mAmplS;
-    forceRHS(1, 0) = TSchlag;
+    forceRHS(1, 0) = THit;
     forceRHS(1, 1) = mAmplS;
-    forceRHS(2, 0) = TSchlag + timeStep;
+    forceRHS(2, 0) = THit + timeStep;
     forceRHS(2, 1) = 0.0;
     forceRHS(3, 0) = simulationTime + 1;
     forceRHS(3, 1) = 0.0;
@@ -147,7 +147,7 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     timeIntegrationScheme.Solve(simulationTime);
 
     // analytical solution
-    double uanal = mAmplS * waveSpeedL * TSchlag / (youngsModulus * mA);
+    double uanal = mAmplS * waveSpeedL * THit / (youngsModulus * mA);
 
     // read in result file
     boost::filesystem::path resultFile = resultDir;
@@ -161,10 +161,31 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
 }
 
 
-BOOST_AUTO_TEST_CASE(ExplicitTIRK)
+BOOST_AUTO_TEST_CASE(ExplicitTIRK4)
 {
     NuTo::Structure s(1);
     NuTo::RungeKutta4 ti(&s);
+    Run(s, ti);
+}
+
+BOOST_AUTO_TEST_CASE(ExplicitTIRK2)
+{
+    NuTo::Structure s(1);
+    NuTo::RungeKutta2 ti(&s);
+    Run(s, ti);
+}
+
+BOOST_AUTO_TEST_CASE(ExplicitTIRK3)
+{
+    NuTo::Structure s(1);
+    NuTo::RungeKutta3 ti(&s);
+    Run(s, ti);
+}
+
+BOOST_AUTO_TEST_CASE(ExplicitTIRK38)
+{
+    NuTo::Structure s(1);
+    NuTo::RungeKutta38 ti(&s);
     Run(s, ti);
 }
 

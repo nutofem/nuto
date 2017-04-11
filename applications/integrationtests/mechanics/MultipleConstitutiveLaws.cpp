@@ -1,25 +1,19 @@
-#include "mechanics/elements/IpDataEnum.h"
+#include "mechanics/MechanicsEnums.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include <array>
 #include <boost/foreach.hpp>
-#include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionTruss.h"
-#ifdef ENABLE_VISUALIZE
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
-#include "mechanics/groups/GroupEnum.h"
-#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,37 +96,18 @@ struct MechanicsControl
     }
 
     template<int TDim>
-    int AddConstraint(NuTo::NewmarkDirect& rTI,
-                       std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
-                       unsigned int rDirection,
-                       double rValue = 0.0)
+    void AddConstraint(std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
+                       NuTo::eDirection rDirection,
+                       std::function<double(double)> rDisplacementFunction = NuTo::Constraint::RhsConstant(0))
     {
-        assert(rValue <= TDim && "Direction isn't part of current dimension");
         int GRPNodesConstraint = mS.GroupCreate("Nodes");
         mS.GroupAddNodeFunction(GRPNodesConstraint,rGetNodeFunction);
+               
+        const auto& group = *mS.GroupGetGroupPtr(GRPNodesConstraint)->AsGroupNode();
 
-        Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
-        direction(rDirection) = 1.0;
-        return mS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, direction,rValue);
+        mS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Constraint::Component(group, {rDirection}, rDisplacementFunction));
     }
-
-    template<int TDim>
-    int AddTimeDependentConstraint( NuTo::NewmarkDirect& rTI,
-                                    std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
-                                    std::function<double(double)> rDisplacementFunction,
-                                    unsigned int rDirection,
-                                    double rValue = 0.0)
-    {
-        int constraintID = AddConstraint<TDim>(rTI,
-                                               rGetNodeFunction,
-                                               rDirection,
-                                               rValue);
-        rTI.AddTimeDependentConstraintFunction(constraintID,
-                                               rDisplacementFunction);
-
-        return constraintID;
-    }
-
 
     NuTo::Structure&        mS;
     NuTo::ConstitutiveBase& mCL;
@@ -287,7 +262,6 @@ public:
 template <int TDim>
 void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
                                           std::function<bool(NuTo::NodeBase*)> rFunctionGetBoundaryNode,
-                                          NuTo::NewmarkDirect& rTI,
                                           std::function<double(double)> rBoundaryConstraintFunction)
 {
     int nGrpBE = rS.GroupCreate("NODES");
@@ -302,7 +276,9 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
     int groupBoundaryElements = rS.BoundaryElementsCreate(eGrpBE,nGrpBE,controlNodePtr);
-    int controlNodeConstraint = rS.ConstraintLinearSetRelativeHumidityNode(controlNodePtr,1.0);
+    
+    rS.Constraints().Add(NuTo::Node::eDof::RELATIVEHUMIDITY,
+            NuTo::Constraint::Value(*controlNodePtr, rBoundaryConstraintFunction));
 
     // Set Integration type - default not sufficient
     std::vector<int> boundaryElementIDs;
@@ -328,8 +304,6 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
 
 
     }
-
-    rTI.AddTimeDependentConstraintFunction(controlNodeConstraint, rBoundaryConstraintFunction);
 }
 
 
@@ -459,14 +433,12 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
 
 inline void SetupVisualize(NuTo::Structure& rS)
 {
-#ifdef ENABLE_VISUALIZE
-        int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
-        rS.GroupAddElementsTotal(visGrp);
-        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
-        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
-        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-#endif // ENABLE_VISUALIZE
+    int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
+    rS.GroupAddElementsTotal(visGrp);
+    rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
+    rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
+    rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 }
 
 
@@ -484,7 +456,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
 void CheckMechanicsResultsAdditiveOutput(NuTo::Structure& rS)
 {
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
-    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    for(auto it : nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
         if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
@@ -500,7 +472,7 @@ void CheckMechanicsResultsAdditiveOutput(NuTo::Structure& rS)
             throw NuTo::Exception(__PRETTY_FUNCTION__,"One ore more calculated Displacement is not correct");
         }
     }
-        std::cout << "Displacements correct!" << std::endl;
+    std::cout << "Displacements correct!" << std::endl;
 }
 
 
@@ -540,7 +512,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
-    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    for(auto it : nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
 
@@ -693,10 +665,7 @@ void AdditiveOutputTest(std::vector<int> rN,
 
     SetupConstrainedNodeBoundaryElements<TDim>(S,
                                                LambdaGetBoundaryNodes,
-                                               TI,
                                                LambdaTimeDepBoundaryRH);
-
-
 
 
     auto lambdaGetNodesLeftSide = [rL](NuTo::NodeBase* rNodePtr) -> bool
@@ -765,21 +734,14 @@ void AdditiveOutputTest(std::vector<int> rN,
 
 
 
-    MeCtrl.AddConstraint<TDim>(TI,
-                               lambdaGetNodesLeftSide,
-                               0);
+    MeCtrl.AddConstraint<TDim>(lambdaGetNodesLeftSide, NuTo::eDirection::X);
+    MeCtrl.AddConstraint<TDim>(lambdaGetNodesRightSide, NuTo::eDirection::X, lambdaDisplacementRightSide);
     if(TDim>1)
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottom,
-                                   1);
+        MeCtrl.AddConstraint<TDim>(lambdaGetNodeLeftBottom, NuTo::eDirection::Y);
     if(TDim>2)
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottom,
-                                   2);
-    MeCtrl.AddTimeDependentConstraint<TDim>(TI,
-                                            lambdaGetNodesRightSide,
-                                            lambdaDisplacementRightSide,
-                                            0);
+        MeCtrl.AddConstraint<TDim>(lambdaGetNodeLeftBottom, NuTo::eDirection::Z);
+    
+
     MTCtrl.SetupStaticData();
     S.NodeBuildGlobalDofs();
 
@@ -936,24 +898,12 @@ void AdditiveInputImplicitTest(std::vector<int> rN,
                                     return -0.1 * rL[0] * rTime / tCtrl.t_final;
                               }; // lambdaDisplacementRightSide
 
-
-
-    MeCtrl1.AddConstraint<TDim>(TI,
-                               lambdaGetNodesLeftSide,
-                               0);
+    MeCtrl1.AddConstraint<TDim>(lambdaGetNodesLeftSide, NuTo::eDirection::X);
+    MeCtrl1.AddConstraint<TDim>(lambdaGetNodesRightSide, NuTo::eDirection::X, lambdaDisplacementRightSide);
     if(TDim>1)
-        MeCtrl1.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottom,
-                                   1);
+        MeCtrl1.AddConstraint<TDim>(lambdaGetNodeLeftBottom, NuTo::eDirection::Y);
     if(TDim>2)
-        MeCtrl1.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottom,
-                                   2);
-
-    MeCtrl1.AddTimeDependentConstraint<TDim>(TI,
-                                            lambdaGetNodesRightSide,
-                                            lambdaDisplacementRightSide,
-                                            0);
+        MeCtrl1.AddConstraint<TDim>(lambdaGetNodeLeftBottom, NuTo::eDirection::Z);
 
     S.NodeBuildGlobalDofs(); //<--- possible memory leak!!! (Valgrind!!!)
 

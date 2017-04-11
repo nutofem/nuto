@@ -42,14 +42,12 @@ foreach(test
     InterfaceElements
     IntegrationPointVoronoiCells
     InterpolationTypes
-    LobattoIntegration
     MisesPlasticity
     MultipleConstitutiveLaws
     NewmarkPlane2D4N
     ParallelAssembly
     PlateWithHole
     RestartFiles
-    RungeKutta
     Shrinkage
     SpringDamperCombination
     SurfaceLoad
