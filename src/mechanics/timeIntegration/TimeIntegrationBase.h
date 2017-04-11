@@ -51,17 +51,6 @@ public:
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     void ResetForNextLoad();
 
-    //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-    //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void AddTimeDependentConstraint(int rTimeDependentConstraint, const Eigen::MatrixXd& mTimeDependentConstraintFactor);
-
-    //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-    //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
-    void AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction);
-
-
     //! @brief Gets the Blockscalar with the set residual tolerances
     //! @return Blockscalar with the set residual tolerances
     const BlockScalar& GetToleranceResidual() const;
@@ -79,9 +68,6 @@ public:
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
     void SetTimeDependentLoadCase(int rLoadCase, const Eigen::MatrixXd& rLoadRHSFactor);
-
-    //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
-    virtual double CalculateTimeDependentConstraintFactor(double rTimeDelta);
 
     //! @brief calculate the external force vector (mStatic and m) as a function of time delta
     virtual void CalculateStaticAndTimeDependentExternalLoad();
@@ -309,21 +295,6 @@ protected:
 
     /// \brief Sparse matrix solver
     std::unique_ptr<SolverBase> mSolver;
-
-    // DEPRECATED BLOCK BEGIN
-
-        //constraint for displacement control (as a function of time)
-        int mTimeDependentConstraint;
-        //includes for each time step the rhs of the constraint mConstraintLoad
-        //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
-        Eigen::MatrixXd mTimeDependentConstraintFactor;
-
-    // DEPRECATED BLOCK END
-
-    // Saves the IDs of all time dependent constraints
-    std::map<int,std::shared_ptr<TimeDependencyBase>> mMapTimeDependentConstraint;
-
-
 
     //time dependent load case number
     int mTimeDependentLoadCase;

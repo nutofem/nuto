@@ -5,6 +5,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/groups/Group.h"
 
 namespace NuTo
 {

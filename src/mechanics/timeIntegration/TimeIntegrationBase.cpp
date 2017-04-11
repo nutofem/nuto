@@ -24,8 +24,6 @@
 #include "mechanics/timeIntegration/ResultNodeDisp.h"
 #include "mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "mechanics/timeIntegration/ResultTime.h"
-#include "mechanics/timeIntegration/TimeDependencyFunction.h"
-#include "mechanics/timeIntegration/TimeDependencyMatrix.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
@@ -38,7 +36,6 @@ using namespace NuTo;
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
         mStructure(rStructure),
         mSolver(std::make_unique<SolverMUMPS>(false)),
-        mTimeDependentConstraint(-1),
         mTimeDependentLoadCase(-1),
         mLoadVectorStatic(rStructure->GetDofStatus()),
         mLoadVectorTimeDependent(rStructure->GetDofStatus()),
@@ -69,21 +66,8 @@ NuTo::TimeIntegrationBase::~TimeIntegrationBase()
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
 {
-    mTimeDependentConstraint = -1;
-    mTimeDependentConstraintFactor.resize(0,0);
     mTimeDependentLoadCase = -1;
     mTimeDependentLoadFactor.resize(0,0);
-}
-
-
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const Eigen::MatrixXd &rTimeDependentConstraintFactor)
-{
-    throw "RemoveMe";
-}
-
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
-{
-    throw "RemoveMe";
 }
 
 const NuTo::BlockScalar& NuTo::TimeIntegrationBase::GetToleranceResidual() const
@@ -118,32 +102,6 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
     mTimeDependentLoadFactor = rTimeDependentLoadFactor;
     mTimeDependentLoadCase = rTimeDependentLoadCase;
 }
-
-//! @brief apply the new rhs of the constraints as a function of the current time delta
-double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double curTime)
-{
-    //calculate the two corresponding time steps between which a linear interpolation is performed
-    if (mTimeDependentConstraintFactor.rows()!=0)
-    {
-        int curStep(0);
-        while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.rows()-1)
-            curStep++;
-
-        if (curStep==0)
-            curStep++;
-
-        //extract the two data points
-        double s1 = mTimeDependentConstraintFactor(curStep-1,1);
-        double s2 = mTimeDependentConstraintFactor(curStep,1);
-        double t1 = mTimeDependentConstraintFactor(curStep-1,0);
-        double t2 = mTimeDependentConstraintFactor(curStep,0);
-
-        return s1 + (s2-s1)/(t2-t1) * (curTime-t1);
-    }
-    return 0;
-}
-
-
 
 
 //! @brief Sets the residual tolerance for a specific DOF

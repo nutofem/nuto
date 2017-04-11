@@ -188,10 +188,6 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         //the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
         //this is calculated using finite differencs
         //make sure to recalculate the internal force and external force (if time factor is not 1)
-        if (mTimeDependentConstraint!=-1)
-        {
-            throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-        }
 
         //acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
         //outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
