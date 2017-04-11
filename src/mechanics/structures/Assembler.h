@@ -12,71 +12,72 @@ namespace NuTo
 class Assembler
 {
 public:
+
+    //! @brief ctor
     Assembler();
 
-#ifndef SWIG
-    void BuildGlobalDofs(const std::vector<NodeBase*>& rNodes);
+    //! @brief builds the global dof numbering depending on the constraints
+    //! sets the members mConstraintMatrix, mConstraintMappingRhs and mConstraintRhs [for time t=0]
+    //! @param nodes all the nodes included in the global dof numbering
+    void BuildGlobalDofs(const std::vector<NodeBase*>& nodes);
 
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(Node::eDof rDof) const;
-
-#endif
-
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(std::string rDof) const;
-
-
-    //! @brief returns the constraint vector after gauss elimination
-    //! rConstraintMatrix*DOFS = RHS
-    BlockFullVector<double> ConstraintGetRhsBeforeGaussElimination(double time) const;
-
-
-    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
-    //! the result is stored internally in mConstraintRHS
-    const BlockFullVector<double>& ConstraintGetRhsAfterGaussElimination() const
+    //! @brief getter for mConstraintRhs, set via ConstraintUpdateRhs
+    const BlockFullVector<double>& GetConstraintRhs() const
     {
         return mConstraintRhs;
     }
 
+    //! @brief getter for mConstraintMatrix, set via BuildGlobalDofs
+    const BlockSparseMatrix& GetConstraintMatrix() const
+    {
+        return mConstraintMatrix;
+    }
+    
+    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
+    //! the result is stored internally in mConstraintRHS
+    //! @param time global time
     void ConstraintUpdateRhs(double time);
 
+    //! @brief throws if the nodes or constraints equations have changed
     void ThrowIfRenumberingRequred() const;
 
-    void SetNodeVectorChanged()
-    {
-        mNodeVectorChanged = true;
-    }
-
+    //! @brief returns true if a node renumbering is required (nodes or constraints changed)
     bool RenumberingRequired() const
     {
         return (mConstraints.HasNewConstraints() or mNodeVectorChanged);
     }
 
-    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
-    DofStatus mDofStatus;
-    
+    //! @brief sets the state variable mNodeVectorChanged to true to indicate
+    //! that a node renumbering is required
+    void SetNodeVectorChanged()
+    {
+        mNodeVectorChanged = true;
+    }
 
+    //! @brief non-const getter for mConstraints
     Constraint::Constraints& GetConstraints()
     {
         return mConstraints;
     }
 
+    //! @brief getter for mConstraints
     const Constraint::Constraints& GetConstraints() const
     {
         return mConstraints;
     }
 
-    const BlockSparseMatrix& GetConstraintMatrix() const
-    {
-        return mConstraintMatrix;
-    }
+    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
+    //! @TODO: should not be pulbic
+    DofStatus mDofStatus;
 
 private:
+    
+    //! @brief builds the constraint rhs vector before the gauss elimination evaluated at time
+    //! @param time global time
+    //! @return constraint rhs before gauss elimination
+    BlockFullVector<double> BuildRhsBeforeGaussElimination(double time) const;
 
+    //! @brief stores the constraints
     Constraint::Constraints mConstraints; 
     
     //!brief ... renumbering of nodal DOFs required or not

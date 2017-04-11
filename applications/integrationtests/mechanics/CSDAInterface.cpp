@@ -6,23 +6,14 @@
  */
 
 #include <cmath>
-#include <boost/filesystem/operations.hpp>
-#include <mechanics/interpolationtypes/InterpolationType.h>
+#include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/groups/GroupEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
-#include "mechanics/structures/Assembler.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 
 #include "mechanics/mesh/MeshCompanion.h"

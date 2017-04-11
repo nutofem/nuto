@@ -219,7 +219,7 @@ NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExte
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetConstraintRHS(double rCurrentTime)
 {
     UpdateConstraints(rCurrentTime);
-    return mStructure->GetAssembler().ConstraintGetRhsAfterGaussElimination();
+    return mStructure->GetAssembler().GetConstraintRhs();
 }
 
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0)
@@ -231,7 +231,7 @@ const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndM
     mStructure->NodeMergeDofValues(0, rDof_dt0);
 
     mStructure->ElementTotalUpdateTmpStaticData();
-    return mStructure->GetAssembler().ConstraintGetRhsAfterGaussElimination();
+    return mStructure->GetAssembler().GetConstraintRhs();
 }
 
 //! @brief monitor the displacements of a node

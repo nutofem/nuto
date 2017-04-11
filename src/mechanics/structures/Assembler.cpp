@@ -43,17 +43,15 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
 
     for (auto dof : mDofStatus.GetDofTypes())
     {
-        int numConstraints = mConstraints.GetNumEquations(dof);
+        int numConstraints = GetConstraints().GetNumEquations(dof);
         mDofStatus.SetNumDependentDofs(dof, numConstraints);
         mDofStatus.SetNumActiveDofs(dof, numDofsMap[dof] - numConstraints);
     }
 
-    std::cout << mDofStatus << std::endl;
-
     for (auto dof : mDofStatus.GetDofTypes())
     {
         auto& constraintMatrix = mConstraintMatrix(dof, dof);
-        constraintMatrix = mConstraints.BuildConstraintMatrix(dof, mDofStatus.GetNumDofs(dof));
+        constraintMatrix = GetConstraints().BuildConstraintMatrix(dof, mDofStatus.GetNumDofs(dof));
 
         const int numActiveDofs = mDofStatus.GetNumActiveDofs(dof);
         const int numDependentDofs = mDofStatus.GetNumDependentDofs(dof);
@@ -129,7 +127,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
 
 
     mNodeVectorChanged = false;
-    mConstraints.SetHasNewConstraints(false);
+    GetConstraints().SetHasNewConstraints(false);
 
     // Build the Rhs once at the global time 0. 
     // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS. 
@@ -139,26 +137,14 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     ConstraintUpdateRhs(0); 
 }
 
-
-int NuTo::Assembler::ConstraintGetNumLinearConstraints(std::string rDof) const
-{
-    return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));
-}
-
-int NuTo::Assembler::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
-{
-    return mConstraints.GetNumEquations(rDof);
-}
-
-
-NuTo::BlockFullVector<double> NuTo::Assembler::ConstraintGetRhsBeforeGaussElimination(double time) const
+NuTo::BlockFullVector<double> NuTo::Assembler::BuildRhsBeforeGaussElimination(double time) const
 {
     ThrowIfRenumberingRequred();
 
     NuTo::BlockFullVector<double> rhsBeforeGaussElimination(mDofStatus);
 
     for (auto dof : mDofStatus.GetDofTypes())
-        rhsBeforeGaussElimination[dof] = mConstraints.GetRhs(dof, time);
+        rhsBeforeGaussElimination[dof] = GetConstraints().GetRhs(dof, time);
 
     return rhsBeforeGaussElimination;
 }
@@ -167,7 +153,7 @@ void NuTo::Assembler::ConstraintUpdateRhs(double time)
 {
     ThrowIfRenumberingRequred();
 
-    BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRhsBeforeGaussElimination(time);
+    BlockFullVector<double> rhsBeforeGaussElimination = BuildRhsBeforeGaussElimination(time);
 
     // calculate the rhs vector of the constraint equations after the Gauss elimination using the mapping matrix
     mConstraintRhs = mConstraintMappingRhs * rhsBeforeGaussElimination;

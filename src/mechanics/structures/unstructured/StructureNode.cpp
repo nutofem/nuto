@@ -537,7 +537,7 @@ NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(c
 {
     GetAssembler().ThrowIfRenumberingRequred();
 
-    return this->GetAssembler().ConstraintGetRhsAfterGaussElimination() - GetAssembler().GetConstraintMatrix() * rActiveDofValues;
+    return this->GetAssembler().GetConstraintRhs() - GetAssembler().GetConstraintMatrix() * rActiveDofValues;
 }
 
 
