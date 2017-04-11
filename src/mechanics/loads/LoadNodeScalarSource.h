@@ -13,6 +13,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "mechanics/loads/LoadNode.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
@@ -33,7 +34,7 @@ public:
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const override;
+    void AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

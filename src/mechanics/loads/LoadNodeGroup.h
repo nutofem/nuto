@@ -10,6 +10,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/loads/LoadBase.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {

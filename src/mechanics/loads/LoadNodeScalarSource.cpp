@@ -15,23 +15,23 @@ NuTo::LoadNodeScalarSource::LoadNodeScalarSource(const NodeBase* rNode, double r
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeScalarSource::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiveDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const
+void NuTo::LoadNodeScalarSource::AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad)const
 {
-    assert(rActiveDofsLoadVector.cols()==1);
-    assert(rDependentDofsLoadVector.cols()==1);
+    assert(externalLoad.J[Node::eDof::ELECTRICPOTENTIAL].cols()==1);
+    assert(externalLoad.K[Node::eDof::ELECTRICPOTENTIAL].cols()==1);
     try
     {
         int dof = mNode->GetDof(Node::eDof::ELECTRICPOTENTIAL, 0);
         assert(dof >= 0);
-        if (dof < rActiveDofsLoadVector.rows())
+        if (dof < externalLoad.J[Node::eDof::ELECTRICPOTENTIAL].rows())
         {
-            rActiveDofsLoadVector(dof,0) += this->mValue;
+            externalLoad.J[Node::eDof::ELECTRICPOTENTIAL](dof,0) += this->mValue;
         }
         else
         {
-            dof -= rActiveDofsLoadVector.rows();
-            assert(dof < rDependentDofsLoadVector.rows());
-            rDependentDofsLoadVector(dof,0) += this->mValue;
+            dof -= externalLoad.J[Node::eDof::ELECTRICPOTENTIAL].rows();
+            assert(dof < externalLoad.K[Node::eDof::ELECTRICPOTENTIAL].rows());
+            externalLoad.K[Node::eDof::ELECTRICPOTENTIAL](dof,0) += this->mValue;
         }
     }
     catch (std::bad_cast & b)

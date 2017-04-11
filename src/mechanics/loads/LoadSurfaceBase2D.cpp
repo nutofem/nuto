@@ -84,8 +84,7 @@ LoadSurfaceBase2D::LoadSurfaceBase2D(StructureBase* rStructure, int rElementGrou
 }
 
 
-void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiveDofsLoadVector,
-                                                  Eigen::VectorXd& rDependentDofsLoadVector) const
+void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const
 {
     for (auto it : mElements2D)
     {
@@ -235,13 +234,13 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiveDofsLo
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if (theDof < rActiveDofsLoadVector.rows())
+                    if (theDof < externalLoad.J[Node::eDof::DISPLACEMENTS].rows())
                     {
-                        rActiveDofsLoadVector(theDof) += theLoad;
+                        externalLoad.J[Node::eDof::DISPLACEMENTS](theDof) += theLoad;
                     }
                     else
                     {
-                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.rows()) += theLoad;
+                        externalLoad.K[Node::eDof::DISPLACEMENTS](theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
                     }
                 }
             }

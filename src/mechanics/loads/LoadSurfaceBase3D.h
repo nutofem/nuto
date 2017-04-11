@@ -11,6 +11,7 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadBase.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>
 
 namespace NuTo
@@ -35,8 +36,7 @@ public:
     //! @brief Adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector Global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector Global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector,
-                                   Eigen::VectorXd& rDependentDofsLoadVector) const override;
+    void AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const override;
 
     //! @brief Calculates the surface load as a function of the coordinates and the normal (for pressure)
     //! @param rCoordinates Global coordinates

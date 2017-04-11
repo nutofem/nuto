@@ -13,6 +13,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <eigen3/Eigen/Dense>
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
@@ -38,8 +39,7 @@ public:
     //! @brief Adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector Global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector Global load vector which correspond to the dependent dofs
-    virtual void AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector,
-                                           Eigen::VectorXd& rDependentDofsLoadVector) const = 0;
+    virtual void AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const = 0;
 
 
 #ifdef ENABLE_SERIALIZATION

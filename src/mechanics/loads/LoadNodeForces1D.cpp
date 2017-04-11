@@ -21,23 +21,22 @@ LoadNodeForces1D::LoadNodeForces1D(const NodeBase* rNode, double rDirection, dou
 }
 
 
-void LoadNodeForces1D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiveDofsLoadVector,
-                                                 Eigen::VectorXd& rDependentDofsLoadVector) const
+void LoadNodeForces1D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const
 {
-    assert(rActiveDofsLoadVector.cols() == 1);
-    assert(rDependentDofsLoadVector.cols() == 1);
+    assert(externalLoad.J[Node::eDof::DISPLACEMENTS].cols() == 1);
+    assert(externalLoad.K[Node::eDof::DISPLACEMENTS].cols() == 1);
 
     int dof = mNode->GetDof(Node::eDof::DISPLACEMENTS, 0);
     assert(dof >= 0);
-    if (dof < rActiveDofsLoadVector.rows())
+    if (dof < externalLoad.J[Node::eDof::DISPLACEMENTS].rows())
     {
-        rActiveDofsLoadVector(dof, 0) += this->mDirection * this->mValue;
+        externalLoad.J[Node::eDof::DISPLACEMENTS](dof, 0) += this->mDirection * this->mValue;
     }
     else
     {
-        dof -= rActiveDofsLoadVector.rows();
-        assert(dof < rDependentDofsLoadVector.rows());
-        rDependentDofsLoadVector(dof, 0) += this->mDirection * this->mValue;
+        dof -= externalLoad.J[Node::eDof::DISPLACEMENTS].rows();
+        assert(dof < externalLoad.K[Node::eDof::DISPLACEMENTS].rows());
+        externalLoad.K[Node::eDof::DISPLACEMENTS](dof, 0) += this->mDirection * this->mValue;
     }
 }
 

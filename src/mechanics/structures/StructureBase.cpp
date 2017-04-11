@@ -815,15 +815,9 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
 
     StructureOutputBlockVector externalLoad(GetDofStatus(), true);
 
-    if (DofTypeIsActive(Node::eDof::DISPLACEMENTS))
+    for (const auto& load : mLoadMap)
     {
-        auto& vectorJ = externalLoad.J[Node::eDof::DISPLACEMENTS];
-        auto& vectorK = externalLoad.K[Node::eDof::DISPLACEMENTS];
-
-        for (const auto& load : mLoadMap)
-        {
-            load.second->AddLoadToGlobalSubVectors(vectorJ, vectorK);
-        }
+        load.second->AddLoadToGlobalSubVectors(externalLoad);
     }
     return externalLoad;
 }

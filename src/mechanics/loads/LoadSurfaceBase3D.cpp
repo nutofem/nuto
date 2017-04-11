@@ -83,8 +83,7 @@ LoadSurfaceBase3D::LoadSurfaceBase3D(StructureBase* rStructure, int rElementGrou
 }
 
 
-void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLoadVector,
-                                                  Eigen::VectorXd& rDependentDofsLoadVector) const
+void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const
 {
     for (auto it : mVolumeElements)
     {
@@ -215,13 +214,13 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(Eigen::VectorXd& rActiceDofsLo
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if (theDof < rActiceDofsLoadVector.rows())
+                    if (theDof < externalLoad.J[Node::eDof::DISPLACEMENTS].rows())
                     {
-                        rActiceDofsLoadVector(theDof) += theLoad;
+                        externalLoad.J[Node::eDof::DISPLACEMENTS](theDof) += theLoad;
                     }
                     else
                     {
-                        rDependentDofsLoadVector(theDof - rActiceDofsLoadVector.rows()) += theLoad;
+                        externalLoad.K[Node::eDof::DISPLACEMENTS](theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
                     }
                 }
             }
