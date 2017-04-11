@@ -51,6 +51,15 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
         }
     }
     break;
+    case Node::eDof::ELECTRICPOTENTIAL:
+    {
+        int numElectricPotential = rNode->GetNum(Node::eDof::ELECTRICPOTENTIAL);
+        if (rDofComponent < 0 || rDofComponent >= numElectricPotential)
+        {
+            throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid electric potential component.");
+        }
+    }
+    break;
     case Node::eDof::NONLOCALEQSTRAIN:
     {
         int numNonlocalEqStrain = rNode->GetNum(Node::eDof::NONLOCALEQSTRAIN);
@@ -98,6 +107,10 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     case Node::eDof::TEMPERATURE:
     {
         return mNode->GetDof(Node::eDof::TEMPERATURE, 0);
+    }
+    case Node::eDof::ELECTRICPOTENTIAL:
+    {
+        return mNode->GetDof(Node::eDof::ELECTRICPOTENTIAL, 0);
     }
     break;
     case Node::eDof::NONLOCALEQSTRAIN:

@@ -40,6 +40,8 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
         return mDimension;
     case NuTo::Node::eDof::TEMPERATURE:
         return 1;
+    case NuTo::Node::eDof::ELECTRICPOTENTIAL:
+        return 1;
     case NuTo::Node::eDof::NONLOCALEQSTRAIN:
         return 1;
     case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:

@@ -21,6 +21,7 @@ enum class eDof : unsigned char {COORDINATES,
                                  NONLOCALEQSTRAIN,
                                  WATERVOLUMEFRACTION,
                                  RELATIVEHUMIDITY,
+                                 ELECTRICPOTENTIAL,
                                  CRACKPHASEFIELD};
 
 //! @brief Gets a set of all Dofs

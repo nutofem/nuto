@@ -34,7 +34,10 @@ enum class eConstitutiveType
     SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,   //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
-    THERMAL_STRAINS                                         //!< strain induced by temperature change
+    THERMAL_STRAINS,                                        //!< strain induced by temperature change
+    LINEAR_ELASTIC_ANISOTROPIC,                             //!< linear elastic fully anisotropic material
+    LINEAR_DIELECTRIC,                                      //!< linear isotropic dielectric material (insulating but polarizable)
+    LINEAR_PIEZOELECTRIC                                    //!< linear piezoelectric material (fully anisotropic)
 };
 
 const std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap();
@@ -85,6 +88,7 @@ enum class eConstitutiveParameter
     DAMAGE_LAW,                                 //!<
     DENSITY,                                    //!<
     DENSITY_WATER,                              //!<
+    DIELECTRIC_TENSOR,                          //!<
     DIFFUSION_COEFFICIENT_RH,                   //!<
     DIFFUSION_COEFFICIENT_WV,                   //!<
     DIFFUSION_EXPONENT_RH,                      //!<
@@ -106,6 +110,7 @@ enum class eConstitutiveParameter
     MAX_BOND_STRESS,                            //!<
     NONLOCAL_RADIUS,                            //!<
     NORMAL_STIFFNESS,                           //!<
+    PIEZOELECTRIC_TENSOR,                       //!<
     POISSONS_RATIO,                             //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
@@ -117,6 +122,7 @@ enum class eConstitutiveParameter
     SOLID_PHASE_BULK_MODULUS,                   //!<
     SPRING_STIFFNESS,                           //!<
     SPRING_DIRECTION,                           //!<
+    STIFFNESS,                                  //!<
     TENSILE_STRENGTH,                           //!<
     TEMPERATURE,                                //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
@@ -126,7 +132,7 @@ enum class eConstitutiveParameter
     VISCOSITY_EXPONENT,                         //!<
     YOUNGS_MODULUS,                             //!<
 	ENDURANCE_STRESS,                           //!<
-    FATIGUE_PARAMETER                           //!<
+    FATIGUE_PARAMETER,                          //!<
 
 };
 
@@ -139,6 +145,7 @@ eConstitutiveParameter ConstitutiveParameterToEnum(std::string rParameter);
 enum class eInput
 {
     NONE,                               //!< for constitutive law additive input explicit (AddConstitutiveLaw-function)
+    ELECTRIC_FIELD,                     //!<
     ENGINEERING_STRAIN,                 //!<
     ENGINEERING_STRAIN_DT1,             //!< first time derivative of the engineering strain
     TEMPERATURE,                        //!< Temperature \f$T\f$
@@ -174,6 +181,12 @@ std::string InputToString ( const eInput& e );
 
 enum class eOutput
 {
+    ELECTRIC_DISPLACEMENT,
+    ELECTRIC_POTENTIAL,
+    ELECTRIC_FIELD,
+    D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD,
+    D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN,
+    PIEZOELECTRIC_STRESS,
     ENGINEERING_STRESS,
     ENGINEERING_STRESS_VISUALIZE,
     D_ENGINEERING_STRESS_D_PHASE_FIELD,
@@ -184,6 +197,7 @@ enum class eOutput
     SHRINKAGE_STRAIN_VISUALIZE,
     THERMAL_STRAIN, //!< \f$\varepsilon_{th} = \alpha \Delta T I\f$
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+    D_ENGINEERING_STRESS_D_ELECTRIC_FIELD,
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1,
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,

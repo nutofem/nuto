@@ -419,6 +419,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::eVisualizeWhat::HEAT_FLUX:
             elementIpDataMap[IpData::eIpStaticDataType::HEAT_FLUX];
             break;
+        case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
+            elementIpDataMap[IpData::eIpStaticDataType::ELECTRIC_FIELD];
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+            elementIpDataMap[IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT];
+            break;
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
             elementIpDataMap[IpData::eIpStaticDataType::LOCAL_EQ_STRAIN];
             break;
@@ -442,6 +447,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::ROTATION:
         case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         default:
@@ -767,6 +773,47 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 }
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), relativeHumidity[0]);
+            }
+            break;
+        case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
+            {
+            const auto& electricField = elementIpDataMap.at(IpData::eIpStaticDataType::ELECTRIC_FIELD);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                double eField[3];
+                eField[0] = electricField(0, theIp);
+                eField[1] = electricField(1, theIp);
+                eField[2] = electricField(2, theIp);
+
+                rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(),eField);
+            }
+            }
+            break;
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+            {
+            const auto& electricD = elementIpDataMap.at(IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                double eD[3];
+                eD[0] = electricD(0, theIp);
+                eD[1] = electricD(1, theIp);
+                eD[2] = electricD(2, theIp);
+
+                rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(),eD);
+            }
+            }
+            break;
+        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::VectorXd electricPotential = InterpolateDofGlobal(coords, Node::eDof::ELECTRICPOTENTIAL);
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), electricPotential[0]);
             }
             break;
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:

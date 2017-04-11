@@ -2,6 +2,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/loads/LoadNode.h"
+#include "mechanics/loads/LoadNodeScalarSource.h"
 #include "mechanics/loads/LoadNodeForces1D.h"
 #include "mechanics/loads/LoadNodeForces2D.h"
 #include "mechanics/loads/LoadNodeForces3D.h"
@@ -17,6 +18,41 @@
 
 using namespace NuTo;
 
+int StructureBase::LoadCreateScalarSource(int rNodeIdent, double rValue)
+{
+    // find node
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rNodeIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+        throw;
+    }
+    catch (...)
+    {
+        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+    }
+
+    return this->LoadCreateScalarSource(nodePtr, rValue);
+}
+
+
+int StructureBase::LoadCreateScalarSource(const NodeBase* rNode, double rValue)
+{
+    int id = GetUnusedId(mLoadMap);
+
+    // create load
+    LoadNode* loadPtr;
+    loadPtr = new LoadNodeScalarSource(rNode, rValue);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
 int StructureBase::LoadCreateNodeForce(int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue)
 {
     auto nodePtr = NodeGetNodePtr(rNodeIdent);
@@ -26,14 +62,7 @@ int StructureBase::LoadCreateNodeForce(int rNodeIdent, const Eigen::MatrixXd& rD
 
 int StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadNode* loadPtr;
@@ -80,14 +109,7 @@ int StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const Eigen::Matrix
 int StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection,
                                             double rValue)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadNodeGroup* loadPtr;
@@ -115,14 +137,7 @@ int StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, c
 int StructureBase::LoadSurfaceConstDirectionCreate3D(int rElementGroupId, int rNodeGroupId,
                                                      const Eigen::VectorXd& rLoadVector)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadSurfaceBase3D* loadPtr;
@@ -137,14 +152,7 @@ int StructureBase::LoadSurfaceConstDirectionCreate3D(int rElementGroupId, int rN
 int StructureBase::LoadSurfaceConstDirectionCreate2D(int rElementGroupId, int rNodeGroupId,
                                                      const Eigen::VectorXd& rLoadVector)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadSurfaceBase2D* loadPtr;
@@ -158,14 +166,7 @@ int StructureBase::LoadSurfaceConstDirectionCreate2D(int rElementGroupId, int rN
 
 int StructureBase::LoadSurfacePressureCreate3D(int rElementGroupId, int rNodeGroupId, double rPressure)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadSurfaceBase3D* loadPtr;
@@ -179,14 +180,7 @@ int StructureBase::LoadSurfacePressureCreate3D(int rElementGroupId, int rNodeGro
 
 int StructureBase::LoadSurfacePressureCreate2D(int rElementGroupId, int rNodeGroupId, double rPressure)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadSurfaceBase2D* loadPtr;
@@ -201,14 +195,7 @@ int StructureBase::LoadSurfacePressureCreate2D(int rElementGroupId, int rNodeGro
 int StructureBase::LoadSurfacePressureFunctionCreate2D(
         int rElementGroupId, int rNodeGroupId, const std::function<Eigen::Vector2d(Eigen::Vector2d)>& rLoadFunction)
 {
-    // find unused integer id
-    int id(0);
-    auto it = mLoadMap.find(id);
-    while (it != mLoadMap.end())
-    {
-        id++;
-        it = mLoadMap.find(id);
-    }
+    int id = GetUnusedId(mLoadMap);
 
     // create load
     LoadSurfaceBase2D* loadPtr;

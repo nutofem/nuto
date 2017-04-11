@@ -21,9 +21,11 @@
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
+#include "mechanics/constraints/ConstraintLinearNodeGroupElectricPotential.h"
 #include "mechanics/constraints/ConstraintLinearNodeRelativeHumidity.h"
 #include "mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "mechanics/constraints/ConstraintLinearNodeTemperature.h"
+#include "mechanics/constraints/ConstraintLinearNodeElectricPotential.h"
 #include "mechanics/constraints/ConstraintLinearNodeWaterVolumeFraction.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
@@ -177,6 +179,46 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, dou
         throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
     }
     return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNode(NodeBase* rNode, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+
+    int id = GetUnusedId(mConstraintMap);
+
+    switch (mDimension)
+    {
+    case 1:
+    case 2:
+    case 3:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeElectricPotential(rNode,rValue));
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNode(int rIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+        throw;
+    }
+    catch (...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetElectricPotentialNode(nodePtr, rValue);
 }
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double rValue)
@@ -333,6 +375,20 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent
     return ConstraintLinearSetTemperatureNodeGroup(nodeGroup, rValue);
 }
 
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNodeGroup(int rGroupIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetElectricPotentialNodeGroup] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
+        throw MechanicsException("[NuTo::Structure::ConstraintLinearSetElectricPotentialNodeGroup] Group is not a node group.");
+    Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
+    assert(nodeGroup!=0);
+
+    return ConstraintLinearSetElectricPotentialNodeGroup(nodeGroup, rValue);
+}
+
 
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
@@ -340,6 +396,15 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>
     int id = GetUnusedId(mConstraintMap);
 
     mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupTemperature(rGroup,rValue));
+    return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetElectricPotentialNodeGroup(Group<NodeBase>* rGroup, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    int id = GetUnusedId(mConstraintMap);
+
+    mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupElectricPotential(rGroup,rValue));
     return id;
 }
 
@@ -927,6 +992,9 @@ int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
 
     case Node::eDof::TEMPERATURE:
         return ConstraintLinearSetTemperatureNode(rNode, rValue);
+
+    case Node::eDof::ELECTRICPOTENTIAL:
+        return ConstraintLinearSetElectricPotentialNode(rNode, rValue);
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,std::string("not implemented for dof ")+Node::DofToString(rDOFType));

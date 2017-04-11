@@ -431,6 +431,8 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::LATTICE_STRESS:
         case NuTo::eVisualizeWhat::LATTICE_STRAIN:
         case NuTo::eVisualizeWhat::LATTICE_PLASTIC_STRAIN:
+        case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
+        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
             rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
 
@@ -447,6 +449,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
@@ -733,7 +736,6 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
     }
     return isSubmatrixCorrect;
 }
-
 
 void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
 {
