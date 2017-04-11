@@ -2,19 +2,23 @@
 #include <fstream>
 
 #include "geometryConcrete/GeometryConcrete.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "visualize/VisualizeEnum.h"
 
+using namespace NuTo;
+
 void CreateMesoscaleGeometryMesh(std::string rGmshFile, double rLX, double rLY)
 {
     // define the geometry
-    NuTo::GeometryConcrete geometry;
+    GeometryConcrete geometry;
     geometry.SetSeed(1337);
     geometry.SetSpecimenBox(0, rLX, 0, rLY, 0, rLY);
-    geometry.SetGradingCurve(NuTo::GeometryConcrete::B16, 3);
+    geometry.SetGradingCurve(GeometryConcrete::B16, 3);
     geometry.SetParticleVolumeFraction(0.4);
     geometry.SetAbsoluteGrowthRate(0.1);
 
@@ -38,13 +42,13 @@ int main(int argc, char* argv[])
     std::cout << "Gmsh File:  " << gmshFile << ".msh" << std::endl;
     std::cout << "Result dir: " << resultPath.string() << std::endl;
 
-    NuTo::Structure myStructure(2);
-    myStructure.SetNumTimeDerivatives(0);
-    myStructure.SetNumProcessors(4);
-    myStructure.LoggerOpenFile(outputPath.string() + "Log.dat");
-    myStructure.LoggerSetQuiet(false);
-    myStructure.SetVerboseLevel(10);
-    myStructure.SetShowTime(false);
+    Structure structure(2);
+    structure.SetNumTimeDerivatives(0);
+    structure.SetNumProcessors(4);
+    structure.LoggerOpenFile(outputPath.string() + "Log.dat");
+    structure.LoggerSetQuiet(false);
+    structure.SetVerboseLevel(10);
+    structure.SetShowTime(false);
 
     // Create and import a mesoscale geometry via gmsh
     double lX = 32;
@@ -52,7 +56,7 @@ int main(int argc, char* argv[])
 
     CreateMesoscaleGeometryMesh(gmshFile, lX, lY);
 
-    auto groupIndices = myStructure.ImportFromGmsh(gmshFile + ".msh");
+    auto groupIndices = structure.ImportFromGmsh(gmshFile + ".msh");
     assert(groupIndices.size() == 2); // two physical groups
 
     int gMatrix = groupIndices[0].first;
@@ -61,96 +65,81 @@ int main(int argc, char* argv[])
     int interpolationMatrix = groupIndices[0].second;
     int interpolationAggreg = groupIndices[1].second;
 
-    myStructure.InterpolationTypeAdd(
-            interpolationMatrix, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeAdd(
-            interpolationAggreg, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    structure.InterpolationTypeAdd(interpolationMatrix, Node::eDof::DISPLACEMENTS,
+                                   Interpolation::eTypeOrder::EQUIDISTANT2);
+    structure.InterpolationTypeAdd(interpolationAggreg, Node::eDof::DISPLACEMENTS,
+                                   Interpolation::eTypeOrder::EQUIDISTANT2);
 
-    myStructure.ElementTotalConvertToInterpolationType();
+    structure.ElementTotalConvertToInterpolationType();
 
     // Define and set sections and constitutive laws
     double thickness = 17;
 
-    auto mySection = NuTo::SectionPlane::Create(thickness, true);
+    auto mySection = SectionPlane::Create(thickness, true);
 
     int myConstitutiveLawAggreg =
-            myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawAggreg, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawAggreg, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .2);
+            structure.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawAggreg,
+                                                Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawAggreg,
+                                                Constitutive::eConstitutiveParameter::POISSONS_RATIO, .2);
 
-    int myConstitutiveLawMatrix = myStructure.ConstitutiveLawCreate(
-            NuTo::Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 75000.);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .3);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::INITIAL_YIELD_STRENGTH, 75);
-    myStructure.ConstitutiveLawSetParameterDouble(
-            myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::INITIAL_HARDENING_MODULUS, 5000);
+    int myConstitutiveLawMatrix =
+            structure.ConstitutiveLawCreate(Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,
+                                                Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 75000.);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,
+                                                Constitutive::eConstitutiveParameter::POISSONS_RATIO, .3);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,
+                                                Constitutive::eConstitutiveParameter::INITIAL_YIELD_STRENGTH, 75);
+    structure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,
+                                                Constitutive::eConstitutiveParameter::INITIAL_HARDENING_MODULUS, 5000);
 
-    myStructure.ElementTotalSetSection(mySection);
-    myStructure.ElementGroupSetConstitutiveLaw(gMatrix, myConstitutiveLawMatrix);
-    myStructure.ElementGroupSetConstitutiveLaw(gAggreg, myConstitutiveLawAggreg);
+    structure.ElementTotalSetSection(mySection);
+    structure.ElementGroupSetConstitutiveLaw(gMatrix, myConstitutiveLawMatrix);
+    structure.ElementGroupSetConstitutiveLaw(gAggreg, myConstitutiveLawAggreg);
 
     // Set boundary conditions
     double deltaD = 0.01;
 
-    int gNodesWest = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int gNodesEast = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    auto& origin = structure.NodeGetAtCoordinate(Eigen::Vector2d({0., 0.}), 1.e-6);
+    auto nodesWest = structure.GroupGetNodeCoordinateRange(eDirection::X, 0., 0.);
+    auto nodesEast = structure.GroupGetNodeCoordinateRange(eDirection::X, lX, lX);
 
-    int iNodeOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector2d({0., 0.}), 1.e-6);
-    myStructure.GroupAddNodeCoordinateRange(gNodesWest, 0, 0., 0.);
-    myStructure.GroupAddNodeCoordinateRange(gNodesEast, 0, lX, lX);
-
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesWest, Eigen::Vector2d::UnitX(), 0.);
-    myStructure.ConstraintLinearSetDisplacementNode(iNodeOrigin, Eigen::Vector2d::UnitY(), 0.);
-
-    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesEast, Eigen::Vector2d::UnitX(), 0);
-
-    // Visualisation
-    myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-    myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-
-    myStructure.AddVisualizationComponent(gMatrix, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(gMatrix, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(gMatrix, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-    myStructure.AddVisualizationComponent(gMatrix, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-    myStructure.AddVisualizationComponent(gMatrix, NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
-
-    // Solver
-    myStructure.NodeBuildGlobalDofs();
-    myStructure.CalculateMaximumIndependentSets();
-    NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodesWest, {eDirection::X}));
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(origin, {eDirection::Y}));
 
     double simulationTime = 1;
+    structure.Constraints().Add(
+            Node::eDof::DISPLACEMENTS,
+            Constraint::Component(nodesEast, {eDirection::X}, Constraint::RhsRamp(simulationTime, deltaD)));
 
-    Eigen::Matrix2d dispRHS;
-    dispRHS << 0, 0, simulationTime, deltaD;
+    // Visualisation
+    structure.AddVisualizationComponent(gAggreg, eVisualizeWhat::DISPLACEMENTS);
+    structure.AddVisualizationComponent(gAggreg, eVisualizeWhat::ENGINEERING_STRAIN);
+    structure.AddVisualizationComponent(gAggreg, eVisualizeWhat::ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(gAggreg, eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 
-    myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);
-    myIntegrationScheme.SetTimeStep(.1 * simulationTime);
-    myIntegrationScheme.SetToleranceForce(1e-6);
-    myIntegrationScheme.SetAutomaticTimeStepping(true);
-    myIntegrationScheme.SetVerboseLevel(0);
-    myIntegrationScheme.SetShowTime(true);
+    structure.AddVisualizationComponent(gMatrix, eVisualizeWhat::DISPLACEMENTS);
+    structure.AddVisualizationComponent(gMatrix, eVisualizeWhat::ENGINEERING_STRAIN);
+    structure.AddVisualizationComponent(gMatrix, eVisualizeWhat::ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(gMatrix, eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(gMatrix, eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
+
+    // Solver
+    structure.NodeBuildGlobalDofs();
+    structure.CalculateMaximumIndependentSets();
+    NewmarkDirect integrationScheme(&structure);
+    integrationScheme.SetTimeStep(.1 * simulationTime);
+    integrationScheme.SetToleranceForce(1e-6);
+    integrationScheme.SetAutomaticTimeStepping(true);
+    integrationScheme.SetVerboseLevel(0);
+    integrationScheme.SetShowTime(true);
 
     bool deleteDirectory = true;
-    myIntegrationScheme.SetResultDirectory(resultPath.string(), deleteDirectory);
+    integrationScheme.SetResultDirectory(resultPath.string(), deleteDirectory);
 
-    try
-    {
-        myIntegrationScheme.Solve(simulationTime);
-    }
-    catch (NuTo::Exception& e)
-    {
-        std::cout << e.ErrorMessage() << std::endl;
-        std::cout << "\n\n\n Errors occured! \n\n\n" << std::endl;
-    }
+    integrationScheme.Solve(simulationTime);
 
     std::cout << "I'm done. Thank you for using NuTo!" << std::endl;
 

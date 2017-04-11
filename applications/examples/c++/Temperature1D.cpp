@@ -9,13 +9,14 @@
 #include <iostream>
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "visualize/VisualizeEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/sections/SectionTruss.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 
@@ -54,10 +55,12 @@ int main()
     structure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads
+    auto& origin = structure.NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Zero());
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(origin, boundary_temperature));
+
+    structure.SetNumLoadCases(1);
     Eigen::VectorXd direction(1);
     direction(0) = 1.0;
-    structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
-    structure.SetNumLoadCases(1);
     structure.LoadCreateNodeHeatFlux(0, num_elements, direction, boundary_flux);
 
     // start analysis

@@ -8,6 +8,7 @@
 #include <cmath>
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"

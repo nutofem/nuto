@@ -6,6 +6,7 @@
 
 #include "mechanics/structures/unstructured/Structure.h"
 
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"

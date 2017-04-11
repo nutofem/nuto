@@ -3,6 +3,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 

@@ -2,6 +2,7 @@
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"

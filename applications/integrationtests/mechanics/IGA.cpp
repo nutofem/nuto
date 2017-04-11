@@ -26,6 +26,8 @@
 
 #include "mechanics/constraints/ConstraintCompanion.h"
 
+#include "mechanics/groups/Group.h"
+
 
 /*  ||>*----*----*----*----*
        |    |    |    |    | -->

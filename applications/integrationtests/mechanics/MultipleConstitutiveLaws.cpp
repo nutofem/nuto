@@ -1,6 +1,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include <array>
 #include <boost/foreach.hpp>

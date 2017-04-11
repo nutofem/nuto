@@ -16,6 +16,8 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/MechanicsEnums.h"
@@ -174,33 +176,23 @@ int main()
     SetVisualization(structure);
 
     // set boundary conditions and loads
-    auto nodesWest = structure.GroupCreate("Nodes");
-    auto nodesEast = structure.GroupCreate("Nodes");
-    auto nodesSouth = structure.GroupCreate(eGroupId::Nodes);
-    auto nodesNorth = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeCoordinateRange(nodesWest, 0, 0.0, 0.0);
-    structure.GroupAddNodeCoordinateRange(nodesEast, 0, 32.0, 32.0);
-    structure.GroupAddNodeCoordinateRange(nodesSouth, 1, 0.0, 0.0);
-    structure.GroupAddNodeCoordinateRange(nodesNorth, 1, 16.0, 16.0);
+    auto nodesWest = structure.GroupGetNodeCoordinateRange(eDirection::X, 0.0, 0.0);
+    auto nodesEast = structure.GroupGetNodeCoordinateRange(eDirection::X, 32.0, 32.0);
+    auto nodesSouth = structure.GroupGetNodeCoordinateRange(eDirection::Y, 0.0, 0.0);
+    auto nodesNorth = structure.GroupGetNodeCoordinateRange(eDirection::Y, 16.0, 16.0);
 
     // displacement BC
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesWest, Eigen::Vector2d::UnitX(), 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesSouth, Eigen::Vector2d::UnitY(), 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesNorth, Eigen::Vector2d::UnitY(), 0.0);
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodesWest, {eDirection::X}));
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodesSouth, {eDirection::Y}));
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodesNorth, {eDirection::Y}));
 
     // temperature BC
-    structure.SetNumLoadCases(1);
-    //structure.ConstraintLinearSetTemperatureNode(0, 50.0);
-    structure.ConstraintLinearSetTemperatureNodeGroup(nodesWest, 0.0);
-    auto east_bc = structure.ConstraintLinearSetTemperatureNodeGroup(nodesEast, 0.0);
-
-    auto test = SandstoneExpansion(300.0);
-    std::cout << test[0] << " " << test[1] << std::endl;
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(nodesWest));
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(nodesEast, iso_temperature_curve));
 
     // solve system
     NewmarkDirect newmark(&structure);
     double simulationTime = 3600.0;
-    newmark.AddTimeDependentConstraintFunction(east_bc, iso_temperature_curve);
     newmark.SetPerformLineSearch(false);
     newmark.SetTimeStep(45);
     newmark.SetMaxTimeStep(0.2*simulationTime);

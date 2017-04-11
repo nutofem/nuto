@@ -1,6 +1,7 @@
 #include "base/Timer.h"
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/elements/ElementBase.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"

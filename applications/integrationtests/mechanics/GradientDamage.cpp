@@ -12,6 +12,7 @@
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/groups/GroupBase.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"

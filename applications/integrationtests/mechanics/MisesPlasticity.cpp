@@ -9,6 +9,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"

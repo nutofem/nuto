@@ -1,11 +1,13 @@
 #pragma once
 
 #include "mechanics/constraints/Constraints.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/DirectionEnum.h"
 
 namespace NuTo
 {
+template <typename T>
+class Group;
+
 namespace Constraint
 {
 

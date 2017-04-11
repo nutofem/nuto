@@ -6,6 +6,7 @@
  */
 
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/constraints/ConstraintCompanion.h"

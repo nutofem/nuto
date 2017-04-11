@@ -18,6 +18,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/elements/ElementBase.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/structures/unstructured/Structure.h"
