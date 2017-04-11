@@ -1,31 +1,34 @@
 #include <ostream>
+#include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/constraints/Constraints.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-void NuTo::Constraint::Constraints::Add(Node::eDof dof, Equation equation)
+using namespace NuTo;
+
+void Constraint::Constraints::Add(Node::eDof dof, Equation equation)
 {
     mEquations[dof].push_back(equation);
     mHasNewConstraints = true;
 }
 
-void NuTo::Constraint::Constraints::Add(Node::eDof dof, std::vector<Equation> equations)
+void Constraint::Constraints::Add(Node::eDof dof, std::vector<Equation> equations)
 {
     Equations& dofEquations = mEquations[dof];
     dofEquations.insert(dofEquations.begin(), equations.begin(), equations.end());
     mHasNewConstraints = true;
 }
 
-void NuTo::Constraint::Constraints::SetHasNewConstraints(bool value)
+void Constraint::Constraints::SetHasNewConstraints(bool value)
 {
     mHasNewConstraints = value;
 }
 
-bool NuTo::Constraint::Constraints::HasNewConstraints() const
+bool Constraint::Constraints::HasNewConstraints() const
 {
     return mHasNewConstraints;
 }
 
-Eigen::VectorXd NuTo::Constraint::Constraints::GetRhs(Node::eDof dof, double time) const
+Eigen::VectorXd Constraint::Constraints::GetRhs(Node::eDof dof, double time) const
 {
     const auto it = mEquations.find(dof);
     if (it == mEquations.end())
@@ -39,14 +42,16 @@ Eigen::VectorXd NuTo::Constraint::Constraints::GetRhs(Node::eDof dof, double tim
     return rhs;
 }
 
-void NuTo::Constraint::Constraints::BuildConstraintMatrix(SparseMatrix<double>& rConstraintMatrix, Node::eDof dof) const
+SparseMatrixCSRVector2General<double> Constraint::Constraints::BuildConstraintMatrix(Node::eDof dof, int nDofs) const
 {
     const auto it = mEquations.find(dof);
     if (it == mEquations.end())
-        return; // no equations for this dof type
+        return SparseMatrixCSRVector2General<double>(0, nDofs); // no equations for this dof type
 
     const Equations& equations = it->second;
     int numEquations = equations.size();
+
+    SparseMatrixCSRVector2General<double> matrix(numEquations, nDofs);
 
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
@@ -63,12 +68,13 @@ void NuTo::Constraint::Constraints::BuildConstraintMatrix(SparseMatrix<double>& 
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetNode().GetDof(dof, term.GetComponent());
             if (std::abs(coefficient) > 1.e-18)
-                rConstraintMatrix.AddValue(iEquation, globalDofNumber, coefficient);
+                matrix.AddValue(iEquation, globalDofNumber, coefficient);
         }
     }
+    return matrix;
 }
 
-int NuTo::Constraint::Constraints::GetNumEquations(Node::eDof dof) const
+int Constraint::Constraints::GetNumEquations(Node::eDof dof) const
 {
     auto it = mEquations.find(dof);
     if (it == mEquations.end())
@@ -77,7 +83,7 @@ int NuTo::Constraint::Constraints::GetNumEquations(Node::eDof dof) const
     return it->second.size();
 }
 
-void NuTo::Constraint::Constraints::ExchangeNodePtr(const NodeBase& oldNode, const NodeBase& newNode)
+void Constraint::Constraints::ExchangeNodePtr(const NodeBase& oldNode, const NodeBase& newNode)
 {
     for (auto& mapPair : mEquations)
     {

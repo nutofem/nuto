@@ -25,8 +25,7 @@ BOOST_AUTO_TEST_CASE(ConstraintX)
     c.Add(eDofDisp, NuTo::Constraint::Component(node.get(), {NuTo::eDirection::X}));
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 1);
     
-    NuTo::SparseMatrixCSRVector2General<double> m(1, 3);
-    c.BuildConstraintMatrix(m, eDofDisp);
+    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
     BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), Eigen::Vector3d(0,1,0).transpose());
 }
 
@@ -38,8 +37,7 @@ BOOST_AUTO_TEST_CASE(ConstraintXandY)
     c.Add(eDofDisp, NuTo::Constraint::Component(node.get(), {NuTo::eDirection::X, NuTo::eDirection::Y}));
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 2);
 
-    NuTo::SparseMatrixCSRVector2General<double> m(2, 3);
-    c.BuildConstraintMatrix(m, eDofDisp);
+    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
     Eigen::MatrixXd expected(2,3);
     expected.setZero();
     expected(0,1) = 1;
@@ -57,8 +55,7 @@ BOOST_AUTO_TEST_CASE(ConstraintDirection)
     c.Add(eDofDisp, NuTo::Constraint::Direction(node.get(), Eigen::Vector2d(1,-1), NuTo::Constraint::RhsConstant(0)));
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 1);
 
-    NuTo::SparseMatrixCSRVector2General<double> m(1, 3);
-    c.BuildConstraintMatrix(m, eDofDisp);
+    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
     Eigen::Vector3d expected(0, 1/sqrt(2), - 1/sqrt(2));
     BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), expected.transpose()); 
 

@@ -23,7 +23,7 @@ public:
 
     Eigen::VectorXd GetRhs(Node::eDof dof, double time) const;
 
-    void BuildConstraintMatrix(SparseMatrix<double>& rConstraintMatrix, Node::eDof dof) const;
+    SparseMatrixCSRVector2General<double> BuildConstraintMatrix(Node::eDof dof, int nDofs) const;
 
     int GetNumEquations(Node::eDof dof) const;    
 

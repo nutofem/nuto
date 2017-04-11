@@ -182,11 +182,8 @@ protected:
     virtual void Info(std::ostream& out) const {};
 };
 
-inline std::ostream& operator<<(std::ostream& out, const NodeBase& node)
-{
-    node.Info(out);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const NodeBase& node);
+
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION

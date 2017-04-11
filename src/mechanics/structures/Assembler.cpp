@@ -53,8 +53,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     for (auto dof : mDofStatus.GetDofTypes())
     {
         auto& constraintMatrix = mConstraintMatrix(dof, dof);
-        constraintMatrix.Resize(mDofStatus.GetNumDependentDofs(dof), mDofStatus.GetNumDofs(dof));
-        mConstraints.BuildConstraintMatrix(constraintMatrix, dof);
+        constraintMatrix = mConstraints.BuildConstraintMatrix(dof, mDofStatus.GetNumDofs(dof));
 
         const int numActiveDofs = mDofStatus.GetNumActiveDofs(dof);
         const int numDependentDofs = mDofStatus.GetNumDependentDofs(dof);

@@ -8,6 +8,6 @@ foreach(test
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} NuToVisualize)
     endif()
-    add_test(almost::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+    add_test(almost::mechanics::constraints::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
 endforeach()
 
