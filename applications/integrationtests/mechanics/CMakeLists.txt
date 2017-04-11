@@ -48,6 +48,7 @@ foreach(test
     MultipleConstitutiveLaws
     NewmarkPlane2D4N
     ParallelAssembly
+    PiezoelectricLaw
     PlateWithHole
     RestartFiles
     RungeKutta
