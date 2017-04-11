@@ -38,6 +38,7 @@ public:
     virtual bool IsPlaneStrain() const;
 
 protected:
+    //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const;
 #ifdef ENABLE_SERIALIZATION
     template <class Archive>

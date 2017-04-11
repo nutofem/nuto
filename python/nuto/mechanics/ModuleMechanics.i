@@ -130,8 +130,8 @@ namespace std {
 
 %typemap(in) std::vector<NuTo::eDirection>
 %{
+    // the seemingly superfluous braces are necessary, because SWIG uses goto internally
     {
-    // Hello World
     std::vector<NuTo::eDirection> dirVec;
     PyObject* seq = PySequence_Fast($input, "Argument not a list.");
     int len = PySequence_Size($input);
@@ -168,27 +168,19 @@ namespace std {
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
 %template(IntBlockFullVector) NuTo::BlockFullVector<int>;
 
-//%extend NuTo::Constraint::Equation
-//{
-//    Equation(PyObject* callback)
-//    {
-//        return new Equation(std::function<double(double)>(PyCallback(callback)));
-//    }
-//};
-//
-//%inline %{
-//
-//namespace NuTo
-//{
-//namespace Constraint
-//{
-//NuTo::Constraint::Equation Value(const NuTo::NodeBase& node, PyObject* callback)
-//{
-//    return Value(node, std::function<double(double)>(PyCallback(callback)));
-//}
-//}
-//}
-//%}
+%define OUTSTREAM_WRAP(class)
 
+%extend class {
+    std::string __str__() const {
+         std::ostringstream out;
+         out << *$self;
+         return out.str();
+    }
+}
+
+%enddef
+
+OUTSTREAM_WRAP(NuTo::NodeBase)
+OUTSTREAM_WRAP(NuTo::Section)
 
 %template(NodeGroup) NuTo::Group<NuTo::NodeBase>;

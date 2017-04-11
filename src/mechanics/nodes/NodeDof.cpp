@@ -1,7 +1,7 @@
-
-
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
+
+using namespace NuTo;
 
 #ifdef ENABLE_SERIALIZATION
 #include "math/CustomBoostSerializationExtensions.h"
@@ -9,7 +9,7 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
-NuTo::NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
+NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
     : NodeBase::NodeBase()
 {
     for (auto& it : rDofInfos)
@@ -32,12 +32,12 @@ NuTo::NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
 }
 
 
-void NuTo::NodeDof::SetDofNumber(Node::eDof dof, int component, int dofNumber)
+void NodeDof::SetDofNumber(Node::eDof dof, int component, int dofNumber)
 {
     mDofNumbers[dof][component] = dofNumber;
 }
 
-int NuTo::NodeDof::GetNumTimeDerivatives(Node::eDof rDof) const
+int NodeDof::GetNumTimeDerivatives(Node::eDof rDof) const
 {
     const auto& it = mDofValues.find(rDof);
     if (it == mDofValues.end())
@@ -46,13 +46,13 @@ int NuTo::NodeDof::GetNumTimeDerivatives(Node::eDof rDof) const
     return it->second.size() - 1; // -1: dt 0 --> size 1; dt 1 --> size 2; ...
 }
 
-bool NuTo::NodeDof::IsDof(Node::eDof rDof) const
+bool NodeDof::IsDof(Node::eDof rDof) const
 {
     return mDofNumbers.find(rDof) != mDofNumbers.end();
 }
 
 
-int NuTo::NodeDof::GetNumDofs() const
+int NodeDof::GetNumDofs() const
 {
     int numDofs = 0;
     for (auto& it : mDofNumbers)
@@ -61,7 +61,7 @@ int NuTo::NodeDof::GetNumDofs() const
 }
 
 
-int NuTo::NodeDof::GetNum(Node::eDof rDof) const
+int NodeDof::GetNum(Node::eDof rDof) const
 {
     const auto& it = mDofValues.find(rDof);
     if (it == mDofValues.end())
@@ -70,49 +70,49 @@ int NuTo::NodeDof::GetNum(Node::eDof rDof) const
     return it->second[0].rows();
 }
 
-int NuTo::NodeDof::GetDof(Node::eDof rDof, int rComponent) const
+int NodeDof::GetDof(Node::eDof rDof, int rComponent) const
 {
     const auto& it = mDofNumbers.find(rDof);
     if (it == mDofNumbers.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rComponent >= it->second.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
-                                                                    ". Component " + std::to_string(it->second.size()) +
-                                                                    " was requested.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
+                                                              ". Component " + std::to_string(it->second.size()) +
+                                                              " was requested.");
 
     return it->second[rComponent];
 }
 
-const Eigen::VectorXd& NuTo::NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
+const Eigen::VectorXd& NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
 {
     const auto& it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Cannot access time derivative " + std::to_string(rTimeDerivative) +
-                                               ". This node only has " + std::to_string(it->second.size()) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                                 "Cannot access time derivative " + std::to_string(rTimeDerivative) +
+                                         ". This node only has " + std::to_string(it->second.size()) + ".");
 
     return it->second[rTimeDerivative];
 }
 
-void NuTo::NodeDof::Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue)
+void NodeDof::Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue)
 {
     auto it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Cannot access time derivative " + std::to_string(rTimeDerivative) +
-                                               ". This node only has " + std::to_string(it->second.size()) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                                 "Cannot access time derivative " + std::to_string(rTimeDerivative) +
+                                         ". This node only has " + std::to_string(it->second.size()) + ".");
 
     it->second[rTimeDerivative] = rValue;
 }
 
-std::set<NuTo::Node::eDof> NuTo::NodeDof::GetDofTypes() const
+std::set<Node::eDof> NodeDof::GetDofTypes() const
 {
     std::set<Node::eDof> dofTypes;
     for (auto it : mDofValues)
@@ -120,17 +120,15 @@ std::set<NuTo::Node::eDof> NuTo::NodeDof::GetDofTypes() const
     return dofTypes;
 }
 
-std::string NuTo::NodeDof::GetNodeTypeStr() const
+void NodeDof::Info(std::ostream& out) const
 {
-    std::stringstream nodeDofype;
     for (auto& it : mDofValues)
     {
-        nodeDofype << Node::DofToString(it.first) << ": " << it.second[0].rows() << " dt:" << it.second.size() << "\n";
+        out << Node::DofToString(it.first) << ": " << it.second[0].rows() << " dt:" << it.second.size() << "\n";
     }
-    return nodeDofype.str();
 }
 
-NuTo::NodeBase* NuTo::NodeDof::Clone() const
+NodeBase* NodeDof::Clone() const
 {
     return new NodeDof(*this);
 }
@@ -139,14 +137,14 @@ NuTo::NodeBase* NuTo::NodeDof::Clone() const
 //! @brief serializes the class
 //! @param ar         archive
 //! @param version    version
-template void NuTo::NodeDof::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::NodeDof::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::NodeDof::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::NodeDof::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::NodeDof::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::NodeDof::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
+template void NodeDof::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
 template <class Archive>
-void NuTo::NodeDof::serialize(Archive& ar, const unsigned int version)
+void NodeDof::serialize(Archive& ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize NodeDof"
@@ -158,5 +156,5 @@ void NuTo::NodeDof::serialize(Archive& ar, const unsigned int version)
     std::cout << "finish serialize NodeDof \n";
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeDof)
+BOOST_CLASS_EXPORT_IMPLEMENT(NodeDof)
 #endif // ENABLE_SERIALIZATION

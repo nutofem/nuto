@@ -1018,7 +1018,7 @@ void NuTo::ElementBase::Info() const
     {
         const NodeBase* node = GetNode(iNode);
         std::cout << "NodeInfo of local node " << iNode << ": \n";
-        std::cout << node->GetNodeTypeStr() << "\n";
+        std::cout << node << "\n";
     }
 }
 

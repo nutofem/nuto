@@ -54,9 +54,11 @@ void NuTo::Constraint::Constraints::BuildConstraintMatrix(SparseMatrix<double>& 
         for (const auto& term : equation.GetTerms())
         {
             if (term.GetNode().GetNum(dof) < term.GetComponent())
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "Cannot access component " + std::to_string(term.GetComponent()) +
-                                                 " from NuTo::NodeBase " + term.GetNode().GetNodeTypeStr());
+            {
+                std::ostringstream message;
+                message << "Cannot access component " << term.GetComponent() << " from node " << term.GetNode() << ".";
+                throw MechanicsException(__PRETTY_FUNCTION__, message.str());
+            }
 
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetNode().GetDof(dof, term.GetComponent());

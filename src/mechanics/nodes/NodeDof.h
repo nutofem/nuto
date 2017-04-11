@@ -72,10 +72,6 @@ public:
     //! @brief returns a set containing all dof types
     std::set<Node::eDof> GetDofTypes() const override;
 
-    //! @brief returns the type of node as a string (all the data stored at the node)
-    //! @return string
-    std::string GetNodeTypeStr() const override;
-
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
 
@@ -86,7 +82,9 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
-
+protected:
+    //! @brief Outstream function for "virtual friend idiom"
+    virtual void Info(std::ostream& out) const override;
 
 private:
 
