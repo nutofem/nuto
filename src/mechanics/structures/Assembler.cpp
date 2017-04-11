@@ -127,7 +127,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
 
 
     mNodeVectorChanged = false;
-    GetConstraints().SetHasNewConstraints(false);
+    GetConstraints().SetHaveChanged(false);
 
     // Build the Rhs once at the global time 0. 
     // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS. 

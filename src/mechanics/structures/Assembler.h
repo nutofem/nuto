@@ -44,7 +44,7 @@ public:
     //! @brief returns true if a node renumbering is required (nodes or constraints changed)
     bool RenumberingRequired() const
     {
-        return (mConstraints.HasNewConstraints() or mNodeVectorChanged);
+        return (mConstraints.HaveChanged() or mNodeVectorChanged);
     }
 
     //! @brief sets the state variable mNodeVectorChanged to true to indicate

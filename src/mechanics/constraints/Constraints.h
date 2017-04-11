@@ -24,6 +24,9 @@ public:
     //! @param equations constraint equations
     void Add(Node::eDof dof, std::vector<Equation> equations);
 
+    //! @brief removes all constraints
+    void RemoveAll();
+
     //! @brief builds the time dependent constraint rhs vector for a specific dof type
     //! @param dof dof type
     //! @param time global time
@@ -50,12 +53,12 @@ public:
     //! @brief prints all equations
     friend std::ostream& operator<<(std::ostream& out, const Constraints& constraints);
 
-    //! @brief getter for mHasNewConstraints
-    //! @return true if new constraints were added
-    bool HasNewConstraints() const;
+    //! @brief getter for mConstraintsChanged
+    //! @return true if constraints changed
+    bool HaveChanged() const;
 
-    //! @brief setter for mHasNewConstraints
-    void SetHasNewConstraints(bool value);
+    //! @brief setter for mConstraintsChanged
+    void SetHaveChanged(bool value);
 
 private:
     //! @brief dof-wise storage of constraint equatiosn
@@ -71,7 +74,7 @@ private:
     //!  - Assembler keeps track of std::hash(mEquations)
     //!  - Not allowed to add constraints after building the global dof numbering
     //!       = mConstraints is a const member at mAssembler
-    bool mHasNewConstraints = false;
+    bool mConstraintsChanged = false;
 };
 
 } /* Constaint */

@@ -8,24 +8,31 @@ using namespace NuTo;
 void Constraint::Constraints::Add(Node::eDof dof, Equation equation)
 {
     mEquations[dof].push_back(equation);
-    mHasNewConstraints = true;
+    mConstraintsChanged = true;
 }
 
 void Constraint::Constraints::Add(Node::eDof dof, std::vector<Equation> equations)
 {
     Equations& dofEquations = mEquations[dof];
     dofEquations.insert(dofEquations.begin(), equations.begin(), equations.end());
-    mHasNewConstraints = true;
+    mConstraintsChanged = true;
 }
 
-void Constraint::Constraints::SetHasNewConstraints(bool value)
+void Constraint::Constraints::RemoveAll()
 {
-    mHasNewConstraints = value;
+    mEquations.clear();
+    mConstraintsChanged = true;
 }
 
-bool Constraint::Constraints::HasNewConstraints() const
+
+void Constraint::Constraints::SetHaveChanged(bool value)
 {
-    return mHasNewConstraints;
+    mConstraintsChanged = value;
+}
+
+bool Constraint::Constraints::HaveChanged() const
+{
+    return mConstraintsChanged;
 }
 
 Eigen::VectorXd Constraint::Constraints::GetRhs(Node::eDof dof, double time) const
