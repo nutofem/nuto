@@ -9,8 +9,9 @@ foreach(test
         target_link_libraries(${test} NuToVisualize)
     endif()
     add_test(almost::mechanics::constraints::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
-endforeach()
+endforeach() 
 
 add_unit_test(ConstraintCompanion
     mechanics/groups/GroupBase.cpp
     mechanics/groups/Group.cpp)
+

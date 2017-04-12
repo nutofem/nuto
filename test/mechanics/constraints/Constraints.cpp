@@ -2,62 +2,82 @@
 #include <fakeit.hpp>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/constraints/Constraints.h"
 #include "math/SparseMatrixCSRVector2General.h"
+#include "mechanics/nodes/NodeBase.h"
 
 const NuTo::Node::eDof eDofDisp = NuTo::Node::eDof::DISPLACEMENTS;
 
-auto GetMockNode()
+auto GetMockNode(std::vector<int> dofs)
 {
     fakeit::Mock<NuTo::NodeBase> node;
-    Method(node, GetNum) = 2;
-    Method(node, GetNumDofs) = 2;
-    ConstOverloadedMethod(node, GetDof, int(NuTo::Node::eDof, int)).Using(eDofDisp, 0) = 1;
-    ConstOverloadedMethod(node, GetDof, int(NuTo::Node::eDof, int)).Using(eDofDisp, 1) = 2;
+    Method(node, GetNum) = dofs.size();
+    Method(node, GetNumDofs) = dofs.size();
+    ConstOverloadedMethod(node, GetDof, int(NuTo::Node::eDof, int)).Using(eDofDisp, 0) = dofs[0];
+    ConstOverloadedMethod(node, GetDof, int(NuTo::Node::eDof, int)).Using(eDofDisp, 1) = dofs[1];
     return node;
 }
 
-BOOST_AUTO_TEST_CASE(ConstraintX)
+BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
 {
-    fakeit::Mock<NuTo::NodeBase> node = GetMockNode();
+    using namespace NuTo::Constraint;
+    constexpr int numDofsTotal = 5;
+    fakeit::Mock<NuTo::NodeBase> node = GetMockNode({3,1});
 
-    NuTo::Constraint::Constraints c;
-    c.Add(eDofDisp, NuTo::Constraint::Component(node.get(), {NuTo::eDirection::X}));
+    Constraints c;
+
+    // 0th component of node --> dof = 3
+    c.Add(eDofDisp, Equation({Term(node.get(),0, 1)}));
+    BOOST_CHECK(c.HaveChanged());
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 1);
     
-    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
-    BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), Eigen::Vector3d(0,1,0).transpose());
-}
+    auto m = c.BuildConstraintMatrix(eDofDisp, numDofsTotal).ConvertToFullMatrix();
+    Eigen::MatrixXd expected(1,numDofsTotal);
+    expected(0, 3) = 1;
+    BoostUnitTest::CheckEigenMatrix(m, expected);
 
-BOOST_AUTO_TEST_CASE(ConstraintXandY)
-{
-    fakeit::Mock<NuTo::NodeBase> node = GetMockNode();
-
-    NuTo::Constraint::Constraints c;
-    c.Add(eDofDisp, NuTo::Constraint::Component(node.get(), {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    // 1st component of node --> dof = 1
+    c.Add(eDofDisp, Equation({Term(node.get(),1, 1)}));
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 2);
+    expected.setZero(2, numDofsTotal);
+    expected(0,3) = 1;
+    expected(1,1) = 1;
+    m = c.BuildConstraintMatrix(eDofDisp, numDofsTotal).ConvertToFullMatrix();
+    BoostUnitTest::CheckEigenMatrix(m, expected);
 
-    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
-    Eigen::MatrixXd expected(2,3);
-    expected.setZero();
-    expected(0,1) = 1;
-    expected(1,2) = 1;
-    BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), expected); 
-    
-    std::cout << c << std::endl;
+    c.RemoveAll();
+    BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 0);
 }
 
-BOOST_AUTO_TEST_CASE(ConstraintDirection)
+BOOST_AUTO_TEST_CASE(ConstraintRhs)
 {
-    fakeit::Mock<NuTo::NodeBase> node = GetMockNode();
+    using namespace NuTo::Constraint;
+    Constraints c;
+    c.Add(eDofDisp, Equation(1));
+    c.Add(eDofDisp, Equation([](double time){return time * 42;}));
 
-    NuTo::Constraint::Constraints c;
-    c.Add(eDofDisp, NuTo::Constraint::Direction(node.get(), Eigen::Vector2d(1,-1), NuTo::Constraint::RhsConstant(0)));
-    BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 1);
+    BoostUnitTest::CheckVector(c.GetRhs(eDofDisp, 0), std::vector<double>({1., 0.}), 2);
+    BoostUnitTest::CheckVector(c.GetRhs(eDofDisp, 0.5), std::vector<double>({1., 21}), 2);
+    BoostUnitTest::CheckVector(c.GetRhs(eDofDisp, 1), std::vector<double>({1., 42.}), 2);
+}
 
-    NuTo::SparseMatrixCSRVector2General<double> m = c.BuildConstraintMatrix(eDofDisp, 3);
-    Eigen::Vector3d expected(0, 1/sqrt(2), - 1/sqrt(2));
-    BoostUnitTest::CheckEigenMatrix(m.ConvertToFullMatrix(), expected.transpose()); 
+BOOST_AUTO_TEST_CASE(ConstraintExchange)
+{
+    using namespace NuTo::Constraint;
+    fakeit::Mock<NuTo::NodeBase> nodeA = GetMockNode({3});
+    fakeit::Mock<NuTo::NodeBase> nodeB = GetMockNode({1});
+    Constraints c;
 
-    std::cout << c << std::endl;
+    // 0th component of node --> dof = 3
+    c.Add(eDofDisp, Equation({Term(nodeA.get(),0, 1)}));
+    auto m = c.BuildConstraintMatrix(eDofDisp, 5).ConvertToFullMatrix();
+    Eigen::MatrixXd expected(1,5);
+    expected(0, 3) = 1;
+    BoostUnitTest::CheckEigenMatrix(m, expected);
+
+    c.ExchangeNodePtr(nodeA.get(), nodeB.get());
+    expected.setZero();
+    expected(0, 1) = 1;
+    m = c.BuildConstraintMatrix(eDofDisp, 5).ConvertToFullMatrix();
+    BoostUnitTest::CheckEigenMatrix(m, expected);
 }
