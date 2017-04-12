@@ -18,6 +18,7 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
@@ -751,11 +752,11 @@ void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const std::vector<int>& dofI
 
 }
 
-void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const int nodeGroupId)
+void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const Group<NodeBase>& nodeGroup)
 {
     boost::mpi::communicator world;
 
-    std::vector<int> boundaryNodeIds = GroupGetMemberIds(nodeGroupId);
+    std::vector<int> boundaryNodeIds = nodeGroup.GetMemberIds();
 
     for (const int nodeId : boundaryNodeIds)
     {

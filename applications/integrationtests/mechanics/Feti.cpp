@@ -12,7 +12,10 @@
 
 #include "boost/filesystem.hpp"
 
+#include "mechanics/DirectionEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/Group.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -32,6 +35,8 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>>;
 
+using namespace NuTo;
+
 // geometry
 constexpr   int         dimension                   = 2;
 constexpr   double      thickness                   = 1.0;
@@ -47,9 +52,7 @@ constexpr   double      toleranceDisp              = 1e-6;
 constexpr   double      simulationTime              = 1.0;
 constexpr   double      loadFactor                  = 13.37;
 
-
-const Eigen::Vector2d directionX    = Eigen::Vector2d::UnitX();
-const Eigen::Vector2d directionY    = Eigen::Vector2d::UnitY();
+const Eigen::Vector2d directionY = Eigen::Vector2d::UnitY();
 
 void AssignSection(NuTo::Structure& structure);
 void AssignMaterial(NuTo::Structure& structure);
@@ -94,54 +97,44 @@ int main(int argc, char* argv[])
 
     if (structure.mRank == 1)
     {
-        int groupNodesFakeConstraints00 = structure.GroupCreate(eGroupId::Nodes);
-        int groupNodesFakeConstraints01 = structure.GroupCreate(eGroupId::Nodes);
-
         nodeCoords[0] = 10;
         nodeCoords[1] = 0;
-        structure.GroupAddNodeRadiusRange(groupNodesFakeConstraints00, nodeCoords, 0, 1.e-6);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints00, directionX, 0);
-
+        auto& groupNodesFakeConstraints00 = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+        structure.Constraints().Add(eDof::DISPLACEMENTS,
+                Constraint::Component(groupNodesFakeConstraints00, {eDirection::X}));
 
         nodeCoords[0] = 10;
         nodeCoords[1] = 10;
-        structure.GroupAddNodeRadiusRange(groupNodesFakeConstraints01, nodeCoords, 0, 1.e-6);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints01, directionX, 0);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints01, directionY, 0);
+        auto& groupNodesFakeConstraints01 = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+        structure.Constraints().Add(eDof::DISPLACEMENTS,
+                Constraint::Component(groupNodesFakeConstraints01, {eDirection::X, eDirection::Y}));
 
         structure.GetLogger() << "Number of nodes that are constraint in 1st group: \t"
-                              << structure.GroupGetNumMembers(groupNodesFakeConstraints00) << "\n";
+                              << groupNodesFakeConstraints00.GetNumMembers() << "\n";
 
         structure.GetLogger() << "Number of nodes that are constraint in 2nd group: \t"
-                              << structure.GroupGetNumMembers(groupNodesFakeConstraints01) << "\n";
-
-
+                              << groupNodesFakeConstraints01.GetNumMembers() << "\n";
     }
 
     if (structure.mRank == 0)
     {
-        int groupNodesFakeConstraints00 = structure.GroupCreate(eGroupId::Nodes);
-        int groupNodesFakeConstraints01 = structure.GroupCreate(eGroupId::Nodes);
-
         nodeCoords[0] = 40;
         nodeCoords[1] = 0;
-        structure.GroupAddNodeRadiusRange(groupNodesFakeConstraints00, nodeCoords, 0, 1.e-6);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints00, directionX, 0);
-
+        auto& groupNodesFakeConstraints00 = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+        structure.Constraints().Add(eDof::DISPLACEMENTS,
+                Constraint::Component(groupNodesFakeConstraints00, {eDirection::X}));
 
         nodeCoords[0] = 50;
         nodeCoords[1] = 10;
-        structure.GroupAddNodeRadiusRange(groupNodesFakeConstraints01, nodeCoords, 0, 1.e-6);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints01, directionX, 0);
-        structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesFakeConstraints01, directionY, 0);
+        auto& groupNodesFakeConstraints01 = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+        structure.Constraints().Add(eDof::DISPLACEMENTS,
+                Constraint::Component(groupNodesFakeConstraints01, {eDirection::X, eDirection::Y}));
 
         structure.GetLogger() << "Number of nodes that are constraint in 1st group: \t"
-                              << structure.GroupGetNumMembers(groupNodesFakeConstraints00) << "\n";
+                              << groupNodesFakeConstraints00.GetNumMembers() << "\n";
 
         structure.GetLogger() << "Number of nodes that are constraint in 2nd group: \t"
-                              << structure.GroupGetNumMembers(groupNodesFakeConstraints01) << "\n";
-
-
+                              << groupNodesFakeConstraints01.GetNumMembers() << "\n";
     }
 
 
@@ -157,25 +150,18 @@ int main(int argc, char* argv[])
         nodeCoords[0] = 0;
         nodeCoords[1] = 0;
 
-        int groupNodesLeftBoundary = structure.GroupCreate(eGroupId::Nodes);
-
-        structure.GroupAddNodeRadiusRange(groupNodesLeftBoundary, nodeCoords, 0, 1.e-6);
+        auto& groupNodesLeftBoundary = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
         structure.ApplyConstraintsTotalFeti(groupNodesLeftBoundary);
     }
 
 
     if (rank == 0)
     {
-
         nodeCoords[0] = 60;
         nodeCoords[1] = 0;
 
-        int groupNodesRightBoundary = structure.GroupCreate(eGroupId::Nodes);
-
-        structure.GroupAddNodeRadiusRange(groupNodesRightBoundary, nodeCoords, 0, 1.e-6);
+        auto& groupNodesRightBoundary = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1e-6);
         structure.ApplyConstraintsTotalFeti(groupNodesRightBoundary);
-
-
     }
 
     structure.GetLogger() << "**********************************************" << "\n";
@@ -359,32 +345,26 @@ std::map<int, VectorXd> ComputeReferenceSolution()
     nodeCoords[0] = 0;
     nodeCoords[1] = 0;
 
-    int groupNodesLeftBoundary = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeRadiusRange(groupNodesLeftBoundary, nodeCoords, 0, 1.e-6);
-
-    structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesLeftBoundary, directionX, 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesLeftBoundary, directionY, 0.0);
+    auto& groupNodesLeftBoundary = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+    structure.Constraints().Add(eDof::DISPLACEMENTS,
+            Constraint::Component(groupNodesLeftBoundary, {eDirection::X, eDirection::Y}));
 
     nodeCoords[0] = 60;
     nodeCoords[1] = 0;
 
-    int groupNodesRightBoundary = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeRadiusRange(groupNodesRightBoundary, nodeCoords, 0, 1.e-6);
-
-    structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesRightBoundary, directionX, 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(groupNodesRightBoundary, directionY, 0.0);
+    auto& groupNodesRightBoundary = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+    structure.Constraints().Add(eDof::DISPLACEMENTS,
+            Constraint::Component(groupNodesRightBoundary, {eDirection::X, eDirection::Y}));
 
     structure.GetLogger() << "**********************************************" << "\n";
     structure.GetLogger() << "**  load                                    **" << "\n";
     structure.GetLogger() << "**********************************************" << "\n\n";
 
-    int loadNodeGroup = structure.GroupCreate(eGroupId::Nodes);
     nodeCoords[0] = 20;
     nodeCoords[1] = 10;
-    structure.GroupAddNodeRadiusRange(loadNodeGroup, nodeCoords, 0, 1.e-6);
-    int loadId = structure.ConstraintLinearSetDisplacementNodeGroup(loadNodeGroup, directionY, 1);
-
-//    AddVisualization(structure);
+    auto& loadNodeGroup = structure.GroupGetNodeRadiusRange(nodeCoords, 0, 1.e-6);
+    structure.Constraints().Add(eDof::DISPLACEMENTS,
+            Constraint::Component(loadNodeGroup, {eDirection::Y}, Constraint::RhsRamp(simulationTime, loadFactor)));
 
     structure.GetLogger() << "**********************************************" << "\n";
     structure.GetLogger() << "**  integration sheme                       **" << "\n";
@@ -398,14 +378,6 @@ std::map<int, VectorXd> ComputeReferenceSolution()
     myIntegrationScheme.SetAutomaticTimeStepping    ( automaticTimeStepping     );
     myIntegrationScheme.SetResultDirectory          ( resultPath.string(), true );
     myIntegrationScheme.SetToleranceResidual        ( eDof::DISPLACEMENTS, toleranceDisp );
-
-    Eigen::Matrix2d dispRHS;
-    dispRHS(0, 0) = 0;
-    dispRHS(1, 0) = simulationTime;
-    dispRHS(0, 1) = 0;
-    dispRHS(1, 1) = loadFactor;
-
-    myIntegrationScheme.AddTimeDependentConstraint(loadId, dispRHS);
 
     structure.GetLogger() << "***********************************" << "\n";
     structure.GetLogger() << "**      Solve                    **" << "\n";

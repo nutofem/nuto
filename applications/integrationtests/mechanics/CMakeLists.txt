@@ -4,7 +4,6 @@ if(ENABLE_PYTHON)
     foreach(test
         Brick8N
         DeleteElemNode
-        GlobalDofs
         HeatConduction
         MassMatrixIntegration
         Quad2DPatchTest
