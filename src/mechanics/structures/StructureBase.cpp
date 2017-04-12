@@ -31,6 +31,7 @@
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/elements/ElementBase.h"
+#include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
@@ -64,6 +65,8 @@
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
+#include "mechanics/interpolationtypes/InterpolationBase.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -74,10 +77,10 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-
+#include "mechanics/structures/Assembler.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeUnstructuredGrid.h"
@@ -87,18 +90,15 @@
 
 using namespace NuTo;
 
-NuTo::StructureBase::StructureBase(int rDimension)
-    : mConstraintMatrix(mDofStatus, false)
-    , mConstraintMappingRHS(mDofStatus, false)
-    , mConstraintRHS(mDofStatus)
-    , mShowTime(true)
+NuTo::StructureBase::StructureBase(int rDimension) :
+    mAssembler(std::make_unique<Assembler>()),
+    mShowTime(true)
 {
     if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {
         throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
     }
     mDimension = rDimension;
-    mNodeNumberingRequired = true;
 
     mNumTimeDerivatives = 0;
 
@@ -215,6 +215,15 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
     }
 }
 
+const NuTo::Constraint::Constraints& NuTo::StructureBase::Constraints() const
+{
+    return GetAssembler().GetConstraints();
+}
+
+NuTo::Constraint::Constraints& NuTo::StructureBase::Constraints()
+{
+    return GetAssembler().GetConstraints();
+}
 
 // add visualization components for an element group
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualizeWhat rVisualizeComponent)
@@ -513,16 +522,15 @@ void NuTo::StructureBase::DefineVisualizeNodeData(
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStructureOutput rOutput)
 {
     Timer timer(std::string(__FUNCTION__) + ": " + StructureOutputToString(rOutput), GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired)
-        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     std::set<eStructureOutput> supportedTypes({eStructureOutput::HESSIAN0, eStructureOutput::HESSIAN1,
                                                eStructureOutput::HESSIAN2, eStructureOutput::HESSIAN2_LUMPED});
     if (supportedTypes.find(rOutput) == supportedTypes.end())
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureOutputToString(rOutput) +
+        throw MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(rOutput) +
                                  " is not a matrix type or is not supported right now.");
 
-    StructureOutputBlockMatrix hessian(mDofStatus, true);
+    StructureOutputBlockMatrix hessian(GetDofStatus(), true);
 
     std::map<eStructureOutput, StructureOutputBase*> evaluateMap;
     evaluateMap[rOutput] = &hessian;
@@ -560,10 +568,9 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian2Lumped(
 NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradient()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired)
-        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    StructureOutputBlockVector internalGradient(mDofStatus, true);
+    StructureOutputBlockVector internalGradient(GetDofStatus(), true);
 
     std::map<eStructureOutput, StructureOutputBase*> evaluateMap;
     evaluateMap[eStructureOutput::INTERNAL_GRADIENT] = &internalGradient;
@@ -666,11 +673,8 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
     bool isHessianCorrect = true;
 
     NodeBuildGlobalDofs(__FUNCTION__);
-
-    bool hasInteractingConstraints = mDofStatus.HasInteractingConstraints();
-    mDofStatus.SetHasInteractingConstraints(
-            true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
-
+    bool hasInteractingConstraints = GetDofStatus().HasInteractingConstraints();
+    DofStatusSetHasInteractingConstraints(true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
 
     auto hessian0 = BuildGlobalHessian0();
     auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
@@ -684,7 +688,7 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
     isHessianCorrect = isHessianCorrect &&
                        CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
 
-    mDofStatus.SetHasInteractingConstraints(hasInteractingConstraints);
+    DofStatusSetHasInteractingConstraints(hasInteractingConstraints);
 
     return isHessianCorrect;
 }
@@ -744,19 +748,18 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     if (GetNumTimeDerivatives() > 0)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only use this method for a system with 0 time derivatives.");
 
-    if (mNodeNumberingRequired)
-        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
     deltaDof_dt0.J.SetZero();
-    deltaDof_dt0.K = ConstraintGetRHSAfterGaussElimination();
+    deltaDof_dt0.K = GetAssembler().GetConstraintRhs();
 
     auto hessian0 = BuildGlobalHessian0();
 
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector() + BuildGlobalInternalGradient();
 
-    hessian0.ApplyCMatrix(GetConstraintMatrix());
-    residual.ApplyCMatrix(GetConstraintMatrix());
+    hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+    residual.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
 
     // reuse deltaDof_dt0
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
@@ -765,7 +768,96 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::Contact(const std::vector<int>& rElementGroups)
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
+                                                                      NuTo::Node::eDof rDofType,
+                                                                      const double rTolerance,
+                                                                      Eigen::Vector3d rNodeCoordOffset)
+{
+    const int dim = GetDimension();
+
+    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
+    queryNodeCoords = queryNodeCoords +  rNodeCoordOffset.head(dim);
+
+
+    std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
+
+    ElementBase* elementPtr = nullptr;
+    Eigen::VectorXd elementNaturalNodeCoords;
+    bool nodeInElement = false;
+    for (auto const& eleId : elementGroupIds) {
+        elementPtr = ElementGetElementPtr(eleId);
+
+        // Coordinate interpolation must be linear so the shape function derivatives are constant!
+        assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
+               Interpolation::eTypeOrder::EQUIDISTANT1);
+        const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
+                Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+
+        // real coordinates of every node in rElement
+        Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+
+        switch (mDimension) {
+            case 2: {
+                Eigen::Matrix2d invJacobian = dynamic_cast<ContinuumElement<2>*>(elementPtr)->CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
+            }
+                break;
+            case 3: {
+                Eigen::Matrix3d invJacobian = dynamic_cast<ContinuumElement<3>*>(elementPtr)->CalculateJacobian(
+                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+
+                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
+
+
+            }
+                break;
+
+            default:
+                throw NuTo::MechanicsException(
+                        std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
+
+        }
+
+
+        if ( (elementNaturalNodeCoords.array() > -rTolerance).all() and elementNaturalNodeCoords.sum() <= 1. + rTolerance)
+        {
+            nodeInElement = true;
+            break;
+        }
+
+    }
+
+    if (not nodeInElement)
+    {
+        GetLogger() << "Natural node coordinates: \n" << elementNaturalNodeCoords << "\n";
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
+    }
+
+    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
+   
+    std::vector<Constraint::Equation> equations(dim); // default construction of Equation with rhs = Constant = 0
+    for (int iDim = 0; iDim < dim; ++iDim)
+    {
+        equations[iDim].AddTerm(Constraint::Term(*NodeGetNodePtr(rNode), iDim, 1.));
+    }
+
+
+    for (int iNode = 0; iNode < shapeFunctions.rows(); ++iNode)
+    {
+        int localNodeId = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
+        auto globalNode = elementPtr->GetNode(localNodeId, Node::eDof::DISPLACEMENTS);
+//        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
+        double coefficient = -shapeFunctions(iNode, 0);
+
+        for (int iDim = 0; iDim < dim; ++iDim)
+            equations[iDim].AddTerm(Constraint::Term(*globalNode, iDim, coefficient));
+    }
+    Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
+}
+
+void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
 {
 }
 
@@ -810,8 +902,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVector()
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired)
-        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     StructureOutputBlockVector externalLoad(GetDofStatus(), true);
 
@@ -891,24 +982,24 @@ void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, boo
 
 void NuTo::StructureBase::DofTypeSetIsSymmetric(Node::eDof rDofType, bool rIsSymmetric)
 {
-    mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
+    GetAssembler().mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
 }
 
 bool NuTo::StructureBase::DofTypeIsSymmetric(Node::eDof rDofType) const
 {
-    return mDofStatus.IsSymmetric(rDofType);
+    return GetDofStatus().IsSymmetric(rDofType);
 }
 
 const NuTo::DofStatus& NuTo::StructureBase::GetDofStatus() const
 {
-    return mDofStatus;
+    return GetAssembler().mDofStatus;
 }
 
 void NuTo::StructureBase::UpdateDofStatus()
 {
     std::set<Node::eDof> dofTypes;
     std::set<Node::eDof> activeDofTypes;
-    BOOST_FOREACH (auto interpolationTypePair, mInterpolationTypeMap)
+    for(auto interpolationTypePair : mInterpolationTypeMap)
     {
         const std::set<Node::eDof>& dofs = interpolationTypePair.second->GetDofs();
         dofTypes.insert(dofs.begin(), dofs.end());
@@ -919,16 +1010,16 @@ void NuTo::StructureBase::UpdateDofStatus()
     dofTypes.erase(Node::eDof::COORDINATES);
     activeDofTypes.erase(Node::eDof::COORDINATES);
 
-    mDofStatus.SetDofTypes(dofTypes);
-    mDofStatus.SetActiveDofTypes(activeDofTypes);
+    GetAssembler().mDofStatus.SetDofTypes(dofTypes);
+    GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-    mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0);
 }
 
 
 void NuTo::StructureBase::DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints)
 {
-    mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
 }
 
 
@@ -940,7 +1031,7 @@ int NuTo::StructureBase::GetNumTotalDofs() const
 int NuTo::StructureBase::GetNumTotalActiveDofs() const
 {
     int numTotalActiveDofs = 0;
-    for (auto pair : mDofStatus.GetNumActiveDofsMap())
+    for (auto pair : GetDofStatus().GetNumActiveDofsMap())
         numTotalActiveDofs += pair.second;
     return numTotalActiveDofs;
 }
@@ -948,7 +1039,7 @@ int NuTo::StructureBase::GetNumTotalActiveDofs() const
 int NuTo::StructureBase::GetNumTotalDependentDofs() const
 {
     int numTotalActiveDofs = 0;
-    for (auto pair : mDofStatus.GetNumDependentDofsMap())
+    for (auto pair : GetDofStatus().GetNumDependentDofsMap())
         numTotalActiveDofs += pair.second;
     return numTotalActiveDofs;
 }
@@ -966,21 +1057,19 @@ int NuTo::StructureBase::GetNumDofs(Node::eDof rDofType) const
 
 int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
 {
-    auto it = mDofStatus.GetNumActiveDofsMap().find(rDofType);
-    if (it == mDofStatus.GetNumActiveDofsMap().end())
+    auto it = GetDofStatus().GetNumActiveDofsMap().find(rDofType);
+    if (it == GetDofStatus().GetNumActiveDofsMap().end())
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
                                        Node::DofToString(rDofType) + " dofs.");
-
     return it->second;
 }
 
 int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
 {
-    auto it = mDofStatus.GetNumDependentDofsMap().find(rDofType);
-    if (it == mDofStatus.GetNumDependentDofsMap().end())
+    auto it = GetDofStatus().GetNumDependentDofsMap().find(rDofType);
+    if (it == GetDofStatus().GetNumDependentDofsMap().end())
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
                                        Node::DofToString(rDofType) + " dofs.");
-
     return it->second;
 }
 
@@ -997,12 +1086,6 @@ int NuTo::StructureBase::GetNumActiveDofs(std::string rDofType) const
 int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
 {
     return GetNumDependentDofs(Node::DofToEnum(rDofType));
-}
-
-
-const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
-{
-    return mConstraintMatrix;
 }
 
 void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)

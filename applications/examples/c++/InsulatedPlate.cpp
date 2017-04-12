@@ -2,15 +2,15 @@
 // Consider a retangular plate of dimension L x H.
 // On the left, T = 0, on the right T = T_0 * y.
 // Top and bottom are insulated (no heat flux).
-#include <iostream>
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
-#include "mechanics/nodes/NodeBase.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/groups/Group.h"
+#include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 
@@ -34,21 +34,17 @@ int main()
     structure.ElementGroupSetSection(meshInfo.first, section);
     structure.ElementGroupSetConstitutiveLaw(meshInfo.first, law);
 
-
     structure.ElementTotalConvertToInterpolationType();
 
-    auto nodesLeft = structure.GroupCreate(eGroupId::Nodes);
-    auto nodesRight = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeCoordinateRange(nodesLeft, 0, 0.0, 0.0);
-    structure.GroupAddNodeCoordinateRange(nodesRight, 0, L, L);
+    auto nodesLeft = structure.GroupGetNodeCoordinateRange(eDirection::X, 0.0, 0.0);
+    auto nodesRight = structure.GroupGetNodeCoordinateRange(eDirection::X, L, L);
 
-    structure.ConstraintLinearSetTemperatureNodeGroup(nodesLeft, 0.0);
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(nodesLeft));
 
-    auto nodeGroup = dynamic_cast<Group<NodeBase>*>(structure.GroupGetGroupPtr(nodesRight));
-    for (auto& node : *nodeGroup)
+    for (auto& node : nodesRight)
     {
         auto coordinate = node.second->Get(Node::eDof::COORDINATES);
-        structure.ConstraintLinearSetTemperatureNode(node.second, T_0 * coordinate[1]);
+        structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(*node.second, T_0 * coordinate[1]));
     }
 
     structure.SolveGlobalSystemStaticElastic();

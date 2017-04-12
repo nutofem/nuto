@@ -4,7 +4,6 @@ if(ENABLE_PYTHON)
     foreach(test
         Brick8N
         DeleteElemNode
-        GlobalDofs
         HeatConduction
         MassMatrixIntegration
         NonlinearLoad
@@ -43,7 +42,6 @@ foreach(test
     InterfaceElements
     IntegrationPointVoronoiCells
     InterpolationTypes
-    LobattoIntegration
     MisesPlasticity
     MultipleConstitutiveLaws
     NewmarkPlane2D4N
@@ -51,7 +49,6 @@ foreach(test
     PiezoelectricLaw
     PlateWithHole
     RestartFiles
-    RungeKutta
     Shrinkage
     SpringDamperCombination
     SurfaceLoad

@@ -57,14 +57,13 @@ structure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "PrincipalEngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "NonlocalEqStrain")
 
-direction = np.array([1.0])
-structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
+firstNode = structure.NodeGetAtCoordinate(0)
+structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(firstNode, [nuto.eDirection_X]))
 
-rightBC = structure.ConstraintLinearSetDisplacementNode(nodeIDs[0], direction, 1.0)
+lastNode = structure.NodeGetAtCoordinate(length)
+structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(lastNode, [nuto.eDirection_X], lambda t: 0.05 * t))
 
 newmark = nuto.NewmarkDirect(structure)
-constraintMatrix = np.array([[0.0, 0.0], [1.0, 0.05]])
-newmark.AddTimeDependentConstraint(rightBC, constraintMatrix)
 newmark.SetTimeStep(0.1)
 newmark.SetResultDirectory("damage_bar_results", True)
 newmark.SetAutomaticTimeStepping(True)

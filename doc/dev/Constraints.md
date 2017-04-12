@@ -1,10 +1,12 @@
 @page Constraints Handling of constraints in NuTo
 
+# Theory
+
 From the principle of virtual displacements, it follows for a body in equilibrium:
-\f[
+$$
 \delta W_{int}^{(t+1)}= \delta W_{ext}^{(t+1)},
-\f]
-where the variation of the internal energy \f$\delta W_{int}^{(t+1)}\f$ and the variation of the external energy \f$\delta W_{ext}^{(t+1)}\f$ is given by
+$$
+where the variation of the internal energy $\delta W_{int}^{(t+1)}$ and the variation of the external energy $\delta W_{ext}^{(t+1)}$ is given by
 \f{eqnarray*}{
 \delta W_{int}^{(t+1)}&=\int_V\boldsymbol{\sigma}^T(\boldsymbol{d}^{(t+1)})\delta\boldsymbol{\varepsilon}^{(t+1)}\;dV\\
 &=\int_V\left(\boldsymbol{\sigma}(\boldsymbol{d}^{(t)})+\Delta \boldsymbol\sigma\left(\boldsymbol{d}^{(t)}+\Delta \boldsymbol{d}^{(t+1)}\right)\right)^T\delta\boldsymbol\varepsilon^{(t+1)}\;dV\\
@@ -171,3 +173,38 @@ with the modified stiffness matrix
 \f{align*}{
 \boldsymbol K^{mod}&= \boldsymbol{K}_{11}-\boldsymbol{C}^T_{con}\boldsymbol{K}_{21}-\boldsymbol{K}_{12}\boldsymbol{C}_{con}+\boldsymbol{C}_{con}^T\boldsymbol{K}_{22}\boldsymbol{C}_{con}.
 \f}
+
+# Implementation
+
+## Basics 
+
+- The class `NuTo::Constraint::Constraints` has a container of `NuTo::Constaint::Equation`. 
+- Each `NuTo::Constraint::Equation` has a time dependent right-hand-side (`std::function<double(double time)>`) and a container of `NuTo::Constraint::Term`. 
+- Each term saves a reference to a `NuTo::NodeBase`, a component and a coefficient.
+
+That way, `NuTo::Constraint::Constraints` can build the matrix \f$\boldsymbol T\f$ and the rhs \f$\boldsymbol b\f$ of
+
+\f[
+\boldsymbol T \boldsymbol u = \boldsymbol b(t)
+\f]
+
+The method `NuTo::Assembler::BuildGlobalDof()` performs a sparse (pivot?) Gauss elimination and identifies the dependent dofs \f$\boldsymbol u_2\f$, performs renumbering, and so on... After that, the following members are valid:
+
+- `BlockSparseMatrix mConstraintMatrix` - corresponds to \f$\boldsymbol T_2^{-1} \boldsymbol T_1\f$
+- `BlockSparseMatrix mConstraintRhsMapping` - corresponds to \f$\boldsymbol T_2^{-1}\f$
+- `BlockFullVector mConstraintRhs` - corresponds to \f$\boldsymbol T_2^{-1} \boldsymbol b(t)\f$
+
+`mConstraintRhs` is updated to a new global time via `NuTo::ConstraintUpdateRhs(time)` which internally calculates \f$\boldsymbol b(t)\f$ and applies \f$\boldsymbol T_2^{-1}\f$ (which is equal, but way faster, than performing the Gauss elimination again (\f$O(n^3)\f$?) - at every time step.)
+
+
+## Usage
+
+1) Create as many instances of `NuTo::Constraint::Equation` as you need
+    - manually by instantiating an object of that class (not recommended)
+    - using `mechanics/constraints/ConstraintCompanion.h`
+        - Just have a look at this class, very intuitive, always returns an `NuTo::Constraint::Equation` or a `std::vector` of those
+
+2) Store the equation
+    - call `NuTo::Constraint::Constraints::Add(...)`
+    - you can access this class via `NuTo::StructureBase::Constraints()`
+

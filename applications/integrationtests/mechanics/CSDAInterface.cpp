@@ -6,23 +6,17 @@
  */
 
 #include <cmath>
-#include <boost/filesystem/operations.hpp>
-#include <mechanics/interpolationtypes/InterpolationType.h>
+#include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 
@@ -220,26 +214,22 @@ void CSDA2D()
     s.ElementTotalConvertToInterpolationType();
 
 
-    int nodeFixXY = s.NodeGetIdAtCoordinate(Eigen::Vector2d({-lx2, 0}), 1.e-5);
-    int nodeFixY = s.NodeGetIdAtCoordinate(Eigen::Vector2d({lx2, 0}), 1.e-5);
-    int nodeBC = s.NodeGetIdAtCoordinate(Eigen::Vector2d({thickness2, ly}), 1.e-5);
+    const auto& nodeFixXY = s.NodeGetAtCoordinate(Eigen::Vector2d({-lx2, 0}));
+    const auto& nodeFixY = s.NodeGetAtCoordinate(Eigen::Vector2d({lx2, 0}));
+    const auto& nodeBC = s.NodeGetAtCoordinate(Eigen::Vector2d({thickness2, ly}));
 
-    s.ConstraintLinearSetDisplacementNode(nodeFixXY, Eigen::Vector2d({1,0}), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXY, Eigen::Vector2d({0,1}), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixY, Eigen::Vector2d({0,1}), 0);
-
-    int BC = s.ConstraintLinearSetDisplacementNode(nodeBC, Eigen::Vector2d({0,1}), 0);
-
+    double deltaD = -.5;
+    using namespace NuTo::Constraint;
+    using NuTo::Node::eDof;
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixXY, {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixY, {NuTo::eDirection::Y}));
+    s.Constraints().Add(eDof::DISPLACEMENTS, Direction(nodeBC, Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
+    
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
     std::cout << s.GetNumTotalDependentDofs() << std::endl;
 
-    double deltaD = .5;
-
-    Eigen::Matrix2d dispRHS;
-    dispRHS << 0, 0, 1, -deltaD;
-
-//    s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
 
     NuTo::NewmarkDirect newmark(&s);
 
@@ -256,15 +246,6 @@ void CSDA2D()
 
     bool deleteDirectory = true;
     newmark.SetResultDirectory("./CSDA2D", deleteDirectory);
-
-    newmark.AddTimeDependentConstraint(BC, dispRHS);
-
-//    newmark.AddResultNodeDisplacements("Displ", nodeBC);
-//    int groupNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
-//    s.GroupAddNode(groupNodeBC, nodeBC);
-//    newmark.AddResultGroupNodeForce("Force", groupNodeBC);
-
-
     newmark.Solve(1);
 }
 
@@ -428,20 +409,20 @@ void CSDA3D()
     s.ElementInfo(10);
     s.NodeInfo(10);
 
-    int nodeFixXYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({-lx, 0, 0}), 1.e-5);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitX(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitZ(), 0);
-
-    int nodeFixYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({lx, 0, 0}), 1.e-5);
-    s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitZ(), 0);
-
+    const auto& nodeFixXYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({-lx, 0, 0}));
+    const auto& nodeFixYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({lx, 0, 0}));
+    
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, lz}), 0, 2*thickness);
+    auto groupZ = s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
 
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitY(), 0);
-    int BC = s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitZ(), 0);
+    using namespace NuTo::Constraint;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
+    double deltaD = -.5;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Direction(*groupZ, Eigen::Vector3d::UnitZ(), RhsRamp(1, deltaD))) ;
+
+    s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
 
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
@@ -462,12 +443,6 @@ void CSDA3D()
 
     bool deleteDirectory = true;
     newmark.SetResultDirectory("./CSDA3D", deleteDirectory);
-
-    double deltaD = .5;
-    Eigen::Matrix2d dispRHS;
-    dispRHS << 0, 0, 1, -deltaD;
-    newmark.AddTimeDependentConstraint(BC, dispRHS);
-
     newmark.Solve(1);
 }
 

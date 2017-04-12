@@ -4,7 +4,6 @@
 #include "base/Timer.h"
 
 
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -13,6 +12,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/Assembler.h"
 
 int NuTo::Structure::GetNumNodes() const
 {
@@ -149,8 +149,7 @@ int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Nod
     // add node to map
     this->mNodeMap.insert(id, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    this->mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 
     //return int identifier of the new node
     return id;
@@ -262,8 +261,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    this->mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 }
 
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
@@ -319,9 +317,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    this->mNodeNumberingRequired  = true;
-
+    GetAssembler().SetNodeVectorChanged();
 }
 
 
@@ -359,8 +355,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
     // add node to map
     this->mNodeMap.insert(rNodeNumber, nodePtr);
 
-    //renumbering of dofs for global matrices required
-    this->mNodeNumberingRequired  = true;
+    GetAssembler().SetNodeVectorChanged();
 }
 
 
@@ -424,135 +419,24 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
         // delete element from map
         this->mNodeMap.erase(itNode);
 
-        this->mNodeNumberingRequired = true;
+        GetAssembler().SetNodeVectorChanged();
     }
 }
 
 
 void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 {
+    if (not GetAssembler().RenumberingRequired())
+        return;
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     try
     {
-        std::map<Node::eDof, int> numDofsMap;
-
-        // build initial node numbering
-
-        //
-        // number Lagrange multipliers in constraint equations defined in StructureBase
-        // currently removed
-        // ConstraintNumberGlobalDofs(this->mNumDofs);
-        //
-
         UpdateDofStatus();
-
-        this->mNodeNumberingRequired = false;
-
-        BOOST_FOREACH(auto it, mNodeMap)
-            it.second->SetGlobalDofsNumbers(numDofsMap);
-
-
-        mConstraintMatrix.AllocateSubmatrices();
-        mConstraintMappingRHS.AllocateSubmatrices();
-        mConstraintRHS.AllocateSubvectors();
-
-
-        for (auto dof : DofTypesGet())
-        {
-            mDofStatus.SetNumDependentDofs(dof, ConstraintGetNumLinearConstraints(dof));
-            mDofStatus.SetNumActiveDofs(dof, numDofsMap[dof] - GetNumDependentDofs(dof));
-        }
-
-
-
-        // build constraint matrix for all dofs
-        mConstraintMatrix = ConstraintGetConstraintMatrixBeforeGaussElimination();
-
-        for (auto dof : DofTypesGet())
-        {
-            auto& constraintMatrix = mConstraintMatrix(dof, dof);
-
-            const int numActiveDofs = GetNumActiveDofs(dof);
-            const int numDependentDofs = GetNumDependentDofs(dof);
-            const int numDofs = GetNumDofs(dof);
-
-            //init RHSMatrix as a diagonal identity matrix
-            auto& constraintMappingRHS = mConstraintMappingRHS(dof, dof);
-
-            constraintMappingRHS.Resize(numDependentDofs, numDependentDofs);
-            for (int i = 0; i < numDependentDofs ; ++i)
-                constraintMappingRHS.AddValue(i,i,1.);
-
-            // perform gauss algorithm
-            std::vector<int> mappingInitialToNewOrdering;
-            std::vector<int> mappingNewToInitialOrdering;
-
-            constraintMatrix.Gauss(constraintMappingRHS, mappingNewToInitialOrdering, mappingInitialToNewOrdering);
-
-            // move dependent dofs at the end
-            // Warning!!! after this loop mappingNewToInitialOrdering is no longer valid !!!
-            std::vector<int> tmpMapping;
-            for (int dependentDofCount = 0; dependentDofCount < numDependentDofs; dependentDofCount++)
-            {
-                tmpMapping.push_back(numActiveDofs + dependentDofCount);
-                mappingInitialToNewOrdering[mappingNewToInitialOrdering[dependentDofCount]] += numActiveDofs;
-            }
-            for (int activeDofCount = numDependentDofs; activeDofCount < numDofs; activeDofCount++)
-            {
-                tmpMapping.push_back(activeDofCount - numDependentDofs);
-                mappingInitialToNewOrdering[mappingNewToInitialOrdering[activeDofCount]] -= numDependentDofs;
-            }
-            mappingNewToInitialOrdering.clear();
-
-            // reorder columns
-            constraintMatrix.ReorderColumns(tmpMapping);
-
-
-            // remove columns of dependent dofs
-            // check if the submatrix which is removed is a diagonal matrix
-            const auto& columns = constraintMatrix.GetColumns();
-
-            for (unsigned int iRow = 0; iRow < columns.size(); iRow++)
-                for (unsigned int iPos = 0; iPos < columns[iRow].size(); iPos++)
-                {
-                    int column = columns[iRow][iPos];
-                    if (column > numActiveDofs)
-                        if (column - numActiveDofs != (int)iRow)
-                            throw MechanicsException("[NuTo::Structure::NodeBuildGlobalDofs] invalid matrix structure.");
-                }
-
-
-            constraintMatrix.RemoveLastColumns(numDependentDofs);
-
-            // renumber dofs
-
-            BOOST_FOREACH(auto it, mNodeMap)
-            {
-                it->second->RenumberGlobalDofs(dof, mappingInitialToNewOrdering);
-            }
-        }
-
-        // since only the diagonals were set, the off-diagonal submatrices have to be resized
-        // to guarantee the right dimensions in arithmetic operations
-        mConstraintMatrix.FixOffDiagonalDimensions();
-        mConstraintMappingRHS.FixOffDiagonalDimensions();
-
-        mConstraintMatrix.CheckDimensions();
-        mConstraintMappingRHS.CheckDimensions();
-
-
-        // number Lagrange multipliers in constraint equations defined in StructureBase
-        // currently removed
-        //renumber DOFS in constraints (Lagrange multiplier)
-        //        ConstraintRenumberGlobalDofs(mappingInitialToNewOrdering);
-
-        //calculate current rhs matrix
-        this->ConstraintUpdateRHSAfterGaussElimination();
-
-        mNodeNumberingRequired = false;
-        UpdateDofStatus(); // again
-
+        std::vector<NodeBase*> nodes;
+        this->GetNodesTotal(nodes);
+        GetAssembler().BuildGlobalDofs(nodes); 
+        UpdateDofStatus();
     }
     catch (MathException& e)
     {
@@ -577,8 +461,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
 NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTimeDerivative) const
 {
-    if (this->mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
     StructureOutputBlockVector dofValues(GetDofStatus(), true); // with resize
 
@@ -587,41 +470,63 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
         auto& actDofValues = dofValues.J[dofType];
         auto& depDofValues = dofValues.K[dofType];
 
-        // extract dof values from nodes
-        BOOST_FOREACH(auto it, mNodeMap)
-            it->second->GetGlobalDofValues(rTimeDerivative, dofType, actDofValues, depDofValues);
+        int numActiveDofs = GetNumActiveDofs(dofType);
 
-        //extract dof values of additional DOFs
-        // NodeExtractAdditionalGlobalDofValues(rTimeDerivative, rActiveDofValues[dof],rDependentDofValues[dof]);
-        // I do not get this method. But obviously, it is not implemented at the moment. - TT
+        for (auto it : mNodeMap)
+        {
+            const NodeBase& node = *it->second;
+            if (not node.IsDof(dofType))
+                continue;
+
+            const auto& values = node.Get(dofType, rTimeDerivative);
+            for (int i = 0; i < values.rows(); ++i)
+            {
+                int dofNumber = node.GetDof(dofType, i); 
+                if (dofNumber < numActiveDofs)
+                    actDofValues[dofNumber] = values[i]; 
+                else
+                    depDofValues[dofNumber - numActiveDofs] = values[i];
+            }
+        }
     }
     return dofValues;
 }
 
 void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues)
 {
-    if (this->mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
     for (auto dofType : DofTypesGetActive())
     {
         if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of active dof vector for " + Node::DofToString(dofType));
+            throw MechanicsException(__PRETTY_FUNCTION__,  "invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
         if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
+            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
-        // write dof values to the nodes
-        BOOST_FOREACH(auto it, mNodeMap)
-            it->second->SetGlobalDofValues(rTimeDerivative, dofType, rActiveDofValues[dofType], rDependentDofValues[dofType]);
+        auto& actDofValues = rActiveDofValues[dofType];
+        auto& depDofValues = rDependentDofValues[dofType];
+        int numActiveDofs = GetNumActiveDofs(dofType);
 
+        for (auto it : mNodeMap)
+        {
+            NodeBase& node = *it->second;
+            if (not node.IsDof(dofType))
+                continue;
 
-        //write the dof values of the Lagrange multipliers
-//        ConstraintMergeGlobalDofValues(rActiveDofValues, rDependentDofValues);
+            int numValues = node.GetNum(dofType);
+            Eigen::VectorXd values(numValues);
+            for (int i = 0; i < numValues; ++i)
+            {
+                int dofNumber = node.GetDof(dofType, i); 
+                if (dofNumber < numActiveDofs)
+                    values[i] = actDofValues[dofNumber]; 
+                else
+                    values[i] = depDofValues[dofNumber - numActiveDofs];
+            }
+            node.Set(dofType, rTimeDerivative, values);
+        }
 
-        //write dof values of additional DOFs
-//        NodeMergeAdditionalGlobalDofValues(rTimeDerivative,rActiveDofValues,rDependentDofValues);
-        // I do not get this method. But obviously, it is not implemented at the moment. - TT
     }
     this->mUpdateTmpStaticDataRequired=true;
 }
@@ -631,10 +536,9 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
 NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const
 {
-    if (this->mNodeNumberingRequired)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] a valid dof numbering was not found (build dof numbering using NodeBuildGlobalDofs).");
+    GetAssembler().ThrowIfRenumberingRequred();
 
-    return this->mConstraintRHS - this->mConstraintMatrix * rActiveDofValues;
+    return this->GetAssembler().GetConstraintRhs() - GetAssembler().GetConstraintMatrix() * rActiveDofValues;
 }
 
 
@@ -730,8 +634,5 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     }
 
     //in constraints
-    for(boost::ptr_map<int,ConstraintBase>::iterator constraintIt=mConstraintMap.begin();constraintIt!=mConstraintMap.end(); ++constraintIt)
-    {
-        constraintIt->second->ExchangeNodePtr(rOldPtr, rNewPtr);
-    }
+    GetAssembler().GetConstraints().ExchangeNodePtr(*rOldPtr, *rNewPtr);
 }

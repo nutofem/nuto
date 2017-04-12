@@ -386,16 +386,12 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
 
 int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, const Eigen::MatrixXi& rNodeNumbers)
 {
-    std::cout << rNodeNumbers << std::endl;
     std::vector<int> newElementIds;
     // go through the elements
     for (int iNode = 0; iNode < rNodeNumbers.cols(); ++iNode)
     {
-        std::cout << rNodeNumbers.col(iNode) << std::endl;
         auto column = rNodeNumbers.col(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
-        for (int i : incidence)
-            std::cout << i << std::endl;
         int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }

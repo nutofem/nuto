@@ -18,7 +18,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 
 #include <boost/filesystem.hpp>
@@ -217,31 +217,28 @@ BOOST_AUTO_TEST_CASE(displacementBoundary)
     Eigen::Vector3d directionZ;
     directionZ << 0.,0.0,1.0;
 
-
     // electrical conditions at the boundaries are derived from the test data
     std::vector<int> boundaryNodeIds = s.GroupGetMemberIds(grpNodesBoundary);
-    for (std::size_t ii=0; ii < boundaryNodeIds.size(); ii++) {
-        Eigen::VectorXd coords;
-        int curNode = boundaryNodeIds[ii];
-        s.NodeGetCoordinates(curNode,coords);
-        s.ConstraintLinearSetElectricPotentialNode(curNode,testEField.dot(coords));
+    for (int nodeId : boundaryNodeIds) 
+    {
+        const auto& curNode = *s.NodeGetNodePtr(nodeId);
+        s.Constraints().Add(NuTo::Node::eDof::ELECTRICPOTENTIAL,
+                NuTo::Constraint::Value(curNode, testEField.dot(curNode.Get(NuTo::Node::eDof::COORDINATES))));
     }
 
-
-
-
     // mechanical part: either displ. or forces or mixed
-
     // mechanical conditions at the boundaries are derived from the test data
-    for (std::size_t  ii=0; ii < boundaryNodeIds.size(); ii++) {
-        Eigen::VectorXd coords;
-        int curNode = boundaryNodeIds[ii];
-        s.NodeGetCoordinates(curNode,coords);
-        Eigen::VectorXd displ;
-        displ = testStrainMatrix * coords;
-        s.ConstraintLinearSetDisplacementNode(curNode,directionX,displ(0));
-        s.ConstraintLinearSetDisplacementNode(curNode,directionY,displ(1));
-        s.ConstraintLinearSetDisplacementNode(curNode,directionZ,displ(2));
+    for (int nodeId : boundaryNodeIds) 
+    {
+        const auto& curNode = *s.NodeGetNodePtr(nodeId);
+        Eigen::VectorXd displ = testStrainMatrix * curNode.Get(NuTo::Node::eDof::COORDINATES);
+        
+        s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Constraint::Component(curNode, {NuTo::eDirection::X}, displ[0]));
+        s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Constraint::Component(curNode, {NuTo::eDirection::Y}, displ[1]));
+        s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Constraint::Component(curNode, {NuTo::eDirection::Z}, displ[2]));
     }
 
 //    part or all displacement boundary conditions could be replaced with traction boundary conditions below

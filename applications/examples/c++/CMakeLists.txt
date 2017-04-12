@@ -28,11 +28,9 @@ foreach(test
     HeatedPlate
     InsulatedPlate
     PGDPlateMeso2D
-    Plane2D4NFreeHangingNode
     SparseDirectSolverMUMPS
     Temperature1D
     Truss1D2N
-    VisualizePlane2D4N
     )
 
     add_executable(${test} ${test}.cpp)

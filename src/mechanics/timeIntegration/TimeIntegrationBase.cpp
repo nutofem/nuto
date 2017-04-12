@@ -24,20 +24,18 @@
 #include "mechanics/timeIntegration/ResultNodeDisp.h"
 #include "mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "mechanics/timeIntegration/ResultTime.h"
-#include "mechanics/timeIntegration/TimeDependencyFunction.h"
-#include "mechanics/timeIntegration/TimeDependencyMatrix.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
+#include "mechanics/structures/Assembler.h"
 
 using namespace NuTo;
 
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
         mStructure(rStructure),
         mSolver(std::make_unique<SolverMUMPS>(false)),
-        mTimeDependentConstraint(-1),
         mTimeDependentLoadCase(-1),
         mLoadVectorStatic(rStructure->GetDofStatus()),
         mLoadVectorTimeDependent(rStructure->GetDofStatus()),
@@ -68,41 +66,8 @@ NuTo::TimeIntegrationBase::~TimeIntegrationBase()
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
 {
-    mTimeDependentConstraint = -1;
-    mTimeDependentConstraintFactor.resize(0,0);
     mTimeDependentLoadCase = -1;
     mTimeDependentLoadFactor.resize(0,0);
-}
-
-
-//! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-//! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const Eigen::MatrixXd &rTimeDependentConstraintFactor)
-{
-    if (rTimeDependentConstraintFactor.cols()!=2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
-    if (rTimeDependentConstraintFactor.rows()<2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
-    if (rTimeDependentConstraintFactor(0,0)!=0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "the first time should always be zero.");
-    //check, if the time is monotonically increasing
-    for (int count=0; count<rTimeDependentConstraintFactor.rows()-1; count++)
-    {
-        if (rTimeDependentConstraintFactor(count,0)>=rTimeDependentConstraintFactor(count+1,0))
-            throw MechanicsException(__PRETTY_FUNCTION__, "time has to increase monotonically.");
-    }
-
-    mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyMatrix>(rTimeDependentConstraintFactor)));
-}
-
-
-//! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-//! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
-{
-    mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction)));
 }
 
 const NuTo::BlockScalar& NuTo::TimeIntegrationBase::GetToleranceResidual() const
@@ -110,13 +75,9 @@ const NuTo::BlockScalar& NuTo::TimeIntegrationBase::GetToleranceResidual() const
     return mToleranceResidual;
 }
 
-//! @brief Updates the Rhs for all constraints
-//! @param rCurrentTime ... current time
-//! @remark remove the second argument rDof
 void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
 {
-    for(auto itTDC : mMapTimeDependentConstraint)
-        mStructure->ConstraintSetRHS(itTDC.first, itTDC.second->GetTimeDependentFactor(rCurrentTime));
+    mStructure->GetAssembler().ConstraintUpdateRhs(rCurrentTime);
 }
 
 
@@ -141,32 +102,6 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
     mTimeDependentLoadFactor = rTimeDependentLoadFactor;
     mTimeDependentLoadCase = rTimeDependentLoadCase;
 }
-
-//! @brief apply the new rhs of the constraints as a function of the current time delta
-double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double curTime)
-{
-    //calculate the two corresponding time steps between which a linear interpolation is performed
-    if (mTimeDependentConstraintFactor.rows()!=0)
-    {
-        int curStep(0);
-        while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.rows()-1)
-            curStep++;
-
-        if (curStep==0)
-            curStep++;
-
-        //extract the two data points
-        double s1 = mTimeDependentConstraintFactor(curStep-1,1);
-        double s2 = mTimeDependentConstraintFactor(curStep,1);
-        double t1 = mTimeDependentConstraintFactor(curStep-1,0);
-        double t2 = mTimeDependentConstraintFactor(curStep,0);
-
-        return s1 + (s2-s1)/(t2-t1) * (curTime-t1);
-    }
-    return 0;
-}
-
-
 
 
 //! @brief Sets the residual tolerance for a specific DOF
@@ -232,7 +167,7 @@ NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExte
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetConstraintRHS(double rCurrentTime)
 {
     UpdateConstraints(rCurrentTime);
-    return mStructure->ConstraintGetRHSAfterGaussElimination();
+    return mStructure->GetAssembler().GetConstraintRhs();
 }
 
 const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0)
@@ -243,11 +178,8 @@ const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndM
     rDof_dt0.K = mStructure->NodeCalculateDependentDofValues(rDof_dt0.J);
     mStructure->NodeMergeDofValues(0, rDof_dt0);
 
-
-
     mStructure->ElementTotalUpdateTmpStaticData();
-
-    return mStructure->ConstraintGetRHSAfterGaussElimination();
+    return mStructure->GetAssembler().GetConstraintRhs();
 }
 
 //! @brief monitor the displacements of a node

@@ -1,9 +1,8 @@
 #pragma once
 
+#include <vector>
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/DofHash.h"
-#include <unordered_map>
-
 
 namespace NuTo
 {
@@ -29,28 +28,11 @@ public:
     //! @param contains the information for each dof type
     NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos);
 
-    //! @brief sets the global dofs numbers for each dof type
-    //! @param rDofNumbers ... map containing the dof type and the current number
-    void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers) override;
-
-    //! @brief write dof values to the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) override;
-
-    //! @brief extract dof values from the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rDofType ... specific dof type
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const override;
-
-    //! @brief renumber the global dofs according to predefined ordering
-    //! @param rDofType ... specific dof type
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    void RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rMappingInitialToNewOrdering) override;
+    //! @brief sets the global dof number for a specific dof type and a component
+    //! @param dof ... specific dof type
+    //! @param component ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
+    //! @param dofNumber ... dof number
+    void SetDofNumber(Node::eDof dof, int domponent, int dofNumber) override;
 
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
@@ -90,10 +72,6 @@ public:
     //! @brief returns a set containing all dof types
     std::set<Node::eDof> GetDofTypes() const override;
 
-    //! @brief returns the type of node as a string (all the data stored at the node)
-    //! @return string
-    std::string GetNodeTypeStr() const override;
-
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
 
@@ -104,29 +82,17 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
-
+protected:
+    //! @brief Outstream function for "virtual friend idiom"
+    virtual void Info(std::ostream& out) const override;
 
 private:
 
-    //! @brief extracts the appropriate dof value from the active dof vector or the dependent dof vector
-    //! @param rDofNumber ... dof number
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    //! @return dof value that corresponds to the rDofNumber
-    inline double GetDofValueFromVector(int rDofNumber, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) const;
-
-    //! @brief writes the appropriate dof value to the active dof vector or the dependent dof vector
-    //! @param rDofNumber ... dof number
-    //! @param rDofValue ... dof value
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    inline void WriteNodeValueToVector(int rDofNumber, double rDofValue, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const;
-
     //! @brief stores the dof values (std::vector for time derivatives, VectorXd for values)
-    std::unordered_map<Node::eDof, std::vector<Eigen::VectorXd>, Node::eDofHash> mDofValues;
+    std::map<Node::eDof, std::vector<Eigen::VectorXd>> mDofValues;
 
     //! @brief stores the global dof numbers in a dynamic integer vector
-    std::unordered_map<Node::eDof, Eigen::VectorXi, Node::eDofHash> mDofNumbers;
+    std::map<Node::eDof, Eigen::VectorXi> mDofNumbers;
 
 };
 

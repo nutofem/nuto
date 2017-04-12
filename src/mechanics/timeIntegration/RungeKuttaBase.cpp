@@ -18,6 +18,7 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
+#include "mechanics/structures/Assembler.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
@@ -71,7 +72,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    if (mStructure->GetDofStatus().HasInteractingConstraints() and !(mMapTimeDependentConstraint.empty()) )
+    if (mStructure->GetDofStatus().HasInteractingConstraints())
         throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for time dependent constraints including multiple dofs.");
 
     if (mTimeStep==0.)
@@ -105,7 +106,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2Lumped();
 
     //invert the mass matrix
-    auto cmat = mStructure->GetConstraintMatrix();
+    auto cmat = mStructure->GetAssembler().GetConstraintMatrix();
     hessian2.ApplyCMatrix(cmat);
 
     hessian2.CwiseInvert();
@@ -148,20 +149,9 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
                 curTime=prevCurTime+deltaTimeStage;
                 mTime=prevTime+deltaTimeStage;
 
-                //to be implemented mStructure->SetCurrentTime(mTime);
-                //an update of the external load factor and the time dependent constraint is only
-                //necessary for a modified global time
-                if (!(mMapTimeDependentConstraint.empty()))
-                {
-                    //throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-                    //double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-                    //mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-                    //mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
-                    UpdateConstraints(mTime);
-                }
-                //calculate external force
+                UpdateConstraints(mTime);
+               
                 extLoad = CalculateCurrentExternalLoad(curTime);
-
             }
             dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
             mStructure->NodeMergeDofValues(0,dof_dt0_tmp);
@@ -207,10 +197,6 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         //the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
         //this is calculated using finite differencs
         //make sure to recalculate the internal force and external force (if time factor is not 1)
-        if (mTimeDependentConstraint!=-1)
-        {
-            throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-        }
 
         //acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
         //outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;

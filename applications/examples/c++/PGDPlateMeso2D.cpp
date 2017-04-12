@@ -1,20 +1,14 @@
-#include <iostream>
 #include <boost/filesystem.hpp>
-#include <boost/tokenizer.hpp>
-#include <sstream>
-
-#ifdef _OPENMP
-    #include <omp.h>
-#endif //_OPENMP
-
 
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 
-#include <math/EigenCompanion.h>
+#include "math/EigenCompanion.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include "visualize/VisualizeEnum.h"
 
@@ -382,21 +376,9 @@ int main()
     		SetStructureX(myStructureX, properties, MeshX, nodeGroupX,nodeGroupConst,nodeGroupLoad,elemGroupLoad);
 
     		//set constraints x=0 fixed in X and Y direction
-    		Eigen::VectorXd directionX(2);
-    	    directionX(0)=1;
-    	    Eigen::VectorXd directionY(2);
-    	    directionY(1)=1;
-
-    		std::vector<int> Nodesx0 = myStructureX.GroupGetMemberIds(nodeGroupConst);
-    		int NumNodesx0 = myStructureX.GroupGetNumMembers(nodeGroupConst);
-    		std::vector<int> Constr(NumNodesx0*2);
-
-    		for (int count=0; count<NumNodesx0; count++)
-    		{
-    			int node_id=Nodesx0[count];
-    			Constr[count] = myStructureX.ConstraintLinearSetDisplacementNode(node_id, directionX, 0.0);
-    			Constr[count+NumNodesx0] = myStructureX.ConstraintLinearSetDisplacementNode(node_id, directionY, 0.0);
-    		}
+            const auto& groupX0 = *myStructureX.GroupGetGroupPtr(nodeGroupConst)->AsGroupNode();
+            myStructureX.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                    NuTo::Constraint::Component(groupX0, {NuTo::eDirection::X, NuTo::eDirection::Y}));
 
     	    myStructureX.NodeBuildGlobalDofs();
     	    myStructureX.CalculateMaximumIndependentSets();
@@ -459,11 +441,8 @@ int main()
     		//compute scalar factors (alpha1 and beta1 unchanged)
 			//\int_X R'^2 dx		//
 			//get stiffness without constraints to calculate integral (it's maybe possible to directly use only the unconstrained problem form the beginning)
-    		for (int count=0; count<NumNodesx0*2; count++)
-    		{
-    			int Constrnum = Constr[count];
-    			myStructureX.ConstraintDelete(Constrnum);
-    		}
+            myStructureX.Constraints().RemoveAll();
+
 			auto hessian0X = myStructureX.BuildGlobalHessian0();
 //			std::cout << "After delete Constraints node numbering " << std::endl;
 //			myStructureX.NodeInfo(10);

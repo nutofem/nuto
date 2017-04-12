@@ -54,6 +54,7 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
+#include "mechanics/structures/Assembler.h"
 
 #include <ANN/ANN.h>
 #include <set>
@@ -501,8 +502,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     if (rStructureOutput.empty())
         return;     // ! ---> may occur if matrices have been identified as constant
 
-    if (this->mNodeNumberingRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node numbering required! Call NodeBuildGlobalDofs() first.");
+    NodeBuildGlobalDofs();
 
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
@@ -547,27 +547,27 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
         {
         case NuTo::eStructureOutput::HESSIAN0:
         {
-            elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+            elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
             break;
         }
         case NuTo::eStructureOutput::HESSIAN1:
         {
-            elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+            elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
             break;
         }
         case NuTo::eStructureOutput::HESSIAN2:
         {
-            elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+            elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
             break;
         }
         case NuTo::eStructureOutput::HESSIAN2_LUMPED:
         {
-            elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+            elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
             break;
         }
         case NuTo::eStructureOutput::INTERNAL_GRADIENT:
         {
-            elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+            elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
             break;
         }
         case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
@@ -581,10 +581,9 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
         }
         }
     }
-    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
-    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
-
     // calculate element contribution
+    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 #ifdef _OPENMP
     for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
     {
@@ -696,15 +695,15 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
 
 
     // declare necessary variables
-    StructureOutputBlockMatrix Hessian_1(mDofStatus,true);
+    StructureOutputBlockMatrix Hessian_1(GetDofStatus(),true);
 
-    StructureOutputBlockVector delta_dof_dt1 (mDofStatus,true);
+    StructureOutputBlockVector delta_dof_dt1 (GetDofStatus(),true);
 
-    StructureOutputBlockVector dof_dt1(mDofStatus,true);
-    StructureOutputBlockVector residual(mDofStatus, true);
-    StructureOutputBlockVector trialResidual(mDofStatus, true);
-    StructureOutputBlockVector intForce(mDofStatus, true);
-    StructureOutputBlockVector extForce(mDofStatus, true);
+    StructureOutputBlockVector dof_dt1(GetDofStatus(),true);
+    StructureOutputBlockVector residual(GetDofStatus(), true);
+    StructureOutputBlockVector trialResidual(GetDofStatus(), true);
+    StructureOutputBlockVector intForce(GetDofStatus(), true);
+    StructureOutputBlockVector extForce(GetDofStatus(), true);
 
 
     // declare and fill output map for structure
@@ -806,7 +805,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         newNode->Set(Node::eDof::COORDINATES, node->Get(Node::eDof::COORDINATES) + rOffset);
     }
     //renumbering of dofs for global matrices required
-    this->mNodeNumberingRequired = true;
+    GetAssembler().SetNodeVectorChanged();
 
     std::vector<ElementBase*> elements;
     GetElementsTotal(elements);

@@ -1,18 +1,18 @@
+#include <map>
+#include <string>
+#include <iostream>
+#include <cmath>
+#include <boost/filesystem.hpp>
+
 #include "mechanics/structures/unstructured/Structure.h"
 
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/sections/SectionPlane.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
-#include "base/Exception.h"
-#include <boost/filesystem.hpp>
-
-#include <map>
-#include <string>
-#include <iostream>
-
-#include <cmath>
 
 using ExactStress     = Eigen::Vector3d;
 constexpr double load = 10;
@@ -63,48 +63,39 @@ Eigen::Vector2d GetPressureUpper(Eigen::VectorXd rCartesianCoordinate)
     return GetPressure(rCartesianCoordinate, Eigen::Vector2d::UnitY());
 }
 
-void ApplyBCs(NuTo::Structure& rS)
+void ApplyBCs(NuTo::Structure& s)
 {
-
-    int groupNodeBCRight       = rS.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCLower       = rS.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCLeft        = rS.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCUpper       = rS.GroupCreate(NuTo::eGroupId::Nodes);
     constexpr double lx        = 4;
     constexpr double ly        = 4;
-    constexpr double tolerance = 1.e-6;
 
-    rS.GroupAddNodeCoordinateRange(groupNodeBCLeft, 0, -tolerance, tolerance);
-    rS.GroupAddNodeCoordinateRange(groupNodeBCLower, 1, -tolerance, tolerance);
-    rS.GroupAddNodeCoordinateRange(groupNodeBCRight, 0, lx - tolerance, lx + tolerance);
-    rS.GroupAddNodeCoordinateRange(groupNodeBCUpper, 1, ly - tolerance, ly + tolerance);
+    auto& groupLeft  = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0.);
+    auto& groupRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
+    auto& groupLower = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 0);
+    auto& groupUpper = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, ly);
 
-    rS.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Eigen::Vector2d::UnitX(), 0);
-    rS.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLower, Eigen::Vector2d::UnitY(), 0);
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(groupLeft, {NuTo::eDirection::X}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
 
-
-    int groupElementBCUpper = rS.GroupCreate(NuTo::eGroupId::Elements);
-    int groupElementBCRight = rS.GroupCreate(NuTo::eGroupId::Elements);
-
-    rS.GroupAddElementsFromNodes(groupElementBCRight, groupNodeBCRight, false);
-    rS.GroupAddElementsFromNodes(groupElementBCUpper, groupNodeBCUpper, false);
-
-    std::function<Eigen::Vector2d(Eigen::Vector2d)> pressureRight = GetPressureRight;
-    std::function<Eigen::Vector2d(Eigen::Vector2d)> pressureUpper = GetPressureUpper;
-
-    rS.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, groupNodeBCRight, pressureRight);
-    rS.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, groupNodeBCUpper, pressureUpper);
+    int groupElementBCUpper = s.GroupCreate(NuTo::eGroupId::Elements);
+    int groupElementBCRight = s.GroupCreate(NuTo::eGroupId::Elements);
+    s.GroupAddElementsFromNodes(groupElementBCRight, s.GroupGetId(&groupRight), false);
+    s.GroupAddElementsFromNodes(groupElementBCUpper, s.GroupGetId(&groupUpper), false);
+    
+    s.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, s.GroupGetId(&groupRight), GetPressureRight);
+    s.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, s.GroupGetId(&groupUpper), GetPressureUpper);
 }
 
-bool CheckSolution(NuTo::Structure& rS)
+bool CheckSolution(NuTo::Structure& s)
 {
-    rS.SetShowTime(false);
+    s.SetShowTime(false);
     double maxerror = 0;
     bool error = false;
-    for (int elementId : rS.GroupGetMemberIds(rS.GroupGetElementsTotal()))
+    for (int elementId : s.GroupGetMemberIds(s.GroupGetElementsTotal()))
     {
-        auto ipCoords = rS.ElementGetIntegrationPointCoordinates(elementId);
-        auto ipStress = rS.ElementGetEngineeringStress(elementId);
+        auto ipCoords = s.ElementGetIntegrationPointCoordinates(elementId);
+        auto ipStress = s.ElementGetEngineeringStress(elementId);
 
         for (int iIP = 0; iIP < ipCoords.cols(); ++iIP)
         {

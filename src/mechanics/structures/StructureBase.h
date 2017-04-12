@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 #include <eigen3/Eigen/Core>
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -15,21 +16,16 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
 
-
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
-
-
 #include "mechanics/MechanicsException.h"
 #include "StructureOutputBlockVector.h"
 
 
 namespace NuTo
 {
+class Assembler;
 class ConstitutiveBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
-class ConstraintBase;
 class ElementBase;
 class EngineeringStrain2D;
 class GroupBase;
@@ -48,9 +44,9 @@ class StructureOutputBlockVector;
 class TimeIntegrationBase;
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
-template<typename T> class BlockFullMatrix;
-template<typename T> class BlockFullVector;
 template<typename IOEnum> class ConstitutiveIOMap;
+template<class T> class BlockFullMatrix;
+template<class T> class BlockFullVector;
 template<class T> class Group;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
@@ -74,6 +70,10 @@ namespace Constitutive
     enum class eOutput;
 }// namespace Constitutive
 
+namespace Constraint
+{
+    class Constraints;
+}
 
 namespace Element
 {
@@ -266,12 +266,12 @@ public:
     //! @return number of nodes
     virtual int GetNumNodes() const =0;
 
-#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
     virtual NodeBase* NodeGetNodePtr(int rIdent)=0;
 
+#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
@@ -291,7 +291,16 @@ public:
     //! @param rCoordinates
     //! @param rRange
     //! @return ... node id
-    int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange);
+    int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange = 1.e-6);
+
+    //! @brief ... returns the (first) node that has the specified coordinates within the range
+    //! @param coordinate node coordinates
+    //! @param tolerance spherical search range
+    //! @return reference to the node
+    NodeBase& NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance = 1.e-6);
+
+    //! @brief see NodeGetAtCoordinate(Vector, tolerance) for 1D
+    NodeBase& NodeGetAtCoordinate(double coordinate, double tolerance = 1.e-6);
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
@@ -740,240 +749,6 @@ public:
     //! this is used for the estimation of the critical time step
     double ElementGroupCalculateLargestElementEigenvalue(int rGroupId);
 
-    //*************************************************
-    //************ Constraint routines     ***************
-    //**  defined in StructureBaseConstraints.cpp **
-    //*************************************************
-    //! @brief deletes a constraint equation
-    //! @param ConstraintId constraint id
-    void ConstraintDelete(int ConstraintId);
-
-#ifndef SWIG
-    //! @brief adds a constraint to the map
-    //! @param ConstraintId constraint id
-    //! @param
-    void ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint);
-#endif
-
-    //! @brief releases a constraint, (remove from the list but don't delete it)
-    //!@param rConstraintEquation id of the constraint equation
-    //! @return ptr to constraint
-    //! @brief releases a constraint, (remove from the list but don't delete it)
-    NuTo::ConstraintBase* ConstraintRelease(int rConstraintId);
-
-#ifndef SWIG
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
-    //! @param rNode pointer to node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, double rValue);
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
-    //! @param rNode pointer to node
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rNode pointer to node
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
-#endif
-
-    //! @brief adds a displacement constraint equation for a node
-    //! @param rNode identifier for node
-    //! @param rComponent e.g. the first (count from zero) displacement component
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue);
-
-    //! @brief adds a relative humidity constraint equation for node
-    //! @param rNode pointer to node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue);
-
-    //! @brief adds a relative humidity constraint for a node
-    //! @param rIdent identifier for node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a rotation constraint equation for a node
-    //! @param rNode pointer to node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue);
-#endif
-
-    //! @brief adds a rotation constraint equation for a node
-    //! @param rNode identifier for node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
-
-    //! @brief Adds a temperature constraint equation for node.
-    //! @param rNode Pointer to node
-    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue);
-
-    //! @brief Adds a relative humidity constraint for a node.
-    //! @param rIdent Identifier for node
-    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNode(int rIdent, double rValue);
-
-    //! @brief Adds a electric potential constraint equation for node.
-    //! @param rNode Pointer to node
-    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetElectricPotentialNode(NodeBase* rNode, double rValue);
-
-    //! @brief Adds a electric potential constraint equation for node.
-    //! @param rIdent Identifier for node
-    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return Integer id to delete or modify the constraint
-    int ConstraintLinearSetElectricPotentialNode(int rIdent, double rValue);
-
-    //! @brief adds a water volume fraction constraint for a node
-    //! @param rNode pointer to node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue);
-
-    //! @brief adds a water volume fraction constraint for a node
-    //! @param rIdent identifier for node
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a displacement constraint equation for a group of node
-    //! @param rNode pointer to group of nodes
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    //! @param rDof displacements, rotations, temperatures
-    //! @param rComponent e.g. the first (count from zero) displacement component
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a rotation constraint equation for a group of node
-    //! @param rNode pointer to group of nodes
-    //! @param rValue prescribed value (e.g. zero to fix a rotation to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a temperature constraint equation for a group of nodes
-    //! @param rNode pointer to group of nodes
-    //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
-    int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue);
-
-#ifndef SWIG
-    //! @brief adds a ElectricPotential constraint equation for a group of nodes
-    //! @param rNode pointer to group of nodes
-    //! @param rValue prescribed value (e.g. zero for conducting boundaries)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetElectricPotentialNodeGroup(Group<NodeBase>* rGroup, double rValue);
-#endif
-
-    //! @brief adds a constraint equation for a group of nodes
-    //! @param rGroupIdent identifier for group of nodes
-    //! @param rValue prescribed value (e.g. zero for conducting boundaries)
-    int ConstraintLinearSetElectricPotentialNodeGroup(int rGroupIdent, double rValue);
-
-    // ######################################
-    // ##                                  ##
-    // ##    CONSTRAINT CALCULATION        ##
-    // ##                                  ##
-    // ######################################
-
-#ifndef SWIG
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(Node::eDof rDof) const;
-
-#endif
-
-    //! @brief returns the number of constraint equations for a specific dof type
-    //! @return number of constraints
-    //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(std::string rDof) const;
-
-
-    //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
-    //! @param rConstraintMatrix constraint matrix
-    NuTo::BlockSparseMatrix ConstraintGetConstraintMatrixBeforeGaussElimination() const;
-
-    //! @brief returns the constraint vector after gauss elimination
-    //! rConstraintMatrix*DOFS = RHS
-    //! @return rhs
-    const NuTo::BlockFullVector<double>& ConstraintGetRHSAfterGaussElimination() const;
-
-    //! @brief returns the constraint vector after gauss elimination
-    //! rConstraintMatrix*DOFS = RHS
-    NuTo::BlockFullVector<double> ConstraintGetRHSBeforeGaussElimination();
-
-
-    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
-    //! the result is stored internally in mConstraintRHS
-    void ConstraintUpdateRHSAfterGaussElimination();
-
-    //!@brief sets/modifies the right hand side of the constraint equations
-    //!@param rRHS new right hand side
-    //!@param rRHS new right hand side
-    void ConstraintSetRHS(int rConstraintEquation, double rRHS);
-
-    //!@brief gets the right hand side of the constraint equations
-    //!@param rConstraintEquation constraint equation
-    //!@return rRHS
-    double ConstraintGetRHS(int rConstraintEquation)const;
-
-
-    //! @brief ... create a constraint equation
-    //! @param rNode ... node id in the first constraint equation term
-    //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
-    //! @param rCoefficient ... weight factor of this term
-    //! @param rRHS ... prescribed right hand side value
-    //! @return integer id of the constraint
-    int ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
-
-    //! @brief ... create a constraint equation
-    //! @param rConstraint ... constraint id
-    //! @param rNode ... node id in the first constraint equation term
-    //! @param rDof ... dof in the first constraint equation term (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
-    //! @param rCoefficient ... weight factor of this term
-    //! @param rRHS ... prescribed right hand side value
-    void ConstraintLinearEquationCreate(int rConstraint, int rNode, const std::string& rDof, double rCoefficient, double rRHS = 0);
-
-#ifndef SWIG
     //! @brief ... create a constraint equation
     //! @param rConstraint ... constraint id
     //! @param rNode ... node id in the first constraint equation term
@@ -981,7 +756,6 @@ public:
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
 
     //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an element
     //! @param rNode ... node id in the first constraint equation term
@@ -993,50 +767,6 @@ public:
                                                      NuTo::Node::eDof rDofType,
                                                      const double rTolerance = 1.e-6,
                                                      Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
-
-
-
-
-#endif
-
-    //! @brief ... add a term to a constraint equation
-    //! @param rConstraint ... constraint id
-    //! @param rNode ... node id
-    //! @param rDof ... dof (e.g "X_DISPLACEMENT", "Z_Rotation", "Temperature")
-    //! @param rCoefficient ... weight factor of this term
-    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
-
-    //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
-    //! @param rAngle... angle in deg
-    //! @param rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
-    //! @param rNodeGroupUpper... all nodes on the upper boundary
-    //! @param rNodeGrouplower... all nodes on the lower boundary
-    //! @param rNodeGroupLeft... all nodes on the left boundary
-    //! @param rNodeGroupRight...  all nodes on the right boundary
-    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, Eigen::MatrixXd rStrain,
-            double rRadiusToCrackWithoutConstraints,
-            int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
-
-#ifndef SWIG
-    //! @brief ... add a term to a constraint equation
-    //! @param rConstraint ... constraint id
-    //! @param rNode ... node id
-    //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
-    //! @param rDofComponent ... dof component (0, 1, 2)
-    //! @param rCoefficient ... weight factor of this term
-    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient);
-
-    //! @brief info about the nodes in the Structure
-    void ConstraintInfo(int mVerboseLevel)const;
-
-#endif
-
-private:
-    //! @brief ... convert input string to dof type and dof component
-    //! @brief rDof ... input string
-    //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
-    //! @param rDofComponent ... dof component (0, 1, 2)
-    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eDof& rDofType, int& rDofComponent);
 
 public:
     //*************************************************
@@ -1312,7 +1042,6 @@ public:
     //! @param rVerboseLevel describes how detailed the information is
     void GroupInfo(int rVerboseLevel)const;
 
-#ifndef SWIG
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
@@ -1328,6 +1057,7 @@ public:
     //! @return ... pointer to the group
     const GroupBase* GroupGetGroupPtr(int rIdent) const;
 
+#ifndef SWIG
     //! @brief ... Creates a group for the structure
     //! @param rType  type of the group, e.g. "NODES" or "ELEMENTS"
     //! @return ... rIdent identifier for the group
@@ -1391,6 +1121,31 @@ public:
     //! @param rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, eDirection rDirection, double rMin, double rMax);
 
+    //! @brief creates a new node group and selects all nodes whose coordinates are in the specified range [min .. max]
+    //! @param direction either X, Y, Z
+    //! @param min minimum value
+    //! @param max maximum value
+    //! return reference to the node group
+    //! @remark This should be rewritten in a method that returns a Group by value without storing it
+    //! at all. But this collides with some other features (mainly postprocessing) that rely on a
+    //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
+    Group<NodeBase>& GroupGetNodeCoordinateRange(eDirection direction, double min, double max);
+    
+    
+    //! @brief creates a new node group and selects all nodes whose coordinates at value (+- tolerance)
+    //! Equal to GroupGetNodeCoordinateRange(direction, value - tolerance, value + tolerance)
+    //! Example: direction = Y, value = 42. --> selects all nodes with Y = 42
+    //! @param direction either X, Y, Z
+    //! @param value specific coordinate value
+    //! @param tolerance tolerance -+ 
+    //! return reference to the node group
+    //! @remark This should be rewritten in a method that returns a Group by value without storing it
+    //! at all. But this collides with some other features (mainly postprocessing) that rely on a
+    //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
+    Group<NodeBase>& GroupGetNodesAtCoordinate(eDirection direction, double value, double tolerance = 1.e-6);
+
+    
+
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param rIdentGroup identifier for the group
@@ -1433,6 +1188,8 @@ public:
     //! @param rMin ... minimum radius
     //! @param rMax ... maximum radius
     void GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, double rMin, double rMax);
+
+    Group<NodeBase>& GroupGetNodeRadiusRange(Eigen::VectorXd center, double min, double max);
 
     //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
     //! @param rIdentGroup identifier for the group
@@ -1628,9 +1385,6 @@ public:
     //! @param rIsConstitutiveInput ... is/is not constitutive input
     void DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput);
 
-    //! @brief returns the a reference to the constraint matrix
-    const NuTo::BlockSparseMatrix& GetConstraintMatrix() const;
-
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* currently no members to serialize */};
@@ -1685,6 +1439,18 @@ public:
 
     void SetVerboseLevel(unsigned short verboseLevel);
 
+    const Constraint::Constraints& Constraints() const;
+    Constraint::Constraints& Constraints();
+
+    const Assembler& GetAssembler() const
+    {
+        return *mAssembler;
+    }
+    Assembler& GetAssembler()
+    {
+        return *mAssembler;
+    }
+
 protected:
 
     //! @brief finds an unused ID in rMap
@@ -1711,13 +1477,11 @@ protected:
 
     int mDimension;
 
+    std::unique_ptr<NuTo::Assembler> mAssembler;
+
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase
     boost::ptr_map<int,ConstitutiveBase> mConstitutiveLawMap;
-
-    //! @brief ... map storing the constraints
-    //! @sa ConstraintBase
-    boost::ptr_map<int,ConstraintBase> mConstraintMap;
 
     //! @brief ... map storing node loads
     //! @sa LoadBase
@@ -1740,35 +1504,6 @@ protected:
 
     //! @brief ... map storing the type of visualization for the output (VTK) file
     std::map<int, eVisualizationType> mGroupVisualizationType;
-
-    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
-    DofStatus mDofStatus;
-
-    //!brief ... renumbering of nodal DOFs required or not
-    bool mNodeNumberingRequired;
-
-    //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
-    BlockSparseMatrix mConstraintMatrix;
-
-    //! @brief mapping matrix of the rhs to relate the rhs before the gauss elimination to the constraint matrix after
-    // (mConstraintRHS (after elimination) = mConstraintMappingRHS *  mConstraintRHS (before elimination)
-    // (the values of the RHS before elimination are stored at the individual constraints
-    //the initial system is e.g.
-    //[1 1 0]* [d1 d2 d3]^T = [rhs1]
-    //[0 0 2]                 [rhs2]
-    //this is replaced by
-    //[1 1 0]* [d1 d2 d3]^T = rhs1 *[1] + rhs2 *[0]
-    //[0 0 2]                       [0]         [1]
-    //after gauss elimination and reordering this gives
-    //[1 0 1]* [d1 d3 d2]^T = rhs1 *[1] + rhs2 *[0]
-    //[0 1 0]                       [0]         [0.5]
-    //as a consequence, the gauss elimination has only to be performed for a change of the constraint matrix
-    //for a change of the rhs it is sufficient to recalculate the rhs from the above vectors
-    //the mapping matrix [1,0; 0,0.5] is stored and the rhs is calculated from mConstraintMappingRHS*mConstraintRHSBeforGaussElimination
-    BlockSparseMatrix mConstraintMappingRHS;
-
-    //! @brief right hand side of the constraint equations
-    BlockFullVector<double> mConstraintRHS;
 
     //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
     bool mHaveTmpStaticData;

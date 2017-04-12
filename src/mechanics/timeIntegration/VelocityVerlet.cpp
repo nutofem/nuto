@@ -22,6 +22,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
+#include "mechanics/structures/Assembler.h"
 
 #include "base/Timer.h"
 
@@ -102,6 +103,14 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
         	}
         }
 
+        // check constraints:
+        mStructure->GetAssembler().ConstraintUpdateRhs(42);
+        if (mStructure->GetAssembler().GetConstraintRhs().Export().sum() > 1.e-6)
+        {
+          	throw MechanicsException(__PRETTY_FUNCTION__, "solution with constraints != 0 not yet implemented.");
+        }
+        mStructure->GetAssembler().ConstraintUpdateRhs(0);
+
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
 
@@ -143,15 +152,6 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
             //apply constraints for new time stepdouble RHSConstraint
 //            double timeDependentConstraintFactor(0);
-            if (mTimeDependentConstraint!=-1)
-            {
-            	throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-//                timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-//                mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-//
-//                NuTo::BlockFullVector<double> bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
-            }
-
             //calculate new displacement approximation
             dof_dt0 += dof_dt1 * mTimeStep +  dof_dt2 * (mTimeStep*mTimeStep*0.5);
 
@@ -179,10 +179,6 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
             //**********************************************
             //PostProcessing
             //**********************************************
-        	if (mTimeDependentConstraint!=-1)
-	        {
-	            throw MechanicsException("[NuTo::VelocityVerlet::Solve] not implemented for constrained systems including multiple dofs.");
-	        }
 
             //postprocess data for plotting
         	this->PostProcess(extLoad-intForce);

@@ -1,10 +1,8 @@
 #include "base/Timer.h"
+#include "mechanics/MechanicsEnums.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
@@ -12,7 +10,6 @@
 #include "physics/PhysicalEquationsSI.h"
 #include <array>
 #include <boost/foreach.hpp>
-#include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
@@ -20,11 +17,9 @@
 #include "mechanics/constitutive/staticData/IPAdditiveOutput.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionTruss.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
-#ifdef ENABLE_VISUALIZE
-#include "mechanics/groups/GroupEnum.h"
 #include "visualize/VisualizeEnum.h"
-#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,39 +109,18 @@ struct MechanicsControl
         mCL.SetParameterDouble  (NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,    mYoungsModulus);
     }
 
-    template<int TDim>
-    int AddConstraint(NuTo::NewmarkDirect& rTI,
-                       std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
-                       unsigned int rDirection,
-                       double rValue = 0.0)
+    void AddConstraint(std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
+                       NuTo::eDirection rDirection,
+                       std::function<double(double)> rDisplacementFunction = NuTo::Constraint::RhsConstant(0))
     {
-        assert(rValue <= TDim && "Direction isn't part of current dimension");
         int GRPNodesConstraint = mS.GroupCreate("Nodes");
-        mS.GroupAddNodeFunction(GRPNodesConstraint, rGetNodeFunction);
+        mS.GroupAddNodeFunction(GRPNodesConstraint,rGetNodeFunction);
+               
+        const auto& group = *mS.GroupGetGroupPtr(GRPNodesConstraint)->AsGroupNode();
 
-        Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
-        direction(rDirection) = 1.0;
-
-        return mS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, direction, rValue);
+        mS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Constraint::Component(group, {rDirection}, rDisplacementFunction));
     }
-
-    template<int TDim>
-    int AddTimeDependentConstraint( NuTo::NewmarkDirect& rTI,
-                                    std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
-                                    std::function<double(double)> rDisplacementFunction,
-                                    unsigned int rDirection,
-                                    double rValue = 0.0)
-    {
-        int constraintID = AddConstraint<TDim>(rTI,
-                                               rGetNodeFunction,
-                                               rDirection,
-                                               rValue);
-        rTI.AddTimeDependentConstraintFunction(constraintID,
-                                               rDisplacementFunction);
-
-        return constraintID;
-    }
-
 
     NuTo::Structure&        mS;
     NuTo::ConstitutiveBase& mCL;
@@ -301,7 +275,6 @@ public:
 template <int TDim>
 void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
                                           std::function<bool(NuTo::NodeBase*)> rFunctionGetBoundaryNode,
-                                          NuTo::NewmarkDirect& rTI,
                                           std::function<double(double)> rBoundaryConstraintFunction)
 {
     int nGrpBE = rS.GroupCreate("NODES");
@@ -316,8 +289,10 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
     int groupBoundaryElements = rS.BoundaryElementsCreate(eGrpBE,nGrpBE,controlNodePtr);
-    int controlNodeConstraint = rS.ConstraintLinearSetRelativeHumidityNode(controlNodePtr,1.0);
-
+    
+    rS.Constraints().Add(NuTo::Node::eDof::RELATIVEHUMIDITY,
+            NuTo::Constraint::Value(*controlNodePtr, rBoundaryConstraintFunction));
+   
     // Set Integration type - default not sufficient
     std::vector<int> boundaryElementIDs;
     rS.ElementGroupGetMembers(groupBoundaryElements, boundaryElementIDs);
@@ -343,8 +318,6 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
 
 
     }
-
-    rTI.AddTimeDependentConstraintFunction(controlNodeConstraint, rBoundaryConstraintFunction);
 }
 
 
@@ -509,7 +482,7 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
     const double capStress       = 0.062035 * std::log(0.4) * capStressFactor;
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
-    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    for (auto it : nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
         if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
@@ -544,7 +517,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
-    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    for (auto it : nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
 
@@ -727,7 +700,6 @@ void ShrinkageTestStressBased(  std::vector<int> rN,
 
     SetupConstrainedNodeBoundaryElements<TDim>(S,
                                                LambdaGetBoundaryNodes,
-                                               TI,
                                                LambdaTimeDepBoundaryRH);
 
 
@@ -811,39 +783,21 @@ void ShrinkageTestStressBased(  std::vector<int> rN,
                                 };  // lambdaGetNodeLeftBottom
 
 
-
-
-    MeCtrl.AddConstraint<TDim>(TI,
-                               lambdaGetNodeLeftBottomFront,
-                               0);
+    MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::X);
     if(TDim>1)
     {
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomFront,
-                                   1);
-
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomBack,
-                                   0);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::Y);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomBack, NuTo::eDirection::X);
     }
+
     if(TDim>2)
     {
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomFront,
-                                   2);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::Z);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomBack, NuTo::eDirection::Z);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftTopFront, NuTo::eDirection::X);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftTopFront, NuTo::eDirection::Y);
+    } 
 
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomBack,
-                                   2);
-
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftTopFront,
-                                   0);
-
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftTopFront,
-                                   1);
-    }
 
     MTCtrl.SetupStaticData();
     S.NodeBuildGlobalDofs();
@@ -1015,7 +969,6 @@ void ShrinkageTestStrainBased(  std::vector<int> rN,
 
     SetupConstrainedNodeBoundaryElements<TDim>(S,
                                                LambdaGetBoundaryNodes,
-                                               TI,
                                                LambdaTimeDepBoundaryRH);
 
 
@@ -1099,39 +1052,22 @@ void ShrinkageTestStrainBased(  std::vector<int> rN,
                                 };  // lambdaGetNodeLeftBottom
 
 
-
-
-    MeCtrl.AddConstraint<TDim>(TI,
-                               lambdaGetNodeLeftBottomFront,
-                               0);
+    MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::X);
     if(TDim>1)
     {
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomFront,
-                                   1);
-
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomBack,
-                                   0);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::Y);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomBack, NuTo::eDirection::X);
     }
+
     if(TDim>2)
     {
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomFront,
-                                   2);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomFront, NuTo::eDirection::Z);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftBottomBack, NuTo::eDirection::Z);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftTopFront, NuTo::eDirection::X);
+        MeCtrl.AddConstraint(lambdaGetNodeLeftTopFront, NuTo::eDirection::Y);
+    } 
 
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftBottomBack,
-                                   2);
 
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftTopFront,
-                                   0);
-
-        MeCtrl.AddConstraint<TDim>(TI,
-                                   lambdaGetNodeLeftTopFront,
-                                   1);
-    }
 
     MTCtrl.SetupStaticData();
     S.NodeBuildGlobalDofs();

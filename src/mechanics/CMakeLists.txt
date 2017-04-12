@@ -36,28 +36,8 @@ set(NuToMechanicsConstitutiveSources
     )
 
 set(NuToMechanicsConstraintSources
-    constraints/ConstraintBase.cpp
-    constraints/ConstraintEquationTerm.cpp
-    constraints/ConstraintLinear.cpp
-    constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
-    constraints/ConstraintLinearEquation.cpp
-    constraints/ConstraintLinearNodeDisplacements1D.cpp
-    constraints/ConstraintLinearNodeDisplacements2D.cpp
-    constraints/ConstraintLinearNodeDisplacements3D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
-    constraints/ConstraintLinearNodeGroupRotations2D.cpp
-    constraints/ConstraintLinearNodeGroupTemperature.cpp
-    constraints/ConstraintLinearNodeGroupElectricPotential.cpp
-    constraints/ConstraintLinearNodeRelativeHumidity.cpp
-    constraints/ConstraintLinearNodeRotations2D.cpp
-    constraints/ConstraintLinearNodeTemperature.cpp
-    constraints/ConstraintLinearNodeElectricPotential.cpp
-    constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
-    constraints/ConstraintNode.cpp
-    constraints/ConstraintNodeGroup.cpp
-    constraints/ConstraintNonlinear.cpp
+    constraints/Constraints.cpp
+    constraints/ConstraintCompanion.cpp
     )
 
 set(NuToMechanicsDofSubMatrixStorageSources
@@ -193,7 +173,6 @@ set(NuToMechanicsSectionSources
 set(NuToMechanicsStructuresSources
     structures/StructureBase.cpp
     structures/StructureBaseConstitutiveLaw.cpp
-    structures/StructureBaseConstraints.cpp
     structures/StructureBaseElement.cpp
     structures/StructureBaseEnum.cpp
     structures/StructureBaseGroup.cpp
@@ -209,6 +188,7 @@ set(NuToMechanicsStructuresSources
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
     structures/unstructured/StructureNode.cpp
+    structures/Assembler.cpp
     )
 
 
@@ -234,7 +214,6 @@ set(NuToMechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
-    timeIntegration/TimeDependencyBase.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp

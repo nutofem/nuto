@@ -9,13 +9,14 @@
 #include <iostream>
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "visualize/VisualizeEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/sections/SectionTruss.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 
@@ -53,10 +54,11 @@ int main()
     structure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads
-    Eigen::VectorXd direction(1);
-    direction(0) = 1.0;
-    structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
-    structure.ConstraintLinearSetTemperatureNode(structure.GetNumNodes()-1, boundary_temperature + 20);
+    auto& origin = structure.NodeGetAtCoordinate(0);
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(origin, boundary_temperature));
+
+    auto& nodeRight = structure.NodeGetAtCoordinate(length);
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(nodeRight, boundary_temperature + 20));
 
     // start analysis
     structure.SolveGlobalSystemStaticElastic();

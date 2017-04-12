@@ -322,7 +322,7 @@ public:
     /// \brief Constraints all degrees of freedom of nodes in node group
     /// \param nodeGroupId
     ///
-    void ApplyConstraintsTotalFeti(const int nodeGroupId);
+    void ApplyConstraintsTotalFeti(const Group<NodeBase>&  nodeGroup);
 
     ///
     /// \brief Constraints all degrees of freedom

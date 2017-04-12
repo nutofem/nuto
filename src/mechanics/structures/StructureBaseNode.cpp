@@ -510,8 +510,8 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     try
     {
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-        elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
-        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
+        elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
         std::vector<ElementBase*> elements;
         this->NodeGetElements(rNodePtr, elements);
@@ -561,6 +561,33 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
     throw MechanicsException(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }
 
+NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(double coordinate, double tolerance)
+{
+    if (GetDimension() != 1)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Only valid for 1D structure!");
+    return NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Constant(coordinate), tolerance);
+}
+
+NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(Eigen::VectorXd coordinate, double tolerance)
+{
+    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    std::vector<NodeBase*> nodeVector;
+    this->GetNodesTotal(nodeVector);
+
+    double toleranceSquared = tolerance * tolerance;
+
+    for (auto* node : nodeVector)
+    {
+        if (node->GetNum(Node::eDof::COORDINATES) < 1)
+            continue;
+        if ((node->Get(Node::eDof::COORDINATES) - coordinate).squaredNorm() < toleranceSquared)
+            return *node;
+    }
+    std::stringstream coordStream;
+    coordStream << '(' << coordinate.transpose() << ')';
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no node at " + coordStream.str() + " within tolerance " + std::to_string(tolerance));
+}
 
 int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange)
 {

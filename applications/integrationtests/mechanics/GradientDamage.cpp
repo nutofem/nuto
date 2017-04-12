@@ -3,18 +3,17 @@
 #include <boost/filesystem.hpp>
 
 #include "base/Timer.h"
+
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
+
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"
-#include "mechanics/groups/GroupEnum.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/groups/GroupBase.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionVariableTruss.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
@@ -24,20 +23,18 @@
 
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "math/SparseMatrixCSRVector2General.h"
-#include "visualize/VisualizeEnum.h"
-
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
-    // create a damage law
-    int lawId = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::DamageLawExponential::Create(4./30000., 4. / 0.021));
+    using namespace NuTo::Constitutive;
+    int lawId = rStructure.ConstitutiveLawCreate(eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::POISSONS_RATIO, 0.2);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::NONLOCAL_RADIUS, 3);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4./30000., 4. / 0.021));
     return lawId;
 }
 
@@ -218,29 +215,21 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 }
 
 
-void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
+void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, NuTo::Group<NuTo::NodeBase>& nodes)
 {
-    for (int nodeId : rStructure.GroupGetMemberIds(rGroupNodeId))
+    for (int nodeId : nodes.GetMemberIds()) 
     {
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         if (node->GetNum(NuTo::Node::eDof::DISPLACEMENTS) == 0)
-        {
-            NuTo::GroupBase* group = rStructure.GroupGetGroupPtr(rGroupNodeId);
-            group->RemoveMember(nodeId);
-        }
+            nodes.RemoveMember(nodeId);
     }
 }
 
-void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rDir)
+void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, std::string rDir)
 {
     double simulationTime = 1;
-    double dispEnd = 0.01;
     int numLoadSteps = 3;
 
-    Eigen::Matrix2d timeDepDisp;
-    timeDepDisp << 0, 0, simulationTime, dispEnd;
-
-    rTimeIntegration.AddTimeDependentConstraint(rBC, timeDepDisp);
     rTimeIntegration.SetTimeStep(simulationTime / numLoadSteps);
     rTimeIntegration.SetAutomaticTimeStepping(false);
     rTimeIntegration.SetToleranceForce(1e-8);
@@ -316,21 +305,13 @@ void Check1D2D3D()
     }
 
 
-    int leftNodes1D = s1D.GroupCreate(NuTo::eGroupId::Nodes);
-    int leftNodes2D = s2D.GroupCreate(NuTo::eGroupId::Nodes);
-    int leftNodes3D = s3D.GroupCreate(NuTo::eGroupId::Nodes);
+    auto& leftNodes1D = s1D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    auto& leftNodes2D = s2D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    auto& leftNodes3D = s3D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
 
-    int rightNodes1D = s1D.GroupCreate(NuTo::eGroupId::Nodes);
-    int rightNodes2D = s2D.GroupCreate(NuTo::eGroupId::Nodes);
-    int rightNodes3D = s3D.GroupCreate(NuTo::eGroupId::Nodes);
-
-    s1D.GroupAddNodeCoordinateRange(leftNodes1D, 0, -1.e-4, 1.e-4);
-    s2D.GroupAddNodeCoordinateRange(leftNodes2D, 0, -1.e-4, 1.e-4);
-    s3D.GroupAddNodeCoordinateRange(leftNodes3D, 0, -1.e-4, 1.e-4);
-
-    s1D.GroupAddNodeCoordinateRange(rightNodes1D, 0, lx - 1.e-4, lx + 1.e-4);
-    s2D.GroupAddNodeCoordinateRange(rightNodes2D, 0, lx - 1.e-4, lx + 1.e-4);
-    s3D.GroupAddNodeCoordinateRange(rightNodes3D, 0, lx - 1.e-4, lx + 1.e-4);
+    auto& rightNodes1D = s1D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
+    auto& rightNodes2D = s2D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
+    auto& rightNodes3D = s3D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
 
     GroupRemoveNodesWithoutDisplacements(s1D, leftNodes1D);
     GroupRemoveNodesWithoutDisplacements(s1D, rightNodes1D);
@@ -339,19 +320,23 @@ void Check1D2D3D()
     GroupRemoveNodesWithoutDisplacements(s3D, leftNodes3D);
     GroupRemoveNodesWithoutDisplacements(s3D, rightNodes3D);
 
-    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
-    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
-    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
+    const NuTo::Node::eDof eDofDispl = NuTo::Node::eDof::DISPLACEMENTS;
+    using namespace NuTo::Constraint;
+    s1D.Constraints().Add(eDofDispl, Component(leftNodes1D, {NuTo::eDirection::X}));
+    s2D.Constraints().Add(eDofDispl, Component(leftNodes2D, {NuTo::eDirection::X}));
+    s3D.Constraints().Add(eDofDispl, Component(leftNodes3D, {NuTo::eDirection::X}));
 
-    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
-    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
-    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
+    const double dispBC = 0.01;
+    s1D.Constraints().Add(eDofDispl, Component(rightNodes1D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
+    s2D.Constraints().Add(eDofDispl, Component(rightNodes2D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
+    s3D.Constraints().Add(eDofDispl, Component(rightNodes3D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
 
-    s2D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
-    s3D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector3d::UnitY(), 0.);
+    // additionally fix y for 2D/3D
+    s2D.Constraints().Add(eDofDispl, Component(s2D.NodeGetAtCoordinate(Eigen::Vector2d::Zero()), {NuTo::eDirection::Y}));
+    s3D.Constraints().Add(eDofDispl, Component(s3D.NodeGetAtCoordinate(Eigen::Vector3d::Zero()), {NuTo::eDirection::Y}));
 
-    int nFixRotation = s3D.NodeGetIdAtCoordinate(Eigen::Vector3d({0,0,lz}), 1.e-4);
-    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, Eigen::Vector3d::UnitY(), 0.);
+    const auto& nFixRotation = s3D.NodeGetAtCoordinate(Eigen::Vector3d({0,0,lz}));
+    s3D.Constraints().Add(eDofDispl, Component(nFixRotation, {NuTo::eDirection::Y}));
 
     Visualize(s1D, "tmp");
     Visualize(s2D, "tmp");
@@ -366,9 +351,9 @@ void Check1D2D3D()
     NuTo::NewmarkDirect myIntegrationScheme2D(&s2D);
     NuTo::NewmarkDirect myIntegrationScheme3D(&s3D);
 
-    SetupNewmark(myIntegrationScheme1D, bc1D, "Newmark1D");
-    SetupNewmark(myIntegrationScheme2D, bc2D, "Newmark2D");
-    SetupNewmark(myIntegrationScheme3D, bc3D, "Newmark3D");
+    SetupNewmark(myIntegrationScheme1D, "Newmark1D");
+    SetupNewmark(myIntegrationScheme2D, "Newmark2D");
+    SetupNewmark(myIntegrationScheme3D, "Newmark3D");
 
     timer.Reset(std::string(__FUNCTION__) + " Solution via NewmarkDirect");
 

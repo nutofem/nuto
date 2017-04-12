@@ -18,7 +18,9 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -199,48 +201,35 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
             nodeIdsVirtualConstraints.push_back(nodePair.first);
         }
     }
-    const int lastNodeId = nodeIdsVirtualConstraints.size()-1;
+
     switch (GetDimension())
     {
         case 2:
         {
-            int id2 = lastNodeId;
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector2d::UnitY(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[id2], Eigen::Vector2d::UnitY(), 0.);
+            auto& firstNode = *NodeGetNodePtr(nodeIdsVirtualConstraints.front());
+            Constraints().Add(eDof::DISPLACEMENTS, Constraint::Component(firstNode, {eDirection::X, eDirection::Y}));
+            auto& lastNode = *NodeGetNodePtr(nodeIdsVirtualConstraints.back());
+            Constraints().Add(eDof::DISPLACEMENTS, Constraint::Component(lastNode, {eDirection::Y}));
 
-            Eigen::VectorXd coordinates(2);
-            NodeGetCoordinates(nodeIdsVirtualConstraints[0], coordinates);
-
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0]
-                        << "\t in X \n coordinates: \n"
-                        << coordinates << "\n\n";
-
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0]
-                        << "\t in Y \n coordinates: \n"
-                        << coordinates << "\n\n";
-
-            NodeGetCoordinates(nodeIdsVirtualConstraints[id2], coordinates);
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[id2]
-                        << "\t in Y \n coordinates: \n"
-                        << coordinates << "\n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.front() << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.front() << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.back() << "\t in Y \n\n";
             break;
         }
         case 3:
         {
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitY(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[0], Eigen::Vector3d::UnitZ(), 0.);
+            auto& firstNode = *NodeGetNodePtr(nodeIdsVirtualConstraints.front());
+            auto& thirdNode = *NodeGetNodePtr(nodeIdsVirtualConstraints[2]);
+            auto& lastNode = *NodeGetNodePtr(nodeIdsVirtualConstraints.back());
+            Constraints().Add(eDof::DISPLACEMENTS, Constraint::Component(firstNode, {eDirection::X, eDirection::Y, eDirection::Z}));
+            Constraints().Add(eDof::DISPLACEMENTS, Constraint::Component(thirdNode, {eDirection::Z}));
+            Constraints().Add(eDof::DISPLACEMENTS, Constraint::Component(lastNode, {eDirection::X, eDirection::Y}));
 
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[lastNodeId], Eigen::Vector3d::UnitX(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[lastNodeId], Eigen::Vector3d::UnitY(), 0.);
-            ConstraintLinearSetDisplacementNode(nodeIdsVirtualConstraints[2], Eigen::Vector3d::UnitZ(), 0.);
-
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in Y \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[0] << "\t in Z \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[lastNodeId] << "\t in X \n\n";
-            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[lastNodeId] << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.front() << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.front() << "\t in Y \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.front() << "\t in Z \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.back()  << "\t in X \n\n";
+            GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints.back()  << "\t in Y \n\n";
             GetLogger() << "Applied virtual constraint to node id: \t" << nodeIdsVirtualConstraints[2] << "\t in Z \n\n";
 
             break;
@@ -762,11 +751,11 @@ void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const std::vector<int>& dofI
 
 }
 
-void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const int nodeGroupId)
+void NuTo::StructureFeti::ApplyConstraintsTotalFeti(const Group<NodeBase>& nodeGroup)
 {
     boost::mpi::communicator world;
 
-    std::vector<int> boundaryNodeIds = GroupGetMemberIds(nodeGroupId);
+    std::vector<int> boundaryNodeIds = nodeGroup.GetMemberIds();
 
     for (const int nodeId : boundaryNodeIds)
     {

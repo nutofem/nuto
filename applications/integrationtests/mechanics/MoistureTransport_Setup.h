@@ -1,12 +1,10 @@
 #pragma once
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/MechanicsEnums.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
@@ -14,10 +12,7 @@
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionTruss.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#include "mechanics/groups/GroupEnum.h"
-#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,14 +184,6 @@ public:
             }
         }
     }
-
-
-    int SetupConstraint(int rBoundaryNodeID)
-    {
-        return  mS.ConstraintLinearSetRelativeHumidityNode(rBoundaryNodeID,1.0);
-    }
-
-
 };
 
 
@@ -218,7 +205,6 @@ public:
 template <int TDim>
 void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
                                           std::function<bool(NuTo::NodeBase*)> rFunctionGetBoundaryNode,
-                                          NuTo::NewmarkDirect& rTI,
                                           std::function<double(double)> rBoundaryConstraintFunction)
 {
     int nGrpBE = rS.GroupCreate("NODES");
@@ -233,7 +219,9 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
     int groupBoundaryElements = rS.BoundaryElementsCreate(eGrpBE,nGrpBE,controlNodePtr);
-    int controlNodeConstraint = rS.ConstraintLinearSetRelativeHumidityNode(controlNodePtr,1.0);
+    
+    rS.Constraints().Add(NuTo::Node::eDof::RELATIVEHUMIDITY,
+            NuTo::Constraint::Value(*controlNodePtr, rBoundaryConstraintFunction));
 
     // Set Integration type - default not sufficient
     std::vector<int> boundaryElementIDs;
@@ -260,10 +248,6 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
 
 
     }
-
-    //rS.InterpolationTypeSetIntegrationType();
-
-    rTI.AddTimeDependentConstraintFunction(controlNodeConstraint, rBoundaryConstraintFunction);
 }
 
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mechanics/constraints/ConstraintEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/IpDataEnum.h"

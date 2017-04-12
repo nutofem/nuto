@@ -177,14 +177,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 					curTime=prevCurTime+deltaTimeStage;
 					mTime=prevTime+deltaTimeStage;
 
-                    //to be implemented for time dependent problems mStructure->SetCurrentTime(mTime);
-					//an update of the external load factor and the time dependent constraint is only
-					//necessary for a modified global time
-//			        UpdateConstraints(curTime);??????????
-					if(mTimeDependentConstraint!=-1)
-					{
-						throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
-					}
+                    UpdateConstraints(curTime);
 
     				//calculate external force
 			        extLoad = CalculateCurrentExternalLoad(curTime);
@@ -243,26 +236,6 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
             //**********************************************
 			//PostProcessing
 			//**********************************************
-            if (mTimeDependentConstraint!=-1)
-	        {
-	            throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
-	        }
-	        else
-	        {
-	        	// outOfBalance_j is automatically zero
-			    //outOfBalance_j.Resize(intForce_j.rows());
-	        	//the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
-	        	//this is calculated using finite differencs
-	        	//make sure to recalculate the internal force and external force (if time factor is not 1)
-				//if (mTimeDependentConstraint!=-1)
-				//{
-				//	throw MechanicsException("[NuTo::NystroemBase::Solve3] solution with constraints not yet implemented.");
-				//}
-
-				//acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
-	        	//outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
-	        }
-
 			//postprocess data for plotting
             this->PostProcess(extLoad-intForce);
         }

@@ -10,6 +10,7 @@
  *
  *
  */
+#include "BoostUnitTest.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
@@ -18,6 +19,7 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -48,14 +50,9 @@ class ParametersGeometry3D
 public:
     static constexpr int mDimension = 3;
     static constexpr double mCrossSection = 0.1;
-    static const Eigen::Vector3d mDirectionX;
-    static const Eigen::Vector3d mDirectionY;
-    static const Eigen::Vector3d mDirectionZ;
 };
 
-const Eigen::Vector3d ParametersGeometry3D::mDirectionX = Eigen::Vector3d::UnitX();
-const Eigen::Vector3d ParametersGeometry3D::mDirectionY = Eigen::Vector3d::UnitY();
-const Eigen::Vector3d ParametersGeometry3D::mDirectionZ = Eigen::Vector3d::UnitZ();
+
 
 // Input:   3 node vectors (quadratic truss element),
 //          1 direction vector that points in the direction of the truss (for the load)
@@ -65,7 +62,8 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
            Eigen::VectorXd rNodeCoords2,
            Eigen::VectorXd rDirectionAligned,
            Eigen::VectorXd rDirectionOrthogonal0,
-           Eigen::VectorXd rDirectionOrthogonal1)
+           Eigen::VectorXd rDirectionOrthogonal1,
+           double expectedNorm)
 {
     //**********************************************
     //          Structure
@@ -127,16 +125,25 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
     //**********************************************
     //          Boundary Conditions
     //**********************************************
+    const auto& node0Ref = *myStructure.NodeGetNodePtr(node0);
+    const auto& node1Ref = *myStructure.NodeGetNodePtr(node1);
+    const auto& node2Ref = *myStructure.NodeGetNodePtr(node2);
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(node0Ref, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
-    myStructure.ConstraintLinearSetDisplacementNode(node0, ParametersGeometry3D::mDirectionX, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node0, ParametersGeometry3D::mDirectionY, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node0, ParametersGeometry3D::mDirectionZ, 0);
+    
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal0)); 
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal0)); 
+    
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal1)); 
+    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal1)); 
+   
+    std::cout << myStructure.Constraints() << std::endl;
 
-    myStructure.ConstraintLinearSetDisplacementNode(node1, rDirectionOrthogonal0, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node2, rDirectionOrthogonal0, 0);
-
-    myStructure.ConstraintLinearSetDisplacementNode(node1, rDirectionOrthogonal1, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(node2, rDirectionOrthogonal1, 0);
     //**********************************************
     //          Loads
     //**********************************************
@@ -164,136 +171,72 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
     boost::filesystem::remove_all(resultPath);
 
     myStructure.NodeGetDisplacements(node2, displacements);
-
-    if (std::abs(displacements.norm() - std::sqrt(3)) > 1e-8)
-        throw NuTo::Exception("The calculated displacements do not agree with the analytical solution!");
+    
+    BOOST_CHECK_CLOSE(displacements.norm(), expectedNorm, 1e-8);
 }
 
-int main(int argc, char* argv[])
+BOOST_AUTO_TEST_CASE(TrussAlignedX)
 {
-    // node coordinates
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords0;
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords1;
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords2;
+    std::cout << "*******************************************************************" << std::endl;
+    std::cout << "*********** Start Example 1: Truss aligned with x-axis ************" << std::endl;
+    std::cout << "*******************************************************************" << std::endl;
 
-    // directions
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionAligned;
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionOrthogonal0;
-    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionOrthogonal1;
+    Eigen::Vector3d directionAligned = Eigen::Vector3d::UnitX();
+    Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitY();
+    Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitZ();
 
-    try
-    {
-        std::cout << "*******************************************************************" << std::endl;
-        std::cout << "*********** Start Example 1: Truss aligned with x-axis ************" << std::endl;
-        std::cout << "*******************************************************************" << std::endl;
+    Run3d(Eigen::Vector3d(1, 5, 3), 
+          Eigen::Vector3d(2, 5, 3), 
+          Eigen::Vector3d(3, 5, 3), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
 
-        nodeCoords0[0] = 1.0;
-        nodeCoords0[1] = 5.0;
-        nodeCoords0[2] = 3.0;
+    std::cout << "*******************************************************************" << std::endl;
+}
 
-        nodeCoords1[0] = 1.0 + 0.5 * std::sqrt(3);
-        nodeCoords1[1] = 5.0;
-        nodeCoords1[2] = 3.0;
+BOOST_AUTO_TEST_CASE(TrussAlignedY)
+{
 
-        nodeCoords2[0] = 1.0 + 1.0 * std::sqrt(3);
-        nodeCoords2[1] = 5.0;
-        nodeCoords2[2] = 3.0;
+    std::cout << "*******************************************************************" << std::endl;
+    std::cout << "*********** Start Example 2: Truss aligned with y-axis ************" << std::endl;
+    std::cout << "*******************************************************************" << std::endl;
+ 
+    Eigen::Vector3d directionAligned = Eigen::Vector3d::UnitY();
+    Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitX();
+    Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitZ();
+ 
+    Run3d(Eigen::Vector3d(0,0,0), 
+          Eigen::Vector3d(0,1,0), 
+          Eigen::Vector3d(0,2,0), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
 
-        directionAligned = Eigen::Vector3d::UnitX();
-        directionOrthogonal0 = Eigen::Vector3d::UnitY();
-        directionOrthogonal1 = Eigen::Vector3d::UnitZ();
+}
 
-        Run3d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal0, directionOrthogonal1);
+BOOST_AUTO_TEST_CASE(TrussAlignedZ)
+{
+    std::cout << "*******************************************************************" << std::endl;
+    std::cout << "*********** Start Example 3: Truss aligned with z-axis ************" << std::endl;
+    std::cout << "*******************************************************************" << std::endl;
+ 
+    Eigen::Vector3d directionAligned = Eigen::Vector3d::UnitZ();
+    Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitX();
+    Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitY();
+ 
+    Run3d(Eigen::Vector3d(6,7,3), 
+          Eigen::Vector3d(6,7,4),
+          Eigen::Vector3d(6,7,5), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
+} 
 
-        std::cout << "*******************************************************************" << std::endl;
-        std::cout << "*********** Start Example 2: Truss aligned with y-axis ************" << std::endl;
-        std::cout << "*******************************************************************" << std::endl;
+BOOST_AUTO_TEST_CASE(TrussAlignedAngleBisector)
+{
+    std::cout << "*******************************************************************" << std::endl;
+    std::cout << "*********** Start Example 4: Truss aligned with angle bisector ****" << std::endl;
+    std::cout << "*******************************************************************" << std::endl;
 
-        nodeCoords0[0] = 0.0;
-        nodeCoords0[1] = 0.0;
-        nodeCoords0[2] = 0.0;
+    auto nodeCoord = Eigen::Vector3d(2,0,3);
+    auto nodeOffset = Eigen::Vector3d(1,1,1);
 
-        nodeCoords1[0] = 0.0;
-        nodeCoords1[1] = 0.0 + 0.5 * std::sqrt(3);
-        nodeCoords1[2] = 0.0;
-
-        nodeCoords2[0] = 0.0;
-        nodeCoords2[1] = 0.0 + 1.0 * std::sqrt(3);
-        nodeCoords2[2] = 0.0;
-
-        directionAligned = Eigen::Vector3d::UnitY();
-        directionOrthogonal0 = Eigen::Vector3d::UnitX();
-        directionOrthogonal1 = Eigen::Vector3d::UnitZ();
-
-        Run3d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal0, directionOrthogonal1);
-
-        std::cout << "*******************************************************************" << std::endl;
-        std::cout << "*********** Start Example 3: Truss aligned with z-axis ************" << std::endl;
-        std::cout << "*******************************************************************" << std::endl;
-
-        nodeCoords0[0] = 6.0;
-        nodeCoords0[1] = 7.0;
-        nodeCoords0[2] = 3.0;
-
-        nodeCoords1[0] = 6.0;
-        nodeCoords1[1] = 7.0;
-        nodeCoords1[2] = 3.0 + 0.5 * std::sqrt(3);
-
-        nodeCoords2[0] = 6.0;
-        nodeCoords2[1] = 7.0;
-        nodeCoords2[2] = 3.0 + 1.0 * std::sqrt(3);
-
-        directionAligned = Eigen::Vector3d::UnitZ();
-        directionOrthogonal0 = Eigen::Vector3d::UnitX();
-        directionOrthogonal1 = Eigen::Vector3d::UnitY();
-
-        Run3d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal0, directionOrthogonal1);
-
-        std::cout << "*******************************************************************" << std::endl;
-        std::cout << "*********** Start Example 4: Truss aligned with angle bisector ****" << std::endl;
-        std::cout << "*******************************************************************" << std::endl;
-
-        nodeCoords0[0] = 2.0;
-        nodeCoords0[1] = 0.0;
-        nodeCoords0[2] = 3.0;
-
-        nodeCoords1[0] = 2.0 + 0.5;
-        nodeCoords1[1] = 0.0 + 0.5;
-        nodeCoords1[2] = 3.0 + 0.5;
-
-        nodeCoords2[0] = 2.0 + 1.0;
-        nodeCoords2[1] = 0.0 + 1.0;
-        nodeCoords2[2] = 3.0 + 1.0;
-
-        directionAligned[0] = 1.0;
-        directionAligned[1] = 1.0;
-        directionAligned[2] = 1.0;
-        directionAligned.normalize();
-
-        directionOrthogonal0[0] = -1.0;
-        directionOrthogonal0[1] = -1.0;
-        directionOrthogonal0[2] = 2.0;
-
-        directionOrthogonal1[0] = 2.0;
-        directionOrthogonal1[1] = -1.0;
-        directionOrthogonal1[2] = -1.0;
-
-        Run3d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal0, directionOrthogonal1);
-
-    } catch (NuTo::Exception& e)
-    {
-        std::cout << "## Test failed ##" << std::endl;
-        std::cout << e.ErrorMessage();
-        return EXIT_FAILURE;
-    }
-    catch (...)
-    {
-        std::cout << "## Test failed ##" << std::endl;
-        std::cout << "Something else went wrong :-(" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::cout << "## Test successful ##" << std::endl;
-
+    auto directionAligned = Eigen::Vector3d(1,1,1);
+    auto directionOrthogonal0 = Eigen::Vector3d(-1, -1, 2);
+    auto directionOrthogonal1 = Eigen::Vector3d(2, -1, -1);
+ 
+    Run3d(nodeCoord, nodeCoord + 0.5 * nodeOffset, nodeCoord + nodeOffset, directionAligned, directionOrthogonal0, directionOrthogonal1, std::sqrt(3));
 }
 

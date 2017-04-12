@@ -6,6 +6,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"
 
+#include "mechanics/groups/Group.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/ImplEx.h"
@@ -18,8 +19,10 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include "visualize/VisualizeEnum.h"
+
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
@@ -33,7 +36,6 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
     rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4./30000, 4./0.021));
-
     return lawId;
 }
 
@@ -127,16 +129,15 @@ void ImplEx()
 
     s.ElementGroupAllocateAdditionalStaticData(s.GroupGetElementsTotal(), 2);
 
-    s.ConstraintLinearSetDisplacementNode(0, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
-
-    int gNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNodeCoordinateRange(gNodeBC, 0, length, length);
-    int iNodeBC = s.GroupGetMemberIds(gNodeBC)[0];
-
-    int bc = s.ConstraintLinearSetDisplacementNode(iNodeBC, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
+    using namespace NuTo::Constraint;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(s.NodeGetAtCoordinate(Eigen::VectorXd::Zero(1)), {NuTo::eDirection::X}));
+    
+    auto& nodesBC = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, length);
+    double simulationTime = 1;
+    double dispEnd = 0.1;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodesBC, {NuTo::eDirection::X}, RhsRamp(simulationTime, dispEnd)));
 
     int visualizationGroup = s.GroupGetElementsTotal();
-
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN);
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN);
@@ -146,34 +147,33 @@ void ImplEx()
 
     s.CalculateMaximumIndependentSets();
 
-    NuTo::ImplEx myIntegrationScheme(&s);
+    NuTo::ImplEx implex(&s);
 
-    double simulationTime = 1;
-    double dispEnd = 0.1;
     int numLoadSteps = 10;
 
     Eigen::Matrix2d timeDepDisp;
     timeDepDisp << 0, 0, simulationTime, dispEnd;
 
-    myIntegrationScheme.AddTimeDependentConstraint(bc, timeDepDisp);
-    myIntegrationScheme.SetTimeStep(simulationTime / numLoadSteps);
-    myIntegrationScheme.SetAutomaticTimeStepping(true);
+    implex.SetTimeStep(simulationTime / numLoadSteps);
+    implex.SetAutomaticTimeStepping(true);
 
-    myIntegrationScheme.AddCalculationStep({NuTo::Node::eDof::DISPLACEMENTS});
-    myIntegrationScheme.AddCalculationStep({NuTo::Node::eDof::NONLOCALEQSTRAIN});
+    implex.AddCalculationStep({NuTo::Node::eDof::DISPLACEMENTS});
+    implex.AddCalculationStep({NuTo::Node::eDof::NONLOCALEQSTRAIN});
 
-    myIntegrationScheme.AddDofWithConstantHessian0(NuTo::Node::eDof::NONLOCALEQSTRAIN);
+    implex.AddDofWithConstantHessian0(NuTo::Node::eDof::NONLOCALEQSTRAIN);
 
-    myIntegrationScheme.AddResultGroupNodeForce("Force", gNodeBC);
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", iNodeBC);
+    int gNodeBC = s.GroupGetId(&nodesBC);
+    int iNodeBC = s.GroupGetMemberIds(gNodeBC)[0];
+    implex.AddResultGroupNodeForce("Force", gNodeBC);
+    implex.AddResultNodeDisplacements("Displ", iNodeBC);
 
-    myIntegrationScheme.SetExtrapolationErrorThreshold(1);
+    implex.SetExtrapolationErrorThreshold(1);
 
     std::string resultDir = "./ResultsImplex";
     boost::filesystem::create_directory(resultDir);
-    myIntegrationScheme.SetResultDirectory(resultDir, true);
+    implex.SetResultDirectory(resultDir, true);
 
-    myIntegrationScheme.Solve(simulationTime / 5.);
+    implex.Solve(simulationTime / 5.);
 
 }
 

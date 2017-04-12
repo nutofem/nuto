@@ -1,13 +1,18 @@
 #include <iostream>
+
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
+
+#include "mechanics/MechanicsEnums.h"
+#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/sections/SectionTruss.h"
 #include "visualize/VisualizeEnum.h"
+
+using namespace NuTo;
 
 int main()
 {
@@ -21,15 +26,15 @@ int main()
     double BoundaryDisplacement = 0.1;
 
     // create one-dimensional structure
-    NuTo::Structure structure(1);
+    Structure structure(1);
 
     // create section
-    auto Section1 = NuTo::SectionTruss::Create(Area);
+    auto Section1 = SectionTruss::Create(Area);
 
     // create material law
     auto Material1 = structure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    structure.ConstitutiveLawSetParameterDouble(
-            Material1, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+    structure.ConstitutiveLawSetParameterDouble(Material1, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                                YoungsModulus);
 
     // create nodes
     Eigen::VectorXd nodeCoordinates(1);
@@ -41,10 +46,9 @@ int main()
     }
 
     int InterpolationType = structure.InterpolationTypeCreate("Truss1D");
-    structure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::COORDINATES,
-            NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    structure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeAdd(InterpolationType, Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeAdd(InterpolationType, Node::eDof::DISPLACEMENTS,
+                                   Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create elements
     std::vector<int> elementIncidence(2);
@@ -61,18 +65,20 @@ int main()
     structure.ElementTotalConvertToInterpolationType();
 
     // set boundary conditions and loads
-    Eigen::VectorXd direction(1);
-    direction(0) = 1;
-    structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    auto& origin = structure.NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Zero());
+    structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Value(origin));
     if (EnableDisplacementControl)
     {
         std::cout << "Displacement control" << std::endl;
-        structure.ConstraintLinearSetDisplacementNode(NumElements, direction, BoundaryDisplacement);
+        auto& lastNode = *structure.NodeGetNodePtr(NumElements);
+        structure.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Value(lastNode, BoundaryDisplacement));
     }
     else
     {
         std::cout << "Load control" << std::endl;
-        structure.LoadCreateNodeForce( NumElements, direction, Force);
+        Eigen::VectorXd direction(1);
+        direction(0) = 1;
+        structure.LoadCreateNodeForce(NumElements, direction, Force);
     }
 
     // start analysis
@@ -82,12 +88,12 @@ int main()
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
     // visualize results
-    int visualizationGroup = structure.GroupCreate(NuTo::eGroupId::Elements);
+    int visualizationGroup = structure.GroupCreate(eGroupId::Elements);
     structure.GroupAddElementsTotal(visualizationGroup);
 
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(visualizationGroup, eVisualizeWhat::DISPLACEMENTS);
+    structure.AddVisualizationComponent(visualizationGroup, eVisualizeWhat::ENGINEERING_STRAIN);
+    structure.AddVisualizationComponent(visualizationGroup, eVisualizeWhat::ENGINEERING_STRESS);
     structure.ExportVtkDataFileElements("Truss1D2N.vtk");
 
     return 0;

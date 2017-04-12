@@ -247,7 +247,6 @@ void SimulationTest(std::vector<int> rN,
 
     SetupConstrainedNodeBoundaryElements<TDim>(S,
                                                LambdaGetBoundaryNodes,
-                                               TI,
                                                LambdaTimeDepBoundaryRH);
 
     MT.SetupStaticData();

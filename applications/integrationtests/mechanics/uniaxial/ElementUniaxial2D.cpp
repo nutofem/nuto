@@ -5,11 +5,8 @@
  *      Author: Thomas Titscher
  */
 
-#define BOOST_TEST_MODULE LinearInterpolation
-#define BOOST_TEST_DYN_LINK
-
-#include "mechanics/sections/SectionPlane.h"
 #include "ElementUniaxialTest.h"
+#include "mechanics/sections/SectionPlane.h"
 
 using namespace NuTo::Interpolation;
 

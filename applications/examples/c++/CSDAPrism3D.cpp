@@ -5,16 +5,15 @@
  *      Author: Thomas Titscher
  */
 
-#include <boost/filesystem/operations.hpp>
 #include "mechanics/MechanicsEnums.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
-
 
 int main()
 {
@@ -42,14 +41,9 @@ int main()
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
     s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4./200., 4. * thickness / fractureEnergy));
 
-    std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;
-
     auto prism = NuTo::MeshCompanion::ElementPrismsCreate(s, gMatrix, gAggreg, thickness);
     s.ElementTotalSetConstitutiveLaw(LIN);
     s.ElementGroupSetConstitutiveLaw(prism.first, CSDA);
-
-    std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;
-
 
     s.InterpolationTypeAdd(ids[0].second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     s.InterpolationTypeAdd(ids[1].second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
@@ -57,27 +51,28 @@ int main()
 
     s.ElementTotalConvertToInterpolationType();
 
-    std::cout << "GetNumNodes() \n" << s.GetNumNodes() << std::endl;
-
     s.ElementInfo(10);
     s.NodeInfo(10);
 
-    int nodeFixXYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({-5, 0, 0}), 1.e-5);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitX(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixXYZ, Eigen::Vector3d::UnitZ(), 0);
+    auto& nodeFixXYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({-5, 0, 0}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
-    int nodeFixYZ = s.NodeGetIdAtCoordinate(Eigen::Vector3d({5, 0, 0}), 1.e-5);
-    s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitY(), 0);
-    s.ConstraintLinearSetDisplacementNode(nodeFixYZ, Eigen::Vector3d::UnitZ(), 0);
+    auto& nodeFixYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({5, 0, 0}));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, 2}), 0, 2*thickness);
+    auto& groupZ = *s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
 
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitY(), 0);
-
-    int BC = s.ConstraintLinearSetDisplacementNodeGroup(groupNodeFixZ, Eigen::Vector3d::UnitZ(), 0);
-
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(groupZ, {NuTo::eDirection::Y}));
+    
+    double deltaD = .5;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+            NuTo::Constraint::Component(groupZ, {NuTo::eDirection::Z}, NuTo::Constraint::RhsRamp(1, deltaD)));
+    
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
     std::cout << s.GetNumTotalDependentDofs() << std::endl;
@@ -88,7 +83,6 @@ int main()
 
     s.SetShowTime(false);
     newmark.SetShowTime(false);
-
     newmark.SetTimeStep(0.1);
     newmark.SetMinTimeStep(1.e-12);
     newmark.SetMaxTimeStep(0.1);
@@ -99,13 +93,6 @@ int main()
 
     bool deleteDirectory = true;
     newmark.SetResultDirectory("./CSDAPrism3DOut", deleteDirectory);
-
-    double deltaD = .5;
-    Eigen::Matrix2d dispRHS;
-    dispRHS << 0, 0, 1, -deltaD;
-
-    newmark.AddTimeDependentConstraint(BC, dispRHS);
     newmark.Solve(1);
-
     return EXIT_SUCCESS;
 }

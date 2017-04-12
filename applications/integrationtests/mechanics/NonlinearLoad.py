@@ -16,31 +16,33 @@ def SetConstitutiveLaw(structure):
 
 
 def SetBCs(structure):
-    nodesBottom = structure.GroupCreate("Nodes")
-    nodesTop = structure.GroupCreate("Nodes")
-    structure.GroupAddNodeCoordinateRange(nodesBottom, 2, -1e-6, 1e-6)
-    structure.GroupAddNodeCoordinateRange(nodesTop, 2, 1.0 - 1e-6, 1.0 + 1e-6)
+    nodesBottom = structure.GroupGetNodesAtCoordinate(nuto.eDirection_Z, 0)
+    nodesTop = structure.GroupGetNodesAtCoordinate(nuto.eDirection_Z, 1)
+
+    structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodesBottom, [nuto.eDirection_Z]))
+
+
+    nodeZero = structure.NodeGetAtCoordinate(np.r_[0.0, 0.0, 0.0])
+    structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodeZero, [nuto.eDirection_X, nuto.eDirection_Y]))
+
+    nodeOne = structure.NodeGetAtCoordinate(np.r_[1.0, 0.0, 0.0])
+    structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodeOne, [nuto.eDirection_Y]))
+
+
+    topNodes = nodesTop.GetMemberIds()
+    topNodes = list(topNodes)
+    primary = structure.NodeGetNodePtr(topNodes.pop(0))
+    for secondary in topNodes:
+        secondaryNode = structure.NodeGetNodePtr(secondary) 
+        e = nuto.Equation()
+        e.AddTerm(nuto.Term(primary, 2, 1))
+        e.AddTerm(nuto.Term(secondaryNode, 2, -1))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, e);
 
     elementsTop = structure.GroupCreate("Elements")
-    structure.GroupAddElementsFromNodes(elementsTop, nodesTop, False)
-
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBottom, np.r_[0.0, 0.0, 1.0], 0.0)
-
-    nodeZero = structure.NodeGetIdAtCoordinate(np.r_[0.0, 0.0, 0.0], 1e-5)
-    structure.ConstraintLinearSetDisplacementNode(nodeZero, np.r_[1.0, 0.0, 0.0], 0.0)
-    structure.ConstraintLinearSetDisplacementNode(nodeZero, np.r_[0.0, 1.0, 0.0], 0.0)
-
-    nodeOne = structure.NodeGetIdAtCoordinate(np.r_[1.0, 0.0, 0.0], 1e-8)
-    structure.ConstraintLinearSetDisplacementNode(nodeOne, np.r_[0.0, 1.0, 0.0], 0.0)
-
-    topNodes = structure.GroupGetMemberIds(nodesTop)
-    topNodes = list(topNodes)
-    primary = topNodes.pop(0)
-    for secondary in topNodes:
-        constraint = structure.ConstraintLinearEquationCreate(primary, "Z_DISPLACEMENT", 1.0, 0.0)
-        structure.ConstraintLinearEquationAddTerm(constraint, secondary, "Z_DISPLACEMENT", -1.0)
-
-    structure.LoadSurfacePressureCreate3D(elementsTop, nodesTop, 4.0)
+    nodesTopId = structure.GroupGetId(nodesTop)
+    structure.GroupAddElementsFromNodes(elementsTop, nodesTopId, False)
+    structure.LoadSurfacePressureCreate3D(elementsTop, nodesTopId, 4.0)
 
 
 class NonlinearLoadTestCase(unittest.TestCase):

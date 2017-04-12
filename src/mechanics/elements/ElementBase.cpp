@@ -20,7 +20,6 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
-#include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -1066,7 +1065,7 @@ void NuTo::ElementBase::Info() const
     {
         const NodeBase* node = GetNode(iNode);
         std::cout << "NodeInfo of local node " << iNode << ": \n";
-        std::cout << node->GetNodeTypeStr() << "\n";
+        std::cout << node << "\n";
     }
 }
 
