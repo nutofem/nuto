@@ -36,9 +36,9 @@ public:
     }
 
     //! @brief ctor with a rhs function and terms
-    //! @param rhs rhs function
     //! @param terms equation terms
-    Equation(RhsFunction rhs, std::vector<Term> terms)
+    //! @param rhs rhs function
+    Equation(std::vector<Term> terms, RhsFunction rhs)
         : mRhs(rhs)
         , mTerms(terms)
     {

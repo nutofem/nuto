@@ -24,7 +24,7 @@ std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> di
             // if you try to constrain the Z component of the temperature. Which would be wrong.
             throw MechanicsException(__PRETTY_FUNCTION__, "Dimension mismatch");
 
-        eqs.push_back(Equation(rhs, {Term(node, component, 1)}));
+        eqs.push_back(Equation({Term(node, component, 1)}, rhs));
     }
     return eqs;
 }

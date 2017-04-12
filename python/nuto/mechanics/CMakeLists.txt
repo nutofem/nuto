@@ -1,6 +1,7 @@
 set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/constraints/Constraints.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/constraints/ConstraintCompanion.h
+    ${CMAKE_SOURCE_DIR}/src/mechanics/constraints/Equation.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/dofSubMatrixStorage/DofStatus.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/dofSubMatrixStorage/BlockScalar.h
