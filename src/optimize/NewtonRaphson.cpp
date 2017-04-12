@@ -9,9 +9,7 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
+#include <iostream>
 
 #include "optimize/NewtonRaphson.h"
 #include "optimize/OptimizeException.h"

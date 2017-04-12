@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionTruss.h"
 

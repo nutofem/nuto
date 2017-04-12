@@ -1,4 +1,4 @@
-// $Id$
+#include <iostream>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>

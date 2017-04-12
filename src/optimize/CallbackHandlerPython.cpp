@@ -1,3 +1,4 @@
+#include <iostream>
 #include <Python.h>
 #include "optimize/CallbackHandlerPython.h"
 #include "optimize/OptimizeException.h"

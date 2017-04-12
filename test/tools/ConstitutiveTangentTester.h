@@ -2,8 +2,11 @@
 // Created by Thomas Titscher on 10/26/16.
 //
 #pragma once
+#include <iostream>
+
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+
 namespace NuTo
 {
 namespace Test

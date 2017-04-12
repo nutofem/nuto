@@ -7,6 +7,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <iostream>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
 

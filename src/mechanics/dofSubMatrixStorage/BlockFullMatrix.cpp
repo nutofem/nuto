@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"

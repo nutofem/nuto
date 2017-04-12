@@ -17,6 +17,8 @@
 #include "math/CustomBoostSerializationExtensions.h"
 #endif
 
+#include <iostream>
+
 #include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"

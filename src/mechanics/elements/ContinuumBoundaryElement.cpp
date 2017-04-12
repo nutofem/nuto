@@ -4,6 +4,8 @@
  *  Created on: 5 Mar 2016
  *      Author: vhirtham
  */
+#include <iostream>
+
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
