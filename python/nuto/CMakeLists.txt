@@ -63,4 +63,13 @@ else()
     deactivate_module(optimize.ModuleOptimize)
 endif()
 
+# support for strongly typed enums was introduced in 3.0.3
+if(SWIG_VERSION VERSION_LESS "3.0.3")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
+    file(READ enum_hack.py ADDITIONAL_ENUMS)
+    string(CONCAT MODIFIED_FILE_CONTENT ${FILE_CONTENT} ${ADDITIONAL_ENUMS})
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+endif()
+
+
 set(CMAKE_CXX_FLAGS "${ORIGINAL_CXX_FLAGS}")
