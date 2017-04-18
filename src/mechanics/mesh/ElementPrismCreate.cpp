@@ -23,7 +23,7 @@ struct ElementSurface
 
 struct NodeCoordinate
 {
-    Eigen::VectorXd operator () (const NuTo::NodeBase* rNode)
+    Eigen::VectorXd operator () (const NuTo::NodeBase* rNode) const
     {
         return rNode->Get(NuTo::Node::eDof::COORDINATES);
     }

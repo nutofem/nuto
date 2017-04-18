@@ -52,7 +52,6 @@ void DataMoistureTransport::SetCurrentSorptionCoeff(Eigen::VectorXd rCurrentSorp
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
-        break;
     }
     }
 }
@@ -87,7 +86,6 @@ void DataMoistureTransport::SetLastSorptionCoeff(Eigen::VectorXd rLastSorptionCo
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
-        break;
     }
     }
 }

@@ -1077,7 +1077,6 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                 default:
                 {
                     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-                    break;
                 }
             }
             return;

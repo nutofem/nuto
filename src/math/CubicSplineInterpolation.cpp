@@ -10,11 +10,10 @@ NuTo::Math::CubicSplineInterpolation::CubicSplineInterpolation(std::vector<std::
     // natural boundary condition
     ddy[0] = u[0] = 0.0;
     ddy[n-1] = 0.0;
-    double sigma, p;
     for (unsigned i = 1; i < n - 1; ++i)
     {
-        sigma = (mData[i][0] - mData[i-1][0]) / (mData[i+1][0] - mData[i-1][0]);
-        p = sigma*ddy[i-1] + 2.0;
+        double sigma = (mData[i][0] - mData[i-1][0]) / (mData[i+1][0] - mData[i-1][0]);
+        double p = sigma*ddy[i-1] + 2.0;
         ddy[i] = (sigma - 1.0) / p;
         u[i]=(mData[i+1][1] - mData[i][1]) / (mData[i+1][0] - mData[i][0])
            - (mData[i][1] - mData[i-1][1]) / (mData[i][0] - mData[i-1][0]);

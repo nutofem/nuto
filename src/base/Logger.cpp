@@ -39,7 +39,6 @@ void NuTo::Logger::Save (const std::string &filename, std::string rType )const
         else if (rType=="XML")
         {
             boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-            std::string tmpString(this->GetTypeId());
             oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
             oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
         }

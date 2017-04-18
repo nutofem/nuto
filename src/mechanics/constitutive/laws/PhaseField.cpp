@@ -463,15 +463,12 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
 
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Visualization of stress not implemented for the anisotropic phase-field model!");
-
-            break;
         }
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Visualization of strain not implemented for the anisotropic phase-field model!");
-            break;
         }
 
         case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:

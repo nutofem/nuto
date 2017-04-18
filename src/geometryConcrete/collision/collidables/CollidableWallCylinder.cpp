@@ -58,7 +58,6 @@ double NuTo::CollidableWallCylinder::PredictCollision(
 	long double c = dP.dot(dP) - dR * dR;
 	long double b = 2 * (dV.dot(dP) - dR * dG);
 
-	long double timeCollision = 0;
 
 	if (c > 2.0e-10 * rSphere.mRadius)
 		throw NuTo::Exception("[NuTo::CollidableSphere::CreateNewEvent] Sphere overlapping with Cylinder!");
@@ -66,6 +65,7 @@ double NuTo::CollidableWallCylinder::PredictCollision(
 	long double discriminant = b * b - 4 * a * c;
 	if (discriminant > -1e-11)
 	{
+        long double timeCollision = 0;
 		if (discriminant < 0.)
 			discriminant = 0;
 

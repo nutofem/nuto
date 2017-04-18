@@ -316,7 +316,7 @@ void NuTo::BSplineCurve::BezierElementControlPoints()
 
     std::vector<Eigen::MatrixXd>::iterator itCP = mBezierControlPoints.begin();
     int i = 0;
-    for(std::vector<Eigen::MatrixXd>::iterator it = mBezierOperators.begin(); it != mBezierOperators.end(); it++, itCP++, i++)
+    for(std::vector<Eigen::MatrixXd>::iterator it = mBezierOperators.begin(); it != mBezierOperators.end(); ++it, ++itCP, ++i)
     {
         Eigen::MatrixXd controlPoints = (mControlPoints.block(0, i, mDegree+1, dim)).transpose();
         (*itCP) = (*it)*controlPoints;

@@ -1,5 +1,3 @@
-// $Id$
-
 #include <sstream>
 #include <iostream>
 #include "mechanics/structures/StructureBase.h"
@@ -40,7 +38,7 @@
 void NuTo::StructureBase::IntegrationTypeInfo(int rVerboseLevel) const
 {
     std::cout << "number of integration types : " << mIntegrationTypeMap.size() << std::endl;
-    for (boost::ptr_map<std::string, IntegrationTypeBase>::const_iterator it = mIntegrationTypeMap.begin(); it != mIntegrationTypeMap.end(); it++)
+    for (boost::ptr_map<std::string, IntegrationTypeBase>::const_iterator it = mIntegrationTypeMap.begin(); it != mIntegrationTypeMap.end(); ++it)
     {
         it->second->Info(rVerboseLevel);
     }

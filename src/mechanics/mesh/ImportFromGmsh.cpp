@@ -1,5 +1,3 @@
-
-
 #include <fstream>
 
 #include "mechanics/mesh/MeshCompanion.h"
@@ -223,7 +221,6 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
     int element_type;
     int num_elm_follow;
     int num_tags;
-    int cur_num_elm_nodes;
 
     for (int elemCount = 0; elemCount < numElements; elemCount++)
     {
@@ -235,7 +232,7 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
         rFile.read((char *) &num_elm_follow, sizeof(int));
 
         // set num_elemt_node
-        cur_num_elm_nodes = GetNumNodesPerElementType(element_type);
+        int cur_num_elm_nodes = GetNumNodesPerElementType(element_type);
 
         // Read numOfTags
         rFile.read((char *) &num_tags, sizeof(int));
@@ -338,9 +335,6 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     }
 
     auto newNodeNumber = CreateNodes(rS, nodes);
-
-    // allocate data structure for group id and interpolation type id
-    std::map<int, std::set<int>> groupInterpolationIds;
 
     std::vector<int> nodeNumbers;
     for (auto& element : elements)

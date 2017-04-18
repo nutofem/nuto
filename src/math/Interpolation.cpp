@@ -21,10 +21,9 @@ unsigned NuTo::Math::Interpolation::bisection(double x)
 {
     unsigned lower = 0;
     unsigned upper = mData.size() - 1;
-    unsigned pivot;
     while (upper - lower > 1)
     {
-        pivot = (upper + lower) / 2; 
+        unsigned pivot = (upper + lower) / 2; 
         if (x > mData[pivot][0])
         {
             lower = pivot;

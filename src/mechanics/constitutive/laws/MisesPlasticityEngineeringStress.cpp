@@ -430,9 +430,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     norm_dev,
     sigma_y,
     factor,
-    factor2,
     yield_condition,
-    epsilon_p_eq2,
     d_sigma,
     d_H,
     H,
@@ -440,8 +438,6 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     mu,
     bulk_modulus,
     delta_gamma=0.,
-    g,
-    dg,
     df_dsigma[6],
     trace_epsilon,
     trace_epsilon_div_3;
@@ -558,14 +554,14 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     int i=0;
     for (;i<100;i++)
     {
-        g  = yield_condition - (2.*mu*delta_gamma + sqrt_2div3 * (H2-H));
+        double g  = yield_condition - (2.*mu*delta_gamma + sqrt_2div3 * (H2-H));
         if (std::abs(g)<tolerance*sigma_y)
         {
             break;
         }
-        dg = -2.* mu * (1.+(d_H+d_sigma)/(3.*mu));
+        double dg = -2.* mu * (1.+(d_H+d_sigma)/(3.*mu));
         delta_gamma -=g/dg;
-        epsilon_p_eq2 = oldStaticData.GetEquivalentPlasticStrain() + sqrt_2div3 * delta_gamma;
+        double epsilon_p_eq2 = oldStaticData.GetEquivalentPlasticStrain() + sqrt_2div3 * delta_gamma;
 
         H2  = GetHardeningModulus(epsilon_p_eq2,d_H);
 
@@ -628,7 +624,7 @@ void NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
     if (rNewStress!=nullptr)
     {
 		factor  = 2.*mu*delta_gamma;
-		factor2 = bulk_modulus*trace_epsilon;
+		double factor2 = bulk_modulus*trace_epsilon;
 		(*rNewStress)[0] = factor2+sigma_trial[0]-factor*df_dsigma[0];
 		(*rNewStress)[1] = factor2+sigma_trial[1]-factor*df_dsigma[1];
 		(*rNewStress)[2] = factor2+sigma_trial[2]-factor*df_dsigma[2];
@@ -694,7 +690,7 @@ double NuTo::MisesPlasticityEngineeringStress::GetYieldStrength(double rEpsilonP
     std::vector<std::pair<double, double>>::const_iterator it(mSigma.begin());
     while (rEpsilonPEq >= it->first)
     {
-        it++;
+        ++it;
         if (it == mSigma.end())
         {
             // the maximum is reached, afterwards the yield strength remains constant
@@ -723,11 +719,11 @@ double NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus(double rEpsil
     {
 		do
 		{
-			it++;
+			++it;
 			if (it == mH.end())
 			{
 				// the maximum is reached, afterwards use a constant slope
-				it--;
+				--it;
 				rDHDEpsilonP = it->second;
 				H += (rEpsilonPEq - it->first) * (it->second);
 				return H;
@@ -738,7 +734,7 @@ double NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus(double rEpsil
 			}
 			else
 			{
-				it--;
+				--it;
 				rDHDEpsilonP = it->second;
 				H += (rEpsilonPEq - it->first) * (it->second);
 				return H;
@@ -840,7 +836,7 @@ void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, d
 	if (rSigma<=0)
 		throw MechanicsException(__PRETTY_FUNCTION__, "Yield strength has to be positive.");
 	std::vector<std::pair<double, double> >::iterator it;
-	for (it = mSigma.begin(); it!=mSigma.end(); it++)
+	for (it = mSigma.begin(); it!=mSigma.end(); ++it)
 	{
 		if (it->first > rEpsilon)
 		{
@@ -877,7 +873,7 @@ void NuTo::MisesPlasticityEngineeringStress::AddHardeningModulus(double rEpsilon
 	if (rH<0)
 		throw MechanicsException(__PRETTY_FUNCTION__, "Hardening modul must not be negative.");
 	std::vector<std::pair<double, double> >::iterator it;
-	for (it = mH.begin(); it!=mH.end(); it++)
+	for (it = mH.begin(); it!=mH.end(); ++it)
 	{
 		if (it->first>rEpsilon)
 		{

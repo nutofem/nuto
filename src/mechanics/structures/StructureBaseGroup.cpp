@@ -17,7 +17,7 @@ void StructureBase::GroupInfo(int rVerboseLevel) const
     std::cout << "number of groups  : " << mGroupMap.size() << std::endl;
     if (rVerboseLevel > 2)
     {
-        for (boost::ptr_map<int, GroupBase>::const_iterator it = mGroupMap.begin(); it != mGroupMap.end(); it++)
+        for (boost::ptr_map<int, GroupBase>::const_iterator it = mGroupMap.begin(); it != mGroupMap.end(); ++it)
         {
             std::cout << "  Group " << it->first << std::endl;
             it->second->Info(rVerboseLevel, this);
@@ -28,7 +28,7 @@ void StructureBase::GroupInfo(int rVerboseLevel) const
 
 int StructureBase::GroupGetId(GroupBase* rGroup) const
 {
-    for (boost::ptr_map<int, GroupBase>::const_iterator it = mGroupMap.begin(); it != mGroupMap.end(); it++)
+    for (boost::ptr_map<int, GroupBase>::const_iterator it = mGroupMap.begin(); it != mGroupMap.end(); ++it)
     {
         if (it->second == rGroup)
             return it->first;
@@ -324,11 +324,10 @@ void StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::Vect
             NodeBase* nodePtr(node.second);
             if (nodePtr->GetNum(Node::eDof::COORDINATES) != 2)
                 continue;
-            double r2(0.);
             coordinates = nodePtr->Get(Node::eDof::COORDINATES);
             vecDelta = coordinates - rCenter;
 
-            r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1));
+            double r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1));
 
             if (r2 >= rMin2 && r2 <= rMax2)
             {
@@ -356,7 +355,6 @@ void StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::Vect
             NodeBase* nodePtr(node.second);
             if (nodePtr->GetNum(Node::eDof::COORDINATES) != 3)
                 continue;
-            double r2(0.);
             coordinates = nodePtr->Get(Node::eDof::COORDINATES);
             vecPtrCenter = coordinates - rCenter;
 
@@ -365,7 +363,7 @@ void StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::Vect
             vecPtrProjection = rCenter + rDirection * s;
             vecDelta = coordinates - vecPtrProjection;
 
-            r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1) + vecDelta(2) * vecDelta(2));
+            double r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1) + vecDelta(2) * vecDelta(2));
 
             if (r2 >= rMin2 && r2 <= rMax2)
             {
@@ -398,7 +396,6 @@ void StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNodeGrou
 
     std::vector<std::pair<int, ElementBase*>> elementVector;
     this->GetElementsTotal(elementVector);
-    std::vector<const NodeBase*> elementNodes;
     for (auto& element : elementVector)
     {
         if (!elementGroup->Contain(element.first))
@@ -458,7 +455,7 @@ void StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rElementGrou
     }
 
     for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end();
-         itElement++)
+         ++itElement)
     {
         try
         {

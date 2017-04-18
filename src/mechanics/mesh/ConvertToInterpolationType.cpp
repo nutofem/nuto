@@ -66,7 +66,7 @@ struct TmpNode
 //! @brief struct to extract the coodinates from TmpNode (for NuTo::SpatialContainer)
 struct TmpNodeCoordinate
 {
-    Eigen::VectorXd operator() (const TmpNode& rTmpNode)
+    Eigen::VectorXd operator() (const TmpNode& rTmpNode) const
     {
         return rTmpNode.coordinate;
     }

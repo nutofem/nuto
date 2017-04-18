@@ -1,4 +1,3 @@
-#include <boost/spirit/include/classic_core.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -14,8 +13,7 @@ namespace NuTo
 template<>
 SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
-    throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] conversion from full matrix not implemented for integers.");
-    mNumColumns = 0;
+    throw MathException(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
 }
 
 template<>
@@ -569,7 +567,6 @@ void SparseMatrixCSRGeneral<T>::Save ( const std::string &filename, std::string 
         else if (rType == "XML")
         {
             boost::archive::xml_oarchive oxa(ofs, std::ios::binary);
-            std::string tmpString(this->GetTypeId());
             oxa& boost::serialization::make_nvp("Object_type", typeIdString);
             oxa& boost::serialization::make_nvp(typeIdString.c_str(), *this);
         }

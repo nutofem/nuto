@@ -211,7 +211,7 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
     while (ElementIter != rElementGroup->end())
     {
         rElements.push_back(ElementIter->second);
-        ElementIter++;
+        ++ElementIter;
     }
 }
 
@@ -1248,11 +1248,10 @@ void NuTo::StructureBase::SetOMPNested(bool rNested)
 
 bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType)
 {
-    InterpolationType* interpolationType;
     for (auto interpolation = mInterpolationTypeMap.begin(); interpolation != mInterpolationTypeMap.end();
          interpolation++)
     {
-        interpolationType = interpolation->second;
+        auto interpolationType = interpolation->second;
         if (interpolationType->IsConstitutiveInput(rDofType))
         {
             return true;

@@ -190,7 +190,7 @@ void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, std::vector<int>& rM
 
     rMembers.resize(nodeGroup->GetNumMembers());
     int countNode(0);
-    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++,countNode++)
+    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end(); ++itNode,countNode++)
     {
         rMembers[countNode] = itNode->first;
     }
@@ -302,7 +302,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, Eigen::Matr
     rDisplacements.resize(nodeGroup->GetNumMembers(),numDisp);
 
     int theNode(0);
-    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end(); ++itNode, theNode++)
     {
         try
         {
@@ -382,7 +382,7 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::Matrix
     //resize the matrix
     rCoordinates.resize(nodeGroup->GetNumMembers(),numCoords);
     int theNode(0);
-    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
+    for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end(); ++itNode, theNode++)
     {
         try
         {
