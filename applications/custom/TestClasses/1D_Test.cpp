@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include <eigen3/Eigen/Core>
+#include <boost/filesystem.hpp>
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
@@ -36,6 +37,16 @@
 
 //#define SHOW_INTERMEDIATE_RESULTS
 //#define SHOW_SOLUTION
+
+
+void checkDirectories(const std::string rLogDirectory, const std::string rResultDirectory)
+{
+    if (!boost::filesystem::exists(rLogDirectory))
+        boost::filesystem::create_directory(rLogDirectory);
+
+    if (!boost::filesystem::exists(rResultDirectory))
+        boost::filesystem::create_directory(rResultDirectory);
+}
 
 
 Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epetra_MultiVector rRhs, bool iterative = true)
@@ -105,6 +116,12 @@ int main(int argc, char** argv)
     rank = Comm.MyPID();
     size = Comm.NumProc();
 
+    //CREATE DIRECTORIES FOR LOGS AND RESULTS
+    const std::string logDirectory = "1D_Test_Logs";
+    const std::string resultDirectory = "1D_Test_Results";
+    checkDirectories(logDirectory, resultDirectory);
+
+
     // one-dimensional problem
     const int dim = 1;
 
@@ -151,7 +168,7 @@ int main(int argc, char** argv)
     NuTo::Structure structure(dim);
 
     structure.SetVerboseLevel(10);
-    structure.GetLogger().OpenFile("1D_Test_Logs/output_" + std::to_string(rank));
+    structure.GetLogger().OpenFile(logDirectory + "/output_" + std::to_string(rank));
     structure.GetLogger().SetQuiet(false);
 
     auto section = NuTo::SectionTruss::Create(area);
@@ -202,9 +219,9 @@ int main(int argc, char** argv)
     structure.ElementTotalSetConstitutiveLaw(material);
     structure.ElementTotalConvertToInterpolationType();
 
-    // ----------------------------------------
-    // | DEFINE BOUNDARY AND OVERLAPPING AREAS|
-    // ----------------------------------------
+    // -----------------------------------------
+    // | DEFINE BOUNDARY AND OVERLAPPING AREAS |
+    // -----------------------------------------
     int nodeBCLeft = structure.GroupCreate(NuTo::eGroupId::Nodes);
     int nodeBCRight = structure.GroupCreate(NuTo::eGroupId::Nodes);
     structure.GroupAddNodeCoordinateRange(nodeBCLeft, 0, -1e-6, 1e-6);
@@ -371,11 +388,9 @@ int main(int argc, char** argv)
     ConversionTools converter;
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
-
     globalMatrix.PutScalar(0.0);
     globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
     globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
-
 #ifdef SHOW_INTERMEDIATE_RESULTS
     //PRINT SOME INTERMEDIATE RESULTS
     std::ostream& os = std::cout;
@@ -404,10 +419,10 @@ int main(int argc, char** argv)
     Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector);
     sol.Scale(-1);
     //save solution
-//    saveMultiVector(sol, "1D_Test_Results/solution_vector", "Solution, describes displacements");
-    EpetraExt::MultiVectorToMatlabFile("1D_Test_Results/solution.mat", sol);
-    EpetraExt::RowMatrixToMatlabFile("1D_Test_Results/globalMatrix.mat", globalMatrix);
-    EpetraExt::VectorToMatlabFile("1D_Test_Results/globalRHS.mat", globalRhsVector);
+//    saveMultiVector(sol, resultDirectory + "/solution_vector", "Solution, describes displacements");
+    EpetraExt::MultiVectorToMatlabFile((resultDirectory + "/solution.mat").c_str(), sol);
+    EpetraExt::RowMatrixToMatlabFile((resultDirectory + "/globalMatrix.mat").c_str(), globalMatrix);
+    EpetraExt::VectorToMatlabFile((resultDirectory + "/globalRHS.mat").c_str(), globalRhsVector);
 
 #ifdef SHOW_SOLUTION
     std::cout << "Solution:\n---------------\n";
@@ -423,7 +438,7 @@ int main(int argc, char** argv)
         displ *= -1;
 
         //save direct solution
-        std::ofstream file("1D_Test_Results/solution_direct.mat");
+        std::ofstream file(resultDirectory + "/solution_direct.mat");
         file << displ;
         file.close();
     }
