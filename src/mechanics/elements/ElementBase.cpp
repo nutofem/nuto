@@ -38,6 +38,8 @@
 #include <eigen3/Eigen/Dense>
 
 #ifdef ENABLE_VISUALIZE
+#include "visualize/Point.h"
+#include "visualize/CellBase.h"
 #include "visualize/VisualizeUnstructuredGrid.h"
 #include "visualize/VisualizeComponent.h"
 #include "visualize/VisualizeException.h"
@@ -271,40 +273,24 @@ void NuTo::ElementBase::GetVisualizationCells(unsigned int& NumVisualizationPoin
 
 void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
 {
-    // get visualization cells from integration type
-    unsigned int NumVisualizationPoints;
-    std::vector<double> VisualizationPointLocalCoordinates;
-    unsigned int NumVisualizationCells;
-    std::vector<NuTo::eCellTypes> VisualizationCellType;
-    std::vector<unsigned int> VisualizationCellsIncidence;
-    std::vector<unsigned int> VisualizationCellsIP;
-    //get the visualization cells either from the integration type (standard)
-    // or (if the routine is rewritten for e.g. XFEM or lattice elements, from other element data
-    GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
+    IntegrationTypeBase::IpCellInfo ipCellInfo = GetIntegrationType().GetVisualizationCells(); 
+    if (ipCellInfo.cells.size() == 0) return; // nothing to visualize
 
-    // calculate global point coordinates and store point at the visualize object
-    if (NumVisualizationPoints == 0) return; // nothing to visualize
-    int dimension(VisualizationPointLocalCoordinates.size() / NumVisualizationPoints);
-    assert(VisualizationPointLocalCoordinates.size() == NumVisualizationPoints * dimension);
-
-    // TODO: fix that by proper visualization point (natural!) coordinates, local might be misleading here
-    Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dimension, NumVisualizationPoints);
-
-    std::vector<unsigned int> PointIdVec;
-    for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+    // add visualization points and store their id together with their local coordinates
+    struct PointWithLocalCoordinates
     {
-        if (dimension != 1 and dimension != 2 and dimension != 3)
-            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
+        int id;
+        Eigen::VectorXd localCoords;
+    };
 
-        const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eDof::COORDINATES);
-        unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
-        PointIdVec.push_back(PointId);
+    std::vector<PointWithLocalCoordinates> points;
+    for (auto& localCoords : ipCellInfo.cellVertices)
+    {
+        Eigen::Vector3d globalCoords = InterpolateDof3D(localCoords, Node::eDof::COORDINATES);
+        points.push_back({rVisualize.AddPoint(globalCoords), localCoords});
     }
 
-    // store cells at the visualize object
-    assert(VisualizationCellType.size() == NumVisualizationCells);
-    assert(VisualizationCellsIP.size() == NumVisualizationCells);
+
     std::vector<unsigned int> CellIdVec;
     unsigned int Pos = 0;
     for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)

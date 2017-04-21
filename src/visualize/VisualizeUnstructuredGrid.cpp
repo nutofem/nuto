@@ -19,39 +19,10 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 
-
-NuTo::VisualizeUnstructuredGrid::VisualizeUnstructuredGrid()
-{}
-
-NuTo::VisualizeUnstructuredGrid::~VisualizeUnstructuredGrid()
-{}
-
-// add point
-unsigned int NuTo::VisualizeUnstructuredGrid::AddPoint(const double* rCoordinates)
+int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 {
-    this->mPoints.push_back(new Point(rCoordinates));
-    unsigned int PointId = this->mPoints.size() - 1;
-    for (unsigned int PointDataCount = 0; PointDataCount < this->mPointData.size(); PointDataCount++)
-    {
-        switch (this->mPointData[PointDataCount].GetDataType())
-        {
-        case NuTo::eVisualizeDataType::SCALAR:
-            this->mPoints[PointId].AddDataScalar(PointDataCount);
-            break;
-        case NuTo::eVisualizeDataType::VECTOR:
-            this->mPoints[PointId].AddDataVector(PointDataCount);
-            break;
-        case NuTo::eVisualizeDataType::TENSOR:
-            this->mPoints[PointId].AddDataTensor(PointDataCount);
-            break;
-        case NuTo::eVisualizeDataType::FIELD:
-            this->mPoints[PointId].AddDataField(PointDataCount, this->mPointData[PointDataCount].GetNumData());
-            break;
-        default:
-            throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::AddPoint] Unsupported data type.");
-        }
-    }
-    return PointId;
+    mPoints.push_back(new Point(coordinates, mPointDataNamesToId.size()));
+    return mPoints.size() - 1;
 }
 
 // add vertex cell
@@ -250,167 +221,50 @@ void NuTo::VisualizeUnstructuredGrid::CheckPoints(const unsigned int rNumPoints,
     }
 }
 
-// define scalar point data
-void NuTo::VisualizeUnstructuredGrid::DefinePointDataScalar(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::DefinePointData(std::string name)
 {
-    this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::SCALAR));
-    unsigned int DataIndex = this->mPointData.size() - 1;
-    // add data to all points
-    boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
-    while (PointIter != this->mPoints.end())
-    {
-        PointIter->AddDataScalar(DataIndex);
-        PointIter++;
-    }
+    if (mPointDataNamesToId.find(name) != mPointDataNamesToId.end())
+        throw VisualizeException(__PRETTY_FUNCTION__, "data identifier already exist for point data.");
+
+    if (not mPoints.empty())
+        throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding points");
+
+    int newId = mPointDataNamesToId.size();
+    mPointDataNamesToId[name] = newId;
 }
 
-// define scalar cell data
-void NuTo::VisualizeUnstructuredGrid::DefineCellDataScalar(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::DefineCellData(std::string name)
 {
-    this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::SCALAR));
-    unsigned int DataIndex = this->mCellData.size() - 1;
-    // add data to all cells
-    boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
-    while (CellIter != this->mCells.end())
-    {
-        CellIter->AddDataScalar(DataIndex);
-        CellIter++;
-    }
+    if (mCellDataNamesToId.find(name) != mCellDataNamesToId.end())
+        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data identifier already exist for point data.");
+    
+    if (not mCells.empty())
+        throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding cells");
+    
+    int newId = mCellDataNamesToId.size();
+    mCellDataNamesToId[name] = newId;
 }
 
-// define vector point data
-void NuTo::VisualizeUnstructuredGrid::DefinePointDataVector(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::string& name, double data)
 {
-    this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::VECTOR));
-    unsigned int DataIndex = this->mPointData.size() - 1;
-    // add data to all points
-    boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
-    while (PointIter != this->mPoints.end())
-    {
-        PointIter->AddDataVector(DataIndex);
-        PointIter++;
-    }
+    SetPointData(pointIndex, name, Eigen::Matrix<double, 1, 1>::Constant(data));
 }
 
-// define vector cell data
-void NuTo::VisualizeUnstructuredGrid::DefineCellDataVector(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data)
 {
-    this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::VECTOR));
-    unsigned int DataIndex = this->mCellData.size() - 1;
-    // add data to all cells
-    boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
-    while (CellIter != this->mCells.end())
-    {
-        CellIter->AddDataVector(DataIndex);
-        CellIter++;
-    }
+    mPoints[pointIndex].SetData(GetPointDataIndex(name), data); 
 }
 
-// define tensor point data
-void NuTo::VisualizeUnstructuredGrid::DefinePointDataTensor(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, double data)
 {
-    this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::TENSOR));
-    unsigned int DataIndex = this->mPointData.size() - 1;
-    // add data to all points
-    boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
-    while (PointIter != this->mPoints.end())
-    {
-        PointIter->AddDataTensor(DataIndex);
-        PointIter++;
-    }
+
 }
 
-// define tensor cell data
-void NuTo::VisualizeUnstructuredGrid::DefineCellDataTensor(const std::string& rIdent)
+void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data)
 {
-    this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::TENSOR));
-    unsigned int DataIndex = this->mCellData.size() - 1;
-    // add data to all cells
-    boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
-    while (CellIter != this->mCells.end())
-    {
-        CellIter->AddDataTensor(DataIndex);
-        CellIter++;
-    }
+    
 }
 
-// define field point data
-void NuTo::VisualizeUnstructuredGrid::DefinePointDataField(const std::string& rIdent, unsigned int rNumData)
-{
-    this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::FIELD));
-    this->mPointData[this->mPointData.size() - 1].SetNumData(rNumData);
-    unsigned int DataIndex = this->mPointData.size() - 1;
-    // add data to all points
-    boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
-    while (PointIter != this->mPoints.end())
-    {
-        PointIter->AddDataField(DataIndex, rNumData);
-        PointIter++;
-    }
-}
-
-// define field cell data
-void NuTo::VisualizeUnstructuredGrid::DefineCellDataField(const std::string& rIdent, unsigned int rNumData)
-{
-    this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::FIELD));
-    this->mCellData[this->mCellData.size() - 1].SetNumData(rNumData);
-    unsigned int DataIndex = this->mCellData.size() - 1;
-    // add data to all points
-    boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
-    while (CellIter != this->mCells.end())
-    {
-        CellIter->AddDataField(DataIndex, rNumData);
-        CellIter++;
-    }
-}
-
-// check point data identifier
-void NuTo::VisualizeUnstructuredGrid::CheckPointDataIdent(const std::string& rIdent) const
-{
-    this->CheckDataIdent(rIdent);
-    std::vector<VisualizeDataType>::const_iterator iter = mPointData.begin();
-    while (iter != mPointData.end())
-    {
-        if (iter->IsIdent(rIdent))
-        {
-            break;
-        }
-        iter++;
-    }
-    if (iter != mPointData.end())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::CheckPointDataIdent] data identifier already exist for point data.");
-    }
-}
-
-// check cell data identifier
-void NuTo::VisualizeUnstructuredGrid::CheckCellDataIdent(const std::string& rIdent) const
-{
-    this->CheckDataIdent(rIdent);
-    std::vector<VisualizeDataType>::const_iterator iter = mCellData.begin();
-    while (iter != mCellData.end())
-    {
-        if (iter->IsIdent(rIdent))
-        {
-            break;
-        }
-        iter++;
-    }
-    if (iter != mCellData.end())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::CheckCellDataIdent] data identifier already exist for cell data.");
-    }
-}
-
-// check strings
 void NuTo::VisualizeUnstructuredGrid::CheckDataIdent(const std::string& rIdent) const
 {
     std::vector<std::string> tokens;
@@ -423,85 +277,18 @@ void NuTo::VisualizeUnstructuredGrid::CheckDataIdent(const std::string& rIdent) 
     }
 }
 
-// set scalar point data
-void NuTo::VisualizeUnstructuredGrid::SetPointDataScalar(unsigned int rPointIndex, const std::string& rDataIdent, double rData)
+int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::string& name) const
 {
-    if (rPointIndex >= this->mPoints.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetPointDataScalar] invalid point index.");
-    }
-    unsigned int PointDataIndex = this->GetPointDataIndex(rDataIdent);
-    this->mPoints[rPointIndex].SetDataScalar(PointDataIndex, rData);
+    auto it = mPointDataNamesToId.find(name);
+    if (it == mPointDataNamesToId.end())
+        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
+    return it->second();
 }
 
-// set vector point data
-void NuTo::VisualizeUnstructuredGrid::SetPointDataVector(unsigned int rPointIndex, const std::string& rDataIdent, double rData[3])
+int NuTo::VisualizeUnstructuredGrid::GetCellDataIndex(const std::string& name) const
 {
-    if (rPointIndex >= this->mPoints.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetPointDataVector] invalid point index.");
-    }
-    unsigned int PointDataIndex = this->GetPointDataIndex(rDataIdent);
-    this->mPoints[rPointIndex].SetDataVector(PointDataIndex, rData);
-}
-
-// set scalar cell data
-void NuTo::VisualizeUnstructuredGrid::SetCellDataScalar(unsigned int rCellIndex, const std::string& rDataIdent, double rData)
-{
-    if (rCellIndex >= this->mCells.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetCellDataScalar] invalid cell index.");
-    }
-    unsigned int CellDataIndex = this->GetCellDataIndex(rDataIdent);
-    this->mCells[rCellIndex].SetDataScalar(CellDataIndex, rData);
-}
-
-// set vector cell data
-void NuTo::VisualizeUnstructuredGrid::SetCellDataVector(unsigned int rCellIndex, const std::string& rDataIdent, double rData[3])
-{
-    if (rCellIndex >= this->mCells.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetCellDataTensor] invalid cell index.");
-    }
-    unsigned int CellDataIndex = this->GetCellDataIndex(rDataIdent);
-    this->mCells[rCellIndex].SetDataVector(CellDataIndex, rData);
-}
-
-// set tensor cell data
-void NuTo::VisualizeUnstructuredGrid::SetCellDataTensor(unsigned int rCellIndex, const std::string& rDataIdent, double rData[9])
-{
-    if (rCellIndex >= this->mCells.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::SetCellDataTensor] invalid cell index.");
-    }
-    unsigned int CellDataIndex = this->GetCellDataIndex(rDataIdent);
-    this->mCells[rCellIndex].SetDataTensor(CellDataIndex, rData);
-}
-
-// get point data index
-unsigned int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::string& rIdent) const
-{
-    for (unsigned int PointDataCount = 0; PointDataCount < this->mPointData.size(); PointDataCount++)
-    {
-        if (this->mPointData[PointDataCount].IsIdent(rIdent))
-        {
-            return PointDataCount;
-        }
-    }
-    std::cout << rIdent << '\n';
-    throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::GetPointDataIndex] data identifier not found.");
-}
-
-// get cell data index
-unsigned int NuTo::VisualizeUnstructuredGrid::GetCellDataIndex(const std::string& rIdent) const
-{
-    for (unsigned int CellDataCount = 0; CellDataCount < this->mCellData.size(); CellDataCount++)
-    {
-        if (this->mCellData[CellDataCount].IsIdent(rIdent))
-        {
-            return CellDataCount;
-        }
-    }
-    std::cout << rIdent << '\n';
-    throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::GetCellDataIndex] data identifier not found.");
+    auto it = mCellDataNamesToId.find(name);
+    if (it == mCellDataNamesToId.end())
+        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
+    return it->second();
 }

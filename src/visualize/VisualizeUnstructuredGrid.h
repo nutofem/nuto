@@ -3,8 +3,8 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <string>
-
-#include "visualize/VisualizeBase.h"
+#include <map>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -16,15 +16,13 @@ class VisualizeDataType;
 //! @brief ... visualization of unstructured grids
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
-class VisualizeUnstructuredGrid: public NuTo::VisualizeBase
+class VisualizeUnstructuredGrid
 {
 public:
 
-    //! @brief ...ctor
-    VisualizeUnstructuredGrid();
-
-    //! @brief ...destructor
-    ~VisualizeUnstructuredGrid();
+    //! @brief ... export to Vtk datafile
+    //! @param rFilename ... filename
+    void ExportVtkDataFile(const std::string& rFilename) const;
 
     //! @brief ... export to Vtu datafile
     //! @param rFilename ... filename
@@ -32,8 +30,8 @@ public:
 
     //! @brief ... add Point to unstructured grid
     //! @param rCoordinates ... point coordinates
-    //! @return ... point identifier (zero based indexing)
-    unsigned int AddPoint(const double* rCoordinates);
+    //! @return ... point id
+    int AddPoint(Eigen::Vector3d coordinates);
 
     //! @brief ... add vertex cell
     //! @param rPoints ... point id's (zero based indexing)
@@ -70,69 +68,38 @@ public:
     //! @return ... cell identifier (zero based indexing)
     unsigned int AddHexahedronCell(const unsigned int* rPoints);
 
-    //! @brief ... define scalar point data at the structure
-    //! @param rIdent ... identifier
-    void DefinePointDataScalar(const std::string& rIdent);
+    //! @brief ... define point data 
+    //! @param name ... name of the data field
+    void DefinePointData(std::string name);
 
-    //! @brief ... define vector (length 3) point data at the structure
-    //! @param rIdent ... identifier
-    void DefinePointDataVector(const std::string& rIdent);
+    //! @brief ... define cell data 
+    //! @param name ... name of the data field
+    void DefineCellData(std::string name);
 
     //! @brief ... set scalar point data
-    //! @param rPointIndex ... point index
-    //! @param rDataIdent ... data identifier
-    //! @param rData ... scalar data
-    void SetPointDataScalar(unsigned int rPointIndex, const std::string& rDataIdent, double rData);
+    //! @param pointIndex ... point index
+    //! @param name ... name of the data field
+    //! @param data ... scalar data
+    void SetPointData(int pointIndex, const std::string& name, double data);
 
-    //! @brief ... set vector point data
-    //! @param rPointIndex ... point index
-    //! @param rDataIdent ... data identifier
-    //! @param rData ... vector data
-    void SetPointDataVector(unsigned int rPointIndex, const std::string& rDataIdent, double rData[3]);
-
-    //! @brief ... define tensor (3x3) point data at the structure
-    //! @param rIdent ... identifier
-    void DefinePointDataTensor(const std::string& rIdent);
-
-    //! @brief ... define field point data at the structure
-    //! @param rIdent ... identifier
-    //! @param rNumData ... number of field data components
-    void DefinePointDataField(const std::string& rIdent, unsigned int rNumData = 0);
-
-    //! @brief ... define scalar cell data at the structure
-    //! @param rIdent ... identifier
-    void DefineCellDataScalar(const std::string& rIdent);
-
-    //! @brief ... define vector (length 3) cell data at the structure
-    //! @param rIdent ... identifier
-    void DefineCellDataVector(const std::string& rIdent);
-
-    //! @brief ... define tensor (3x3) cell data at the structure
-    //! @param rIdent ... identifier
-    void DefineCellDataTensor(const std::string& rIdent);
+    //! @brief ... set point data
+    //! @param pointIndex ... point index
+    //! @param name ... name of the data field
+    //! @param data ... data
+    void SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data); 
 
     //! @brief ... set scalar cell data
-    //! @param rPointIndex ... cell index
-    //! @param rDataIdent ... data identifier
-    //! @param rData ... scalar data
-    void SetCellDataScalar(unsigned int rCellIndex, const std::string& rDataIdent, double rData);
+    //! @param cellIndex ... cell index
+    //! @param name ... name of the data field
+    //! @param data ... scalar data
+    void SetCellData(int cellIndex, const std::string& name, double data);
 
-    //! @brief ... set vector cell data
-    //! @param rPointIndex ... cell index
-    //! @param rDataIdent ... data identifier
-    //! @param rData ... vector data
-    void SetCellDataVector(unsigned int rCellIndex, const std::string& rDataIdent, double rData[3]);
+    //! @brief ... set cell data
+    //! @param cellIndex ... cell index
+    //! @param name ... name of the data field
+    //! @param data ... data
+    void SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data); 
 
-    //! @brief ... set tensor cell data
-    //! @param rPointIndex ... cell index
-    //! @param rDataIdent ... data identifier
-    //! @param rData ... tensor data
-    void SetCellDataTensor(unsigned int rCellIndex, const std::string& rDataIdent, double rData[9]);
-
-    //! @brief ... define field cell data at the structure
-    //! @param rIdent ... identifier
-    //! @param rNumData ... number of field data components
-    void DefineCellDataField(const std::string& rIdent, unsigned int rNumData = 0);
 
 private:
     //! @brief ... vector of points
@@ -141,35 +108,27 @@ private:
     //! @brief ... vector of cells
     boost::ptr_vector<CellBase> mCells;
 
-    //! @brief ...vector of point data definitions
-    std::vector<VisualizeDataType> mPointData;
+    //! @brief ... mapping of point data names to their id at the Point::mData 
+    std::map<std::string, int> mPointDataNamesToId;
 
-    //! @brief ... vector of cell data definitions
-    std::vector<VisualizeDataType> mCellData;
+    //! @brief ... mapping of cell data names to their id at the CellBase::mData 
+    std::map<std::string, int> mCellDataNamesToId;
 
     //! @brief ... check if points are defined
     //! @param rNumPoints ... number of points
     //! @param rPoints ... point id's
     void CheckPoints(const unsigned int rNumPoints, const unsigned int *rPoints) const;
 
-    //! @brief ... check identifier for point data
-    //! @param rIdent ... identifier
-    void CheckPointDataIdent(const std::string& rIdent) const;
-
-    //! @brief ... check identifier for cell data
-    //! @param rIdent ... identifier
-    void CheckCellDataIdent(const std::string& rIdent) const;
-
     //! @brief ... check identifier for data
     void CheckDataIdent(const std::string& rIdent) const;
 
     //! @brief ... get point data index from identifier
-    //! @param rIdent ... data identifier
-    unsigned int GetPointDataIndex(const std::string& rIdent) const;
+    //! @param name ... identifier
+    int GetPointDataIndex(const std::string& name) const;
 
     //! @brief ... get point data index from identifier
-    //! @param rIdent ... data identifier
-    unsigned int GetCellDataIndex(const std::string& rIdent) const;
+    //! @param name ... identifier
+    int GetCellDataIndex(const std::string& name) const;
 };
 
 }

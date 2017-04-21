@@ -10,7 +10,7 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include <eigen3/Eigen/Core>
 #include  <vector>
-
+#include <memory>
 
 
 namespace NuTo
@@ -105,6 +105,33 @@ public:
     virtual void DeleteIntegrationPoint(const int rIpNum);
 
 #ifdef ENABLE_VISUALIZE
+
+    struct CellWithIpId
+    {
+        std::unique_ptr<CellBase> cell;
+        int ipId;
+    }
+
+    struct IpCellInfo
+    {
+        std::vector<CellWithIpId> cells;
+        std::vector<Eigen::VectorXd> cellVertices;
+    }
+
+    IpCellInfo GetVisualizationCells() const
+    {
+     unsigned int NumVisualizationPoints;
+    std::vector<double> VisualizationPointLocalCoordinates;
+    unsigned int NumVisualizationCells;
+    std::vector<NuTo::eCellTypes> VisualizationCellType;
+    std::vector<unsigned int> VisualizationCellsIncidence;
+    std::vector<unsigned int> VisualizationCellsIP;
+
+    GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
+    
+
+    }
+
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
