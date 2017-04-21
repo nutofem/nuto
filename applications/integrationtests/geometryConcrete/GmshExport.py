@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 import math
 import unittest
 import sys
@@ -92,12 +92,11 @@ class BoxMesh(unittest.TestCase):
 
 if __name__ == "__main__":
     # Get path to build dir, and create result dir if it doesn't exist
-    pathToWorkDir = sys.argv[1]
-    resultDir = os.path.join(pathToWorkDir, "GmshExport")
+    resultDir = os.path.join(os.getcwd(), "GmshExport")
     if not os.path.exists(resultDir):
         os.makedirs(resultDir)
 
-    gmsh = sys.argv[3]
+    gmsh = sys.argv[1]
     sys.argv[1:] = []
 
     unittest.main()
