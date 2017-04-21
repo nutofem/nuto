@@ -431,6 +431,107 @@ Eigen::MatrixXd NuTo::ParticleHandler::GetParticles2D(
     return circles;
 }
 
+
+void writeBox(std::ofstream& file, Eigen::MatrixXd bounds, double meshSize)
+{
+    file << "xS = " << bounds(0, 0) << "; xE = " << bounds(0, 1) << ";\n";
+    file << "yS = " << bounds(1, 0) << "; yE = " << bounds(1, 1) << ";\n";
+    file << "zS = " << bounds(2, 0) << "; zE = " << bounds(2, 1) << ";\n";
+    file << "meshSpecimen = " << meshSize << "; \n";
+
+    file << "// defines a box-shaped specimen \n";
+    file << "// by start coordinates <xyz>S \n";
+    file << "// and end coordinates  <xyz>E \n";
+    file << "\n";
+    file << "// top points: z = zE \n";
+    file << "p0 = newp; Point(p0) = {xS, yS, zE, meshSpecimen}; \n";
+    file << "p1 = newp; Point(p1) = {xS, yE, zE, meshSpecimen}; \n";
+    file << "p2 = newp; Point(p2) = {xE, yE, zE, meshSpecimen}; \n";
+    file << "p3 = newp; Point(p3) = {xE, yS, zE, meshSpecimen}; \n";
+    file << "// bottom points z = zS \n";
+    file << "p4 = newp; Point(p4) = {xS, yS, zS, meshSpecimen}; \n";
+    file << "p5 = newp; Point(p5) = {xS, yE, zS, meshSpecimen}; \n";
+    file << "p6 = newp; Point(p6) = {xE, yE, zS, meshSpecimen}; \n";
+    file << "p7 = newp; Point(p7) = {xE, yS, zS, meshSpecimen}; \n";
+    file << "\n";
+    file << "// top lines z = zS \n";
+    file << "lT0 = newreg; Line(lT0) = {p0, p1}; \n";
+    file << "lT1 = newreg; Line(lT1) = {p1, p2}; \n";
+    file << "lT2 = newreg; Line(lT2) = {p2, p3}; \n";
+    file << "lT3 = newreg; Line(lT3) = {p3, p0}; \n";
+    file << "// bottom lines z = zE \n";
+    file << "lB0 = newreg; Line(lB0) = {p4, p5}; \n";
+    file << "lB1 = newreg; Line(lB1) = {p5, p6}; \n";
+    file << "lB2 = newreg; Line(lB2) = {p6, p7}; \n";
+    file << "lB3 = newreg; Line(lB3) = {p7, p4}; \n";
+    file << "// connection zS --> zE \n";
+    file << "lC0 = newreg; Line(lC0) = {p0, p4}; \n";
+    file << "lC1 = newreg; Line(lC1) = {p1, p5}; \n";
+    file << "lC2 = newreg; Line(lC2) = {p2, p6}; \n";
+    file << "lC3 = newreg; Line(lC3) = {p3, p7}; \n";
+    file << "\n";
+    file << "// lineloops and surfaces \n";
+    file << "// the index says which coordinate is constant \n";
+    file << "lxS = newreg; Line Loop(lxS) = {-lT3, lC3, lB3,-lC0}; Plane Surface(newreg) = {lxS}; \n";
+    file << "lxE = newreg; Line Loop(lxE) = {-lT1, lC1, lB1,-lC2}; Plane Surface(newreg) = {lxE}; \n";
+    file << "\n";
+    file << "lyS = newreg; Line Loop(lyS) = {-lT0, lC0, lB0,-lC1}; Plane Surface(newreg) = {lyS}; \n";
+    file << "lyE = newreg; Line Loop(lyE) = {-lT2, lC2, lB2,-lC3}; Plane Surface(newreg) = {lyE}; \n";
+    file << "\n";
+    file << "lzS = newreg; Line Loop(lzS) = { lT0, lT1, lT2, lT3}; Plane Surface(newreg) = {lzS}; \n";
+    file << "lzE = newreg; Line Loop(lzE) = {-lB3,-lB2,-lB1,-lB0}; Plane Surface(newreg) = {lzE}; \n";
+    file << "\n";
+    file << "theLoops[0] = newreg; \n";
+    file << "Surface Loop(theLoops[0]) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; \n";
+    file << "theBox = newreg; \n";
+    file << "Volume(theBox) = theLoops[0]; \n";
+    file << "\n";
+    file << "\n";
+}
+
+
+void writeCylinder(std::ofstream& file, Eigen::MatrixXd bounds, double meshSize)
+{
+    file << "radius = " << bounds(0, 1) << ";\n";
+    file << "height = " << bounds(2, 1) << ";\n";
+    file << "meshSpecimen = " << meshSize << ";\n";
+
+    file << "// defines a cylinder-shaped specimen\n";
+    file << "\n";
+    file << "// base cirle\n";
+    file << "p0 = newp; Point(p0) = {0, 0, 0, meshSpecimen};\n";
+    file << "p1 = newp; Point(p1) = {0, radius, 0, meshSpecimen};\n";
+    file << "p2 = newp; Point(p2) = {0, -radius, 0, meshSpecimen};\n";
+    file << "c0 = newreg; Circle(c0) = {p1, p0, p2};\n";
+    file << "c1 = newreg; Circle(c1) = {p2, p0, p1};\n";
+    file << "baseLoop = newreg; Line Loop(baseLoop) = {c0, c1};\n";
+    file << "baseSurface = newreg; Plane Surface(baseSurface) = {baseLoop};\n";
+    file << "\n";
+    file << "// top cirle\n";
+    file << "p3 = newp; Point(p3) = {0, 0, height, meshSpecimen};\n";
+    file << "p4 = newp; Point(p4) = {0, radius, height, meshSpecimen};\n";
+    file << "p5 = newp; Point(p5) = {0, -radius, height, meshSpecimen};\n";
+    file << "c2 = newreg; Circle(c2) = {p4, p3, p5};\n";
+    file << "c3 = newreg; Circle(c3) = {p5, p3, p4};\n";
+    file << "topLoop = newreg; Line Loop(topLoop) = {c2, c3};\n";
+    file << "topSurface = newreg; Plane Surface(topSurface) = {topLoop};\n";
+    file << "\n";
+    file << "// barrell surfaces\n";
+    file << "verticalOne = newreg; Line(verticalOne) = {p2, p5};\n";
+    file << "verticalTwo = newreg; Line(verticalTwo) = {p1, p4};\n";
+    file << "barrelLoopOne = newreg; Line Loop(barrelLoopOne) = {c0, verticalOne, -c2, -verticalTwo};\n";
+    file << "barrelLoopTwo = newreg; Line Loop(barrelLoopTwo) = {c1, verticalTwo, -c3, -verticalOne};\n";
+    file << "barrelSurfaceOne = newreg; Ruled Surface(barrelSurfaceOne) = {barrelLoopOne};\n";
+    file << "barrelSurfaceTwo = newreg; Ruled Surface(barrelSurfaceTwo) = {barrelLoopTwo};\n";
+    file << "// surface loop\n";
+    file << "theLoops[0] = newreg;\n";
+    file << "Surface Loop(theLoops[0]) = {barrelSurfaceOne, barrelSurfaceTwo, baseSurface, topSurface};\n";
+    file << "theBox = newreg;\n";
+    file << "Volume(theBox) = theLoops[0];\n";
+    file << "\n\n";
+}
+
+
 void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
         Specimen& rSpecimen, double rMeshSize) const
 {
@@ -498,59 +599,17 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
 
     auto bounds = rSpecimen.GetBoundingBox();
 
-    mFile << "xS = " << bounds(0, 0) << "; xE = " << bounds(0, 1) << ";\n";
-    mFile << "yS = " << bounds(1, 0) << "; yE = " << bounds(1, 1) << ";\n";
-    mFile << "zS = " << bounds(2, 0) << "; zE = " << bounds(2, 1) << ";\n";
-    mFile << "meshSpecimen = " << rMeshSize << "; \n";
-
-    mFile << "// defines a box-shaped specimen \n";
-    mFile << "// by start coordinates <xyz>S \n";
-    mFile << "// and end coordinates  <xyz>E \n";
-    mFile << "\n";
-    mFile << "// top points: z = zE \n";
-    mFile << "p0 = newp; Point(p0) = {xS, yS, zE, meshSpecimen}; \n";
-    mFile << "p1 = newp; Point(p1) = {xS, yE, zE, meshSpecimen}; \n";
-    mFile << "p2 = newp; Point(p2) = {xE, yE, zE, meshSpecimen}; \n";
-    mFile << "p3 = newp; Point(p3) = {xE, yS, zE, meshSpecimen}; \n";
-    mFile << "// bottom points z = zS \n";
-    mFile << "p4 = newp; Point(p4) = {xS, yS, zS, meshSpecimen}; \n";
-    mFile << "p5 = newp; Point(p5) = {xS, yE, zS, meshSpecimen}; \n";
-    mFile << "p6 = newp; Point(p6) = {xE, yE, zS, meshSpecimen}; \n";
-    mFile << "p7 = newp; Point(p7) = {xE, yS, zS, meshSpecimen}; \n";
-    mFile << "\n";
-    mFile << "// top lines z = zS \n";
-    mFile << "lT0 = newreg; Line(lT0) = {p0, p1}; \n";
-    mFile << "lT1 = newreg; Line(lT1) = {p1, p2}; \n";
-    mFile << "lT2 = newreg; Line(lT2) = {p2, p3}; \n";
-    mFile << "lT3 = newreg; Line(lT3) = {p3, p0}; \n";
-    mFile << "// bottom lines z = zE \n";
-    mFile << "lB0 = newreg; Line(lB0) = {p4, p5}; \n";
-    mFile << "lB1 = newreg; Line(lB1) = {p5, p6}; \n";
-    mFile << "lB2 = newreg; Line(lB2) = {p6, p7}; \n";
-    mFile << "lB3 = newreg; Line(lB3) = {p7, p4}; \n";
-    mFile << "// connection zS --> zE \n";
-    mFile << "lC0 = newreg; Line(lC0) = {p0, p4}; \n";
-    mFile << "lC1 = newreg; Line(lC1) = {p1, p5}; \n";
-    mFile << "lC2 = newreg; Line(lC2) = {p2, p6}; \n";
-    mFile << "lC3 = newreg; Line(lC3) = {p3, p7}; \n";
-    mFile << "\n";
-    mFile << "// lineloops and surfaces \n";
-    mFile << "// the index says which coordinate is constant \n";
-    mFile << "lxS = newreg; Line Loop(lxS) = {-lT3, lC3, lB3,-lC0}; Plane Surface(newreg) = {lxS}; \n";
-    mFile << "lxE = newreg; Line Loop(lxE) = {-lT1, lC1, lB1,-lC2}; Plane Surface(newreg) = {lxE}; \n";
-    mFile << "\n";
-    mFile << "lyS = newreg; Line Loop(lyS) = {-lT0, lC0, lB0,-lC1}; Plane Surface(newreg) = {lyS}; \n";
-    mFile << "lyE = newreg; Line Loop(lyE) = {-lT2, lC2, lB2,-lC3}; Plane Surface(newreg) = {lyE}; \n";
-    mFile << "\n";
-    mFile << "lzS = newreg; Line Loop(lzS) = { lT0, lT1, lT2, lT3}; Plane Surface(newreg) = {lzS}; \n";
-    mFile << "lzE = newreg; Line Loop(lzE) = {-lB3,-lB2,-lB1,-lB0}; Plane Surface(newreg) = {lzE}; \n";
-    mFile << "\n";
-    mFile << "theLoops[0] = newreg; \n";
-    mFile << "Surface Loop(theLoops[0]) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; \n";
-    mFile << "theBox = newreg; \n";
-    mFile << "Volume(theBox) = theLoops[0]; \n";
-    mFile << "\n";
-    mFile << "\n";
+    switch (rSpecimen.GetTypeOfSpecimen())
+    {
+        case Specimen::eSpecimenType::Cylinder:
+            writeCylinder(mFile, bounds, rMeshSize);
+            break;
+        case Specimen::eSpecimenType::Box:
+            writeBox(mFile, bounds, rMeshSize);
+            break;
+        default:
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Don't know how to export this specimen type");
+    }
 
     auto spheres = GetParticles();
     int objectCounter = 1; // The first (index 0) object is the box.

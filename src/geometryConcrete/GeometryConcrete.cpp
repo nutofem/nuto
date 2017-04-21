@@ -160,6 +160,11 @@ void NuTo::GeometryConcrete::SetSpecimenCylinder(double rXs, double rXe, double 
     mSpecimen = new NuTo::Specimen(bounds, NuTo::Specimen::Cylinder);
 }
 
+void NuTo::GeometryConcrete::SetSpecimenCylinder(double radius, double height)
+{
+    SetSpecimenCylinder(-radius, radius, -radius, radius, 0.0, height);
+}
+
 void NuTo::GeometryConcrete::SetGradingCurve(eGradingCurve rGradingCurveEnum, int rNumClasses)
 {
     Eigen::MatrixX3d fullGradingCurve(6,3);

@@ -60,6 +60,7 @@ public:
 
     void SetSpecimenBox(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe);
     void SetSpecimenCylinder(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe);
+    void SetSpecimenCylinder(double radius, double height);
 
     //! @brief ... sets the grading curve - DIN
     //! @param rGradingCurveEnum ... enum
