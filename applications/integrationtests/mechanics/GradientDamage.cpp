@@ -79,7 +79,7 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
 
-    rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu");
 }
 
 void AddInterpolationType(NuTo::Structure& rS, int rITid)

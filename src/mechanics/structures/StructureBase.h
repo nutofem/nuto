@@ -146,22 +146,16 @@ public:
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
-    //! @param rTimeStep ... time step for the output files
-    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML = false);
+    void ExportVtkDataFileElements(const std::string& rResultFileName);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
-    //! @param rTimeStep ... time step for the output files
-    //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileNodes(const std::string& rResultFileName, bool rXML = false);
+    void ExportVtkDataFileNodes(const std::string& rResultFileName);
 
-    //! @brief ... export an element group to Vtk/xml data file
+    //! @brief ... export an element group to Vtk data file
     //! @param rGroupIdent ... group ident
     //! @param rResultFileName ... file name
-    //! @param rTimeStep ... time step for the output files
-    //! @param rXML ... use xml or vtk format (true for xml)
-    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName, bool rXML);
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName);
 
     //! @brief Add rVisualizeComponent to an element group for the visualization
     //! @param rElementGroup: element group

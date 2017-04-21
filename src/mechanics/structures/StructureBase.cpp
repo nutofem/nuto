@@ -348,7 +348,7 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileName, bool rXML)
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileName)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -359,16 +359,13 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
         this->DefineVisualizeNodeData(visualize, it.second);
         this->NodeTotalAddToVisualize(visualize, it.second);
 
-        if (rXML)
-            visualize.ExportVtuDataFile(rResultFileName);
-        else
-            visualize.ExportVtkDataFile(rResultFileName);
+        visualize.ExportVtuDataFile(rResultFileName);
     }
 #endif // ENABLE_VISUALIZE
 }
 
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML)
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -380,16 +377,13 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFi
         this->DefineVisualizeElementData(visualize, it.second);
         ElementGroupAddToVisualize(it.first, visualize, it.second);
 
-        if (rXML)
-            visualize.ExportVtuDataFile(rResultFileName);
-        else
-            visualize.ExportVtkDataFile(rResultFileName);
+        visualize.ExportVtuDataFile(rResultFileName);
     }
 
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName, bool rXML)
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -398,10 +392,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     this->DefineVisualizeElementData(visualize, mGroupVisualizeComponentsMap.at(rGroupIdent));
     this->ElementGroupAddToVisualize(rGroupIdent, visualize, mGroupVisualizeComponentsMap.at(rGroupIdent));
 
-    if (rXML)
-        visualize.ExportVtuDataFile(rResultFileName);
-    else
-        visualize.ExportVtkDataFile(rResultFileName);
+    visualize.ExportVtuDataFile(rResultFileName);
 
 #endif // ENABLE_VISUALIZE
 }

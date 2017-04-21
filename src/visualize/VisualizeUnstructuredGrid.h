@@ -26,10 +26,6 @@ public:
     //! @brief ...destructor
     ~VisualizeUnstructuredGrid();
 
-    //! @brief ... export to Vtk datafile
-    //! @param rFilename ... filename
-    void ExportVtkDataFile(const std::string& rFilename) const;
-
     //! @brief ... export to Vtu datafile
     //! @param rFilename ... filename
     void ExportVtuDataFile(const std::string& rFilename) const;

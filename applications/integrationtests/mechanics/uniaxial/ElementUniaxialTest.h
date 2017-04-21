@@ -225,7 +225,7 @@ private:
         s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
         s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-        s.ExportVtkDataFileElements(directory.string(),true);
+        s.ExportVtkDataFileElements(directory.string());
 #endif
     }
 };

@@ -495,7 +495,7 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
     if (mExportDataFileNodes==true)
     {
         resultFile /= std::string("Nodes") + ssTimeStepVTK.str() + std::string(".vtu");
-        mStructure->ExportVtkDataFileNodes(resultFile.string(), true);
+        mStructure->ExportVtkDataFileNodes(resultFile.string());
     }
 
     std::stringstream timeFormatted;
@@ -509,7 +509,7 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
         //plot all elements
         resultFile = rResultDir;
         resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") + ssTimeStepVTK.str() + std::string(".vtu");
-        mStructure->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string(), true);
+        mStructure->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string());
 
         //write an additional pvd file
         resultFile = rResultDir;

@@ -464,8 +464,8 @@ void solve(NuTo::Structure *s, double solution, const std::string &resultDir, co
     s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
     s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
-    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
+    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu");
+    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu");
 
     if(exc)
     {
@@ -614,8 +614,8 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
-    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
+    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu");
+    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu");
 }
 
 
@@ -662,8 +662,8 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
-    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
+    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu");
+    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu");
 }
 
 
