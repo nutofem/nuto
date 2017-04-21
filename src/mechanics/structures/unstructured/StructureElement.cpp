@@ -235,8 +235,6 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                        "COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) +
                                                " nodes. " + std::to_string(nodeVector.size()) + " are provided.");
 
-    ElementBase* ptrElement = nullptr;
-
     if (not interpolationType.HasIntegrationType())
     {
         eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
@@ -244,51 +242,36 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         interpolationType.UpdateIntegrationType(*integrationType);
     }
 
-    try
+    ElementBase* ptrElement = nullptr;
+    switch (interpolationType.GetShapeType())
     {
-        switch (interpolationType.GetShapeType())
-        {
-        case NuTo::Interpolation::eShapeType::SPRING:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
-            //            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType,
-            //            interpolationType);
-            //            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSS1D:
-        case NuTo::Interpolation::eShapeType::TRUSSXD:
-        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
-        case NuTo::Interpolation::eShapeType::QUAD2D:
-        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
-        case NuTo::Interpolation::eShapeType::BRICK3D:
-        case NuTo::Interpolation::eShapeType::INTERFACE:
-            throw NuTo::MechanicsException(
-                    __PRETTY_FUNCTION__,
-                    "Please use approriate functions for element creation, this is IGA implementation.");
-            break;
-        case NuTo::Interpolation::eShapeType::IGA1D:
-            ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::IGA2D:
-            ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
-        }
+    case NuTo::Interpolation::eShapeType::SPRING:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSS1D:
+    case NuTo::Interpolation::eShapeType::TRUSSXD:
+    case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+    case NuTo::Interpolation::eShapeType::QUAD2D:
+    case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+    case NuTo::Interpolation::eShapeType::BRICK3D:
+    case NuTo::Interpolation::eShapeType::INTERFACE:
+        throw NuTo::MechanicsException(
+                __PRETTY_FUNCTION__,
+                "Please use approriate functions for element creation, this is IGA implementation.");
+        break;
+    case NuTo::Interpolation::eShapeType::IGA1D:
+        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::IGA2D:
+        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
+    }
 
-        mElementMap.insert(rElementNumber, ptrElement);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber) + ".");
-        throw;
-    }
-    catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Error creating element " + std::to_string(rElementNumber) + ".");
-    }
+    mElementMap.insert(rElementNumber, ptrElement);
 }
 
 void NuTo::Structure::ElementCreate(int elementNumber, int interpolationTypeId, const std::vector<int>& rNodeNumbers)
@@ -319,8 +302,6 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                                                     std::to_string(numNodesCoordinates) + " nodes. " +
                                                                     std::to_string(rNodes.size()) + " are provided.");
 
-    ElementBase* ptrElement = nullptr;
-
     if (not interpolationType.HasIntegrationType())
     {
         eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
@@ -328,59 +309,45 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         interpolationType.UpdateIntegrationType(*integrationType);
     }
 
-    try
+    ElementBase* ptrElement = nullptr;
+    switch (interpolationType.GetShapeType())
     {
-        switch (interpolationType.GetShapeType())
-        {
-        case NuTo::Interpolation::eShapeType::SPRING:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
-            //            ptrElement = new Element1DSpring(this, nodeVector, interpolationType);
-            //            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSS1D:
-            ptrElement = new ContinuumElement<1>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSSXD:
-            ptrElement = new Element1DInXD(rNodes, interpolationType, GetDofStatus(), mDimension);
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
-        case NuTo::Interpolation::eShapeType::QUAD2D:
-            ptrElement = new ContinuumElement<2>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
-        case NuTo::Interpolation::eShapeType::BRICK3D:
-        case NuTo::Interpolation::eShapeType::PRISM3D:
-            ptrElement = new ContinuumElement<3>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::INTERFACE:
-            ptrElement = new Element2DInterface(rNodes, interpolationType, mDimension);
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::IGA1D:
-            throw NuTo::MechanicsException(
-                    __PRETTY_FUNCTION__,
-                    "Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
-        }
+    case NuTo::Interpolation::eShapeType::SPRING:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSS1D:
+        ptrElement = new ContinuumElement<1>(rNodes, interpolationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSSXD:
+        ptrElement = new Element1DInXD(rNodes, interpolationType, GetDofStatus(), mDimension);
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+    case NuTo::Interpolation::eShapeType::QUAD2D:
+        ptrElement = new ContinuumElement<2>(rNodes, interpolationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+    case NuTo::Interpolation::eShapeType::BRICK3D:
+    case NuTo::Interpolation::eShapeType::PRISM3D:
+        ptrElement = new ContinuumElement<3>(rNodes, interpolationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::INTERFACE:
+        ptrElement = new Element2DInterface(rNodes, interpolationType, mDimension);
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::IGA1D:
+        throw NuTo::MechanicsException(
+                __PRETTY_FUNCTION__,
+                "Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
+    }
 
-        mElementMap.insert(rElementNumber, ptrElement);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber) + ".");
-        throw;
-    }
-    catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Error creating element " + std::to_string(rElementNumber) + ".");
-    }
+    mElementMap.insert(rElementNumber, ptrElement);
 }
 
 

@@ -233,7 +233,6 @@ void NuTo::RungeKutta4::Save (const std::string &filename, std::string rType )co
         std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
         std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
         std::string tmpStr ( GetTypeId() );
-        std::string baseClassStr = tmpStr.substr ( 4,100 );
         if (rType=="BINARY")
         {
             boost::archive::binary_oarchive oba ( ofs, std::ios::binary );

@@ -809,7 +809,6 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
 
     std::vector<ElementBase*> elements;
     GetElementsTotal(elements);
-    std::set<ConstitutiveBase*> constitutiveWithNonlocalData;
     for (auto oldElementPtr : elements)
     {
         int numNodes = oldElementPtr->GetNumNodes();
@@ -843,16 +842,6 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         //set constitutive model
         ConstitutiveBase& constitutive = oldElementPtr->GetConstitutiveLaw(0);
         newElementPtr->SetConstitutiveLaw(constitutive);
-    }
-
-#ifdef _OPENMP
-    //there seems to be a problem with the nearest neighbor search library
-#pragma omp critical
-#endif
-    {
-        //rebuild nonlocal data
-//        for (auto it = constitutiveWithNonlocalData.begin(); it != constitutiveWithNonlocalData.end(); it++)
-//            BuildNonlocalData(*it);
     }
 }
 

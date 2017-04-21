@@ -573,38 +573,27 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
     return maxDamage;
 }
 
-double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
+
+double StructureBase::ElementTotalGetStaticDataExtrapolationError()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
         throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::EXTRAPOLATION_ERROR);
+    elementOutputMap[Element::eOutput::IP_DATA] =
+            std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::EXTRAPOLATION_ERROR);
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
 
-    int numIP = 0;
-    for (auto element : elementVector)
-        numIP += element->GetNumIntegrationPoints();
-
     double maxError = 0;
-
     Eigen::MatrixXd ipValues;
     for (auto element : elementVector)
     {
-        try
-        {
-            element->Evaluate(elementOutputMap);
-            ipValues = elementOutputMap.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::EXTRAPOLATION_ERROR];
-        } catch (NuTo::MechanicsException &e)
-        {
-            e.AddMessage(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " + std::to_string(ElementGetId(element)) + ".");
-            throw;
-        } catch (...)
-        {
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " +std::to_string(ElementGetId(element)) + ".");
-        }
+        element->Evaluate(elementOutputMap);
+        ipValues = elementOutputMap.at(Element::eOutput::IP_DATA)
+                           ->GetIpData()
+                           .GetIpDataMap()[IpData::eIpStaticDataType::EXTRAPOLATION_ERROR];
         maxError = std::max(maxError, ipValues.maxCoeff());
     }
     return maxError;
