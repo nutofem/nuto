@@ -5,11 +5,6 @@
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#ifdef ENABLE_VISUALIZE
-#include <list>
-#include <memory>
-#endif // ENABLE_VISUALIZE
-
 #include "mechanics/MechanicsException.h"
 
 #include <eigen3/Eigen/Dense>
@@ -18,11 +13,6 @@
 
 namespace NuTo
 {
-#ifdef ENABLE_VISUALIZE
-class VisualizeComponent;
-class VisualizeUnstructuredGrid;
-#endif // ENABLE_VISUALIZE
-
 namespace Node
 {
     enum class eDof : unsigned char;
@@ -166,16 +156,6 @@ public:
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     virtual NodeBase* Clone()const=0;
-
-#ifdef ENABLE_VISUALIZE
-    void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
-
-
-private:
-    //! @brief extracts the desired vector data to a 3d vector
-    Eigen::Vector3d GetPointVectorData(Node::eDof rDofType, int rTimeDerivative) const;
-#endif // ENABLE_VISUALIZE
-
 
 protected:
     //! @brief Outstream function for "virtual friend idiom"

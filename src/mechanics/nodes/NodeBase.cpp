@@ -1,94 +1,24 @@
 #include <iostream>
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "visualize/VisualizeComponent.h"
-#include "visualize/VisualizeEnum.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
 #include <cassert>
 
 using namespace NuTo;
 
-#ifdef ENABLE_VISUALIZE
-
-Eigen::Vector3d NodeBase::GetPointVectorData(Node::eDof rDofType, int rTimeDerivative) const
+int NodeBase::GetDof(Node::eDof rDof) const
 {
-    int dim = this->GetNum(rDofType);
-    assert(dim != 0);
-    Eigen::Vector3d data = Eigen::Vector3d::Zero();
-    data.block(0, 0, dim, 1) = this->Get(rDofType, rTimeDerivative);
-    return data;
+    assert(GetNum(rDof) == 1);
+    return GetDof(rDof, 0);
 }
 
-void NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize,
-                         const std::list<std::shared_ptr<VisualizeComponent>>& rVisualizationList) const
+namespace NuTo
 {
-    Eigen::Matrix<double, 3, 1> coordinates = Eigen::Matrix<double, 3, 1>::Zero();
-    int dim = this->GetNum(Node::eDof::COORDINATES);
-    coordinates.block(0, 0, dim, 1) = this->Get(Node::eDof::COORDINATES);
-
-    unsigned int PointId = rVisualize.AddPoint(coordinates.data());
-    //	std::cout << "add point " << PointId << std::endl;
-
-
-    // store data
-    for (auto const& it : rVisualizationList)
-    {
-        switch (it.get()->GetComponentEnum())
-        {
-        case eVisualizeWhat::DISPLACEMENTS:
-        {
-            if (GetNum(Node::eDof::DISPLACEMENTS) == 0)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::DISPLACEMENTS, 0).data());
-        }
-        break;
-        case eVisualizeWhat::VELOCITY:
-        {
-            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::DISPLACEMENTS, 1).data());
-        }
-        break;
-        case eVisualizeWhat::ACCELERATION:
-        {
-            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::DISPLACEMENTS, 2).data());
-        }
-        break;
-        case eVisualizeWhat::ROTATION:
-        {
-            if (GetNum(Node::eDof::ROTATIONS) == 0)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::ROTATIONS, 0).data());
-        }
-        break;
-        case eVisualizeWhat::ANGULAR_VELOCITY:
-        {
-            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 1)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::ROTATIONS, 1).data());
-        }
-        break;
-        case eVisualizeWhat::ANGULAR_ACCELERATION:
-        {
-            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 2)
-                break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(),
-                                          GetPointVectorData(Node::eDof::ROTATIONS, 2).data());
-        }
-        break;
-        default:
-            break;
-        }
-    }
+std::ostream& operator<<(std::ostream& out, const NodeBase& node)
+{
+    node.Info(out);
+    return out;
 }
-#endif // ENABLE_VISUALIZE
+} /* NuTo */
 
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
@@ -114,19 +44,4 @@ void NodeBase::serialize(Archive& ar, const unsigned int version)
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NodeBase)
 #endif // ENABLE_SERIALIZATION
-
-int NodeBase::GetDof(Node::eDof rDof) const
-{
-    assert(GetNum(rDof) == 1);
-    return GetDof(rDof, 0);
-}
-
-namespace NuTo
-{
-std::ostream& operator<<(std::ostream& out, const NodeBase& node)
-{
-    node.Info(out);
-    return out;
-}
-} /* NuTo */
 

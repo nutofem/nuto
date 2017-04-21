@@ -30,6 +30,11 @@ public:
     //! @return matrix
     static Eigen::MatrixXd ReadFromFile(const std::string& rFileName, std::string rDelimiter = " ");
 
+    //! @brief converts data to a 3D vector, fills with zeros if needed
+    //! @param data vector of arbitrary size
+    //! @return 3D vector
+    static Eigen::Vector3d To3D(const Eigen::VectorXd& data);
+
 private:
 
     //! @brief converts a string, seperated by rDelimiter, to a vector of doubles
