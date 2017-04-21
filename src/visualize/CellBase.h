@@ -1,14 +1,12 @@
 // $Id$
 #pragma once
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
+#include <eigen3/Eigen/Core>
 
 
 namespace NuTo
 {
-
-class VisualizeDataBase;
-class VisualizeDataType;
 
 //! @brief ... base class for visualization cells
 //! @author Stefan Eckardt, ISM
@@ -18,14 +16,12 @@ class CellBase
 public:
 
     //! @brief constructor
-    //! @param rDataTypes ... data type definitions
-    CellBase(const std::vector<VisualizeDataType>& rDataTypes);
-
-    virtual ~CellBase();
+    //! @param numData ... number of different data fields
+    CellBase(int numData);
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
-    virtual unsigned int GetNumPoints() const = 0;
+    virtual int GetNumPoints() const = 0;
 
     //! @brief ... return point id's
     //! @return ... array of point id's
@@ -35,41 +31,16 @@ public:
     //! @return ... Vtk cell type
     virtual unsigned int GetVtkCellType() const = 0;
 
-    //! @brief ... add scalar data
-    //! @param rDataIndex ... index in data vector (zero based indexing)
-    void AddDataScalar(unsigned int rDataIndex);
-
-    //! @brief ... add vector (length 3) data
-    //! @param rDataIndex ... index in data vector (zero based indexing)
-    void AddDataVector(unsigned int rDataIndex);
-
-    //! @brief ... add tensor (3x3) data
-    //! @param rDataIndex ... index in data vector (zero based indexing)
-    void AddDataTensor(unsigned int rDataIndex);
-
     //! @brief ... set tensor data
-    //! @param rDataIndex ... data index
-    //! @param rData ... tensor data
-    void SetDataTensor(unsigned int rDataIndex, double rData[9]);
+    //! @param data ... data
+    void SetData(int dataIndex, Eigen::VectorXd data);
 
-    //! @brief ... set tensor data
-    //! @param rDataIndex ... data index
-    //! @param rData ... tensor data
-    void SetDataScalar(unsigned int rDataIndex, double rData);
+    //! @param dataIndex ... data index
+    const Eigen::VectorXd& GetData(int dataIndex) const;
 
-    //! @brief ... set vector data
-    //! @param rDataIndex ... data index
-    //! @param rData ... tensor data
-    void SetDataVector (unsigned int rDataIndex, double rData[3]);
-
-    //! @brief ... add field data
-    //! @param rDataIndex ... index in data vector (zero based indexing)
-    //! @param rNumData ... number of data
-    void AddDataField(unsigned int rDataIndex, unsigned int rNumData = 0);
-
-    const VisualizeDataBase* GetData(unsigned int rDataIndex) const;
 protected:
-    boost::ptr_vector<VisualizeDataBase> mData;
+
+    std::vector<Eigen::VectorXd> mData;
 };
 
 }
