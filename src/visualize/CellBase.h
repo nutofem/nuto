@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <eigen3/Eigen/Core>
+#include "visualize/VisualizeEnum.h" 
 
 
 namespace NuTo
@@ -17,19 +18,22 @@ public:
 
     //! @brief constructor
     //! @param numData ... number of different data fields
-    CellBase(int numData);
+    CellBase(std::vector<int> pointIds, int numData, eCellTypes cellType);
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
-    virtual int GetNumPoints() const = 0;
+    int GetNumPoints() const;
 
     //! @brief ... return point id's
     //! @return ... array of point id's
-    virtual const unsigned int* GetPoints() const = 0;
+    const std::vector<int>& GetPointIds() const;
+
+    //! @brief ... setter for mPointIds
+    void SetPointIds(std::vector<int> pointIds);
 
     //! @brief ... returns the corresponding Vtk cell type
     //! @return ... Vtk cell type
-    virtual unsigned int GetVtkCellType() const = 0;
+    int GetVtkCellType() const;
 
     //! @brief ... set tensor data
     //! @param data ... data
@@ -39,8 +43,9 @@ public:
     const Eigen::VectorXd& GetData(int dataIndex) const;
 
 protected:
-
     std::vector<Eigen::VectorXd> mData;
+    std::vector<int> mPointIds;
+    int mVtkCellType;
 };
 
 }

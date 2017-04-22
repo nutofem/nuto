@@ -22,65 +22,16 @@
 
 int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 {
-    mPoints.push_back(new Point(coordinates, mPointDataNames.size()));
+    mPoints.push_back(Point(coordinates, mPointDataNames.size()));
     return mPoints.size() - 1;
 }
 
-// add vertex cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddVertexCell(const unsigned int* rPoints)
+int NuTo::VisualizeUnstructuredGrid::AddCell(CellBase cell)
 {
-    this->CheckPoints(1,rPoints);
-    this->mCells.push_back(new CellVertex(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
+    mCells.push_back(cell);
+    return mCells.size() - 1;
 }
 
-// add line cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddLineCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(2,rPoints);
-    this->mCells.push_back(new CellLine(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
-
-// add triangle cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddTriangleCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(3,rPoints);
-    this->mCells.push_back(new CellTriangle(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
-
-// add quadrilateral cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddQuadCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(4,rPoints);
-    this->mCells.push_back(new CellQuad(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
-
-// add tetraeder cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddTetraCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(4,rPoints);
-    this->mCells.push_back(new CellTetra(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
-
-// add pyramid cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddPyramidCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(5,rPoints);
-    this->mCells.push_back(new CellPyramid(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
-
-// add hexahedron cell
-unsigned int NuTo::VisualizeUnstructuredGrid::AddHexahedronCell(const unsigned int* rPoints)
-{
-    this->CheckPoints(8,rPoints);
-    this->mCells.push_back(new CellHexahedron(rPoints,this->mCellData));
-    return this->mCells.size() - 1;
-}
 
 // export to Vtu Datafile (XML based file format)
 void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const

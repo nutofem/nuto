@@ -1,9 +1,8 @@
 // $Id$
 #pragma once
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <string>
-#include <map>
+#include <vector>
 #include <eigen3/Eigen/Core>
 
 namespace NuTo
@@ -20,10 +19,6 @@ class VisualizeUnstructuredGrid
 {
 public:
 
-    //! @brief ... export to Vtk datafile
-    //! @param rFilename ... filename
-    void ExportVtkDataFile(const std::string& rFilename) const;
-
     //! @brief ... export to Vtu datafile
     //! @param rFilename ... filename
     void ExportVtuDataFile(const std::string& rFilename) const;
@@ -36,38 +31,8 @@ public:
     //! @brief ... add vertex cell
     //! @param rPoints ... point id's (zero based indexing)
     //! @return ... cell identifier (zero based indexing)
-    unsigned int AddVertexCell(const unsigned int* rPoints);
-
-    //! @brief ... add line cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddLineCell(const unsigned int* rPoints);
-
-    //! @brief ... add triangle cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddTriangleCell(const unsigned int* rPoints);
-
-    //! @brief ... add quadrilateral cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddQuadCell(const unsigned int* rPoints);
-
-    //! @brief ... add tetraeder cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddTetraCell(const unsigned int* rPoints);
-
-    //! @brief ... add pyramid cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddPyramidCell(const unsigned int* rPoints);
-
-    //! @brief ... add hexahedron cell
-    //! @param rPoints ... point id's (zero based indexing)
-    //! @return ... cell identifier (zero based indexing)
-    unsigned int AddHexahedronCell(const unsigned int* rPoints);
-
+    int AddCell(CellBase cell);
+    
     //! @brief ... define point data 
     //! @param name ... name of the data field
     void DefinePointData(std::string name);
@@ -103,10 +68,10 @@ public:
 
 private:
     //! @brief ... vector of points
-    boost::ptr_vector<Point> mPoints;
+    std::vector<Point> mPoints;
 
     //! @brief ... vector of cells
-    boost::ptr_vector<CellBase> mCells;
+    std::vector<CellBase> mCells;
 
     //! @brief ... vector of point data field names
     std::vector<std::string> mPointDataNames;
