@@ -1,4 +1,5 @@
 // $Id$
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -21,7 +22,7 @@
 
 int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 {
-    mPoints.push_back(new Point(coordinates, mPointDataNamesToId.size()));
+    mPoints.push_back(new Point(coordinates, mPointDataNames.size()));
     return mPoints.size() - 1;
 }
 
@@ -223,26 +224,24 @@ void NuTo::VisualizeUnstructuredGrid::CheckPoints(const unsigned int rNumPoints,
 
 void NuTo::VisualizeUnstructuredGrid::DefinePointData(std::string name)
 {
-    if (mPointDataNamesToId.find(name) != mPointDataNamesToId.end())
+    if (std::find(mPointDataNames.begin(), mPointDataNames.end(), name) != mPointDataNamesToId.end())
         throw VisualizeException(__PRETTY_FUNCTION__, "data identifier already exist for point data.");
 
     if (not mPoints.empty())
         throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding points");
 
-    int newId = mPointDataNamesToId.size();
-    mPointDataNamesToId[name] = newId;
+    mPointDataNames.push_back(name);
 }
 
 void NuTo::VisualizeUnstructuredGrid::DefineCellData(std::string name)
 {
-    if (mCellDataNamesToId.find(name) != mCellDataNamesToId.end())
+    if (std::find(mCellDataNames.begin(), mCellDataNames.end(), name) != mCellDataNamesToId.end())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data identifier already exist for point data.");
     
     if (not mCells.empty())
         throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding cells");
-    
-    int newId = mCellDataNamesToId.size();
-    mCellDataNamesToId[name] = newId;
+
+    mCellDataNames.push_back(name);
 }
 
 void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::string& name, double data)
@@ -257,38 +256,26 @@ void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::st
 
 void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, double data)
 {
-
+    SetCellData(cellIndex, name, Eigen::Matrix<double, 1, 1>::Constant(data));
 }
 
 void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data)
 {
-    
-}
-
-void NuTo::VisualizeUnstructuredGrid::CheckDataIdent(const std::string& rIdent) const
-{
-    std::vector<std::string> tokens;
-    std::istringstream iss(rIdent);
-    std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter<std::vector<std::string> >(tokens));
-    if (tokens.size() != 1)
-    {
-        //std::cout << "data ident : " << rIdent << '\n';
-    	throw NuTo::VisualizeException("[NuTo::VisualizeUnstructuredGrid::CheckDataIdent] data identifier must be a single word.");
-    }
+    mCells[cellIndex].SetData(GetCellDataIndex(name), data); 
 }
 
 int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::string& name) const
 {
-    auto it = mPointDataNamesToId.find(name);
+    auto it = std::find(mPointDataNames.begin(), mPointDataNames.end(), name);
     if (it == mPointDataNamesToId.end())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
-    return it->second();
+    return std::distance(mPointDataNames.begin(), it);
 }
 
 int NuTo::VisualizeUnstructuredGrid::GetCellDataIndex(const std::string& name) const
 {
-    auto it = mCellDataNamesToId.find(name);
+    auto it = std::find(mCellDataNames.begin(), mCellDataNames.end(), name);
     if (it == mCellDataNamesToId.end())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
-    return it->second();
+    return std::distance(mCellDataNames.begin(), it);
 }

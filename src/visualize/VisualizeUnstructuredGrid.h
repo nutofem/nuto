@@ -108,19 +108,16 @@ private:
     //! @brief ... vector of cells
     boost::ptr_vector<CellBase> mCells;
 
-    //! @brief ... mapping of point data names to their id at the Point::mData 
-    std::map<std::string, int> mPointDataNamesToId;
+    //! @brief ... vector of point data field names
+    std::vector<std::string> mPointDataNames;
 
-    //! @brief ... mapping of cell data names to their id at the CellBase::mData 
-    std::map<std::string, int> mCellDataNamesToId;
+    //! @brief ... vector of cell data field names 
+    std::vector<std::string> mCellDataNames;
 
     //! @brief ... check if points are defined
     //! @param rNumPoints ... number of points
     //! @param rPoints ... point id's
     void CheckPoints(const unsigned int rNumPoints, const unsigned int *rPoints) const;
-
-    //! @brief ... check identifier for data
-    void CheckDataIdent(const std::string& rIdent) const;
 
     //! @brief ... get point data index from identifier
     //! @param name ... identifier
