@@ -4,18 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
-#include <boost/tokenizer.hpp>
 
-#include "visualize/CellHexahedron.h"
-#include "visualize/CellVertex.h"
-#include "visualize/CellLine.h"
-#include "visualize/CellPyramid.h"
-#include "visualize/CellQuad.h"
-#include "visualize/CellTetra.h"
-#include "visualize/CellTriangle.h"
 #include "visualize/Point.h"
-#include "visualize/VisualizeDataBase.h"
-#include "visualize/VisualizeDataType.h"
 #include "visualize/VisualizeException.h"
 #include "visualize/VisualizeUnstructuredGrid.h"
 
