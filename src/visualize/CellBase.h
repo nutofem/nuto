@@ -31,9 +31,9 @@ public:
     //! @brief ... setter for mPointIds
     void SetPointIds(std::vector<int> pointIds);
 
-    //! @brief ... returns the corresponding Vtk cell type
-    //! @return ... Vtk cell type
-    int GetVtkCellType() const;
+    //! @brief ... returns the corresponding cell type
+    //! @return ... cell type
+    eCellTypes GetCellType() const;
 
     //! @brief ... set tensor data
     //! @param data ... data
@@ -45,7 +45,7 @@ public:
 protected:
     std::vector<Eigen::VectorXd> mData;
     std::vector<int> mPointIds;
-    int mVtkCellType;
+    eCellTypes mCellType;
 };
 
 }
