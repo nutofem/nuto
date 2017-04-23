@@ -6,20 +6,17 @@
 #include <iostream>
 #endif // ENABLE_SERIALIZATION
 
-#include "mechanics/MechanicsException.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include <vector>
 #include <eigen3/Eigen/Core>
-#include  <vector>
-#include <memory>
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+
+#ifdef ENABLE_VISUALIZE
+#include "visualize/CellBase.h"
+#endif //ENABLE_VISUALIZE
 
 
 namespace NuTo
 {
-#ifdef ENABLE_VISUALIZE
-class CellBase;
-enum class eCellTypes;
-#endif //ENABLE_VISUALIZE
-
 
 class IntegrationPointBase;
 
@@ -39,11 +36,15 @@ class IntegrationTypeBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    //! @brief constructor
-    IntegrationTypeBase();
+    IntegrationTypeBase() = default;
+    IntegrationTypeBase(const IntegrationTypeBase&) = default;
+    IntegrationTypeBase(IntegrationTypeBase&&) = default;
+
+    IntegrationTypeBase& operator= (const IntegrationTypeBase&) = default;
+    IntegrationTypeBase& operator= (IntegrationTypeBase&&) = default;
 
     //! @brief ... destructor
-    virtual ~IntegrationTypeBase(){};
+    virtual ~IntegrationTypeBase() = default;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -70,10 +71,7 @@ public:
     virtual Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const = 0;
 
 
-    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented in base class.");
-    }
+    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const;
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
@@ -108,29 +106,17 @@ public:
 
     struct CellWithIpId
     {
-        std::unique_ptr<CellBase> cell;
+        CellBase cell;
         int ipId;
-    }
+    };
 
     struct IpCellInfo
     {
         std::vector<CellWithIpId> cells;
         std::vector<Eigen::VectorXd> cellVertices;
-    }
+    };
 
-    IpCellInfo GetVisualizationCells() const
-    {
-     unsigned int NumVisualizationPoints;
-    std::vector<double> VisualizationPointLocalCoordinates;
-    unsigned int NumVisualizationCells;
-    std::vector<NuTo::eCellTypes> VisualizationCellType;
-    std::vector<unsigned int> VisualizationCellsIncidence;
-    std::vector<unsigned int> VisualizationCellsIP;
-
-    GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
-    
-
-    }
+    IpCellInfo GetVisualizationCells() const;
 
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,

@@ -1,23 +1,7 @@
 set(NuToVisualizeSources
-    CellBase.cpp
-    CellHexahedron.cpp
-    CellVertex.cpp
-    CellLine.cpp
-    CellPyramid.cpp
-    CellQuad.cpp
-    CellTetra.cpp
-    CellTriangle.cpp
-    Point.cpp
-    VisualizeBase.cpp
-    VisualizeComponent.cpp
-    VisualizeComponentBase.cpp
-    VisualizeDataBase.cpp
-    VisualizeDataField.cpp
-    VisualizeDataScalar.cpp
-    VisualizeDataTensor.cpp
-    VisualizeDataVector.cpp
-    VisualizeDataType.cpp
     VisualizeUnstructuredGrid.cpp
+    CellBase.cpp
+    Point.cpp
 )
 
 sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)

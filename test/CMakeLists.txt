@@ -6,6 +6,10 @@ if(ENABLE_MECHANICS)
     add_subdirectory(mechanics)
 endif()
 
+if(ENABLE_VISUALIZE)
+    add_subdirectory(visualize)
+endif()
+
 add_custom_target(unit
     COMMAND ctest -R unit
     DEPENDS ${all_unit_tests}

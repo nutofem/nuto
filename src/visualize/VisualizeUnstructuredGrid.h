@@ -79,16 +79,15 @@ private:
     //! @brief ... vector of cell data field names 
     std::vector<std::string> mCellDataNames;
 
-    //! @brief ... check if points are defined
-    //! @param rNumPoints ... number of points
-    //! @param rPoints ... point id's
-    void CheckPoints(const unsigned int rNumPoints, const unsigned int *rPoints) const;
+    //! @brief ... check if point ids are defined, throws if not
+    //! @param pointIds ... point ids
+    void CheckPoints(std::vector<int> pointIds) const;
 
-    //! @brief ... get point data index from identifier
+    //! @brief ... get point data index from identifier, throws if not found
     //! @param name ... identifier
     int GetPointDataIndex(const std::string& name) const;
 
-    //! @brief ... get point data index from identifier
+    //! @brief ... get point data index from identifier, throws if not found
     //! @param name ... identifier
     int GetCellDataIndex(const std::string& name) const;
 };
