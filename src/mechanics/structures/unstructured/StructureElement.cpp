@@ -154,7 +154,7 @@ void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationT
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
 
     for (const auto& elementPair : mElementMap)
-        ElementSetInterpolationType(elementPair.first, rInterpolationTypeId);
+        ElementSetInterpolationType(elementPair.second, itInterpolationType->second);
 }
 
 void NuTo::Structure::ElementTotalConvertToInterpolationType()

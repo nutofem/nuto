@@ -58,7 +58,7 @@ int main()
         elementIncidence[0] = element;
         elementIncidence[1] = element + 1;
         structure.ElementCreate(InterpolationType, elementIncidence);
-        structure.ElementSetSection(element, Section1);
+        structure.ElementSetSection(structure.ElementGetElementPtr(element), Section1);
         structure.ElementSetConstitutiveLaw(element, Material1);
     }
 

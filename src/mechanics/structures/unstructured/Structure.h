@@ -572,12 +572,14 @@ public:
 #endif // SWIG
 
 protected:
+#ifndef SWIG
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... standard constructor just for the serialization routine
     Structure()
     {
     }
 #endif  // ENABLE_SERIALIZATION
+#endif
 
 #ifndef SWIG
 

@@ -6,6 +6,7 @@
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/MechanicsException.h"
@@ -196,6 +197,16 @@ namespace std {
 }
 
 %enddef
+
+%extend NuTo::Structure
+{
+    void ElementSetSection(int rElementId, std::shared_ptr<Section> section)
+    {
+        ElementBase* elementPtr = $self->ElementGetElementPtr(rElementId);
+        $self->ElementSetSection(elementPtr, section);
+    }
+}
+
 
 OUTSTREAM_WRAP(NuTo::NodeBase)
 OUTSTREAM_WRAP(NuTo::Section)

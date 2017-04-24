@@ -592,11 +592,6 @@ public:
 
 #endif //SWIG
 
-    //! @brief Modifies the section of a single element
-    //! @param elementId element number
-    //! @param section Section to add to the element
-    void ElementSetSection(int elementId, std::shared_ptr<Section> section);
-
     //! @brief Modifies the section of a group of elements
     //! @param groupId Identifier for the group of elements
     //! @param section Section to add to the elements
@@ -606,17 +601,10 @@ public:
     //! @param section Section to add to the elements
     void ElementTotalSetSection(std::shared_ptr<Section> section);
 
-#ifndef SWIG
     //! @brief modifies the section of a single element
     //! @param rElement element pointer
     //! @param rSection section
     void ElementSetSection(ElementBase* rElement, std::shared_ptr<Section> rSection);
-#endif //SWIG
-
-    //! @brief modifies the interpolation type of a single element
-    //! @param rElementId ... element number
-    //! @param rInterpolationTypeId ... interpolation type id
-    void ElementSetInterpolationType(int rElementId, int rInterpolationTypeId);
 
     //! @brief modifies the interpolation type of a group of elements
     //! @param rGroupId ... identifier for the group of elements
