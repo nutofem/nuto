@@ -16,7 +16,7 @@ First, you need some external dependencies
 
     sudo apt-get install git swig3.0 cmake doxygen python3-dev python3-numpy \
     libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev \
-    libann-dev libarpack2-dev libomp-dev gmsh vtk6
+    libann-dev libarpack2-dev libomp-dev gmsh libvtk6-dev
 
 Then, you need to check out the source code
 
