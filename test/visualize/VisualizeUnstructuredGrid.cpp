@@ -2,6 +2,9 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 #include "visualize/VisualizeException.h"
 
+#include <vtkXMLUnstructuredGridReader.h>
+#include <vtkSmartPointer.h>
+
 BOOST_AUTO_TEST_CASE(DefinitionOrder)
 {
     NuTo::VisualizeUnstructuredGrid visu;
@@ -42,5 +45,9 @@ BOOST_AUTO_TEST_CASE(Export)
     voigt[5] = 12;
     visu.SetCellData(cellId, "Tensor", voigt); 
 
-    visu.ExportVtuDataFile("VisualizeUnstructuredGridTest.vtu");
+    auto file = "VisualizeUnstructuredGridTest.vtu";
+    visu.ExportVtuDataFile(file);
+    auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+    reader->SetFileName(file);
+    reader->Update();
 }

@@ -7,27 +7,27 @@
 #include "visualize/CellBase.h"
 #include "visualize/VisualizeException.h"
 
-int CellTypeToVtk(NuTo::eCellTypes cellType)
-{
-    switch (cellType)
-    {
-    case NuTo::eCellTypes::HEXAHEDRON:
-        return 12;
-    case NuTo::eCellTypes::LINE:
-        return 3;
-    case NuTo::eCellTypes::PYRAMID:
-        return 14;
-    case NuTo::eCellTypes::QUAD:
-        return 9;
-    case NuTo::eCellTypes::TETRAEDER:
-        return 10;
-    case NuTo::eCellTypes::TRIANGLE:
-        return 5;
-    case NuTo::eCellTypes::VERTEX:
-        return 1;
-    }
-}
-
+//#include <vtkSmartPointer.h>
+//#include <vtkCellArray.h>
+//
+//void CellTypeToVtk(vtkCellArray& cellArray, std::vector<int> pointIds, NuTo::eCellTypes cellType)
+//{
+//
+//    switch (cellType)
+//    {
+//    case NuTo::eCellTypes::HEXAHEDRON:
+//        return 12;
+//    case NuTo::eCellTypes::LINE:
+//        return 3;
+//    case NuTo::eCellTypes::QUAD:
+//        return 9;
+//    case NuTo::eCellTypes::TETRAEDER:
+//        return 10;
+//    case NuTo::eCellTypes::TRIANGLE:
+//        return 5;
+//    }
+//}
+//
 void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
 {
 }
