@@ -15,10 +15,9 @@
 
 
 NuTo::VisualizeComponent::VisualizeComponent(NuTo::eVisualizeWhat visualizeComponent) :
-        mVisualizeComponent(rVisualizeComponent)
+        mVisualizeComponent(visualizeComponent)
 {
 }
-
 
 NuTo::eVisualizeWhat NuTo::VisualizeComponent::GetComponentEnum() const
 {

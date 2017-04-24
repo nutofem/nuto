@@ -643,43 +643,43 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::StructureBase::NodeTotalAddToVisualize(
-        VisualizeUnstructuredGrid& rVisualize,
-        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
+        VisualizeUnstructuredGrid& visualizer,
+        const std::vector<VisualizeComponent>& visualizeComponents) const
 {
     std::vector<const NodeBase*> nodeVec;
     this->GetNodesTotal(nodeVec);
-    NodeVectorAddToVisualize(rVisualize, rVisualizationList, nodeVec);
+    NodeVectorAddToVisualize(visualizer, visualizeComponents, nodeVec);
 }
 
 void NuTo::StructureBase::NodeVectorAddToVisualize(
-        VisualizeUnstructuredGrid& rVisualize,
-        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList,
-        const std::vector<const NodeBase*>& rNodes) const
+        VisualizeUnstructuredGrid& visualizer,
+        const std::vector<VisualizeComponent>& visualizeComponents,
+        const std::vector<const NodeBase*>& nodes) const
 {
     using Node::eDof;
 
     auto NodeData3D = [=](const NodeBase* node, eDof dof, int timeDerivative)
     {
         auto data = node->Get(dof, timeDerivative);
-        return EigenCompanion::To3D(data).data();
+        return EigenCompanion::To3D(data);
     };
 
-    for (auto node : rNodes)
+    for (auto node : nodes)
     {
         auto coordinates = NuTo::EigenCompanion::To3D(node->Get(eDof::COORDINATES));
-        const unsigned pointId = rVisualize.AddPoint(coordinates.data());
+        const int pointId = visualizer.AddPoint(coordinates);
 
 
         // store data
-        for (auto const& it : rVisualizationList)
+        for (auto const& it : visualizeComponents)
         {
-            switch (it.get()->GetComponentEnum())
+            switch (it.GetComponentEnum())
             {
             case eVisualizeWhat::DISPLACEMENTS:
             {
                 if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 0));
             }
             break;
@@ -687,7 +687,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0 && node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 1));
             }
             break;
@@ -695,7 +695,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0 && node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 2));
             }
             break;
@@ -703,7 +703,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNum(Node::eDof::ROTATIONS) == 0)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::ROTATIONS, 0));
             }
             break;
@@ -711,7 +711,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNum(Node::eDof::ROTATIONS) == 0 && node->GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 1)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::ROTATIONS, 1));
             }
             break;
@@ -719,7 +719,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNum(Node::eDof::ROTATIONS) == 0 && node->GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 2)
                     break;
-                rVisualize.SetPointDataVector(pointId, it.get()->GetComponentName(),
+                visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::ROTATIONS, 2));
             }
             break;

@@ -2,6 +2,7 @@
 
 set(NuToVisualizeSources
     VisualizeUnstructuredGrid.cpp
+    VisualizeComponent.cpp
     CellBase.cpp
     Point.cpp
 )

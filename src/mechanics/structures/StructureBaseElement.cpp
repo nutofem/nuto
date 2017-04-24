@@ -973,58 +973,59 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 
 
 #ifdef ENABLE_VISUALIZE
-void StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize,
-                                               const std::list<std::shared_ptr<VisualizeComponent>>& rVisualizationList)
+void StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& visualizer,
+                                               const std::vector<VisualizeComponent>& visualizeComponents)
 {
     std::vector<ElementBase*> elementVec;
     this->GetElementsTotal(elementVec);
-    ElementVectorAddToVisualize(rVisualize, rVisualizationList, elementVec);
+    ElementVectorAddToVisualize(visualizer, visualizeComponents, elementVec);
 }
 
 
-void StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize,
-                                               const std::list<std::shared_ptr<VisualizeComponent>>& rVisualizationList)
+void StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& visualizer,
+                                               const std::vector<VisualizeComponent>& visualizeComponents)
 {
     // find group by name
     Group<ElementBase>* elementGroup = this->GroupGetGroupPtr(rGroupId)->AsGroupElement();
     std::vector<ElementBase*> elementVec;
     this->GetElementsByGroup(elementGroup, elementVec);
-    ElementVectorAddToVisualize(rVisualize, rVisualizationList, elementVec, mGroupVisualizationType.at(rGroupId));
+    ElementVectorAddToVisualize(visualizer, visualizeComponents, elementVec, mGroupVisualizationType.at(rGroupId));
 }
 
 
-void StructureBase::ElementVectorAddToVisualize(
-        VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<VisualizeComponent>>& rVisualizationList,
-        const std::vector<ElementBase*>& rElements)
+void StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& visualizer,
+                                                const std::vector<VisualizeComponent>& visualizeComponents,
+                                                const std::vector<ElementBase*>& elements)
 {
-    ElementVectorAddToVisualize(rVisualize, rVisualizationList, rElements, eVisualizationType::VORONOI_CELL);
+    ElementVectorAddToVisualize(visualizer, visualizeComponents, elements, eVisualizationType::VORONOI_CELL);
 }
 
 
-void StructureBase::ElementVectorAddToVisualize(
-        VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<VisualizeComponent>>& rVisualizationList,
-        const std::vector<ElementBase*>& rElements, const eVisualizationType rVisualizationType)
+void StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& visualizer,
+                                                const std::vector<VisualizeComponent>& visualizeComponents,
+                                                const std::vector<ElementBase*>& elements,
+                                                const eVisualizationType rVisualizationType)
 {
     // build global tmp static data
     if (mHaveTmpStaticData and mUpdateTmpStaticDataRequired)
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Update of tmpStaticData required first.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Update of tmpStaticData required first.");
 
     switch (rVisualizationType)
     {
     case eVisualizationType::VORONOI_CELL:
-        for (auto const& iElePtr : rElements)
-            iElePtr->Visualize(rVisualize, rVisualizationList);
+        for (auto const& iElePtr : elements)
+            iElePtr->Visualize(visualizer, visualizeComponents);
         break;
     case eVisualizationType::EXTRAPOLATION_TO_NODES:
-        for (auto const& iElePtr : rElements)
-            iElePtr->VisualizeExtrapolateToNodes(rVisualize, rVisualizationList);
+        for (auto const& iElePtr : elements)
+            iElePtr->VisualizeExtrapolateToNodes(visualizer, visualizeComponents);
         break;
     case eVisualizationType::POINTS:
-        for (auto const& iElePtr : rElements)
-            iElePtr->VisualizeIntegrationPointData(rVisualize, rVisualizationList);
+        for (auto const& iElePtr : elements)
+            iElePtr->VisualizeIntegrationPointData(visualizer, visualizeComponents);
         break;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization type not implemented.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization type not implemented.");
     }
 }
 #endif // VISUALIZE

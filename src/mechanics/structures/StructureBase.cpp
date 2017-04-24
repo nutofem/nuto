@@ -237,28 +237,18 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
 
     // create a new visualization list for an element group or add components to an already existing list
     if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
-    {
-        std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
-        visualizationPtrList.push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
-
-        mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);
-
         mGroupVisualizationType.emplace(rElementGroup, eVisualizationType::VORONOI_CELL);
-    }
-    else
-    {
-        mGroupVisualizeComponentsMap.at(rElementGroup)
-                .push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
-    }
+
+    mGroupVisualizeComponentsMap[rElementGroup].push_back(VisualizeComponent(rVisualizeComponent));
 
     if (mVerboseLevel > 5)
     {
         for (auto const& iPair : mGroupVisualizeComponentsMap)
         {
             std::cout << "ele group: \t" << iPair.first << std::endl;
-            for (auto const& iComponentPtr : iPair.second)
+            for (auto const& component : iPair.second)
             {
-                std::cout << "components: \t " << iComponentPtr->GetComponentName() << std::endl;
+                std::cout << "components: \t " << component.GetComponentName() << std::endl;
             }
         }
     }
@@ -397,7 +387,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>&
+std::map<int, std::vector<NuTo::VisualizeComponent>>&
 NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
     return mGroupVisualizeComponentsMap;
@@ -409,22 +399,18 @@ void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeI
 }
 
 void NuTo::StructureBase::DefineVisualizeElementData(
-        VisualizeUnstructuredGrid& rVisualize,
-        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
+        VisualizeUnstructuredGrid& visualizer,
+        const std::vector<NuTo::VisualizeComponent>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const& it : rVisualizationList)
+    for (auto const& it : visualizeComponents)
     {
-        switch (it.get()->GetComponentEnum())
+        switch (it.GetComponentEnum())
         {
-
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::DAMAGE:
-            rVisualize.DefineCellDataScalar(it.get()->GetComponentName());
-            break;
-
         case NuTo::eVisualizeWhat::HEAT_FLUX:
         case NuTo::eVisualizeWhat::SLIP:
         case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
@@ -433,32 +419,25 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::LATTICE_PLASTIC_STRAIN:
         case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
         case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
-            rVisualize.DefineCellDataVector(it.get()->GetComponentName());
-            break;
-
         case NuTo::eVisualizeWhat::BOND_STRESS:
         case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
         case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
         case NuTo::eVisualizeWhat::THERMAL_STRAIN:
-            rVisualize.DefineCellDataTensor(it.get()->GetComponentName());
-            break;
-
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
-            rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
+            visualizer.DefineCellData(it.GetComponentName());
             break;
 
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
-        //        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN: // this is a test
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:
-            rVisualize.DefinePointDataVector(it.get()->GetComponentName());
+            visualizer.DefinePointData(it.GetComponentName());
             break;
 
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
@@ -476,14 +455,14 @@ void NuTo::StructureBase::DefineVisualizeElementData(
 }
 
 void NuTo::StructureBase::DefineVisualizeNodeData(
-        VisualizeUnstructuredGrid& rVisualize,
-        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
+        VisualizeUnstructuredGrid& visualizer,
+        const std::vector<NuTo::VisualizeComponent>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const& it : rVisualizationList)
+    for (auto const& it : visualizeComponents)
     {
-        switch (it.get()->GetComponentEnum())
+        switch (it.GetComponentEnum())
         {
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ROTATION:
@@ -491,14 +470,12 @@ void NuTo::StructureBase::DefineVisualizeNodeData(
         case NuTo::eVisualizeWhat::ACCELERATION:
         case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
-            rVisualize.DefinePointDataVector(it.get()->GetComponentName());
-            break;
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
-            rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
+            visualizer.DefinePointData(it.GetComponentName());
             break;
         default:
             // do nothing for integration point data in the visualization list. However, the visualization of new dofs

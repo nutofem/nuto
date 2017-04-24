@@ -679,7 +679,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 
 #ifdef ENABLE_VISUALIZE
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
+void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& visualize, const std::vector<VisualizeComponent>& visualizeComponents)
 {
     std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }

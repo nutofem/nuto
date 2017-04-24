@@ -672,7 +672,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
 
 }
 
-void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
+void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents)
 {
 
     // get visualization cells from integration type
@@ -702,7 +702,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         Eigen::Vector3d GlobalPointCoor = Eigen::Vector3d::Zero();
 
         GlobalPointCoor.head(dimension) = ExtractNodeValues(0, Node::eDof::COORDINATES).segment(dimension*PointCount, dimension);
-        unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
+        unsigned int PointId = visualizer.AddPoint(GlobalPointCoor);
         PointIdVec.push_back(PointId);
     }
 
@@ -718,12 +718,12 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         case NuTo::eCellTypes::QUAD:
         {
             assert(Pos + 4 <= VisualizationCellsIncidence.size());
-            unsigned int Points[4];
+            std::vector<int> Points(4);
             for (unsigned int PointCount = 0; PointCount < 4; PointCount++)
             {
                 Points[PointCount] = PointIdVec[VisualizationCellsIncidence[Pos + PointCount]];
             }
-            unsigned int CellId = rVisualize.AddQuadCell(Points);
+            unsigned int CellId = visualizer.AddCell(Points, eCellTypes::QUAD);
             CellIdVec.push_back(CellId);
             Pos += 4;
         }
@@ -738,9 +738,9 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
     elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
     auto& elementIpDataMap = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
 
-    for (auto const &it : rVisualizationList)
+    for (auto const &it : visualizeComponents)
     {
-        switch (it.get()->GetComponentEnum())
+        switch (it.GetComponentEnum())
         {
         case NuTo::eVisualizeWhat::BOND_STRESS:
             elementIpDataMap[IpData::eIpStaticDataType::BOND_STRESS];
@@ -762,9 +762,9 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
 
     // store data
-    for (auto const &it : rVisualizationList)
+    for (auto const &it : visualizeComponents)
     {
-        switch (it.get()->GetComponentEnum())
+        switch (it.GetComponentEnum())
         {
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
@@ -773,7 +773,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
                 GlobalDisplacements.head(dimension) = ExtractNodeValues(0, Node::eDof::DISPLACEMENTS).segment(dimension*PointCount, dimension);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalDisplacements.data());
+                visualizer.SetPointData(PointId, it.GetComponentName(), GlobalDisplacements);
             }
             break;
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
@@ -785,19 +785,16 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                double bondStressTensor[9];
+                Eigen::VectorXd bondStressTensor(6);
                 bondStressTensor[0] = bondStress(0, theIp);
                 bondStressTensor[1] = bondStress(1, theIp);
                 bondStressTensor[2] = 0.0;
                 bondStressTensor[3] = 0.0;
                 bondStressTensor[4] = 0.0;
                 bondStressTensor[5] = 0.0;
-                bondStressTensor[6] = 0.0;
-                bondStressTensor[7] = 0.0;
-                bondStressTensor[8] = 0.0;
 
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), bondStressTensor);
+                visualizer.SetCellData(CellId, it.GetComponentName(), bondStressTensor);
             }
         }
             break;

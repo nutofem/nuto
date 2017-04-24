@@ -135,8 +135,8 @@ public:
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize,
-            const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
+    virtual void Visualize(VisualizeUnstructuredGrid& visualizer,
+            const std::vector<VisualizeComponent>& virualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 
 protected:
