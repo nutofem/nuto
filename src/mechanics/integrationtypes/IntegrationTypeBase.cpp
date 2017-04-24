@@ -11,7 +11,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/MechanicsException.h"
 
 void NuTo::IntegrationTypeBase::Info(int rVerboseLevel) const
 {
@@ -31,7 +30,6 @@ Eigen::MatrixXd NuTo::IntegrationTypeBase::GetNaturalIntegrationPointCoordinates
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented in base class.");
 }
-
 
 NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizationCells() const
 {

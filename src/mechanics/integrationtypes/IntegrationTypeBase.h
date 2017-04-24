@@ -8,10 +8,12 @@
 
 #include <vector>
 #include <eigen3/Eigen/Core>
+#include "mechanics/MechanicsException.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/CellBase.h"
+#include "visualize/VisualizeUnstructuredGrid.h"
 #endif //ENABLE_VISUALIZE
 
 
@@ -116,7 +118,7 @@ public:
         std::vector<Eigen::VectorXd> cellVertices;
     };
 
-    IpCellInfo GetVisualizationCells() const;
+    virtual IpCellInfo GetVisualizationCells() const;
 
     virtual void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,

@@ -5,12 +5,11 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 
+#include "visualize/CellBase.h"
+#include "visualize/Point.h"
+
 namespace NuTo
 {
-
-class CellBase;
-class Point;
-class VisualizeDataType;
 
 //! @brief ... visualization of unstructured grids
 //! @author Stefan Eckardt, ISM
