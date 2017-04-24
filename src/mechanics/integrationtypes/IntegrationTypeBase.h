@@ -106,15 +106,16 @@ public:
 
 #ifdef ENABLE_VISUALIZE
 
-    struct CellWithIpId
+    struct CellInfo
     {
-        CellBase cell;
+        std::vector<int> pointIds;
+        eCellTypes cellType; 
         int ipId;
     };
 
     struct IpCellInfo
     {
-        std::vector<CellWithIpId> cells;
+        std::vector<CellInfo> cells;
         std::vector<Eigen::VectorXd> cellVertices;
     };
 

@@ -13,6 +13,28 @@ enum class eCellTypes
     HEXAHEDRON
 };
 
+namespace Visualize
+{
+inline int GetNumPoints(eCellTypes cellType)
+{
+    switch (cellType)
+    {
+        case eCellTypes::VERTEX:
+            return 1;
+        case eCellTypes::LINE:
+            return 2;
+        case eCellTypes::TRIANGLE:
+            return 3;
+        case eCellTypes::QUAD:
+            return 4;
+        case eCellTypes::TETRAEDER:
+            return 4;
+        case eCellTypes::HEXAHEDRON:
+            return 8;
+    }
+}
+} // Visualize
+
 enum class eVisualizationType
 {
     VORONOI_CELL,                   //!< Decomposes the element into smaller cells

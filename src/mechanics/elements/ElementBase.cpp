@@ -356,15 +356,13 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
     std::vector<CellIdWithIpId> cells;
     for (auto cell : ipCellInfo.cells)
     {
-        auto& currentCell = cell.cell;
         // transform the ids of the cell points
         std::vector<int> globalPointIds;
-        globalPointIds.reserve(currentCell.GetNumPoints());
-        for (int localPointId : currentCell.GetPointIds())
+        globalPointIds.reserve(cell.pointIds.size());
+        for (int localPointId : cell.pointIds)
             globalPointIds.push_back(points[localPointId].id);
         
-        currentCell.SetPointIds(globalPointIds);
-        cells.push_back({visualizer.AddCell(globalPointIds, currentCell.GetCellType()), cell.ipId});
+        cells.push_back({visualizer.AddCell(globalPointIds, cell.cellType), cell.ipId});
     }
 
     //determine the ipdata and determine the map
@@ -462,9 +460,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         {
+            std::string name = it.GetComponentName();
+            std::cout << "Component name: " << name << std::endl;
+            auto nodeDof = ToNodeEnum(it.GetComponentEnum());
             for (auto point : points)
-                visualizer.SetPointData(point.id, it.GetComponentName(),
-                                        InterpolateDof3D(point.localCoords, ToNodeEnum(it.GetComponentEnum())));
+                visualizer.SetPointData(point.id, name, InterpolateDof3D(point.localCoords, nodeDof));
         }
         break;
 

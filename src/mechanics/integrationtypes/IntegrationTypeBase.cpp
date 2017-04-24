@@ -51,15 +51,23 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     const int dim = VisualizationPointLocalCoordinates.size() / NumVisualizationPoints;
     Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dim, NumVisualizationPoints);
     
-    ipCellInfo.cellVertices.reserve(NumVisualizationCells);
+    ipCellInfo.cellVertices.resize(NumVisualizationPoints);
     for (int i = 0; i < NumVisualizationPoints; ++i)
-        ipCellInfo.cellVertices.push_back(visualizationPointNaturalCoordinates.col(i));
+        ipCellInfo.cellVertices[i] = visualizationPointNaturalCoordinates.col(i);
 
     // transform cells
-    ipCellInfo.cells.reserve(NumVisualizationCells);
+    ipCellInfo.cells.resize(NumVisualizationCells);
+    auto it = VisualizationCellsIncidence.begin();
+    for (int i = 0; i < NumVisualizationCells; ++i)
+    {
+        CellInfo& cellInfo = ipCellInfo.cells[i];
+        cellInfo.cellType = VisualizationCellType[i];
+        cellInfo.ipId = VisualizationCellsIP[i];
 
-    throw "This is kind of messed up. The vector VisualizationCellsIncidence (typo??) just lists the point ids. It is hard to extract the ids for a single cell without knowing the number of ids per cell. Ahhh.";
-
+        const int numPoints = Visualize::GetNumPoints(cellInfo.cellType);
+        cellInfo.pointIds = std::vector<int>(it, it + numPoints);
+        std::advance(it, numPoints);
+    }
 
     return ipCellInfo;
 }
