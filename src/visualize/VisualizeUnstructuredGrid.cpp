@@ -38,9 +38,9 @@ int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
     return mPoints.size() - 1;
 }
 
-int NuTo::VisualizeUnstructuredGrid::AddCell(CellBase cell)
+int NuTo::VisualizeUnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 {
-    mCells.push_back(cell);
+    mCells.push_back(CellBase(pointIds, cellType, mCellDataNames.size()));
     return mCells.size() - 1;
 }
 

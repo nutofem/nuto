@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include <string>
@@ -11,13 +10,10 @@
 namespace NuTo
 {
 
-//! @brief ... visualization of unstructured grids
-//! @author Stefan Eckardt, ISM
-//! @date November 2009
+//! @brief ... visualization of unstructured grids, wrapper for vtkUnstructuredGrid
 class VisualizeUnstructuredGrid
 {
 public:
-
     //! @brief ... export to Vtu datafile
     //! @param rFilename ... filename
     void ExportVtuDataFile(const std::string& rFilename) const;
@@ -27,16 +23,16 @@ public:
     //! @return ... point id
     int AddPoint(Eigen::Vector3d coordinates);
 
-    //! @brief ... add vertex cell
+    //! @brief ... add cell
     //! @param rPoints ... point id's (zero based indexing)
     //! @return ... cell identifier (zero based indexing)
-    int AddCell(CellBase cell);
-    
-    //! @brief ... define point data 
+    int AddCell(std::vector<int> pointIds, eCellTypes cellType);
+
+    //! @brief ... define point data
     //! @param name ... name of the data field
     void DefinePointData(std::string name);
 
-    //! @brief ... define cell data 
+    //! @brief ... define cell data
     //! @param name ... name of the data field
     void DefineCellData(std::string name);
 
@@ -50,7 +46,7 @@ public:
     //! @param pointIndex ... point index
     //! @param name ... name of the data field
     //! @param data ... data
-    void SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data); 
+    void SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data);
 
     //! @brief ... set scalar cell data
     //! @param cellIndex ... cell index
@@ -62,7 +58,7 @@ public:
     //! @param cellIndex ... cell index
     //! @param name ... name of the data field
     //! @param data ... data
-    void SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data); 
+    void SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data);
 
 
 private:
@@ -75,7 +71,7 @@ private:
     //! @brief ... vector of point data field names
     std::vector<std::string> mPointDataNames;
 
-    //! @brief ... vector of cell data field names 
+    //! @brief ... vector of cell data field names
     std::vector<std::string> mCellDataNames;
 
     //! @brief ... check if point ids are defined, throws if not
@@ -90,6 +86,4 @@ private:
     //! @param name ... identifier
     int GetCellDataIndex(const std::string& name) const;
 };
-
 }
-

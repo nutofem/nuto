@@ -1,9 +1,7 @@
-// $Id$
-
 #include "visualize/CellBase.h"
 #include "visualize/VisualizeException.h"
 
-NuTo::CellBase::CellBase(std::vector<int> pointIds, int numData, eCellTypes cellType)
+NuTo::CellBase::CellBase(std::vector<int> pointIds, eCellTypes cellType, int numData)
     : mPointIds(pointIds)
     , mCellType(cellType)
 {

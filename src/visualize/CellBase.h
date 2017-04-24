@@ -1,24 +1,21 @@
-// $Id$
 #pragma once
 
 #include <vector>
 #include <eigen3/Eigen/Core>
-#include "visualize/VisualizeEnum.h" 
-
+#include "visualize/VisualizeEnum.h"
 
 namespace NuTo
 {
 
 //! @brief ... base class for visualization cells
-//! @author Stefan Eckardt, ISM
-//! @date November 2009
 class CellBase
 {
 public:
-
     //! @brief constructor
+    //! @param pointIds ... point ids
+    //! @param cellType ... cell type enum
     //! @param numData ... number of different data fields
-    CellBase(std::vector<int> pointIds, int numData, eCellTypes cellType);
+    CellBase(std::vector<int> pointIds, eCellTypes cellType, int numData);
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
@@ -47,6 +44,4 @@ protected:
     std::vector<int> mPointIds;
     eCellTypes mCellType;
 };
-
-}
-
+} // namespace NuTo
