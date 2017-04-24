@@ -121,8 +121,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	// =========================================
 	Eigen::Vector3d pointTop = mPosition + n * mHeigth / 2.;
 	Eigen::Vector3d pointBot = mPosition - n * mHeigth / 2.;
-	unsigned int indexTop = rVisualizer.AddPoint(pointTop.data());
-	unsigned int indexBot = rVisualizer.AddPoint(pointBot.data());
+	unsigned int indexTop = rVisualizer.AddPoint(pointTop);
+	unsigned int indexBot = rVisualizer.AddPoint(pointBot);
 
 	unsigned int pointCircleIndexTop[nPoints + 1];
 	unsigned int pointCircleIndexBot[nPoints + 1];
@@ -130,8 +130,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	{
 		Eigen::Vector3d pointCircleTop = pointCircle.row(i).transpose() + pointTop;
 		Eigen::Vector3d pointCircleBot = pointCircle.row(i).transpose() + pointBot;
-		pointCircleIndexTop[i] = rVisualizer.AddPoint(pointCircleTop.data());
-		pointCircleIndexBot[i] = rVisualizer.AddPoint(pointCircleBot.data());
+		pointCircleIndexTop[i] = rVisualizer.AddPoint(pointCircleTop);
+		pointCircleIndexBot[i] = rVisualizer.AddPoint(pointCircleBot);
 	}
 
 	// =========================================
@@ -139,8 +139,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	// =========================================
 	for (int i = 0; i < nPoints; i++)
 	{
-		unsigned int triangleIndexTop[3];
-		unsigned int triangleIndexBot[3];
+        std::vector<int> triangleIndexTop(3);
+        std::vector<int> triangleIndexBot(3);
 
 		triangleIndexTop[0] = indexTop;
 		triangleIndexTop[1] = pointCircleIndexTop[i];
@@ -150,13 +150,13 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 		triangleIndexBot[1] = pointCircleIndexBot[i];
 		triangleIndexBot[2] = pointCircleIndexBot[i + 1];
 
-		unsigned int insertIndexTop = rVisualizer.AddTriangleCell(triangleIndexTop);
-		unsigned int insertIndexBot = rVisualizer.AddTriangleCell(triangleIndexBot);
+		unsigned int insertIndexTop = rVisualizer.AddCell(triangleIndexTop, eCellTypes::TRIANGLE);
+		unsigned int insertIndexBot = rVisualizer.AddCell(triangleIndexBot, eCellTypes::TRIANGLE);
 
 		Eigen::Vector3d dirTop = -n;
 		Eigen::Vector3d dirBot = n;
-		rVisualizer.SetCellDataVector(insertIndexTop, "Direction", dirTop.data());
-		rVisualizer.SetCellDataVector(insertIndexBot, "Direction", dirBot.data());
+		rVisualizer.SetCellData(insertIndexTop, "Direction", dirTop);
+		rVisualizer.SetCellData(insertIndexBot, "Direction", dirBot);
 
 	}
 	// =========================================
@@ -164,17 +164,17 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	// =========================================
 	for (int i = 0; i < nPoints; i++)
 	{
-		unsigned int quadIndex[4];
+        std::vector<int> quadIndex(4);
 		quadIndex[0] = pointCircleIndexBot[i];
 		quadIndex[1] = pointCircleIndexBot[i + 1];
 		quadIndex[2] = pointCircleIndexTop[i + 1];
 		quadIndex[3] = pointCircleIndexTop[i];
 
-		unsigned int insertIndex = rVisualizer.AddQuadCell(quadIndex);
+		unsigned int insertIndex = rVisualizer.AddCell(quadIndex, eCellTypes::QUAD);
 		Eigen::Vector3d lineVector = pointCircle.row(i).transpose() - pointCircle.row(i + 1).transpose();
 		Eigen::Vector3d dir = lineVector.cross(n);
 		dir.normalize();
-		rVisualizer.SetCellDataVector(insertIndex, "Direction", dir.data());
+		rVisualizer.SetCellData(insertIndex, "Direction", dir);
 	}
 }
 #endif

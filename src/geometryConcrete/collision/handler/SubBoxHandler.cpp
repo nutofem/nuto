@@ -345,7 +345,7 @@ void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 {
 #ifdef ENABLE_VISUALIZE
 	NuTo::VisualizeUnstructuredGrid visuBorders;
-	visuBorders.DefineCellDataVector("Direction");
+	visuBorders.DefineCellData("Direction");
 	for (auto& box : mSubBoxes)
 		for (auto wall : box.GetWalls())
 			wall->VisualizationStatic(visuBorders);

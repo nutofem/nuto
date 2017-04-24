@@ -237,17 +237,10 @@ void NuTo::CollidableParticleSphere::VisualizationDynamic(
 		NuTo::VisualizeUnstructuredGrid& rVisualizer,
 		bool rFinal) const
 		{
-	double const* coords = mPosition.data();
-	unsigned int index = rVisualizer.AddPoint(coords);
+	unsigned int index = rVisualizer.AddPoint(mPosition);
 	double radius = rFinal ? mRadius0 : mRadius;
-	rVisualizer.SetPointDataScalar(index, "Radius", radius);
-	// wierd cast as SetPointDataVector does not handle const data. TODO ?
-	// no known conversion for argument 3 from ‘const Scalar* {aka const double*}’ to ‘double*’
-	double tmpVelocity[3];
-	tmpVelocity[0] = mVelocity[0];
-	tmpVelocity[1] = mVelocity[1];
-	tmpVelocity[2] = mVelocity[2];
-	rVisualizer.SetPointDataVector(index, "Velocity", tmpVelocity);
+	rVisualizer.SetPointData(index, "Radius", radius);
+	rVisualizer.SetPointData(index, "Velocity", mVelocity);
 }
 #endif
 

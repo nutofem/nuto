@@ -105,18 +105,14 @@ void NuTo::CollidableWallBase::VisualizationStatic(
 	corners.row(3) = (mPosition - transversal + transversal2).transpose();
 
 
-	unsigned int cornerIndex[4];
+    std::vector<int> cornerIndex(4);
 	for (int i = 0; i < 4; ++i)
 	{
-		cornerIndex[i] = rVisualizer.AddPoint(corners.row(i).data());
+		cornerIndex[i] = rVisualizer.AddPoint(corners.row(i));
 	}
-	unsigned int insertIndex = rVisualizer.AddQuadCell(cornerIndex);
+	int insertIndex = rVisualizer.AddCell(cornerIndex, eCellTypes::QUAD);
 
-	double tmpDirection[3];
-	tmpDirection[0] = mDirection[0];
-	tmpDirection[1] = mDirection[1];
-	tmpDirection[2] = mDirection[2];
-	rVisualizer.SetCellDataVector(insertIndex, "Direction", tmpDirection);
+	rVisualizer.SetCellData(insertIndex, "Direction", mDirection);
 }
 #endif
 

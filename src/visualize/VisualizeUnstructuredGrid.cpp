@@ -7,29 +7,109 @@
 #include "visualize/CellBase.h"
 #include "visualize/VisualizeException.h"
 
-//#include <vtkSmartPointer.h>
-//#include <vtkCellArray.h>
-//
-//void CellTypeToVtk(vtkCellArray& cellArray, std::vector<int> pointIds, NuTo::eCellTypes cellType)
-//{
-//
-//    switch (cellType)
-//    {
-//    case NuTo::eCellTypes::HEXAHEDRON:
-//        return 12;
-//    case NuTo::eCellTypes::LINE:
-//        return 3;
-//    case NuTo::eCellTypes::QUAD:
-//        return 9;
-//    case NuTo::eCellTypes::TETRAEDER:
-//        return 10;
-//    case NuTo::eCellTypes::TRIANGLE:
-//        return 5;
-//    }
-//}
-//
+#include <vtkSmartPointer.h>
+#include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkPoints.h>
+#include <vtkTetra.h>
+#include <vtkHexahedron.h>
+#include <vtkTriangle.h>
+#include <vtkQuad.h>
+#include <vtkLine.h>
+#include <vtkVertex.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+
+
+vtkSmartPointer<vtkCell> CellToVtkCell(const NuTo::CellBase& c)
+{
+    vtkSmartPointer<vtkCell> cell;
+    switch (c.GetCellType())
+    {
+    case NuTo::eCellTypes::VERTEX:
+        cell = vtkSmartPointer<vtkVertex>::New();
+        break;
+    case NuTo::eCellTypes::HEXAHEDRON:
+        cell = vtkSmartPointer<vtkHexahedron>::New();
+        break;
+    case NuTo::eCellTypes::LINE:
+        cell = vtkSmartPointer<vtkLine>::New();
+        break;
+    case NuTo::eCellTypes::QUAD:
+        cell = vtkSmartPointer<vtkQuad>::New();
+        break;
+    case NuTo::eCellTypes::TETRAEDER:
+        cell = vtkSmartPointer<vtkTetra>::New();
+        break;
+    case NuTo::eCellTypes::TRIANGLE:
+        cell = vtkSmartPointer<vtkTriangle>::New();
+        break;
+    }
+    for (auto pointId : c.GetPointIds())
+        cell->GetPointIds()->InsertNextId(pointId);
+    return cell;
+}
+
 void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
 {
+    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    
+    // geometry
+    
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    for (const auto& point : mPoints)
+        points->InsertNextPoint(point.GetCoordinates().data());
+    grid->SetPoints(points);
+    
+    //grid->Allocate(mCells.size());
+    for (const auto& cell : mCells)
+    {
+        auto vtkcell = CellToVtkCell(cell);
+        grid->InsertNextCell(vtkcell->GetCellType(), vtkcell->GetPointIds());
+    }
+   
+    // data
+
+    for (const auto& pointData : mPointDataNames)
+    {
+        const int id = GetPointDataIndex(pointData);
+        const int numComponents = mPoints[0].GetData(id).rows();
+        const int numPoints = mPoints.size();
+        auto dataArray = vtkSmartPointer<vtkDoubleArray>::New();
+        dataArray->SetName(pointData.c_str());
+        dataArray->SetNumberOfComponents(numComponents);
+        dataArray->SetNumberOfTuples(numPoints);
+       
+        for (int i = 0; i < numPoints; ++i)
+            dataArray->SetTuple(i, mPoints[i].GetData(id).data());
+        
+        grid->GetPointData()->AddArray(dataArray);
+    }
+   
+    grid->GetCellData()->vtkFieldData::Initialize();
+    for (const auto& cellData : mCellDataNames)
+    {
+        const int id = GetCellDataIndex(cellData);
+        const int numComponents = mCells[0].GetData(id).rows();
+        const int numCells = mCells.size();
+        auto dataArray = vtkSmartPointer<vtkDoubleArray>::New();
+        dataArray->SetName(cellData.c_str());
+        dataArray->SetNumberOfComponents(numComponents);
+        dataArray->SetNumberOfTuples(numCells);
+        
+        for (int i = 0; i < numCells; ++i)
+            dataArray->SetTuple(i, mCells[i].GetData(id).data());
+        
+        grid->GetCellData()->AddArray(dataArray);
+    }
+
+    auto writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+    writer->SetFileName(rFilename.c_str());
+    writer->SetInputData(grid);
+    writer->SetDataModeToAscii();
+    writer->Write();
 }
 
 int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)

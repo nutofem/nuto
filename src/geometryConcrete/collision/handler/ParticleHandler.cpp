@@ -104,8 +104,8 @@ void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory,
 	rGlobalTime += rTimeStep * 1.e-10;
 
 	NuTo::VisualizeUnstructuredGrid visuSpheres;
-	visuSpheres.DefinePointDataScalar("Radius");
-	visuSpheres.DefinePointDataVector("Velocity");
+	visuSpheres.DefinePointData("Radius");
+	visuSpheres.DefinePointData("Velocity");
 	for (auto particle : mParticles)
 		particle->VisualizationDynamic(visuSpheres, rFinal);
 
@@ -153,20 +153,20 @@ void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, doub
 #ifdef ENABLE_VISUALIZE
 
     NuTo::VisualizeUnstructuredGrid visuSpheres;
-    visuSpheres.DefinePointDataScalar("Radius");
+    visuSpheres.DefinePointData("Radius");
 
     auto circles = GetParticles2D(rZCoord,0);
 
     for (int i = 0; i < circles.rows(); i ++)
     {
-        double coords[3];
+        Eigen::Vector3d coords;
         coords[0] = circles(i,0);
         coords[1] = circles(i,1);
         coords[2] = 0;
 
         unsigned int index = visuSpheres.AddPoint(coords);
         double radius = circles(i,2);
-        visuSpheres.SetPointDataScalar(index, "Radius", radius);
+        visuSpheres.SetPointData(index, "Radius", radius);
     }
     visuSpheres.ExportVtuDataFile(rOutputFile);
 

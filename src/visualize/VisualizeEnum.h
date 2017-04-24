@@ -10,8 +10,7 @@ enum class eCellTypes
     TRIANGLE,
     QUAD,
     TETRAEDER,
-    HEXAHEDRON,
-    PYRAMID
+    HEXAHEDRON
 };
 
 enum class eVisualizationType
