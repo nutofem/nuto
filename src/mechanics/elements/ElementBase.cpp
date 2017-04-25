@@ -329,40 +329,25 @@ NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const std::vector<NuTo::VisualizeComponent>& visualizeComponents)
 {
     IntegrationTypeBase::IpCellInfo ipCellInfo = GetIntegrationType().GetVisualizationCells(); 
+    auto& cells = ipCellInfo.cells;
+    auto& points = ipCellInfo.vertices;
     if (ipCellInfo.cells.size() == 0) return; // nothing to visualize
 
-    struct CellIdWithIpId
-    {
-        int cellId;
-        int ipId;
-    };
-
-    struct PointWithLocalCoordinates
-    {
-        int id;
-        Eigen::VectorXd localCoords;
-    };
-
-
-
     // add visualization points and store their id together with their local coordinates
-    std::vector<PointWithLocalCoordinates> points;
-    for (auto& localCoords : ipCellInfo.cellVertices)
+    for (auto& pointInfo : points) 
     {
-        Eigen::Vector3d globalCoords = InterpolateDof3D(localCoords, Node::eDof::COORDINATES);
-        points.push_back({visualizer.AddPoint(globalCoords), localCoords});
+        Eigen::Vector3d globalCoords = InterpolateDof3D(pointInfo.localCoords, Node::eDof::COORDINATES);
+        pointInfo.visualizePointId = visualizer.AddPoint(globalCoords);
     }
 
-    std::vector<CellIdWithIpId> cells;
-    for (auto cell : ipCellInfo.cells)
+    for (auto cellInfo : cells)
     {
         // transform the ids of the cell points
         std::vector<int> globalPointIds;
-        globalPointIds.reserve(cell.pointIds.size());
-        for (int localPointId : cell.pointIds)
-            globalPointIds.push_back(points[localPointId].id);
-        
-        cells.push_back({visualizer.AddCell(globalPointIds, cell.cellType), cell.ipId});
+        globalPointIds.reserve(cellInfo.pointIds.size());
+        for (int localPointId : cellInfo.pointIds)
+            globalPointIds.push_back(points[localPointId].visualizePointId);
+        cellInfo.visualizeCellId = visualizer.AddCell(globalPointIds, cellInfo.cellType);
     }
 
     //determine the ipdata and determine the map
@@ -447,7 +432,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
             const auto& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
             assert(data.size() != 0);
             for (auto cell : cells)
-                visualizer.SetCellData(cell.cellId, it.GetComponentName(), data.data()[cell.ipId]);
+                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.data()[cell.ipId]);
         }
         break;
 
@@ -464,14 +449,14 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
             std::cout << "Component name: " << name << std::endl;
             auto nodeDof = ToNodeEnum(it.GetComponentEnum());
             for (auto point : points)
-                visualizer.SetPointData(point.id, name, InterpolateDof3D(point.localCoords, nodeDof));
+                visualizer.SetPointData(point.visualizePointId, name, InterpolateDof3D(point.localCoords, nodeDof));
         }
         break;
 
         case NuTo::eVisualizeWhat::VELOCITY:
         {
             for (auto point : points)
-                visualizer.SetPointData(point.id, it.GetComponentName(),
+                visualizer.SetPointData(point.visualizePointId, it.GetComponentName(),
                                         InterpolateDof3D(1, point.localCoords, Node::eDof::DISPLACEMENTS));
         }
         break;
@@ -479,7 +464,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         case NuTo::eVisualizeWhat::ACCELERATION:
         {
             for (auto point : points)
-                visualizer.SetPointData(point.id, it.GetComponentName(),
+                visualizer.SetPointData(point.visualizePointId, it.GetComponentName(),
                                         InterpolateDof3D(2, point.localCoords, Node::eDof::DISPLACEMENTS));
         }
         break;

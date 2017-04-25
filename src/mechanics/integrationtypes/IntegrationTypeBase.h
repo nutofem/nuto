@@ -108,15 +108,22 @@ public:
 
     struct CellInfo
     {
+        int visualizeCellId = -1; // global visualize id, set later by visualizer
         std::vector<int> pointIds;
         eCellTypes cellType; 
         int ipId;
     };
 
+    struct CellVectexInfo
+    {
+        int visualizePointId = -1; // global visualize id, set later by visualizer
+        Eigen::VectorXd localCoords;
+    };
+
     struct IpCellInfo
     {
         std::vector<CellInfo> cells;
-        std::vector<Eigen::VectorXd> cellVertices;
+        std::vector<CellVectexInfo> vertices;
     };
 
     virtual IpCellInfo GetVisualizationCells() const;

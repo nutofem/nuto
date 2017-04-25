@@ -51,9 +51,9 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     const int dim = VisualizationPointLocalCoordinates.size() / NumVisualizationPoints;
     Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dim, NumVisualizationPoints);
     
-    ipCellInfo.cellVertices.resize(NumVisualizationPoints);
+    ipCellInfo.vertices.resize(NumVisualizationPoints);
     for (int i = 0; i < NumVisualizationPoints; ++i)
-        ipCellInfo.cellVertices[i] = visualizationPointNaturalCoordinates.col(i);
+        ipCellInfo.vertices[i].localCoords = visualizationPointNaturalCoordinates.col(i);
 
     // transform cells
     ipCellInfo.cells.resize(NumVisualizationCells);
