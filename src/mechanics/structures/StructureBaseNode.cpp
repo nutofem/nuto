@@ -666,6 +666,24 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
 
     for (auto node : nodes)
     {
+        /*
+         * TTitscher: vtk requires each point to have all data fields. Imagine:
+         * Node 0 : Displ, Temp
+         * Node 1 : Displ
+         * Node 2 : Displ, Temp, Rotation
+         *
+         * Each node is a point. "Displ", "Temp" and "Rotation" are data fields.
+         * What value should be assigned to "Rotation" of Node 1? --> Problem.
+         *
+         * Near future solution: Independent interpolation, nodes have only one dof
+         * --> NodesDispl.vtu, NodesTemp.vtu, NodesRotation.vtu. 
+         *  TODO for future self.
+         *
+         *  For now, only displacements (+derivatives) are visualized (as before...).
+         */
+
+        if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0)
+            continue;
         auto coordinates = NuTo::EigenCompanion::To3D(node->Get(eDof::COORDINATES));
         const int pointId = visualizer.AddPoint(coordinates);
 
@@ -677,15 +695,13 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
             case eVisualizeWhat::DISPLACEMENTS:
             {
-                if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0)
-                    break;
                 visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 0));
             }
             break;
             case eVisualizeWhat::VELOCITY:
             {
-                if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0 && node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
+                if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                     break;
                 visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 1));
@@ -693,34 +709,10 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             break;
             case eVisualizeWhat::ACCELERATION:
             {
-                if (node->GetNum(Node::eDof::DISPLACEMENTS) == 0 && node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
+                if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                     break;
                 visualizer.SetPointData(pointId, it.GetComponentName(),
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 2));
-            }
-            break;
-            case eVisualizeWhat::ROTATION:
-            {
-                if (node->GetNum(Node::eDof::ROTATIONS) == 0)
-                    break;
-                visualizer.SetPointData(pointId, it.GetComponentName(),
-                                              NodeData3D(node, Node::eDof::ROTATIONS, 0));
-            }
-            break;
-            case eVisualizeWhat::ANGULAR_VELOCITY:
-            {
-                if (node->GetNum(Node::eDof::ROTATIONS) == 0 && node->GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 1)
-                    break;
-                visualizer.SetPointData(pointId, it.GetComponentName(),
-                                              NodeData3D(node, Node::eDof::ROTATIONS, 1));
-            }
-            break;
-            case eVisualizeWhat::ANGULAR_ACCELERATION:
-            {
-                if (node->GetNum(Node::eDof::ROTATIONS) == 0 && node->GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 2)
-                    break;
-                visualizer.SetPointData(pointId, it.GetComponentName(),
-                                              NodeData3D(node, Node::eDof::ROTATIONS, 2));
             }
             break;
             default:
