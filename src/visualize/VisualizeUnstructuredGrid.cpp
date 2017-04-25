@@ -7,69 +7,78 @@
 #include "visualize/CellBase.h"
 #include "visualize/VisualizeException.h"
 
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkPoints.h>
-#include <vtkTetra.h>
-#include <vtkHexahedron.h>
-#include <vtkTriangle.h>
-#include <vtkQuad.h>
-#include <vtkLine.h>
-#include <vtkVertex.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLUnstructuredGridWriter.h>
 
 
-vtkSmartPointer<vtkCell> CellToVtkCell(const NuTo::CellBase& c)
+int ToVtkCellType(NuTo::eCellTypes type)
 {
-    vtkSmartPointer<vtkCell> cell;
-    switch (c.GetCellType())
+    switch (type)
     {
     case NuTo::eCellTypes::VERTEX:
-        cell = vtkSmartPointer<vtkVertex>::New();
-        break;
+        return VTK_VERTEX;
     case NuTo::eCellTypes::HEXAHEDRON:
-        cell = vtkSmartPointer<vtkHexahedron>::New();
-        break;
+        return VTK_HEXAHEDRON;
     case NuTo::eCellTypes::LINE:
-        cell = vtkSmartPointer<vtkLine>::New();
-        break;
+        return VTK_LINE;
     case NuTo::eCellTypes::QUAD:
-        cell = vtkSmartPointer<vtkQuad>::New();
-        break;
+        return VTK_QUAD;
     case NuTo::eCellTypes::TETRAEDER:
-        cell = vtkSmartPointer<vtkTetra>::New();
-        break;
+        return VTK_TETRA;
     case NuTo::eCellTypes::TRIANGLE:
-        cell = vtkSmartPointer<vtkTriangle>::New();
-        break;
+        return VTK_TRIANGLE;
+    case NuTo::eCellTypes::POLYGON:
+        return VTK_POLYGON;
     }
-    for (auto pointId : c.GetPointIds())
-        cell->GetPointIds()->InsertNextId(pointId);
-    return cell;
+}
+
+Eigen::VectorXd TransformData(Eigen::VectorXd nuto)
+{
+    //                     0  1  2  3  4  5 
+    // NuTo voigt format: xx yy zz yz xz xy
+    // VTK voigt format:  xx yy zz xy yz xz
+    
+    if (nuto.rows() != 6)
+        return nuto;
+    
+    Eigen::VectorXd vtk(6);
+    vtk.segment(0,3) = nuto.segment(0,3);
+    vtk[3] = nuto[5];
+    vtk[4] = nuto[3];
+    vtk[5] = nuto[4];
+    return vtk;
 }
 
 void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
 {
     auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    
+
     // geometry
-    
+
     auto points = vtkSmartPointer<vtkPoints>::New();
-    for (const auto& point : mPoints)
-        points->InsertNextPoint(point.GetCoordinates().data());
+    points->SetNumberOfPoints(mPoints.size());
+    for (int i = 0; i < mPoints.size(); ++i)
+        points->SetPoint(i, mPoints[i].GetCoordinates().data());
     grid->SetPoints(points);
-    
+
     //grid->Allocate(mCells.size());
     for (const auto& cell : mCells)
     {
-        auto vtkcell = CellToVtkCell(cell);
-        grid->InsertNextCell(vtkcell->GetCellType(), vtkcell->GetPointIds());
+        auto vtkcellType = ToVtkCellType(cell.GetCellType());
+        auto ids = vtkSmartPointer<vtkIdList>::New();
+        const int numIds = cell.GetPointIds().size();
+        ids->SetNumberOfIds(numIds);
+        for (int i = 0; i < numIds; ++i)
+            ids->SetId(i, cell.GetPointIds()[i]);
+        grid->InsertNextCell(vtkcellType, ids);
     }
-   
+
     // data
 
     for (const auto& pointData : mPointDataNames)
@@ -81,14 +90,14 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFile
         dataArray->SetName(pointData.c_str());
         dataArray->SetNumberOfComponents(numComponents);
         dataArray->SetNumberOfTuples(numPoints);
-       
+
         for (int i = 0; i < numPoints; ++i)
             dataArray->SetTuple(i, mPoints[i].GetData(id).data());
-        
+
         grid->GetPointData()->AddArray(dataArray);
     }
-   
-    grid->GetCellData()->vtkFieldData::Initialize();
+
+    //grid->GetCellData()->vtkFieldData::Initialize();
     for (const auto& cellData : mCellDataNames)
     {
         const int id = GetCellDataIndex(cellData);
@@ -98,10 +107,10 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFile
         dataArray->SetName(cellData.c_str());
         dataArray->SetNumberOfComponents(numComponents);
         dataArray->SetNumberOfTuples(numCells);
-        
+
         for (int i = 0; i < numCells; ++i)
-            dataArray->SetTuple(i, mCells[i].GetData(id).data());
-        
+            dataArray->SetTuple(i, TransformData(mCells[i].GetData(id)).data());
+
         grid->GetCellData()->AddArray(dataArray);
     }
 
@@ -109,6 +118,7 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFile
     writer->SetFileName(rFilename.c_str());
     writer->SetInputData(grid);
     writer->SetDataModeToAscii();
+    //writer->SetDataModeToBinary();
     writer->Write();
 }
 
@@ -120,6 +130,7 @@ int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 
 int NuTo::VisualizeUnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 {
+    CheckPoints(pointIds);
     mCells.push_back(CellBase(pointIds, cellType, mCellDataNames.size()));
     return mCells.size() - 1;
 }

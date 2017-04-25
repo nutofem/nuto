@@ -78,7 +78,7 @@ if(ENABLE_OPTIMIZE)
 endif()
 
 if(ENABLE_VISUALIZE)
-    find_package(VTK REQUIRED)
+    find_package(VTK REQUIRED COMPONENTS vtkIOXML NO_MODULE)
     include_directories(SYSTEM ${VTK_INCLUDE_DIRS})
     add_definitions("-DENABLE_VISUALIZE")
     set(NuTo_DOXYGEN_PREDEFINED "ENABLE_VISUALIZE" ${NuTo_DOXYGEN_PREDEFINED})

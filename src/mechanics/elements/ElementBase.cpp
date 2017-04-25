@@ -340,7 +340,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         pointInfo.visualizePointId = visualizer.AddPoint(globalCoords);
     }
 
-    for (auto cellInfo : cells)
+    for (auto& cellInfo : cells)
     {
         // transform the ids of the cell points
         std::vector<int> globalPointIds;
@@ -417,10 +417,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         {
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::DAMAGE:
-        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
         case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-        case NuTo::eVisualizeWhat::THERMAL_STRAIN:
-        case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::BOND_STRESS:
@@ -429,10 +426,22 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
         case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
         {
-            const auto& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+            const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
             assert(data.size() != 0);
             for (auto cell : cells)
-                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.data()[cell.ipId]);
+                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.col(cell.ipId));
+        }
+        break;
+
+        case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
+        case NuTo::eVisualizeWhat::THERMAL_STRAIN:
+        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+        {
+            Eigen::MatrixXd data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+            assert(data.rows() == 6);
+            data.bottomRows(3) /= 2.; // transform engineering gamma to epsilon
+            for (auto cell : cells)
+                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.col(cell.ipId));
         }
         break;
 
@@ -446,7 +455,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         {
             std::string name = it.GetComponentName();
-            std::cout << "Component name: " << name << std::endl;
             auto nodeDof = ToNodeEnum(it.GetComponentEnum());
             for (auto point : points)
                 visualizer.SetPointData(point.visualizePointId, name, InterpolateDof3D(point.localCoords, nodeDof));
@@ -545,10 +553,10 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
             case NuTo::eVisualizeWhat::DAMAGE:
             case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
             {
-                const auto& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+                const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
                 assert(data.size() != 0);
                 for (int i = 0; i < numIp; ++i)
-                    visualizer.SetCellData(ipInfo[i].cellId, it.GetComponentName(), data.data()[i]);
+                    visualizer.SetCellData(ipInfo[i].cellId, it.GetComponentName(), data.col(i));
             }
                 break;
             case NuTo::eVisualizeWhat::DISPLACEMENTS:

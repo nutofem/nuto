@@ -425,15 +425,15 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
         case NuTo::eVisualizeWhat::THERMAL_STRAIN:
-        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
-        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
-        case NuTo::eVisualizeWhat::TEMPERATURE:
-        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
-        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
             visualizer.DefineCellData(it.GetComponentName());
             break;
 
+        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
+        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
+        case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:
@@ -470,11 +470,11 @@ void NuTo::StructureBase::DefineVisualizeNodeData(
         case NuTo::eVisualizeWhat::ACCELERATION:
         case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
-        case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
-        case NuTo::eVisualizeWhat::TEMPERATURE:
-        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
-        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
+        //case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
+        //case NuTo::eVisualizeWhat::TEMPERATURE:
+        //case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        //case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+        //case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
             visualizer.DefinePointData(it.GetComponentName());
             break;
         default:
