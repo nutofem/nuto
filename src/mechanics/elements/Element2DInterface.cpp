@@ -25,9 +25,9 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeComponent.h"
+#include "visualize/Component.h"
 #include "visualize/VisualizeEnum.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 #endif // ENABLE_VISUALIZE
 
 using namespace NuTo;
@@ -672,7 +672,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
 
 }
 
-void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents)
+void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
 {
 
     // get visualization cells from integration type

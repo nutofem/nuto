@@ -6,16 +6,17 @@
 
 namespace NuTo
 {
-
-//! @brief ... base class for visualization cells
-class CellBase
+namespace Visualize
+{
+//! @brief ... class for storing visualization cells
+class Cell
 {
 public:
     //! @brief constructor
     //! @param pointIds ... point ids
     //! @param cellType ... cell type enum
     //! @param numData ... number of different data fields
-    CellBase(std::vector<int> pointIds, eCellTypes cellType, int numData);
+    Cell(std::vector<int> pointIds, eCellTypes cellType, int numData);
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
@@ -44,4 +45,5 @@ protected:
     std::vector<int> mPointIds;
     eCellTypes mCellType;
 };
+} // namespace Visualize
 } // namespace NuTo

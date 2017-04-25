@@ -973,8 +973,8 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 
 
 #ifdef ENABLE_VISUALIZE
-void StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& visualizer,
-                                               const std::vector<VisualizeComponent>& visualizeComponents)
+void StructureBase::ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                               const std::vector<Visualize::Component>& visualizeComponents)
 {
     std::vector<ElementBase*> elementVec;
     this->GetElementsTotal(elementVec);
@@ -982,8 +982,8 @@ void StructureBase::ElementTotalAddToVisualize(VisualizeUnstructuredGrid& visual
 }
 
 
-void StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& visualizer,
-                                               const std::vector<VisualizeComponent>& visualizeComponents)
+void StructureBase::ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
+                                               const std::vector<Visualize::Component>& visualizeComponents)
 {
     // find group by name
     Group<ElementBase>* elementGroup = this->GroupGetGroupPtr(rGroupId)->AsGroupElement();
@@ -993,16 +993,16 @@ void StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructur
 }
 
 
-void StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& visualizer,
-                                                const std::vector<VisualizeComponent>& visualizeComponents,
+void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                                const std::vector<Visualize::Component>& visualizeComponents,
                                                 const std::vector<ElementBase*>& elements)
 {
     ElementVectorAddToVisualize(visualizer, visualizeComponents, elements, eVisualizationType::VORONOI_CELL);
 }
 
 
-void StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& visualizer,
-                                                const std::vector<VisualizeComponent>& visualizeComponents,
+void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                                const std::vector<Visualize::Component>& visualizeComponents,
                                                 const std::vector<ElementBase*>& elements,
                                                 const eVisualizationType rVisualizationType)
 {

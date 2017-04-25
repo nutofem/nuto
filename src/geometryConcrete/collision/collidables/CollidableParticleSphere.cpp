@@ -16,7 +16,7 @@
 #include "geometryConcrete/collision/collidables/CollidableWallVirtual.h"
 #include "geometryConcrete/collision/collidables/CollidableWallCylinder.h"
 
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 
 NuTo::CollidableParticleSphere::CollidableParticleSphere(
 		Eigen::Vector3d rPosition,
@@ -234,7 +234,7 @@ void NuTo::CollidableParticleSphere::GetLocalEventsToDelete(Event::LocalEvents& 
 #ifdef ENABLE_VISUALIZE
 
 void NuTo::CollidableParticleSphere::VisualizationDynamic(
-		NuTo::VisualizeUnstructuredGrid& rVisualizer,
+		NuTo::Visualize::UnstructuredGrid& rVisualizer,
 		bool rFinal) const
 		{
 	unsigned int index = rVisualizer.AddPoint(mPosition);

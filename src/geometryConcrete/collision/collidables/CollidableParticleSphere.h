@@ -18,7 +18,11 @@ class CollidableWallPhysical;
 class CollidableWallVirtual;
 class CollidableWallCylinder;
 class CollidableWallBase;
-class VisualizeUnstructuredGrid;
+
+namespace Visualize
+{
+class UnstructuredGrid;
+}
 
 //! @brief ... class for spherical collidables
 class CollidableParticleSphere: public NuTo::CollidableParticleBase
@@ -97,7 +101,7 @@ public:
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all moving collidables
 	//! @param rVisualizer ... NuTo object for ascii-export
-	void VisualizationDynamic(VisualizeUnstructuredGrid& rVisualizer, bool rFinal) const;
+	void VisualizationDynamic(Visualize::UnstructuredGrid& rVisualizer, bool rFinal) const;
 #endif
 
 	//! @brief ... resets the sphere velocity to 0.0

@@ -20,8 +20,8 @@
 #include "mechanics/groups/GroupEnum.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeUnstructuredGrid.h"
-#include "visualize/VisualizeComponent.h"
+#include "visualize/UnstructuredGrid.h"
+#include "visualize/Component.h"
 #include "visualize/VisualizeEnum.h"
 #endif
 
@@ -643,8 +643,8 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::StructureBase::NodeTotalAddToVisualize(
-        VisualizeUnstructuredGrid& visualizer,
-        const std::vector<VisualizeComponent>& visualizeComponents) const
+        Visualize::UnstructuredGrid& visualizer,
+        const std::vector<Visualize::Component>& visualizeComponents) const
 {
     std::vector<const NodeBase*> nodeVec;
     this->GetNodesTotal(nodeVec);
@@ -652,8 +652,8 @@ void NuTo::StructureBase::NodeTotalAddToVisualize(
 }
 
 void NuTo::StructureBase::NodeVectorAddToVisualize(
-        VisualizeUnstructuredGrid& visualizer,
-        const std::vector<VisualizeComponent>& visualizeComponents,
+        Visualize::UnstructuredGrid& visualizer,
+        const std::vector<Visualize::Component>& visualizeComponents,
         const std::vector<const NodeBase*>& nodes) const
 {
     using Node::eDof;

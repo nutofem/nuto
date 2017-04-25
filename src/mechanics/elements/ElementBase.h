@@ -29,15 +29,15 @@ class Lattice2D;
 class Section;
 template<class T>
 class SparseMatrix;
-class VisualizeComponentBase;
-class VisualizeComponent;
 class ElementOutputBase;
 template<typename IOEnum> class ConstitutiveIOMap;
 
 #ifdef ENABLE_VISUALIZE
-class VisualizeUnstructuredGrid;
-
-class CellBase;
+namespace Visualize
+{
+    class UnstructuredGrid;
+    class Component;
+}
 enum class eCellTypes;
 #endif // ENABLE_VISUALIZE
 
@@ -315,20 +315,20 @@ public:
 
 #ifdef ENABLE_VISUALIZE
 
-    //! @brief Computes all data in rVisualizationList for the visualization. Decomposes the element into small cells for the cisualization.
-    //! @param rVisualize
-    //! @param rVisualizationList: a list of visualization components to be visualized
-    virtual void Visualize(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents);
+    //! @brief Computes all data in visualizeComponents for the visualization. Decomposes the element into small cells for the cisualization.
+    //! @param visualizer
+    //! @param visualizeComponents: a list of visualization components to be visualized
+    virtual void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
 
-    //! @brief Computes all data in rVisualizationList for the visualization. Extrapolates integration point data to element nodes
-    //! @param rVisualize
-    //! @param rVisualizationList: a list of visualization components to be visualized
-    virtual void VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents);
+    //! @brief Computes all data in visualizeComponents for the visualization. Extrapolates integration point data to element nodes
+    //! @param visualizer
+    //! @param visualizeComponents: a list of visualization components to be visualized
+    virtual void VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
 
-    //! @brief Computes all data in rVisualizationList for the visualization. Visualizes integration point data as vertiex elements
-    //! @param rVisualize
-    //! @param rVisualizationList: a list of visualization components to be visualized
-    virtual void VisualizeIntegrationPointData(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents);
+    //! @brief Computes all data in visualizeComponents for the visualization. Visualizes integration point data as vertiex elements
+    //! @param visualizer
+    //! @param visualizeComponents: a list of visualization components to be visualized
+    virtual void VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
 
     virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
             std::vector<unsigned int>& VisualizationCellsIP) const;

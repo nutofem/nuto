@@ -10,17 +10,19 @@
 
 namespace NuTo
 {
-
-class VisualizeComponent
+namespace Visualize
+{
+class Component
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
     
     //! @brief just for serialization
-    VisualizeComponent() = default;
+    Component() = default;
+
 #endif // ENABLE_SERIALIZATION
 public:
-    VisualizeComponent(NuTo::eVisualizeWhat visualizeComponent);
+    Component(NuTo::eVisualizeWhat visualizeComponent);
 
     NuTo::eVisualizeWhat GetComponentEnum() const;
 
@@ -35,12 +37,13 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 private:
-    eVisualizeWhat mVisualizeComponent;
+    eVisualizeWhat mComponent;
 
 };
-}
+} // namespace Visualize
+} // namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponent)
+BOOST_CLASS_EXPORT_KEY(NuTo::Visualize::Component)
 #endif // ENABLE_SERIALIZATION
 

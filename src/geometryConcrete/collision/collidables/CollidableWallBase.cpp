@@ -12,7 +12,7 @@
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "geometryConcrete/collision/SubBox.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 
 NuTo::CollidableWallBase::CollidableWallBase(
 		Eigen::VectorXd rPosition,
@@ -72,7 +72,7 @@ void NuTo::CollidableWallBase::Print(std::ostream& rReturnStream) const
 #ifdef ENABLE_VISUALIZE
 
 void NuTo::CollidableWallBase::VisualizationStatic(
-		NuTo::VisualizeUnstructuredGrid& rVisualizer) const
+		NuTo::Visualize::UnstructuredGrid& rVisualizer) const
 {
 
 	double size = 1.;

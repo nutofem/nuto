@@ -41,9 +41,9 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/Point.h"
-#include "visualize/CellBase.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
-#include "visualize/VisualizeComponent.h"
+#include "visualize/Cell.h"
+#include "visualize/UnstructuredGrid.h"
+#include "visualize/Component.h"
 #include "visualize/VisualizeException.h"
 #endif
 
@@ -326,7 +326,7 @@ NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 }
 }
 
-void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const std::vector<NuTo::VisualizeComponent>& visualizeComponents)
+void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
 {
     IntegrationTypeBase::IpCellInfo ipCellInfo = GetIntegrationType().GetVisualizationCells(); 
     auto& cells = ipCellInfo.cells;
@@ -490,12 +490,12 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& visualizer, const s
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
 {
     throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
 
-void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid& visualizer, const std::vector<VisualizeComponent>& visualizeComponents)
+void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
 {
     //
     //  This function is still in beta and only works for engineering strain. Implementation is still in progress...

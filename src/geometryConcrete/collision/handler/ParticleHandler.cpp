@@ -20,7 +20,7 @@
 
 
 #ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 #endif
 
 NuTo::ParticleHandler::ParticleHandler(
@@ -103,7 +103,7 @@ void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory,
 	// modify rGlobalTime slightly to resolve every event
 	rGlobalTime += rTimeStep * 1.e-10;
 
-	NuTo::VisualizeUnstructuredGrid visuSpheres;
+	NuTo::Visualize::UnstructuredGrid visuSpheres;
 	visuSpheres.DefinePointData("Radius");
 	visuSpheres.DefinePointData("Velocity");
 	for (auto particle : mParticles)
@@ -152,7 +152,7 @@ void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, doub
 {
 #ifdef ENABLE_VISUALIZE
 
-    NuTo::VisualizeUnstructuredGrid visuSpheres;
+    NuTo::Visualize::UnstructuredGrid visuSpheres;
     visuSpheres.DefinePointData("Radius");
 
     auto circles = GetParticles2D(rZCoord,0);

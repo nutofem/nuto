@@ -12,8 +12,7 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "visualize/CellBase.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/VisualizeEnum.h"
 #endif //ENABLE_VISUALIZE
 
 

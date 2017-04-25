@@ -14,8 +14,11 @@ namespace NuTo
 {
 class SubBox;
 class CollidableParticleSphere;
-class VisualizeUnstructuredGrid;
 
+namespace Visualize
+{
+    class UnstructuredGrid;
+}
 //! @brief ... base class for walls
 class CollidableWallBase: public NuTo::CollidableBase
 {
@@ -76,7 +79,7 @@ public:
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables
 	//! @param rVisualizer ... NuTo object for ascii-export
-	virtual void VisualizationStatic(VisualizeUnstructuredGrid& rVisualizer) const;
+	virtual void VisualizationStatic(Visualize::UnstructuredGrid& rVisualizer) const;
 #endif
 
 	//! @brief ... does nothing as all other wall events are still legal

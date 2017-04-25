@@ -18,8 +18,7 @@
 #include "geometryConcrete/collision/collidables/CollidableWallVirtual.h"
 #include "geometryConcrete/collision/collidables/CollidableWallCylinder.h"
 
-
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 
 NuTo::SubBoxHandler::SubBoxHandler(
 		ParticleHandler& rSpheres,
@@ -344,7 +343,7 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 {
 #ifdef ENABLE_VISUALIZE
-	NuTo::VisualizeUnstructuredGrid visuBorders;
+	NuTo::Visualize::UnstructuredGrid visuBorders;
 	visuBorders.DefineCellData("Direction");
 	for (auto& box : mSubBoxes)
 		for (auto wall : box.GetWalls())

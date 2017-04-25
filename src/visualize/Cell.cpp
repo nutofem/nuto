@@ -1,41 +1,43 @@
-#include "visualize/CellBase.h"
+#include "visualize/Cell.h"
 #include "visualize/VisualizeException.h"
 
-NuTo::CellBase::CellBase(std::vector<int> pointIds, eCellTypes cellType, int numData)
+using namespace NuTo::Visualize;
+
+Cell::Cell(std::vector<int> pointIds, eCellTypes cellType, int numData)
     : mPointIds(pointIds)
     , mCellType(cellType)
 {
     mData.resize(numData);
 }
 
-int NuTo::CellBase::GetNumPoints() const
+int Cell::GetNumPoints() const
 {
     return mPointIds.size();
 }
 
-const std::vector<int>& NuTo::CellBase::GetPointIds() const
+const std::vector<int>& Cell::GetPointIds() const
 {
     return mPointIds;
 }
 
-void NuTo::CellBase::SetPointIds(std::vector<int> pointIds)
+void Cell::SetPointIds(std::vector<int> pointIds)
 {
     mPointIds = pointIds;
 }
 
-NuTo::eCellTypes NuTo::CellBase::GetCellType() const
+NuTo::eCellTypes Cell::GetCellType() const
 {
     return mCellType;
 }
 
-const Eigen::VectorXd& NuTo::CellBase::GetData(int dataIndex) const
+const Eigen::VectorXd& Cell::GetData(int dataIndex) const
 {
     if (dataIndex >= this->mData.size())
         throw VisualizeException(__PRETTY_FUNCTION__, "invalid data index.");
     return mData[dataIndex];
 }
 
-void NuTo::CellBase::SetData(int dataIndex, Eigen::VectorXd data)
+void Cell::SetData(int dataIndex, Eigen::VectorXd data)
 {
     if (dataIndex >= this->mData.size())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "invalid data index.");

@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 #include "visualize/VisualizeException.h"
 
 #include <vtkXMLUnstructuredGridReader.h>
@@ -7,7 +7,7 @@
 
 BOOST_AUTO_TEST_CASE(DefinitionOrder)
 {
-    NuTo::VisualizeUnstructuredGrid visu;
+    NuTo::Visualize::UnstructuredGrid visu;
     visu.DefinePointData("Stuff");
     visu.DefineCellData("Stuff");
     int pointId = visu.AddPoint(Eigen::Vector3d::Zero());
@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(DefinitionOrder)
 
 BOOST_AUTO_TEST_CASE(Export)
 {
-    NuTo::VisualizeUnstructuredGrid visu;
+    NuTo::Visualize::UnstructuredGrid visu;
     visu.DefinePointData("Vector");
     visu.DefineCellData("Tensor");
     std::vector<int> pointIds;

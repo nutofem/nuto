@@ -1,10 +1,7 @@
-// $Id$
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 
 #include <algorithm>
 
-#include "visualize/Point.h"
-#include "visualize/CellBase.h"
 #include "visualize/VisualizeException.h"
 
 #include <vtkUnstructuredGrid.h>
@@ -55,7 +52,9 @@ Eigen::VectorXd TransformData(Eigen::VectorXd nuto)
     return vtk;
 }
 
-void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
+using namespace NuTo::Visualize;
+
+void UnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
 {
     auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
@@ -122,29 +121,29 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtuDataFile(const std::string& rFile
     writer->Write();
 }
 
-int NuTo::VisualizeUnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
+int UnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 {
     mPoints.push_back(Point(coordinates, mPointDataNames.size()));
     return mPoints.size() - 1;
 }
 
-int NuTo::VisualizeUnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
+int UnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 {
     CheckPoints(pointIds);
-    mCells.push_back(CellBase(pointIds, cellType, mCellDataNames.size()));
+    mCells.push_back(Cell(pointIds, cellType, mCellDataNames.size()));
     return mCells.size() - 1;
 }
 
 
 
-void NuTo::VisualizeUnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
+void UnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
 {
     for (auto pointId : pointIds)
         if (pointId >= mPoints.size())
             throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Point id not defined.");
 }
 
-void NuTo::VisualizeUnstructuredGrid::DefinePointData(std::string name)
+void UnstructuredGrid::DefinePointData(std::string name)
 {
     if (std::find(mPointDataNames.begin(), mPointDataNames.end(), name) != mPointDataNames.end())
         throw VisualizeException(__PRETTY_FUNCTION__, "data name already exist for point data.");
@@ -155,7 +154,7 @@ void NuTo::VisualizeUnstructuredGrid::DefinePointData(std::string name)
     mPointDataNames.push_back(name);
 }
 
-void NuTo::VisualizeUnstructuredGrid::DefineCellData(std::string name)
+void UnstructuredGrid::DefineCellData(std::string name)
 {
     if (std::find(mCellDataNames.begin(), mCellDataNames.end(), name) != mCellDataNames.end())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data name already exist for point data.");
@@ -166,27 +165,27 @@ void NuTo::VisualizeUnstructuredGrid::DefineCellData(std::string name)
     mCellDataNames.push_back(name);
 }
 
-void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::string& name, double data)
+void UnstructuredGrid::SetPointData(int pointIndex, const std::string& name, double data)
 {
     SetPointData(pointIndex, name, Eigen::Matrix<double, 1, 1>::Constant(data));
 }
 
-void NuTo::VisualizeUnstructuredGrid::SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data)
+void UnstructuredGrid::SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data)
 {
     mPoints[pointIndex].SetData(GetPointDataIndex(name), data); 
 }
 
-void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, double data)
+void UnstructuredGrid::SetCellData(int cellIndex, const std::string& name, double data)
 {
     SetCellData(cellIndex, name, Eigen::Matrix<double, 1, 1>::Constant(data));
 }
 
-void NuTo::VisualizeUnstructuredGrid::SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data)
+void UnstructuredGrid::SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data)
 {
     mCells[cellIndex].SetData(GetCellDataIndex(name), data); 
 }
 
-int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::string& name) const
+int UnstructuredGrid::GetPointDataIndex(const std::string& name) const
 {
     auto it = std::find(mPointDataNames.begin(), mPointDataNames.end(), name);
     if (it == mPointDataNames.end())
@@ -194,7 +193,7 @@ int NuTo::VisualizeUnstructuredGrid::GetPointDataIndex(const std::string& name) 
     return std::distance(mPointDataNames.begin(), it);
 }
 
-int NuTo::VisualizeUnstructuredGrid::GetCellDataIndex(const std::string& name) const
+int UnstructuredGrid::GetCellDataIndex(const std::string& name) const
 {
     auto it = std::find(mCellDataNames.begin(), mCellDataNames.end(), name);
     if (it == mCellDataNames.end())

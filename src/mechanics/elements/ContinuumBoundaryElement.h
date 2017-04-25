@@ -9,10 +9,8 @@
 
 #include "mechanics/elements/ElementBase.h"
 
-
 namespace NuTo
 {
-
 
 class ElementOutputIpData;
 template <int TDim> class ContinuumElement;
@@ -135,8 +133,8 @@ public:
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& visualizer,
-            const std::vector<VisualizeComponent>& virualizeComponents) override;
+    virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
+            const std::vector<Visualize::Component>& virualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 
 protected:

@@ -4,14 +4,16 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 
-#include "visualize/CellBase.h"
+#include "visualize/Cell.h"
 #include "visualize/Point.h"
 
 namespace NuTo
 {
+namespace Visualize
+{
 
 //! @brief ... visualization of unstructured grids, wrapper for vtkUnstructuredGrid
-class VisualizeUnstructuredGrid
+class UnstructuredGrid
 {
 public:
     //! @brief ... export to Vtu datafile
@@ -60,13 +62,29 @@ public:
     //! @param data ... data
     void SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data);
 
+    const std::vector<Point>& GetPoints() const
+    {
+        return mPoints;
+    }
+    const std::vector<Cell>& GetCells() const
+    {
+        return mCells;
+    }
+    const std::vector<std::string>& GetPointDataNames() const
+    {
+        return mPointDataNames;
+    }
+    const std::vector<std::string>& GetCellDataNames() const
+    {
+        return mCellDataNames;
+    }
 
 private:
     //! @brief ... vector of points
     std::vector<Point> mPoints;
 
     //! @brief ... vector of cells
-    std::vector<CellBase> mCells;
+    std::vector<Cell> mCells;
 
     //! @brief ... vector of point data field names
     std::vector<std::string> mPointDataNames;
@@ -86,4 +104,5 @@ private:
     //! @param name ... identifier
     int GetCellDataIndex(const std::string& name) const;
 };
-}
+} // Visualize
+} // NuTo

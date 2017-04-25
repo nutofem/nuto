@@ -5,7 +5,8 @@
 
 namespace NuTo
 {
-
+namespace Visualize
+{
 //! @brief ... point for visualization
 class Point
 {
@@ -21,12 +22,13 @@ public:
     void SetData(int dataIndex, Eigen::VectorXd data);
 
     //! @brief ... get point coordinates
-    //! @return ... pointer to point coordinates
+    //! @return ... reference to point coordinates
     const Eigen::Vector3d& GetCoordinates() const;
 
     //! @brief ... get data
-    //! @return ... pointer to point coordinates
-    const Eigen::VectorXd& GetData(unsigned int rDataIndex) const;
+    //! @param dataIndex ... data index
+    //! @return ... reference to point data
+    const Eigen::VectorXd& GetData(int dataIndex) const;
 
 private:
     //! @brief ... point coordinates
@@ -35,4 +37,5 @@ private:
     //! @brief ... vector of point data
     std::vector<Eigen::VectorXd> mData;
 };
+} // namespace Visualize
 } // namespace NuTo

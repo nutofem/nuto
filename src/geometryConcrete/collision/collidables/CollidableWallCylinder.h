@@ -45,7 +45,7 @@ public:
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables
 	//! @param rVisualizer ... NuTo object for ascii-export
-	void VisualizationStatic(VisualizeUnstructuredGrid& rVisualizer) const override;
+	void VisualizationStatic(Visualize::UnstructuredGrid& rVisualizer) const override;
 #endif
 
 	//! @brief ... returns true, if the sphere is in this cylinder

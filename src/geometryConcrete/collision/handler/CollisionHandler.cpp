@@ -15,7 +15,6 @@
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "geometryConcrete/collision/handler/ParticleHandler.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
 #include "base/Logger.h"
 #include <sstream>
 #include <fstream>

@@ -1,9 +1,9 @@
 
 
 set(NuToVisualizeSources
-    VisualizeUnstructuredGrid.cpp
-    VisualizeComponent.cpp
-    CellBase.cpp
+    UnstructuredGrid.cpp
+    Component.cpp
+    Cell.cpp
     Point.cpp
 )
 

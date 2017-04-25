@@ -11,7 +11,7 @@
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallCylinder.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
-#include "visualize/VisualizeUnstructuredGrid.h"
+#include "visualize/UnstructuredGrid.h"
 
 NuTo::CollidableWallCylinder::CollidableWallCylinder(
 	Eigen::Vector3d rPosition,
@@ -88,7 +88,7 @@ double NuTo::CollidableWallCylinder::PredictCollision(
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::CollidableWallCylinder::VisualizationStatic(
-		VisualizeUnstructuredGrid& rVisualizer) const
+		Visualize::UnstructuredGrid& rVisualizer) const
 		{
 	// =========================================
 	// create a circle out of several line cells
