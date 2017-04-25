@@ -1,124 +1,14 @@
 #include "visualize/UnstructuredGrid.h"
-
 #include <algorithm>
-
 #include "visualize/VisualizeException.h"
+#include "visualize/XMLWriter.h"
 
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkSmartPointer.h>
-#include <vtkCellArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointData.h>
-#include <vtkCellData.h>
-#include <vtkPoints.h>
-
-
-int ToVtkCellType(NuTo::eCellTypes type)
-{
-    switch (type)
-    {
-    case NuTo::eCellTypes::VERTEX:
-        return VTK_VERTEX;
-    case NuTo::eCellTypes::HEXAHEDRON:
-        return VTK_HEXAHEDRON;
-    case NuTo::eCellTypes::LINE:
-        return VTK_LINE;
-    case NuTo::eCellTypes::QUAD:
-        return VTK_QUAD;
-    case NuTo::eCellTypes::TETRAEDER:
-        return VTK_TETRA;
-    case NuTo::eCellTypes::TRIANGLE:
-        return VTK_TRIANGLE;
-    case NuTo::eCellTypes::POLYGON:
-        return VTK_POLYGON;
-    }
-}
-
-Eigen::VectorXd TransformData(Eigen::VectorXd nuto)
-{
-    //                     0  1  2  3  4  5 
-    // NuTo voigt format: xx yy zz yz xz xy
-    // VTK voigt format:  xx yy zz xy yz xz
-    
-    if (nuto.rows() != 6)
-        return nuto;
-    
-    Eigen::VectorXd vtk(6);
-    vtk.segment(0,3) = nuto.segment(0,3);
-    vtk[3] = nuto[5];
-    vtk[4] = nuto[3];
-    vtk[5] = nuto[4];
-    return vtk;
-}
 
 using namespace NuTo::Visualize;
 
-void UnstructuredGrid::ExportVtuDataFile(const std::string& rFilename) const
+void UnstructuredGrid::ExportVtuDataFile(const std::string& filename, bool asBinary) const
 {
-    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-    // geometry
-
-    auto points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(mPoints.size());
-    for (int i = 0; i < mPoints.size(); ++i)
-        points->SetPoint(i, mPoints[i].GetCoordinates().data());
-    grid->SetPoints(points);
-
-    //grid->Allocate(mCells.size());
-    for (const auto& cell : mCells)
-    {
-        auto vtkcellType = ToVtkCellType(cell.GetCellType());
-        auto ids = vtkSmartPointer<vtkIdList>::New();
-        const int numIds = cell.GetPointIds().size();
-        ids->SetNumberOfIds(numIds);
-        for (int i = 0; i < numIds; ++i)
-            ids->SetId(i, cell.GetPointIds()[i]);
-        grid->InsertNextCell(vtkcellType, ids);
-    }
-
-    // data
-
-    for (const auto& pointData : mPointDataNames)
-    {
-        const int id = GetPointDataIndex(pointData);
-        const int numComponents = mPoints[0].GetData(id).rows();
-        const int numPoints = mPoints.size();
-        auto dataArray = vtkSmartPointer<vtkDoubleArray>::New();
-        dataArray->SetName(pointData.c_str());
-        dataArray->SetNumberOfComponents(numComponents);
-        dataArray->SetNumberOfTuples(numPoints);
-
-        for (int i = 0; i < numPoints; ++i)
-            dataArray->SetTuple(i, mPoints[i].GetData(id).data());
-
-        grid->GetPointData()->AddArray(dataArray);
-    }
-
-    //grid->GetCellData()->vtkFieldData::Initialize();
-    for (const auto& cellData : mCellDataNames)
-    {
-        const int id = GetCellDataIndex(cellData);
-        const int numComponents = mCells[0].GetData(id).rows();
-        const int numCells = mCells.size();
-        auto dataArray = vtkSmartPointer<vtkDoubleArray>::New();
-        dataArray->SetName(cellData.c_str());
-        dataArray->SetNumberOfComponents(numComponents);
-        dataArray->SetNumberOfTuples(numCells);
-
-        for (int i = 0; i < numCells; ++i)
-            dataArray->SetTuple(i, TransformData(mCells[i].GetData(id)).data());
-
-        grid->GetCellData()->AddArray(dataArray);
-    }
-
-    auto writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
-    writer->SetFileName(rFilename.c_str());
-    writer->SetInputData(grid);
-    writer->SetDataModeToAscii();
-    //writer->SetDataModeToBinary();
-    writer->Write();
+    XMLWriter::Export(filename, *this, asBinary);
 }
 
 int UnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)

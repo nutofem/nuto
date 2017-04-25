@@ -1,10 +1,11 @@
 
 
 set(NuToVisualizeSources
-    UnstructuredGrid.cpp
-    Component.cpp
     Cell.cpp
+    Component.cpp
     Point.cpp
+    UnstructuredGrid.cpp
+    XMLWriter.cpp 
 )
 
 sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)

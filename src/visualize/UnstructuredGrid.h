@@ -12,13 +12,15 @@ namespace NuTo
 namespace Visualize
 {
 
-//! @brief ... visualization of unstructured grids, wrapper for vtkUnstructuredGrid
+//! @brief ... visualization of unstructured grids
 class UnstructuredGrid
 {
+friend class XMLWriter;
 public:
     //! @brief ... export to Vtu datafile
-    //! @param rFilename ... filename
-    void ExportVtuDataFile(const std::string& rFilename) const;
+    //! @param filename ... filename including ".vtu"
+    //! @param asBinary ... true for output as binary vtu file
+    void ExportVtuDataFile(const std::string& filename, bool asBinary = true) const;
 
     //! @brief ... add Point to unstructured grid
     //! @param rCoordinates ... point coordinates
@@ -61,23 +63,6 @@ public:
     //! @param name ... name of the data field
     //! @param data ... data
     void SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data);
-
-    const std::vector<Point>& GetPoints() const
-    {
-        return mPoints;
-    }
-    const std::vector<Cell>& GetCells() const
-    {
-        return mCells;
-    }
-    const std::vector<std::string>& GetPointDataNames() const
-    {
-        return mPointDataNames;
-    }
-    const std::vector<std::string>& GetCellDataNames() const
-    {
-        return mCellDataNames;
-    }
 
 private:
     //! @brief ... vector of points
