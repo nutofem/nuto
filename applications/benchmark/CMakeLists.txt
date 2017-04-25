@@ -5,6 +5,7 @@ if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
+    LinearElasticityVisualize
     AssembleSparseMatrix
     Solvers
     )
