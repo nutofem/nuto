@@ -1,122 +1,142 @@
 #include "visualize/XMLWriter.h"
 #include "visualize/UnstructuredGrid.h"
+#include "visualize/VisualizeException.h"
 
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkSmartPointer.h>
-#include <vtkCellArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointData.h>
-#include <vtkCellData.h>
-#include <vtkPoints.h>
+#include <fstream>
 
 int ToVtkCellType(NuTo::eCellTypes type)
 {
     switch (type)
     {
     case NuTo::eCellTypes::VERTEX:
-        return VTK_VERTEX;
+        return 1;
     case NuTo::eCellTypes::HEXAHEDRON:
-        return VTK_HEXAHEDRON;
+        return 12;
     case NuTo::eCellTypes::LINE:
-        return VTK_LINE;
+        return 3;
     case NuTo::eCellTypes::QUAD:
-        return VTK_QUAD;
+        return 9;
     case NuTo::eCellTypes::TETRAEDER:
-        return VTK_TETRA;
+        return 10;
     case NuTo::eCellTypes::TRIANGLE:
-        return VTK_TRIANGLE;
+        return 5;
     case NuTo::eCellTypes::POLYGON:
-        return VTK_POLYGON;
-    }
-}
-
-vtkSmartPointer<vtkPoints> DefineVtkPoints(const std::vector<NuTo::Visualize::Point>& points)
-{
-    auto p = vtkSmartPointer<vtkPoints>::New();
-    p->SetNumberOfPoints(points.size());
-    for (int i = 0; i < points.size(); ++i)
-        p->SetPoint(i, points[i].GetCoordinates().data());
-    return p;
-}
-
-void DefineVtkCells(const std::vector<NuTo::Visualize::Cell>& cells, vtkUnstructuredGrid& grid)
-{
-    for (const auto& cell : cells)
-    {
-        auto vtkcellType = ToVtkCellType(cell.GetCellType());
-        auto ids = vtkSmartPointer<vtkIdList>::New();
-        const int numIds = cell.GetPointIds().size();
-        ids->SetNumberOfIds(numIds);
-        for (int i = 0; i < numIds; ++i)
-            ids->SetId(i, cell.GetPointIds()[i]);
-        grid.InsertNextCell(vtkcellType, ids);
+        return 7;
     }
 }
 
 Eigen::VectorXd TransformData(Eigen::VectorXd data)
 {
+    if (data.rows() == 6)
+    {
     //                     0  1  2  3  4  5
     // NuTo voigt format: xx yy zz yz xz xy
-    std::swap(data[3], data[5]); 
+        std::swap(data[3], data[5]); 
     // swap to:           xx yy zz xy xz yz
-    std::swap(data[4], data[5]); 
+        std::swap(data[4], data[5]); 
     // VTK voigt format:  xx yy zz xy yz xz
+    }
     return data;
 }
 
-template <typename Ts>
-vtkSmartPointer<vtkDoubleArray> DefineDataArray(const Ts data, const std::string& name, int index)
+void WriteDataLine(std::ofstream& file, const Eigen::VectorXd& data)
 {
-    const int num = data.size();
-    const int numComponents = data[0].GetData(index).rows();
-
-    auto dataArray = vtkSmartPointer<vtkDoubleArray>::New();
-    dataArray->SetName(name.c_str());
-    dataArray->SetNumberOfComponents(numComponents);
-    dataArray->SetNumberOfTuples(num);
-
-    if (numComponents == 6)
-        // write with transformation
-        for (int i = 0; i < num; ++i)
-            dataArray->SetTuple(i, TransformData(data[i].GetData(index)).data());
-    else
-        // write without transformation
-        for (int i = 0; i < num; ++i)
-            dataArray->SetTuple(i, data[i].GetData(index).data());
-
-    return dataArray;
+    for (int i = 0; i < data.rows(); ++i)
+        file << " " << data[i];
+    file << '\n';
 }
-
 
 void NuTo::Visualize::XMLWriter::Export(std::string filename, const UnstructuredGrid& unstructuredGrid, bool asBinary)
 {
     const auto& points = unstructuredGrid.mPoints;
     const auto& cells = unstructuredGrid.mCells;
-    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    // define geometry
-    grid->SetPoints(DefineVtkPoints(points));
-    DefineVtkCells(cells, *grid);
+    std::ofstream file(filename);
+    if (!file.is_open())
+    	throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
 
-   
-    // define data
-    for (const auto& name : unstructuredGrid.mPointDataNames)
-        grid->GetPointData()->AddArray(DefineDataArray(points, name, unstructuredGrid.GetPointDataIndex(name)));
+    // header /////////////////////////////////////////////////////////////////
+    file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    file << "  <UnstructuredGrid>\n";
+    file << "    <Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
+    ///////////////////////////////////////////////////////////////////////////
 
-    for (const auto& name : unstructuredGrid.mCellDataNames)
-        grid->GetCellData()->AddArray(DefineDataArray(cells, name, unstructuredGrid.GetCellDataIndex(name)));
 
-    
-    // write to file
-    auto writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
-    writer->SetFileName(filename.c_str());
-    writer->SetInputData(grid);
+    // point data /////////////////////////////////////////////////////////////////
+    file << "      <PointData>\n";
 
-    if (asBinary)
-        writer->SetDataModeToBinary();
-    else
-        writer->SetDataModeToAscii();
+    for (auto pointDataName : unstructuredGrid.mPointDataNames)
+    {
+        const int index = unstructuredGrid.GetPointDataIndex(pointDataName);
+        const int numComponents = points[0].GetData(index).rows(); 
+        file << "        <DataArray type=\"Float32\" Name=\"" << pointDataName << "\" NumberOfComponents=\"" << numComponents << "\" Format=\"ascii\">\n";
+        for (const auto& point : points)
+        {
+            const Eigen::VectorXd& pointData = TransformData(point.GetData(index));
+            assert(pointData.rows() == numComponents);
+            WriteDataLine(file, pointData);
+        }
+        file << "        </DataArray>\n";
+    }
+    file << "      </PointData>\n";
 
-    writer->Write();
+    // cell data /////////////////////////////////////////////////////////////////
+    file << "      <CellData>\n";
+
+    for (auto cellDataName : unstructuredGrid.mCellDataNames)
+    {
+        const int index = unstructuredGrid.GetCellDataIndex(cellDataName);
+        const int numComponents = cells[0].GetData(index).rows(); 
+        file << "        <DataArray type=\"Float32\" Name=\"" << cellDataName << "\" NumberOfComponents=\"" << numComponents << "\" Format=\"ascii\">\n";
+        for (const auto& cell : cells)
+        {
+            const Eigen::VectorXd& cellData = TransformData(cell.GetData(index));
+            assert(cellData.rows() == numComponents);
+            WriteDataLine(file, cellData);
+        }
+        file << "        </DataArray>\n";
+    }
+    file << "      </CellData>\n";
+
+    // points /////////////////////////////////////////////////////////////////
+    file << "      <Points>\n";
+    file << "        <DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">\n";
+    for (const auto& point : points)
+        WriteDataLine(file, point.GetCoordinates());
+    file << "        </DataArray>\n";
+    file << "      </Points>\n";
+    // end points /////////////////////////////////////////////////////////////////////
+
+    // Cells - connectivity ///////////////////////////////////////////////////////////
+    file << "      <Cells>\n";
+    file << "        <DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">\n";
+    for (const auto& cell : cells) 
+    {
+        for (int id : cell.GetPointIds())
+            file << " " << id;
+        file << '\n';
+    }
+    file << "        </DataArray>\n";
+
+    // Cells - offsets //////////////////////////////////////////////////////////////
+    file << "        <DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">\n";
+    int offset = 0;
+    for (const auto& cell : cells)
+        file << " " << (offset += cell.GetNumPoints()) << "\n"; 
+    file << "        </DataArray>\n";
+
+    // Cells - types //////////////////////////////////////////////////////////////
+    file << "        <DataArray type=\"Int32\" Name=\"types\" Format=\"ascii\">\n";
+    for (const auto& cell : cells)
+        file << ToVtkCellType(cell.GetCellType()) << '\n';
+    file << "        </DataArray>\n";
+    file << "      </Cells>\n";
+    //end cells /////////////////////////////////////////////////////////////////////////
+
+    // end header /////////////////////////////////////////////////////////////////
+    file << "    </Piece>\n";
+    file << "  </UnstructuredGrid>\n";
+    file << "</VTKFile>\n";
+
+    file.close();
 }

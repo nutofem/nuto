@@ -10,7 +10,6 @@ sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)
 
 # build shared library
 add_library(NuToVisualize ${NuToVisualizeObjects})
-target_link_libraries(NuToVisualize ${VTK_LIBRARIES})
 
 # install library
 install(TARGETS NuToVisualize

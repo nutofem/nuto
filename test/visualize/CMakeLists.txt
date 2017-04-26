@@ -4,5 +4,3 @@ add_unit_test(UnstructuredGrid
     visualize/Point.cpp
     visualize/XMLWriter.cpp
     )
-
-target_link_libraries(UnstructuredGrid ${VTK_LIBRARIES})

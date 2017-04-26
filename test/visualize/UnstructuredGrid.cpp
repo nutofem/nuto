@@ -1,12 +1,6 @@
 #include "BoostUnitTest.h"
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/XMLWriter.h"
 #include "visualize/VisualizeException.h"
-
-#include <vtkSmartPointer.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkCellData.h>
 
 BOOST_AUTO_TEST_CASE(DefinitionOrder)
 {
@@ -49,21 +43,5 @@ BOOST_AUTO_TEST_CASE(Export)
     visu.SetCellData(cellId, "Tensor", voigt); 
 
     auto file = "VisualizeUnstructuredGridTest.vtu";
-    NuTo::Visualize::XMLWriter::Export(file, visu, true);
-    auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-    reader->SetFileName(file);
-    reader->Update();
-
-    vtkUnstructuredGrid& grid = *reader->GetOutput();
-    BOOST_CHECK_EQUAL(grid.GetNumberOfPoints(), 3);
-    BOOST_CHECK_EQUAL(grid.GetNumberOfCells(), 1);
-
-    vtkDataArray& dataArray = *grid.GetCellData()->GetArray(0);
-    BOOST_CHECK_EQUAL(dataArray.GetName(), "Tensor");
-    BOOST_CHECK_EQUAL(dataArray.GetNumberOfTuples(), 1);
-    BOOST_CHECK_EQUAL(dataArray.GetNumberOfComponents(), 6);
-
-    std::vector<double> data(dataArray.GetTuple(0), dataArray.GetTuple(0) + dataArray.GetNumberOfComponents());
-    std::vector<double> vtkVoigt = {11, 22, 33, 12, 23, 13};
-    BoostUnitTest::CheckVector(data, vtkVoigt, 6);
+    visu.ExportVtuDataFile(file, false);
 }
