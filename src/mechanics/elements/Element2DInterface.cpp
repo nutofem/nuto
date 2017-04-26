@@ -25,8 +25,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "visualize/Component.h"
-#include "visualize/VisualizeEnum.h"
+#include "visualize/ComponentName.h"
 #include "visualize/UnstructuredGrid.h"
 #endif // ENABLE_VISUALIZE
 
@@ -672,7 +671,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
 
 }
 
-void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
+void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
 {
 
     // get visualization cells from integration type
@@ -738,9 +737,9 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
     elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
     auto& elementIpDataMap = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
 
-    for (auto const &it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        switch (component)
         {
         case NuTo::eVisualizeWhat::BOND_STRESS:
             elementIpDataMap[IpData::eIpStaticDataType::BOND_STRESS];
@@ -762,9 +761,9 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
 
 
     // store data
-    for (auto const &it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        switch (component)
         {
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
@@ -773,7 +772,7 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
 
                 GlobalDisplacements.head(dimension) = ExtractNodeValues(0, Node::eDof::DISPLACEMENTS).segment(dimension*PointCount, dimension);
                 unsigned int PointId = PointIdVec[PointCount];
-                visualizer.SetPointData(PointId, it.GetComponentName(), GlobalDisplacements);
+                visualizer.SetPointData(PointId, GetComponentName(component), GlobalDisplacements);
             }
             break;
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
@@ -794,12 +793,12 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
                 bondStressTensor[5] = 0.0;
 
                 unsigned int CellId = CellIdVec[CellCount];
-                visualizer.SetCellData(CellId, it.GetComponentName(), bondStressTensor);
+                visualizer.SetCellData(CellId, GetComponentName(component), bondStressTensor);
             }
         }
             break;
         default:
-            throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t unsupported datatype for visualization.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "unsupported datatype for visualization.");
         }
     }
 

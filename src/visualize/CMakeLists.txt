@@ -1,8 +1,6 @@
-
-
 set(NuToVisualizeSources
     Cell.cpp
-    Component.cpp
+    ComponentName.cpp
     Point.cpp
     UnstructuredGrid.cpp
     XMLWriter.cpp 

@@ -134,7 +134,7 @@ public:
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
-            const std::vector<Visualize::Component>& virualizeComponents) override;
+            const std::vector<eVisualizeWhat>& virualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 
 protected:

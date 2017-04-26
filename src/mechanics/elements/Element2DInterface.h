@@ -149,7 +149,7 @@ private:
     void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
             std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const override;
 
-    void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents) override;
+    void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 };
 

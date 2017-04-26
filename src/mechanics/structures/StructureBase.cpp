@@ -84,9 +84,8 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/Component.h"
 #endif // ENABLE_VISUALIZE
-#include "visualize/VisualizeEnum.h"
+#include "visualize/ComponentName.h"
 
 using namespace NuTo;
 
@@ -149,7 +148,7 @@ void NuTo::StructureBase::serialize(Archive& ar, const unsigned int version)
     ar& BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
     ar& BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
 #ifdef ENABLE_VISUALIZE
-    //    ar & BOOST_SERIALIZATION_NVP(mGroupVisualize::ComponentsMap);
+    //    ar & BOOST_SERIALIZATION_NVP(mGroupeVisualizeWhatsMap);
     std::cout << "WARNING: Visualization components are not serialized!\n";
 #endif
     ar& BOOST_SERIALIZATION_NVP(mDofStatus);
@@ -238,16 +237,16 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
     if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
         mGroupVisualizationType.emplace(rElementGroup, eVisualizationType::VORONOI_CELL);
 
-    mGroupVisualizeComponentsMap[rElementGroup].push_back(Visualize::Component(visualizeComponent));
+    mGroupVisualizeComponentsMap[rElementGroup].push_back(visualizeComponent);
 
     if (mVerboseLevel > 5)
     {
         for (auto const& iPair : mGroupVisualizeComponentsMap)
         {
             std::cout << "ele group: \t" << iPair.first << std::endl;
-            for (auto const& component : iPair.second)
+            for (auto component : iPair.second)
             {
-                std::cout << "components: \t " << component.GetComponentName() << std::endl;
+                std::cout << "components: \t " << GetComponentName(component) << std::endl;
             }
         }
     }
@@ -257,59 +256,8 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
 
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std::string& visualizeComponent)
 {
-    std::cout << visualizeComponent << std::endl;
-    if (visualizeComponent == "Accelerations")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ACCELERATION);
-    else if (visualizeComponent == "AngularAccelerations")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ANGULAR_ACCELERATION);
-    else if (visualizeComponent == "AngularVelocities")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ANGULAR_VELOCITY);
-    else if (visualizeComponent == "BondStress")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::BOND_STRESS);
-    else if (visualizeComponent == "Damage")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::DAMAGE);
-    else if (visualizeComponent == "Displacements")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::DISPLACEMENTS);
-    else if (visualizeComponent == "EngineeringPlasticStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
-    else if (visualizeComponent == "EngineeringStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_STRAIN);
-    else if (visualizeComponent == "EngineeringStress")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_STRESS);
-    else if (visualizeComponent == "HeatFlux")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::HEAT_FLUX);
-    else if (visualizeComponent == "LatticeStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LATTICE_STRAIN);
-    else if (visualizeComponent == "LatticeStress")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LATTICE_STRESS);
-    else if (visualizeComponent == "LocalEqStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LOCAL_EQ_STRAIN);
-    else if (visualizeComponent == "NonlocalEqStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::NONLOCAL_EQ_STRAIN);
-    else if (visualizeComponent == "ParticleRadius")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::PARTICLE_RADIUS);
-    else if (visualizeComponent == "PrincipalEngineeringStress")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-    else if (visualizeComponent == "RelativeHumidity")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::RELATIVE_HUMIDITY);
-    else if (visualizeComponent == "Rotations")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ROTATION);
-    else if (visualizeComponent == "ShrinkageStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SHRINKAGE_STRAIN);
-    else if (visualizeComponent == "Slip")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SLIP);
-    else if (visualizeComponent == "Temperature")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::TEMPERATURE);
-    else if (visualizeComponent == "TotalInelasticEqStrain")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN);
-    else if (visualizeComponent == "Velocities")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::VELOCITY);
-    else if (visualizeComponent == "WaterVolumeFraction")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::WATER_VOLUME_FRACTION);
-    else
-        throw MechanicsException(__PRETTY_FUNCTION__, "Visualization component not implemented or misspelled.");
+    AddVisualizationComponent(rElementGroup, GetComponentEnum(visualizeComponent));
 }
-
 
 void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType)
 {
@@ -385,7 +333,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::vector<NuTo::Visualize::Component>>&
+std::map<int, std::vector<NuTo::eVisualizeWhat>>&
 NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
     return mGroupVisualizeComponentsMap;
@@ -398,13 +346,13 @@ void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeI
 
 void NuTo::StructureBase::DefineVisualizeElementData(
         Visualize::UnstructuredGrid& visualizer,
-        const std::vector<NuTo::Visualize::Component>& visualizeComponents) const
+        const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const& it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        switch (component)
         {
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
@@ -423,7 +371,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
         case NuTo::eVisualizeWhat::THERMAL_STRAIN:
-            visualizer.DefineCellData(it.GetComponentName());
+            visualizer.DefineCellData(GetComponentName(component));
             break;
 
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
@@ -435,7 +383,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:
-            visualizer.DefinePointData(it.GetComponentName());
+            visualizer.DefinePointData(GetComponentName(component));
             break;
 
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
@@ -446,7 +394,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(
             break;
 
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "undefined visualize components.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "undefined visualize component " + GetComponentName(component));
         }
     }
 #endif // ENABLE_VISUALIZE
@@ -454,27 +402,27 @@ void NuTo::StructureBase::DefineVisualizeElementData(
 
 void NuTo::StructureBase::DefineVisualizeNodeData(
         Visualize::UnstructuredGrid& visualizer,
-        const std::vector<NuTo::Visualize::Component>& visualizeComponents) const
+        const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const& it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        switch (component)
         {
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ROTATION:
         case NuTo::eVisualizeWhat::VELOCITY:
-        case NuTo::eVisualizeWhat::ACCELERATION:
-        case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
-        case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
+        //case NuTo::eVisualizeWhat::ACCELERATION:
+        //case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
+        //case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
         //case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
         //case NuTo::eVisualizeWhat::TEMPERATURE:
         //case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         //case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         //case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
-            visualizer.DefinePointData(it.GetComponentName());
-            break;
+            visualizer.DefinePointData(GetComponentName(component));
+
         default:
             // do nothing for integration point data in the visualization list. However, the visualization of new dofs
             // needs to be added here!

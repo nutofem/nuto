@@ -30,13 +30,13 @@ class Section;
 template<class T>
 class SparseMatrix;
 class ElementOutputBase;
+enum class eVisualizeWhat;
 template<typename IOEnum> class ConstitutiveIOMap;
 
 #ifdef ENABLE_VISUALIZE
 namespace Visualize
 {
     class UnstructuredGrid;
-    class Component;
 }
 enum class eCellTypes;
 #endif // ENABLE_VISUALIZE
@@ -318,17 +318,17 @@ public:
     //! @brief Computes all data in visualizeComponents for the visualization. Decomposes the element into small cells for the cisualization.
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
+    virtual void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief Computes all data in visualizeComponents for the visualization. Extrapolates integration point data to element nodes
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
+    virtual void VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief Computes all data in visualizeComponents for the visualization. Visualizes integration point data as vertiex elements
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
+    virtual void VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
 
     virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
             std::vector<unsigned int>& VisualizationCellsIP) const;

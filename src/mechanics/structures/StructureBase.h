@@ -84,7 +84,6 @@ namespace IpData
 
 namespace Visualize
 {
-    class Component;
     class UnstructuredGrid;
 }// namespace Visualize
 
@@ -176,25 +175,25 @@ public:
     void SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType);
 
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
-    void DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents) const;
+    void DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents) const;
 
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for a node plot
-    void DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents) const;
+    void DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents) const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents, const std::vector<ElementBase*>& elements);
+    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents, const std::vector<ElementBase*>& elements);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents, const std::vector<ElementBase*>& elements, const eVisualizationType rVisualizationType);
+    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents, const std::vector<ElementBase*>& elements, const eVisualizationType rVisualizationType);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
+    void ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents);
+    void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief ... returns the map that contains the visualization components to be exported for each element group
-    std::map<int, std::vector<Visualize::Component>>& GetGroupVisualizeComponentsMap(void);
+    std::map<int, std::vector<eVisualizeWhat>>& GetGroupVisualizeComponentsMap(void);
 #endif //SWIG
 
 
@@ -464,10 +463,10 @@ public:
     void NodeInternalForce(const NodeBase* rNodePtr, Eigen::VectorXd& rNodeForce);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::Visualize::Component>& visualizeComponents) const;
+    void NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const;
 
     //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
-    void NodeVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::Visualize::Component>& virualizeComponents, const std::vector<const NodeBase*>& nodes) const;
+    void NodeVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::eVisualizeWhat>& virualizeComponents, const std::vector<const NodeBase*>& nodes) const;
 
 #endif //SWIG
 
@@ -1484,7 +1483,7 @@ protected:
     boost::ptr_map<int,InterpolationType> mInterpolationTypeMap;
 
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
-    std::map<int, std::vector<Visualize::Component>> mGroupVisualizeComponentsMap;
+    std::map<int, std::vector<eVisualizeWhat>> mGroupVisualizeComponentsMap;
 
     //! @brief ... map storing the type of visualization for the output (VTK) file
     std::map<int, eVisualizationType> mGroupVisualizationType;

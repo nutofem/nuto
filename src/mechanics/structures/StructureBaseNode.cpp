@@ -21,8 +21,7 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/Component.h"
-#include "visualize/VisualizeEnum.h"
+#include "visualize/ComponentName.h"
 #endif
 
 void NuTo::StructureBase::NodeSetDisplacements(int rNode, const Eigen::VectorXd& rDisplacements)
@@ -644,7 +643,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 #ifdef ENABLE_VISUALIZE
 void NuTo::StructureBase::NodeTotalAddToVisualize(
         Visualize::UnstructuredGrid& visualizer,
-        const std::vector<Visualize::Component>& visualizeComponents) const
+        const std::vector<eVisualizeWhat>& visualizeComponents) const
 {
     std::vector<const NodeBase*> nodeVec;
     this->GetNodesTotal(nodeVec);
@@ -653,7 +652,7 @@ void NuTo::StructureBase::NodeTotalAddToVisualize(
 
 void NuTo::StructureBase::NodeVectorAddToVisualize(
         Visualize::UnstructuredGrid& visualizer,
-        const std::vector<Visualize::Component>& visualizeComponents,
+        const std::vector<eVisualizeWhat>& visualizeComponents,
         const std::vector<const NodeBase*>& nodes) const
 {
     using Node::eDof;
@@ -689,13 +688,14 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
 
 
         // store data
-        for (auto const& it : visualizeComponents)
+        for (auto component : visualizeComponents)
         {
-            switch (it.GetComponentEnum())
+            auto name = GetComponentName(component);
+            switch (component)
             {
             case eVisualizeWhat::DISPLACEMENTS:
             {
-                visualizer.SetPointData(pointId, it.GetComponentName(),
+                visualizer.SetPointData(pointId, name, 
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 0));
             }
             break;
@@ -703,7 +703,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                     break;
-                visualizer.SetPointData(pointId, it.GetComponentName(),
+                visualizer.SetPointData(pointId, name,
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 1));
             }
             break;
@@ -711,7 +711,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
                 if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                     break;
-                visualizer.SetPointData(pointId, it.GetComponentName(),
+                visualizer.SetPointData(pointId, name,
                                               NodeData3D(node, Node::eDof::DISPLACEMENTS, 2));
             }
             break;

@@ -31,7 +31,7 @@
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/sections/Section.h"
-#include "visualize/VisualizeEnum.h"
+#include "visualize/ComponentName.h"
 
 #include "math/EigenCompanion.h"
 
@@ -43,7 +43,6 @@
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/Component.h"
 #include "visualize/VisualizeException.h"
 #endif
 
@@ -326,7 +325,7 @@ NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 }
 }
 
-void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
+void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     IntegrationTypeBase::IpCellInfo ipCellInfo = GetIntegrationType().GetVisualizationCells(); 
     auto& cells = ipCellInfo.cells;
@@ -359,9 +358,9 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
     bool evaluateStress(false);
 
 
-    for (auto const& it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        switch (component)
         {
         case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
@@ -379,7 +378,7 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
-            elementIpDataMap[ToIpDataEnum(it.GetComponentEnum())];
+            elementIpDataMap[ToIpDataEnum(component)];
             break;
 
 
@@ -411,9 +410,10 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
 
 
     // store data
-    for (auto const& it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        auto componentName = GetComponentName(component);
+        switch (component)
         {
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::DAMAGE:
@@ -426,10 +426,10 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
         case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
         {
-            const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+            const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(component));
             assert(data.size() != 0);
             for (auto cell : cells)
-                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.col(cell.ipId));
+                visualizer.SetCellData(cell.visualizeCellId, componentName, data.col(cell.ipId));
         }
         break;
 
@@ -437,11 +437,11 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::THERMAL_STRAIN:
         case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
         {
-            Eigen::MatrixXd data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+            Eigen::MatrixXd data = elementIpDataMap.at(ToIpDataEnum(component));
             assert(data.rows() == 6);
             data.bottomRows(3) /= 2.; // transform engineering gamma to epsilon
             for (auto cell : cells)
-                visualizer.SetCellData(cell.visualizeCellId, it.GetComponentName(), data.col(cell.ipId));
+                visualizer.SetCellData(cell.visualizeCellId, componentName, data.col(cell.ipId));
         }
         break;
 
@@ -454,17 +454,16 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         {
-            std::string name = it.GetComponentName();
-            auto nodeDof = ToNodeEnum(it.GetComponentEnum());
+            auto nodeDof = ToNodeEnum(component);
             for (auto point : points)
-                visualizer.SetPointData(point.visualizePointId, name, InterpolateDof3D(point.localCoords, nodeDof));
+                visualizer.SetPointData(point.visualizePointId, componentName, InterpolateDof3D(point.localCoords, nodeDof));
         }
         break;
 
         case NuTo::eVisualizeWhat::VELOCITY:
         {
             for (auto point : points)
-                visualizer.SetPointData(point.visualizePointId, it.GetComponentName(),
+                visualizer.SetPointData(point.visualizePointId, componentName,
                                         InterpolateDof3D(1, point.localCoords, Node::eDof::DISPLACEMENTS));
         }
         break;
@@ -472,7 +471,7 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::ACCELERATION:
         {
             for (auto point : points)
-                visualizer.SetPointData(point.visualizePointId, it.GetComponentName(),
+                visualizer.SetPointData(point.visualizePointId, componentName,
                                         InterpolateDof3D(2, point.localCoords, Node::eDof::DISPLACEMENTS));
         }
         break;
@@ -485,17 +484,17 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
             break;
         default:
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                           "visualization of " + it.GetComponentName() + " not implemented.");
+                                           "visualization of " + componentName + " not implemented.");
         }
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
 
-void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<Visualize::Component>& visualizeComponents)
+void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     //
     //  This function is still in beta and only works for engineering strain. Implementation is still in progress...
@@ -526,17 +525,17 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
         auto& elementIpDataMap = elementOutput[Element::eOutput::IP_DATA]->GetIpData().GetIpDataMap();
 
-        for (auto const &it : visualizeComponents)
+        for (auto component : visualizeComponents)
         {
-            switch (it.GetComponentEnum())
+            switch (component)
             {
                 case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
                 case NuTo::eVisualizeWhat::DAMAGE:
                 case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-                    elementIpDataMap[ToIpDataEnum(it.GetComponentEnum())];
+                    elementIpDataMap[ToIpDataEnum(component)];
                     break;
                 default:
-                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization component " + it.GetComponentName() + " is not implemented or not known at the integration points.");
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization component " + GetComponentName(component) + " is not implemented or not known at the integration points.");
                     break;
             }
         }
@@ -545,18 +544,19 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         Evaluate(elementOutput);
 
     // store data
-    for (auto const &it : visualizeComponents)
+    for (auto component : visualizeComponents)
     {
-        switch (it.GetComponentEnum())
+        auto componentName = GetComponentName(component);
+        switch (component)
         {
             case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
             case NuTo::eVisualizeWhat::DAMAGE:
             case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
             {
-                const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(it.GetComponentEnum()));
+                const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(component));
                 assert(data.size() != 0);
                 for (int i = 0; i < numIp; ++i)
-                    visualizer.SetCellData(ipInfo[i].cellId, it.GetComponentName(), data.col(i));
+                    visualizer.SetCellData(ipInfo[i].cellId, componentName, data.col(i));
             }
                 break;
             case NuTo::eVisualizeWhat::DISPLACEMENTS:
@@ -564,12 +564,12 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
             case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
             {
                 for (int i = 0; i < numIp; ++i)
-                    visualizer.SetPointData(ipInfo[i].pointId, it.GetComponentName(),
+                    visualizer.SetPointData(ipInfo[i].pointId, componentName,
                                         InterpolateDof3D(ipInfo[i].localCoords, Node::eDof::DISPLACEMENTS));
             }
                 break;
             default:
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization component " + it.GetComponentName() + " is not implemented or not known at the integration points.");
+                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization component " + componentName + " is not implemented or not known at the integration points.");
         }
     }
 }

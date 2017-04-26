@@ -974,7 +974,7 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 
 #ifdef ENABLE_VISUALIZE
 void StructureBase::ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
-                                               const std::vector<Visualize::Component>& visualizeComponents)
+                                               const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     std::vector<ElementBase*> elementVec;
     this->GetElementsTotal(elementVec);
@@ -982,8 +982,8 @@ void StructureBase::ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visu
 }
 
 
-void StructureBase::ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
-                                               const std::vector<Visualize::Component>& visualizeComponents)
+void NuTo::StructureBase::ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
+                                                     const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     // find group by name
     Group<ElementBase>* elementGroup = this->GroupGetGroupPtr(rGroupId)->AsGroupElement();
@@ -994,7 +994,7 @@ void StructureBase::ElementGroupAddToVisualize(int rGroupId, Visualize::Unstruct
 
 
 void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
-                                                const std::vector<Visualize::Component>& visualizeComponents,
+                                                const std::vector<eVisualizeWhat>& visualizeComponents,
                                                 const std::vector<ElementBase*>& elements)
 {
     ElementVectorAddToVisualize(visualizer, visualizeComponents, elements, eVisualizationType::VORONOI_CELL);
@@ -1002,11 +1002,10 @@ void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& vis
 
 
 void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
-                                                const std::vector<Visualize::Component>& visualizeComponents,
+                                                const std::vector<eVisualizeWhat>& visualizeComponents,
                                                 const std::vector<ElementBase*>& elements,
                                                 const eVisualizationType rVisualizationType)
 {
-    // build global tmp static data
     if (mHaveTmpStaticData and mUpdateTmpStaticDataRequired)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Update of tmpStaticData required first.");
 
