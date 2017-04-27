@@ -301,7 +301,7 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
 }
 
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName)
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool asBinary)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -313,7 +313,7 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFi
         DefineVisualizeElementData(visualize, it.second);
         ElementGroupAddToVisualize(it.first, visualize, it.second);
 
-        visualize.ExportVtuDataFile(rResultFileName);
+        visualize.ExportVtuDataFile(rResultFileName, asBinary);
     }
 
 #endif // ENABLE_VISUALIZE

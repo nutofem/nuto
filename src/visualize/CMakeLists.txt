@@ -4,6 +4,7 @@ set(NuToVisualizeSources
     Point.cpp
     UnstructuredGrid.cpp
     XMLWriter.cpp 
+    base64.cpp
 )
 
 sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)

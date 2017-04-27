@@ -1,3 +1,4 @@
+#include <iostream>
 #include "BoostUnitTest.h"
 #include "visualize/UnstructuredGrid.h"
 #include "visualize/VisualizeException.h"
@@ -42,6 +43,9 @@ BOOST_AUTO_TEST_CASE(Export)
     voigt[5] = 12;
     visu.SetCellData(cellId, "Tensor", voigt); 
 
-    auto file = "VisualizeUnstructuredGridTest.vtu";
-    visu.ExportVtuDataFile(file, false);
+    auto file = "VisualizeUnstructuredGridTestBinary.vtu";
+    visu.ExportVtuDataFile(file, true);
+
+    auto asciiFile = "VisualizeUnstructuredGridTestAscii.vtu";
+    visu.ExportVtuDataFile(asciiFile, false);
 }

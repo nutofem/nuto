@@ -147,7 +147,7 @@ public:
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
-    void ExportVtkDataFileElements(const std::string& rResultFileName);
+    void ExportVtkDataFileElements(const std::string& rResultFileName, bool binary=true);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
