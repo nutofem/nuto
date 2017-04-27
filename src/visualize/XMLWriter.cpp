@@ -3,6 +3,7 @@
 #include "visualize/VisualizeException.h"
 
 #include <fstream>
+#include <iomanip>
 
 int ToVtkCellType(NuTo::eCellTypes type)
 {
@@ -51,12 +52,16 @@ void NuTo::Visualize::XMLWriter::Export(std::string filename, const Unstructured
     const auto& points = unstructuredGrid.mPoints;
     const auto& cells = unstructuredGrid.mCells;
 
+    const auto format = asBinary? std::quoted("ascii") : std::quoted("ascii");
+
     std::ofstream file(filename);
     if (!file.is_open())
     	throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
 
     // header /////////////////////////////////////////////////////////////////
-    file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    file << "<VTKFile type=" << std::quoted("UnstructuredGrid") 
+         << " version=" << std::quoted("0.1") 
+         << " byte_order=" << std::quoted("LittleEndian") << ">\n";
     file << "  <UnstructuredGrid>\n";
     file << "    <Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
     ///////////////////////////////////////////////////////////////////////////
@@ -69,7 +74,7 @@ void NuTo::Visualize::XMLWriter::Export(std::string filename, const Unstructured
     {
         const int index = unstructuredGrid.GetPointDataIndex(pointDataName);
         const int numComponents = points[0].GetData(index).rows(); 
-        file << "        <DataArray type=\"Float32\" Name=\"" << pointDataName << "\" NumberOfComponents=\"" << numComponents << "\" Format=\"ascii\">\n";
+        file << "        <DataArray type=\"Float32\" Name=\"" << pointDataName << "\" NumberOfComponents=\"" << numComponents << "\" Format=" << format << ">\n";
         for (const auto& point : points)
         {
             const Eigen::VectorXd& pointData = TransformData(point.GetData(index));
