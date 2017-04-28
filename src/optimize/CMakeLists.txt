@@ -3,7 +3,6 @@ set(NuToOptimizeSources
     ConjugateGradientNonLinear.cpp
     CallbackHandler.cpp
     CallbackHandlerPython.cpp
-    CallbackHandlerGrid.cpp
     Jacobi.cpp
     MisesWielandt.cpp
     NonlinearSolverBase.cpp

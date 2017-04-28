@@ -8,8 +8,6 @@
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/MechanicsException.h"
 
-#include <iostream>
-
 namespace NuTo
 {
 namespace ShapeFunctions1D // interval -1 to 1

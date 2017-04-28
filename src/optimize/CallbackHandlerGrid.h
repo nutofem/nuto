@@ -7,7 +7,6 @@
 
 #include <boost/dynamic_bitset.hpp>
 #include "optimize/OptimizeException.h"
-#include <iostream>
 #include <vector>
 
 namespace NuTo
@@ -112,10 +111,6 @@ public:
 	{
 		throw OptimizeException("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
 
-	}
-	void Info() const
-	{
-		std::cout << "CallbackHandlerGrid" << std::endl;
 	}
 
 #ifdef ENABLE_SERIALIZATION

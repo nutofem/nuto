@@ -4,6 +4,7 @@
 #include <boost/serialization/vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#include <iostream>
 #include <cfloat>
 #include <string>
 #include <eigen3/Eigen/Core>

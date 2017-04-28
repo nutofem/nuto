@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <iostream>
+
 #include <boost/foreach.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 

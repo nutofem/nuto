@@ -1,6 +1,7 @@
 //! @author Andrea Keßler, ISM
 //! @brief ... von-Mises-Wielandt method to calculate max and min eigenvalues and vectors
 
+#include <iostream>
 #include <fstream>
 #include "optimize/MisesWielandt.h"
 #define machine_precision 1e-15

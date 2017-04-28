@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/structures/StructureOutputBase.h"
 

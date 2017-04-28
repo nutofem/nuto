@@ -59,8 +59,6 @@ public:
 
     void Hessian(Eigen::MatrixXd& rHessian) const override;
 
-    void Info() const override;
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief Restore the object from a file
     //! @param filename Filename

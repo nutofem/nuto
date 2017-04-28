@@ -1,4 +1,3 @@
-#include <iostream>
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include <cassert>

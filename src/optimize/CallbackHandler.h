@@ -63,7 +63,6 @@ public:
         throw OptimizeException(__PRETTY_FUNCTION__, "Hessian function not implemented in CallbackHandler object.");
     }
 
-    virtual void Info() const = 0;
 #ifdef ENABLE_SERIALIZATION
     virtual void Save(const std::string& filename, std::string rType) const {}
     virtual void Restore(const std::string& filename, std::string rType) {}

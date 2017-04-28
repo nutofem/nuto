@@ -1,6 +1,7 @@
 //! @author Andrea Keßler, ISM
 //! @brief ... conjugate gradient method without global matrix matrix-vector product
 
+#include <iostream>
 #include <fstream>
 #include "optimize/ConjugateGradientGrid.h"
 #include "optimize/MisesWielandt.h"

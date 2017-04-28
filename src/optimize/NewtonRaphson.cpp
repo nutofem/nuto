@@ -9,8 +9,6 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <iostream>
-
 #include "optimize/NewtonRaphson.h"
 #include "optimize/OptimizeException.h"
 
@@ -163,7 +161,7 @@ void NuTo::NewtonRaphson::LineSearch(Eigen::VectorXd &rXold, const double rFold,
 	slope = rG.dot(rP);
 
 	if (slope >= 0.0){
-		std::cout << "Roundoff problem in linesearch." << std::endl;
+		//std::cout << "Roundoff problem in linesearch." << std::endl;
 		throw("[NuTo::NewmarkRaphson::LineSearch] Roundoff problem in linesearch.");
 	}
 

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <Python.h>
 #include "optimize/CallbackHandlerPython.h"
 #include "optimize/OptimizeException.h"
@@ -151,6 +150,3 @@ void CallbackHandlerPython::Hessian(Eigen::MatrixXd& rHessian) const
 
     Py_DECREF(result);
 }
-
-
-void CallbackHandlerPython::Info() const { std::cout << "CallbackHandlerPython" << std::endl; }

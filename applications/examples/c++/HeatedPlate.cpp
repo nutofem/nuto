@@ -7,7 +7,6 @@
 //!     \f[T|_{x = 100\mathrm{mm}} = f(t) \text{ where $f$ is ISO 834 fire curve }\f]
 //!     \f[q|_{y=0, y = 20\mathrm{mm}} = 0\f]
 //!
-#include <iostream>
 #include <cmath>
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"

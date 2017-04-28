@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <iostream>
 #include "optimize/Jacobi.h"
 
 //! @brief ... Optimize routine - optimize displacement or error according to input

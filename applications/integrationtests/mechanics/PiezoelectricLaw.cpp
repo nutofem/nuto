@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <iostream>
 #include <math.h>
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"

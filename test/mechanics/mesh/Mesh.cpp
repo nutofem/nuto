@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 #include "mechanics/mesh/Mesh.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
-#include <iostream>
 
 BOOST_AUTO_TEST_CASE(MeshBasics)
 {

@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include <iostream>
 #include <fstream>  //for file acces
 
 #ifdef ENABLE_SERIALIZATION

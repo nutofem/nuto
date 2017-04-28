@@ -11,8 +11,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "boost/filesystem.hpp"
-#include <iostream>
-
 
 #include "base/Timer.h"
 

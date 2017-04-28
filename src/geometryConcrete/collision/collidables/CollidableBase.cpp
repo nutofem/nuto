@@ -6,6 +6,7 @@
  */
 
 #include <algorithm>
+#include <iostream>
 
 #include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"
