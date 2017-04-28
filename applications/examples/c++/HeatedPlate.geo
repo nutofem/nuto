@@ -19,7 +19,7 @@ Return
  
 xS = 0; xE = 32;
 yS = 0; yE = 16;
-meshSpecimen = 0.75;
+meshSpecimen = 1.5;
 // defines a box-shaped specimen 
 // by start coordinates <xyz>S 
 // and end coordinates  <xyz>E 
@@ -41,7 +41,7 @@ l3 = newreg; Line(l3) = {p3, p0};
 box = newreg; Line Loop(box) = { l0, l1, l2, l3}; 
 
 
-meshCircle = 0.75; 
+meshCircle = 1.5; 
 t = 0;
 xC = 24.1899; yC = 11.1245;
 R = 2.3458; 
