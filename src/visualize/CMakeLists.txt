@@ -11,6 +11,9 @@ sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)
 
 # build shared library
 add_library(NuToVisualize ${NuToVisualizeObjects})
+if (ZLIB_FOUND)
+    target_link_libraries(NuToVisualize ${ZLIB_LIBRARY})
+endif()
 
 # install library
 install(TARGETS NuToVisualize

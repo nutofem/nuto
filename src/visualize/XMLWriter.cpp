@@ -42,14 +42,57 @@ Eigen::VectorXd TransformData(Eigen::VectorXd data)
     return data;
 }
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+extern "C" {
+int compress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);
+}
+
+template <typename T>
+std::vector<unsigned char> compress_data(const std::vector<T>& data)
+{
+    // Compute length of uncompressed data
+    const unsigned long uncompressed_size = data.size() * sizeof(T);
+
+    // Compute maximum length of compressed data
+    unsigned long compressed_size = (uncompressed_size + (((uncompressed_size) / 1000) + 1) + 12);
+
+    // Allocate space for compressed data
+    std::vector<unsigned char> compressed_data(compressed_size);
+
+    // Compress data
+    if (compress((Bytef*)compressed_data.data(), &compressed_size, (const Bytef*)data.data(), uncompressed_size) !=
+        Z_OK)
+    {
+        NuTo::VisualizeException(__PRETTY_FUNCTION__, "Zlib error while compressing data");
+    }
+
+    compressed_data.resize(compressed_size);
+
+    return compressed_data;
+}
+#endif
 
 template <typename T>
 std::string encode_base64(const std::vector<T>& data)
 {
+#ifdef HAVE_ZLIB
+    std::uint32_t header[4];
+    header[0] = 1;
+    header[1] = data.size() * sizeof(T);
+    header[2] = 0;
+
+    std::vector<unsigned char> compressed_data = compress_data(data);
+
+    header[3] = compressed_data.size();
+
+    auto prefix = base64_encode((const unsigned char*)&header[0], 4 * sizeof(std::uint32_t));
+    auto dataString = base64_encode(compressed_data.data(), compressed_data.size());
+#else
     const std::uint32_t size = data.size() * sizeof(T);
     auto prefix = base64_encode((const unsigned char*)&size, sizeof(std::uint32_t));
     auto dataString = base64_encode((const unsigned char*)&data[0], size);
-
+#endif
     return prefix + dataString;
 }
 
@@ -74,7 +117,11 @@ void NuTo::Visualize::XMLWriter::Export(std::string filename, const Unstructured
 
     // header /////////////////////////////////////////////////////////////////
     file << "<VTKFile type=" << std::quoted("UnstructuredGrid") << " version=" << std::quoted("0.1")
-         << " byte_order=" << std::quoted("LittleEndian") << ">\n";
+         << " byte_order=" << std::quoted("LittleEndian");
+#ifdef HAVE_ZLIB
+    file << " compressor=" << std::quoted("vtkZLibDataCompressor");
+#endif
+    file << ">\n";
     file << "  <UnstructuredGrid>\n";
     file << "    <Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
     ///////////////////////////////////////////////////////////////////////////

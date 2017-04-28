@@ -243,7 +243,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
     {
         for (auto const& iPair : mGroupVisualizeComponentsMap)
         {
-            std::cout << "ele group: \t" << iPair.first << std::endl;
+            std::cout << "element group: \t" << iPair.first << std::endl;
             for (auto component : iPair.second)
             {
                 std::cout << "components: \t " << GetComponentName(component) << std::endl;

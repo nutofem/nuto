@@ -8,7 +8,7 @@ BENCHMARK(LinearElasticity, VisualizeBinary, runner)
     s.SetupVisualization();
     while(runner.KeepRunningIterations(10))
     {
-        s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualize.vtu"); 
+        s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualize.vtu");
     }
 }
 
@@ -19,6 +19,6 @@ BENCHMARK(LinearElasticity, VisualizeAscii, runner)
     s.SetupVisualization();
     while(runner.KeepRunningIterations(10))
     {
-        s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualize.vtu", false); 
+        s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualizeAscii.vtu", false);
     }
 }
