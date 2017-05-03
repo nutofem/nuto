@@ -39,7 +39,8 @@ public:
     enum class eIterativeSolver
     {
         ConjugateGradient,
-        BiconjugateGradientStabilized
+        BiconjugateGradientStabilized,
+        ProjectedGmres
     };
 
     enum class eFetiPreconditioner
@@ -287,6 +288,25 @@ public:
     }
 
 
+    VectorXd CalculateFx(const VectorXd& x)
+    {
+        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
+
+        const SparseMatrix& B = structure->GetConnectivityMatrix();
+        const SparseMatrix Btrans = B.transpose();
+
+        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
+        const int numRigidBodyModes = structure->GetNumRigidBodyModes();
+
+        VectorXd tmp = VectorXd::Zero(numActiveDofs + numRigidBodyModes);
+        tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
+        VectorXd Ax = B * tmp;
+
+        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return Ax;
+    }
+
     //! @brief Conjugate projected gradient method (CG)
     //!
     //! Iterative method to solve the interface problem.
@@ -310,14 +330,9 @@ public:
 
         VectorXd tmp;
         tmp.setZero(numActiveDofs + numRigidBodyModes);
-        tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax = B * tmp;
 
-        //        world.barrier();
+        VectorXd Ax = CalculateFx(x);
 
-        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        //        world.barrier();
         // initial residual
         VectorXd r = rhs - Ax;
         VectorXd z;
@@ -385,6 +400,155 @@ public:
                                << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
         return iteration;
+    }
+
+    //! \brief Calculates parameters for the Givens roration matrix
+    //! \param a
+    //! \param b
+    //! \param c
+    //! \param s
+    void CalculateGivensRotationParameters(const double a, const double b, double& c, double& s)
+    {
+        if (b < 1.e-5)
+        {
+            c = 1.;
+            s = 0.;
+        }
+        else if (std::abs(b) > std::abs(a))
+        {
+            double temp = a / b;
+            s = 1. / std::sqrt(1. + temp * temp);
+            c = temp * s;
+        }
+        else
+        {
+            double temp = b / a;
+            c = 1. / std::sqrt(1. + temp * temp);
+            s = temp * c;
+        }
+    }
+
+    //! @brief Projected generalized minimal residual method
+    //!
+    //! Iterative method to solve the interface problem.
+    //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
+    //! iteration
+    int ProjGmres(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
+    {
+
+        using MatrixType = Eigen::MatrixXd;
+        using VectorType = Eigen::VectorXd;
+
+        // calculates Fx = sum(Btrans * K^+ * B * x)
+        VectorType Fx = CalculateFx(x);
+        VectorType r = rhs - Fx;
+
+        // initial projected search direction
+        VectorType projResidual = projection * r;
+        double projResidualNorm = projResidual.norm();
+
+        double rhsNorm = rhs.norm();
+        if (rhsNorm < 1.e-5)
+            rhsNorm = 1.0;
+
+        int n = r.rows();
+
+        // krylovDimension = max number of vectors that form the Krylov subspace
+        int krylovDimension = 10;
+
+        // initialize upper Hessenberg matrix
+        MatrixType H = MatrixType::Zero(krylovDimension + 1, krylovDimension);
+
+        // initialize Krylov subspace
+        MatrixType V = MatrixType::Zero(n, krylovDimension + 1);
+
+        // container for Givens rotation matrices, i.e. a vector of Matrix2d with cosines and sines
+        std::vector<Eigen::JacobiRotation<double>> Givens(krylovDimension + 1);
+
+        VectorType e1 = VectorType::Zero(n);
+        e1[0] = 1.0;
+
+        double tolerance = 1.e-11;
+        int maxNumRestarts = 1000;
+
+        int numRestarts = 0;
+
+        while (projResidualNorm > tolerance * rhsNorm and numRestarts < maxNumRestarts)
+        {
+            // the first vector in the Krylov subspace is the normalized residual
+            V.col(0) = projResidual / projResidualNorm;
+
+            // initialize the s vector used to estimate the residual
+            VectorType s = projResidualNorm * e1;
+
+            for (int i = 0; i < krylovDimension; ++i)
+            {
+                // calculate w = A * V.col(i)
+                VectorType w = CalculateFx(V.col(i));
+
+                // project w
+                w = projection * w;
+
+                for (int iRow = 0; iRow < i + 1; ++iRow)
+                {
+                    H(iRow, i) = w.transpose() * V.col(iRow);
+                    w = w - H(iRow, i) * V.col(iRow);
+                }
+
+                H(i + 1, i) = w.norm();
+                V.col(i + 1) = w / H(i + 1, i);
+
+                // Apply the Givens Rotations to ensure that H is an upper triangular matrix.
+                // First apply previous rotations to the current matrix
+                for (int iRow = 0; iRow < i; ++iRow)
+                {
+                    H.col(i).applyOnTheLeft(iRow, iRow + 1, Givens[iRow].adjoint());
+                }
+
+                // form the i-th rotation matrix
+                Givens[i].makeGivens(H(i, i), H(i + 1, i));
+
+                // Apply the new Givens rotation on the
+                // new entry in the uppper Hessenberg matrix
+                H.col(i).applyOnTheLeft(i, i + 1, Givens[i].adjoint());
+
+                // Finally apply the new Givens rotation on the s vector
+                s.applyOnTheLeft(i, i + 1, Givens[i].adjoint());
+
+                projResidualNorm = std::abs(s[i + 1]);
+
+                mStructure->GetLogger() << "projected GMRES relative error: \t" << projResidualNorm/(rhsNorm)
+                          << "\t #restarts: \t" << numRestarts << "\n";
+
+                if (projResidualNorm < tolerance * rhsNorm)
+                {
+                    VectorType y = s.head(i + 1);
+                    H.topLeftCorner(i + 1, i + 1).triangularView<Eigen::Upper>().solveInPlace(y);
+                    x = x + V.block(0, 0, n, i + 1) * y;
+                    return numRestarts;
+                }
+            }
+
+
+            // we have exceeded the number of iterations. Update the approximation and start over
+            VectorType y = s.head(krylovDimension);
+            H.topLeftCorner(krylovDimension, krylovDimension).triangularView<Eigen::Upper>().solveInPlace(y);
+            x = x + V.block(0, 0, n, krylovDimension) * y;
+
+            // compute preconditioned residual
+            Fx = CalculateFx(x);
+            r  = rhs - Fx;
+            projResidual = projection * r;
+            projResidualNorm = projResidual.norm();
+
+            ++numRestarts;
+        }
+
+
+        std::cout << "Not converged! #restarts in projected GMRES: \t" << numRestarts << std::endl;
+
+
+        return numRestarts;
     }
 
 
@@ -495,6 +659,13 @@ public:
             iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
+        case eIterativeSolver::ProjectedGmres:
+        {
+            iterations = ProjGmres(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Requested solver not yet implemented.");
         }
 
 
@@ -513,7 +684,7 @@ public:
 
         zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-2, 1.e-1)))
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
@@ -521,7 +692,7 @@ public:
 
 
         zeroVec = rigidBodyModes.transpose() * (residual_mod - B.transpose() * deltaLambda);
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-2, 1.e-1)))
             throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
@@ -984,7 +1155,6 @@ public:
                     rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
 
 
-
                     normResidual = residual.J.CalculateInfNorm();
                     for (const auto& dof : activeDofSet)
                         boost::mpi::all_reduce(world, boost::mpi::inplace(normResidual[dof]), std::plus<double>());
@@ -1128,7 +1298,6 @@ public:
     //! rhs = extForce - intForce - Btrans*lambda
     void CalculateRhs()
     {
-
     }
 
     double CalculateLoadFactor(double rTime)

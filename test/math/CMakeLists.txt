@@ -18,6 +18,7 @@ add_unit_test(SparseMatrixCSRVector2General
     )
 
 
+add_unit_test(Gmres)
 
 add_unit_test(SpatialContainer)
 target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
