@@ -315,38 +315,24 @@ public:
     int CPG(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
     {
 
-        boost::mpi::communicator world;
-        VectorXd Ap;
+        VectorXd Fp;
 
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
-
-        const SparseMatrix& B = structure->GetConnectivityMatrix();
-        const SparseMatrix Btrans = B.transpose();
-
-        //        world.barrier();
-
-        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numRigidBodyModes = structure->GetNumRigidBodyModes();
-
-        VectorXd tmp;
-        tmp.setZero(numActiveDofs + numRigidBodyModes);
-
-        VectorXd Ax = CalculateFx(x);
+        VectorXd Fx = CalculateFx(x);
 
         // initial residual
-        VectorXd r = rhs - Ax;
+        VectorXd r = rhs - Fx;
         VectorXd z;
 
         // initial projected search direction
         VectorXd w = projection * r;
 
         // precondition
-        structure->GetLogger() << "projection.cols() = \t" << projection.cols() << "\nmLocalPreconditioner.rows() = \t"
+        mStructure->GetLogger() << "projection.cols() = \t" << projection.cols() << "\nmLocalPreconditioner.rows() = \t"
                                << mLocalPreconditioner.rows() << "\nmLocalPreconditioner.cols() = \t"
                                << mLocalPreconditioner.cols() << "\nw.rows() = \t" << w.rows() << "\n\n";
 
         VectorXd p = projection * mLocalPreconditioner * w;
-        boost::mpi::all_reduce(world, boost::mpi::inplace(p.data()), p.size(), std::plus<double>());
+        MPI_Allreduce(MPI_IN_PLACE, p.data(), p.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         //    p = w;
 
         const double rhs_sqnorm = rhs.squaredNorm();
@@ -357,76 +343,46 @@ public:
         while (iteration < mCpgMaxIterations)
         {
             // at every iteration i the r has to be recomputed which is quite expensive
-            //            world.barrier();
-
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * p).head(numActiveDofs));
-            Ap.noalias() = B * tmp;
-
-            //            world.barrier();
-            MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            Fp = CalculateFx(p);
 
             // step size
-            double alpha = absNew / p.dot(Ap);
+            double alpha = absNew / p.dot(Fp);
 
             // update solution
             x += alpha * p;
 
             // update projected residual
-            w -= alpha * projection * Ap;
+            w -= alpha * projection * Fp;
 
             if (w.squaredNorm() < threshold)
                 break;
 
             // precondition
             z = projection * mLocalPreconditioner * w;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(z.data()), z.size(), std::plus<double>());
+            MPI_Allreduce(MPI_IN_PLACE, z.data(), z.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
             //        z = w;
 
 
             double absOld = absNew;
-            absNew = w.dot(z); // update the absolute value of r
-            double beta = absNew / absOld; // calculate the Gram-Schmidt value used to create the new search direction
-            p = z + beta * p; // update search direction
+            absNew = w.dot(z);
+            double beta = absNew / absOld;
+            // update search direction
+            p = z + beta * p;
 
-            structure->GetLogger() << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
+            mStructure->GetLogger() << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
                                    << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
 
             ++iteration;
         }
 
-        structure->GetLogger() << "\nConverged! \n"
+        mStructure->GetLogger() << "\nConverged! \n"
                                << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
                                << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
         return iteration;
     }
 
-    //! \brief Calculates parameters for the Givens roration matrix
-    //! \param a
-    //! \param b
-    //! \param c
-    //! \param s
-    void CalculateGivensRotationParameters(const double a, const double b, double& c, double& s)
-    {
-        if (b < 1.e-5)
-        {
-            c = 1.;
-            s = 0.;
-        }
-        else if (std::abs(b) > std::abs(a))
-        {
-            double temp = a / b;
-            s = 1. / std::sqrt(1. + temp * temp);
-            c = temp * s;
-        }
-        else
-        {
-            double temp = b / a;
-            c = 1. / std::sqrt(1. + temp * temp);
-            s = temp * c;
-        }
-    }
 
     //! @brief Projected generalized minimal residual method
     //!

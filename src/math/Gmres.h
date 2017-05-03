@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-#include <Eigen/Sparse>
+
 #include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/QR>
-#include <eigen3/unsupported/Eigen/IterativeSolvers>
+
 
 namespace NuTo
 {
