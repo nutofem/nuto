@@ -149,7 +149,8 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
         while (curTime < rTimeDelta)
         {
          	//calculate for delta_t = 0
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
+            if (mStructure->GetVerboseLevel() > 5)
+                std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
         	auto dof_dt0_new = dof_dt0 + dof_dt1*mTimeStep;
         	auto dof_dt1_new = dof_dt1;
 //        	std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;

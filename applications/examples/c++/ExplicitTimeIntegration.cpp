@@ -46,7 +46,7 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     double mAmplS = -1e6;
 
     // mesh parameter
-    int numElements = 100; // number of elements
+    int numElements = 50; // number of elements
     double timeStep = 1e-6;
 
     // computation simulation time
@@ -86,7 +86,7 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     s.Info();
 
     // time step (explicit method)
-    double minTimeStepAccuracy(timePeriod / 100); // to cover the external wave
+    double minTimeStepAccuracy(timePeriod / 50); // to cover the external wave
     // calculate critical time step
     double criticalTimeStep(minTimeStepAccuracy);
     if (timeIntegrationScheme.HasCriticalTimeStep())
@@ -125,6 +125,7 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     // set output
     s.SetShowTime(false);
     s.SetNumProcessors(1);
+    s.SetVerboseLevel(0);
 
     timeIntegrationScheme.AddResultTime("Time");
     timeIntegrationScheme.AddResultNodeDisplacements("DisplacementsNodeRight", s.NodeGetId(&nodeRight));

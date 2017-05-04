@@ -121,7 +121,8 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     std::vector<double> stageDerivativeFactor(this->GetNumStages()-1);
     while (curTime < rTimeDelta)
     {
-        std::cout << curTime/rTimeDelta << std::endl;
+        if (mStructure->GetVerboseLevel() > 5)
+            std::cout << curTime/rTimeDelta << std::endl;
         //calculate for delta_t = 0
         auto dof_dt0_new = dof_dt0;
         auto dof_dt1_new = dof_dt1;

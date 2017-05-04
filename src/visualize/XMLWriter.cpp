@@ -1,11 +1,12 @@
+#include "visualize/XMLWriter.h"
+
 #include <fstream>
 #include <iomanip>
 
-#include "visualize/XMLWriter.h"
 #include "visualize/UnstructuredGrid.h"
+#include "visualize/DataArray.h"
 #include "visualize/VisualizeException.h"
 
-#include "visualize/base64.h"
 
 int ToVtkCellType(NuTo::eCellTypes type)
 {
@@ -42,254 +43,149 @@ Eigen::VectorXd TransformData(Eigen::VectorXd data)
     return data;
 }
 
-#ifdef HAVE_ZLIB
-#include <zlib.h>
-extern "C" {
-int compress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);
+using DataType = float;
+
+//! @brief extracts point data and cell data into a DataArray object
+template <typename TContainer>
+NuTo::Visualize::DataArray<DataType> ExtractData(const TContainer& container, std::string name, int dataIndex)
+{
+    const int numComponents = container.begin()->GetData(dataIndex).rows();
+
+    std::vector<DataType> data;
+    data.reserve(container.size() * numComponents);
+    for (const auto& item : container)
+    {
+        auto dataItem = TransformData(item.GetData(dataIndex));
+        assert(numComponents == dataItem.size());
+        for (int i = 0; i < dataItem.size(); ++i)
+            data.push_back(dataItem[i]);
+    }
+    return NuTo::Visualize::DataArray<DataType>(name, numComponents, std::move(data));
 }
 
-template <typename T>
-std::vector<unsigned char> compress_data(const std::vector<T>& data)
+NuTo::Visualize::DataArray<DataType> ExtractCoordinates(const std::vector<NuTo::Visualize::Point>& points)
 {
-    // Compute length of uncompressed data
-    const unsigned long uncompressed_size = data.size() * sizeof(T);
-
-    // Compute maximum length of compressed data
-    unsigned long compressed_size = (uncompressed_size + (((uncompressed_size) / 1000) + 1) + 12);
-
-    // Allocate space for compressed data
-    std::vector<unsigned char> compressed_data(compressed_size);
-
-    // Compress data
-    if (compress((Bytef*)compressed_data.data(), &compressed_size, (const Bytef*)data.data(), uncompressed_size) !=
-        Z_OK)
+    std::vector<DataType> data;
+    data.reserve(points.size() * 3);
+    for (const auto& point : points)
     {
-        NuTo::VisualizeException(__PRETTY_FUNCTION__, "Zlib error while compressing data");
+        const Eigen::Vector3d coordinates = point.GetCoordinates();
+        data.push_back(coordinates[0]);
+        data.push_back(coordinates[1]);
+        data.push_back(coordinates[2]);
+    }
+    return NuTo::Visualize::DataArray<DataType>("points", 3, std::move(data));
+}
+
+//! @brief collection of DataArrays for the return type of ExtractCellInfos()
+struct CellInfos
+{
+    NuTo::Visualize::DataArray<unsigned> connectivity;
+    NuTo::Visualize::DataArray<unsigned> offsets;
+    NuTo::Visualize::DataArray<uint8_t> types;
+};
+
+CellInfos ExtractCellInfos(const std::vector<NuTo::Visualize::Cell>& cells)
+{
+    std::vector<unsigned> connectivity;
+    std::vector<unsigned> offsets;
+    std::vector<uint8_t> vtkCellTypes;
+
+    unsigned offset = 0;
+    for (const auto& cell : cells)
+    {
+        offset += cell.GetNumPoints();
+        const auto& pointIds = cell.GetPointIds();
+        int cellType = ToVtkCellType(cell.GetCellType());
+
+        connectivity.insert(connectivity.end(), pointIds.begin(), pointIds.end());
+        offsets.push_back(offset);
+        vtkCellTypes.push_back(cellType);
     }
 
-    compressed_data.resize(compressed_size);
-
-    return compressed_data;
+    NuTo::Visualize::DataArray<unsigned> dataConnectivity("connectivity", 0, std::move(connectivity));
+    NuTo::Visualize::DataArray<unsigned> dataOffsets("offsets", 0, std::move(offsets));
+    NuTo::Visualize::DataArray<uint8_t> dataCellTypes("types", 0, std::move(vtkCellTypes));
+    return CellInfos({std::move(dataConnectivity), std::move(dataOffsets), std::move(dataCellTypes)});
 }
-#endif
 
-template <typename T>
-std::string encode_base64(const std::vector<T>& data)
+template <typename TDataTye>
+void WriteDataArray(std::ofstream& file, const NuTo::Visualize::DataArray<TDataTye>& dataArray, bool binary,
+                    int* offset)
 {
-#ifdef HAVE_ZLIB
-    std::uint32_t header[4];
-    header[0] = 1;
-    header[1] = data.size() * sizeof(T);
-    header[2] = 0;
-
-    std::vector<unsigned char> compressed_data = compress_data(data);
-
-    header[3] = compressed_data.size();
-
-    auto prefix = base64_encode((const unsigned char*)&header[0], 4 * sizeof(std::uint32_t));
-    auto dataString = base64_encode(compressed_data.data(), compressed_data.size());
-#else
-    const std::uint32_t size = data.size() * sizeof(T);
-    auto prefix = base64_encode((const unsigned char*)&size, sizeof(std::uint32_t));
-    auto dataString = base64_encode((const unsigned char*)&data[0], size);
-#endif
-    return prefix + dataString;
+    if (binary)
+        dataArray.WriteBinaryHeader(file, offset);
+    else
+        dataArray.WriteAscii(file);
 }
-
-
-void WriteDataLine(std::ofstream& file, const Eigen::VectorXd& vec)
-{
-    for (int i = 0; i < vec.rows(); ++i)
-        file << " " << vec[i];
-    file << '\n';
-}
-
 
 void NuTo::Visualize::XMLWriter::Export(std::string filename, const UnstructuredGrid& unstructuredGrid, bool binary)
 {
     const auto& points = unstructuredGrid.mPoints;
     const auto& cells = unstructuredGrid.mCells;
 
-    const auto format = binary ? std::quoted("binary") : std::quoted("ascii");
+    std::vector<DataArray<DataType>> pointData;
+    for (auto name : unstructuredGrid.mPointDataNames)
+        pointData.push_back(ExtractData(points, name, unstructuredGrid.GetPointDataIndex(name)));
+
+    std::vector<DataArray<DataType>> cellData;
+    for (auto name : unstructuredGrid.mCellDataNames)
+        cellData.push_back(ExtractData(cells, name, unstructuredGrid.GetCellDataIndex(name)));
+
+    DataArray<DataType> pointCoordinates = ExtractCoordinates(points);
+    CellInfos cellInfos = ExtractCellInfos(cells);
+
     std::ofstream file(filename);
     if (!file.is_open())
         throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
+    // header #########################################################################################################
+    file << R"(<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian")";
+    if (binary)
+        file << R"( header_type="UInt64")";
+    file << ">\n <UnstructuredGrid>\n";
+    file << "  <Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
+    int offset = 0;
+    // point data #####################################################################################################
+    file << "   <PointData>\n";
+    for (const auto& dataArray : pointData)
+        WriteDataArray(file, dataArray, binary, &offset);
+    file << "   </PointData>\n";
 
-    // header /////////////////////////////////////////////////////////////////
-    file << "<VTKFile type=" << std::quoted("UnstructuredGrid") << " version=" << std::quoted("0.1")
-         << " byte_order=" << std::quoted("LittleEndian");
-#ifdef HAVE_ZLIB
-    file << " compressor=" << std::quoted("vtkZLibDataCompressor");
-#endif
-    file << ">\n";
-    file << "  <UnstructuredGrid>\n";
-    file << "    <Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
-    ///////////////////////////////////////////////////////////////////////////
+    // cell data ######################################################################################################
+    file << "   <CellData>\n";
+    for (const auto& dataArray : cellData)
+        WriteDataArray(file, dataArray, binary, &offset);
+    file << "   </CellData>\n";
 
+    // points #########################################################################################################
+    file << "   <Points>\n";
+    WriteDataArray(file, pointCoordinates, binary, &offset);
+    file << "   </Points>\n";
 
-    // point data /////////////////////////////////////////////////////////////////
-    file << "      <PointData>\n";
+    // Cells - ########################################################################################################
+    file << "   <Cells>\n";
+    WriteDataArray(file, cellInfos.connectivity, binary, &offset);
+    WriteDataArray(file, cellInfos.offsets, binary, &offset);
+    WriteDataArray(file, cellInfos.types, binary, &offset);
+    file << "   </Cells>\n";
+    file << "  </Piece>\n";
+    file << " </UnstructuredGrid>\n";
 
-    for (auto pointDataName : unstructuredGrid.mPointDataNames)
-    {
-        const int index = unstructuredGrid.GetPointDataIndex(pointDataName);
-        const int numComponents = points[0].GetData(index).rows();
-        file << "        <DataArray type=\"Float64\" Name=\"" << pointDataName << "\" NumberOfComponents=\""
-             << numComponents << "\" format=" << format << ">\n";
-        if (binary)
-        {
-            std::vector<double> allPointData;
-            allPointData.reserve(points.size() * numComponents);
-            for (const auto& point : points)
-            {
-                const Eigen::VectorXd& pointData = TransformData(point.GetData(index));
-                assert(pointData.rows() == numComponents);
-                for (int i = 0; i < pointData.size(); ++i)
-                    allPointData.push_back(pointData[i]);
-            }
-            file << encode_base64(allPointData) << "\n";
-        }
-        else
-        {
-            for (const auto& point : points)
-            {
-                const Eigen::VectorXd& pointData = TransformData(point.GetData(index));
-                assert(pointData.rows() == numComponents);
-                WriteDataLine(file, pointData);
-            }
-        }
-        file << "        </DataArray>\n";
-    }
-    file << "      </PointData>\n";
-
-    // cell data /////////////////////////////////////////////////////////////////
-    file << "      <CellData>\n";
-
-    for (auto cellDataName : unstructuredGrid.mCellDataNames)
-    {
-        const int index = unstructuredGrid.GetCellDataIndex(cellDataName);
-        const int numComponents = cells[0].GetData(index).rows();
-        file << "        <DataArray type=\"Float64\" Name=\"" << cellDataName << "\" NumberOfComponents=\""
-             << numComponents << "\" format=" << format << ">\n";
-        if (binary)
-        {
-            std::vector<double> allCellData;
-            allCellData.reserve(cells.size() * numComponents);
-            for (const auto& cell : cells)
-            {
-                const Eigen::VectorXd& cellData = TransformData(cell.GetData(index));
-                assert(cellData.rows() == numComponents);
-                for (int i = 0; i < cellData.size(); ++i)
-                    allCellData.push_back(cellData[i]);
-            }
-            file << encode_base64(allCellData) << "\n";
-        }
-        else
-        {
-            for (const auto& cell : cells)
-            {
-                const Eigen::VectorXd& cellData = TransformData(cell.GetData(index));
-                assert(cellData.rows() == numComponents);
-                WriteDataLine(file, cellData);
-            }
-        }
-        file << "        </DataArray>\n";
-    }
-    file << "      </CellData>\n";
-
-    // points /////////////////////////////////////////////////////////////////
-    file << "      <Points>\n";
-    file << "        <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=" << format << ">\n";
     if (binary)
     {
-        std::vector<double> allCoordinates;
-        allCoordinates.reserve(points.size() * points[0].GetCoordinates().size());
-        for (const auto& point : points)
-        {
-            for (int i = 0; i < point.GetCoordinates().size(); ++i)
-                allCoordinates.push_back(point.GetCoordinates()[i]);
-        }
-        file << encode_base64(allCoordinates) << "\n";
-    }
-    else
-    {
-        for (const auto& point : points)
-        {
-            WriteDataLine(file, point.GetCoordinates());
-        }
-    }
-    file << "        </DataArray>\n";
-    file << "      </Points>\n";
-    // end points /////////////////////////////////////////////////////////////////////
+        file << " <AppendedData encoding=\"raw\">\n_";
 
-    // Cells - connectivity ///////////////////////////////////////////////////////////
-    file << "      <Cells>\n";
-    file << "        <DataArray type=\"Int32\" Name=\"connectivity\" format=" << format << ">\n";
-    if (binary)
-    {
-        std::vector<int> allCellPointIds;
-        for (const auto& cell : cells)
-        {
-            for (int id : cell.GetPointIds())
-                allCellPointIds.push_back(id);
-        }
-        file << encode_base64(allCellPointIds) << "\n";
-    }
-    else
-    {
-        for (const auto& cell : cells)
-        {
-            for (int id : cell.GetPointIds())
-                file << " " << id;
-            file << '\n';
-        }
-    }
-    file << "        </DataArray>\n";
+        for (const auto& dataArray : pointData)
+            dataArray.WriteBinaryData(file);
+        for (const auto& dataArray : cellData)
+            dataArray.WriteBinaryData(file);
+        pointCoordinates.WriteBinaryData(file);
+        cellInfos.connectivity.WriteBinaryData(file);
+        cellInfos.offsets.WriteBinaryData(file);
+        cellInfos.types.WriteBinaryData(file);
 
-    // Cells - offsets //////////////////////////////////////////////////////////////
-    file << "        <DataArray type=\"Int32\" Name=\"offsets\" format=" << format << ">\n";
-    if (binary)
-    {
-        std::vector<int> offsets;
-        int offset = 0;
-        for (const auto& cell : cells)
-        {
-            offset += cell.GetNumPoints();
-            offsets.push_back(offset);
-        }
-        file << encode_base64(offsets) << "\n";
+        file << "\n </AppendedData>\n";
     }
-    else
-    {
-        int offset = 0;
-        for (const auto& cell : cells)
-            file << " " << (offset += cell.GetNumPoints()) << "\n";
-    }
-    file << "        </DataArray>\n";
-
-    // Cells - types //////////////////////////////////////////////////////////////
-    file << "        <DataArray type=\"Int32\" Name=\"types\" format=" << format << ">\n";
-    if (binary)
-    {
-        std::vector<int> cellTypes;
-        cellTypes.reserve(cells.size());
-        for (const auto& cell : cells)
-            cellTypes.push_back(ToVtkCellType(cell.GetCellType()));
-        file << encode_base64(cellTypes) << "\n";
-    }
-    else
-    {
-        for (const auto& cell : cells)
-            file << ToVtkCellType(cell.GetCellType()) << '\n';
-    }
-    file << "        </DataArray>\n";
-    file << "      </Cells>\n";
-    // end cells /////////////////////////////////////////////////////////////////////////
-
-    // end header /////////////////////////////////////////////////////////////////
-    file << "    </Piece>\n";
-    file << "  </UnstructuredGrid>\n";
     file << "</VTKFile>\n";
-
     file.close();
 }

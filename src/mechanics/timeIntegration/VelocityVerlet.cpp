@@ -148,7 +148,8 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
         {
          	//increase time step
             curTime += mTimeStep;
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
+            if (mStructure->GetVerboseLevel() > 5)
+                std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
 
             //apply constraints for new time stepdouble RHSConstraint
 //            double timeDependentConstraintFactor(0);

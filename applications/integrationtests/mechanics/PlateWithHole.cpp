@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 
     std::string resultDir = "./PlateWithHoleResults";
     boost::filesystem::create_directory(resultDir);
-    s.ExportVtkDataFileElements(resultDir + "/PlateWithHole.vtu");
+    s.ExportVtkDataFileElements(resultDir + "/PlateWithHole.vtu", true);
 
     return CheckSolution(s);
 }
