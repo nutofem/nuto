@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < numSubDomains; ++i)
     {
-        numElementsPerSubDomain[i] = 5;
+        numElementsPerSubDomain[i] = i+1;
         numElementsTotal += numElementsPerSubDomain[i];
         numElementsTillSubDomain_inclusive[i] = numElementsTotal;
         if (setTotalLength)

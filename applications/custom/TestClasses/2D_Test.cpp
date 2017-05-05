@@ -618,7 +618,10 @@ void generateSubDomainIdentifiers(int rNumSubDomains_X, int rNumSubDomains_Y, st
 }
 
 
-void run_Test_2D()
+
+
+
+void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomains_X, int rNumSubdomains_Y, int rNumElementsPerSubdomain_X, int rNumElementsPerSubdomain_Y)
 {
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     int rank = Comm.MyPID();
@@ -630,7 +633,7 @@ void run_Test_2D()
     checkDirectories(logDirectory, resultDirectory);
 
 
-    // one-dimensional problem
+    // two-dimensional problem
     const int dim = 2;
 
     // --------------------
@@ -638,30 +641,42 @@ void run_Test_2D()
     // --------------------
     int numSubDomains_X = 0;
     int numSubDomains_Y = 0;
-    separateDomain(numProc, numSubDomains_X, numSubDomains_Y);
-    std::cout << "SEPARATE DOMAIN: " << numProc << ", " << numSubDomains_X << ", " << numSubDomains_Y << std::endl;
+    if ((rNumSubdomains_X == 0) || (rNumSubdomains_Y == 0) || (rNumSubdomains_X*rNumSubdomains_Y != numProc))
+        separateDomain(numProc, numSubDomains_X, numSubDomains_Y);
+    else
+    {
+        numSubDomains_X = rNumSubdomains_X;
+        numSubDomains_Y = rNumSubdomains_Y;
+    }
+
+    if (rank == 0)
+    std::cout << "DOMAIN SEPARATION\n---------------\nNum Subdomains X: " << numSubDomains_X << "\nNum Subdomains Y: " << numSubDomains_Y
+              << "\nNum Elements per Subdomain X: " << rNumElementsPerSubdomain_X << "\nNum Elements per Subdomain Y: " << rNumElementsPerSubdomain_Y << std::endl;
 
     std::vector<int> subDomains_X;
     std::vector<int> subDomains_Y;
     generateSubDomainIdentifiers(numSubDomains_X, numSubDomains_Y, subDomains_X, subDomains_Y);
 
     int numSubDomains = numSubDomains_X * numSubDomains_Y;
-    int* numElementsPerSubDomain_X = new int[numSubDomains_X];
-    int* numElementsPerSubDomain_Y = new int[numSubDomains_Y];
+//    int* numElementsPerSubDomain_X = new int[numSubDomains_X];
+//    int* numElementsPerSubDomain_Y = new int[numSubDomains_Y];
+    int numElementsPerSubDomain_X = rNumElementsPerSubdomain_X;
+    int numElementsPerSubDomain_Y = rNumElementsPerSubdomain_Y;
     int* numActiveDofsPerSubDomain = new int[numSubDomains];
     int* numActiveDofsTillSubDomain_inclusive = new int[numSubDomains];
     int numElementsTotal_X = 0;
     int numElementsTotal_Y = 0;
     bool setTotalLength = true;
     double* lengthPerSubDomain_X = new double[numSubDomains_X];
-    double lengthTotal_X = (setTotalLength ? 10. : 0.);
+    double lengthTotal_X = (setTotalLength ? rTotalLength_X : 0.);
     double* lengthPerSubDomain_Y = new double[numSubDomains_Y];
-    double lengthTotal_Y = (setTotalLength ? 5. : 0.);
+    double lengthTotal_Y = (setTotalLength ? rTotalLength_Y : 0.);
 
     for (int i = 0; i < numSubDomains_X; ++i)
     {
-        numElementsPerSubDomain_X[i] = 1;
-        numElementsTotal_X += numElementsPerSubDomain_X[i];
+//        numElementsPerSubDomain_X[i] = 1;
+//        numElementsTotal_X += numElementsPerSubDomain_X[i];
+        numElementsTotal_X += numElementsPerSubDomain_X;
 
         if (setTotalLength)
         {
@@ -676,8 +691,9 @@ void run_Test_2D()
 
     for (int i = 0; i < numSubDomains_Y; ++i)
     {
-        numElementsPerSubDomain_Y[i] = 1;
-        numElementsTotal_Y += numElementsPerSubDomain_Y[i];
+//        numElementsPerSubDomain_Y[i] = 1;
+//        numElementsTotal_Y += numElementsPerSubDomain_Y[i];
+        numElementsTotal_Y += numElementsPerSubDomain_Y;
 
         if (setTotalLength)
         {
@@ -695,7 +711,7 @@ void run_Test_2D()
     // ------------------------
     double thickness = 10.;
     double YoungsModulus = 2.e4;
-    double PoissonRatio = 0.3;
+    double PoissonRatio = 0;
     double force = 1.e5;
 
     double fixedDisplacement = 0.;
@@ -706,7 +722,7 @@ void run_Test_2D()
     directionY(0) = 0;
     directionY(1) = 1;
     bool enableDisplacementControl = false;
-    bool loadOnNode = true;
+    bool loadOnNode = false;
 
 
     //DEFINE STRUCTURE
@@ -745,12 +761,16 @@ void run_Test_2D()
         {
             if (rank == currSubDomain)
             {
-                for (int jx = 0; jx < numElementsPerSubDomain_X[currSubDomain_X]+1; ++jx)
+//                for (int jx = 0; jx < numElementsPerSubDomain_X[currSubDomain_X]+1; ++jx)
+                for (int jx = 0; jx < numElementsPerSubDomain_X+1; ++jx)
                 {
-                    nodeCoords(0) = currLength_X + jx*lengthPerSubDomain_X[currSubDomain_X]/numElementsPerSubDomain_X[currSubDomain_X];
-                    for (int jy = 0; jy < numElementsPerSubDomain_Y[currSubDomain_Y]+1; ++jy)
+//                    nodeCoords(0) = currLength_X + jx*lengthPerSubDomain_X[currSubDomain_X]/numElementsPerSubDomain_X[currSubDomain_X];
+                    nodeCoords(0) = currLength_X + jx*lengthPerSubDomain_X[currSubDomain_X]/numElementsPerSubDomain_X;
+//                    for (int jy = 0; jy < numElementsPerSubDomain_Y[currSubDomain_Y]+1; ++jy)
+                    for (int jy = 0; jy < numElementsPerSubDomain_Y+1; ++jy)
                     {
-                        nodeCoords(1) = currLength_Y + jy*lengthPerSubDomain_Y[currSubDomain_Y]/numElementsPerSubDomain_Y[currSubDomain_Y];
+//                        nodeCoords(1) = currLength_Y + jy*lengthPerSubDomain_Y[currSubDomain_Y]/numElementsPerSubDomain_Y[currSubDomain_Y];
+                        nodeCoords(1) = currLength_Y + jy*lengthPerSubDomain_Y[currSubDomain_Y]/numElementsPerSubDomain_Y;
                         structure.NodeCreate(currNode, nodeCoords);
                         ++currNode;
                     }
@@ -784,14 +804,18 @@ void run_Test_2D()
         {
             if (rank == currSubDomain)
             {
-                for (int jx = 0; jx < numElementsPerSubDomain_X[currSubDomain_X]; ++jx)
+//                for (int jx = 0; jx < numElementsPerSubDomain_X[currSubDomain_X]; ++jx)
+                for (int jx = 0; jx < numElementsPerSubDomain_X; ++jx)
                 {
-                    for (int jy = 0; jy < numElementsPerSubDomain_Y[currSubDomain_Y]; ++jy)
+//                    for (int jy = 0; jy < numElementsPerSubDomain_Y[currSubDomain_Y]; ++jy)
+                    for (int jy = 0; jy < numElementsPerSubDomain_Y; ++jy)
                     {
                         elementNodes[0] = currNode;
                         elementNodes[1] = currNode + 1;
-                        elementNodes[2] = currNode + (numElementsPerSubDomain_Y[currSubDomain_Y]+1) + 1;
-                        elementNodes[3] = currNode + (numElementsPerSubDomain_Y[currSubDomain_Y]+1);
+//                        elementNodes[2] = currNode + (numElementsPerSubDomain_Y[currSubDomain_Y]+1) + 1;
+//                        elementNodes[3] = currNode + (numElementsPerSubDomain_Y[currSubDomain_Y]+1);
+                        elementNodes[2] = currNode + (numElementsPerSubDomain_Y+1) + 1;
+                        elementNodes[3] = currNode + (numElementsPerSubDomain_Y+1);
                         structure.ElementCreate(interpolationType, elementNodes);
                         ++currNode;
                         ++currElement;
@@ -825,6 +849,7 @@ void run_Test_2D()
     else
         structure.GroupAddNodeCoordinateRange(nodesBCRight, 0, lengthTotal_X-1e-6, lengthTotal_X+1e-6);
 
+
     //COMPUTE OVERLAPPING AREAS
     int numOverlapping_X = numSubDomains_X - 1;
     int numOverlapping_Y = numSubDomains_Y - 1;
@@ -856,8 +881,8 @@ void run_Test_2D()
     }
 
     //FIX LEFT BOUNDARY
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionX, fixedDisplacement);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
+//    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionX, fixedDisplacement);
+//    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
 
     //SET LOAD ON RIGHT BOUNDARY
     structure.SetNumLoadCases(1);
@@ -883,15 +908,51 @@ void run_Test_2D()
     Eigen::SparseMatrix<double> hessian0_eigen = hessian0.JJ.ExportToEigenSparseMatrix();
     Eigen::MatrixXd residual_eigen = residual.J.Export();
 
-    int ownedNumActiveDOFs = -1;
-    if (currSubDomain_Y == 0)
+
+    std::vector<int> structNodes = structure.GroupGetMemberIds(nodesBCLeft);
+    for (int currNode : structNodes)
     {
-        ownedNumActiveDOFs = numElementsPerSubDomain_X[currSubDomain_X]*(numElementsPerSubDomain_Y[currSubDomain_Y]+1)*dim;
+        std::vector<int> structDofIDs = structure.NodeGetDofIds(currNode, NuTo::Node::eDof::DISPLACEMENTS);
+        for (int dofID : structDofIDs)
+        {
+            hessian0_eigen.coeffRef(dofID, dofID) = 1.e15;
+        }
+    }
+
+    int ownedNumActiveDOFs = -1;
+//    if (currSubDomain_Y == 0)
+//    {
+////        ownedNumActiveDOFs = numElementsPerSubDomain_X[currSubDomain_X]*(numElementsPerSubDomain_Y[currSubDomain_Y]+1)*dim;
+//        ownedNumActiveDOFs = numElementsPerSubDomain_X*(numElementsPerSubDomain_Y+1)*dim;
+//    }
+//    else
+//    {
+////        ownedNumActiveDOFs = numElementsPerSubDomain_X[currSubDomain_X]*numElementsPerSubDomain_Y[currSubDomain_Y]*dim;
+//        ownedNumActiveDOFs = numElementsPerSubDomain_X*numElementsPerSubDomain_Y*dim;
+//    }
+    if (subDomains_X[rank] == 0)
+    {
+        if (subDomains_Y[rank] == 0)
+        {
+            ownedNumActiveDOFs = (numElementsPerSubDomain_X+1)*(numElementsPerSubDomain_Y+1)*dim;
+        }
+        else
+        {
+            ownedNumActiveDOFs = (numElementsPerSubDomain_X+1)*numElementsPerSubDomain_Y*dim;
+        }
     }
     else
     {
-        ownedNumActiveDOFs = numElementsPerSubDomain_X[currSubDomain_X]*numElementsPerSubDomain_Y[currSubDomain_Y]*dim;
+        if (subDomains_Y[rank] == 0)
+        {
+            ownedNumActiveDOFs = numElementsPerSubDomain_X*(numElementsPerSubDomain_Y+1)*dim;
+        }
+        else
+        {
+            ownedNumActiveDOFs = numElementsPerSubDomain_X*numElementsPerSubDomain_Y*dim;
+        }
     }
+
 
     //GET IDS OF OVERLAPPING NODES AND LEFT (FIXED) BOUNDARY
     std::vector<int> overlapNodeIDs_X;
@@ -923,10 +984,12 @@ void run_Test_2D()
     }
 
     std::vector<int> leftNodeIDs = structure.GroupGetMemberIds(nodesBCLeft);
-    int leftNodeCount = leftNodeIDs.size();
+//    int leftNodeCount = leftNodeIDs.size();
+    int leftNodeCount = 0;
     std::vector<int> overlapNodeIDs_Y;
     overlapNodeIDs_Corner = vectorIntersection(overlapNodeIDs_X, overlapNodeIDs_Y_total);
-    overlapNodeIDs_Y = vectorDifference(overlapNodeIDs_Y_total, leftNodeIDs);
+//    overlapNodeIDs_Y = vectorDifference(overlapNodeIDs_Y_total, leftNodeIDs);
+    overlapNodeIDs_Y = overlapNodeIDs_Y_total;
     overlapNodeIDs_Y = vectorDifference(overlapNodeIDs_Y, overlapNodeIDs_Corner);
     overlapNodeIDs_X = vectorDifference(overlapNodeIDs_X, overlapNodeIDs_Corner);
     int overlappingNodeCount_X = overlapNodeIDs_X.size();
@@ -936,7 +999,9 @@ void run_Test_2D()
     int subDomainCounter = 0;
     for (int k = 0; k < numSubDomains_Y; ++k)
     {
-        numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X[0]) * (numElementsPerSubDomain_Y[k] + 1)*dim;
+//        numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X[0]) * (numElementsPerSubDomain_Y[k] + 1)*dim;
+//        numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X) * (numElementsPerSubDomain_Y + 1)*dim;
+        numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X + 1) * (numElementsPerSubDomain_Y + 1)*dim;
         if (subDomainCounter == 0)
             numActiveDofsTillSubDomain_inclusive[subDomainCounter] = numActiveDofsPerSubDomain[subDomainCounter];
         else
@@ -946,7 +1011,7 @@ void run_Test_2D()
                                                                         + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_Y+overlappingNodeCount_Corner);
             else
                 numActiveDofsTillSubDomain_inclusive[subDomainCounter] = numActiveDofsTillSubDomain_inclusive[subDomainCounter-1]
-                                                                        + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_Y);
+                                                                        + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_Y + overlappingNodeCount_Corner);
 
         }
         ++subDomainCounter;
@@ -957,7 +1022,8 @@ void run_Test_2D()
     {
         for (int k = 0; k < numSubDomains_Y; ++k)
         {
-            numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X[j] + 1) * (numElementsPerSubDomain_Y[k] + 1)*dim;
+//            numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X[j] + 1) * (numElementsPerSubDomain_Y[k] + 1)*dim;
+            numActiveDofsPerSubDomain[subDomainCounter] = (numElementsPerSubDomain_X + 1) * (numElementsPerSubDomain_Y + 1)*dim;
 //            if (subDomains_X[rank] == 0)
             if ((subDomains_X[rank] == 0) && (numSubDomains_X > 1))
             {
@@ -965,8 +1031,10 @@ void run_Test_2D()
                     numActiveDofsTillSubDomain_inclusive[subDomainCounter] = numActiveDofsTillSubDomain_inclusive[subDomainCounter-1]
                                                                         + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_X+overlappingNodeCount_Corner);
                 else
+//                    numActiveDofsTillSubDomain_inclusive[subDomainCounter] = numActiveDofsTillSubDomain_inclusive[subDomainCounter-1]
+//                                                                        + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y+1);
                     numActiveDofsTillSubDomain_inclusive[subDomainCounter] = numActiveDofsTillSubDomain_inclusive[subDomainCounter-1]
-                                                                        + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y+1);
+                                                                        + numActiveDofsPerSubDomain[subDomainCounter] - dim*(overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y);
             }
             else
             {
@@ -1044,18 +1112,30 @@ void run_Test_2D()
     }
 
     internDofCounter = 0;
+    int newID = -1;
     if (numProc > 1)
     {
         if ((subDomains_X[rank] == 0) && (numSubDomains_X > 1))
         {
             if (subDomains_Y[rank] == 0)
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
@@ -1066,122 +1146,117 @@ void run_Test_2D()
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
             }
             else if (subDomains_Y[rank] == 1)
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_X)*dim;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 if (overlappingNodeCount_Corner > 0)
                 {
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
-
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
             }
             else
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_X)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-2] + (overlappingNodeCount_X-1)*dim - overlappingNodeCount_X*dim;
+                int offset = 0;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+//                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter + offset*dim*(numElementsPerSubDomain_Y-1);
+                        ++internDofCounter;
+                    }
+                    ++offset;
+                }
+
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 if (overlappingNodeCount_Corner > 0)
                 {
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
+
             }
         }
         else if ((subDomains_X[rank] == 0) && (numSubDomains_X == 1))
         {
             if (subDomains_Y[rank] == 0)
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_Y)*dim;
                 for (int nodeID_Y : overlapNodeIDs_Y)
                 {
                     std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Y)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
-            }
-            else if (subDomains_Y[rank] == 1)
-            {
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
             }
             else
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y)*dim;
                 for (int nodeID_Y : overlapNodeIDs_Y)
                 {
                     std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Y)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
@@ -1191,219 +1266,272 @@ void run_Test_2D()
         {
             if (subDomains_Y[rank] == 0)
             {
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        if (overlappingNodeCount_Y > 0)
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y-1)*dim + internDofCounter;
-                        else
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim + internDofCounter;
+//                        if (overlappingNodeCount_Y > 0)
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
 
                         ++internDofCounter;
                     }
                 }
 
+//                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 if (overlappingNodeCount_Corner > 0)
                 {
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        if (overlappingNodeCount_Y > 0)
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y-1)*dim + internDofCounter;
-                        else
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
 
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
             }
             else if (subDomains_Y[rank] == 1)
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
                 if (overlappingNodeCount_Corner > 0)
                 {
+//                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim;
+                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        if (overlappingNodeCount_Y > 0)
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y-1)*dim + internDofCounter;
-                        else
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim + internDofCounter;
-
+//                        if (overlappingNodeCount_Y > 0)
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
             }
             else
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                if (overlappingNodeCount_Corner > 0)
-                {
-                    int nodeID_Corner = overlapNodeIDs_Corner[0];
-                    std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Corner)
-                    {
-                        if (overlappingNodeCount_Y > 0)
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y-1)*dim + internDofCounter;
-                        else
-                            local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
-
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y+(numElementsPerSubDomain_X-1)*(numElementsPerSubDomain_Y-1))*dim;
+                int offset = 0;
                 for (int nodeID_Y : overlapNodeIDs_Y)
                 {
                     std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Y)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter + offset*dim*(numElementsPerSubDomain_Y-1);
+                        ++internDofCounter;
+                    }
+                    ++offset;
+                }
+
+                if (overlappingNodeCount_Corner > 0)
+                {
+//                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim;
+                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
+                    int nodeID_Corner = overlapNodeIDs_Corner[0];
+                    std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Corner)
+                    {
+//                        if (overlappingNodeCount_Y > 0)
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
+
             }
         }
         else
         {
             if (subDomains_Y[rank] == 0)
             {
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim;
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+//                        if (overlappingNodeCount_Y > 0)
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
+
                         ++internDofCounter;
                     }
                 }
 
+                newID = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                 if (overlappingNodeCount_Corner > 0)
                 {
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+//                        if (overlappingNodeCount_Y > 0)
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
+
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
             }
             else if (subDomains_Y[rank] == 1)
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
+                        ++internDofCounter;
+                    }
+                }
+
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
                 if (overlappingNodeCount_Corner > 0)
                 {
+                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
                     int nodeID_Corner = overlapNodeIDs_Corner[0];
                     std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Corner)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+//                        if (overlappingNodeCount_Y > 0)
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                for (int nodeID_Y : overlapNodeIDs_Y)
-                {
-                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Y)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
             }
             else
             {
+                newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim;
                 for (int nodeID_X : overlapNodeIDs_X)
                 {
                     std::vector<int> overlapDofIDs_X = structure.NodeGetDofIds(nodeID_X, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_X)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y] - (overlappingNodeCount_X)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
 
-                if (overlappingNodeCount_Corner > 0)
-                {
-                    int nodeID_Corner = overlapNodeIDs_Corner[0];
-                    std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
-                    for (int dofID : overlapDofIDs_Corner)
-                    {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
-                        ++internDofCounter;
-                    }
-                }
-
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Y+(numElementsPerSubDomain_X-1)*(numElementsPerSubDomain_Y-1))*dim;
+                int offset = 0;
                 for (int nodeID_Y : overlapNodeIDs_Y)
                 {
                     std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
                     for (int dofID : overlapDofIDs_Y)
                     {
-                        local2GlobalMapping[dofID] = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim + internDofCounter;
+                        local2GlobalMapping[dofID] = newID + internDofCounter + offset*dim*(numElementsPerSubDomain_Y-1);
+                        ++internDofCounter;
+                    }
+                    ++offset;
+                }
+
+                if (overlappingNodeCount_Corner > 0)
+                {
+                    newID = numActiveDofsTillSubDomain_inclusive[rank-numSubDomains_Y-1] - (overlappingNodeCount_X+overlappingNodeCount_Corner+overlappingNodeCount_Y)*dim;
+                    int nodeID_Corner = overlapNodeIDs_Corner[0];
+                    std::vector<int> overlapDofIDs_Corner = structure.NodeGetDofIds(nodeID_Corner, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Corner)
+                    {
+//                        if (overlappingNodeCount_Y > 0)
+//                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y-1)*dim + internDofCounter;
+////                            local2GlobalMapping[dofID] = newID - (overlappingNodeCount_Y)*dim + internDofCounter;
+//                        else
+                            local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
                 }
+
             }
         }
     }
@@ -1438,15 +1566,13 @@ void run_Test_2D()
     //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
     ConversionTools converter;
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
-//    if (rank == 2)
-//        std::cout << hessian0_eigen.toDense() << std::endl;
-//    if (rank == numProc-2)
-//        std::cout << hessian0_eigen.toDense() << std::endl;
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
+    localRhsVector.Scale(1/(double(numSubDomains_Y*numElementsPerSubDomain_Y+1)));
 
     globalMatrix.PutScalar(0.0);
     globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
-    globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
+//    globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
+    globalRhsVector.Export(localRhsVector, exporter, Insert);
 
 #ifdef SHOW_INTERMEDIATE_RESULTS
     //PRINT SOME INTERMEDIATE RESULTS
@@ -1459,13 +1585,13 @@ void run_Test_2D()
     os << "Overlap Map:\n-------------\n";
     overlappingMap.Print(os);
     os << "Local matrix on proc " << rank << ":\n-----------------\n";
-    localMatrix.Print(std::cout);
+    localMatrix.Print(os);
     os << "Global matrix:\n-------------\n";
-    globalMatrix.Print(std::cout);
+    globalMatrix.Print(os);
     os << "Local RHS on proc " << rank << ":\n-----------------\n";
-    localRhsVector.Print(std::cout);
+    localRhsVector.Print(os);
     os << "Global RHS:\n-------------\n";
-    globalRhsVector.Print(std::cout);
+    globalRhsVector.Print(os);
 #endif
 
     // --------------------------------
@@ -1486,18 +1612,41 @@ void run_Test_2D()
 #endif
 
     //solve system serial (for comparison only)
-    if (numProc == 1)
-    {
-        Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
-        solver.compute(hessian0_eigen);
-        Eigen::VectorXd displ = solver.solve(residual_eigen);
-        displ *= -1;
+//    if (numProc == 1)
+//    {
+//        Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
+//        solver.compute(hessian0_eigen);
+//        Eigen::VectorXd displ = solver.solve(residual_eigen);
+//        displ *= -1;
+//        std::cout << rank << ":\n" << displ << std::endl;
+//        //save direct solution
+//        std::ofstream file(resultDirectory + "/solution_direct.mat");
+//        file << displ;
+//        file.close();
+//    }
+}
 
-        //save direct solution
-        std::ofstream file(resultDirectory + "/solution_direct.mat");
-        file << displ;
-        file.close();
+void run_Test_2D(int argc, char** argv)
+{
+    double totalLength_X = 1000.;
+    double totalLength_Y = 150.;
+    int numSubDomains_X = 0;
+    int numSubDomains_Y = 0;
+    int numElementsPerSubDomain_X = 1;
+    int numElementsPerSubDomain_Y = 1;
+
+    if (argc >= 3)
+    {
+        numElementsPerSubDomain_X = atoi(argv[1]);
+        numElementsPerSubDomain_Y = atoi(argv[2]);
     }
+    if (argc >= 5)
+    {
+        numSubDomains_X = atoi(argv[3]);
+        numSubDomains_Y = atoi(argv[4]);
+    }
+
+    run_Test_2D(totalLength_X, totalLength_Y, numSubDomains_X, numSubDomains_Y, numElementsPerSubDomain_X, numElementsPerSubDomain_Y);
 }
 
 
@@ -1506,7 +1655,9 @@ int main(int argc, char** argv)
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
 //    run_Test_2D_GivenMesh();
-    run_Test_2D();
+
+
+    run_Test_2D(argc, argv);
 
     return 0;
 }
