@@ -77,11 +77,7 @@ ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(
 
 bool LinearDielectric::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
 {
-    if ((timeDerivative == 0) && (dofRow == Node::eDof::ELECTRICPOTENTIAL and dofCol == Node::eDof::ELECTRICPOTENTIAL))
-    {
-            return true;
-    }
-    else return false;
+    return (dofRow == Node::eDof::ELECTRICPOTENTIAL && dofCol == Node::eDof::ELECTRICPOTENTIAL && ( timeDerivative == 0 || timeDerivative == 2));
 }
 
 template <int TDim>

@@ -149,12 +149,15 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
 
         case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
         {
-            auto activeDofs = mInterpolationType->GetActiveDofs();
-            if (activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
-                throw MechanicsException(__PRETTY_FUNCTION__, "Lumped Hessian2 is only implemented for displacements.");
-            int numDofs = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetNumDofs();
-            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].resize(numDofs);
-            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].setZero();
+            for (auto dof : mInterpolationType->GetActiveDofs())
+            {
+                //if (mInterpolationType->IsActive(dof))
+                {
+                    int numDofs = mInterpolationType->Get(dof).GetNumDofs();
+                    it.second->GetBlockFullVectorDouble()[dof].resize(numDofs);
+                    it.second->GetBlockFullVectorDouble()[dof].setZero();
+                }
+            }
             break;
         }
 
@@ -424,6 +427,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(Constitutiv
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_2_TIME_DERIVATIVE for (" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -750,40 +754,50 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
         case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
             for (auto dof : mInterpolationType->GetActiveDofs())
             {
+                double factor = -42.;
                 switch (dof)
                 {
                 case Node::eDof::DISPLACEMENTS:
                 {
-                    // calculate local mass matrix (the nonlocal terms are zero)
-                    // don't forget to include determinant of the Jacobian and area
-                    // detJ * area * density * HtH, :
-                    Eigen::Matrix<double, Eigen::Dynamic, 1>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
-                    double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
-                    rData.mTotalMass += rData.mDetJxWeightIPxSection * rho;
-                    const Eigen::VectorXd& shapeFunctions = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetShapeFunctions(rTheIP);
-
-                    //calculate for the translational dofs the diagonal entries
-                    for (int i = 0; i < shapeFunctions.rows(); i++)
-                       result(TDim * i) += shapeFunctions[i] * shapeFunctions[i] * rData.mDetJxWeightIPxSection * rho;
-
-                    if (rTheIP + 1 == GetNumIntegrationPoints())
-                    {
-                        //calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
-                        double sumDiagonal = result.sum();
-
-                        //scale so that the sum of the diagonals represents the full mass
-                        double scaleFactor = rData.mTotalMass / sumDiagonal;
-                        result *= scaleFactor;
-
-                        // "spread" the entries over the whole result vector
-                        for (int i = 0; i < shapeFunctions.rows(); i++)
-                            for (int iDim = 1; iDim < TDim; ++iDim)
-                                result(TDim * i + iDim) = result(TDim*i);
-                    }
+                    factor = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                            Constitutive::eConstitutiveParameter::DENSITY);
+                    break;
                 }
+                case Node::eDof::ELECTRICPOTENTIAL:
+                    factor = 1.;
                     break;
                 default:
-                    throw MechanicsException(__PRETTY_FUNCTION__, "Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
+                    throw MechanicsException(__PRETTY_FUNCTION__, "LUMPED_HESSIAN_2 not implemented for " + Node::DofToString(dof));
+                }
+
+                // calculate local mass matrix (the nonlocal terms are zero)
+                // don't forget to include determinant of the Jacobian and area
+                // detJ * area * density * HtH, :
+                const int localDim = mInterpolationType->Get(dof).GetNumDofsPerNode();
+                Eigen::Matrix<double, Eigen::Dynamic, 1>& result =
+                        it.second->GetBlockFullVectorDouble()[dof];
+                rData.mTotalMass += rData.mDetJxWeightIPxSection * factor;
+                const Eigen::VectorXd& shapeFunctions =
+                        mInterpolationType->Get(dof).GetShapeFunctions(rTheIP);
+
+                // calculate for the translational dofs the diagonal entries
+                for (int i = 0; i < shapeFunctions.rows(); i++)
+                    result(localDim * i) += shapeFunctions[i] * shapeFunctions[i] * rData.mDetJxWeightIPxSection * factor;
+
+                if (rTheIP + 1 == GetNumIntegrationPoints())
+                {
+                    // calculate sum of diagonal entries (is identical for all directions, that's why only x direction
+                    // is calculated
+                    double sumDiagonal = result.sum();
+
+                    // scale so that the sum of the diagonals represents the full mass
+                    double scaleFactor = rData.mTotalMass / sumDiagonal;
+                    result *= scaleFactor;
+
+                    // "spread" the entries over the whole result vector
+                    for (int i = 0; i < shapeFunctions.rows(); i++)
+                        for (int iDim = 1; iDim < localDim; ++iDim)
+                            result(localDim * i + iDim) = result(localDim * i);
                 }
             }
             break;
@@ -1149,6 +1163,12 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
                 double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                 hessian2 += rho * N.transpose() * N * rData.mDetJxWeightIPxSection;
 
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
+            {
+                const auto& N = *(rData.GetNMatrix(dofRow));
+                hessian2 += N.transpose() * N * rData.mDetJxWeightIPxSection;
                 break;
             }
             default:

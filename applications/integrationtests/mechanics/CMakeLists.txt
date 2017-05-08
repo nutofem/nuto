@@ -4,6 +4,7 @@ if(ENABLE_PYTHON)
     foreach(test
         Brick8N
         DeleteElemNode
+        ElectricWave
         HeatConduction
         MassMatrixIntegration
         NonlinearLoad
