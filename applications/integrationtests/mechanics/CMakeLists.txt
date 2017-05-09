@@ -51,6 +51,7 @@ foreach(test
     RestartFiles
     Shrinkage
     SpringDamperCombination
+    StructureNodeTest
     SurfaceLoad
     ThermoElasticity1D
     TrussIn2D

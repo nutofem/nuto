@@ -26,9 +26,9 @@ NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)
         return it->second;
     else
     {
-    	std::stringstream out;
-    	out << rIdent;
-    	throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+        std::stringstream out;
+        out << rIdent;
+        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
     }
 }
 
@@ -39,9 +39,9 @@ const NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)const
         return it->second;
     else
     {
-    	std::stringstream out;
-    	out << rIdent;
-    	throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+        std::stringstream out;
+        out << rIdent;
+        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
     }
 }
 
@@ -64,31 +64,32 @@ const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() con
 
 void NuTo::Structure::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
 {
-	const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
-	std::vector<NuTo::ElementBase*> elementPtrs;
-	this->NodeGetElements(nodePtr,elementPtrs);
-	rElementNumbers.resize(elementPtrs.size());
-	size_t i=0;
-	BOOST_FOREACH(NuTo::ElementBase* thisElPtr,elementPtrs)
-		rElementNumbers[++i] = ElementGetId(thisElPtr);
+    const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
+    std::vector<NuTo::ElementBase*> elementPtrs;
+    this->NodeGetElements(nodePtr,elementPtrs);
+    rElementNumbers.resize(0);
+    for (auto elementPtr : elementPtrs)
+    {
+        rElementNumbers.push_back(ElementGetId(elementPtr));
+    }
 }
 
 void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
 {
-	rElements.resize(0);
-	boost::ptr_map<int,NuTo::ElementBase>::iterator ElementIter = this->mElementMap.begin();
-	while (ElementIter != this->mElementMap.end())
-	{
-		for(size_t thisNode=ElementIter->second->GetNumNodes();thisNode--;){
-			NuTo::NodeBase* thisNodePtr=ElementIter->second->GetNode(thisNode);
-			if(thisNodePtr==rNodePtr)
-			{
-				rElements.push_back(ElementIter->second);
-				break;
-			}
-		}
-		ElementIter++;
-	}
+    rElements.resize(0);
+    boost::ptr_map<int,NuTo::ElementBase>::iterator ElementIter = this->mElementMap.begin();
+    while (ElementIter != this->mElementMap.end())
+    {
+        for(size_t thisNode=ElementIter->second->GetNumNodes();thisNode--;){
+            NuTo::NodeBase* thisNodePtr=ElementIter->second->GetNode(thisNode);
+            if(thisNodePtr==rNodePtr)
+            {
+                rElements.push_back(ElementIter->second);
+                break;
+            }
+        }
+        ElementIter++;
+    }
 }
 
 
@@ -126,10 +127,10 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 
 int NuTo::Structure::NodeCreate()
 {
-	Eigen::VectorXd coordinates(this->GetDimension());
-	coordinates.setZero();
+    Eigen::VectorXd coordinates(this->GetDimension());
+    coordinates.setZero();
 
-	//return int identifier of the new node
+    //return int identifier of the new node
     return NodeCreate(coordinates);
 }
 
@@ -246,14 +247,14 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen
 
 void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
 {
-	// check node number
-	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
-	if(it != this->mNodeMap.end())
-	{
-		throw MechanicsException("[NuTo::Structure::NodeCreate] Node already exists.");
-	}
+    // check node number
+    boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
+    if(it != this->mNodeMap.end())
+    {
+        throw MechanicsException("[NuTo::Structure::NodeCreate] Node already exists.");
+    }
 
-	std::set<Node::eDof> dofs;
+    std::set<Node::eDof> dofs;
     dofs.insert(Node::eDof::COORDINATES);
 
     NodeBase* nodePtr = NodePtrCreate(dofs, rCoordinates);
@@ -361,20 +362,20 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
 
 std::vector<int> NuTo::Structure::NodesCreate(Eigen::MatrixXd& rCoordinates)
 {
-	std::vector<int> idVec;
-	/// go through the nodes
-	for(size_t i=0 ; i<(size_t)rCoordinates.cols(); ++i)
-	{
-		Eigen::VectorXd coordinate = rCoordinates.col(i);
-		idVec.push_back(NodeCreate(coordinate));
-	}
+    std::vector<int> idVec;
+    /// go through the nodes
+    for(size_t i=0 ; i<(size_t)rCoordinates.cols(); ++i)
+    {
+        Eigen::VectorXd coordinate = rCoordinates.col(i);
+        idVec.push_back(NodeCreate(coordinate));
+    }
 
     return idVec;
 }
 
 void NuTo::Structure::NodeDelete(int rNodeNumber)
 {
-	NodeDelete(rNodeNumber,true);
+    NodeDelete(rNodeNumber,true);
 }
 
 void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
@@ -386,34 +387,34 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
     }
     else
     {
-    	if (checkElements)
-    	{
-    		NodeBase* nodePtr = itNode->second;
-    	 	/// Search for node in elements: using a loop over all elements
-			for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt)
-			{
-				// loop over all element nodes
-				for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode)
-				{
-					// if the id of the node to be deleted is found, throw an error
-					if(nodePtr == elemIt->second->GetNode(iNode) )
-					{
-						std::stringstream outNode, outElement;
-						outNode << rNodeNumber;
-						outElement << (elemIt->first);
-						throw MechanicsException( "[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " + outElement.str() + ", delete element first");
-					}
-				}
-			}
-    	}
+        if (checkElements)
+        {
+            NodeBase* nodePtr = itNode->second;
+            /// Search for node in elements: using a loop over all elements
+            for(boost::ptr_map<int,ElementBase>::const_iterator elemIt=mElementMap.begin(); elemIt!=mElementMap.end(); ++elemIt)
+            {
+                // loop over all element nodes
+                for(unsigned short iNode=0; iNode<elemIt->second->GetNumNodes(); ++iNode)
+                {
+                    // if the id of the node to be deleted is found, throw an error
+                    if(nodePtr == elemIt->second->GetNode(iNode) )
+                    {
+                        std::stringstream outNode, outElement;
+                        outNode << rNodeNumber;
+                        outElement << (elemIt->first);
+                        throw MechanicsException( "[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " + outElement.str() + ", delete element first");
+                    }
+                }
+            }
+        }
 
-    	                        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
-        	if(groupIt->second->GetType()==NuTo::eGroupId::Nodes){
-        		if(groupIt->second->Contain(itNode->first))
-        		{
-        			groupIt->second->RemoveMember(itNode->first);
-        		}
-        	}
+                                for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+            if(groupIt->second->GetType()==NuTo::eGroupId::Nodes){
+                if(groupIt->second->Contain(itNode->first))
+                {
+                    groupIt->second->RemoveMember(itNode->first);
+                }
+            }
         }
 
         // delete element from map
@@ -435,7 +436,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         UpdateDofStatus();
         std::vector<NodeBase*> nodes;
         this->GetNodesTotal(nodes);
-        GetAssembler().BuildGlobalDofs(nodes); 
+        GetAssembler().BuildGlobalDofs(nodes);
         UpdateDofStatus();
     }
     catch (MathException& e)
@@ -481,9 +482,9 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
             const auto& values = node.Get(dofType, rTimeDerivative);
             for (int i = 0; i < values.rows(); ++i)
             {
-                int dofNumber = node.GetDof(dofType, i); 
+                int dofNumber = node.GetDof(dofType, i);
                 if (dofNumber < numActiveDofs)
-                    actDofValues[dofNumber] = values[i]; 
+                    actDofValues[dofNumber] = values[i];
                 else
                     depDofValues[dofNumber - numActiveDofs] = values[i];
             }
@@ -518,9 +519,9 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
             Eigen::VectorXd values(numValues);
             for (int i = 0; i < numValues; ++i)
             {
-                int dofNumber = node.GetDof(dofType, i); 
+                int dofNumber = node.GetDof(dofType, i);
                 if (dofNumber < numActiveDofs)
-                    values[i] = actDofValues[dofNumber]; 
+                    values[i] = actDofValues[dofNumber];
                 else
                     values[i] = depDofValues[dofNumber - numActiveDofs];
             }
@@ -545,12 +546,12 @@ NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(c
 // store all nodes of a structure in a vector
 void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
 {
-	rNodes.reserve(mNodeMap.size());
+    rNodes.reserve(mNodeMap.size());
     rNodes.resize(0);
-	boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
+    boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {
-    	rNodes.push_back(NodeIter->second);
+        rNodes.push_back(NodeIter->second);
         NodeIter++;
     }
 }
@@ -558,12 +559,12 @@ void NuTo::Structure::GetNodesTotal(std::vector<const NodeBase*>& rNodes) const
 // store all nodes of a structure in a vector
 void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const
 {
-	rNodes.reserve(mNodeMap.size());
+    rNodes.reserve(mNodeMap.size());
     rNodes.resize(0);
-	boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
+    boost::ptr_map<int,NodeBase>::const_iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {
-    	rNodes.push_back(std::pair<int, const NodeBase*>(NodeIter->first,NodeIter->second));
+        rNodes.push_back(std::pair<int, const NodeBase*>(NodeIter->first,NodeIter->second));
         NodeIter++;
     }
 }
@@ -571,12 +572,12 @@ void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int, const NodeBase*> 
 // store all nodes of a structure in a vector
 void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
 {
-	rNodes.reserve(mNodeMap.size());
-	rNodes.resize(0);
+    rNodes.reserve(mNodeMap.size());
+    rNodes.resize(0);
     boost::ptr_map<int,NodeBase>::iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {
-    	rNodes.push_back(NodeIter->second);
+        rNodes.push_back(NodeIter->second);
         NodeIter++;
     }
 }
@@ -584,12 +585,12 @@ void NuTo::Structure::GetNodesTotal(std::vector<NodeBase*>& rNodes)
 // store all nodes of a structure in a vector
 void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes)
 {
-	rNodes.reserve(mNodeMap.size());
-	rNodes.resize(0);
+    rNodes.reserve(mNodeMap.size());
+    rNodes.resize(0);
     boost::ptr_map<int,NodeBase>::iterator NodeIter = this->mNodeMap.begin();
     while (NodeIter != this->mNodeMap.end())
     {
-    	rNodes.push_back(std::pair<int, NodeBase*>(NodeIter->first,NodeIter->second));
+        rNodes.push_back(std::pair<int, NodeBase*>(NodeIter->first,NodeIter->second));
         NodeIter++;
     }
 }
@@ -628,7 +629,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     {
         if(groupIt->second->GetType()==NuTo::eGroupId::Nodes)
         {
-        	if (groupIt->second->Contain(rId))
+            if (groupIt->second->Contain(rId))
                 groupIt->second->ExchangePtr(rId, rOldPtr, rNewPtr);
         }
     }
