@@ -446,7 +446,6 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         break;
 
 
-        case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
@@ -456,7 +455,15 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         {
             auto nodeDof = ToNodeEnum(component);
             for (auto point : points)
-                visualizer.SetPointData(point.visualizePointId, componentName, InterpolateDof3D(point.localCoords, nodeDof));
+                visualizer.SetPointData(point.visualizePointId, componentName, InterpolateDofGlobal(point.localCoords, nodeDof));
+        }
+        break;
+
+        case NuTo::eVisualizeWhat::DISPLACEMENTS:
+        {
+            for (auto point : points)
+                visualizer.SetPointData(point.visualizePointId, componentName,
+                                        InterpolateDof3D(point.localCoords, Node::eDof::DISPLACEMENTS));
         }
         break;
 
