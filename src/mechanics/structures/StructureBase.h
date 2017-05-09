@@ -1368,6 +1368,16 @@ public:
     //! @param rIsConstitutiveInput ... is/is not constitutive input
     void DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput);
 
+    //! @brief writes the current state of the structure (nodal values, history variables and global time) as a binary file
+    //! @param filename ... file name
+    //! @param globalTime ... global time
+    void WriteRestartFile(std::string filename, double globalTime);
+
+    //! @brief reads a state of the structure (nodal values and history variables) from a restart file
+    //! @param filename ... file name
+    //! @return globalTime
+    double ReadRestartFile(std::string filename);
+
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* currently no members to serialize */};

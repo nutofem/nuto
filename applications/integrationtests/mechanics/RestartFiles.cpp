@@ -2,6 +2,7 @@
 // Created by Thomas Titscher on 10/24/16.
 //
 #include "BoostUnitTest.h"
+#include <boost/filesystem.hpp>
 #include "mechanics/MechanicsEnums.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
@@ -9,10 +10,12 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "mechanics/constitutive/damageLaws/DamageLawLinear.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {
@@ -43,7 +46,9 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     rS.ElementTotalSetSection(NuTo::SectionPlane::Create(.42, true));
-    rS.ElementTotalSetConstitutiveLaw(rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS));
+    int lawId = rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+    rS.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::DamageLawLinear::Create(1, 2, 3));
+    rS.ElementTotalSetConstitutiveLaw(lawId);
     rS.ElementTotalConvertToInterpolationType();
 
     // add a constraint --> dependent dof vector K
@@ -154,4 +159,29 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDatasBinary)
     NuTo::Structure b(2);
     NuToSerializeStructure("NuToSerializeStructureDataBinary.dat" , true, a, b);
     CheckStaticData(a, b);
+}
+
+BOOST_AUTO_TEST_CASE(RestartFiles_FromPostprocesss)
+{
+    NuTo::Structure a(2);
+    CreateTestStructure(a, true);
+    auto someBlockVector = a.BuildGlobalInternalGradient();
+
+    NuTo::NewmarkDirect newmark(&a);
+
+    std::string resultDir = "./RestartFilesOut";
+    boost::filesystem::create_directory(resultDir);
+    newmark.SetResultDirectory(resultDir, true);
+
+    // If the restart exists from a previous run, this could make the test useless.
+    // So check, if it cannot be opened.
+    BOOST_CHECK_THROW(NuTo::SerializeStreamIn(newmark.GetRestartFileName(), true), NuTo::Exception);
+
+    newmark.PostProcess(someBlockVector);
+
+    NuTo::Structure b(2);
+    CreateTestStructure(b, false);
+    double globalTime = b.ReadRestartFile(newmark.GetRestartFileName());
+    CheckDofs(a, b);
+    BOOST_CHECK_SMALL(globalTime, 1.e-10);
 }

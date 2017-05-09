@@ -66,7 +66,7 @@ class NonlinearLoadTestCase(unittest.TestCase):
         newmark.SetTimeDependentLoadCase(0, force_application)
         newmark.SetPerformLineSearch(True)
         newmark.SetTimeStep(1.0)
-        newmark.SetResultDirectory("blubb")
+        newmark.SetResultDirectory("./NonlinearLoadOut", True)
         newmark.Solve(1.0)
 
     def testStress(self):

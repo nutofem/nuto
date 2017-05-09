@@ -92,6 +92,9 @@ public:
     //! @remark rOutOfBalance here means Residual = ExternalForces - InternalForces
     void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
 
+    //! @brief returns the name of the restart file
+    std::string GetRestartFileName() const;
+
     //! @brief sets the  time step for the time integration procedure (initial value)
     void SetTimeStep(double rTimeStep)
     {

@@ -304,6 +304,13 @@ double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& r
     return norm;
 }
 
+std::string NuTo::TimeIntegrationBase::GetRestartFileName() const
+{
+    boost::filesystem::path restartFile(mResultDir);
+    restartFile /= "LastTimeStep.restart";
+    return restartFile.c_str();
+}
+
 //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
 //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
 void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
@@ -316,6 +323,8 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
     }
     else
     {
+        mStructure->WriteRestartFile(GetRestartFileName(), mTime);
+
         //perform Postprocessing
         for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)
         {

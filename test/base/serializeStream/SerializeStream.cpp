@@ -9,6 +9,11 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 
+BOOST_AUTO_TEST_CASE(RestartFile_InvalidFile)
+{
+    BOOST_CHECK_THROW(NuTo::SerializeStreamIn("invalidFile.restart", true), NuTo::Exception);
+}
+
 //! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
 T WriteReadNumber(const std::string &rFile, bool rIsBinary, T &rValue, T rZero)

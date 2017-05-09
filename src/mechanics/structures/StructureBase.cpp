@@ -24,6 +24,8 @@
 
 #include "mechanics/structures/StructureBase.h"
 #include "base/Timer.h"
+#include "base/serializeStream/SerializeStreamIn.h"
+#include "base/serializeStream/SerializeStreamOut.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
 #include "math/SparseDirectSolverPardiso.h"
@@ -1012,6 +1014,23 @@ void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(std::string rDofType, bo
     DofTypeSetIsConstitutiveInput(Node::DofToEnum(rDofType), rIsConstitutiveInput);
 }
 
+void NuTo::StructureBase::WriteRestartFile(std::string filename, double globalTime)
+{
+    NuTo::SerializeStreamOut binaryOut(filename, true);
+    binaryOut << globalTime;
+    binaryOut.Separator();
+    binaryOut << *this;
+}
+
+double NuTo::StructureBase::ReadRestartFile(std::string filename)
+{
+    NuTo::SerializeStreamIn binaryIn(filename, true);
+    double globalTime = -61.74;
+    binaryIn >> globalTime;
+    binaryIn.Separator();
+    binaryIn >> *this;
+    return globalTime;
+}
 
 #ifdef _OPENMP
 //@brief determines the maximum independent sets and stores it at the structure
