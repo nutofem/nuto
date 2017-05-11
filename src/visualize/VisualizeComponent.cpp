@@ -1,4 +1,4 @@
-// $Id$ 
+// $Id$
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -15,20 +15,19 @@
 #include "visualize/VisualizeException.h"
 
 
-NuTo::VisualizeComponent::VisualizeComponent(NuTo::eVisualizeWhat rVisualizeComponent) :
-        mVisualizeComponent(rVisualizeComponent)
+NuTo::VisualizeComponent::VisualizeComponent(NuTo::eVisualizeWhat rVisualizeComponent)
+    : mVisualizeComponent(rVisualizeComponent)
 {
 }
 
 
-
-int NuTo::VisualizeComponent::GetElementId()const
+int NuTo::VisualizeComponent::GetElementId() const
 {
     throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component has no ElementId.");
 }
 
 
-int NuTo::VisualizeComponent::GetIp()const
+int NuTo::VisualizeComponent::GetIp() const
 {
     throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component has no Integration point.");
 }
@@ -55,6 +54,8 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "Damage";
     case eVisualizeWhat::CRACK_PHASE_FIELD:
         return "CrackPhaseField";
+    case eVisualizeWhat::CRACK_PHASE_FIELD_VELOCITY:
+        return "CrackPhaseFieldVelocity";
     case eVisualizeWhat::DISPLACEMENTS:
         return "Displacements";
     case eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
@@ -101,17 +102,16 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
 }
 
 
-
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
-template void NuTo::VisualizeComponent::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::VisualizeComponent::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::VisualizeComponent::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::VisualizeComponent::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::VisualizeComponent::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::VisualizeComponent::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::VisualizeComponent::serialize(Archive & ar, const unsigned int version)
+template void NuTo::VisualizeComponent::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
+template void NuTo::VisualizeComponent::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
+template void NuTo::VisualizeComponent::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
+template void NuTo::VisualizeComponent::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
+template void NuTo::VisualizeComponent::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
+template void NuTo::VisualizeComponent::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
+template <class Archive>
+void NuTo::VisualizeComponent::serialize(Archive& ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize VisualizeComponent" << std::endl;

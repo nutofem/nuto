@@ -11,29 +11,6 @@
 namespace NuTo
 {
 
-/// \brief Compute the Givens rotation matrix parameters for a and b
-void rotmat(const double a, const double b, double& c, double& s)
-{
-    if (b < 1.e-5)
-    {
-        c = 1.;
-        s = 0.;
-    }
-    else if (std::abs(b) > std::abs(a))
-    {
-        double temp = a / b;
-        s = 1. / std::sqrt(1. + temp * temp);
-        c = temp * s;
-    }
-    else
-    {
-        double temp = b / a;
-        c = 1. / std::sqrt(1. + temp * temp);
-        s = temp * c;
-    }
-}
-
-
 /// \brief Generalized minimal residual method
 template <class T, class Preconditioner = Eigen::DiagonalPreconditioner<double>>
 int Gmres(const T& A, const Eigen::VectorXd& rhs, Eigen::VectorXd& x, const int maxNumRestarts, const double tolerance,

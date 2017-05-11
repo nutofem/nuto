@@ -40,7 +40,8 @@ public:
     {
         ConjugateGradient,
         BiconjugateGradientStabilized,
-        ProjectedGmres
+        ProjectedGmres,
+        Direct
     };
 
     enum class eFetiPreconditioner
@@ -156,7 +157,7 @@ public:
     //! Iterative method to solve the interface problem.
     //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
     //! iteration
-    int BiCgStab(const MatrixXd& projection, VectorXd& x, const VectorXd& rhs)
+    int ProjBiCgStab(const MatrixXd& projection, VectorXd& x, const VectorXd& rhs)
     {
 
         boost::mpi::communicator world;
@@ -307,12 +308,20 @@ public:
         return Ax;
     }
 
+    VectorXd ApplyPreconditionerOnTheLeft(const VectorXd& x)
+    {
+        VectorXd vec = mLocalPreconditioner * x;
+        MPI_Allreduce(MPI_IN_PLACE, vec.data(), vec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return vec;
+    }
+
     //! @brief Conjugate projected gradient method (CG)
     //!
     //! Iterative method to solve the interface problem.
     //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
     //! iteration
-    int CPG(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
+    int ProjConjugateGradient(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
     {
 
         VectorXd Fp;
@@ -328,11 +337,15 @@ public:
 
         // precondition
         mStructure->GetLogger() << "projection.cols() = \t" << projection.cols() << "\nmLocalPreconditioner.rows() = \t"
-                               << mLocalPreconditioner.rows() << "\nmLocalPreconditioner.cols() = \t"
-                               << mLocalPreconditioner.cols() << "\nw.rows() = \t" << w.rows() << "\n\n";
+                                << mLocalPreconditioner.rows() << "\nmLocalPreconditioner.cols() = \t"
+                                << mLocalPreconditioner.cols() << "\nw.rows() = \t" << w.rows() << "\n\n";
 
-        VectorXd p = projection * mLocalPreconditioner * w;
-        MPI_Allreduce(MPI_IN_PLACE, p.data(), p.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        // apply precondtioner
+        VectorXd p = ApplyPreconditionerOnTheLeft(w);
+
+        // reproject
+        p = projection * p;
+
         //    p = w;
 
         const double rhs_sqnorm = rhs.squaredNorm();
@@ -358,10 +371,11 @@ public:
                 break;
 
             // precondition
-            z = projection * mLocalPreconditioner * w;
-            MPI_Allreduce(MPI_IN_PLACE, z.data(), z.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-            //        z = w;
+            z = ApplyPreconditionerOnTheLeft(w);
 
+            // reproject
+            z = projection * z;
+            //        z = w;
 
             double absOld = absNew;
             absNew = w.dot(z);
@@ -369,16 +383,16 @@ public:
             // update search direction
             p = z + beta * p;
 
-            mStructure->GetLogger() << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
-                                   << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
+            mStructure->GetLogger() << "ProjConjugateGradient rel. error = " << w.squaredNorm() / rhs_sqnorm
+                                    << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
 
             ++iteration;
         }
 
         mStructure->GetLogger() << "\nConverged! \n"
-                               << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
-                               << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
+                                << "ProjConjugateGradient rel. error = " << w.squaredNorm() / rhs_sqnorm
+                                << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
         return iteration;
     }
@@ -401,7 +415,15 @@ public:
 
         // initial projected search direction
         VectorType projResidual = projection * r;
-        double projResidualNorm = projResidual.norm();
+
+        // precondition
+        VectorType precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+        // reproject
+        precondProjResidual = projection * precondProjResidual;
+
+        //        double projResidualNorm = projResidual.norm();
+        double precondProjResidualNorm = precondProjResidual.norm();
 
         double rhsNorm = rhs.norm();
         if (rhsNorm < 1.e-5)
@@ -410,7 +432,7 @@ public:
         int n = r.rows();
 
         // krylovDimension = max number of vectors that form the Krylov subspace
-        int krylovDimension = 10;
+        int krylovDimension = 40;
 
         // initialize upper Hessenberg matrix
         MatrixType H = MatrixType::Zero(krylovDimension + 1, krylovDimension);
@@ -421,21 +443,20 @@ public:
         // container for Givens rotation matrices, i.e. a vector of Matrix2d with cosines and sines
         std::vector<Eigen::JacobiRotation<double>> Givens(krylovDimension + 1);
 
-        VectorType e1 = VectorType::Zero(n);
-        e1[0] = 1.0;
+        VectorType e1 = VectorType::Unit(n, 0);
 
-        double tolerance = 1.e-11;
-        int maxNumRestarts = 1000;
+        double tolerance = 1.e-12;
+        int maxNumRestarts = mCpgMaxIterations;
 
         int numRestarts = 0;
 
-        while (projResidualNorm > tolerance * rhsNorm and numRestarts < maxNumRestarts)
+        while (precondProjResidualNorm > tolerance * rhsNorm and numRestarts < maxNumRestarts)
         {
             // the first vector in the Krylov subspace is the normalized residual
-            V.col(0) = projResidual / projResidualNorm;
+            V.col(0) = precondProjResidual / precondProjResidualNorm;
 
             // initialize the s vector used to estimate the residual
-            VectorType s = projResidualNorm * e1;
+            VectorType s = precondProjResidualNorm * e1;
 
             for (int i = 0; i < krylovDimension; ++i)
             {
@@ -443,6 +464,12 @@ public:
                 VectorType w = CalculateFx(V.col(i));
 
                 // project w
+                w = projection * w;
+
+                // precondition
+                w = ApplyPreconditionerOnTheLeft(w);
+
+                // reproject
                 w = projection * w;
 
                 for (int iRow = 0; iRow < i + 1; ++iRow)
@@ -471,12 +498,12 @@ public:
                 // Finally apply the new Givens rotation on the s vector
                 s.applyOnTheLeft(i, i + 1, Givens[i].adjoint());
 
-                projResidualNorm = std::abs(s[i + 1]);
+                precondProjResidualNorm = std::abs(s[i + 1]);
 
-                mStructure->GetLogger() << "projected GMRES relative error: \t" << projResidualNorm/(rhsNorm)
-                          << "\t #restarts: \t" << numRestarts << "\n";
+                mStructure->GetLogger() << "projected GMRES relative error: \t" << precondProjResidualNorm / (rhsNorm)
+                                        << "\t #restarts: \t" << numRestarts << "\n";
 
-                if (projResidualNorm < tolerance * rhsNorm)
+                if (precondProjResidualNorm < tolerance * rhsNorm)
                 {
                     VectorType y = s.head(i + 1);
                     H.topLeftCorner(i + 1, i + 1).triangularView<Eigen::Upper>().solveInPlace(y);
@@ -485,7 +512,6 @@ public:
                 }
             }
 
-
             // we have exceeded the number of iterations. Update the approximation and start over
             VectorType y = s.head(krylovDimension);
             H.topLeftCorner(krylovDimension, krylovDimension).triangularView<Eigen::Upper>().solveInPlace(y);
@@ -493,9 +519,16 @@ public:
 
             // compute preconditioned residual
             Fx = CalculateFx(x);
-            r  = rhs - Fx;
+            r = rhs - Fx;
             projResidual = projection * r;
-            projResidualNorm = projResidual.norm();
+
+            // precondition
+            precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+            // reproject
+            precondProjResidual = projection * precondProjResidual;
+
+            precondProjResidualNorm = precondProjResidual.norm();
 
             ++numRestarts;
         }
@@ -507,6 +540,16 @@ public:
         return numRestarts;
     }
 
+
+    //! @brief Direct solver for the interface problem
+    //!
+    //! Iterative method to solve the interface problem.
+    //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
+    //! iteration
+    int DirectSolver(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
+    {
+        return 1337;
+    }
 
     //! @brief Solves the global and local problem
     //!
@@ -589,7 +632,7 @@ public:
         VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
 
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
             throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
@@ -606,13 +649,13 @@ public:
         {
         case eIterativeSolver::ConjugateGradient:
         {
-            iterations = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjConjugateGradient(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
 
         case eIterativeSolver::BiconjugateGradientStabilized:
         {
-            iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjBiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
         case eIterativeSolver::ProjectedGmres:
@@ -625,8 +668,11 @@ public:
         }
 
 
-        if (iterations >= mCpgMaxIterations)
+        if (iterations >= mCpgMaxIterations - 1)
+        {
             throw MechanicsException(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
+        }
+
 
         if (structure->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
@@ -640,7 +686,7 @@ public:
 
         zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
-        if (not(zeroVec.isMuchSmallerThan(1.e-2, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
@@ -648,7 +694,7 @@ public:
 
 
         zeroVec = rigidBodyModes.transpose() * (residual_mod - B.transpose() * deltaLambda);
-        if (not(zeroVec.isMuchSmallerThan(1.e-2, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
             throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
@@ -702,6 +748,15 @@ public:
 
 
         delta_dof_active = delta_dof_active - rigidBodyModes * alphaLocal;
+
+        //        zeroVec = B * delta_dof_active;
+        //
+        //        structure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
+        //
+        //        MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        //
+        //        structure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
+        //        structure->GetLogger() << "delta lambda: \n" << deltaLambda << "\n\n";
 
 
         StructureOutputBlockVector delta_dof_dt0(structure->GetDofStatus());
@@ -758,74 +813,105 @@ public:
         case eFetiPreconditioner::Dirichlet:
         {
 
-            ////            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
-            ////            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
-            //            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-            ////            mStructure->GetLogger() << "H \n" << H << "\n\n";
-            //
-            ////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-            //
-            //            std::vector<int> lagrangeMultiplierDofIds =
-            //                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
-            //
-            //            std::vector<int> internalDofIds;
-            //
-            //            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-            //                internalDofIds.push_back(j);
-            //
-            //            for (const auto& id : lagrangeMultiplierDofIds)
-            //                internalDofIds.erase(internalDofIds.begin() + id);
-            //
-            ////            mStructure->NodeInfo(10);
+            //            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
+            //            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
+            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
+            //            mStructure->GetLogger() << "H \n" << H << "\n\n";
+
+            //            mStructure->GetLogger() << "Searching for seg fault \n\n";
+
+
+            std::vector<int> lagrangeMultiplierDofIds =
+                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+
+
+            std::set<int> internalDofIds;
+
+            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
+            {
+                internalDofIds.insert(j);
+            }
+
+
+            for (const auto& id : lagrangeMultiplierDofIds)
+            {
+                internalDofIds.erase(id);
+            }
+
+
+            //            mStructure->GetLogger() << "LagrangeMultiplierDOfIds    "
+            //                                    << "\n";
             //            for (const auto& i : lagrangeMultiplierDofIds)
             //                mStructure->GetLogger() << i << "\n";
             //
-            //            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() <<
-            //            "\n\n";
-            //            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() <<
-            //            "\n\n";
-            //            //
-            //            //            mStructure->GetLogger() << "\n\n";
-            //            //
-            //            //            for (const auto& i : internalDofIds)
-            //            //                mStructure->GetLogger() << i << "\n";
+            //            mStructure->GetLogger() << "InternalDofIds    "
+            //                                    << "\n";
             //
+            //            for (const auto& i : internalDofIds)
+            //                mStructure->GetLogger() << i << "\n";
+
+            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
+
+            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() << "\n\n";
+            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() << "\n\n";
+
+            //            mStructure->GetLogger() << "\n\n";
             //
-            //            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-            //            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIds, internalDofIds);
-            //            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIds);
-            //            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIds, lagrangeMultiplierDofIds);
+            //            mStructure->GetLogger() << "InternalDofIdsVec    "
+            //                                    << "\n";
             //
-            //
-            ////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-            ////            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
-            ////            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
-            ////            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
-            ////            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
-            //
-            //            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
-            //            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
-            ////            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
-            //
-            //            //
-            //            //     | 0  0   |
-            //            // S = | 0  Sbb |
-            //            //
-            //            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-            //
-            //
-            //            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-            //                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-            //                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
-            //                    Sbb.coeff(rowId, colId);
-            //
-            //
-            //            mLocalPreconditioner = B * S * B.transpose();
-            //
-            ////            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
+            //            for (const auto& i : internalDofIdsVec)
+            //                mStructure->GetLogger() << i << "\n";
 
 
-            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
+            Timer extrac("Time to extract");
+            mStructure->GetLogger() << "Extract Kbb"
+                                    << "\n\n";
+            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
+            mStructure->GetLogger() << "Extract Ki"
+                                    << "\n\n";
+            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
+            mStructure->GetLogger() << "Extract Kbi"
+                                    << "\n\n";
+            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
+            mStructure->GetLogger() << "Extract Kib"
+                                    << "\n\n";
+            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
+
+            extrac.Reset();
+
+            //            mStructure->GetLogger() << "Searching for seg fault \n\n";
+            //            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
+            //            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
+            //            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
+            //            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
+
+            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
+            //            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
+
+            //
+            //     | 0  0   |
+            // S = | 0  Sbb |
+            //
+            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
+
+
+            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
+                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
+                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
+                            Sbb.coeff(rowId, colId);
+
+
+            mLocalPreconditioner = B * S * B.transpose();
+
+            //            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
+
+
+            MPI_Barrier(MPI_COMM_WORLD);
+
+            //            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented
+            //            yet.");
 
             break;
         }
@@ -840,9 +926,46 @@ public:
     {
         Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
 
-        for (size_t rowId = 0; rowId < rowIds.size(); ++rowId)
-            for (size_t colId = 0; colId < colIds.size(); ++colId)
-                subMatrix.insert(rowId, colId) = mat.coeff(rowIds[rowId], colIds[colId]);
+        mStructure->GetLogger() << "rowIds.size() \n"
+                                << rowIds.size() << "\ncolIds.size() \n"
+                                << colIds.size() << "\n\n";
+
+        //        for (size_t rowId = 0; rowId < rowIds.size(); ++rowId)
+        //            for (size_t colId = 0; colId < colIds.size(); ++colId)
+        //                subMatrix.insert(rowId, colId) = mat.coeff(rowIds[rowId], colIds[colId]);
+
+
+        //        mStructure->GetLogger() << "Lgrange multiplier ids" << "\n";
+        //        for (const auto& i : rowIds)
+        //            mStructure->GetLogger() << i << "\n";
+
+
+        for (int k = 0; k < mat.outerSize(); ++k)
+        {
+            auto colIt = std::find(colIds.begin(), colIds.end(), k);
+            if (colIt != colIds.end())
+            {
+                for (typename Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it)
+                {
+                    auto rowIt = std::find(rowIds.begin(), rowIds.end(), it.row());
+                    if (rowIt != rowIds.end())
+                    {
+                        int rowId = std::distance(rowIds.begin(), rowIt);
+                        int colId = std::distance(colIds.begin(), colIt);
+                        //                        mStructure->GetLogger() << "rowId \t" << rowId
+                        //                                                << "\t it.row() \t" << it.row() <<"\n"
+                        //                                                << "colId \t" << colId
+                        //                                                << "\t it.col() \t" << it.col() <<"\n";
+                        subMatrix.insert(rowId, colId) = it.value();
+
+                        ++rowId;
+                    }
+                }
+            }
+        }
+
+
+        //        mStructure->GetLogger() << "submatrix2 \n" << subMatrix2 << "\n\n";
 
         return subMatrix;
     }
@@ -962,6 +1085,8 @@ public:
             StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
 
             StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
+            StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
+            StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
 
             StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
             StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
@@ -1031,6 +1156,15 @@ public:
                 // calculate Delta_BRhs and Delta_ExtForce
                 //            auto bRHS           = UpdateAndGetAndMergeConstraintRHS(mTime, lastConverged_dof_dt0);
 
+                if (curTime >= 0.006)
+                    timeStep = 1.e-4;
+
+                if (curTime >= 0.0063)
+                    timeStep = 1.e-5;
+
+                if (curTime >= 0.0064)
+                    timeStep = 1.e-6;
+
                 curTime += timeStep;
                 SetTimeAndTimeStep(curTime, timeStep, rTimeDelta); // check whether harmonic excitation, check whether
                 // curTime is too close to the time data
@@ -1082,6 +1216,7 @@ public:
 
                     delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
 
+
                     if (structure->mRank == 0)
                     {
                         std::cout << "Time for factorization and FETI solve for " << structure->mNumProcesses
@@ -1089,12 +1224,17 @@ public:
                     }
 
 
+                    // calculate trial state
                     dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+                    if (mStructure->GetNumTimeDerivatives() >= 1)
+                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+                    if (mStructure->GetNumTimeDerivatives() >= 2)
+                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+
+
+                    MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
 
                     lambda = lastConverged_lambda + deltaLambda;
-
-
-                    mStructure->NodeMergeDofValues(dof_dt0);
 
 
                     // ******************************************************
@@ -1118,7 +1258,6 @@ public:
                     mStructure->GetLogger() << "Residual J: \t" << normResidual << "\n\n";
                     mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
 
-
                     int iteration = 0;
                     while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
                     {
@@ -1138,8 +1277,14 @@ public:
 
 
                         dof_dt0 += delta_dof_dt0;
+                        if (mStructure->GetNumTimeDerivatives() >= 1)
+                            dof_dt1 += delta_dof_dt0 * (mGamma / (timeStep * mBeta));
+                        if (mStructure->GetNumTimeDerivatives() >= 2)
+                            dof_dt2 += delta_dof_dt0 * (1. / (timeStep * timeStep * mBeta));
+
                         lambda += deltaLambda;
-                        mStructure->NodeMergeDofValues(dof_dt0);
+                        MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
+
 
                         // ******************************************************
                         mStructure->Evaluate(inputMap, evaluateInternalGradient);
@@ -1176,11 +1321,16 @@ public:
 
                         // store converged step
                         lastConverged_dof_dt0 = dof_dt0;
-                        lastConverged_lambda = lambda;
+                        if (mStructure->GetNumTimeDerivatives() >= 1)
+                            lastConverged_dof_dt1 = dof_dt1;
+                        if (mStructure->GetNumTimeDerivatives() >= 1)
+                            lastConverged_dof_dt2 = dof_dt2;
 
                         prevResidual = residual;
 
-                        mStructure->NodeMergeDofValues(dof_dt0);
+
+                        MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
+                        lastConverged_lambda = lambda;
 
 
                         mTime += timeStep;
@@ -1289,7 +1439,7 @@ private:
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
     double mCpgTolerance = 1.0e-4;
-    const int mCpgMaxIterations = 1000;
+    const int mCpgMaxIterations = 10;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
     eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
 };

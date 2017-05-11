@@ -450,6 +450,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
+        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD_VELOCITY:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
 
