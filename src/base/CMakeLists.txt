@@ -4,6 +4,7 @@ set(NuToBaseSources
     serializeStream/SerializeStreamBase.cpp
     serializeStream/SerializeStreamIn.cpp
     serializeStream/SerializeStreamOut.cpp
+    Timer.cpp
     )
 
 sources_to_objects("${NuToBaseSources}" NuToBaseObjects)
