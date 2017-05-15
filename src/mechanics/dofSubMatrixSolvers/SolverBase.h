@@ -6,7 +6,6 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {

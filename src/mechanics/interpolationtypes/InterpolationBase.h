@@ -8,7 +8,7 @@
 #pragma once
 
 #include <vector>
-#include "eigen3/Eigen/Dense"
+#include <eigen3/Eigen/Core>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>

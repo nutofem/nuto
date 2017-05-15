@@ -35,9 +35,6 @@
 #include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorInt.h"
-#include "mechanics/elements/ElementOutputFullMatrixDouble.h"
-#include "mechanics/elements/ElementOutputFullVectorDouble.h"
-#include "mechanics/elements/ElementOutputVectorInt.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/GroupEnum.h"
@@ -55,9 +52,6 @@
 
 #include "mechanics/mesh/MeshCompanion.h"
 #include "mechanics/structures/Assembler.h"
-
-#include <ANN/ANN.h>
-#include <set>
 
 NuTo::Structure::Structure(int rDimension) :
         StructureBase(rDimension)

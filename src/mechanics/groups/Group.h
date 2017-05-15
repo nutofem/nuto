@@ -15,6 +15,7 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
+#include <algorithm>
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/MechanicsException.h"
 

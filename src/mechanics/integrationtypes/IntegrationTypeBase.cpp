@@ -52,13 +52,13 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dim, NumVisualizationPoints);
     
     ipCellInfo.vertices.resize(NumVisualizationPoints);
-    for (int i = 0; i < NumVisualizationPoints; ++i)
+    for (unsigned i = 0; i < NumVisualizationPoints; ++i)
         ipCellInfo.vertices[i].localCoords = visualizationPointNaturalCoordinates.col(i);
 
     // transform cells
     ipCellInfo.cells.resize(NumVisualizationCells);
     auto it = VisualizationCellsIncidence.begin();
-    for (int i = 0; i < NumVisualizationCells; ++i)
+    for (unsigned i = 0; i < NumVisualizationCells; ++i)
     {
         CellInfo& cellInfo = ipCellInfo.cells[i];
         cellInfo.cellType = VisualizationCellType[i];

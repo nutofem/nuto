@@ -12,7 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 #include <vector>

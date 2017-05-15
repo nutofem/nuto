@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include <memory>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 #include "base/Exception.h"
 

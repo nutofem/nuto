@@ -1,8 +1,8 @@
 #pragma once
 
-#include <eigen3/Eigen/Core>
 #include <vector>
-
+#include <string>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -42,7 +42,5 @@ private:
     //! @param rDelimiter delimiters between the entries in each line
     //! @return vector containing the numbers in the string
     static std::vector<double> StringToDoubles(const std::string& rString, std::string rDelimiter);
-
 };
-
 }

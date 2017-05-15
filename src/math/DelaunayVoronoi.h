@@ -4,9 +4,7 @@
  *  Created on: 1 Sep 2015
  *      Author: ttitsche
  */
-
-#ifndef DELAUNAYVORONOI_H_
-#define DELAUNAYVORONOI_H_
+#pragma once
 
 #include <iostream>
 #include <eigen3/Eigen/Dense>
@@ -788,5 +786,3 @@ private:
     Polygon mBoundary;
     bool mCalculateInTransformedSystem;
 };
-
-#endif /* DELAUNAYVORONOI_H_ */

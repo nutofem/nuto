@@ -7,7 +7,7 @@
 
 #include "mechanics/MechanicsException.h"
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 #include <map>
 #include <set>
 
