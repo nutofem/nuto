@@ -6,6 +6,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <iomanip>
 #include "mechanics/feti/NewmarkFeti.h"
 
 #include "mechanics/nodes/NodeBase.h"

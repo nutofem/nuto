@@ -16,6 +16,7 @@
 #include "math/CustomBoostSerializationExtensions.h"
 #endif  // ENABLE_SERIALIZATION
 
+#include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolationtypes/InterpolationBaseFEM.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 

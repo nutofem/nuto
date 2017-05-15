@@ -87,7 +87,7 @@ double NuTo::Timer::GetTimeDifference() const
 
 #ifdef _OPENMP
 //! @brief returns the time from ctor to now in seconds
-double GetCPUTimeDifference() const
+double NuTo::Timer::GetCPUTimeDifference() const
 {
     return difftime(clock(), mCPUTimeInit) / CLOCKS_PER_SEC;
 }
