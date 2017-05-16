@@ -24,6 +24,7 @@ enum class eConstitutiveType
     LATTICE_CONCRETE,                                       //!< material law for lattice model
     LINEAR_DAMPING_ENGINEERING_STRESS,                      //!< linear damping
     LINEAR_ELASTIC_ENGINEERING_STRESS,                      //!< linear-elastic behavior
+    LINEAR_ELASTIC_INHOMOGENEOUS,                           //!<
     LINEAR_SPRING,                                          //!< linear spring model
     LOCAL_DAMAGE_MODEL,                                     //!< local damage model
     MISES_PLASTICITY_ENGINEERING_STRESS,                    //!< mises plasticity with isotropic and kinematic hardening
@@ -172,7 +173,8 @@ enum class eInput
     PLANE_STATE,                        //!< for telling the law whether there is plane stress or plane strain
     TIME,
     TIME_STEP,
-    CALCULATE_INITIALIZE_VALUE_RATES   //!
+    CALCULATE_INITIALIZE_VALUE_RATES,   //!
+    COORDINATES
 };
 
 

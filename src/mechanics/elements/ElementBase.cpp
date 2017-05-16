@@ -48,6 +48,15 @@
 
 using namespace NuTo;
 
+namespace NuTo
+{
+std::ostream& operator<<(std::ostream& out, const ElementBase& element)
+{
+    element.Info(out);
+    return out;
+}
+} /* NuTo */
+
 NuTo::ElementBase::ElementBase(const InterpolationType& rInterpolationType) :
         mInterpolationType(&rInterpolationType),
         mIPData(rInterpolationType.GetCurrentIntegrationType())
@@ -629,10 +638,21 @@ void NuTo::ElementBase::Info() const
     {
         const NodeBase* node = GetNode(iNode);
         std::cout << "NodeInfo of local node " << iNode << ": \n";
-        std::cout << node << "\n";
+        std::cout << *node << "\n";
     }
 }
 
+void NuTo::ElementBase::Info(std::ostream& out) const
+{
+    out << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
+
+    for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+    {
+        const NodeBase* node = GetNode(iNode);
+        out << "NodeInfo of local node " << iNode << ": \n";
+        out << *node << "\n";
+    }
+}
 
 void NuTo::ElementBase::ReorderNodes()
 {

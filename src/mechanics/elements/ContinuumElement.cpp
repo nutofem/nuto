@@ -629,6 +629,12 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
             electricField.AsVector() = -rData.mB.at(Node::eDof::ELECTRICPOTENTIAL) * rData.mNodalValues.at(Node::eDof::ELECTRICPOTENTIAL);
             break;
         }
+        case Constitutive::eInput::COORDINATES:
+        {
+            auto& coordinates = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());
+            coordinates.AsVector() = *rData.GetNMatrix(Node::eDof::COORDINATES) * rData.mNodalValues.at(Node::eDof::COORDINATES);
+            break;
+        }
         case Constitutive::eInput::TIME:
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
@@ -957,19 +963,19 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::ELECTRICPOTENTIAL):
             {
                 const auto& tangentD_E = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD).get());
-                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_E * rData.mB.at(dofRow);
+                hessian0 += -rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_E * rData.mB.at(dofRow);
                 break;
             }
             case Node::CombineDofs(Node::eDof::ELECTRICPOTENTIAL, Node::eDof::DISPLACEMENTS):
             {
                 const auto& tangentD_strain = *static_cast<ConstitutiveMatrix<TDim, VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN).get());
-                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_strain * rData.mB.at(dofCol);
+                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentD_strain * rData.mB.at(dofCol);
                 break;
             }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::ELECTRICPOTENTIAL):
             {
                 const auto& tangentStress_E = *static_cast<ConstitutiveMatrix<VoigtDim, TDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD).get());
-                hessian0 += -1*rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStress_E * rData.mB.at(dofCol);
+                hessian0 += -rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStress_E * rData.mB.at(dofCol);
                 break;
             }
                 //VHIRTHAMTODO get references to shape functions ---> no double find for the same value
@@ -1306,7 +1312,7 @@ std::shared_ptr<const Section> ContinuumElement<TDim>::GetSection() const
     if (mSection != nullptr)
         return mSection;
 
-    Info();
+    std::cout << this;
     throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
 }
 
@@ -1393,8 +1399,8 @@ void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDa
     // calculate shape functions and their derivatives
     for (auto dof : mInterpolationType->GetDofs())
     {
-        if (dof == Node::eDof::COORDINATES)
-            continue;
+//        if (dof == Node::eDof::COORDINATES)
+//            continue;
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
         rData.mN[dof] = &interpolationType.GetMatrixN(rTheIP);
 

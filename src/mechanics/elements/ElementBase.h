@@ -82,6 +82,9 @@ public:
 
     virtual ~ElementBase() = default;
 
+    //! @brief Print information about the element
+    friend std::ostream& operator<<(std::ostream& out, const ElementBase& element);
+
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! @return local dimension
@@ -344,6 +347,9 @@ protected:
     ElementBase() {};
 #endif // ENABLE_SERIALIZATION
 
+    //! @brief Outstream function for "virtual friend idiom"
+    virtual void Info(std::ostream& out) const;
+
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes();
 
@@ -361,6 +367,9 @@ protected:
     IPData mIPData;
 
 };
+
+std::ostream& operator<<(std::ostream& out, const ElementBase& element);
+
 }    //namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION

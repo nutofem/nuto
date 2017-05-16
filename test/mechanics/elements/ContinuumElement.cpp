@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
-
+#include <boost/test/output_test_stream.hpp>
+#include <fstream>
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
@@ -94,4 +95,21 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     Eigen::Matrix<double, 2, 1> expected_gradient;
     expected_gradient << 0.5, 0.5;
     BOOST_CHECK_SMALL((gradient - expected_gradient).norm(), 1e-15);
+
+    boost::test_tools::output_test_stream output;
+    output << element;
+    std::string expected = "InterpolationTypeInfo:\n"
+                           "COORDINATES: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "TEMPERATURE: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "\n"
+                           "NodeInfo of local node 0: \n"
+                           "COORDINATES: 1 dt:2\n"
+                           "TEMPERATURE: 1 dt:2\n"
+                           "\n"
+                           "NodeInfo of local node 1: \n"
+                           "COORDINATES: 1 dt:2\n"
+                           "TEMPERATURE: 1 dt:2\n"
+                           "\n";
+
+    BOOST_CHECK(output.is_equal(expected));
 }
