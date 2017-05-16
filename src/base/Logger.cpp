@@ -12,10 +12,6 @@ NuTo::Logger::Logger()
 //! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Logger::Save (const std::string &filename, std::string rType )const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
     try
     {
         //transform to uppercase
@@ -69,11 +65,6 @@ void NuTo::Logger::Save (const std::string &filename, std::string rType )const
     {
         throw Exception ( e.what() );
     }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::Logger::Save] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
 }
 
 
@@ -82,10 +73,6 @@ void NuTo::Logger::Save (const std::string &filename, std::string rType )const
 //! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Logger::Restore (const std::string &filename, std::string rType )
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
     try
     {
         //transform to uppercase
@@ -149,11 +136,6 @@ void NuTo::Logger::Restore (const std::string &filename, std::string rType )
     {
         throw Exception ( e.what() );
     }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::Logger::Restore] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
 }
 
 #endif //SERIALIZATION

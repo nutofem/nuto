@@ -7,10 +7,12 @@
 #include <mkl_service.h>
 #endif // HAVE_MKL_PARDISO
 
+#include "base/Timer.h"
 #include "math/MathException.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
+
 
 NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirectSolver()
 {
@@ -29,22 +31,20 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirec
 #ifdef HAVE_MKL_PARDISO
 void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    NuTo::Timer timer(__PRETTY_FUNCTION__ + " Reordering and symbolic factorization");
+    
     mkl_set_num_threads(2);
     std::cout << "number of threads: " << mkl_get_max_threads() << std::endl;
 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] one based indexing of sparse rMatrix is required for this solver.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] matrix must be symmetric.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix must be symmetric.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     const std::vector<int>& matrixColumns = rMatrix.GetColumns();
@@ -69,7 +69,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     // check right hand side
     if (matrixDimension != rRhs.rows())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] invalid dimension of right hand side vector.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = rRhs.cols();
     const double *rhsValues = rRhs.data();
@@ -185,17 +185,11 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
              &error);
     if (error != 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Analysis and reordering phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for reordering and symbolic factorization: "
-                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
+    
+    timer.Restart(__PRETTY_FUNCTION__ + " Numerical factorization");
 
-    // Numerical factorization.
     phase = 22;
     PARDISO (pt,
              &maxfct,
@@ -217,15 +211,9 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " + this->GetErrorString(error) + ".");
     }
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for numerical factorization: "
-                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
+    
+    timer.Reset(__PRETTY_FUNCTION__ + "Back substitution and iterative refinement.");
 
-    // Back substitution and iterative refinement.
     phase = 33;
     PARDISO (pt,
              &maxfct,
@@ -247,13 +235,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " + this->GetErrorString(error) + ".");
     }
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        std::cout << "[NuTo::SparseDirectSolverMKLPardiso::solve] Time for back substitution and iterative refinement: "
-                  << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
+
 	if (this->mVerboseLevel > 1)
 	{
 		std::cout << "[SparseDirectSolverMKLPardiso::solve] Peak memory symbolic factorization: "

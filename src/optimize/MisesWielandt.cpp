@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include "optimize/MisesWielandt.h"
+#include "base/Timer.h"
 #define machine_precision 1e-15
 //sqrt machine_precision
 
@@ -11,19 +12,15 @@
 
 int NuTo::MisesWielandt::Optimize()
 {
-#ifdef SHOW_TIME
-    std::clock_t startOpt,endOpt;
-    startOpt=clock();
-#endif
-
+    NuTo::Timer timer(__PRETTY_FUNCTION__, mShowTime);
+    
     const double tol=mAccuracyGradient;
 	double lambda=0.,		//lambda_min = lambda
 		   prevLambda=0.,
            norm=0.;
            //prevNorm=0.;
 
-    int numGradientCalls(0),   // number of gradient calls
-		curIteration(0);       //number of iterations
+    int numGradientCalls(0);   // number of gradient calls
 
     eOptimizationReturnAttributes returnValue;
 
@@ -116,20 +113,6 @@ int NuTo::MisesWielandt::Optimize()
 
 	mIsBuild = true;
 
-#ifdef SHOW_TIME
-    endOpt=clock();
-    if (mShowTime)
-	{
-		std::cout << "[NuTo::MisesWielandt::Optimize] " << difftime(endOpt, startOpt) / CLOCKS_PER_SEC << "sec"
-				  << std::endl;
-		std::cout << "[MisesWielandt] lambda - norm " << lambda << " " << norm << " " << "\n";
-		std::cout << "[MisesWielandt] " << mObjectiveType << " " << mObjective << "\n";
-		outputTime.open(filename, std::fstream::out | std::fstream::app);
-		outputTime << (difftime(endOpt, startOpt) / CLOCKS_PER_SEC) << "   " << curIteration << "\n";
-		outputTime.close();
-	}
-
-#endif
 	if (mVerboseLevel>0)
 	{
 		std::cout<< " "  << std::endl;

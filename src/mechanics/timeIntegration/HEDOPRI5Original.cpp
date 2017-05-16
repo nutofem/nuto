@@ -9,10 +9,7 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
+#include "base/Timer.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
@@ -271,13 +268,8 @@ void NuTo::RungeKuttaBase::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime();
-#endif
-    start=clock();
-#endif
+    NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+
     try
     {
         if (mTimeStep==0.)
@@ -535,19 +527,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
         throw;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::HEDOPRI5Original::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::HEDOPRI5Original::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return NuTo::Error::SUCCESSFUL;
-
 }
 
 

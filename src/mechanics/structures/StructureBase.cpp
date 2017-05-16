@@ -1039,10 +1039,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 #define UNDONE 1
 #define SELECTED 2
 #define DELETED 3
-#ifdef SHOW_TIME
-    std::clock_t start, end;
-    start = clock();
-#endif
+    NuTo::Timer timer(__PRETTY_FUNCTION__, GetShowTime(), GetLogger());
     try
     {
         mMIS.clear();
@@ -1140,13 +1137,6 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
                 "[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
         throw;
     }
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        mLogger << "[NuTo::StructureBase::CalculateMaximumIndependentSets] " << difftime(end, start) / CLOCKS_PER_SEC
-                << "sec"
-                << "\n";
-#endif
 }
 #else
 //@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without

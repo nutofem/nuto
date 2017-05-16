@@ -15,15 +15,12 @@ option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES "enable building private examples in a separate directory (applications/custom)" FALSE)
-option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
-option(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 option(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 option(ENABLE_SERIALIZATION "enables serialization" FALSE)
-option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" TRUE)
 option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
@@ -89,17 +86,6 @@ if(ENABLE_SERIALIZATION)
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
 endif()
 
-if(ENABLE_VERBOSELEVEL)
-    add_definitions("-DENABLE_VERBOSELEVEL")
-    set(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VERBOSELEVEL")
-endif()
-
-if(ENABLE_SHOW_TIME)
-    add_definitions("-DSHOW_TIME")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DSHOW_TIME")
-endif()
-
 # search path for external libraries
 # check if NUTO_EXTERNAL_LIBRARIES_ROOT is set
 if(NOT NUTO_EXTERNAL_LIBRARIES_ROOT AND DEFINED $ENV{NUTO_EXTERNAL_LIBRARIES_ROOT})
@@ -112,10 +98,6 @@ endif()
 
 if(ENABLE_DEBUG_SERIALIZATION)
     add_definitions("-DDEBUG_SERIALIZATION")
-endif()
-
-if(ENABLE_OPENACC)
-    add_definitions("-D_OPENACC")
 endif()
 
 if(ENABLE_COVERAGE)
