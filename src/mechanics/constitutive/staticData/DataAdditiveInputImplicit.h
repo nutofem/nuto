@@ -1,14 +1,6 @@
 #pragma once
 
-
-#include "eigen3/Eigen/Dense"
-
-
-
-
-
-
-
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -21,22 +13,21 @@ namespace StaticData
 class DataAdditiveInputImplicit
 {
 public:
-
     DataAdditiveInputImplicit();
     ~DataAdditiveInputImplicit();
 
 
-Eigen::VectorXd& GetStress();
-const Eigen::VectorXd& GetStress() const;
+    Eigen::VectorXd& GetStress();
+    const Eigen::VectorXd& GetStress() const;
 
-Eigen::VectorXd& GetLocalInputs();
-const Eigen::VectorXd& GetLocalInputs() const;
+    Eigen::VectorXd& GetLocalInputs();
+    const Eigen::VectorXd& GetLocalInputs() const;
 
-Eigen::VectorXd& GetLocalInputRates();
-const Eigen::VectorXd& GetLocalInputRates() const;
+    Eigen::VectorXd& GetLocalInputRates();
+    const Eigen::VectorXd& GetLocalInputRates() const;
 
-double& GetTime();
-double GetTime() const;
+    double& GetTime();
+    double GetTime() const;
 
 private:
     Eigen::VectorXd mLocalInputs;
@@ -45,6 +36,6 @@ private:
     double mTime;
 };
 
-}// namespace StaticData
-}// namespace Constitutive
-}// namespace NuTo
+} // namespace StaticData
+} // namespace Constitutive
+} // namespace NuTo

@@ -4,11 +4,8 @@
 
 #include "math/EigenCompanion.h"
 
-#include "mechanics/elements/ElementOutputFullMatrixDouble.h"
-#include "mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorInt.h"
-#include "mechanics/elements/ElementOutputVectorInt.h"
 
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"

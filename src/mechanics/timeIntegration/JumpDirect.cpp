@@ -11,15 +11,15 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
 #include <iostream>
 #include <fstream>
 
+#include "base/Timer.h"
+
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
 
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
@@ -27,9 +27,6 @@
 #include "mechanics/timeIntegration/JumpDirect.h"
 #include "mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-
-#include "math/SparseMatrixCSRGeneral.h"
-#include "math/SparseMatrixCSRSymmetric.h"
 
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/constitutive/ConstitutiveStaticDataBase.h"
@@ -83,19 +80,12 @@ void NuTo::JumpDirect::serialize(Archive & ar, const unsigned int version)
 
 NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
+    NuTo::Timer timer(__PRETTY_FUNCTION__, mShowTime);
+
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
     //NuTo::SparseDirectSolverMKLPardiso mySolver;
-#ifdef SHOW_TIME
-        mySolver.SetShowTime(mStructure->GetShowTime());
-#endif
+    mySolver.SetShowTime(mStructure->GetShowTime());
     try
     {
     	this->SetNewmarkBeta(3./10.);
@@ -738,19 +728,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::JumpDirect::Solve] performing Newton-Raphson iteration.");
         throw;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::JumpDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::JumpDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return NuTo::Error::SUCCESSFUL;
-
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file

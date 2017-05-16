@@ -24,24 +24,10 @@ NuTo::ElementOutputBase::ElementOutputBase()
 NuTo::ElementOutputBase::~ElementOutputBase()
 {}
 
-Eigen::MatrixXd& NuTo::ElementOutputBase::GetFullMatrixDouble()
-{
-    throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type Eigen::MatrixXd");
-}
 
 NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble()
 {
     throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output matrix is not of type BlockFullMatrix<double>"));
-}
-
-Eigen::MatrixXi& NuTo::ElementOutputBase::GetFullMatrixInt()
-{
-    throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type Eigen::MatrixXd");
-}
-
-Eigen::VectorXd& NuTo::ElementOutputBase::GetFullVectorDouble()
-{
-    throw MechanicsException("[ElementOutputBase::GetFullVectorDouble] element output matrix is not of type Eigen::VectorXd");
 }
 
 NuTo::BlockFullVector<double> &NuTo::ElementOutputBase::GetBlockFullVectorDouble()
@@ -52,11 +38,6 @@ NuTo::BlockFullVector<double> &NuTo::ElementOutputBase::GetBlockFullVectorDouble
 NuTo::BlockFullVector<int>& NuTo::ElementOutputBase::GetBlockFullVectorInt()
 {
     throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output vector is not of type BlockFullVector<int>"));
-}
-
-Eigen::VectorXi& NuTo::ElementOutputBase::GetFullVectorInt()
-{
-	throw MechanicsException("[ElementOutputBase::GetFullVectorInt] element output matrix is not of type Eigen::VectorXd");
 }
 
 std::vector<int>& NuTo::ElementOutputBase::GetVectorInt()

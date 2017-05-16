@@ -1,9 +1,8 @@
 #include "BoostUnitTest.h"
 
 #include <memory>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
-#include "base/Timer.h"
 #include "base/Exception.h"
 
 #include "base/serializeStream/SerializeStreamOut.h"
@@ -221,7 +220,6 @@ void CheckCompoundData(const std::string& rFile, bool rIsBinary)
 
 void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
 {
-    NuTo::Timer timer(__PRETTY_FUNCTION__);
     size_t num = 42;
     std::vector<std::unique_ptr<CompoundDataBase>> values(num);
     std::vector<std::unique_ptr<CompoundDataBase>> valuesFromFile(num);
@@ -237,20 +235,17 @@ void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
         static_cast<CompoundData*>(&(*valueFromFile))->SetZero(5,3);
     }
 
-    timer.Reset("Write");
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
         for (auto& value : values)
             streamOut << *value;
     }
-    timer.Reset("Read");
     // read
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
     for (auto& valueFromFile : valuesFromFile)
         streamIn >> *valueFromFile;
 
-    timer.Reset("Cleanup");
     for (size_t i = 0; i < num; ++i)
     {
         BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mScalar,

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo

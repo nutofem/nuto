@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {

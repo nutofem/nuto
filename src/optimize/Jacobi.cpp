@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <iostream>
 #include "optimize/Jacobi.h"
+#include "base/Timer.h"
 
 //! @brief ... Optimize routine - optimize displacement or error according to input
 //! @brief ... Optimize residual if $|r|\inequal 0$
@@ -22,11 +23,8 @@ int NuTo::Jacobi::Optimize()
 //! @return ... optimization_return_attribute
 int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 {
-#ifdef SHOW_TIME
-    std::clock_t startJac,endJac;
-    startJac=clock();
-#endif
-//		std::cout<< __FILE__<<" "<<__LINE__<< "[Jacobi::Optimize]" << std::endl;
+    NuTo::Timer timer(__PRETTY_FUNCTION__, mShowTime);
+    
     double rErrorNorm=0.;
     int  numGradientCalls(0),   // number of gradient calls
 		 curIteration(0);      //number of iterations
@@ -93,12 +91,8 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 	}
 
 	mIsBuild = true;
-#ifdef SHOW_TIME
-    endJac=clock();
-	if (mShowTime &&mVerboseLevel>0 )
-		std::cout<< "[Jacobi::Optimize] Elapsed time (sec)............. " << difftime(endJac,startJac)/CLOCKS_PER_SEC << std::endl;
-#endif
-	if (mVerboseLevel>0)
+	
+    if (mVerboseLevel>0)
 	{
 		std::cout<< "[Jacobi::Optimize] Number of Iterations............. " << curIteration << std::endl;
 		std::cout<< "[Jacobi::Optimize] Active convergence criterion..... " ;

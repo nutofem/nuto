@@ -221,6 +221,9 @@ set(NuToMechanicsTimeIntegrationSources
     timeIntegration/VelocityVerlet.cpp
     )
 
+set(NuToMechanicsToolsSources
+    tools/GlobalFractureEnergyIntegrator.cpp
+    )
 
 set(NuToMechanicsSources
     ${NuToMechanicsConstitutiveSources}
@@ -238,6 +241,7 @@ set(NuToMechanicsSources
     ${NuToMechanicsSectionSources}
     ${NuToMechanicsStructuresSources}
     ${NuToMechanicsTimeIntegrationSources}
+    ${NuToMechanicsToolsSources}
     )
 
 

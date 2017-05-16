@@ -9,11 +9,6 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
-
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -75,13 +70,6 @@ void NuTo::VelocityVerlet::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
@@ -202,17 +190,6 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::VelocityVerlet::Solve] performing Newton-Raphson iteration.");
         throw;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
 }
 
 

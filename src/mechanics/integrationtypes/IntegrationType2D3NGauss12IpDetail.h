@@ -9,8 +9,6 @@
 
 #include "mechanics/integrationtypes/IntegrationType2D.h"
 
-#include <eigen3/Eigen/Dense>
-
 namespace NuTo
 {
 

@@ -363,19 +363,15 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, const Eigen::Matri
         newElementIds.push_back(newElementId);
     }
 
-#ifdef SHOW_TIME
     bool showTime = mShowTime;
     mShowTime = false;
-#endif
 
     // create element group containing the new elements
     int newElementGroup = GroupCreate(eGroupId::Elements);
     for (int newElementId : newElementIds)
         GroupAddElement(newElementGroup, newElementId);
 
-#ifdef SHOW_TIME
     mShowTime = showTime;
-#endif
     return newElementGroup;
 }
 

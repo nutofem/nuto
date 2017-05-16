@@ -2,7 +2,6 @@
 #pragma once
 
 #include <vector>
-#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
@@ -33,19 +32,11 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    virtual Eigen::MatrixXd& GetFullMatrixDouble();
-
     virtual BlockFullMatrix<double>& GetBlockFullMatrixDouble();
-
-    virtual Eigen::MatrixXi& GetFullMatrixInt();
-
-    virtual Eigen::VectorXd& GetFullVectorDouble();
 
     virtual BlockFullVector<double>& GetBlockFullVectorDouble();
 
     virtual BlockFullVector<int>& GetBlockFullVectorInt();
-
-    virtual Eigen::VectorXi& GetFullVectorInt();
 
     virtual std::vector<int>& GetVectorInt();
 

@@ -6,6 +6,7 @@
  *      Author: ttitsche
  */
 
+#include <eigen3/Eigen/Dense> // for ::determinant() 
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 

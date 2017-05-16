@@ -28,8 +28,8 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 
-#include "eigen3/Eigen/Eigenvalues"
-#include "eigen3/Eigen/Dense"
+#include <eigen3/Eigen/Eigenvalues>
+#include <eigen3/Eigen/Core>
 
 
 NuTo::PhaseField::PhaseField(const double rYoungsModulus,

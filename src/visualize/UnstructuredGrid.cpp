@@ -29,7 +29,7 @@ int UnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 void UnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
 {
     for (auto pointId : pointIds)
-        if (pointId >= mPoints.size())
+        if (pointId >= static_cast<int>(mPoints.size()))
             throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Point id not defined.");
 }
 

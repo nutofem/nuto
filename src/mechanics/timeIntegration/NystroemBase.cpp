@@ -9,10 +9,6 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
 #include "math/SparseDirectSolverMUMPS.h"
 
 #include "math/SparseMatrixCSRVector2.h"
@@ -72,13 +68,6 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
 void NuTo::NystroemBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
     try
     {
     	mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
@@ -151,7 +140,8 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
          	//calculate for delta_t = 0
             if (mStructure->GetVerboseLevel() > 5)
                 std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
-        	auto dof_dt0_new = dof_dt0 + dof_dt1*mTimeStep;
+
+            auto dof_dt0_new = dof_dt0 + dof_dt1*mTimeStep;
         	auto dof_dt1_new = dof_dt1;
 //        	std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
 //        	std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
@@ -246,17 +236,6 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::NystroemBase::Solve] performing Nystroem iteration.");
         throw;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::NystroemBase::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::NystroemBase::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
 }
 
 

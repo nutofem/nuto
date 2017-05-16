@@ -1,4 +1,5 @@
 set(solverSources 
+        base/Timer.cpp
         mechanics/dofSubMatrixStorage/BlockSparseMatrix.cpp
         mechanics/dofSubMatrixStorage/DofStatus.cpp
         mechanics/dofSubMatrixStorage/BlockFullVector.cpp

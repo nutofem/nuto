@@ -12,7 +12,6 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Dense>
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
