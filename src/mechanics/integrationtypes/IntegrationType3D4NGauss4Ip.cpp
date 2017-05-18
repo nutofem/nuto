@@ -5,39 +5,25 @@
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
 
-//! @brief constructor
 NuTo::IntegrationType3D4NGauss4Ip::IntegrationType3D4NGauss4Ip()
 {
+    mCoordinates[0] = Eigen::Vector3d({0.13819660, 0.13819660, 0.13819660});
+    mCoordinates[1] = Eigen::Vector3d({0.58541020, 0.13819660, 0.13819660});
+    mCoordinates[2] = Eigen::Vector3d({0.13819660, 0.58541020, 0.13819660});
+    mCoordinates[3] = Eigen::Vector3d({0.13819660, 0.13819660, 0.58541020});
 }
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     assert(rIpNum>=0 && rIpNum<4);
-    switch (rIpNum)
-    {
-    case 0: return Eigen::Vector3d({0.13819660, 0.13819660, 0.13819660});
-    case 1: return Eigen::Vector3d({0.58541020, 0.13819660, 0.13819660});
-    case 2: return Eigen::Vector3d({0.13819660, 0.58541020, 0.13819660});
-    case 3: return Eigen::Vector3d({0.13819660, 0.13819660, 0.58541020});
-    default:
-    	throw MechanicsException("[NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates3D] number of ip out of range.");
-    }
+    return mCoordinates[rIpNum];
 }
 
-
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
 int NuTo::IntegrationType3D4NGauss4Ip::GetNumIntegrationPoints()const
 {
     return 4;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
 double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     return 1./24.;

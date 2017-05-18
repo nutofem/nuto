@@ -2,6 +2,7 @@
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationType3D.h"
+#include <array>
 
 namespace NuTo
 {
@@ -68,6 +69,7 @@ public:
 
 protected:
 
+    std::array<Eigen::Vector3d, 4> mCoordinates;
 
 };
 } // namespace NuTo

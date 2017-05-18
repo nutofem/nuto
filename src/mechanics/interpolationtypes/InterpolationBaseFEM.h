@@ -213,6 +213,10 @@ public:
 
 #endif  // ENABLE_SERIALIZATION
 
+    //! @brief calculate and store the shape functions and their derivatives
+    //! @param rIntegrationType ... integration type
+    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
+
 protected:
 
     //! @brief returns the natural coordinates of the nodes that span the surface
@@ -224,10 +228,6 @@ protected:
     //! @param rSurface ... surface id
     //! @param rNaturalNodeCoordinate ... natural coordinate of the node to test
     bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const override;
-
-    //! @brief calculate and store the shape functions and their derivatives
-    //! @param rIntegrationType ... integration type
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
 
     //! @brief return the number node depending the shape and the order
     virtual int CalculateNumNodes() const override = 0;

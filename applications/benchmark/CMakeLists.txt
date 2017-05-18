@@ -7,6 +7,7 @@ foreach(test
     LinearElasticity
     LinearElasticityVisualize
     AssembleSparseMatrix
+    ShapeFunctionMemoization
     Solvers
     )
 
