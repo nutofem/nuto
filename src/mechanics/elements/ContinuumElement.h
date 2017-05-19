@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 namespace NuTo
 {
@@ -9,7 +8,7 @@ namespace NuTo
 class NodeBase;
 class ElementOutputBase;
 class ElementOutputIpData;
-
+class DofStatus;
 template <typename T> class BlockFullVector;
 template <typename T> class BlockFullMatrix;
 template <int TDim> class ContinuumBoundaryElement;

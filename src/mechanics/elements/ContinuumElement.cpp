@@ -18,6 +18,7 @@
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/EvaluateDataContinuum.h"
 
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 
