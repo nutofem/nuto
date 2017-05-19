@@ -3,7 +3,6 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation1DIGA.h"
 
 NuTo::Interpolation1DIGA::Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
@@ -45,31 +44,6 @@ void NuTo::Interpolation1DIGA::UpdateIntegrationType(const IntegrationTypeBase& 
 
     mUpdateRequired = false;
 }
-
-
-int NuTo::Interpolation1DIGA::GetNumDofsPerNode() const
-{
-    switch (mDofType)
-    {
-    case NuTo::Node::eDof::COORDINATES:
-        return mDimension;
-    case NuTo::Node::eDof::DISPLACEMENTS:
-        return mDimension;
-    case NuTo::Node::eDof::TEMPERATURE:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
-        return 2;
-    case NuTo::Node::eDof::RELATIVEHUMIDITY:
-        return 1;
-    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
-        return 1;
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
-    }
-}
-
 
 // --- shape functions --- //
 

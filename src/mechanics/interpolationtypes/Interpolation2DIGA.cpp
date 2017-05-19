@@ -3,8 +3,8 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation2DIGA.h"
+#include "mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation2DIGA::Interpolation2DIGA(NuTo::Node::eDof rDofType,
                                              NuTo::Interpolation::eTypeOrder rTypeOrder,
@@ -45,29 +45,6 @@ NuTo::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() co
 std::vector<Eigen::VectorXd> NuTo::Interpolation2DIGA::GetSurfaceEdgesCoordinates(int rSurface) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented yet");
-}
-
-int NuTo::Interpolation2DIGA::GetNumDofsPerNode() const
-{
-    switch (mDofType)
-    {
-    case NuTo::Node::eDof::COORDINATES:
-        return mDimension;
-    case NuTo::Node::eDof::DISPLACEMENTS:
-        return mDimension;
-    case NuTo::Node::eDof::TEMPERATURE:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
-        return 2;
-    case NuTo::Node::eDof::RELATIVEHUMIDITY:
-        return 1;
-    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
-        return 1;
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
-    }
 }
 
 /*******************/
@@ -237,7 +214,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen
 Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const
 {
     int numNodes = GetNumNodes();
-    int dimBlock = GetNumDofsPerNode();
+    int dimBlock = NuTo::Node::GetNumComponents(mDofType, 2);
 
     assert (rShapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
 

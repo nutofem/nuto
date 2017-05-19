@@ -40,9 +40,6 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const override;
-
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override
     {

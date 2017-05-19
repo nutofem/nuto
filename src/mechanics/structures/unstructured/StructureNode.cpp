@@ -156,60 +156,6 @@ int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Nod
     return id;
 }
 
-int NuTo::Structure::GetDofDimension(Node::eDof rDof)
-{
-    switch (rDof)
-    {
-    // **************************************
-    // dofs with dimension = global dimension
-    // **************************************
-    case Node::eDof::COORDINATES:
-    case Node::eDof::DISPLACEMENTS:
-        return GetDimension();
-
-    // **************************************
-    // scalars:
-    // **************************************
-    case Node::eDof::TEMPERATURE:
-    case Node::eDof::NONLOCALEQSTRAIN:
-    case Node::eDof::WATERVOLUMEFRACTION:
-    case Node::eDof::RELATIVEHUMIDITY:
-    case Node::eDof::CRACKPHASEFIELD:
-    case Node::eDof::ELECTRICPOTENTIAL:
-        return 1;
-
-    // **************************************
-    // others:
-    // **************************************
-    case Node::eDof::ROTATIONS:
-    {
-        if (GetDimension() == 2)
-            return 1;
-
-        if (GetDimension() == 3)
-            return 3;
-
-        throw MechanicsException(__PRETTY_FUNCTION__, "Rotations are only defined for structural dimension 2 and 3");
-    }
-    case Node::eDof::NONLOCALEQPLASTICSTRAIN:
-    case Node::eDof::NONLOCALTOTALSTRAIN:
-    {
-        if (GetDimension() == 1)
-            return 1;
-
-        if (GetDimension() == 2)
-            return 3;
-
-        if (GetDimension() == 3)
-            return 6;
-
-        break;
-    }
-    default:
-    break; // throw below gets called...
-    }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Dimensions of the required DOF " + Node::DofToString(rDof) + " not defined.");
-}
 
 NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
@@ -228,7 +174,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen
     {
         NodeDofInfo& dofInfo = dofInfos[dof];
 
-        dofInfo.mDimension = GetDofDimension(dof);
+        dofInfo.mDimension = Node::GetNumComponents(dof, mDimension);
         dofInfo.mNumTimeDerivatives = GetNumTimeDerivatives();
         dofInfo.mIsDof = true;
 

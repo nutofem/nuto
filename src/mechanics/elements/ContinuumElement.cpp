@@ -92,7 +92,7 @@ Eigen::VectorXd NuTo::ContinuumElement<TDim>::ExtractNodeValues(int rTimeDerivat
     const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
 
     int numNodes = interpolationTypeDof.GetNumNodes();
-    int numDofsPerNode = interpolationTypeDof.GetNumDofsPerNode();
+    int numDofsPerNode = NuTo::Node::GetNumComponents(rDofType, TDim);
 
     Eigen::VectorXd nodalValues(numDofsPerNode * numNodes);
 
@@ -780,7 +780,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                 // calculate local mass matrix (the nonlocal terms are zero)
                 // don't forget to include determinant of the Jacobian and area
                 // detJ * area * density * HtH, :
-                const int localDim = mInterpolationType->Get(dof).GetNumDofsPerNode();
+                const int localDim = NuTo::Node::GetNumComponents(dof, TDim);
                 Eigen::Matrix<double, Eigen::Dynamic, 1>& result =
                         it.second->GetBlockFullVectorDouble()[dof];
                 rData.mTotalMass += rData.mDetJxWeightIPxSection * factor;

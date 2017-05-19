@@ -176,9 +176,6 @@ public:
     //! @brief returns the number of surfaces
     virtual int GetNumSurfaces() const override = 0;
 
-    //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const override = 0;
-
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override = 0;
 

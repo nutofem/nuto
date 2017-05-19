@@ -34,9 +34,6 @@ public:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
     }
 
-    //! @brief return the number of dofs per node depending on dimension
-    int GetNumDofsPerNode() const override;
-
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override
     {

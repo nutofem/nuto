@@ -30,9 +30,6 @@ public:
     //! @return ... natural surface edge coordinates
     std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
 
-    //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const override;
-
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override
     {
