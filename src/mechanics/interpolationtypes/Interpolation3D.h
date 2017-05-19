@@ -40,7 +40,6 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override
     {
         return 3;

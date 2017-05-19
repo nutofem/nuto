@@ -24,9 +24,6 @@ protected:
 public:
     Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
-    //! @brief returns the natural coordinates of the nodes that span the surface
-    //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
-    //! @return ... natural surface edge coordinates
     std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
@@ -34,7 +31,6 @@ public:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
     }
 
-    //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const override
     {
         return 2;
