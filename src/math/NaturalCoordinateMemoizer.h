@@ -70,7 +70,9 @@ public:
 
     void ClearCache()
     {
-        mCache.clear();
+        for (auto& ptr : mCache)
+            ptr = nullptr;
+        // mCache.clear(); somehow fails in gcc/release (clang or gcc/debug works though)
     }
 
 private:
