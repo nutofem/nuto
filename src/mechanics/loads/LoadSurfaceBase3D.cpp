@@ -170,7 +170,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // #######################################
             ipCoordsSurface = integrationType->GetLocalIntegrationPointCoordinates(theIp);
             ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
-            ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
+            ipCoordsGlobal = interpolationTypeCoords.MatrixN(ipCoordsNatural) * nodeCoordinates;
 
             // #######################################
             // ##  Calculate the surface jacobian
@@ -178,7 +178,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // ## = [dX / dAlpha] x [dX / dBeta]
             // #######################################
             derivativeShapeFunctionsNatural =
-                    interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+                    interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
             const Eigen::Matrix3d jacobian =
                     elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates); // = [dX / dXi]
 
@@ -203,7 +203,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             loadVector *= factor;
 
             // calculate 3D shape functions
-            shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
+            shapeFunctions = interpolationTypeDisps.ShapeFunctions(ipCoordsNatural);
 
             // add load vector to global vector
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)

@@ -28,7 +28,7 @@ void CheckPartitionOfUnity(const NuTo::InterpolationType &rIT, const NuTo::Node:
     for (int iIP = 0; iIP < rIT.GetCurrentIntegrationType().GetNumIntegrationPoints(); ++iIP)
     {
         Eigen::VectorXd ip = rIT.GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
-        BOOST_CHECK_CLOSE(rIT.Get(dofType).CalculateShapeFunctions(ip).sum(),  1., 1.e-6);
+        BOOST_CHECK_CLOSE(rIT.Get(dofType).ShapeFunctions(ip).sum(),  1., 1.e-6);
     }
 }
 
@@ -41,8 +41,8 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
     {
         auto nodeCoordinates = rIT.GetNaturalNodeCoordinates(i);
 
-        auto B = IT.CalculateDerivativeShapeFunctionsNatural(nodeCoordinates);
-        auto N = IT.CalculateShapeFunctions(nodeCoordinates);
+        auto B = IT.DerivativeShapeFunctionsNatural(nodeCoordinates);
+        auto N = IT.ShapeFunctions(nodeCoordinates);
 
         auto B_CDF = B;
         B_CDF.setZero();
@@ -51,7 +51,7 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
         for (int iDim = 0; iDim < nodeCoordinates.rows(); ++iDim)
         {
             nodeCoordinates[iDim] += delta;
-            B_CDF.col(iDim) = (IT.CalculateShapeFunctions(nodeCoordinates) - N) / delta;
+            B_CDF.col(iDim) = (IT.ShapeFunctions(nodeCoordinates) - N) / delta;
             nodeCoordinates[iDim] -= delta;
         }
         BOOST_CHECK_SMALL((B - B_CDF).cwiseAbs().maxCoeff(), 1.e-4);
@@ -70,7 +70,7 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         auto naturalNodeCoordinate = rIT.Get(dofType).CalculateNaturalNodeCoordinates(iNode);
-        auto shapeFunctions = rIT.Get(dofType).CalculateShapeFunctions(naturalNodeCoordinate);
+        auto shapeFunctions = rIT.Get(dofType).ShapeFunctions(naturalNodeCoordinate);
         BOOST_CHECK_EQUAL(shapeFunctions.rows(), numNodes);
 
         for (int iShapeFunctions = 0; iShapeFunctions < shapeFunctions.rows(); ++iShapeFunctions)

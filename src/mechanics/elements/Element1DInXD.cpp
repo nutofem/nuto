@@ -234,7 +234,7 @@ Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(int rTimeDerivative, c
 
     const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
     const Eigen::VectorXd nodalValues = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
-    const Eigen::MatrixXd matrixNLocal = interpolationType.CalculateMatrixN(rNaturalCoordinates);
+    const Eigen::MatrixXd matrixNLocal = interpolationType.MatrixN(rNaturalCoordinates);
 
     int numNodes = GetNumNodes(rDofType);
     int dimBlock = GetNumDofsPerNode(rDofType);
@@ -263,13 +263,14 @@ void NuTo::Element1DInXD::CheckElement()
     Eigen::MatrixXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     double length = 0;
-    for (unsigned int iIP = 0; iIP < numIntegrationPoints; ++iIP)
+    for (unsigned int iIp = 0; iIp < numIntegrationPoints; ++iIp)
     {
-        const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(iIP);
+        const auto coords = GetIntegrationType().GetLocalIntegrationPointCoordinates(iIp);
+        const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(coords);
         Eigen::Matrix<double,1,1> detJacobian = CalculateJacobian(derivativeShapeFunctions, nodeCoordinates);
         assert(detJacobian(0,0) > 0 and "Jacobian needs to be greater than 0");
 
-        length += this->GetIntegrationPointWeight(iIP) * detJacobian(0,0);
+        length += this->GetIntegrationPointWeight(iIp) * detJacobian(0,0);
     }
 
     // check element length

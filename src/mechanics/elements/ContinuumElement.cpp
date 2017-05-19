@@ -737,7 +737,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
     rData.mDetJxWeightIPxSection = CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
-
+    const auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
     for (auto it : rElementOutput)
     {
         switch (it.first)
@@ -785,7 +785,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                         it.second->GetBlockFullVectorDouble()[dof];
                 rData.mTotalMass += rData.mDetJxWeightIPxSection * factor;
                 const Eigen::VectorXd& shapeFunctions =
-                        mInterpolationType->Get(dof).GetShapeFunctions(rTheIP);
+                        mInterpolationType->Get(dof).ShapeFunctions(ipCoords);
 
                 // calculate for the translational dofs the diagonal entries
                 for (int i = 0; i < shapeFunctions.rows(); i++)
@@ -1325,7 +1325,8 @@ const Eigen::VectorXd NuTo::ContinuumElement<TDim>::GetIntegrationPointVolume() 
     Eigen::VectorXd volume(GetNumIntegrationPoints());
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
-        Eigen::MatrixXd derivativeShapeFunctionsNatural = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);
+        const auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+        Eigen::MatrixXd derivativeShapeFunctionsNatural = mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(ipCoords);
         double detJacobian = CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
         volume[theIP] = detJacobian * GetIntegrationType().GetIntegrationPointWeight(theIP);
     }
@@ -1343,7 +1344,8 @@ void NuTo::ContinuumElement<TDim>::CheckElement()
     }
 
     int theIP = 0;
-    const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);
+    auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+    const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(ipCoords);
     Eigen::MatrixXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
     double detJacobian = CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
     if (detJacobian < 0)
@@ -1356,7 +1358,8 @@ void NuTo::ContinuumElement<TDim>::CheckElement()
     double size = 0;
     for (int iIP = 0; iIP < numIntegrationPoints; ++iIP)
     {
-        const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(iIP);
+        ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
+        const Eigen::MatrixXd& derivativeShapeFunctions = mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(ipCoords);
         detJacobian = CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
         if (detJacobian <= 0)
         {
@@ -1384,8 +1387,10 @@ void NuTo::ContinuumElement<TDim>::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* 
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &rData, int rTheIP) const
 {
+    const auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    
     // calculate Jacobian
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(rTheIP);
+    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(ipCoords);
 
     Eigen::Matrix<double, TDim, TDim> jacobian = CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::eDof::COORDINATES]);
     rData.mDetJacobian = jacobian.determinant();
@@ -1403,9 +1408,9 @@ void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDa
 //        if (dof == Node::eDof::COORDINATES)
 //            continue;
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-        rData.mN[dof] = &interpolationType.GetMatrixN(rTheIP);
+        rData.mN[dof] = &interpolationType.MatrixN(ipCoords);
 
-        rData.mB[dof] = CalculateMatrixB(dof, interpolationType.GetDerivativeShapeFunctionsNatural(rTheIP), invJacobian);
+        rData.mB[dof] = CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoords), invJacobian);
     }
 }
 
@@ -1487,7 +1492,8 @@ void NuTo::ContinuumElement<3>::BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& 
 template<>
 double NuTo::ContinuumElement<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).GetMatrixN(rTheIP);
+    const auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(ipCoords);
     Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetArea(globalIPCoordinate(0, 0));

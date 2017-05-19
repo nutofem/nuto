@@ -24,7 +24,10 @@
 using namespace NuTo;
 
 InterpolationBaseFEM::InterpolationBaseFEM(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDimension)
-    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
+    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension),
+    mShapeFunctions([=] (const Eigen::VectorXd& v) { return CalculateShapeFunctions(v);}),
+    mMatrixN([=] (const Eigen::VectorXd& v) { return CalculateMatrixN(v);}),
+    mDerivativeShapeFunctionsNatural([=] (const Eigen::VectorXd& v) { return CalculateDerivativeShapeFunctionsNatural(v);})
 {
 }
 
@@ -32,24 +35,7 @@ InterpolationBaseFEM::InterpolationBaseFEM(Node::eDof rDofType, Interpolation::e
 //! @param rIntegrationType ... integration type
 void InterpolationBaseFEM::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
 {
-    int numIPs = rIntegrationType.GetNumIntegrationPoints();
-
-    mShapeFunctions.clear();
-    mMatrixN.clear();
-    mDerivativeShapeFunctionsNatural.clear();
-
-    mShapeFunctions.resize(numIPs);
-    mMatrixN.resize(numIPs);
-    mDerivativeShapeFunctionsNatural.resize(numIPs);
-
-    for (int iIP = 0; iIP < numIPs; ++iIP)
-    {
-        Eigen::VectorXd IPcoordinates = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-        mShapeFunctions[iIP] = CalculateShapeFunctions(IPcoordinates);
-        mMatrixN[iIP] = CalculateMatrixN(IPcoordinates);
-        mDerivativeShapeFunctionsNatural[iIP] = CalculateDerivativeShapeFunctionsNatural(IPcoordinates);
-    }
-    mUpdateRequired = false;
+       mUpdateRequired = false;
 }
 
 Eigen::MatrixXd InterpolationBaseFEM::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
@@ -86,25 +72,19 @@ const Eigen::VectorXd& InterpolationBaseFEM::GetNaturalNodeCoordinates(int rNode
     return mNodeCoordinates[rNodeIndex];
 }
 
-const Eigen::VectorXd& InterpolationBaseFEM::GetShapeFunctions(int rIP) const
+const Eigen::VectorXd& InterpolationBaseFEM::ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const
 {
-    assert(rIP < (int)mShapeFunctions.size());
-    assert(not mUpdateRequired);
-    return mShapeFunctions.at(rIP);
+    return mShapeFunctions.Get(naturalCoordinates);
 }
 
-const Eigen::MatrixXd& InterpolationBaseFEM::GetMatrixN(int rIP) const
+const Eigen::MatrixXd& InterpolationBaseFEM::MatrixN(const Eigen::VectorXd& naturalCoordinates) const
 {
-    assert(rIP < (int)mMatrixN.size());
-    assert(not mUpdateRequired);
-    return mMatrixN.at(rIP);
+    return mMatrixN.Get(naturalCoordinates);
 }
 
-const Eigen::MatrixXd& InterpolationBaseFEM::GetDerivativeShapeFunctionsNatural(int rIP) const
+const Eigen::MatrixXd& InterpolationBaseFEM::DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const
 {
-    assert(rIP < (int)mDerivativeShapeFunctionsNatural.size());
-    assert(not mUpdateRequired);
-    return mDerivativeShapeFunctionsNatural.at(rIP);
+    return mDerivativeShapeFunctionsNatural.Get(naturalCoordinates);
 }
 
 void InterpolationBaseFEM::CalculateSurfaceNodeIds()

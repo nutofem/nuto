@@ -176,9 +176,9 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             else
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
 
-            Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
+            Eigen::MatrixXd N = interpolationTypeCoords.MatrixN(ipCoordsNatural);
 
-            ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
+            ipCoordsGlobal = N  * nodeCoordinates;
 
             // ########################### ############
             // ##  Calculate the surface jacobian
@@ -186,7 +186,7 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // #######################################
 
             derivativeShapeFunctionsNatural =
-                    interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+                    interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
 
             const Eigen::Matrix2d jacobianStd =
                     elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates); // = [dX / dXi]
@@ -214,7 +214,7 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
 
             // calculate 2D shape functions
-            shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
+            shapeFunctions = interpolationTypeDisps.ShapeFunctions(ipCoordsNatural);
 
             // calculate weighting factor
             double thickness = elementPtr->GetSection()->GetThickness();

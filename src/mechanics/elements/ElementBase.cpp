@@ -161,7 +161,7 @@ Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(int rTimeDerivative, con
 
     const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
     Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
-    Eigen::MatrixXd matrixN = interpolationType.CalculateMatrixN(rNaturalCoordinates);
+    Eigen::MatrixXd matrixN = interpolationType.MatrixN(rNaturalCoordinates);
 
     return matrixN * nodalValues;
 }
@@ -247,7 +247,8 @@ template void NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::Constitu
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
-    const Eigen::MatrixXd& matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).GetMatrixN(rIpNum);
+    const auto naturalCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(rIpNum);
+    const Eigen::MatrixXd& matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(naturalCoords);
     Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();

@@ -110,21 +110,14 @@ public:
     //! @brief returns specific shape functions via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific shape functions
-    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const = 0;
+    virtual const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
     //! @brief returns specific N-matrix via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific N-matrix
-    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const = 0;
+    virtual const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
-    //! @brief calculates the shape functions for a specific dof
-    //! @param rCoordinates ... integration point coordinates
-    //! @param rDofType ... dof type
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
-    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const = 0;
 
     // --- IGA interpolation--- //
 
@@ -158,12 +151,7 @@ public:
     //! @brief returns specific derivative shape functions natural via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific derivative shape functions natural
-    virtual const Eigen::MatrixXd& GetDerivativeShapeFunctionsNatural(int rIP) const = 0;
-
-    //! @brief returns specific derivative shape functions natural via coordinates
-    //! @param rCoordinates ... integration point coordinates
-    //! @return ... specific derivative shape functions natural
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
+    virtual const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
     // --- IGA interpolation--- //
 
@@ -231,6 +219,19 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief calculates the shape functions for a specific dof
+    //! @param rCoordinates ... integration point coordinates
+    //! @param rDofType ... dof type
+    //! @return ... shape functions for the specific dof type
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
+    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief returns specific derivative shape functions natural via coordinates
+    //! @param rCoordinates ... integration point coordinates
+    //! @return ... specific derivative shape functions natural
+    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType

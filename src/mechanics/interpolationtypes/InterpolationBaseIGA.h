@@ -61,12 +61,12 @@ public:
     //       SHAPE FUNCTIONS
     //********************************************
 
-    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const override
+    virtual const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "The shape functions are calculated on the fly, use 'GetShapeFunctions' routine!");
     }
 
-    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const override
+    virtual const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "The shape functions are calculated on the fly, use 'GetMatrixN' routine!");
     }
@@ -75,7 +75,7 @@ public:
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************
 
-    virtual const Eigen::MatrixXd& GetDerivativeShapeFunctionsNatural(int rIP) const override
+    virtual const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Since the shape functions are calculated on the fly, just use 'GetDerivativeShapeFunctionsNatural' routine!");
     }

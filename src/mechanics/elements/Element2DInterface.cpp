@@ -116,10 +116,11 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
-    for (int theIP = 0; theIP < GetNumIntegrationPoints(); ++theIP)
+    for (int iIp = 0; iIp < GetNumIntegrationPoints(); ++iIp)
     {
 
         const Eigen::VectorXd nodeCoords = data.mNodalValues[Node::eDof::COORDINATES];
+        const auto ipCoords = GetIntegrationType().GetLocalIntegrationPointCoordinates(iIp);
 
         // 0.5 * element length
         data.mDetJacobian = 0.5 * (nodeCoords.segment(0, mGlobalDimension) - nodeCoords.segment(0.5 * nodeCoords.rows(), mGlobalDimension)).norm();
@@ -130,8 +131,8 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
                 continue;
 
             const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-            data.mMatrixN[dof] = &interpolationType.GetMatrixN(theIP);
-            const Eigen::MatrixXd shapeFunctions = *data.mMatrixN[dof];
+            data.mMatrixN[dof] = &interpolationType.MatrixN(ipCoords);
+            const Eigen::MatrixXd& shapeFunctions = *data.mMatrixN[dof];
 
             const unsigned numberOfNodes = interpolationType.GetNumNodes();
             Eigen::MatrixXd BMatrix(mGlobalDimension, mGlobalDimension * numberOfNodes);
@@ -155,14 +156,14 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput, std:
 
         try
         {
-            EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, theIP);
+            EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, iIp);
         } 
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
             throw;
         }
-        CalculateElementOutputs(rElementOutput, data, theIP, constitutiveOutput);
+        CalculateElementOutputs(rElementOutput, data, iIp, constitutiveOutput);
     }
 }
 
@@ -783,10 +784,10 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
             assert(bondStress.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
-                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int iIp = VisualizationCellsIP[CellCount];
                 Eigen::VectorXd bondStressTensor(6);
-                bondStressTensor[0] = bondStress(0, theIp);
-                bondStressTensor[1] = bondStress(1, theIp);
+                bondStressTensor[0] = bondStress(0, iIp);
+                bondStressTensor[1] = bondStress(1, iIp);
                 bondStressTensor[2] = 0.0;
                 bondStressTensor[3] = 0.0;
                 bondStressTensor[4] = 0.0;

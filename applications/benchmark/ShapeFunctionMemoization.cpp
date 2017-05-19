@@ -5,26 +5,9 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-#include "math/NaturalCoordinateMemoizer.h"
-
 using Interpolation = NuTo::Interpolation3DTetrahedron;
 using Integration = NuTo::IntegrationType3D4NGauss4Ip;
 auto dof = NuTo::Node::eDof::DISPLACEMENTS;
-
-BENCHMARK(Hash, WithoutMemoization, runner)
-{
-    Integration integration;
-    Interpolation interpolation(dof, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, 3);
-
-    while (runner.KeepRunningTime(1))
-    {
-        for (int i = 0; i < integration.GetNumIntegrationPoints(); ++i)
-        {
-            auto coords = integration.GetLocalIntegrationPointCoordinates(i);
-            auto N = interpolation.CalculateMatrixN(coords);
-        }
-    }
-}
 
 //! @brief current NuTo implementation
 BENCHMARK(Hash, IdVectorHash, runner)
@@ -37,28 +20,10 @@ BENCHMARK(Hash, IdVectorHash, runner)
     {
         for (int i = 0; i < integration.GetNumIntegrationPoints(); ++i)
         {
-            const auto& N = interpolation.GetMatrixN(i);
-            (void)N;
-        }
-    }
-}
-
-
-BENCHMARK(Hash, NaturalCoordinateHash, runner)
-{
-    Integration integration;
-    Interpolation interpolation(dof, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, 3);
-
-    auto fct = [=](Eigen::Vector3d v) {return interpolation.CalculateMatrixN(v);};
-
-    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> cache(fct);
-    while (runner.KeepRunningTime(1))
-    {
-        for (int i = 0; i < integration.GetNumIntegrationPoints(); ++i)
-        {
             auto coords = integration.GetLocalIntegrationPointCoordinates(i);
-            const auto& N = cache.Get(coords);
+            const auto& N = interpolation.MatrixN(coords);
             (void)N;
         }
     }
 }
+

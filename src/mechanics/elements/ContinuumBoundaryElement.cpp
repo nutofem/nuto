@@ -172,7 +172,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
     // ##  Calculate the surface jacobian
     // ## = || [dX / dXi] * [dXi / dAlpha] ||
     // #######################################
-    Eigen::MatrixXd derivativeShapeFunctionsNatural     = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+    Eigen::MatrixXd derivativeShapeFunctionsNatural     = interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
     const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement.CalculateJacobian(derivativeShapeFunctionsNatural, rData.mNodalValues[Node::eDof::COORDINATES]);// = [dX / dXi]
 
     const Eigen::MatrixXd derivativeNaturalSurfaceCoordinates   = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId); // = [dXi / dAlpha]
@@ -191,9 +191,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
         if (dof == Node::eDof::COORDINATES)
             continue;
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-        rData.mN[dof] = interpolationType.CalculateMatrixN(ipCoordsNatural);
+        rData.mN[dof] = interpolationType.MatrixN(ipCoordsNatural);
 
-        rData.mB[dof] = mBaseElement.CalculateMatrixB(dof, interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
+        rData.mB[dof] = mBaseElement.CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
     }
 }
 
@@ -667,7 +667,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 
     Eigen::VectorXd naturalIpCoordinates = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, mSurfaceId);
 
-    Eigen::VectorXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(naturalIpCoordinates);
+    Eigen::VectorXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(naturalIpCoordinates);
     Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();

@@ -222,7 +222,7 @@ Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const Element
     Eigen::VectorXd ipCoordsSurface = GetLocalSurfaceCoordinates(rNode, rElementSurface);
     Eigen::VectorXd ipCoordsNatural = it.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface);
 
-    Eigen::MatrixXd derivativeShapeFunctionsNatural = it.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+    Eigen::MatrixXd derivativeShapeFunctionsNatural = it.DerivativeShapeFunctionsNatural(ipCoordsNatural);
     const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(rElementSurface.mElement)->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
 
     Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = it.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface); // = [dXi / dAlpha]

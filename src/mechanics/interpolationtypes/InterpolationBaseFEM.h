@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include "math/NaturalCoordinateMemoizer.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/MechanicsException.h"
 
-#include <vector>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -60,13 +60,11 @@ public:
     //       SHAPE FUNCTIONS
     //********************************************
 
-    const Eigen::VectorXd& GetShapeFunctions(int rIP) const override;
+    const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const override;
 
-    const Eigen::MatrixXd& GetMatrixN(int rIP) const override;
+    const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const override;
 
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const override = 0;
 
-    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const override;
 
 
     // --- IGA interpolation--- //
@@ -94,9 +92,8 @@ public:
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************
 
-    const Eigen::MatrixXd & GetDerivativeShapeFunctionsNatural(int rIP) const override;
+    const Eigen::MatrixXd & DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const override;
 
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const override = 0;
 
     // --- IGA interpolation--- //
 
@@ -164,6 +161,12 @@ public:
 
 protected:
 
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const override = 0;
+
+    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const override;
+
+    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const override = 0;
+
     virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override = 0;
 
     bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const override;
@@ -182,9 +185,9 @@ protected:
 
     // members for each integration point
     std::vector<Eigen::VectorXd> mNodeCoordinates;
-    std::vector<Eigen::VectorXd> mShapeFunctions;
-    std::vector<Eigen::MatrixXd> mMatrixN;
-    std::vector<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
+    NuTo::NaturalCoordinateMemoizer<Eigen::VectorXd, Eigen::VectorXd> mShapeFunctions;
+    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> mMatrixN;
+    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> mDerivativeShapeFunctionsNatural;
 };
 } /* namespace NuTo */
 
