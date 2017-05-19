@@ -52,7 +52,7 @@ public:
     NaturalCoordinateMemoizer(std::function<TResult(TNaturalCoords)> function)
         : mFunction(function)
     {
-        mData.resize(TIdHash::MaxId());
+        mCache.resize(TIdHash::MaxId());
     }
 
     //! @brief returns the value of the function for the given arguments. 
@@ -63,14 +63,14 @@ public:
     const TResult& Get(const TNaturalCoords& v) const
     {
         size_t id = TIdHash()(v);
-        if (mData[id] == nullptr)
-            mData[id] = std::make_unique<TResult>(mFunction(v));
-        return *mData[id];
+        if (mCache[id] == nullptr)
+            mCache[id] = std::make_unique<TResult>(mFunction(v));
+        return *mCache[id];
     }
 
 private:
     //! @brief mutable to mark the Get() method const
-    mutable std::vector<std::unique_ptr<TResult>> mData;
+    mutable std::vector<std::unique_ptr<TResult>> mCache;
 
     std::function<TResult(TNaturalCoords)> mFunction;
 };

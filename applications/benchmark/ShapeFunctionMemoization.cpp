@@ -49,17 +49,15 @@ BENCHMARK(Hash, NaturalCoordinateHash, runner)
     Integration integration;
     Interpolation interpolation(dof, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, 3);
 
-    std::function<Eigen::MatrixXd(Eigen::Vector3d)> fct = [=](Eigen::Vector3d v) {
-        return interpolation.CalculateMatrixN(v);
-    };
-    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> myhash(fct);
+    auto fct = [=](Eigen::Vector3d v) {return interpolation.CalculateMatrixN(v);};
 
+    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> cache(fct);
     while (runner.KeepRunningTime(1))
     {
         for (int i = 0; i < integration.GetNumIntegrationPoints(); ++i)
         {
             auto coords = integration.GetLocalIntegrationPointCoordinates(i);
-            const auto& N = myhash.Get(coords);
+            const auto& N = cache.Get(coords);
             (void)N;
         }
     }
