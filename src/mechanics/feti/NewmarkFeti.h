@@ -162,31 +162,19 @@ public:
     int ProjBiCgStab(const MatrixXd& projection, VectorXd& x, const VectorXd& rhs)
     {
 
-        boost::mpi::communicator world;
 
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
-        const SparseMatrix& B = structure->GetConnectivityMatrix();
-        const SparseMatrix Btrans = B.transpose();
-
-        //        world.barrier();
+        const SparseMatrix Btrans = mB.transpose();
 
 
-        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numRigidBodyModes = structure->GetNumRigidBodyModes();
 
-        // solve the linear system Ax = b
-        VectorXd tmp;
-        tmp.setZero(numActiveDofs + numRigidBodyModes);
-        tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax = B * tmp;
-        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        VectorXd Ax = CalculateFx(x);
+
 
         VectorXd Ay = Ax;
         VectorXd Az = Ax;
 
         const int n = rhs.rows();
         VectorXd r = rhs - Ax;
-        //    VectorXd r0 = r;
 
         VectorXd rProj = projection * r;
         VectorXd rProj0 = rProj;
@@ -204,36 +192,28 @@ public:
         VectorXd s(n);
         VectorXd t(n);
 
-        const double tol2 = 1.0e-7 * rhs_sqnorm;
+        const double tol2 = mFetiTolerance * mFetiTolerance * rhs_sqnorm;
 
         int i = 0;
         int restarts = 0;
 
-        const int maxIters = mCpgMaxIterations;
 
-        while (rProj.squaredNorm() > tol2 and i < maxIters)
+
+        while (rProj.squaredNorm() > tol2 and i < mMaxNumFetiIterations)
         {
-            double rho_old = rho;
+            const double rho_old = rho;
 
             rho = rProj0.dot(rProj);
-
 
             if (std::fabs(rho) < 1.0e-20)
             {
 
-                structure->GetLogger()
+                mStructure->GetLogger()
                         << "The new residual vector became too orthogonal to the arbitrarily chosen direction r0.\n"
                            "Let's restart with a new r0!"
                         << "\n\n";
 
-                // The new residual vector became too orthogonal to the arbitrarily chosen direction r0
-                // Let's restart with a new r0:
-
-                tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-                Ax.noalias() = B * tmp;
-
-                MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
+                Ax = CalculateFx(x);
 
                 rProj = projection * (rhs - Ax);
                 rProj0 = rProj;
@@ -242,51 +222,49 @@ public:
                     i = 0;
             }
 
-            double beta = (rho / rho_old) * (alpha / w);
+            const double beta = (rho / rho_old) * (alpha / w);
 
             p = rProj + beta * (p - w * v);
 
-            y = projection * mLocalPreconditioner * p;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(y.data()), y.size(), std::plus<double>());
-            //                        y = p;
+            // precondition
+            y = ApplyPreconditionerOnTheLeft(p);
 
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * y).head(numActiveDofs));
-            Ay.noalias() = B * tmp;
+            // reprojection
+            y = projection * y;
 
-            MPI_Allreduce(MPI_IN_PLACE, Ay.data(), Ay.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            Ay = CalculateFx(y);
 
-            v.noalias() = projection * Ay;
+            v = projection * Ay;
 
             alpha = rho / rProj0.dot(v);
 
             s = rProj - alpha * v;
 
-            z = projection * mLocalPreconditioner * s;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(z.data()), z.size(), std::plus<double>());
-            //                        z = s;
+            // precondition
+            z = ApplyPreconditionerOnTheLeft(s);
 
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * z).head(numActiveDofs));
-            Az.noalias() = B * tmp;
+            // reprojection
+            z = projection * z;
 
-            MPI_Allreduce(MPI_IN_PLACE, Az.data(), Az.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            Az = CalculateFx(z);
 
-            t.noalias() = projection * Az;
+            t = projection * Az;
 
-            double tmp = t.dot(t);
+            const double tSquaredNorm = t.squaredNorm();
 
-            if (tmp > 0.0)
-                w = t.dot(s) / tmp;
+            if (tSquaredNorm > 0.0)
+                w = t.dot(s) / tSquaredNorm;
             else
                 w = 0.0;
 
             x += alpha * y + w * z;
             rProj = s - w * t;
 
-            structure->GetLogger() << "BiCGStab rel. error = " << rProj.squaredNorm() / rhs_sqnorm
-                                   << "\t at iteration = " << i << "/" << maxIters << "\n";
+            mStructure->GetLogger() << "BiCGStab rel. error = " << rProj.squaredNorm() / rhs_sqnorm
+                                   << "\t at iteration = " << i << "/" << mMaxNumFetiIterations << "\n";
             ++i;
         }
-        //    tol_error = sqrt(r.squaredNorm()/rhs_sqnorm);
+
         return i;
     }
 
@@ -326,75 +304,52 @@ public:
     int ProjConjugateGradient(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
     {
 
-        VectorXd Fp;
+        VectorXd tmp = CalculateFx(x);
 
-        VectorXd Fx = CalculateFx(x);
+        // initial projected residual
+        VectorXd projResidual = projection * (rhs - tmp);
 
-        // initial residual
-        VectorXd r = rhs - Fx;
+        // apply precondtioner and reproject
+        VectorXd precondProjResidual = projection * ApplyPreconditionerOnTheLeft(projResidual);
+
         VectorXd z;
 
-        // initial projected search direction
-        VectorXd w = projection * r;
-
-        // precondition
-        mStructure->GetLogger() << "projection.cols() = \t" << projection.cols() << "\nmLocalPreconditioner.rows() = \t"
-                                << mLocalPreconditioner.rows() << "\nmLocalPreconditioner.cols() = \t"
-                                << mLocalPreconditioner.cols() << "\nw.rows() = \t" << w.rows() << "\n\n";
-
-        // apply precondtioner
-        VectorXd p = ApplyPreconditionerOnTheLeft(w);
-
-        // reproject
-        p = projection * p;
-
-        //    p = w;
-
         const double rhs_sqnorm = rhs.squaredNorm();
-        const double threshold = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
+        const double threshold = mFetiTolerance * mFetiTolerance * rhs_sqnorm;
 
-        double absNew = w.dot(p);
+        double absNew = projResidual.dot(precondProjResidual);
         int iteration = 0;
-        while (iteration < mCpgMaxIterations)
+        while (iteration < mMaxNumFetiIterations)
         {
             // at every iteration i the r has to be recomputed which is quite expensive
-            Fp = CalculateFx(p);
+            tmp = CalculateFx(precondProjResidual);
 
             // step size
-            double alpha = absNew / p.dot(Fp);
+            const double alpha = absNew / precondProjResidual.dot(tmp);
 
             // update solution
-            x += alpha * p;
+            x += alpha * precondProjResidual;
 
             // update projected residual
-            w -= alpha * projection * Fp;
+            projResidual -= alpha * projection * tmp;
 
-            if (w.squaredNorm() < threshold)
+            if (projResidual.squaredNorm() < threshold)
                 break;
 
-            // precondition
-            z = ApplyPreconditionerOnTheLeft(w);
+            // precondition and reproject
+            z = projection * ApplyPreconditionerOnTheLeft(projResidual);
 
-            // reproject
-            z = projection * z;
-            //        z = w;
-
-            double absOld = absNew;
-            absNew = w.dot(z);
-            double beta = absNew / absOld;
+            const double absOld = absNew;
+            absNew = projResidual.dot(z);
+            const double beta = absNew / absOld;
             // update search direction
-            p = z + beta * p;
+            precondProjResidual = z + beta * precondProjResidual;
 
-            mStructure->GetLogger() << "ProjConjugateGradient rel. error = " << w.squaredNorm() / rhs_sqnorm
-                                    << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
-
+            mStructure->GetLogger() << "ProjConjugateGradient rel. error = " << projResidual.squaredNorm() / rhs_sqnorm
+                                    << "\t at iteration = " << iteration << "/" << mMaxNumFetiIterations << "\n";
 
             ++iteration;
         }
-
-        mStructure->GetLogger() << "\nConverged! \n"
-                                << "ProjConjugateGradient rel. error = " << w.squaredNorm() / rhs_sqnorm
-                                << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
 
         return iteration;
     }
@@ -448,7 +403,7 @@ public:
         VectorType e1 = VectorType::Unit(n, 0);
 
         double tolerance = 1.e-12;
-        int maxNumRestarts = mCpgMaxIterations;
+        int maxNumRestarts = mMaxNumFetiIterations;
 
         int numRestarts = 0;
 
@@ -501,12 +456,12 @@ public:
                 s.applyOnTheLeft(i, i + 1, Givens[i].adjoint());
 
                 //! TODO: Think about why this is std::abs and not norm
-                precondProjResidualNorm = std::abs(s[i + 1]);
+                const double error = std::abs(s[i + 1]);
 
-                mStructure->GetLogger() << "projected GMRES relative error: \t" << precondProjResidualNorm / (rhsNorm)
+                mStructure->GetLogger() << "projected GMRES relative error: \t" << error / (rhsNorm)
                                         << "\t #restarts: \t" << numRestarts << "\n";
 
-                if (precondProjResidualNorm < tolerance * rhsNorm)
+                if (error < tolerance * rhsNorm)
                 {
                     VectorType y = s.head(i + 1);
                     H.topLeftCorner(i + 1, i + 1).triangularView<Eigen::Upper>().solveInPlace(y);
@@ -541,17 +496,6 @@ public:
 
 
         return numRestarts;
-    }
-
-
-    //! @brief Direct solver for the interface problem
-    //!
-    //! Iterative method to solve the interface problem.
-    //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
-    //! iteration
-    int DirectSolver(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
-    {
-        return 1337;
     }
 
     //! @brief Solves the global and local problem
@@ -670,7 +614,7 @@ public:
         }
 
 
-        if (iterations >= mCpgMaxIterations - 1)
+        if (iterations >= mMaxNumFetiIterations - 1)
         {
             converged = false;
             return StructureOutputBlockVector(structure->GetDofStatus());
@@ -1396,7 +1340,7 @@ public:
 
     void SetToleranceIterativeSolver(const double tolerance)
     {
-        mCpgTolerance = tolerance;
+        mFetiTolerance = tolerance;
     }
 
     void SetFetiPreconditioner(eFetiPreconditioner fetiPreconditioner)
@@ -1413,8 +1357,8 @@ private:
     FetiSolver mFetiSolver;
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
-    double mCpgTolerance = 1.0e-4;
-    const int mCpgMaxIterations = 10;
+    double mFetiTolerance = 1.0e-4;
+    const int mMaxNumFetiIterations = 100;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
     eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
 
