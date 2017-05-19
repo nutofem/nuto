@@ -378,13 +378,8 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
             shapeType = Interpolation::eShapeType::TRUSSXD;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
-            //ordering is different than in gmsh, fix this first
-            {
-                std::vector<int> nodeNumbersCopy = nodeNumbers;
-                nodeNumbers[0]  = nodeNumbersCopy[0];
-                nodeNumbers[1]  = nodeNumbersCopy[2];
-                nodeNumbers[2]  = nodeNumbersCopy[1];
-            }
+            //ordering is different than in gmsh
+            std::swap(nodeNumbers[1], nodeNumbers[2]);
             break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
             shapeType = Interpolation::eShapeType::TRIANGLE2D;
