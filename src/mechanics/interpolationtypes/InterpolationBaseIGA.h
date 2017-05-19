@@ -38,10 +38,6 @@ public:
 
     virtual ~InterpolationBaseIGA() {}
 
-    virtual int GetSplineDegree(int dir) const override = 0;
-
-    virtual eIntegrationType GetStandardIntegrationType() const override = 0;
-
     //********************************************
     //             NODE METHODS
     //********************************************
@@ -75,24 +71,6 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "The shape functions are calculated on the fly, use 'GetMatrixN' routine!");
     }
 
-    // -- shape functions --//
-
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const override = 0;
-
-    virtual Eigen::VectorXd CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const override = 0;
-
-    // -- N matrix --//
-
-    virtual Eigen::MatrixXd CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const override= 0;
-
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override= 0;
-
-    // -- derivatives --//
-
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const override= 0;
-
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override= 0;
-
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************
@@ -113,17 +91,7 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "Use the function 'CalculateNaturalSurfaceCoordinates(rNaturalSurfaceCoordinates, rSurface, rKnots)' instead!");
     }
 
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override = 0;
-
-    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
-
-    virtual int GetNumSurfaces() const override = 0;
-
-    virtual int GetLocalDimension() const override = 0;
-
-    virtual Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override = 0;
-
-    int GetSurfaceDegree(int rSurface) const override = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override = 0;
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -154,10 +122,6 @@ protected:
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
     }
-
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override = 0;
-
-    virtual int CalculateNumNodes() const override = 0;
 
     //! @brief this method sets the mNumDofs, mNumNodes and mNodeIndices members
     //! @remark it should be called from the ctor InterpolationTypeBase()
