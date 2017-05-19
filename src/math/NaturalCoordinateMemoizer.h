@@ -15,8 +15,8 @@ struct NaturalCoordianteToId
     size_t operator()(const TNaturalCoords& v) const
     {
         int id = 0;
-        constexpr float factor = 0.5 * TRaster;
-        constexpr float eps = 1.e-6;
+        constexpr float eps = 1.e-2;
+        constexpr float factor = 0.5 * TRaster - 2 * eps;
         // reverse the loop to get
         // id = x + 10*y + 100*z
         // instead of (unreversed)
@@ -68,9 +68,10 @@ public:
         return *mCache[id];
     }
 
-    void ClearCache()
+    void ClearCache() const
     {
-        mCache.clear();
+        for (auto& ptr : mCache)
+            ptr = nullptr;
     }
 
 private:

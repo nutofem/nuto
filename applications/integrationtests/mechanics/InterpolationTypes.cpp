@@ -51,6 +51,7 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
         for (int iDim = 0; iDim < nodeCoordinates.rows(); ++iDim)
         {
             nodeCoordinates[iDim] += delta;
+            IT.ClearCache();
             B_CDF.col(iDim) = (IT.ShapeFunctions(nodeCoordinates) - N) / delta;
             nodeCoordinates[iDim] -= delta;
         }

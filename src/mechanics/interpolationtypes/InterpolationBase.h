@@ -56,6 +56,8 @@ public:
 
     virtual int GetSplineDegree(int dir) const = 0;
 
+    virtual void ClearCache() const {}
+
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
     virtual eIntegrationType GetStandardIntegrationType() const = 0;

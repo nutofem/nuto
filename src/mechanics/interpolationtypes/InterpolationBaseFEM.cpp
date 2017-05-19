@@ -31,6 +31,13 @@ InterpolationBaseFEM::InterpolationBaseFEM(Node::eDof rDofType, Interpolation::e
 {
 }
 
+void InterpolationBaseFEM::ClearCache() const
+{
+    mShapeFunctions.ClearCache();
+    mMatrixN.ClearCache();
+    mDerivativeShapeFunctionsNatural.ClearCache();
+}
+
 //! @brief calculate and store the shape functions and their derivatives
 //! @param rIntegrationType ... integration type
 void InterpolationBaseFEM::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)

@@ -46,6 +46,8 @@ public:
 
     virtual int GetSplineDegree(int dir) const override;
 
+    void ClearCache() const override;
+
     //********************************************
     //             NODE METHODS
     //********************************************
