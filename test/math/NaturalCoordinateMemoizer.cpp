@@ -36,5 +36,14 @@ BOOST_AUTO_TEST_CASE(memoization)
 
     // even though the method is called 12 times, it should only
     // be evaluated once per integration point
-    BOOST_CHECK_EQUAL(counter, lobatto.ips.size());
+    int expectedCounter = lobatto.ips.size();
+    BOOST_CHECK_EQUAL(counter, expectedCounter);
+
+    memo.ClearCache();
+    for (int i = 0; i < 12; ++i)
+        for (const auto& ip : lobatto.ips)
+            BoostUnitTest::CheckVector(memo.Get(ip), ip, 3);
+
+    expectedCounter += lobatto.ips.size();
+    BOOST_CHECK_EQUAL(counter, expectedCounter);
 }

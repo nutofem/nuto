@@ -68,6 +68,11 @@ public:
         return *mCache[id];
     }
 
+    void ClearCache()
+    {
+        mCache.clear();
+    }
+
 private:
     //! @brief mutable to mark the Get() method const
     mutable std::vector<std::unique_ptr<TResult>> mCache;
