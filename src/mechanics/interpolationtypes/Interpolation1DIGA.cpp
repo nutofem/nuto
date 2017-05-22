@@ -58,7 +58,7 @@ Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::V
     return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), rKnotID, mDegree, mKnots, mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const
+Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(!mUpdateRequired);
     assert(rIP >=0 && rIP < mIPCoordinates.rows());
@@ -80,12 +80,12 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatur
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), rKnotIDs(0), mDegree, mKnots, mWeights);
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(!mUpdateRequired);
     assert(rIP >=0 && rIP < mIPCoordinates.rows());
@@ -95,7 +95,7 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatur
 
     IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
 
-    return CalculateDerivativeShapeFunctionsNatural(IPcoordinates, rKnotIDs);
+    return DerivativeShapeFunctionsNaturalIGA(IPcoordinates, rKnotIDs);
 }
 
 // --- N-matrix --- //
@@ -107,14 +107,14 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates, rKnotIDs(0));
     return shapeFunctions.transpose();
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(int rIP,  const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(int rIP,  const Eigen::VectorXi &rKnotIDs) const
 {
     assert(!mUpdateRequired);
     assert(rIP >=0 && rIP < mIPCoordinates.rows());
@@ -124,11 +124,11 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(int rIP,  const Eigen
 
     IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
 
-    return CalculateMatrixN(IPcoordinates, rKnotIDs);
+    return MatrixNIGA(IPcoordinates, rKnotIDs);
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
 {
     assert(rDerivative >= 0 && rDerivative <= 2);
     assert(!mUpdateRequired);

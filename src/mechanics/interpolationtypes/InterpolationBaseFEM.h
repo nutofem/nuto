@@ -71,22 +71,22 @@ public:
 
     // --- IGA interpolation--- //
 
-    virtual Eigen::VectorXd CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::VectorXd ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
+    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
     }
@@ -99,12 +99,12 @@ public:
 
     // --- IGA interpolation--- //
 
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
