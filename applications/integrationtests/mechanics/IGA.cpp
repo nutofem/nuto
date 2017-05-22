@@ -471,6 +471,8 @@ void solve(NuTo::Structure *s, double solution, const std::string &resultDir, co
     {
         if (std::fabs(nodeDisp - solution)/std::fabs(solution) > tol)
         {
+            std::cout << "NodeDisp \t" << nodeDisp << "\n";
+            std::cout << "solution \t" << solution << "\n";
             throw NuTo::Exception("[IGA] : displacement is not correct");
         }
     }

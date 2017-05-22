@@ -55,7 +55,8 @@ const Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::GetIntegrationPointVolume
     Eigen::VectorXd volume(this->GetNumIntegrationPoints());
     for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
     {
-        Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(theIP, mKnotIDs);
+        const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+        Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
         double detJacobian = this->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
         volume[theIP] = detJacobian * this->GetIntegrationPointWeight(theIP);
     }
@@ -74,7 +75,8 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
 
     int theIP = 0;
 
-    Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(theIP, mKnotIDs);
+    const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+    Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
     Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
     double detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
     if (detJacobian < 0)
@@ -87,7 +89,8 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
     double size = 0;
     for (int iIP = 0; iIP < numIntegrationPoints; ++iIP)
     {
-        Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(iIP, mKnotIDs);
+        const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+        Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
         detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
         if (detJacobian <= 0)
         {
@@ -110,7 +113,8 @@ template<int TDim>
 void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &rData, int rTheIP) const
 {
     // calculate Jacobian
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(rTheIP, mKnotIDs);
+    const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
 
     Eigen::Matrix<double, TDim, TDim> jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::eDof::COORDINATES]);
 
@@ -130,9 +134,9 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
         if (dof == Node::eDof::COORDINATES)
             continue;
         const InterpolationBase& interpolationType = this->mInterpolationType->Get(dof);
-        rData.mNIGA[dof] = interpolationType.MatrixNIGA(rTheIP, mKnotIDs);
+        rData.mNIGA[dof] = interpolationType.MatrixNIGA(ipCoords, mKnotIDs);
 
-        rData.mB[dof] = this->CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNaturalIGA(rTheIP, mKnotIDs), invJacobian);
+        rData.mB[dof] = this->CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs), invJacobian);
     }
 }
 
@@ -193,9 +197,8 @@ namespace NuTo // template specialization in *.cpp somehow requires the definiti
 template<>
 double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixNIGA(rTheIP, mKnotIDs);
-    Eigen::VectorXd globalIPCoordinate = matrixN * this->ExtractNodeValues(0, Node::eDof::COORDINATES);
-
+    const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    const auto globalIPCoordinate = this->InterpolateDofGlobal(0, ipCoords, Node::eDof::COORDINATES);
     return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetArea(globalIPCoordinate(0, 0));
 }
 

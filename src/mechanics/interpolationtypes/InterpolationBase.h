@@ -127,12 +127,7 @@ public:
     //! @param rIP ... id of the integration point
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (a transformation needs to be done, since integration point coordinates are in [-1, 1])
     //! @return ... specific shape functions
-    virtual Eigen::VectorXd ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
-
-    //! @brief returns the N matrix at a parameter for IGA elements
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //! @brief returns the N matrix for IGA elements at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     //! @param rCoordinates ... parameter
@@ -156,11 +151,6 @@ public:
     virtual const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
     // --- IGA interpolation--- //
-
-    //! @brief returns specific derivative shape functions at an integration point
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //! @brief returns specific derivative shape functions at a parameter, which fits to the knot vector
     //! @param rCoordinates ... parameter

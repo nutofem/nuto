@@ -58,17 +58,10 @@ Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::V
     return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), rKnotID, mDegree, mKnots, mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
+Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-    assert(rKnotIDs.rows() == 1 );
-
-    Eigen::VectorXd IPcoordinates(1);
-
-    IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
-
-    return CalculateShapeFunctions(IPcoordinates, rKnotIDs(0));
+    return CalculateShapeFunctions(naturalCoordinates, rKnotIDs(0));
 }
 
 // --- derivatives shape functions --- //
@@ -85,19 +78,6 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(con
     return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), rKnotIDs(0), mDegree, mKnots, mWeights);
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-    assert(rKnotIDs.rows() == 1 );
-
-    Eigen::VectorXd IPcoordinates(1);
-
-    IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
-
-    return DerivativeShapeFunctionsNaturalIGA(IPcoordinates, rKnotIDs);
-}
-
 // --- N-matrix --- //
 
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
@@ -111,20 +91,6 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(const Eigen::VectorXd& rCoo
 {
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates, rKnotIDs(0));
     return shapeFunctions.transpose();
-}
-
-
-Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(int rIP,  const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-    assert(rKnotIDs.rows() == 1 );
-
-    Eigen::VectorXd IPcoordinates(1);
-
-    IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
-
-    return MatrixNIGA(IPcoordinates, rKnotIDs);
 }
 
 

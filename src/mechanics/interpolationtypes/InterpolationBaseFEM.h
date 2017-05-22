@@ -71,12 +71,7 @@ public:
 
     // --- IGA interpolation--- //
 
-    virtual Eigen::VectorXd ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
-    }
-
-    virtual Eigen::MatrixXd MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
@@ -98,11 +93,6 @@ public:
 
 
     // --- IGA interpolation--- //
-
-    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
-    }
 
     virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {

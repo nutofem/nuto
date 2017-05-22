@@ -55,7 +55,7 @@ public:
     //! @return ... specific shape functions
     Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates, const Eigen::Vector2i &rKnotIDs) const;
 
-    Eigen::VectorXd ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
+    Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
 
     // --- derivatives shape functions --- //
 
@@ -63,15 +63,11 @@ public:
 
     Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
 
-    Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
-
     // --- N-matrix --- //
 
     Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const override;
 
     Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
-
-    Eigen::MatrixXd MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
 
     Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override;
 

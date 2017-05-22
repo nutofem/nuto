@@ -75,16 +75,10 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(const Eigen::V
     return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation2DIGA::ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
+Eigen::VectorXd NuTo::Interpolation2DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return CalculateShapeFunctions(IPcoordinates, rKnotIDs);
+    return CalculateShapeFunctions(naturalCoordinates, rKnotIDs);
 }
 
 /***************/
@@ -113,17 +107,6 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::DerivativeShapeFunctionsNaturalIGA(con
     return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(1, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return DerivativeShapeFunctionsNaturalIGA(IPcoordinates, rKnotIDs);
-}
-
 /***************/
 // N-Matrix    //
 /***************/
@@ -146,17 +129,6 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNIGA(const Eigen::VectorXd& rCoo
     parameter(1) = transformation(rCoordinates(1), mKnotsY(rKnotIDs(1)), mKnotsY(rKnotIDs(1) + 1));
 
     return ConstructMatrixN(ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights));
-}
-
-Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return MatrixNIGA(IPcoordinates, rKnotIDs);
 }
 
 Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters,

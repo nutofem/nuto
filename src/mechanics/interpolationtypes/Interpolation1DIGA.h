@@ -55,11 +55,7 @@ public:
     //! @return ... specific shape functions
     Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates, int rKnotID) const;
 
-    //! @brief returns specific shape functions at a parameter, whicg fits the knot vector
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (a transformation needs to be done, since integration point coordinates are in [-1, 1])
-    //! @return ... specific shape functions
-    virtual Eigen::VectorXd ShapeFunctionsIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
 
     // --- derivatives shape functions --- //
 
@@ -73,11 +69,6 @@ public:
     //! @param rKnotID ... knot id specifying the knot interval the rCoordinates are lying in (no need to search)
     Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
 
-    //! @brief returns specific derivative shape functions at a parameter, which fits to the knot vector
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
-
     // --- N-matrix --- //
 
     //! @brief returns the N matrix at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
@@ -88,11 +79,6 @@ public:
     //! @param rCoordinates ... parameter
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
     Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override;
-
-    //! @brief returns the N matrix at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    Eigen::MatrixXd MatrixNIGA(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
 
     //! @brief returns the N matrix at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     //! @param rParameters ... parameter on the curve
