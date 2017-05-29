@@ -26,6 +26,8 @@ int ToVtkCellType(NuTo::eCellTypes type)
         return 5;
     case NuTo::eCellTypes::POLYGON:
         return 7;
+    case NuTo::eCellTypes::WEDGE:
+        return 13;
     }
 }
 

@@ -22,7 +22,7 @@ NuTo::eIntegrationType NuTo::Interpolation3DPrism::GetStandardIntegrationType() 
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::eIntegrationType::IntegrationType3D6NGauss2x3Ip;
+        return NuTo::eIntegrationType::IntegrationType3D6NGauss1Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return NuTo::eIntegrationType::IntegrationType3D6NGauss2x3Ip;
     default:

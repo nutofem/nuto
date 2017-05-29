@@ -11,7 +11,8 @@ enum class eCellTypes
     QUAD,
     TETRAEDER,
     HEXAHEDRON,
-    POLYGON
+    POLYGON,
+    WEDGE
 };
 
 namespace Visualize
@@ -32,6 +33,8 @@ inline int GetNumPoints(eCellTypes cellType)
             return 4;
         case eCellTypes::HEXAHEDRON:
             return 8;
+        case eCellTypes::WEDGE:
+            return 6;
         default:
             return -1;
     }
