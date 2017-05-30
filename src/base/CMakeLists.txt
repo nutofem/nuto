@@ -1,4 +1,3 @@
-include(Version)
 configure_file(Version.cpp ${CMAKE_CURRENT_BINARY_DIR}/Version.cpp)
 
 set(NuToBaseSources
