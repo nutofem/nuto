@@ -330,13 +330,24 @@ public:
     ///
     void ApplyConstraintsTotalFeti(const std::vector<int>& dofIds);
 
+    ///
+    /// \param dofIdAndPrescribedDisplacementMap
     void ApplyPrescribedDisplacements(const std::map<int, double> dofIdAndPrescribedDisplacementMap);
 
+    ///
     void CalculateProjectionMatrix();
+
+    ///
     void CalculateG();
 
+    ///
     void CalculateAndAppyVirtualConstraints();
 
+    ///
+    /// \param interfaceCoordinates
+    /// \param globalNodeId
+    /// \param interfaceId
+    /// \param connectivityValue
     void AddNodeIdsToInterface(const std::vector<double>& interfaceCoordinates, int& globalNodeId, int& interfaceId,
                                const double connectivityValue)
     {
@@ -359,6 +370,10 @@ public:
         }
     }
 
+    ///
+    /// \param meshDimensions
+    /// \param numElements
+    /// \return
     std::pair<int,int> CreateRectangularMesh2D(const std::vector<double>& meshDimensions, const std::vector<int>& numElements)
     {
 
@@ -413,6 +428,8 @@ public:
         return importContainer;
     }
 
+    ///
+    /// \return
     const Eigen::VectorXd& GetPrescribedDofVector()
     {
         return mPrescribedDofVector;
@@ -420,7 +437,8 @@ public:
 
 
 
-
+    ///
+    /// \return
     std::vector<int> CalculateLagrangeMultiplierIds()
     {
 
@@ -449,6 +467,32 @@ public:
         return lagrangeMultiplierDofIds;
 
 
+    }
+
+
+    /// \brief Assembles vector for multiplicity scaling
+    void MultiplicityScaling()
+    {
+
+        std::vector<int> multiplicity(mNumInterfaceNodesTotal,0);
+
+        for (const auto& interface : mInterfaces)
+            for (const auto& nodePair : interface.mNodeIdsMap)
+            {
+                const int globalIndex = nodePair.first;
+
+                multiplicity[globalIndex]++;
+
+            }
+
+        MPI_Allreduce(MPI_IN_PLACE, multiplicity.data(), multiplicity.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        Eigen::DiagonalMatrix<double, Eigen::Dynamic> mFetiScalingMatrix(mNumInterfaceNodesTotal);
+
+        for (int i = 0; i < mNumInterfaceNodesTotal; ++i)
+            mFetiScalingMatrix.diagonal()[i] = multiplicity[i];
+
+        GetLogger() << "mFetiScalingMatrix (multiplicity scaling) \n" << mFetiScalingMatrix << "\n\n";
     }
 
 protected:
@@ -501,8 +545,9 @@ protected:
 
     int mNumRigidBodyModes = -1337;
     int mNumRigidBodyModesTotal = -1337;
+public:
     int mNumInterfaceNodesTotal = -1337;
-
+protected:
     ///
     /// \brief mBoundaryDofIds
     ///
@@ -553,8 +598,9 @@ protected:
     /// The total number of degrees of freedom that have a prescribed displacement
     ///
     ///
+public:
     int mNumTotalPrescribedDisplacementDofIds = 0;
-
+protected:
     ///
     /// \brief mRigidBodyModes
     ///

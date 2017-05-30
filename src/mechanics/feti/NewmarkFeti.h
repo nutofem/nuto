@@ -51,6 +51,14 @@ public:
         Dirichlet
     };
 
+    enum class eFetiScaling
+    {
+        None,
+        Multiplicity,
+        Superlumped
+    };
+
+
     using VectorXd = Eigen::VectorXd;
     using MatrixXd = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
@@ -166,7 +174,6 @@ public:
         const SparseMatrix Btrans = mB.transpose();
 
 
-
         VectorXd Ax = CalculateFx(x);
 
 
@@ -196,7 +203,6 @@ public:
 
         int i = 0;
         int restarts = 0;
-
 
 
         while (rProj.squaredNorm() > tol2 and i < mMaxNumFetiIterations)
@@ -261,7 +267,7 @@ public:
             rProj = s - w * t;
 
             mStructure->GetLogger() << "BiCGStab rel. error = " << rProj.squaredNorm() / rhs_sqnorm
-                                   << "\t at iteration = " << i << "/" << mMaxNumFetiIterations << "\n";
+                                    << "\t at iteration = " << i << "/" << mMaxNumFetiIterations << "\n";
             ++i;
         }
 
@@ -269,6 +275,10 @@ public:
     }
 
 
+    //! \brief Applies the interface flexibility operator to some vector x
+    //!
+    //! \param x
+    //! \return sum of B_s K_s^+ B_s^T x
     VectorXd CalculateFx(const VectorXd& x)
     {
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
@@ -288,6 +298,9 @@ public:
         return Ax;
     }
 
+    //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
+    //! \param x
+    //! \return
     VectorXd ApplyPreconditionerOnTheLeft(const VectorXd& x)
     {
         VectorXd vec = mLocalPreconditioner * x;
@@ -366,7 +379,7 @@ public:
         using MatrixType = Eigen::MatrixXd;
         using VectorType = Eigen::VectorXd;
 
-        // calculates Fx = sum(Btrans * K^+ * B * x)
+        // calculates Fx = sum(B * K^+ * Btrans * x)
         VectorType Fx = CalculateFx(x);
         VectorType r = rhs - Fx;
 
@@ -402,7 +415,7 @@ public:
 
         VectorType e1 = VectorType::Unit(n, 0);
 
-        double tolerance = 1.e-12;
+        double tolerance = mFetiTolerance;
         int maxNumRestarts = mMaxNumFetiIterations;
 
         int numRestarts = 0;
@@ -455,7 +468,6 @@ public:
                 // Finally apply the new Givens rotation on the s vector
                 s.applyOnTheLeft(i, i + 1, Givens[i].adjoint());
 
-                //! TODO: Think about why this is std::abs and not norm
                 const double error = std::abs(s[i + 1]);
 
                 mStructure->GetLogger() << "projected GMRES relative error: \t" << error / (rhsNorm)
@@ -466,6 +478,28 @@ public:
                     VectorType y = s.head(i + 1);
                     H.topLeftCorner(i + 1, i + 1).triangularView<Eigen::Upper>().solveInPlace(y);
                     x = x + V.block(0, 0, n, i + 1) * y;
+
+                    // compute preconditioned residual
+                    Fx = CalculateFx(x);
+                    r = rhs - Fx;
+
+                    mStructure->GetLogger() << "Residual norm: \t" << r.norm() << "\n";
+
+                    projResidual = projection * r;
+
+                    mStructure->GetLogger() << "Projected residual norm: \t" << projResidual.norm() << "\n";
+
+                    // precondition
+                    precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+                    // reproject
+                    precondProjResidual = projection * precondProjResidual;
+
+                    precondProjResidualNorm = precondProjResidual.norm();
+
+                    mStructure->GetLogger() << "precond. proj. residual norm: \t" << precondProjResidual.norm() << "\n";
+
+                    WriteGmresInfo(i, numRestarts, krylovDimension);
                     return numRestarts;
                 }
             }
@@ -494,8 +528,19 @@ public:
 
         std::cout << "Not converged! #restarts in projected GMRES: \t" << numRestarts << std::endl;
 
-
         return numRestarts;
+    }
+
+
+    //! \brief Writes information of current GMRES iteration to a file
+    //! \param numIterations
+    //! \param numRestarts
+    //! \param krylovDimension
+    void WriteGmresInfo(const int numIterations, const int numRestarts, const int krylovDimension)
+    {
+        std::ofstream file(mResultDir + "/GmresInfo.dat", std::ios::app);
+        file << mTime << "\t" << numIterations + (numRestarts * krylovDimension) << "\t" << krylovDimension << "\n";
+        file.close();
     }
 
     //! @brief Solves the global and local problem
@@ -578,7 +623,7 @@ public:
         VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
 
-        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-8, 1.e-1)))
             throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
@@ -625,24 +670,25 @@ public:
         if (structure->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
 
+        structure->GetLogger() << "deltaLambda \n" << deltaLambda << "\n\n";
+
         structure->GetLogger() << "*********************************** \n"
                                << "**      End   Interface Problem  ** \n"
                                << "*********************************** \n\n";
 
 
-        // MPI_Barrier(MPI_COMM_WORLD);
-
         zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
 
-        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
         {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
-                                                                  std::to_string(zeroVec.norm()));
+            structure->GetLogger() << "zeroVEc \n" << zeroVec << "\n";
+            throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: 1e-6*" +
+                                                                  std::to_string(zeroVec.norm() * 1.e6));
         }
 
 
         zeroVec = rigidBodyModes.transpose() * (residual_mod - B.transpose() * deltaLambda);
-        if (not(zeroVec.isMuchSmallerThan(1.e-6, 1.e-1)))
+        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
             throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " +
                                                                   std::to_string(zeroVec.norm()));
 
@@ -664,20 +710,23 @@ public:
         alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
 
 
-        // MPI_Barrier(MPI_COMM_WORLD);
         //        VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
         //        if (not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)))
         //        {
         //            structure->GetLogger() << "G*alpha - (d- F*lambda) = 0 \n" << zeroVecTmp << "\n\n";
         //            throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
         //        }
-        //
-        //        VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
-        //        if (not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)))
-        //            throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied");
 
 
-        // MPI_Barrier(MPI_COMM_WORLD);
+//        VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
+//        if (not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)))
+//        {
+//            structure->GetLogger() << "Ptrans * (d- F*lambda) = 0 \n" << zeroVecTmp2 << "\n\n";
+//            throw MechanicsException(__PRETTY_FUNCTION__, "\nPtrans * (d- F*lambda) = 0 not satisfied \nNorm is: " +
+//                                                                  std::to_string(zeroVecTmp2.norm()) + "\n");
+//        }
+
+
 
 
         std::vector<int> recvCount;
@@ -685,26 +734,13 @@ public:
         MpiGatherRecvCountAndDispls(recvCount, displs, numRigidBodyModesLocal);
         VectorXd alphaLocal = alphaGlobal.segment(displs[structure->mRank], numRigidBodyModesLocal);
 
-        //    structure->GetLogger() << "alphaGlobal: \n" << alphaGlobal                << "\n\n";
-        //    structure->GetLogger() << "alphaLocal: \n" << alphaLocal                << "\n\n";
-        //    structure->GetLogger() << "rigidBodyModes: \n" << rigidBodyModes                << "\n\n";
-
-        VectorXd delta_dof_active;
-        delta_dof_active.setZero(mStructure->GetNumTotalDofs());
-        delta_dof_active.head(mStructure->GetNumTotalActiveDofs()) =
-                mSolver.solve((residual_mod - Btrans * deltaLambda).head(structure->GetNumTotalActiveDofs()));
-
+        VectorXd delta_dof_active = VectorXd::Zero(mNumTotalDofs);
+        delta_dof_active.head(mNumTotalActiveDofs) =
+                mSolver.solve((residual_mod - Btrans * deltaLambda).head(mNumTotalActiveDofs));
 
         delta_dof_active = delta_dof_active - rigidBodyModes * alphaLocal;
 
-        //        zeroVec = B * delta_dof_active;
-        //
-        //        structure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
-        //
-        //        MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-        //
-        //        structure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
-        //        structure->GetLogger() << "delta lambda: \n" << deltaLambda << "\n\n";
+        CheckContinuity(delta_dof_active, structure->mNumInterfaceNodesTotal);
 
 
         StructureOutputBlockVector delta_dof_dt0(structure->GetDofStatus());
@@ -729,6 +765,46 @@ public:
     }
 
 
+    //! \brief Checks if the field variables are continuous across the interfaces
+    //! \param delta_dof_active
+    //! \param numInterfaceNodesTotal
+    void CheckContinuity(const VectorXd& delta_dof_active, const int numInterfaceNodesTotal)
+    {
+        VectorXd zeroVec = mB * delta_dof_active;
+
+        mStructure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
+
+        MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        mStructure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
+
+
+        const int numLagrangeMultipliersDisplacement = numInterfaceNodesTotal * 2;
+        if (not(zeroVec.head(numLagrangeMultipliersDisplacement).isMuchSmallerThan(1.e-6, 1.e-1)))
+        {
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "Continuity of the displacement field is not satisfied, i.e. B*u = 0 not satisfied. Norm is: " +
+                            std::to_string(zeroVec.head(numLagrangeMultipliersDisplacement).norm()));
+        }
+
+        const int numLagrangeMultipliersCrack = numInterfaceNodesTotal;
+
+        if (not(zeroVec.segment(numLagrangeMultipliersDisplacement, numLagrangeMultipliersCrack)
+                        .isMuchSmallerThan(1.e-2, 1.e-1)))
+        {
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "Continuity of the crack phase-field is not satisfied, i.e. B*d = 0 not satisfied. Norm is: " +
+                            std::to_string(
+                                    zeroVec.segment(numLagrangeMultipliersDisplacement, numLagrangeMultipliersCrack)
+                                            .norm()));
+        }
+    }
+
+
+    //! \brief Calculates the local preconditioner (lumped, Dirichlet)
+    //! \param hessian
     void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
     {
         mStructure->GetLogger() << "******************************************** \n"
@@ -1254,6 +1330,11 @@ public:
 
 
                         // perform Postprocessing
+                        std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
+                        file << mTime << "\t" << iteration << "\n";
+                        file.close();
+
+
                         PostProcess(mLambda, dofStatus);
 
                         mStructure->GetLogger() << "normResidual: \n" << normResidual << "\n\n";
@@ -1282,8 +1363,8 @@ public:
         }
     }
 
-    void IncrementDofs(StructureOutputBlockVector &dof_dt0, StructureOutputBlockVector &dof_dt1,
-                       StructureOutputBlockVector &dof_dt2, const StructureOutputBlockVector &delta_dof_dt0) const
+    void IncrementDofs(StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
+                       StructureOutputBlockVector& dof_dt2, const StructureOutputBlockVector& delta_dof_dt0) const
     {
         dof_dt0 += delta_dof_dt0;
         if (mStructure->GetNumTimeDerivatives() >= 1)
@@ -1315,7 +1396,7 @@ public:
 
     //! @brief Calculates the right hand side of the system
     //! rhs = extForce - intForce - Btrans*lambda
-    VectorXd CalculateResidual(const StructureOutputBlockVector &extForce, const StructureOutputBlockVector &intForce)
+    VectorXd CalculateResidual(const StructureOutputBlockVector& extForce, const StructureOutputBlockVector& intForce)
     {
         return (extForce.ExportToEigenVector() - intForce.ExportToEigenVector() - mB.transpose() * mLambda);
     }
@@ -1357,8 +1438,8 @@ private:
     FetiSolver mFetiSolver;
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
-    double mFetiTolerance = 1.0e-4;
-    const int mMaxNumFetiIterations = 100;
+    double mFetiTolerance = 1.0e-12;
+    const int mMaxNumFetiIterations = 20;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
     eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
 
