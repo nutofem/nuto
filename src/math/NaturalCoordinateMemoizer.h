@@ -24,6 +24,8 @@ struct NaturalCoordianteToId
         // IMO the first version is better to keep the data in 1D/2D closer together
         for (int i = v.size() - 1; i >= 0; --i)
         {
+            assert(v[i] > -1.-eps);
+            assert(v[i] < 1.+eps);
             id *= TRaster;
             id += factor * (v[i] + 1 - eps); // transformation from float[-1, 1] --> int[0, TRaster]
         }
@@ -64,7 +66,18 @@ public:
     {
         size_t id = TIdHash()(v);
         if (mCache[id] == nullptr)
+        {
             mCache[id] = std::make_unique<TResult>(mFunction(v));
+#ifdef NDEBUG
+            mCoordinates[id] = v; 
+#endif
+        }
+
+#ifdef NDEBUG
+        if ((v-mCoordinates[id]).norm() > 1.e-15)
+            throw;
+#endif
+
         return *mCache[id];
     }
 
@@ -72,11 +85,18 @@ public:
     {
         for (auto& ptr : mCache)
             ptr = nullptr;
+#ifdef NDEBUG
+        mCoordinates.clear(); 
+#endif
     }
 
 private:
     //! @brief mutable to mark the Get() method const
     mutable std::vector<std::unique_ptr<TResult>> mCache;
+
+#ifdef NDEBUG
+    mutable std::vector<TNaturalCoords> mCoordinates;
+#endif
 
     std::function<TResult(TNaturalCoords)> mFunction;
 };

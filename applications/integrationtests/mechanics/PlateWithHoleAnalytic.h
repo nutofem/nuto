@@ -16,7 +16,7 @@ class PlateWithHoleAnalytical
 public:
     // @brief returns the analytical solution (sxx, syy, sxy) taken from
     // https://en.wikiversity.org/wiki/Introduction_to_Elasticity/Plate_with_hole_in_tension
-    static ExactStress AnalyticStress(Eigen::Vector2d cartesianCoordinate)
+    static ExactStress AnalyticStress(Eigen::VectorXd cartesianCoordinate)
     {
         constexpr double a = 1.0;
         double r = cartesianCoordinate.norm();

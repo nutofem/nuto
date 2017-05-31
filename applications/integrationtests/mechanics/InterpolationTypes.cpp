@@ -41,6 +41,7 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
     {
         auto nodeCoordinates = rIT.GetNaturalNodeCoordinates(i);
 
+        IT.ClearCache();
         auto B = IT.DerivativeShapeFunctionsNatural(nodeCoordinates);
         auto N = IT.ShapeFunctions(nodeCoordinates);
 
@@ -63,6 +64,7 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
 //! This should be true: N_i(xi_j) == 1 for i == j    and      N_j(xi_i) == 0 for i != j
 void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumNodesExpected)
 {
+    rIT.ClearCache();
     auto dofType = NuTo::Node::eDof::COORDINATES;
     BOOST_CHECK(rIT.IsDof(dofType));
     BOOST_CHECK_EQUAL(rIT.GetNumNodes(), rNumNodesExpected);
