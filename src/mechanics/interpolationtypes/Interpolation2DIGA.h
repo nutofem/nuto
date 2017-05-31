@@ -39,8 +39,6 @@ public:
         return 2;
     }
 
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
-
     //********************************************
     //       SHAPE FUNCTIONS AND DERIVATIVES
     //********************************************
@@ -117,9 +115,6 @@ protected:
 
     //! @brief weights
     Eigen::MatrixXd mWeights;
-
-    //! @brief integration point coordinates
-    Eigen::Matrix<double, Eigen::Dynamic, 2> mIPCoordinates;
 
     //! @brief return the number node depending the shape and the order
     int CalculateNumNodes() const override;

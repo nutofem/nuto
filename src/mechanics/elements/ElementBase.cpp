@@ -57,9 +57,9 @@ std::ostream& operator<<(std::ostream& out, const ElementBase& element)
 }
 } /* NuTo */
 
-NuTo::ElementBase::ElementBase(const InterpolationType& rInterpolationType) :
-        mInterpolationType(&rInterpolationType),
-        mIPData(rInterpolationType.GetCurrentIntegrationType())
+NuTo::ElementBase::ElementBase(const InterpolationType& interpolationType, const IntegrationTypeBase& integrationType) :
+        mInterpolationType(&interpolationType),
+        mIPData(integrationType)
 {}
 
 

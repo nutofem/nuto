@@ -9,7 +9,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/interpolationtypes/InterpolationBaseIGA.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;

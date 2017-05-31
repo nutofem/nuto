@@ -20,7 +20,6 @@
 namespace NuTo
 {
 class StructureBase;
-class IntegrationTypeBase;
 class InterpolationBase;
 enum class eIntegrationType;
 
@@ -58,24 +57,15 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
-    //! @brief calculate and store the shape functions and their derivatives
-    //! and stores the pointer
-    //! @param rIntegrationType ... integration type
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
-
-    //! @brief checks for a valid integration type
-    //! @return true, if the integration type is assigned
-    bool HasIntegrationType() const;
-
-    //! @brief returns a reference to the integration type that is currently used
-    const IntegrationTypeBase& GetCurrentIntegrationType() const;
-
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
     eIntegrationType GetStandardIntegrationType() const;
 
     //! @brief returns the shape type
     const Interpolation::eShapeType GetShapeType() const;
+
+    //! @brief clears the cached shape functions / N-matrices
+    void ClearCache() const;
 
     //********************************************
     //             DOF METHODS
@@ -195,9 +185,6 @@ private:
 
     //! @brief contains local node coordinates
     std::vector<Eigen::VectorXd> mNodeCoordinates;
-
-    //! @brief current integration type
-    const IntegrationTypeBase* mIntegrationType;
 
     //! @brief node renumbering indices that (if applied) change the orientation of the element
     Eigen::MatrixX2i mNodeRenumberingIndices;

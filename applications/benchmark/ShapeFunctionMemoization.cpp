@@ -14,7 +14,6 @@ BENCHMARK(Hash, IdVectorHash, runner)
 {
     Integration integration;
     Interpolation interpolation(dof, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, 3);
-    interpolation.UpdateIntegrationType(integration);
 
     while (runner.KeepRunningTime(1))
     {

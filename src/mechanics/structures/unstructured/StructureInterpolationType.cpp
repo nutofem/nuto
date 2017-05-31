@@ -41,7 +41,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType)
 {
     InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
-    interpolationType->UpdateIntegrationType(*rIntegrationType);
+    interpolationType->ClearCache();
 
     // update all elements
     // disable show time
@@ -96,7 +96,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
     const IntegrationTypeBase& integrationType = *this->GetPtrIntegrationType(integrationTypeEnum);
 
-    interpolationType->UpdateIntegrationType(integrationType);
+    interpolationType->ClearCache();
     if (mVerboseLevel > 2)
         mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << IntegrationTypeToString(integrationType.GetEnumType()) << ".\n";
 
@@ -128,7 +128,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
     const IntegrationTypeBase& integrationType = *this->GetPtrIntegrationType(integrationTypeEnum);
 
-    interpolationType->UpdateIntegrationType(integrationType);
+    interpolationType->ClearCache();
     if (mVerboseLevel > 2)
         mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << IntegrationTypeToString(integrationType.GetEnumType()) << ".\n";
 

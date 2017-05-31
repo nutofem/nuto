@@ -33,18 +33,6 @@ NuTo::eIntegrationType NuTo::Interpolation1DIGA::GetStandardIntegrationType() co
     }
 }
 
-void NuTo::Interpolation1DIGA::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-    int numIPs = rIntegrationType.GetNumIntegrationPoints();
-
-    mIPCoordinates.resize(numIPs);
-
-    for (int iIP = 0; iIP < numIPs; ++iIP)
-        mIPCoordinates(iIP) = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP)[0];
-
-    mUpdateRequired = false;
-}
-
 // --- shape functions --- //
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
@@ -60,7 +48,6 @@ Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::V
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
-    assert(!mUpdateRequired);
     return CalculateShapeFunctions(naturalCoordinates, rKnotIDs(0));
 }
 
@@ -97,7 +84,6 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(const Eigen::VectorXd& rCoo
 Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
 {
     assert(rDerivative >= 0 && rDerivative <= 2);
-    assert(!mUpdateRequired);
     assert(rKnotIDs.rows() == 1 );
     assert(rDirection == 0);
 

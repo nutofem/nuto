@@ -32,8 +32,8 @@
 using namespace NuTo;
 
 NuTo::Element2DInterface::Element2DInterface(
-        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType, int globalDimension) :
-        NuTo::ElementBase::ElementBase(rInterpolationType), mNodes(rNodes), mGlobalDimension(globalDimension)
+        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType, const IntegrationTypeBase& integrationType, int globalDimension) :
+        NuTo::ElementBase::ElementBase(rInterpolationType, integrationType), mNodes(rNodes), mGlobalDimension(globalDimension)
 {
     mTransformationMatrix = CalculateTransformationMatrix(mGlobalDimension, mNodes.size());
 }

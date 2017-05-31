@@ -30,8 +30,9 @@ template <int TDim>
 NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const std::vector<NuTo::NodeBase*>& rNodes,
                                                      const Eigen::MatrixXd& rKnots, const Eigen::VectorXi& rKnotIDs,
                                                      const InterpolationType& rInterpolationType,
+                                                     const IntegrationTypeBase& integrationType,
                                                      const DofStatus& dofStatus)
-    : ContinuumElement<TDim>(rNodes, rInterpolationType, dofStatus)
+    : ContinuumElement<TDim>(rNodes, rInterpolationType, integrationType, dofStatus)
     , mKnots(rKnots)
     , mKnotIDs(rKnotIDs)
 {

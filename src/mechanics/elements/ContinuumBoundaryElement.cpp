@@ -33,8 +33,8 @@
 using namespace NuTo;
 
 template <int TDim>
-NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId)
-: ElementBase::ElementBase(rBaseElement.GetInterpolationType()),
+NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, const IntegrationTypeBase& integrationType, int rSurfaceId)
+: ElementBase::ElementBase(rBaseElement.GetInterpolationType(), integrationType),
   mBaseElement(rBaseElement),
   mSurfaceId(rSurfaceId),
   mAlphaUserDefined(-1)

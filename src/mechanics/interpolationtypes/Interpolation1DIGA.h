@@ -22,9 +22,6 @@ public:
     //! @return standard integration type
     eIntegrationType GetStandardIntegrationType() const override;
 
-    //! @brief stores the integration point coordinates
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
-
     //! @brief the spline degree
     int GetSplineDegree(int dir) const override
     {
@@ -158,9 +155,6 @@ private:
 
     //! @brief polynomial degree
     int mDegree;
-
-    //! @brief integration point coordinates
-    Eigen::VectorXd mIPCoordinates;
 
 };
 

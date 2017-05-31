@@ -11,7 +11,9 @@ class ContinuumBoundaryElementConstrainedControlNode : public ContinuumBoundaryE
 {
 
 public:
-    ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId, NodeBase* rControlNode);
+    ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim>& rBaseElement,
+                                                   const IntegrationTypeBase& integrationType, int rSurfaceId,
+                                                   NodeBase* rControlNode);
 
     //! @brief Gets the control node of an boundary element, if it has one
     //! @return boundary control node
@@ -21,4 +23,4 @@ protected:
     NodeBase* mControlNode;
 };
 
-}//namespace NuTo
+} // namespace NuTo

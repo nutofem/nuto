@@ -18,7 +18,6 @@
 
 #include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolationtypes/InterpolationBaseFEM.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
@@ -36,13 +35,6 @@ void InterpolationBaseFEM::ClearCache() const
     mShapeFunctions.ClearCache();
     mMatrixN.ClearCache();
     mDerivativeShapeFunctionsNatural.ClearCache();
-}
-
-//! @brief calculate and store the shape functions and their derivatives
-//! @param rIntegrationType ... integration type
-void InterpolationBaseFEM::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-       mUpdateRequired = false;
 }
 
 Eigen::MatrixXd InterpolationBaseFEM::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const

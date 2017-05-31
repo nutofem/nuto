@@ -30,6 +30,7 @@ public:
     ContinuumElement(
             const std::vector<NuTo::NodeBase* >& rNodes,
             const InterpolationType& rInterpolationType,
+            const IntegrationTypeBase& integrationType,
             const DofStatus& dofStatus);
 
     ContinuumElement(const ContinuumElement& ) = default;

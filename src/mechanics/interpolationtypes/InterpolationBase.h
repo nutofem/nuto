@@ -22,7 +22,6 @@
 
 namespace NuTo
 {
-class IntegrationTypeBase;
 enum class eIntegrationType;
 namespace Interpolation
 {
@@ -235,10 +234,6 @@ protected:
     //! @param rNaturalNodeCoordinate ... natural coordinate of the node to test
     virtual bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const = 0;
 
-    //! @brief calculate and store the shape functions and their derivatives
-    //! @param rIntegrationType ... integration type
-    virtual void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) {}
-
     //! @brief return the number node depending the shape and the order
     virtual int CalculateNumNodes() const = 0;
 
@@ -261,8 +256,6 @@ protected:
 
     // members for each surface
     std::vector<std::vector<int>> mSurfaceNodeIndices;
-
-    bool mUpdateRequired;
 
     //! @brief dimension = Structure.GetDimension()
     const int mDimension;

@@ -23,8 +23,9 @@
 
 NuTo::Element1DInXD::Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
                                    const InterpolationType& rInterpolationType,
+                                   const IntegrationTypeBase& integrationType,
                                    const DofStatus& dofStatus, int globalDimension)
-    : NuTo::ContinuumElement<1>(rNodes, rInterpolationType, dofStatus)
+    : NuTo::ContinuumElement<1>(rNodes, rInterpolationType, integrationType, dofStatus)
     , mGlobalDimension(globalDimension)
 {
     mRotationMatrix = CalculateRotationMatrix();

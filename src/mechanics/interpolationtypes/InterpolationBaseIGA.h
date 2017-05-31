@@ -18,7 +18,6 @@
 
 namespace NuTo
 {
-class IntegrationTypeBase;
 
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)

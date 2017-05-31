@@ -1,7 +1,6 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation2DIGA.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -77,7 +76,6 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(const Eigen::V
 
 Eigen::VectorXd NuTo::Interpolation2DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
-    assert(!mUpdateRequired);
     return CalculateShapeFunctions(naturalCoordinates, rKnotIDs);
 }
 
@@ -293,18 +291,6 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
-}
-
-void NuTo::Interpolation2DIGA::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-    int numIPs = rIntegrationType.GetNumIntegrationPoints();
-
-    mIPCoordinates.resize(numIPs, 2);
-
-    for (int iIP = 0; iIP < numIPs; ++iIP)
-        mIPCoordinates.row(iIP) = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-
-    mUpdateRequired = false;
 }
 
 int NuTo::Interpolation2DIGA::CalculateNumNodes() const

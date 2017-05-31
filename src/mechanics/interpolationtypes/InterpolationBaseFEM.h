@@ -24,7 +24,6 @@
 
 namespace NuTo
 {
-class IntegrationTypeBase;
 
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
@@ -146,10 +145,6 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 
 #endif  // ENABLE_SERIALIZATION
-
-    //! @brief calculate and store the shape functions and their derivatives
-    //! @param rIntegrationType ... integration type
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
 
 protected:
 

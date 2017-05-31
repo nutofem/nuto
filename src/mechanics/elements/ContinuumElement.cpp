@@ -34,8 +34,9 @@ using namespace NuTo;
 
 template <int TDim>
 NuTo::ContinuumElement<TDim>::ContinuumElement(const std::vector<NuTo::NodeBase*>& rNodes,
-                                               const InterpolationType& rInterpolationType, const DofStatus& dofStatus)
-    : NuTo::ElementBase::ElementBase(rInterpolationType)
+                                               const InterpolationType& rInterpolationType, 
+                                               const IntegrationTypeBase& integrationType, const DofStatus& dofStatus)
+    : NuTo::ElementBase::ElementBase(rInterpolationType, integrationType)
     , mDofStatus(dofStatus)
     , mNodes(rNodes)
 {
