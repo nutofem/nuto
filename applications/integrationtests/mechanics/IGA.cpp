@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿#include "BoostUnitTest.h"
+#include "PlateWithHoleAnalytic.h"
+#include <iostream>
 #include <boost/filesystem.hpp>
 
 #include "mechanics/structures/StructureBase.h"
@@ -81,8 +83,22 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
     return NuTo::BSplineSurface(degree, knotsX, knotsY, controlPoints, weights);
 }
 
+void SolveAndVisualize(NuTo::Structure* s, std::string name)
+{
+    s->SolveGlobalSystemStaticElastic();
 
-NuTo::Structure* constantStress(double& displacementCorrect, int refinements, const std::string &resultDir)
+    int visualizationGroup = s->GroupGetElementsTotal();
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+
+    std::string resultDir = "./ResultsIGA";
+    boost::filesystem::create_directory(resultDir);
+    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu");
+    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu");
+}
+
+BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
 {
     /** parameters **/
     double  YoungsModulus = 20000.;
@@ -93,17 +109,11 @@ NuTo::Structure* constantStress(double& displacementCorrect, int refinements, co
     double  Length = 10;
     double  Stress = 10.;
 
-    displacementCorrect = (Stress*Length)/YoungsModulus;
 
     NuTo::BSplineSurface surface = buildRect2D(0, 0, Height, Length);
 
     /** Structure 2D **/
     NuTo::Structure* s = new NuTo::Structure(2);
-
-#ifdef _OPENMP
-    int numThreads = 1;
-    s->SetNumProcessors(numThreads);
-#endif
 
     /** create section **/
     auto mySection = NuTo::SectionPlane::Create(thickness, false);
@@ -112,12 +122,6 @@ NuTo::Structure* constantStress(double& displacementCorrect, int refinements, co
     int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
     s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
     s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
-
-    for(int i = 0; i < refinements; i++)
-    {
-        surface.DuplicateKnots(0);
-        surface.DuplicateKnots(1);
-    }
 
     std::set<NuTo::Node::eDof> setOfDOFS;
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
@@ -167,84 +171,18 @@ NuTo::Structure* constantStress(double& displacementCorrect, int refinements, co
 
     s->NodeInfo(10);
 
-    double sumExternalLoads = s->BuildGlobalExternalLoadVector().J.Export().sum();
-    double sumExternalLoadsExpected = Stress * thickness * Height;
+    SolveAndVisualize(s, "Rectangle1");
 
-    if (std::abs(sumExternalLoads - sumExternalLoadsExpected) > 1.e-6)
+    double displacementCorrect = (Stress*Length)/YoungsModulus;
+    for (int id : s->GroupGetMemberIds(groupNumberNodesLeft))
     {
-        std::cout << "sum external loads          " << sumExternalLoads << "\n";
-        std::cout << "sum external loads expected " << sumExternalLoadsExpected << "\n";
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Surface load integration incorrect.");
+        auto displ = s->NodeGetNodePtr(id)->Get(NuTo::Node::eDof::DISPLACEMENTS);
+        BOOST_CHECK_CLOSE(displ[0], displacementCorrect, 1.e-6);
     }
-
-    return s;
-}
-
-Eigen::VectorXd exact_plate_hole_disp(Eigen::VectorXd pt)
-{
-    double a = 1.0;
-    double T = -1.;
-    double E = 1.e5;
-    double nu = 0.3;
-    Eigen::VectorXd disp(2);
-    double r     = std::sqrt(pt(0)*pt(0) + pt(1)*pt(1));
-    double theta = std::atan(pt(1)/pt(0));
-
-    double ct = std::cos(theta);
-    double c3t = std::cos(3*theta);
-    double st = std::sin(theta);
-    double s3t = std::sin(3*theta);
-
-    double mu = E/(1. - 2.*nu);
-    double k =  (3.- nu)/(1. + nu);
-
-    disp(0) = ((T*a)/(8.*mu)) * ( (r/a)*(k + 1.)*ct + ((2.*a)/r)*( (1. + k)*ct + c3t ) - ((2.*a*a*a)/(r*r*r))*c3t );
-    disp(1) = ((T*a)/(8.*mu)) * ( (r/a)*(k - 3.)*st + ((2.*a)/r)*( (1. - k)*st + s3t ) - ((2.*a*a*a)/(r*r*r))*s3t );
-
-//    disp(0) = ((8.*a*(1 + nu)*T)/E) * ((r/a)*(2./(1+nu))*ct + (a/r)*((4./(1+nu))*ct + c3t) - (a/r)*(a/r)*(a/r)*c3t);
-//    disp(1) = ((8.*a*(1 + nu)*T)/E) * ((r/a)*((-2.*nu)/(1+nu))*st + (a/r)*(((-4.*nu)/(1+nu))*st + s3t) - (a/r)*(a/r)*(a/r)*s3t);
-
-    return disp;
-}
-
-Eigen::VectorXd exact_plate_hole(Eigen::VectorXd pt)
-{
-    double a = 1.0;
-    Eigen::VectorXd stress(3);
-    double r     = std::sqrt(pt(0)*pt(0) + pt(1)*pt(1));
-    double theta = std::atan(pt(1)/pt(0));
-
-    double c2t = std::cos(2*theta);
-    double c4t = std::cos(4*theta);
-    double s2t = std::sin(2*theta);
-    double s4t = std::sin(4*theta);
-
-    double fac1 = (a/r)*(a/r);
-    double fac2 = fac1*fac1;
-    stress(0) = 1. - fac1*(1.5*c2t+c4t)+1.5*fac2*c4t; // xx
-    stress(1) =    - fac1*(0.5*c2t-c4t)-1.5*fac2*c4t; // yy
-    stress(2) =    - fac1*(0.5*s2t+s4t)+1.5*fac2*s4t; // xy
-
-    return stress;
 }
 
 
-Eigen::Vector2d exact_plate_hole_left(Eigen::VectorXd pt)
-{
-    Eigen::VectorXd stress = exact_plate_hole(pt);
-    Eigen::Vector2d stressRet(-stress(0), -stress(2));
-    return stressRet;
-}
-
-Eigen::Vector2d exact_plate_hole_upper(Eigen::VectorXd pt)
-{
-    Eigen::VectorXd stress = exact_plate_hole(pt);
-    Eigen::Vector2d stressRet(-stress(2), -stress(1));
-    return stressRet;
-}
-
-
-NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int refine, int BC)
+BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
 {
     NuTo::Structure* s = new NuTo::Structure(2);
 
@@ -252,6 +190,7 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     // Mesh  //
     /*********/
 
+    int refine = 5;
     int noPtsX = 3;
     int noPtsY = 4;
 
@@ -339,378 +278,16 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
         s->GroupAddElement(groupElementsUpper, i);
     }
 
-    //auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-    //                            {
-    //                                double Tol = 1.e-6;
-    //                                if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-    //                                {
-    //                                    double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-    //                                    if ((x >= -4 - Tol && x <= -4 + Tol))
-    //                                    {
-    //                                        return true;
-    //                                    }
-    //                                }
-    //                                return false;
-    //                            };  // GetBoundaryNodesLambda
-    //
-    //auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
-    //                            {
-    //                                double Tol = 1.e-6;
-    //                                if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-    //                                {
-    //                                    double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-    //                                    if ((y >= 4 - Tol && y <= 4 + Tol))
-    //                                    {
-    //                                        return true;
-    //                                    }
-    //                                }
-    //                                return false;
-    //                            };  // GetBoundaryNodesLambda
-    //
+    auto& groupLeft = s->GroupGetNodesAtCoordinate(NuTo::eDirection::X, -4);
+    auto& groupRight = s->GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    auto& groupBottom = s->GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 0);
+    auto& groupTop = s->GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 4);
 
-    auto LambdaGetBoundaryNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 0 - Tol && y <= 0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // LambdaGetBoundaryNodesLowerSymmetry
-
-    auto LambdaGetBoundaryNodesRight = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= 0 - Tol && x <= 0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // LambdaGetBoundaryNodesRight
-
-    auto LambdaGetBoundaryNodesCorner = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 4 - Tol && y <= 4 + Tol) && (x >= -4 - Tol && x <= -4 + Tol) )
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
-
-    int groupNodesLeft  = s->GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodesUpper = s->GroupCreate(NuTo::eGroupId::Nodes);
-
-    int groupNodesLower = s->GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodesRight = s->GroupCreate(NuTo::eGroupId::Nodes);
-
-    int groupNodesCorner = s->GroupCreate(NuTo::eGroupId::Nodes);
-
-    s->GroupAddNodeFunction(groupNodesLower, LambdaGetBoundaryNodesLower);
-    s->GroupAddNodeFunction(groupNodesRight, LambdaGetBoundaryNodesRight);
-
-
-    s->GroupAddNodeFunction(groupNodesCorner, LambdaGetBoundaryNodesCorner);
-
-    const auto& groupLower = *s->GroupGetGroupPtr(groupNodesLower)->AsGroupNode();
-    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
-
-    const auto& groupRight = *s->GroupGetGroupPtr(groupNodesRight)->AsGroupNode();
+    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBottom, {NuTo::eDirection::Y}));
     s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}));
 
-    if(BC == 0)
-    {
-        s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  groupNodesLeft, exact_plate_hole_left);
-        s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, groupNodesUpper, exact_plate_hole_upper);
-    }
-    else
-    {
-        double Stress = -10.;
-        s->LoadSurfacePressureCreate2D(groupElementsLeft, groupNodesLeft, Stress);
-    }
+    s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  s->GroupGetId(&groupLeft), NuTo::Test::PlateWithHoleAnalytical::PressureLeft);
+    s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, s->GroupGetId(&groupTop), NuTo::Test::PlateWithHoleAnalytical::PressureTop);
 
-
-//    s->NodeGroupGetMembers(groupNodesCorner, members);
-//    std::cout << "Node Members group Corner: \n" << members << std::endl;
-//    for(int dof = 0; dof < 1; dof++)
-//    {
-//        int id = s->ConstraintLinearEquationCreate (members(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
-//        s->ConstraintLinearEquationAddTerm(id, members(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
-//    }
-
-    s->CalculateMaximumIndependentSets();
-    s->NodeBuildGlobalDofs();
-
-    s->NodeInfo(10);
-
-    return s;
-}
-
-
-void solve(NuTo::Structure *s, double solution, const std::string &resultDir, const std::string &name, bool exc, double tol = 1.e-6)
-{
-    s->SolveGlobalSystemStaticElastic();
-
-    double nodeDisp = s->NodeGetNodePtr(s->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
-
-    int visualizationGroup = s->GroupGetElementsTotal();
-    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-
-    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu");
-    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu");
-
-    if(exc)
-    {
-        if (std::fabs(nodeDisp - solution)/std::fabs(solution) > tol)
-        {
-            std::cout << "NodeDisp \t" << nodeDisp << "\n";
-            std::cout << "solution \t" << solution << "\n";
-            throw NuTo::Exception("[IGA] : displacement is not correct");
-        }
-    }
-
-}
-
-
-//! @brief Imports a mesh file and builds the hessian and the internal gradient.
-void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
-{
-    NuTo::Structure s(2);
-    auto groupIndices = s.ImportFromGmsh(path + fileName);
-
-    int interpolationType = groupIndices[0].second;
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
-
-    s.SetVerboseLevel(10);
-    s.ElementConvertToInterpolationType(groupIndices[0].first);
-
-//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
-
-    s.InterpolationTypeInfo(0);
-
-    s.NodeBuildGlobalDofs();
-
-    double thickness = 1.;
-    auto section = NuTo::SectionPlane::Create(thickness, false);
-    s.ElementTotalSetSection(section);
-
-    int constitutiveLaw = s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
-    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    s.ElementTotalSetConstitutiveLaw(constitutiveLaw);
-
-    s.CalculateMaximumIndependentSets();
-
-    auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= -4 - Tol && x <= -4 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
-
-    auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 4 - Tol && y <= 4 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // GetBoundaryNodesLambda
-
-    auto LambdaGetBoundaryNodesLowerSymmetry = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 0 - Tol && y <= 0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // LambdaGetBoundaryNodesLowerSymmetry
-
-    auto LambdaGetBoundaryNodesRightSymmetry = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-                                        if ((x >= 0 - Tol && x <= 0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // LambdaGetBoundaryNodesLowerSymmetry
-
-
-
-    int groupNodeBCLeft  = s.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCUpper = s.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCRightSymmetry = s.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupNodeBCLowerSymmetry  = s.GroupCreate(NuTo::eGroupId::Nodes);
-
-    s.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
-    s.GroupAddNodeFunction(groupNodeBCUpper, LambdaGetBoundaryNodesUpper);
-    s.GroupAddNodeFunction(groupNodeBCLowerSymmetry, LambdaGetBoundaryNodesLowerSymmetry);
-    s.GroupAddNodeFunction(groupNodeBCRightSymmetry, LambdaGetBoundaryNodesRightSymmetry);
-
-    // Dirichlet symmetry //
-    std::vector<int> members;
-
-    const auto& groupBCLowerSymmetry= *s.GroupGetGroupPtr(groupNodeBCLowerSymmetry)->AsGroupNode();
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBCLowerSymmetry, {NuTo::eDirection::Y}));
-    
-    const auto& groupBCRightSymmetry= *s.GroupGetGroupPtr(groupNodeBCRightSymmetry)->AsGroupNode();
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBCRightSymmetry, {NuTo::eDirection::X}));
-    
-    int groupelementBCLeft = s.GroupCreate("ELEMENTS");
-    int groupelementBCUpper = s.GroupCreate("ELEMENTS");
-
-    s.GroupAddElementsFromNodes(groupelementBCLeft, groupNodeBCLeft, false);
-    s.GroupAddElementsFromNodes(groupelementBCUpper, groupNodeBCUpper, false);
-
-    if(BC == 0)
-    {
-        std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
-        std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
-
-        s.LoadSurfacePressureFunctionCreate2D(groupelementBCLeft,  groupNodeBCLeft, stress_left);
-        s.LoadSurfacePressureFunctionCreate2D(groupelementBCUpper, groupNodeBCUpper, stress_upper);
-    }
-    else
-    {
-        double Stress = -10.;
-        s.LoadSurfacePressureCreate2D(groupelementBCLeft, groupNodeBCLeft, Stress);
-    }
-
-    s.CalculateMaximumIndependentSets();
-    s.NodeBuildGlobalDofs();
-
-    s.SolveGlobalSystemStaticElastic();
-
-    int visualizationGroup = s.GroupGetElementsTotal();
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-
-    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu");
-    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu");
-}
-
-
-//! @brief Imports a mesh file and builds the hessian and the internal gradient.
-void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
-{
-    NuTo::Structure s(2);
-    auto groupIndices = s.ImportFromGmsh(path + fileName);
-
-    int interpolationType = groupIndices[0].second;
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
-
-    s.SetVerboseLevel(10);
-    s.ElementConvertToInterpolationType(groupIndices[0].first);
-
-//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
-
-    s.InterpolationTypeInfo(0);
-
-    s.NodeBuildGlobalDofs();
-    auto section = NuTo::SectionPlane::Create(1.0, false);
-    s.ElementTotalSetSection(section);
-
-    int constitutiveLaw = s.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
-    s.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    s.ElementTotalSetConstitutiveLaw(constitutiveLaw);
-
-    auto& groupLeft = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, -4);
-    auto& groupRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 4);
-
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLeft, {NuTo::eDirection::X}, -0.01));
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}, 0.01));
-
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(*s.NodeGetNodePtr(0), {NuTo::eDirection::Y}));
-
-    s.CalculateMaximumIndependentSets();
-    s.NodeBuildGlobalDofs();
-
-    s.SolveGlobalSystemStaticElastic();
-
-    int visualizationGroup = s.GroupGetElementsTotal();
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-
-    s.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu");
-    s.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu");
-}
-
-
-int main()
-{
-    double solution = 0;
-    NuTo::Structure* s = nullptr;
-
-    std::string resultDir = "./ResultsIGA";
-
-    if (boost::filesystem::exists(resultDir))
-    {
-        if (boost::filesystem::is_directory(resultDir))
-        {
-            boost::filesystem::remove_all(resultDir);
-        }
-    }
-
-    // create result directory
-    boost::filesystem::create_directory(resultDir);
-
-    // 2D constant stress
-    s = constantStress(solution, 1, resultDir);
-    solve(s, solution, resultDir, "Rectangle1", true);
-
-    // plate with hole
-
-//    Eigen::VectorXd vec = exact_plate_hole(Eigen::Vector2d(0.,1.));
-//    std::cout << "Vector: " << vec << std::endl;
-
-    s = buildPlateWithHole2DNeumann(resultDir, 5, 0);
-    solve(s, solution, resultDir, "Hole5", false);
-
-    std::string path = "./";
-
-    std::string fileName = "PlateWithHole.msh";
-    Neumann(resultDir, path, fileName, 0);
-//    Dirichlet(resultDir, meshFile2D, fileName);
-
-    return 0;
+    BOOST_CHECK_NO_THROW(SolveAndVisualize(s, "Hole5"));
 }

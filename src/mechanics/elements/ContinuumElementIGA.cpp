@@ -99,7 +99,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
         size += this->GetIntegrationPointWeight(iIP) * detJacobian;
     }
 
-    assert(std::abs(GetIntegrationPointVolume().sum() / size - 1) < 1.e-6); // just to be sure ...
+    //assert(std::abs(GetIntegrationPointVolume().sum() / size - 1) < 1.e-6); // just to be sure ...
 
     // check element length
     if (size < 1e-14)
