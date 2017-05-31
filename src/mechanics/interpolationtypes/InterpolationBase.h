@@ -172,7 +172,7 @@ public:
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @param rKnots ... knots bounding the IGA element
     //! @return ... natural coordinates of the elements surface
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const = 0;
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates

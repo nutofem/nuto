@@ -199,20 +199,20 @@ Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rSha
     return matrixN;
 }
 
-Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
+Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
 
     switch (rSurface)
     {
     case 0:
-        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1)), rKnots(1,0));
+        return Eigen::Vector2d(rNaturalSurfaceCoordinates(0), rKnots(1,0));
     case 1:
-        return Eigen::Vector2d(rKnots(0,1), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,0), rKnots(1,1)));
+        return Eigen::Vector2d(rKnots(0,1), rNaturalSurfaceCoordinates(0));
     case 2:
-        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,1), rKnots(0,0)), rKnots(1,1));
+        return Eigen::Vector2d(rNaturalSurfaceCoordinates(0), rKnots(1,1));
     case 3:
-        return Eigen::Vector2d(rKnots(0,0), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,1), rKnots(1,0)));
+        return Eigen::Vector2d(rKnots(0,0), rNaturalSurfaceCoordinates(0));
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }

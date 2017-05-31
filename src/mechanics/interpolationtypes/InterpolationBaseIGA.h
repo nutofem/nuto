@@ -91,7 +91,7 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "Use the function 'CalculateNaturalSurfaceCoordinates(rNaturalSurfaceCoordinates, rSurface, rKnots)' instead!");
     }
 
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override = 0;
 
 
 #ifdef ENABLE_SERIALIZATION

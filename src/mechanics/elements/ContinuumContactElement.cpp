@@ -161,7 +161,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
         Eigen::VectorXd referenceCoordinates(1);
         referenceCoordinates(0);
-        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(referenceCoordinates, surfaceId, elementPtr->GetKnots());
+        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(referenceCoordinates, surfaceId, elementPtr->GetKnots());
         Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
         double distance = (coordinatesMaster - coordinatedIPSlave).norm();
         if(minDistance < distance)

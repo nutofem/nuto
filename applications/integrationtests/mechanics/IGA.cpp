@@ -167,6 +167,16 @@ NuTo::Structure* constantStress(double& displacementCorrect, int refinements, co
 
     s->NodeInfo(10);
 
+    double sumExternalLoads = s->BuildGlobalExternalLoadVector().J.Export().sum();
+    double sumExternalLoadsExpected = Stress * thickness * Height;
+
+    if (std::abs(sumExternalLoads - sumExternalLoadsExpected) > 1.e-6)
+    {
+        std::cout << "sum external loads          " << sumExternalLoads << "\n";
+        std::cout << "sum external loads expected " << sumExternalLoadsExpected << "\n";
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Surface load integration incorrect.");
+    }
+
     return s;
 }
 
@@ -423,11 +433,8 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     if(BC == 0)
     {
-        std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_left  = exact_plate_hole_left;
-        std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_upper = exact_plate_hole_upper;
-
-        s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  groupNodesLeft, stress_left);
-        s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, groupNodesUpper, stress_upper);
+        s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  groupNodesLeft, exact_plate_hole_left);
+        s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, groupNodesUpper, exact_plate_hole_upper);
     }
     else
     {

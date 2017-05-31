@@ -20,7 +20,7 @@ constexpr double load = 10;
 
 // @brief returns the analytical solution (sxx, syy, sxy) taken from
 // https://en.wikiversity.org/wiki/Introduction_to_Elasticity/Plate_with_hole_in_tension
-ExactStress GetAnalyticSolution(Eigen::VectorXd rCartesianCoordinate)
+ExactStress AnalyticSolution(Eigen::VectorXd rCartesianCoordinate)
 {
     constexpr double a = 1.0;
     double r           = rCartesianCoordinate.norm();
@@ -44,7 +44,7 @@ ExactStress GetAnalyticSolution(Eigen::VectorXd rCartesianCoordinate)
 
 Eigen::Vector2d GetPressure(Eigen::VectorXd rCartesianCoordinate, Eigen::Vector2d rN)
 {
-    ExactStress s = GetAnalyticSolution(rCartesianCoordinate);
+    ExactStress s = AnalyticSolution(rCartesianCoordinate);
     Eigen::Matrix2d stress;
     stress << s[0], s[2], s[2], s[1];
     Eigen::Vector2d pressure = stress * rN;
@@ -101,7 +101,7 @@ bool CheckSolution(NuTo::Structure& s)
         {
             auto numericStressNuTo = ipStress.col(iIP);
             Eigen::Vector3d numericStress(numericStressNuTo[0], numericStressNuTo[1], numericStressNuTo[5]);
-            auto analyticStress  = GetAnalyticSolution(ipCoords.col(iIP));
+            auto analyticStress  = AnalyticSolution(ipCoords.col(iIP));
             double error         = (numericStress - analyticStress).norm();
             double relativeError = error / analyticStress.norm();
             if (relativeError > 0.05)

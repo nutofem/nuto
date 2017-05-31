@@ -133,7 +133,7 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const = 0;
+        std::vector<unsigned int>& VisualizationCellsIP) const {};
 #endif // ENABLE_VISUALIZE
 protected:
 };

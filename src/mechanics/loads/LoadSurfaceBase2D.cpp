@@ -173,7 +173,7 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
 
             if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
             {
-                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface,
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(ipCoordsSurface, surface,
                                                                                              elementPtr->GetKnots());
                 derivativeShapeFunctionsNatural =
                         interpolationTypeCoords.DerivativeShapeFunctionsNaturalIGA(ipCoordsNatural, elementPtr->GetKnotIDs());
