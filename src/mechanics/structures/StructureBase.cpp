@@ -93,7 +93,8 @@ using namespace NuTo;
 
 NuTo::StructureBase::StructureBase(int rDimension) :
     mAssembler(std::make_unique<Assembler>()),
-    mShowTime(true)
+    mShowTime(true),
+    mVerboseLevel(0)
 {
     if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {

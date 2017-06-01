@@ -16,8 +16,8 @@ struct CompareVector
     bool operator()(const TVector& l, const TVector& r) const
     {
         assert(l.size() == r.size());
-        //int size = std::min(l.size(), r.size());
-        int size = l.size(); 
+        // int size = std::min(l.size(), r.size());
+        int size = l.size();
         int iDim = 0;
         for (; iDim < size - 1; ++iDim)
             if (l[iDim] != r[iDim])
@@ -50,8 +50,19 @@ public:
         if (it != mCache.end())
             return it->second;
 
-        auto emplace_result = mCache.emplace(v, mFunction(v));
-        return emplace_result.first->second;
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+        // The memoizer is shared between all threads in the parallel assembly.
+        // If it is still empty, all threads want to calculate and emplace the values
+        // into the cache. This will cause problems like infinite recursions, segfaults
+        // during map::rebalancing and so on. Thus: omp critical.
+        // The 'hot' path however, this the code above, which is hopefully not 
+        // affected by the performance loss of omp critical.
+        {
+            it = mCache.emplace(v, mFunction(v)).first;
+        }
+        return it->second;
     }
 
     void ClearCache() const

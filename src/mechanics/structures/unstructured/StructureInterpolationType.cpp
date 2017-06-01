@@ -122,13 +122,13 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
 
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
-    InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
-    interpolationType->AddDofInterpolation(rDofType, rTypeOrder);
+    InterpolationType& interpolationType = *InterpolationTypeGet(rInterpolationTypeId);
+    interpolationType.AddDofInterpolation(rDofType, rTypeOrder);
 
-    eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+    eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
     const IntegrationTypeBase& integrationType = *this->GetPtrIntegrationType(integrationTypeEnum);
 
-    interpolationType->ClearCache();
+    interpolationType.ClearCache();
     if (mVerboseLevel > 2)
         mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << IntegrationTypeToString(integrationType.GetEnumType()) << ".\n";
 
