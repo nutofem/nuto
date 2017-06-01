@@ -15,7 +15,9 @@ struct CompareVector
 {
     bool operator()(const TVector& l, const TVector& r) const
     {
-        int size = std::min(l.size(), r.size()); 
+        assert(l.size() == r.size());
+        //int size = std::min(l.size(), r.size());
+        int size = l.size(); 
         int iDim = 0;
         for (; iDim < size - 1; ++iDim)
             if (l[iDim] != r[iDim])

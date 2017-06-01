@@ -239,8 +239,9 @@ BOOST_AUTO_TEST_CASE(run2d)
         auto elementPtrFiber = s.ElementGetElementPtr(4);
 
         // natural coordinates of (2.5, 0.25) in fiber 4
-        auto dispInFiber = elementPtrFiber->InterpolateDofGlobal(Eigen::Vector2d(-1, 0), NuTo::Node::eDof::DISPLACEMENTS);
-        auto coordsInFiber = elementPtrFiber->InterpolateDofGlobal(Eigen::Vector2d(-1, 0), NuTo::Node::eDof::COORDINATES);
+        Eigen::VectorXd fibreNaturalCoordiante = Eigen::VectorXd::Constant(1, -1);
+        auto dispInFiber = elementPtrFiber->InterpolateDofGlobal(fibreNaturalCoordiante, NuTo::Node::eDof::DISPLACEMENTS);
+        auto coordsInFiber = elementPtrFiber->InterpolateDofGlobal(fibreNaturalCoordiante, NuTo::Node::eDof::COORDINATES);
         std::cout << "dispInFiber \n" << dispInFiber << std::endl;
         std::cout << "coordsInFiber \n" << coordsInFiber << std::endl;
 
@@ -428,11 +429,9 @@ BOOST_AUTO_TEST_CASE(run3d)
     auto elementPtrFiber = s.ElementGetElementPtr(6);
 
     // natural coordinates of (2.5, 0.20, 0.25) in fiber 6
-    nodeCoords[0] = -1.0;
-    nodeCoords[1] = 0.0;
-    nodeCoords[2] = 0.0;
-    auto dispInFiber = elementPtrFiber->InterpolateDofGlobal(nodeCoords, NuTo::Node::eDof::DISPLACEMENTS);
-    auto coordsInFiber = elementPtrFiber->InterpolateDofGlobal(nodeCoords, NuTo::Node::eDof::COORDINATES);
+    Eigen::VectorXd fibreNaturalCoordiante = Eigen::VectorXd::Constant(1, -1);
+    auto dispInFiber = elementPtrFiber->InterpolateDofGlobal(fibreNaturalCoordiante, NuTo::Node::eDof::DISPLACEMENTS);
+    auto coordsInFiber = elementPtrFiber->InterpolateDofGlobal(fibreNaturalCoordiante, NuTo::Node::eDof::COORDINATES);
     std::cout << "dispInFiber \n" << dispInFiber << std::endl;
     std::cout << "coordsInFiber \n" << coordsInFiber << std::endl;
 
