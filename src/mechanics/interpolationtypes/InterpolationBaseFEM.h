@@ -172,9 +172,13 @@ protected:
 
     // members for each integration point
     std::vector<Eigen::VectorXd> mNodeCoordinates;
-    NuTo::NaturalCoordinateMemoizer<Eigen::VectorXd, Eigen::VectorXd> mShapeFunctions;
-    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> mMatrixN;
-    NuTo::NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::VectorXd> mDerivativeShapeFunctionsNatural;
+
+    template <typename TResult>
+    using Memoizer = NuTo::NaturalCoordinateMemoizerUnorderedMap<TResult, Eigen::VectorXd>;
+
+    Memoizer<Eigen::VectorXd> mShapeFunctions;
+    Memoizer<Eigen::MatrixXd> mMatrixN;
+    Memoizer<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 };
 } /* namespace NuTo */
 

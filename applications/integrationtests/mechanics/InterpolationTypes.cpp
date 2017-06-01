@@ -52,7 +52,6 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
         for (int iDim = 0; iDim < nodeCoordinates.rows(); ++iDim)
         {
             nodeCoordinates[iDim] += delta;
-            IT.ClearCache();
             B_CDF.col(iDim) = (IT.ShapeFunctions(nodeCoordinates) - N) / delta;
             nodeCoordinates[iDim] -= delta;
         }
@@ -64,7 +63,6 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
 //! This should be true: N_i(xi_j) == 1 for i == j    and      N_j(xi_i) == 0 for i != j
 void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumNodesExpected)
 {
-    rIT.ClearCache();
     auto dofType = NuTo::Node::eDof::COORDINATES;
     BOOST_CHECK(rIT.IsDof(dofType));
     BOOST_CHECK_EQUAL(rIT.GetNumNodes(), rNumNodesExpected);
