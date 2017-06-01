@@ -49,20 +49,8 @@ void CheckMemoizer()
     BOOST_CHECK_EQUAL(counter, expectedCounter);
 }
 
-BOOST_AUTO_TEST_CASE(memoization)
-{
-    using Memoizer = NuTo::NaturalCoordinateMemoizer<Eigen::Vector3d, Eigen::Vector3d>;
-    CheckMemoizer<Memoizer>();
-}
-
 BOOST_AUTO_TEST_CASE(memoizationMap)
 {
     using Memoizer = NuTo::NaturalCoordinateMemoizerMap<Eigen::Vector3d, Eigen::Vector3d>;
-    CheckMemoizer<Memoizer>();
-}
-
-BOOST_AUTO_TEST_CASE(memoizationUnorderedMap)
-{
-    using Memoizer = NuTo::NaturalCoordinateMemoizerUnorderedMap<Eigen::Vector3d, Eigen::Vector3d>;
     CheckMemoizer<Memoizer>();
 }

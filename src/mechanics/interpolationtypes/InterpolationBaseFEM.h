@@ -174,7 +174,7 @@ protected:
     std::vector<Eigen::VectorXd> mNodeCoordinates;
 
     template <typename TResult>
-    using Memoizer = NuTo::NaturalCoordinateMemoizerUnorderedMap<TResult, Eigen::VectorXd>;
+    using Memoizer = NuTo::NaturalCoordinateMemoizerMap<TResult, Eigen::VectorXd>;
 
     Memoizer<Eigen::VectorXd> mShapeFunctions;
     Memoizer<Eigen::MatrixXd> mMatrixN;
