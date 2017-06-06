@@ -8,6 +8,9 @@ template <typename TVector>
 struct CompareVector
 {
 
+    //! @brief defines a compare operator, following the compare concept
+    //! http://en.cppreference.com/w/cpp/concept/Compare
+    //! @remark Looks wierd, is fast. std::tie performs elementwise comparisons.
     bool operator()(const TVector& l, const TVector& r) const
     {
         assert(l.rows() == r.rows());
@@ -56,9 +59,7 @@ public:
 #ifdef _OPENMP
 #pragma omp critical
 #endif
-            {
-                it = mCache.emplace_hint(it, v, mFunction(v));
-            }
+            it = mCache.emplace_hint(it, v, mFunction(v));
         }
 
         return it->second;

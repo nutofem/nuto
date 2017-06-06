@@ -91,7 +91,7 @@ struct Lobatto
     std::vector<Eigen::Vector3d> ips;
     Lobatto()
     {
-        std::vector<double> ip1D = {1., -0.654653670707977087, 0., +0.654653670707977087, +1.};
+        std::vector<double> ip1D = {-1., -0.654653670707977087, 0., +0.654653670707977087, +1.};
         int num = ip1D.size();
         ips.reserve(num*num*num);
         for (int i = 0; i < num; i++)
