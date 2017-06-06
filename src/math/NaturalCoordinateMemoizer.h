@@ -1,29 +1,27 @@
 #pragma once
 #include <eigen3/Eigen/Core>
-#include <vector>
-#include <array>
 #include <map>
-#include <unordered_map>
-#include <memory>
-
-
 namespace NuTo
 {
 
 template <typename TVector>
 struct CompareVector
 {
+
     bool operator()(const TVector& l, const TVector& r) const
     {
-        assert(l.size() == r.size());
-        // int size = std::min(l.size(), r.size());
-        int size = l.size();
-        int iDim = 0;
-        for (; iDim < size - 1; ++iDim)
-            if (l[iDim] != r[iDim])
-                return l[iDim] < r[iDim];
-        // iDim = size -1 = last entry;
-        return l[iDim] < r[iDim];
+        assert(l.rows() == r.rows());
+        switch (l.rows())
+        {
+        case 1:
+            return l[0] < r[0];
+        case 2:
+            return std::tie(l[0], l[1]) < std::tie(r[0], r[1]);
+        case 3:
+            return std::tie(l[0], l[1], l[2]) < std::tie(r[0], r[1], r[2]);
+        default:
+            throw;
+        }
     }
 };
 
@@ -47,21 +45,22 @@ public:
     const TResult& Get(const TNaturalCoords& v) const
     {
         auto it = mCache.find(v);
-        if (it != mCache.end())
-            return it->second;
-
+        if (it == mCache.end())
+        {
+// The memoizer is shared between all threads in the parallel assembly.
+// If it is still empty, all threads want to calculate and emplace the values
+// into the cache. This will cause problems like infinite recursions, segfaults
+// during map::rebalancing and so on. Thus: omp critical.
+// The 'hot' path however, this the code above, which is hopefully not
+// affected by the performance loss of omp critical.
 #ifdef _OPENMP
 #pragma omp critical
 #endif
-        // The memoizer is shared between all threads in the parallel assembly.
-        // If it is still empty, all threads want to calculate and emplace the values
-        // into the cache. This will cause problems like infinite recursions, segfaults
-        // during map::rebalancing and so on. Thus: omp critical.
-        // The 'hot' path however, this the code above, which is hopefully not 
-        // affected by the performance loss of omp critical.
-        {
-            it = mCache.emplace(v, mFunction(v)).first;
+            {
+                it = mCache.emplace_hint(it, v, mFunction(v));
+            }
         }
+
         return it->second;
     }
 

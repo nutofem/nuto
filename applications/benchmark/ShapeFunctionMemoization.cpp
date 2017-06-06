@@ -6,7 +6,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 
-#include <map>
+#include <vector>
+#include <unordered_map>
+//#include <boost/container/flat_unordered_map.hpp>
 
 //! @brief transforms a vector of natural node coordinates to a reasonable id
 template <int TRaster>
@@ -89,7 +91,7 @@ struct Lobatto
     std::vector<Eigen::Vector3d> ips;
     Lobatto()
     {
-        std::vector<double> ip1D = {-1., -0.654653670707977087, 0., +0.654653670707977087, +1.};
+        std::vector<double> ip1D = {1., -0.654653670707977087, 0., +0.654653670707977087, +1.};
         int num = ip1D.size();
         ips.reserve(num*num*num);
         for (int i = 0; i < num; i++)
