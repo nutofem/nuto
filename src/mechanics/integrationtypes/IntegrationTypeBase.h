@@ -9,7 +9,6 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/MechanicsException.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
@@ -87,17 +86,6 @@ public:
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel)const;
 
-    //! @brief creates new integration-cells/order/area
-    //! @param rArea (Input) polygonal surface of integration area
-    //! @param rOrder (Input) integration order (or number of integration points)
-    virtual void AddIntegrationPoints(std::vector< std::vector<double> > & rArea, const unsigned short rOrder);
-    
-    //! @brief adds a new integration point
-    //! @param rIp (Input) integration point
-    virtual void AddIntegrationPoint(const IntegrationPointBase & rIp);
-    // @brief deletes an integration point
-    // @param rIpNum (Input) integration point (counting from zero)
-    virtual void DeleteIntegrationPoint(const int rIpNum);
 
 #ifdef ENABLE_VISUALIZE
 

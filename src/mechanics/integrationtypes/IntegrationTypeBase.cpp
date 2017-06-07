@@ -71,22 +71,6 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     return ipCellInfo;
 }
 
-void NuTo::IntegrationTypeBase::AddIntegrationPoints(std::vector<std::vector<double>>& rArea,
-                                                     const unsigned short rOrder)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot add an IP to this integration type.");
-}
-
-void NuTo::IntegrationTypeBase::AddIntegrationPoint(const IntegrationPointBase& rIp)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot add an IP to this integration type.");
-}
-
-void NuTo::IntegrationTypeBase::DeleteIntegrationPoint(const int rIpNum)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot delete an IP from this integration type.");
-}
-
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationTypeBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationTypeBase)
