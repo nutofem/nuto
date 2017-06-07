@@ -268,7 +268,6 @@ BOOST_AUTO_TEST_CASE(InterpolationPrism)
     CheckShapeFunctionsAndNodePositions(myIT15, 18);
 }
 
-
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTruss)
 {
 
@@ -291,6 +290,7 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTruss)
     ids = {nodeIds[1], nodeIds[0]};
     myStructureTruss.ElementCreate(itTruss, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTriangle)
 {
     NuTo::Structure myStructureTriangle(2);
@@ -334,6 +334,7 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingQuad)
     ids = {nodeIds[3], nodeIds[2], nodeIds[1], nodeIds[0]};
     myStructureQuad.ElementCreate(itQuad, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTetrahedron)
 {
     NuTo::Structure myStructureTetrahedron(3);
@@ -355,6 +356,7 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTetrahedron)
     ids = {nodeIds[0], nodeIds[3], nodeIds[2], nodeIds[1]};
     myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingBrick)
 {
     NuTo::Structure myStructureBrick(3);
