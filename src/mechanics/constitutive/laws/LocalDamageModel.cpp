@@ -614,6 +614,7 @@ double
 NuTo::LocalDamageModel::CalculateStaticDataExtrapolationError(Data& rStaticData,
                                                               const ConstitutiveInputMap& rConstitutiveInput) const
 {
+    return 0;
     // static data 0 contains the extrapolated values \tilde \kappa_n
     // static data 1 contains the implicit data \kappa_n-1
     // static data 2 contains the implicit data \kappa_n-2

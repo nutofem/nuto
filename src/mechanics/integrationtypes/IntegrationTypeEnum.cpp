@@ -1,4 +1,5 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include <map>
 #include <algorithm>
 #include "mechanics/MechanicsException.h"
 
@@ -35,6 +36,7 @@ std::map<eIntegrationType, std::string> GetIntegrationTypeMap()
         {eIntegrationType::IntegrationType2D4NLobatto25Ip,      "INTEGRATIONTYPE2D4NLOBATTO25IP"},
         {eIntegrationType::IntegrationType3D4NGauss1Ip,         "INTEGRATIONTYPE3D4NGAUSS1IP"},
         {eIntegrationType::IntegrationType3D4NGauss4Ip,         "INTEGRATIONTYPE3D4NGAUSS4IP"},
+        {eIntegrationType::IntegrationType3D6NGauss1Ip,         "INTEGRATIONTYPE3D6NGAUSS1IP"},
         {eIntegrationType::IntegrationType3D6NGauss2x3Ip,       "INTEGRATIONTYPE3D6NGAUSS2X3IP"},
         {eIntegrationType::IntegrationType3D8NGauss1Ip,         "INTEGRATIONTYPE3D8NGAUSS1IP"},
         {eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,     "INTEGRATIONTYPE3D8NGAUSS2X2X2IP"},

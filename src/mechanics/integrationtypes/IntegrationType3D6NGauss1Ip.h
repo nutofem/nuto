@@ -15,16 +15,14 @@ namespace NuTo
 {
 //! @author Thomas Titscher, ISM
 //! @date January 2017
-//! @brief ... integration types in 3D with 6 nodes Gauss integration and 2x3 integration points
-class IntegrationType3D6NGauss2x3Ip : public IntegrationType3D
+//! @brief ... integration types in 3D with 1 Gauss point
+class IntegrationType3D6NGauss1Ip : public IntegrationType3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    //! @brief constructor
-    IntegrationType3D6NGauss2x3Ip();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

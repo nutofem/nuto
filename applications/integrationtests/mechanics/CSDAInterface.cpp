@@ -347,7 +347,7 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
 
 
 
-void CSDA3D()
+void CSDA3D(int order)
 {
 
     NuTo::Structure s(3);
@@ -357,13 +357,15 @@ void CSDA3D()
     constexpr double ly = 2;
     constexpr double lz = 5;
 
+    NuTo::Interpolation::eTypeOrder displInterpol = order == 1? NuTo::Interpolation::eTypeOrder::EQUIDISTANT1 : NuTo::Interpolation::eTypeOrder::EQUIDISTANT2;
+
     int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, displInterpol); 
 
     int it2 = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::PRISM3D);
     s.InterpolationTypeAdd(it2, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(it2, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(it2, NuTo::Node::eDof::DISPLACEMENTS, displInterpol);
 
     s.NodeCreate(0, Eigen::Vector3d({-lx, 0, 0}));
     s.NodeCreate(1, Eigen::Vector3d({-thickness/2,-ly, 0}));
@@ -442,7 +444,7 @@ void CSDA3D()
     newmark.SetMaxNumIterations(100);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("./CSDA3D", deleteDirectory);
+    newmark.SetResultDirectory("./CSDA3D_" + std::to_string(order) , deleteDirectory);
     newmark.Solve(1);
 }
 
@@ -450,7 +452,8 @@ int main()
 {
 
     CSDA2D();
-    CSDA3D();
+    CSDA3D(1);
+    CSDA3D(2);
 
     PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

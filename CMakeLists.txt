@@ -28,6 +28,7 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
 include(CompilerFlags)
+include(Version)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
