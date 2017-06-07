@@ -59,6 +59,8 @@ const Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::GetIntegrationPointVolume
         const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
         Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
         double detJacobian = this->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
+        //for(int i = 0; i < TDim; i++) detJacobian *= 0.5*(mKnots(i,1) - mKnots(i,0));
+
         volume[theIP] = detJacobian * this->GetIntegrationPointWeight(theIP);
     }
     return volume;
@@ -90,7 +92,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
     double size = 0;
     for (int iIP = 0; iIP < numIntegrationPoints; ++iIP)
     {
-        const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(theIP);
+        const auto ipCoords = this->GetIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
         Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs);
         detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
         if (detJacobian <= 0)
@@ -100,7 +102,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
         size += this->GetIntegrationPointWeight(iIP) * detJacobian;
     }
 
-    //assert(std::abs(GetIntegrationPointVolume().sum() / size - 1) < 1.e-6); // just to be sure ...
+    assert(std::abs(GetIntegrationPointVolume().sum() / size - 1) < 1.e-6); // just to be sure ...
 
     // check element length
     if (size < 1e-14)
