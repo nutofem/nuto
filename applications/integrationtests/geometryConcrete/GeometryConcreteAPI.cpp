@@ -20,7 +20,7 @@ void MaxDistanceMesh2D(std::string rGmshFile, double rLX, double rLY, int rNumCl
     geometry.SetGradingCurve(NuTo::GeometryConcrete::B16, rNumClasses);
     geometry.SetParticleVolumeFraction(0.4);
     geometry.SetAbsoluteGrowthRate(0.1);
-    geometry.SetInitialTimeBarrier(0.001);
+    geometry.SetInitialTimeBarrier(10);
 
     geometry.MaximizeParticleDistance(0.75);
 
@@ -38,7 +38,7 @@ void MaxVolumeFraction3D(std::string rGmshFile, double rLX, double rLY, double r
     geometry.SetGradingCurve(NuTo::GeometryConcrete::B16, rNumClasses);
     geometry.SetParticleVolumeFraction(0.8);
     geometry.SetRelativeGrowthRate(0.1);
-    geometry.SetInitialTimeBarrier(0.001);
+    geometry.SetInitialTimeBarrier(2);
 
     geometry.MaximizeParticleVolumeFraction(0.05);
 
