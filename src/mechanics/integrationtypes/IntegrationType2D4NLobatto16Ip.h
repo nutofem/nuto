@@ -1,4 +1,3 @@
-// $Id: IntegrationType2D4NLobatto16Ip.h 331 2010-10-06 09:32:11Z arnold2 $
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationType2D.h"
@@ -39,13 +38,6 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
-
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType2D4NLobatto16Ip;
-    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(

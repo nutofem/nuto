@@ -1,4 +1,3 @@
-// $Id: IntegrationType2D3NGauss1Ip.h 276 2010-06-30 13:04:32Z arnold2 $
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -44,13 +43,6 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
-
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType2D3NGauss1Ip;
-    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(

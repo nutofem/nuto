@@ -1,7 +1,4 @@
-// $Id$
-#ifndef IntegrationType1D2NLobatto6Ip_H
-#define IntegrationType1D2NLobatto6Ip_H
-
+#pragma once
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -59,13 +56,6 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType1D2NLobatto6Ip;
-    }
-
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
@@ -86,5 +76,3 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto6Ip)
 #endif
-
-#endif //IntegrationType1D2NLobatto6Ip_H

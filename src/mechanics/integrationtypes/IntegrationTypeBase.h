@@ -83,10 +83,6 @@ public:
     //! @return weight of integration points
     virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
 
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    virtual eIntegrationType GetEnumType() const = 0;
-
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel)const;

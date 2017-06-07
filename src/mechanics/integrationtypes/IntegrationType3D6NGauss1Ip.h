@@ -47,13 +47,6 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType3D6NGauss2x3Ip;
-    }
-
 #ifdef ENABLE_VISUALIZE
     IntegrationTypeBase::IpCellInfo GetVisualizationCells() const override;
 #endif // ENABLE_VISUALIZE

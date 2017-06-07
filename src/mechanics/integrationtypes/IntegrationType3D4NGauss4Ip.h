@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationType3D.h"
@@ -49,13 +48,6 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
-
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType3D4NGauss4Ip;
-    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
