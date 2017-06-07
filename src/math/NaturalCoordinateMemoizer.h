@@ -67,9 +67,7 @@ public:
 
     void ClearCache() const
     {
-        for (auto& ptr : mCache)
-            ptr = nullptr;
-        // mCache.clear(); somehow fails in gcc/release (clang or gcc/debug works though)
+        mCache.clear();
     }
 
 private:
