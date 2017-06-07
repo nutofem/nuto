@@ -98,7 +98,7 @@ class Brick8NTestCase(unittest.TestCase):
         subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
         collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 
-        collisions.Simulate(100000000, 8., 30., 1., 10.)
+        collisions.Simulate(100000000, 8., 30., 1., .01)
 
     def test_Cylinder(self):
         numParticles = 1000
@@ -112,7 +112,7 @@ class Brick8NTestCase(unittest.TestCase):
         subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
         collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 
-        collisions.Simulate(100000000, 8., 30, 1., 10.)
+        collisions.Simulate(100000000, 8., 30, 1., 0.01)
 
 
 if __name__ == "__main__":
