@@ -26,8 +26,8 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
                                                              int rSurfaceId,
                                                              const Group<ElementBase>* elementGroup,
                                                              const Group<NodeBase>* nodeGroup,
-                                                             const IntegrationTypeBase *rIntegrationType)
-    : ContinuumBoundaryElement<TDim>(rSlaveElement, *rIntegrationType, rSurfaceId), mIntegrationType(rIntegrationType)
+                                                             const IntegrationTypeBase& integrationType)
+    : ContinuumBoundaryElement<TDim>(rSlaveElement, integrationType, rSurfaceId), mIntegrationType(&integrationType)
 {
     //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;

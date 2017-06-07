@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <unordered_map>
-//#include <boost/container/flat_unordered_map.hpp>
 
 //! @brief transforms a vector of natural node coordinates to a reasonable id
 template <int TRaster>

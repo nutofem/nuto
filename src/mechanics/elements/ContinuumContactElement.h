@@ -14,7 +14,7 @@ protected:
     ContinuumContactElement() = default;
 #endif // ENABLE_SERIALIZATION
 public:
-    ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement, int rSurfaceId, const Group<ElementBase>* elementGroup, const Group<NodeBase>* nodeGroup, const IntegrationTypeBase *rIntegrationType);
+    ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement, int rSurfaceId, const Group<ElementBase>* elementGroup, const Group<NodeBase>* nodeGroup, const IntegrationTypeBase& integrationType);
 
     virtual ~ContinuumContactElement() = default;
 
