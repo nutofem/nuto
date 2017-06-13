@@ -62,6 +62,7 @@ enum class eVisualizeWhat
     TOTAL_INELASTIC_EQ_STRAIN,		//!< visualize inelastic equivalent strain
     DAMAGE,                         //!< visualize damage
     CRACK_PHASE_FIELD,              //!< visualize crack phase-field
+    CRACK_PHASE_FIELD_VELOCITY,     //!< visualize crack phase-field velocity
     ENGINEERING_PLASTIC_STRAIN,     //!< visualize engineering plastic strain
     PRINCIPAL_ENGINEERING_STRESS,   //!< visualize principal stresses
     PARTICLE_RADIUS,                //!< visualize radius of particles/nodes

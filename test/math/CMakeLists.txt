@@ -1,9 +1,9 @@
 add_unit_test(LinearInterpolation
-    math/Interpolation.cpp 
+    math/Interpolation.cpp
     )
 
 add_unit_test(CubicSplineInterpolation
-    math/Interpolation.cpp 
+    math/Interpolation.cpp
     )
 
 add_unit_test(EigenCompanion)
@@ -17,7 +17,10 @@ add_unit_test(SparseMatrixCSRVector2General
         math/SparseMatrixCSR.cpp
     )
 
+
 add_unit_test(NaturalCoordinateMemoizer)
+add_unit_test(Gmres)
+
 
 add_unit_test(SpatialContainer)
 target_link_libraries(SpatialContainer ${ANN_LIBRARIES})

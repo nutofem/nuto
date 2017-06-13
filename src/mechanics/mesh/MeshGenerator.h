@@ -38,7 +38,7 @@ public:
     //! @param rElementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
     static std::pair<int, int> Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
-                             std::vector<int> rNumDivisions);
+                                    std::vector<int> rNumDivisions);
 
     //! @brief creates a grid from rStart to rEnd with a default element shape
     //!        1D = Truss | 2D = Quad | 3D = Brick
@@ -49,7 +49,10 @@ public:
     //! @param rElementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
     static std::pair<int, int> Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
-                             std::vector<int> rNumDivisions, Interpolation::eShapeType rElementShape);
+                                    std::vector<int> rNumDivisions, Interpolation::eShapeType rElementShape);
+
+    static std::pair<int, int> Grid(Structure& rS, Eigen::VectorXd rStart, Eigen::VectorXd rEnd,
+                                    Eigen::VectorXi rNumDivisions, Interpolation::eShapeType rElementShape);
 
     //! @param rRadius ... radius of the cylinder
     //! @param rHeight ... height of the cylinder

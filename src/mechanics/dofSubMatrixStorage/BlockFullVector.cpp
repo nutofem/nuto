@@ -237,7 +237,7 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateNormL2()
 }
 
 template<typename T>
-NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm()
+NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm() const
 {
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())

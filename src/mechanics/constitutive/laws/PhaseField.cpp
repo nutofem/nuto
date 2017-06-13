@@ -228,7 +228,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const double oldEnergyDensity,
     double currentEnergyDensity = std::max(elasticEnergyDensity, oldEnergyDensity);
 
     bool performUpdateAtEnd = false;
-    constexpr double residualEnergyDensity = 1.e-8;
+    constexpr double residualEnergyDensity = 1.e-12;
 
     for (auto& itOutput : rConstitutiveOutput)
     {

@@ -9,6 +9,7 @@ add_subdirectory(mesh)
 add_subdirectory(nodes)
 add_subdirectory(sections)
 add_subdirectory(tools)
+add_subdirectory(feti)
 
 if(NOT DEFINED ENV{TRAVIS}) 
     add_subdirectory(todo)
