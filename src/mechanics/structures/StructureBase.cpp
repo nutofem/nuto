@@ -377,16 +377,12 @@ void NuTo::StructureBase::DefineVisualizeElementData(
             break;
 
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
-        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
         case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD_VELOCITY:
-            rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
-            break;
-
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:

@@ -572,7 +572,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
                     break;
             }
         }
-    }
+
 
     // calculate the element solution
     Evaluate(elementOutput);

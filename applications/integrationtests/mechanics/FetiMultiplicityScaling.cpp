@@ -13,7 +13,7 @@
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
-
+#include "mechanics/groups/Group.h"
 using std::cout;
 using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
@@ -94,8 +94,7 @@ int main(int argc, char* argv[])
 
     VectorXd coordinates(dim);
 
-    const int groupNodesLeftBoundary = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeCoordinateRange(groupNodesLeftBoundary, eDirection::X, -tol, +tol);
+    const auto& groupNodesLeftBoundary = structure.GroupGetNodesAtCoordinate(eDirection::X, 0.);
 
     const int groupNodesLoad = structure.GroupCreate(eGroupId::Nodes);
     structure.GroupAddNodeCoordinateRange(groupNodesLoad, eDirection::X, lengthX - tol, lengthX + tol);
@@ -104,7 +103,7 @@ int main(int argc, char* argv[])
                           << "**      virtual constraints      ** \n"
                           << "*********************************** \n\n";
 
-    std::vector<int> nodeIdsBoundaries = structure.GroupGetMemberIds(groupNodesLeftBoundary);
+    std::vector<int> nodeIdsBoundaries = groupNodesLeftBoundary.GetMemberIds();
     std::vector<int> nodeIdsLoads = structure.GroupGetMemberIds(groupNodesLoad);
 
     structure.ApplyVirtualConstraints(nodeIdsBoundaries, nodeIdsLoads);
@@ -114,6 +113,7 @@ int main(int argc, char* argv[])
                           << "*********************************** \n\n";
 
     structure.NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
     structure.ApplyConstraintsTotalFeti(groupNodesLeftBoundary);
 
     structure.GetLogger() << "*********************************** \n"
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
 
-    int loadId = structure.LoadCreateNodeGroupForce(0, groupNodesLoad, directionX, 0);
+    int loadId = structure.LoadCreateNodeGroupForce(groupNodesLoad, directionX, 0);
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      visualization            ** \n"

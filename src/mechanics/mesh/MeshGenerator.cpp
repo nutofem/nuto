@@ -195,7 +195,7 @@ std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, Eigen::VectorXd rSt
     std::vector<double> end(rEnd.data(), rEnd.data() + rEnd.size());
     std::vector<int> numDivisions(rNumDivisions.data(), rNumDivisions.data() + rNumDivisions.size());
 
-    Grid(rS, start, end, numDivisions, rElementShape);
+    return Grid(rS, start, end, numDivisions, rElementShape);
 }
 
 
