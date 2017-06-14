@@ -33,10 +33,8 @@
 //! @param mDimension number of nodes
 NuTo::NewmarkDirect::NewmarkDirect(StructureBase* rStructure)
     : NewmarkBase(rStructure)
+
 {
-    mMinLineSearchStep         = 0.01;
-    mVisualizeResidualTimeStep = 0;
-    mPerformLineSearch         = true;
 }
 
 
@@ -61,7 +59,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     if (mMaxTimeStep == 0)
         throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
 
-    double curTime  = mTime;
+    double curTime = mTime;
     double timeStep = mTimeStep;
 
     const DofStatus& dofStatus = mStructure->GetDofStatus();
@@ -140,17 +138,17 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
 
-    evaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT]                  = &intForce;
+    evaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
     evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
 
     evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
-    evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0]                 = &hessian0;
+    evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
 
     if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
     {
         hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
         evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
-        evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1]                 = &hessian1;
+        evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
     }
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
@@ -246,7 +244,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                                      "time step is smaller than minimum - no convergence is obtained.");
 
         // calculate Delta_BRhs and Delta_ExtForce
-        bRHS         = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+        bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
         prevExtForce = CalculateCurrentExternalLoad(curTime);
 
         curTime += timeStep;
@@ -258,7 +256,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
         unsigned int staggeredStepNumber = 0; // at the moment needed to do the postprocessing after the last step and
-                                              // not after every step of a staggered solution.
+        // not after every step of a staggered solution.
         for (const auto& activeDofs : mStepActiveDofs)
         {
 
@@ -370,7 +368,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     if (mStructure->GetNumTimeDerivatives() >= 1)
                         dof_dt1 = trial_dof_dt1;
                     if (mStructure->GetNumTimeDerivatives() >= 2)
-                        dof_dt2  = trial_dof_dt2;
+                        dof_dt2 = trial_dof_dt2;
                     normResidual = trialNormResidual;
 
                     PrintInfoIteration(normResidual, iteration);
