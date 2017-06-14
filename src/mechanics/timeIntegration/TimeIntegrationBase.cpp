@@ -34,26 +34,10 @@ using namespace NuTo;
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
         mStructure(rStructure),
         mSolver(std::make_unique<SolverMUMPS>(false)),
-        mTimeDependentLoadCase(-1),
         mLoadVectorStatic(rStructure->GetDofStatus()),
         mLoadVectorTimeDependent(rStructure->GetDofStatus()),
-        mTime(0.),
-        mAutomaticTimeStepping(false),
-        mTimeStep(0),
-        mMaxTimeStep(1),
-        mMinTimeStep(0),
-        mMergeActiveDofValuesOrder1(true),
-        mMergeActiveDofValuesOrder2(false),
-        mCheckCoefficientMatrix(false),
         mToleranceResidual(rStructure->GetDofStatus()),
-        mLoadStep(0),
-        mTimeStepResult(0),
-        mTimeStepVTK(0),
-        mMinTimeStepPlot(0),
-        mLastTimePlot(-1e99),
-        mIterationCount(0),
-        mCallback(nullptr),
-        mShowTime(true)
+        mCallback(nullptr)
 {
     ResetForNextLoad();
 }
@@ -61,7 +45,6 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
 NuTo::TimeIntegrationBase::~TimeIntegrationBase()
 {}
 
-//! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
 {
     mTimeDependentLoadCase = -1;
@@ -78,9 +61,6 @@ void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
     mStructure->GetAssembler().ConstraintUpdateRhs(rCurrentTime);
 }
 
-
-//! @brief sets a scalar time dependent multiplication factor for the external loads
-//! @param rTimeDependentLoadFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
 void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadCase, const Eigen::MatrixXd& rTimeDependentLoadFactor)
 {
     if (rTimeDependentLoadFactor.cols()!=2)
@@ -101,15 +81,10 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
     mTimeDependentLoadCase = rTimeDependentLoadCase;
 }
 
-
-//! @brief Sets the residual tolerance for a specific DOF
-//! param rDof: degree of freedom
-//! param rTolerance: tolerance
 void NuTo::TimeIntegrationBase::SetToleranceResidual(NuTo::Node::eDof rDof, double rTolerance)
 {
     mToleranceResidual[rDof] = rTolerance;
 }
-
 
 void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
 {
@@ -129,9 +104,6 @@ void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
                             << "\n";
 }
 
-//! @brief calculate the current external force as a function of time delta
-//! @param curTime ... current time in the load step
-//! @return ... external load vector
 NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExternalLoad(double curTime)
 {
     if (mTimeDependentLoadCase!=-1)
@@ -180,10 +152,6 @@ const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndM
     return mStructure->GetAssembler().GetConstraintRhs();
 }
 
-//! @brief monitor the displacements of a node
-//! @param rNodeId id of the node
-//! @param rResultId string identifying the result, this is used for the output file
-//! @return id of the result, so that it could be modified afterwards
 int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId )
 {
     //find unused integer id
@@ -200,10 +168,6 @@ int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(const std::string& rRe
     return resultNumber;
 }
 
-//! @brief monitor the accelerations of a node
-//! @param rNodeId id of the node
-//! @param rResultId string identifying the result, this is used for the output file
-//! @return id of the result, so that it could be modified afterwards
 int NuTo::TimeIntegrationBase::AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId )
 {
     //find unused integer id
@@ -220,9 +184,6 @@ int NuTo::TimeIntegrationBase::AddResultNodeAccelerations(const std::string& rRe
     return resultNumber;
 }
 
-//! @brief monitor the time
-//! @param rResultId string identifying the result, this is used for the output file
-//! @return id of the result, so that it could be modified afterwards
 int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
 {
     //find unused integer id
@@ -238,7 +199,6 @@ int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
 
     return resultNumber;
 }
-
 
 int NuTo::TimeIntegrationBase::AddResultElementIpData(const std::string& rResultStr, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType)
 {
@@ -256,11 +216,6 @@ int NuTo::TimeIntegrationBase::AddResultElementIpData(const std::string& rResult
     return resultNumber;
 }
 
-
-//! @brief monitor the time
-//! @param rResultId string identifying the result, this is used for the output file
-//! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be calculated
-//! @return id of the result, so that it could be modified afterwards
 int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResultStr,int rGroupNodeId)
 {
     //find unused integer id
@@ -277,10 +232,6 @@ int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResul
     return resultNumber;
 }
 
-//! @brief extracts all dof values
-//! @param rDof_dt0 ... 0th time derivative
-//! @param rDof_dt1 ... 1st time derivative
-//! @param rDof_dt2 ... 2nd time derivative
 void NuTo::TimeIntegrationBase::ExtractDofValues(StructureOutputBlockVector& rDof_dt0, StructureOutputBlockVector& rDof_dt1, StructureOutputBlockVector& rDof_dt2) const
 {
     rDof_dt0 = mStructure->NodeExtractDofValues(0);
@@ -293,8 +244,6 @@ void NuTo::TimeIntegrationBase::ExtractDofValues(StructureOutputBlockVector& rDo
 
 }
 
-//! @brief calculates the norm of the residual, can include weighting
-//! @param rResidual ... residual
 double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& rResidual) const
 {
     double norm = 0;
@@ -311,8 +260,6 @@ std::string NuTo::TimeIntegrationBase::GetRestartFileName() const
     return restartFile.c_str();
 }
 
-//! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-//! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
 void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
 {
     Timer timer(__FUNCTION__, GetShowTime(), mStructure->GetLogger());
@@ -446,13 +393,10 @@ std::cout << "finish serialization of structure base" << "\n";
 }
 #endif  // ENABLE_SERIALIZATION
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::TimeIntegrationBase::Info()const
 {
 }
 
-//! @brief sets the result directory
-//! @param if delete is set, all the content of the directory will be removed
 void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool rDelete)
 {
     mResultDir = rResultDir;
@@ -483,13 +427,6 @@ void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool 
     }
 }
 
-//! @brief sets the minimum time step for the time integration procedure
-void NuTo::TimeIntegrationBase::SetPlotElementGroups(std::vector<int> rPlotElementGroups)
-{
-    if (rPlotElementGroups.empty())
-        throw MechanicsException(__PRETTY_FUNCTION__, "vector must have at least a single row.");
-    mPlotElementGroups = rPlotElementGroups;
-}
 
 void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rResultDir, double rTime, int rTimeStep)
 {
