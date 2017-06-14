@@ -7,13 +7,11 @@
 #include <chrono>
 #include "mechanics/feti/NewmarkFeti.h"
 
-#include "mechanics/nodes/NodeBase.h"
-
 #include "boost/filesystem.hpp"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/groups/Group.h"
+
 using std::cout;
 using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
@@ -39,7 +37,6 @@ using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 constexpr int dim = 2;
 constexpr double thickness = 1.0;
 constexpr double lengthX = 40.;
-constexpr double lengthY = 40.;
 
 // material
 constexpr double youngsModulus = 2.1e5;
@@ -78,33 +75,36 @@ int main(int argc, char* argv[])
 
     structure.ImportMeshJson(meshFile, interpolationTypeId);
 
+    structure.GetLogger() << "*********************************** \n"
+                          << "**      material                 ** \n"
+                          << "*********************************** \n\n";
+
     const int materialId = structure.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     structure.ConstitutiveLawSetParameterDouble(materialId, eConstitutiveParameter::YOUNGS_MODULUS, youngsModulus);
     structure.ConstitutiveLawSetParameterDouble(materialId, eConstitutiveParameter::POISSONS_RATIO, poissonsRatio);
     structure.ElementTotalSetConstitutiveLaw(materialId);
 
+    structure.GetLogger() << "*********************************** \n"
+                          << "**      section                  ** \n"
+                          << "*********************************** \n\n";
 
     auto section = NuTo::SectionPlane::Create(thickness, true);
     structure.ElementTotalSetSection(section);
-
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      node groups              ** \n"
                           << "*********************************** \n\n";
 
     VectorXd coordinates(dim);
-
     const auto& groupNodesLeftBoundary = structure.GroupGetNodesAtCoordinate(eDirection::X, 0.);
-
-    const int groupNodesLoad = structure.GroupCreate(eGroupId::Nodes);
-    structure.GroupAddNodeCoordinateRange(groupNodesLoad, eDirection::X, lengthX - tol, lengthX + tol);
+    const auto& groupNodesLoad = structure.GroupGetNodesAtCoordinate(eDirection::X, lengthX);
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      virtual constraints      ** \n"
                           << "*********************************** \n\n";
 
     std::vector<int> nodeIdsBoundaries = groupNodesLeftBoundary.GetMemberIds();
-    std::vector<int> nodeIdsLoads = structure.GroupGetMemberIds(groupNodesLoad);
+    std::vector<int> nodeIdsLoads = groupNodesLoad.GetMemberIds();
 
     structure.ApplyVirtualConstraints(nodeIdsBoundaries, nodeIdsLoads);
 
@@ -130,7 +130,8 @@ int main(int argc, char* argv[])
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
 
-    int loadId = structure.LoadCreateNodeGroupForce(groupNodesLoad, directionX, 0);
+    int loadId = structure.LoadCreateNodeGroupForce(&groupNodesLoad, directionX, 0.);
+
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      visualization            ** \n"
@@ -171,7 +172,5 @@ int main(int argc, char* argv[])
                           << "**      solve                    ** \n"
                           << "*********************************** \n\n";
 
-
     newmarkFeti.Solve(simulationTime);
-    structure.GetLogger() << "Total number of Dofs: \t" << structure.GetNumTotalDofs() << "\n\n";
 }
