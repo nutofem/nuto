@@ -28,35 +28,18 @@
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
-//! @brief constructor
-//! @param mDimension number of nodes
 NuTo::NewmarkBase::NewmarkBase (StructureBase* rStructure)
     : TimeIntegrationBase (rStructure)
 {
-	mMuDampingMass = 0.;
-	mToleranceForce = 1e-6;
-	mMaxNumIterations = 20;
-	mBeta = 0.25;
-	mGamma = 0.5;
-	mInternalEnergy = 0.;
-	mExternalEnergy = 0.;
-	mKineticEnergy = 0.;
-	mDampedEnergy = 0.;
-
-	mUseLumpedMass = false;
 }
 
-//! @brief merges the dof values depending on the numTimeDerivatives and rMergeAll
-//! @param rDof_dt0 ... 0th time derivative
-//! @param rDof_dt1 ... 1st time derivative
-//! @param rDof_dt2 ... 2nd time derivative
-//! @param rMergeAll ... false: merges dof_dt1 only when mMuMassDamping = 0, ignores dof_dt2
 void NuTo::NewmarkBase::MergeDofValues(const StructureOutputBlockVector& rDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
 {
     mStructure->NodeMergeDofValues(0, rDof_dt0.J, rDof_dt0.K);
+
     if (mStructure->GetNumTimeDerivatives() >= 1)
     {
-        if (rMergeAll || mMuDampingMass == 0)
+        if (rMergeAll or mMuDampingMass == 0)
         {
             mStructure->NodeMergeDofValues(1, rDof_dt1.J, rDof_dt1.K);
         }
@@ -73,11 +56,6 @@ void NuTo::NewmarkBase::MergeDofValues(const StructureOutputBlockVector& rDof_dt
 }
 
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::NewmarkBase::Info()const
-{
-	TimeIntegrationBase::Info();
-}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
