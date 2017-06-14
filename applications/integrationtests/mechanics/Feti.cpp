@@ -58,7 +58,7 @@ void AssignMaterial(NuTo::Structure& structure);
 void AddVisualization(NuTo::Structure& structure);
 std::map<int, VectorXd> GetNodeAndDisplacementsMap(NuTo::Structure& structure);
 
-std::map<int, VectorXd> ComputeReferenceSolution();
+std::map<int, VectorXd> ComputeReferenceSolution(int rank);
 
 int main(int argc, char* argv[])
 {
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
     myIntegrationScheme.Solve(simulationTime);
 
     std::map<int, VectorXd> nodeIdAndDisplacements = GetNodeAndDisplacementsMap(structure);
-    std::map<int, VectorXd> nodeIdAndDisplacementsReference = ComputeReferenceSolution();
+    std::map<int, VectorXd> nodeIdAndDisplacementsReference = ComputeReferenceSolution(rank);
 
 
     for (const auto& nodeIdAndDisplacementsPair : nodeIdAndDisplacements)
@@ -345,12 +345,12 @@ std::map<int, VectorXd> GetNodeAndDisplacementsMap(NuTo::Structure& structure)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::map<int, VectorXd> ComputeReferenceSolution()
+std::map<int, VectorXd> ComputeReferenceSolution(int rank)
 {
 
     NuTo::Structure structure(dimension);
     structure.SetShowTime(false);
-    structure.GetLogger().OpenFile("FetiTestOutputReferenceSolution");
+    structure.GetLogger().OpenFile("FetiTestOutputReferenceSolution_rank" + std::to_string(rank));
 
     std::string meshFile = "feti_beam_coarse_2_subdomains_24_ele_compare.msh";
     auto eleGroupAndInterpolationTypeList = structure.ImportFromGmsh(meshFile);
@@ -411,7 +411,7 @@ std::map<int, VectorXd> ComputeReferenceSolution()
                           << "\n\n";
 
     NuTo::NewmarkDirect myIntegrationScheme(&structure);
-    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/FetiReferenceSolution");
+    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/FetiReferenceSolution_rank" + std::to_string(rank));
 
     std::cout << "resultPath" << resultPath.string() << std::endl;
     myIntegrationScheme.SetTimeStep(timeStep);

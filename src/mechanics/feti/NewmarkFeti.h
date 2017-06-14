@@ -39,7 +39,9 @@ public:
     enum class eIterativeSolver
     {
         ConjugateGradient,
-        BiconjugateGradientStabilized
+        BiconjugateGradientStabilized,
+        ProjectedGmres,
+        Direct
     };
 
     enum class eFetiPreconditioner
@@ -48,6 +50,14 @@ public:
         Lumped,
         Dirichlet
     };
+
+    enum class eFetiScaling
+    {
+        None,
+        Multiplicity,
+        Superlumped
+    };
+
 
     using VectorXd = Eigen::VectorXd;
     using MatrixXd = Eigen::MatrixXd;
@@ -58,6 +68,8 @@ public:
     ///
     NewmarkFeti(StructureFeti* rStructure)
         : NewmarkDirect(rStructure)
+        , mNumTotalActiveDofs(rStructure->GetNumTotalActiveDofs())
+        , mNumTotalDofs(rStructure->GetNumTotalDofs())
     {
     }
 
@@ -79,13 +91,8 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented!");
     }
 
-
     ///
     /// \brief GatherInterfaceRigidBodyModes
-    /// \param interfaceRigidBodyModes
-    /// \param numRigidBodyModesGlobal
-    /// \return
-    ///
     Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes,
                                                   const int numRigidBodyModesGlobal)
     {
@@ -106,10 +113,6 @@ public:
 
     ///
     /// \brief GatherRigidBodyForceVector
-    /// \param rigidBodyForceVectorLocal
-    /// \param numRigidBodyModesGlobal
-    /// \return
-    ///
     Eigen::VectorXd GatherRigidBodyForceVector(Eigen::VectorXd& rigidBodyForceVectorLocal,
                                                const int numRigidBodyModesGlobal)
     {
@@ -127,10 +130,6 @@ public:
     }
     ///
     /// \brief MpiGatherRecvCountAndDispls
-    /// \param recvCount
-    /// \param displs
-    /// \param numValues
-    ///
     void MpiGatherRecvCountAndDispls(std::vector<int>& recvCount, std::vector<int>& displs, const int numValues)
     {
         boost::mpi::communicator world;
@@ -155,34 +154,21 @@ public:
     //! Iterative method to solve the interface problem.
     //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
     //! iteration
-    int BiCgStab(const MatrixXd& projection, VectorXd& x, const VectorXd& rhs)
+    int ProjBiCgStab(const MatrixXd& projection, VectorXd& x, const VectorXd& rhs)
     {
 
-        boost::mpi::communicator world;
 
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
-        const SparseMatrix& B = structure->GetConnectivityMatrix();
-        const SparseMatrix Btrans = B.transpose();
-
-        //        world.barrier();
+        const SparseMatrix Btrans = mB.transpose();
 
 
-        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numRigidBodyModes = structure->GetNumRigidBodyModes();
+        VectorXd Ax = CalculateFx(x);
 
-        // solve the linear system Ax = b
-        VectorXd tmp;
-        tmp.setZero(numActiveDofs + numRigidBodyModes);
-        tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax = B * tmp;
-        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         VectorXd Ay = Ax;
         VectorXd Az = Ax;
 
         const int n = rhs.rows();
         VectorXd r = rhs - Ax;
-        //    VectorXd r0 = r;
 
         VectorXd rProj = projection * r;
         VectorXd rProj0 = rProj;
@@ -200,36 +186,27 @@ public:
         VectorXd s(n);
         VectorXd t(n);
 
-        const double tol2 = 1.0e-7 * rhs_sqnorm;
+        const double tol2 = mFetiTolerance * mFetiTolerance * rhs_sqnorm;
 
         int i = 0;
         int restarts = 0;
 
-        const int maxIters = mCpgMaxIterations;
 
-        while (rProj.squaredNorm() > tol2 and i < maxIters)
+        while (rProj.squaredNorm() > tol2 and i < mMaxNumFetiIterations)
         {
-            double rho_old = rho;
+            const double rho_old = rho;
 
             rho = rProj0.dot(rProj);
-
 
             if (std::fabs(rho) < 1.0e-20)
             {
 
-                structure->GetLogger()
+                mStructure->GetLogger()
                         << "The new residual vector became too orthogonal to the arbitrarily chosen direction r0.\n"
                            "Let's restart with a new r0!"
                         << "\n\n";
 
-                // The new residual vector became too orthogonal to the arbitrarily chosen direction r0
-                // Let's restart with a new r0:
-
-                tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-                Ax.noalias() = B * tmp;
-
-                MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
+                Ax = CalculateFx(x);
 
                 rProj = projection * (rhs - Ax);
                 rProj0 = rProj;
@@ -238,155 +215,405 @@ public:
                     i = 0;
             }
 
-            double beta = (rho / rho_old) * (alpha / w);
+            const double beta = (rho / rho_old) * (alpha / w);
 
             p = rProj + beta * (p - w * v);
 
-            y = projection * mLocalPreconditioner * p;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(y.data()), y.size(), std::plus<double>());
-            //                        y = p;
+            // precondition
+            y = ApplyPreconditionerOnTheLeft(p);
 
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * y).head(numActiveDofs));
-            Ay.noalias() = B * tmp;
+            // reprojection
+            y = projection * y;
 
-            MPI_Allreduce(MPI_IN_PLACE, Ay.data(), Ay.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            Ay = CalculateFx(y);
 
-            v.noalias() = projection * Ay;
+            v = projection * Ay;
 
             alpha = rho / rProj0.dot(v);
 
             s = rProj - alpha * v;
 
-            z = projection * mLocalPreconditioner * s;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(z.data()), z.size(), std::plus<double>());
-            //                        z = s;
+            // precondition
+            z = ApplyPreconditionerOnTheLeft(s);
 
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * z).head(numActiveDofs));
-            Az.noalias() = B * tmp;
+            // reprojection
+            z = projection * z;
 
-            MPI_Allreduce(MPI_IN_PLACE, Az.data(), Az.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            Az = CalculateFx(z);
 
-            t.noalias() = projection * Az;
+            t = projection * Az;
 
-            double tmp = t.dot(t);
+            const double tSquaredNorm = t.squaredNorm();
 
-            if (tmp > 0.0)
-                w = t.dot(s) / tmp;
+            if (tSquaredNorm > 0.0)
+                w = t.dot(s) / tSquaredNorm;
             else
                 w = 0.0;
 
             x += alpha * y + w * z;
             rProj = s - w * t;
 
-            structure->GetLogger() << "BiCGStab rel. error = " << rProj.squaredNorm() / rhs_sqnorm
-                                   << "\t at iteration = " << i << "/" << maxIters << "\n";
+            mStructure->GetLogger() << "BiCGStab rel. error = " << rProj.squaredNorm() / rhs_sqnorm
+                                    << "\t at iteration = " << i << "/" << mMaxNumFetiIterations << "\n";
             ++i;
         }
-        //    tol_error = sqrt(r.squaredNorm()/rhs_sqnorm);
+
         return i;
     }
 
+
+    //! \brief Applies the interface flexibility operator to some vector x
+    //!
+    //! \param x
+    //! \return sum of B_s K_s^+ B_s^T x
+    VectorXd CalculateFx(const VectorXd& x)
+    {
+
+        VectorXd tmp = VectorXd::Zero(mNumTotalActiveDofs + mNumRigidBodyModes);
+        tmp.head(mNumTotalActiveDofs) = mSolver.solve((mB.transpose() * x).head(mNumTotalActiveDofs));
+        VectorXd Ax = mB * tmp;
+
+        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return Ax;
+    }
+
+    //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
+    VectorXd ApplyPreconditionerOnTheLeft(const VectorXd& x)
+    {
+        VectorXd vec = mLocalPreconditioner * x;
+        MPI_Allreduce(MPI_IN_PLACE, vec.data(), vec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return vec;
+    }
 
     //! @brief Conjugate projected gradient method (CG)
     //!
     //! Iterative method to solve the interface problem.
     //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
     //! iteration
-    int CPG(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
+    int ProjConjugateGradient(const Eigen::MatrixXd& projection, Eigen::VectorXd& lambda, const Eigen::VectorXd& rhs)
     {
 
-        boost::mpi::communicator world;
-        VectorXd Ap;
+        VectorXd tmp = CalculateFx(lambda);
 
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
+        // initial projected residual
+        VectorXd projResidual = projection * (rhs - tmp);
 
-        const SparseMatrix& B = structure->GetConnectivityMatrix();
-        const SparseMatrix Btrans = B.transpose();
+        // apply precondtioner and reproject
+        VectorXd precondProjResidual = projection * ApplyPreconditionerOnTheLeft(projResidual);
 
-        //        world.barrier();
-
-        const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numRigidBodyModes = structure->GetNumRigidBodyModes();
-
-        VectorXd tmp;
-        tmp.setZero(numActiveDofs + numRigidBodyModes);
-        tmp.head(numActiveDofs) = mSolver.solve((Btrans * x).head(numActiveDofs));
-        VectorXd Ax = B * tmp;
-
-        //        world.barrier();
-
-        MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        //        world.barrier();
-        // initial residual
-        VectorXd r = rhs - Ax;
         VectorXd z;
 
-        // initial projected search direction
-        VectorXd w = projection * r;
-
-        // precondition
-        structure->GetLogger() << "projection.cols() = \t" << projection.cols() << "\nmLocalPreconditioner.rows() = \t"
-                               << mLocalPreconditioner.rows() << "\nmLocalPreconditioner.cols() = \t"
-                               << mLocalPreconditioner.cols() << "\nw.rows() = \t" << w.rows() << "\n\n";
-
-        VectorXd p = projection * mLocalPreconditioner * w;
-        boost::mpi::all_reduce(world, boost::mpi::inplace(p.data()), p.size(), std::plus<double>());
-        //    p = w;
-
         const double rhs_sqnorm = rhs.squaredNorm();
-        const double threshold = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
+        const double threshold = mFetiTolerance * mFetiTolerance * rhs_sqnorm;
 
-        double absNew = w.dot(p);
+        double absNew = projResidual.dot(precondProjResidual);
         int iteration = 0;
-        while (iteration < mCpgMaxIterations)
+        while (iteration < mMaxNumFetiIterations)
         {
             // at every iteration i the r has to be recomputed which is quite expensive
-            //            world.barrier();
-
-            tmp.head(numActiveDofs) = mSolver.solve((Btrans * p).head(numActiveDofs));
-            Ap.noalias() = B * tmp;
-
-            //            world.barrier();
-            MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            tmp = CalculateFx(precondProjResidual);
 
             // step size
-            double alpha = absNew / p.dot(Ap);
+            const double alpha = absNew / precondProjResidual.dot(tmp);
 
             // update solution
-            x += alpha * p;
+            lambda += alpha * precondProjResidual;
 
             // update projected residual
-            w -= alpha * projection * Ap;
+            projResidual -= alpha * projection * tmp;
 
-            if (w.squaredNorm() < threshold)
+            if (projResidual.squaredNorm() < threshold)
                 break;
 
-            // precondition
-            z = projection * mLocalPreconditioner * w;
-            boost::mpi::all_reduce(world, boost::mpi::inplace(z.data()), z.size(), std::plus<double>());
-            //        z = w;
+            // precondition and reproject
+            z = projection * ApplyPreconditionerOnTheLeft(projResidual);
 
+            const double absOld = absNew;
+            absNew = projResidual.dot(z);
+            const double beta = absNew / absOld;
+            // update search direction
+            precondProjResidual = z + beta * precondProjResidual;
 
-            double absOld = absNew;
-            absNew = w.dot(z); // update the absolute value of r
-            double beta = absNew / absOld; // calculate the Gram-Schmidt value used to create the new search direction
-            p = z + beta * p; // update search direction
-
-            structure->GetLogger() << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
-                                   << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
-
+            mStructure->GetLogger() << "ProjConjugateGradient rel. error = " << projResidual.squaredNorm() / rhs_sqnorm
+                                    << "\t at iteration = " << iteration << "/" << mMaxNumFetiIterations << "\n";
 
             ++iteration;
         }
 
-        structure->GetLogger() << "\nConverged! \n"
-                               << "CPG rel. error = " << w.squaredNorm() / rhs_sqnorm
-                               << "\t at iteration = " << iteration << "/" << mCpgMaxIterations << "\n";
-
         return iteration;
     }
 
+
+    //! @brief Projected generalized minimal residual method
+    //!
+    //! Iterative method to solve the interface problem.
+    //! @param projection: Projection matrix that guarantees that the solution satisfies the constraint at every
+    //! iteration
+    int ProjGmres(const Eigen::MatrixXd& projection, Eigen::VectorXd& x, const Eigen::VectorXd& rhs)
+    {
+
+        using MatrixType = Eigen::MatrixXd;
+        using VectorType = Eigen::VectorXd;
+
+        VectorType Fx = CalculateFx(x);
+        VectorType r = rhs - Fx;
+
+        VectorType projResidual = projection * r;
+
+        // precondition
+        VectorType precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+        // reproject
+        precondProjResidual = projection * precondProjResidual;
+
+        //        double projResidualNorm = projResidual.norm();
+        double precondProjResidualNorm = precondProjResidual.norm();
+
+        double rhsNorm = rhs.norm();
+        if (rhsNorm < 1.e-5)
+            rhsNorm = 1.0;
+
+        int n = r.rows();
+
+        // krylovDimension = max number of vectors that form the Krylov subspace
+        int krylovDimension = 40;
+
+        // initialize upper Hessenberg matrix
+        MatrixType H = MatrixType::Zero(krylovDimension + 1, krylovDimension);
+
+        // initialize Krylov subspace
+        MatrixType V = MatrixType::Zero(n, krylovDimension + 1);
+
+        // container for Givens rotation matrices, i.e. a vector of Matrix2d with cosines and sines
+        std::vector<Eigen::JacobiRotation<double>> Givens(krylovDimension + 1);
+
+        VectorType e1 = VectorType::Unit(n, 0);
+
+        double tolerance = mFetiTolerance;
+        int maxNumRestarts = mMaxNumFetiIterations;
+
+        int numRestarts = 0;
+
+        while (precondProjResidualNorm > tolerance * rhsNorm and numRestarts < maxNumRestarts)
+        {
+            // the first vector in the Krylov subspace is the normalized residual
+            V.col(0) = precondProjResidual / precondProjResidualNorm;
+
+            // initialize the s vector used to estimate the residual
+            VectorType s = precondProjResidualNorm * e1;
+
+            for (int i = 0; i < krylovDimension; ++i)
+            {
+                // calculate w = A * V.col(i)
+                VectorType w = CalculateFx(V.col(i));
+
+                // project w
+                w = projection * w;
+
+                // precondition
+                w = ApplyPreconditionerOnTheLeft(w);
+
+                // reproject
+                w = projection * w;
+
+                for (int iRow = 0; iRow < i + 1; ++iRow)
+                {
+                    H(iRow, i) = w.transpose() * V.col(iRow);
+                    w = w - H(iRow, i) * V.col(iRow);
+                }
+
+                H(i + 1, i) = w.norm();
+                V.col(i + 1) = w / H(i + 1, i);
+
+                // Apply the Givens Rotations to ensure that H is an upper triangular matrix.
+                // First apply previous rotations to the current matrix
+                for (int iRow = 0; iRow < i; ++iRow)
+                {
+                    H.col(i).applyOnTheLeft(iRow, iRow + 1, Givens[iRow].adjoint());
+                }
+
+                // form the i-th rotation matrix
+                Givens[i].makeGivens(H(i, i), H(i + 1, i));
+
+                // Apply the new Givens rotation on the
+                // new entry in the uppper Hessenberg matrix
+                H.col(i).applyOnTheLeft(i, i + 1, Givens[i].adjoint());
+
+                // Finally apply the new Givens rotation on the s vector
+                s.applyOnTheLeft(i, i + 1, Givens[i].adjoint());
+
+                const double error = std::abs(s[i + 1]);
+
+                mStructure->GetLogger() << "projected GMRES relative error: \t" << error / (rhsNorm)
+                                        << "\t #restarts: \t" << numRestarts << "\n";
+
+                if (error < tolerance * rhsNorm)
+                {
+                    VectorType y = s.head(i + 1);
+                    H.topLeftCorner(i + 1, i + 1).triangularView<Eigen::Upper>().solveInPlace(y);
+                    x = x + V.block(0, 0, n, i + 1) * y;
+
+                    // compute preconditioned residual
+                    Fx = CalculateFx(x);
+                    r = rhs - Fx;
+
+                    mStructure->GetLogger() << "Residual norm: \t" << r.norm() << "\n";
+
+                    projResidual = projection * r;
+
+                    mStructure->GetLogger() << "Projected residual norm: \t" << projResidual.norm() << "\n";
+
+                    // precondition
+                    precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+                    // reproject
+                    precondProjResidual = projection * precondProjResidual;
+
+                    precondProjResidualNorm = precondProjResidual.norm();
+
+                    mStructure->GetLogger() << "precond. proj. residual norm: \t" << precondProjResidual.norm() << "\n";
+
+                    WriteGmresInfo(i, numRestarts, krylovDimension);
+                    return numRestarts;
+                }
+            }
+
+            // we have exceeded the number of iterations. Update the approximation and start over
+            VectorType y = s.head(krylovDimension);
+            H.topLeftCorner(krylovDimension, krylovDimension).triangularView<Eigen::Upper>().solveInPlace(y);
+            x = x + V.block(0, 0, n, krylovDimension) * y;
+
+            // compute preconditioned residual
+            Fx = CalculateFx(x);
+            r = rhs - Fx;
+            projResidual = projection * r;
+
+            // precondition
+            precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+
+            // reproject
+            precondProjResidual = projection * precondProjResidual;
+
+            precondProjResidualNorm = precondProjResidual.norm();
+
+            ++numRestarts;
+        }
+
+
+        std::cout << "Not converged! #restarts in projected GMRES: \t" << numRestarts << std::endl;
+
+        return numRestarts;
+    }
+
+
+    //! \brief Writes information of current GMRES iteration to a file
+    //! \param numIterations
+    //! \param numRestarts
+    //! \param krylovDimension
+    void WriteGmresInfo(const int numIterations, const int numRestarts, const int krylovDimension)
+    {
+        std::ofstream file(mResultDir + "/GmresInfo.dat", std::ios::app);
+        file << mTime << "\t" << numIterations + (numRestarts * krylovDimension) << "\t" << krylovDimension << "\n";
+        file.close();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void CheckIfGtransDeltaLambdaEqualsE(const MatrixXd& G, const VectorXd& lambda, const VectorXd& e,
+                                         const double tolerance = 1.e-6) const
+    {
+        constexpr double precision = 1.;
+        const VectorXd zero = G.transpose() * lambda - e;
+
+        if (not(zero.isMuchSmallerThan(tolerance, precision)))
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "Gtrans * lambda - e = 0 not satisfied. Norm is: " + std::to_string(zero.norm()));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void CheckIfRigidBodyModesAreOrthogonalToRightHandSide(const MatrixXd& rigidBodyModes, const VectorXd& residual,
+                                                           const VectorXd& lambda, const double tolerance = 1.e-6) const
+    {
+        constexpr double precision = 1.;
+        const VectorXd zero = rigidBodyModes.transpose() * (residual - mB.transpose() * lambda);
+
+        if (not(zero.isMuchSmallerThan(tolerance, precision)))
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "Rtrans ( f - Btrans * lambda ) = 0 not satisfied. Norm is: " +
+                                             std::to_string(zero.norm()));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void CheckIfFtimesLambdaPLusGtimesAlphaEqualsD(const VectorXd& FtimesLambda, const MatrixXd& G,
+                                                   const VectorXd& alpha, const VectorXd& d,
+                                                   const double tolerance = 1.e-2) const
+    {
+        constexpr double precision = 1.;
+        const VectorXd zero = G * alpha - (d - FtimesLambda);
+
+        if (not(zero.isMuchSmallerThan(tolerance, precision)))
+            throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied. Norm is: " +
+                                                                  std::to_string(zero.norm()));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void CheckIfProjectionOfDminusFtimesLambdaEqualsZero(const VectorXd& d, const VectorXd& FtimesLambda,
+                                                         const double tolerance = 1.e-2)
+    {
+        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
+        const MatrixXd& P = structure->GetProjectionMatrix();
+
+        constexpr double precision = 1.;
+        VectorXd zero = P.transpose() * (d - FtimesLambda);
+        if (not(zero.isMuchSmallerThan(tolerance, precision)))
+            throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied. Norm is: " +
+                                                                  std::to_string(zero.norm()));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    VectorXd ExtractLocalAlpha(const VectorXd& alphaGlobal)
+    {
+        const int rank = static_cast<StructureFeti*>(mStructure)->mRank;
+
+        std::vector<int> recvCount;
+        std::vector<int> displs;
+        MpiGatherRecvCountAndDispls(recvCount, displs, mNumRigidBodyModes);
+        return alphaGlobal.segment(displs[rank], mNumRigidBodyModes);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    VectorXd SolveForActiveDegreesOfFreedom(const VectorXd& residual, const VectorXd& lambda,
+                                            const MatrixXd& rigidBodyModes, const VectorXd& alpha)
+    {
+        VectorXd delta_dof_active = VectorXd::Zero(mNumTotalDofs);
+        delta_dof_active.head(mNumTotalActiveDofs) =
+                mSolver.solve((residual - mB.transpose() * lambda).head(mNumTotalActiveDofs));
+
+        delta_dof_active = delta_dof_active - rigidBodyModes * alpha;
+
+        return delta_dof_active;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    VectorXd CalculateDisplacementGap(const VectorXd& residual, const double timeStep)
+    {
+        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
+
+        VectorXd pseudoInvVec = VectorXd::Zero(mNumTotalDofs);
+        pseudoInvVec.head(mNumTotalActiveDofs) = mSolver.solve(residual.head(mNumTotalActiveDofs));
+
+        VectorXd displacementGap = mB * pseudoInvVec;
+
+
+        MPI_Allreduce(MPI_IN_PLACE, displacementGap.data(), displacementGap.size(), MPI_DOUBLE, MPI_SUM,
+                      MPI_COMM_WORLD);
+
+
+        displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
+
+        return displacementGap;
+    }
 
     //! @brief Solves the global and local problem
     //!
@@ -396,30 +623,17 @@ public:
     //! Calculates the increment of the free degrees of freedom
     //!
     StructureOutputBlockVector FetiSolve(const VectorXd& residual_mod, const std::set<Node::eDof>& activeDofSet,
-                                         VectorXd& deltaLambda, const double timeStep)
+                                         VectorXd& deltaLambda, const double timeStep, bool& converged)
     {
 
         NuTo::Timer timer("Time for FetiSolve", mStructure->GetShowTime());
-        boost::mpi::communicator world;
 
         StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
-
-        const SparseMatrix& B = structure->GetConnectivityMatrix();
-        const SparseMatrix Btrans = B.transpose();
-
-        const int numRigidBodyModesLocal = structure->GetNumRigidBodyModes();
-        const int numRigidBodyModesGlobal = structure->GetNumRigidBodyModesTotal();
-
-        const int numTotalActiveDofs = mStructure->GetNumTotalActiveDofs();
-        const int numTotalDofs = mStructure->GetNumTotalDofs();
-
         const MatrixXd& rigidBodyModes = structure->GetRigidBodyModes();
-
 
         // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
         const MatrixXd& G = structure->GetG();
-
 
         // GtransGinv.size() = (total number of rigid body modes) x (total number of rigid body modes)
         const MatrixXd GtransGinv = (G.transpose() * G).inverse();
@@ -434,7 +648,7 @@ public:
         //     | R_{N_s}^T f    |
         //
         VectorXd rigidBodyForceVectorGlobal =
-                mFetiSolver.GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
+                mFetiSolver.GatherRigidBodyForceVector(rigidBodyForceVectorLocal, mNumRigidBodyModesTotal);
 
 
         // initial guess for lambda
@@ -447,31 +661,10 @@ public:
         // d = B |  0          |
         //
         //*****************************************
-        VectorXd pseudoInvVec;
-        pseudoInvVec.setZero(numTotalDofs);
+        VectorXd displacementGap = CalculateDisplacementGap(residual_mod, timeStep);
 
+        CheckIfGtransDeltaLambdaEqualsE(G, deltaLambda, rigidBodyForceVectorGlobal);
 
-        pseudoInvVec.head(numTotalActiveDofs) = mSolver.solve(residual_mod.head(numTotalActiveDofs));
-
-
-        VectorXd displacementGap = B * pseudoInvVec;
-
-
-        boost::mpi::all_reduce(world, boost::mpi::inplace(displacementGap.data()), displacementGap.size(),
-                               std::plus<double>());
-
-
-        //        std::cout << "time step:                       \t" << timeStep << std::endl;
-        //        std::cout << "CalculateLoadFactor load factor: \t" << CalculateLoadFactor(timeStep) << std::endl;
-        displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
-
-
-        VectorXd zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-
-
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
-                                                                  std::to_string(zeroVec.norm()));
 
         mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
@@ -479,103 +672,68 @@ public:
         structure->GetLogger() << "*********************************** \n"
                                << "**      Start Interface Problem  ** \n"
                                << "*********************************** \n\n";
-
         int iterations = 0;
 
         switch (mIterativeSolver)
         {
         case eIterativeSolver::ConjugateGradient:
         {
-            iterations = CPG(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjConjugateGradient(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
-
         case eIterativeSolver::BiconjugateGradientStabilized:
         {
-            iterations = BiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjBiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
+        case eIterativeSolver::ProjectedGmres:
+        {
+            iterations = ProjGmres(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Requested solver not yet implemented.");
         }
 
 
-        if (iterations >= mCpgMaxIterations)
+        if (iterations >= mMaxNumFetiIterations - 1)
+        {
+            //            converged = false;
+            //            return StructureOutputBlockVector(structure->GetDofStatus());
             throw MechanicsException(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
+        }
+
 
         if (structure->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
+
 
         structure->GetLogger() << "*********************************** \n"
                                << "**      End   Interface Problem  ** \n"
                                << "*********************************** \n\n";
 
-
-        // MPI_Barrier(MPI_COMM_WORLD);
-
-        zeroVec = G.transpose() * deltaLambda - rigidBodyForceVectorGlobal;
-
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Gtrans * lambda - e = 0 not satisfied. Norm is: " +
-                                                                  std::to_string(zeroVec.norm()));
-        }
+        const VectorXd FtimesDeltaLambda = CalculateFx(deltaLambda);
+        const VectorXd alphaGlobal = GtransGinv * G.transpose() * (displacementGap - FtimesDeltaLambda);
 
 
-        zeroVec = rigidBodyModes.transpose() * (residual_mod - B.transpose() * deltaLambda);
-        if (not(zeroVec.isMuchSmallerThan(1.e-4, 1.e-1)))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Rtrans ( f - Btrans*lambda ) = 0 not satisfied. Norm is: " +
-                                                                  std::to_string(zeroVec.norm()));
+        // Gtrans * lambda = e?
+        CheckIfGtransDeltaLambdaEqualsE(G, deltaLambda, rigidBodyForceVectorGlobal);
 
+        // Rtrans * (residual - Btrans * lambda) = 0?
+        CheckIfRigidBodyModesAreOrthogonalToRightHandSide(rigidBodyModes, residual_mod, deltaLambda);
 
-        //*****************************************
-        //
-        //         | K_11^-1 * Btrans*lambda    |
-        // tmp = B |  0                         |
-        //
-        //*****************************************
-        pseudoInvVec.setZero(mStructure->GetNumTotalDofs());
-        pseudoInvVec.head(mStructure->GetNumTotalActiveDofs()) =
-                mSolver.solve((Btrans * deltaLambda).head(mStructure->GetNumTotalActiveDofs()));
+        // F * lambda + G * alpha = d?
+        CheckIfFtimesLambdaPLusGtimesAlphaEqualsD(FtimesDeltaLambda, G, alphaGlobal, displacementGap);
 
-        VectorXd tmp = B * pseudoInvVec;
-        boost::mpi::all_reduce(world, boost::mpi::inplace(tmp.data()), tmp.size(), std::plus<double>());
+        // Ptrans * (d - F * lambda) = 0?
+        CheckIfProjectionOfDminusFtimesLambdaEqualsZero(displacementGap, FtimesDeltaLambda);
 
-        VectorXd alphaGlobal = VectorXd::Zero(numRigidBodyModesGlobal);
-        alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
+        VectorXd alphaLocal = ExtractLocalAlpha(alphaGlobal);
 
+        VectorXd delta_dof_active =
+                SolveForActiveDegreesOfFreedom(residual_mod, deltaLambda, rigidBodyModes, alphaLocal);
 
-        // MPI_Barrier(MPI_COMM_WORLD);
-        //        VectorXd zeroVecTmp = G * alphaGlobal - (displacementGap - tmp);
-        //        if (not(zeroVecTmp.isMuchSmallerThan(1.e-4, 1.e-1)))
-        //        {
-        //            structure->GetLogger() << "G*alpha - (d- F*lambda) = 0 \n" << zeroVecTmp << "\n\n";
-        //            throw MechanicsException(__PRETTY_FUNCTION__, "G*alpha - (d- F*lambda) = 0 not satisfied");
-        //        }
-        //
-        //        VectorXd zeroVecTmp2 = structure->GetProjectionMatrix().transpose() * (displacementGap - tmp);
-        //        if (not(zeroVecTmp2.isMuchSmallerThan(1.e-4, 1.e-1)))
-        //            throw MechanicsException(__PRETTY_FUNCTION__, "Ptrans * (d- F*lambda) = 0 not satisfied");
-
-
-        // MPI_Barrier(MPI_COMM_WORLD);
-
-
-        std::vector<int> recvCount;
-        std::vector<int> displs;
-        MpiGatherRecvCountAndDispls(recvCount, displs, numRigidBodyModesLocal);
-        VectorXd alphaLocal = alphaGlobal.segment(displs[structure->mRank], numRigidBodyModesLocal);
-
-        //    structure->GetLogger() << "alphaGlobal: \n" << alphaGlobal                << "\n\n";
-        //    structure->GetLogger() << "alphaLocal: \n" << alphaLocal                << "\n\n";
-        //    structure->GetLogger() << "rigidBodyModes: \n" << rigidBodyModes                << "\n\n";
-
-        VectorXd delta_dof_active;
-        delta_dof_active.setZero(mStructure->GetNumTotalDofs());
-        delta_dof_active.head(mStructure->GetNumTotalActiveDofs()) =
-                mSolver.solve((residual_mod - Btrans * deltaLambda).head(structure->GetNumTotalActiveDofs()));
-
-
-        delta_dof_active = delta_dof_active - rigidBodyModes * alphaLocal;
-
+        CheckContinuity(delta_dof_active, structure->mNumInterfaceNodesTotal);
 
         StructureOutputBlockVector delta_dof_dt0(structure->GetDofStatus());
         int offset = 0;
@@ -589,16 +747,53 @@ public:
 
         delta_dof_dt0.K[Node::eDof::DISPLACEMENTS] =
                 delta_dof_active.segment(offset, structure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS));
-        //    structure->GetLogger() << "delta_dof_active: \n" << delta_dof_active                << "\n\n";
-        //    structure->GetLogger() << "delta_dof_active.size(): \n" << delta_dof_active.size()  << "\n\n";
-        //    structure->GetLogger() << "delta_dof_dt0.J: \n" << delta_dof_dt0.J                  << "\n\n";
-        //    structure->GetLogger() << "delta_dof_dt0.K: \n" << delta_dof_dt0.K                  << "\n\n";
-
 
         return delta_dof_dt0;
     }
 
 
+    //! \brief Checks if the field variables are continuous across the interfaces
+    //! \param delta_dof_active
+    //! \param numInterfaceNodesTotal
+    void CheckContinuity(const VectorXd& delta_dof_active, const int numInterfaceNodesTotal)
+    {
+        VectorXd zeroVec = mB * delta_dof_active;
+
+        mStructure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
+
+        MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        mStructure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
+
+
+        const int numLagrangeMultipliersDisplacement = numInterfaceNodesTotal * 2;
+        if (not(zeroVec.head(numLagrangeMultipliersDisplacement).isMuchSmallerThan(1.e-4, 1.e-1)))
+        {
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "Continuity of the displacement field is not satisfied, i.e. B*u = 0 not satisfied. Norm is: " +
+                            std::to_string(zeroVec.head(numLagrangeMultipliersDisplacement).norm()));
+        }
+
+        //        const int numLagrangeMultipliersCrack = numInterfaceNodesTotal;
+        //
+        //        if (not(zeroVec.segment(numLagrangeMultipliersDisplacement, numLagrangeMultipliersCrack)
+        //                        .isMuchSmallerThan(1.e-2, 1.e-1)))
+        //        {
+        //            throw MechanicsException(
+        //                    __PRETTY_FUNCTION__,
+        //                    "Continuity of the crack phase-field is not satisfied, i.e. B*d = 0 not satisfied. Norm
+        //                    is: " +
+        //                            std::to_string(
+        //                                    zeroVec.segment(numLagrangeMultipliersDisplacement,
+        //                                    numLagrangeMultipliersCrack)
+        //                                            .norm()));
+        //        }
+    }
+
+
+    //! \brief Calculates the local preconditioner (lumped, Dirichlet)
+    //! \param hessian
     void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
     {
         mStructure->GetLogger() << "******************************************** \n"
@@ -608,9 +803,8 @@ public:
         Timer timer("Time to calculate the local preconditioner", mStructure->GetShowTime(), mStructure->GetLogger());
 
         const int numTotalDofs = mStructure->GetNumTotalDofs();
-        const auto& B = static_cast<StructureFeti*>(mStructure)->GetConnectivityMatrix();
 
-        mLocalPreconditioner.resize(B.rows(), B.rows());
+        mLocalPreconditioner.resize(mB.rows(), mB.rows());
 
         switch (mFetiPreconditioner)
         {
@@ -624,78 +818,61 @@ public:
             auto K = hessian.JJ.ExportToEigenSparseMatrix();
             K.conservativeResize(numTotalDofs, numTotalDofs);
 
-            mLocalPreconditioner = B * K * B.transpose();
+            mLocalPreconditioner = mScalingMatrix * mB * K * mB.transpose() * mScalingMatrix;
 
             break;
         }
         case eFetiPreconditioner::Dirichlet:
         {
+            //            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
+            //
+            //            std::set<int> internalDofIds;
+            //            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
+            //            {
+            //                internalDofIds.insert(j);
+            //            }
+            //
+            //            std::vector<int> lagrangeMultiplierDofIds =
+            //                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+            //
+            //            for (const auto& id : lagrangeMultiplierDofIds)
+            //            {
+            //                internalDofIds.erase(id);
+            //            }
+            //
+            //
+            //            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
+            //
+            //
+            //            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
+            //            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
+            //            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
+            //            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
+            //
+            //            TimerExtractLocalMatrices.Reset();
+            //
+            //            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            //            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
+            //
+            //            //
+            //            //     | 0  0   |
+            //            // S = | 0  Sbb |
+            //            //
+            //            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
+            //
+            //
+            //            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
+            //                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
+            //                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
+            //                            Sbb.coeff(rowId, colId);
+            //
+            //
+            //            mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
+            //
+            //
+            //            MPI_Barrier(MPI_COMM_WORLD);
 
-////            SparseMatrix Hkk = hessian.KK.ExportToEigenSparseMatrix();
-////            mStructure->GetLogger() << "Hkk \n" << Hkk << "\n\n";
-//            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-////            mStructure->GetLogger() << "H \n" << H << "\n\n";
-//
-////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-//
-//            std::vector<int> lagrangeMultiplierDofIds =
-//                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
-//
-//            std::vector<int> internalDofIds;
-//
-//            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-//                internalDofIds.push_back(j);
-//
-//            for (const auto& id : lagrangeMultiplierDofIds)
-//                internalDofIds.erase(internalDofIds.begin() + id);
-//
-////            mStructure->NodeInfo(10);
-//            for (const auto& i : lagrangeMultiplierDofIds)
-//                mStructure->GetLogger() << i << "\n";
-//
-//            mStructure->GetLogger() << "mLocalPreconditioner.rows() \n" << mLocalPreconditioner.rows() << "\n\n";
-//            mStructure->GetLogger() << "mLocalPreconditioner.cols() \n" << mLocalPreconditioner.cols() << "\n\n";
-//            //
-//            //            mStructure->GetLogger() << "\n\n";
-//            //
-//            //            for (const auto& i : internalDofIds)
-//            //                mStructure->GetLogger() << i << "\n";
-//
-//
-//            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-//            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIds, internalDofIds);
-//            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIds);
-//            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIds, lagrangeMultiplierDofIds);
-//
-//
-////            mStructure->GetLogger() << "Searching for seg fault \n\n";
-////            mStructure->GetLogger() << "Kbb \n" << Kbb << "\n\n";
-////            mStructure->GetLogger() << "Kii \n" << Kii << "\n\n";
-////            mStructure->GetLogger() << "Kbi \n" << Kbi << "\n\n";
-////            mStructure->GetLogger() << "Kib \n" << Kib << "\n\n";
-//
-//            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
-//            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
-////            mStructure->GetLogger() << "Sbb \n" << Sbb << "\n\n";
-//
-//            //
-//            //     | 0  0   |
-//            // S = | 0  Sbb |
-//            //
-//            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-//
-//
-//            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-//                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-//                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) = Sbb.coeff(rowId, colId);
-//
-//
-//            mLocalPreconditioner = B * S * B.transpose();
-//
-////            mStructure->GetLogger() << "mLocalPrecon \n" << mLocalPreconditioner << "\n\n";
-
-
-            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
+                        throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
 
             break;
         }
@@ -710,13 +887,35 @@ public:
     {
         Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
 
-        for (size_t rowId = 0; rowId < rowIds.size(); ++rowId)
-            for (size_t colId = 0; colId < colIds.size(); ++colId)
-                subMatrix.insert(rowId, colId) = mat.coeff(rowIds[rowId], colIds[colId]);
+
+        for (int k = 0; k < mat.outerSize(); ++k)
+        {
+            auto colIt = std::find(colIds.begin(), colIds.end(), k);
+            if (colIt != colIds.end())
+            {
+                for (typename Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it)
+                {
+                    auto rowIt = std::find(rowIds.begin(), rowIds.end(), it.row());
+                    if (rowIt != rowIds.end())
+                    {
+                        int rowId = std::distance(rowIds.begin(), rowIt);
+                        int colId = std::distance(colIds.begin(), colIt);
+                        subMatrix.insert(rowId, colId) = it.value();
+
+                        ++rowId;
+                    }
+                }
+            }
+        }
+
+
+        //        mStructure->GetLogger() << "submatrix2 \n" << subMatrix2 << "\n\n";
 
         return subMatrix;
     }
 
+    //! \brief Check the rank of a BlockSparseMatrix using a QR factorization
+    //! \param blockSparseMatrix
     void CheckRankOfBlockSparseMatrix(const BlockSparseMatrix& blockSparseMatrix)
     {
         if (mStructure->GetVerboseLevel() > 10)
@@ -738,17 +937,96 @@ public:
         }
     }
 
+    void BuildAndFactorizeMatrix(StructureOutputBlockMatrix& hessian0, StructureOutputBlockMatrix& hessian1)
+    {
+
+        if (mStructure->GetNumTimeDerivatives() >= 1)
+            hessian0.AddScal(hessian1, mGamma / (mBeta * mTimeStep));
+
+        CheckRankOfBlockSparseMatrix(hessian0.JJ);
+
+        Timer timerBenchmark("Time for factorization", mStructure->GetShowTime());
+        // K_{JJ}^{-1}
+        mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
+    }
+
+    double KeepOrIncreaseTimeStep(const int iteration)
+    {
+        // maybe increase next time step
+        if (mAutomaticTimeStepping && iteration < 0.25 * mMaxNumIterations)
+        {
+            mTimeStep *= 1.5;
+            if (mTimeStep > mMaxTimeStep)
+                mTimeStep = mMaxTimeStep;
+
+            return mTimeStep;
+        }
+        else
+        {
+            return mTimeStep;
+        }
+    }
+
+    double ReduceTimeStep(double& curTime)
+    {
+        // no convergence
+        if (mAutomaticTimeStepping)
+        {
+            // no convergence, reduce the time step and start from scratch
+            curTime -= mTimeStep;
+            mTimeStep *= 0.5;
+            if (mTimeStep < mMinTimeStep)
+            {
+                mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << mTimeStep
+                                        << "\n";
+                throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
+            }
+        }
+        else
+        {
+            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum "
+                                                          "number of iterations, either use automatic "
+                                                          "time stepping, reduce the time step or the "
+                                                          "minimal line search cut back factor.");
+        };
+
+        return mTimeStep;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void CalculateScalingMatrix()
+    {
+        mScalingMatrix.resize(mNumLagrangeMultipliers, mNumLagrangeMultipliers);
+        switch (mFetiScaling)
+        {
+        case eFetiScaling::None:
+        {
+            for (int i = 0; i < mNumLagrangeMultipliers; ++i)
+                mScalingMatrix.insert(i, i) = 1;
+
+            break;
+        }
+        case eFetiScaling::Multiplicity:
+        {
+            mScalingMatrix = static_cast<StructureFeti*>(mStructure)->MultiplicityScaling();
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Scaling method not implemented.");
+        }
+    }
+
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
     void Solve(double rTimeDelta) override
     {
 
-
         try
         {
-            boost::mpi::communicator world;
             StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
             mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+            mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
 
             mStructure->GetLogger() << "Total number of DOFs: \t" << mStructure->GetNumTotalDofs() << "\n\n";
 
@@ -757,16 +1035,16 @@ public:
                                     << "******************************************** \n\n";
 
             structure->CalculateRigidBodyModesTotalFETI();
-            const int numRigidBodyModes = structure->GetNumRigidBodyModes();
-
+            mNumRigidBodyModes = structure->GetNumRigidBodyModes();
+            mNumRigidBodyModesTotal = structure->GetNumRigidBodyModesTotal();
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate connectivity matrix   ** \n"
                                     << "******************************************** \n\n";
 
             structure->AssembleConnectivityMatrix();
-            const SparseMatrix& B = structure->GetConnectivityMatrix();
-            const SparseMatrix Btrans = B.transpose();
+            mB = structure->GetConnectivityMatrix();
+            mNumLagrangeMultipliers = structure->mNumLagrangeMultipliers;
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate interface RBMs        ** \n"
@@ -784,17 +1062,19 @@ public:
             structure->CheckProjectionMatrix();
             structure->CheckProjectionOfCoarseGrid();
 
-            const int numActiveDofs = mStructure->GetNumTotalActiveDofs();
-            const int numTotalDofs = mStructure->GetNumTotalDofs();
+            mStructure->GetLogger() << "******************************************** \n"
+                                    << "**        calculate scaling               ** \n"
+                                    << "******************************************** \n\n";
+
+            CalculateScalingMatrix();
 
 
-            VectorXd deltaLambda = VectorXd::Zero(B.rows());
-            VectorXd lambda = VectorXd::Zero(B.rows());
-            VectorXd lastConverged_lambda = VectorXd::Zero(B.rows());
+            // initialize interface forces
+            mDeltaLambda.setZero(mB.rows());
+            mLambda.setZero(mB.rows());
+            mLambdaOld.setZero(mB.rows());
 
             double curTime = mTime;
-            double timeStep = mTimeStep;
-
 
             CalculateStaticAndTimeDependentExternalLoad();
 
@@ -802,6 +1082,7 @@ public:
             // only necessary for CheckRigidBodyModes
             mStructure->DofStatusSetHasInteractingConstraints(true);
             const DofStatus& dofStatus = mStructure->GetDofStatus();
+
 
             assert(dofStatus.HasInteractingConstraints() == true);
 
@@ -831,6 +1112,8 @@ public:
             StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
 
             StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
+            StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
+            StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
 
             StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
             StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
@@ -838,17 +1121,8 @@ public:
 
             StructureOutputBlockVector extForce(dofStatus, true);
             StructureOutputBlockVector intForce(dofStatus, true);
-            StructureOutputBlockVector residual(dofStatus, true);
-
-            StructureOutputBlockVector prevResidual(dofStatus, true);
-
-
-            // for constraints
-            // ---------------
-            //        const auto& cmat = mStructure->GetConstraintMatrix();
 
             BlockScalar normResidual(dofStatus);
-            BlockScalar normResidualK(dofStatus);
 
             //********************************************
             //        Declare and fill Output maps
@@ -884,7 +1158,7 @@ public:
 
             UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
 
-            PostProcess(residual);
+            PostProcess(mLambda, dofStatus);
 
 
             mStructure->GetLogger() << "******************************************** \n"
@@ -894,17 +1168,12 @@ public:
             while (curTime < rTimeDelta)
             {
 
-
                 mStructure->DofTypeActivateAll();
 
-                // calculate Delta_BRhs and Delta_ExtForce
-                //            auto bRHS           = UpdateAndGetAndMergeConstraintRHS(mTime, lastConverged_dof_dt0);
+                curTime += mTimeStep;
 
-                curTime += timeStep;
-                SetTimeAndTimeStep(curTime, timeStep, rTimeDelta); // check whether harmonic excitation, check whether
-                // curTime is too close to the time data
+                SetTimeAndTimeStep(curTime, mTimeStep, rTimeDelta);
 
-                //            auto deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
                 extForce = CalculateCurrentExternalLoad(curTime);
 
                 for (const auto& activeDofSet : mStepActiveDofs)
@@ -912,165 +1181,115 @@ public:
                     mStructure->DofTypeSetIsActive(activeDofSet);
 
                     mStructure->DofStatusSetHasInteractingConstraints(true);
-                    //                    std::cout << mStructure->GetDofStatus().HasInteractingConstraints() <<
-                    //                    std::endl;
 
                     // ******************************************************
                     mStructure->Evaluate(inputMap, evaluateInternalGradientHessian0Hessian1);
                     // ******************************************************
 
-                    //                structure->CheckRigidBodyModes(hessian0);
-                    structure->CheckStiffnessPartitioning(hessian0);
+                    BuildAndFactorizeMatrix(hessian0, hessian1);
 
-
-                    residual = extForce - intForce;
-                    residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs),
-                                                         dofStatus);
-
-                    VectorXd rhs;
-                    rhs.setZero(numTotalDofs);
-                    rhs.head(numActiveDofs) = residual.J.Export();
-                    rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
-
-                    mStructure->GetLogger() << "Rhs norm: \t" << rhs.norm() << "\n\n";
-
-
-                    if (mStructure->GetNumTimeDerivatives() >= 1)
-                        hessian0.AddScal(hessian1, mGamma / (mBeta * timeStep));
-
-
-                    Timer timerBenchmark("Time for factorization and solving", structure->GetShowTime());
-
-                    // K_{JJ}^{-1}
-                    mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
-
-                    CheckRankOfBlockSparseMatrix(hessian0.JJ);
+                    VectorXd residual = CalculateResidual(extForce, intForce);
 
                     CalculateLocalPreconditioner(hessian0);
 
-
-                    delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, timeStep);
-
-                    if (structure->mRank == 0)
-                    {
-                        std::cout << "Time for factorization and FETI solve for " << structure->mNumProcesses
-                                  << " processes: \t\t" << timerBenchmark.GetTimeDifference() << std::endl;
-                    }
-
-
-                    dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
-
-                    lambda = lastConverged_lambda + deltaLambda;
-
-
-                    mStructure->NodeMergeDofValues(dof_dt0);
-
-
-                    // ******************************************************
-                    mStructure->Evaluate(inputMap, evaluateInternalGradient);
-                    // ******************************************************
-
-                    residual = extForce - intForce;
-                    residual.J = BlockFullVector<double>(residual.J.Export() - (Btrans * lambda).head(numActiveDofs),
-                                                         dofStatus);
-
-
-                    rhs.setZero(numTotalDofs);
-                    rhs.head(numActiveDofs) = residual.J.Export();
-                    rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
-
-                    normResidual = residual.J.CalculateInfNorm();
-                    for (const auto& dof : activeDofSet)
-                        boost::mpi::all_reduce(world, boost::mpi::inplace(normResidual[dof]), std::plus<double>());
-
-                    mStructure->GetLogger() << "Residual J: \t" << normResidual << "\n\n";
-                    mStructure->GetLogger() << "Rhs: \t" << rhs.norm() << "\n\n";
-
-
+                    bool fetiSolverConverged = true;
+                    delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
                     int iteration = 0;
-                    while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
+                    if (fetiSolverConverged)
                     {
 
-
-                        // ******************************************************
-                        mStructure->Evaluate(inputMap, evaluateHessian0Hessian1);
-                        // ******************************************************
-
+                        // calculate trial state
+                        dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
                         if (mStructure->GetNumTimeDerivatives() >= 1)
-                            hessian0.AddScal(hessian1, mGamma / (mBeta * timeStep));
+                            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2,
+                                                    mTimeStep);
+                        if (mStructure->GetNumTimeDerivatives() >= 2)
+                            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2,
+                                                    mTimeStep);
 
-                        mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
+                        MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
 
-                        delta_dof_dt0 = FetiSolve(rhs, activeDofSet, deltaLambda, 0.);
+                        mLambda = mLambdaOld + mDeltaLambda;
 
-
-                        dof_dt0 += delta_dof_dt0;
-                        lambda += deltaLambda;
-                        mStructure->NodeMergeDofValues(dof_dt0);
 
                         // ******************************************************
                         mStructure->Evaluate(inputMap, evaluateInternalGradient);
                         // ******************************************************
 
+                        residual = CalculateResidual(extForce, intForce);
 
-                        residual = extForce - intForce;
-                        residual.J = BlockFullVector<double>(
-                                residual.J.Export() - (Btrans * lambda).head(numActiveDofs), dofStatus);
+                        normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
-                        rhs.setZero(numTotalDofs);
-                        rhs.head(numActiveDofs) = residual.J.Export();
-                        rhs.tail(numRigidBodyModes) = residual.K.Export() - (Btrans * lambda).tail(numRigidBodyModes);
+                        mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
-                        normResidual = residual.J.CalculateInfNorm();
-                        for (const auto& dof : activeDofSet)
-                            boost::mpi::all_reduce(world, boost::mpi::inplace(normResidual[dof]), std::plus<double>());
-
-                        PrintInfoIteration(normResidual, iteration);
-                        mStructure->GetLogger() << "delta_dof_dt0 J: \n" << delta_dof_dt0.J.Export().norm() << "\n\n";
-                        mStructure->GetLogger() << "delta_dof_dt0 K: \n" << delta_dof_dt0.K.Export().norm() << "\n\n";
-
-                        iteration++;
-
-                    } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+                        while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
+                        {
 
 
-                    //                    world.barrier();
+                            // ******************************************************
+                            mStructure->Evaluate(inputMap, evaluateHessian0Hessian1);
+                            // ******************************************************
 
-                    if (normResidual < mToleranceResidual)
+                            BuildAndFactorizeMatrix(hessian0, hessian1);
+
+                            delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, 0., fetiSolverConverged);
+
+                            if (not fetiSolverConverged)
+                                break;
+
+                            IncrementDofs(dof_dt0, dof_dt1, dof_dt2, delta_dof_dt0);
+                            mLambda += mDeltaLambda;
+
+                            MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
+
+
+                            // ******************************************************
+                            mStructure->Evaluate(inputMap, evaluateInternalGradient);
+                            // ******************************************************
+
+
+                            residual = CalculateResidual(extForce, intForce);
+
+                            normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
+
+                            PrintInfoIteration(normResidual, iteration);
+
+                            iteration++;
+
+                        } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+                    }
+
+
+                    if (normResidual < mToleranceResidual and fetiSolverConverged)
                     {
                         // converged solution
                         mStructure->ElementTotalUpdateStaticData();
 
                         // store converged step
                         lastConverged_dof_dt0 = dof_dt0;
-                        lastConverged_lambda = lambda;
+                        lastConverged_dof_dt1 = dof_dt1;
+                        lastConverged_dof_dt2 = dof_dt2;
+                        mLambdaOld = mLambda;
 
-                        prevResidual = residual;
+                        MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
 
-                        mStructure->NodeMergeDofValues(dof_dt0);
-
-
-                        mTime += timeStep;
+                        mTime += mTimeStep;
 
 
                         mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime
-                                                << " (timestep " << timeStep << ").\n";
-                        mStructure->GetLogger() << "Residual: \t" << normResidual << "\n\n";
+                                                << " (time step " << mTimeStep << ").\n";
 
+                        mTimeStep = KeepOrIncreaseTimeStep(iteration);
 
-                        // eventually increase next time step
-                        if (mAutomaticTimeStepping && iteration < 0.25 * mMaxNumIterations)
-                        {
-                            timeStep *= 1.5;
-                            if (timeStep > mMaxTimeStep)
-                                timeStep = mMaxTimeStep;
-                        }
 
                         // perform Postprocessing
-                        residual.J = BlockFullVector<double>(
-                                residual.J.Export() + (Btrans * lambda).head(numActiveDofs), dofStatus);
-                        PostProcess(residual);
+                        std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
+                        file << mTime << "\t" << iteration << "\n";
+                        file.close();
+
+
+                        PostProcess(mLambda, dofStatus);
 
                         mStructure->GetLogger() << "normResidual: \n" << normResidual << "\n\n";
 
@@ -1079,30 +1298,11 @@ public:
                     }
                     else
                     {
-                        if (structure->mRank == 0)
-                            mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n\n";
+                        mStructure->GetLogger() << "No convergence with timestep " << mTimeStep << "\n\n";
 
-                        // no convergence
-                        if (mAutomaticTimeStepping)
-                        {
-                            // no convergence, reduce the time step and start from scratch
-                            curTime -= timeStep;
-                            timeStep *= 0.5;
-                            if (timeStep < mMinTimeStep)
-                            {
-                                mStructure->GetLogger() << "The minimal time step achieved, the actual time step is "
-                                                        << timeStep << "\n";
-                                throw MechanicsException(__PRETTY_FUNCTION__,
-                                                         "No convergence, the current time step is too short.");
-                            }
-                        }
-                        else
-                        {
-                            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum "
-                                                                          "number of iterations, either use automatic "
-                                                                          "time stepping, reduce the time step or the "
-                                                                          "minimal line search cut back factor.");
-                        }
+                        MergeDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, true);
+
+                        mTimeStep = ReduceTimeStep(curTime);
                     }
 
                 } // end for mStepActiveDofs
@@ -1117,6 +1317,43 @@ public:
         }
     }
 
+    void IncrementDofs(StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
+                       StructureOutputBlockVector& dof_dt2, const StructureOutputBlockVector& delta_dof_dt0) const
+    {
+        dof_dt0 += delta_dof_dt0;
+        if (mStructure->GetNumTimeDerivatives() >= 1)
+            dof_dt1 += delta_dof_dt0 * (mGamma / (mTimeStep * mBeta));
+        if (mStructure->GetNumTimeDerivatives() >= 2)
+            dof_dt2 += delta_dof_dt0 * (1. / (mTimeStep * mTimeStep * mBeta));
+    }
+
+    void PostProcess(const VectorXd& lambda, const DofStatus& dofStatus)
+    {
+        StructureOutputBlockVector outOfBalance(dofStatus, true);
+        outOfBalance.J = BlockFullVector<double>((mB.transpose() * lambda).head(mNumTotalActiveDofs), dofStatus);
+        TimeIntegrationBase::PostProcess(outOfBalance);
+    }
+
+
+    BlockScalar CalculateResidualNorm(VectorXd& residual, const DofStatus& dofStatus,
+                                      const std::set<Node::eDof>& activeDofSet) const
+    {
+
+        BlockScalar normResidual =
+                BlockFullVector<double>(residual.head(mNumTotalActiveDofs), dofStatus).CalculateInfNorm();
+        for (const auto& dof : activeDofSet)
+            MPI_Allreduce(MPI_IN_PLACE, &normResidual[dof], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return normResidual;
+    }
+
+
+    //! @brief Calculates the right hand side of the system
+    //! rhs = extForce - intForce - Btrans*lambda
+    VectorXd CalculateResidual(const StructureOutputBlockVector& extForce, const StructureOutputBlockVector& intForce)
+    {
+        return (extForce.ExportToEigenVector() - intForce.ExportToEigenVector() - mB.transpose() * mLambda);
+    }
 
     double CalculateLoadFactor(double rTime)
     {
@@ -1138,7 +1375,7 @@ public:
 
     void SetToleranceIterativeSolver(const double tolerance)
     {
-        mCpgTolerance = tolerance;
+        mFetiTolerance = tolerance;
     }
 
     void SetFetiPreconditioner(eFetiPreconditioner fetiPreconditioner)
@@ -1146,13 +1383,39 @@ public:
         mFetiPreconditioner = fetiPreconditioner;
     }
 
+    void SetFetiScaling(eFetiScaling fetiScaling)
+    {
+        mFetiScaling = fetiScaling;
+    }
+
+    void SetMaxNumberOfFetiIterations(int maxNumFetiIterations)
+    {
+        mMaxNumFetiIterations = maxNumFetiIterations;
+    }
+
 private:
+    // auxilliary member variables
+    const int mNumTotalActiveDofs;
+    const int mNumTotalDofs;
+    int mNumRigidBodyModes = -1337;
+    SparseMatrix mB;
+    SparseMatrix mScalingMatrix;
+
     FetiSolver mFetiSolver;
     EigenSolver mSolver;
     SparseMatrix mLocalPreconditioner;
-    double mCpgTolerance = 1.0e-4;
-    const int mCpgMaxIterations = 1000;
+    double mFetiTolerance = 1.0e-12;
+    int mMaxNumFetiIterations = 100;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
     eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
+    eFetiScaling mFetiScaling = eFetiScaling::None;
+
+    // Lagrange multiplier
+    VectorXd mDeltaLambda;
+    VectorXd mLambda;
+    VectorXd mLambdaOld;
+
+    int mNumRigidBodyModesTotal = -1337;
+    int mNumLagrangeMultipliers = 0;
 };
 } // namespace NuTo

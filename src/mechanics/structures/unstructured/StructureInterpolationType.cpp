@@ -118,7 +118,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     SetShowTime(showTime);
 }
 
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder = Interpolation::eTypeOrder::EQUIDISTANT1)
 {
     InterpolationType& interpolationType = *InterpolationTypeGet(rInterpolationTypeId);
     interpolationType.AddDofInterpolation(rDofType, rTypeOrder);

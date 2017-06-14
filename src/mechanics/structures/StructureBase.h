@@ -13,6 +13,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
+#include <mechanics/MechanicsEnums.h>
 #include "base/Logger.h"
 
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -371,6 +372,7 @@ public:
     //! @param rTimeDerivative time derivative (0 disp, 1 velocity,2 acceleration)
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, int rTimeDerivative, Eigen::VectorXd& rDisplacements)const;
+
 
 #ifndef SWIG
     //! @brief gets the dof     identifiers of a node
@@ -946,7 +948,7 @@ public:
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd  rValue);
 #endif
-    
+
     //! @brief ... set damage law
     //! @param lawId ... lawId
     //! @param damageLaw ... damage law
@@ -1021,6 +1023,21 @@ public:
     const GroupBase* GroupGetGroupPtr(int rIdent) const;
 
 #ifndef SWIG
+
+    //! @brief Creates a group of node ids for the structure
+    //! @return rIdent identifier for the node group
+    int GroupCreateNodeGroup()
+    {
+        return GroupCreate(NuTo::eGroupId::Nodes);
+    }
+
+    //! @brief Creates a group element ids for the structure
+    //! @return rIdent identifier for the element group
+    int GroupCreateElementGroup()
+    {
+        return GroupCreate(NuTo::eGroupId::Elements);
+    }
+
     //! @brief ... Creates a group for the structure
     //! @param rType  type of the group, e.g. "NODES" or "ELEMENTS"
     //! @return ... rIdent identifier for the group
@@ -1093,21 +1110,21 @@ public:
     //! at all. But this collides with some other features (mainly postprocessing) that rely on a
     //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
     Group<NodeBase>& GroupGetNodeCoordinateRange(eDirection direction, double min, double max);
-    
-    
+
+
     //! @brief creates a new node group and selects all nodes whose coordinates at value (+- tolerance)
     //! Equal to GroupGetNodeCoordinateRange(direction, value - tolerance, value + tolerance)
     //! Example: direction = Y, value = 42. --> selects all nodes with Y = 42
     //! @param direction either X, Y, Z
     //! @param value specific coordinate value
-    //! @param tolerance tolerance -+ 
+    //! @param tolerance tolerance -+
     //! return reference to the node group
     //! @remark This should be rewritten in a method that returns a Group by value without storing it
     //! at all. But this collides with some other features (mainly postprocessing) that rely on a
     //! "GroupId". Here, you could obtain the GroupId by calling GroupGetId() if you need it.
     Group<NodeBase>& GroupGetNodesAtCoordinate(eDirection direction, double value, double tolerance = 1.e-6);
 
-    
+
 
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
@@ -1545,7 +1562,7 @@ protected:
     //! @param rNodes ... vector of element pointer
     virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
 #endif
- 
+
     //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer

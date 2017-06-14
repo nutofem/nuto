@@ -66,58 +66,59 @@ std::vector<std::vector<int>> GetElementNodeIds2D(const std::vector<int>& rCorne
     }
 }
 
-std::vector<int> CreateNodes(NuTo::Structure& rS, std::vector<int> rNumNodes, std::vector<double> rDelta, std::vector<double> rStart)
+std::vector<int> CreateNodes(NuTo::Structure& rS, std::vector<int> rNumNodes, std::vector<double> rDelta,
+                             std::vector<double> rStart)
 {
     std::vector<int> nodeIds;
     switch (rS.GetDimension())
     {
-        case 1:
+    case 1:
+    {
+        nodeIds.reserve(rNumNodes[0]);
+        for (int iX = 0; iX < rNumNodes[0]; ++iX)
         {
-            nodeIds.reserve(rNumNodes[0]);
+            const double x = iX * rDelta[0] + rStart[0];
+            nodeIds.push_back(rS.NodeCreate(Eigen::Matrix<double, 1, 1>::Constant(x)));
+        }
+        break;
+    }
+    case 2:
+    {
+        nodeIds.reserve(rNumNodes[0] * rNumNodes[1]);
+        for (int iY = 0; iY < rNumNodes[1]; ++iY)
             for (int iX = 0; iX < rNumNodes[0]; ++iX)
             {
                 const double x = iX * rDelta[0] + rStart[0];
-                nodeIds.push_back(rS.NodeCreate(Eigen::Matrix<double, 1, 1>::Constant(x)));
+                const double y = iY * rDelta[1] + rStart[1];
+                nodeIds.push_back(rS.NodeCreate(Eigen::Vector2d(x, y)));
             }
-            break;
-        }
-        case 2:
-        {
-            nodeIds.reserve(rNumNodes[0] * rNumNodes[1]);
+
+        break;
+    }
+    case 3:
+    {
+        nodeIds.reserve(rNumNodes[0] * rNumNodes[1] * rNumNodes[2]);
+        for (int iZ = 0; iZ < rNumNodes[2]; ++iZ)
             for (int iY = 0; iY < rNumNodes[1]; ++iY)
                 for (int iX = 0; iX < rNumNodes[0]; ++iX)
                 {
                     const double x = iX * rDelta[0] + rStart[0];
                     const double y = iY * rDelta[1] + rStart[1];
-                    nodeIds.push_back(rS.NodeCreate(Eigen::Vector2d(x, y)));
+                    const double z = iZ * rDelta[2] + rStart[2];
+                    nodeIds.push_back(rS.NodeCreate(Eigen::Vector3d(x, y, z)));
                 }
 
-            break;
-        }
-        case 3:
-        {
-            nodeIds.reserve(rNumNodes[0] * rNumNodes[1] * rNumNodes[2]);
-            for (int iZ = 0; iZ < rNumNodes[2]; ++iZ)
-                for (int iY = 0; iY < rNumNodes[1]; ++iY)
-                    for (int iX = 0; iX < rNumNodes[0]; ++iX)
-                    {
-                        const double x = iX * rDelta[0] + rStart[0];
-                        const double y = iY * rDelta[1] + rStart[1];
-                        const double z = iZ * rDelta[2] + rStart[2];
-                        nodeIds.push_back(rS.NodeCreate(Eigen::Vector3d(x, y, z)));
-                    }
-
-            break;
-        }
-        default:
-            throw;
+        break;
+    }
+    default:
+        throw;
     }
     return nodeIds;
 }
 
 std::vector<int> CreateNodes(NuTo::Structure& rS, std::vector<int> rNumNodes, std::vector<double> rDelta)
 {
-    std::vector<double> start(rS.GetDimension(),0.);
+    std::vector<double> start(rS.GetDimension(), 0.);
     return CreateNodes(rS, rNumNodes, rDelta, start);
 }
 
@@ -187,6 +188,16 @@ std::pair<int, int> CreateElements(NuTo::Structure& rS, std::vector<int> rNodeId
     return info;
 }
 
+std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, Eigen::VectorXd rStart, Eigen::VectorXd rEnd,
+                                              Eigen::VectorXi rNumDivisions, Interpolation::eShapeType rElementShape)
+{
+    std::vector<double> start(rStart.data(), rStart.data() + rStart.size());
+    std::vector<double> end(rEnd.data(), rEnd.data() + rEnd.size());
+    std::vector<int> numDivisions(rNumDivisions.data(), rNumDivisions.data() + rNumDivisions.size());
+
+    return Grid(rS, start, end, numDivisions, rElementShape);
+}
+
 
 std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
                                               std::vector<int> rNumDivisions, Interpolation::eShapeType rElementShape)
@@ -216,7 +227,7 @@ std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double>
                                               Interpolation::eShapeType rElementShape)
 {
     std::vector<double> start(rS.GetDimension(), 0.);
-    return Grid(rS,start, rEnd,rNumDivisions,rElementShape);
+    return Grid(rS, start, rEnd, rNumDivisions, rElementShape);
 }
 
 std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double> rEnd, std::vector<int> rNumDivisions)
@@ -226,18 +237,19 @@ std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double>
 }
 
 
-std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd, std::vector<int> rNumDivisions)
+std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
+                                              std::vector<int> rNumDivisions)
 {
     switch (rS.GetDimension())
     {
-        case 1:
-            return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::TRUSS1D);
-        case 2:
-            return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::QUAD2D);
-        case 3:
-            return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::BRICK3D);
-        default:
-            throw;
+    case 1:
+        return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::TRUSS1D);
+    case 2:
+        return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::QUAD2D);
+    case 3:
+        return MeshGenerator::Grid(rS, rStart, rEnd, rNumDivisions, eShapeType::BRICK3D);
+    default:
+        throw;
     }
 }
 

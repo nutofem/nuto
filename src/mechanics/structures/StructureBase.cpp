@@ -378,11 +378,12 @@ void NuTo::StructureBase::DefineVisualizeElementData(
             break;
 
         case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
-        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
         case NuTo::eVisualizeWhat::TEMPERATURE:
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
+        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
+        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD_VELOCITY:
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:
@@ -753,7 +754,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     }
 
     auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).ShapeFunctions(elementNaturalNodeCoords);
-   
+
     std::vector<Constraint::Equation> equations(dim); // default construction of Equation with rhs = Constant = 0
     for (int iDim = 0; iDim < dim; ++iDim)
     {
