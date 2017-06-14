@@ -30,24 +30,9 @@ public:
     //! @brief constructor
     NewmarkDirect(StructureBase* rStructure);
 
-    void SetMinLineSearchStep(double rMinLineSearchStep)
-    {
-    	mMinLineSearchStep = rMinLineSearchStep;
-    }
-
-    double GetMinLineSearchStep()const
-    {
-    	return mMinLineSearchStep;
-    }
-
     void SetPerformLineSearch(bool rPerformLineSearch)
     {
         mPerformLineSearch = rPerformLineSearch;
-    }
-
-    bool GetPerformLineSearch() const
-    {
-        return mPerformLineSearch;
     }
 
     int GetVerboseLevel() const
@@ -59,7 +44,6 @@ public:
     {
         mVerboseLevel = rVerboseLevel;
     }
-
 
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
@@ -164,11 +148,8 @@ protected:
 
 protected:
 
-    double mMinLineSearchStep;
-
-    bool mPerformLineSearch;
-
-    int mVisualizeResidualTimeStep;
+    double mMinLineSearchStep = 0.01;
+    bool mPerformLineSearch = true;
 
     //! @brief Controls the output verbosity (0 = silent)
     int mVerboseLevel = 1;
