@@ -623,14 +623,6 @@ protected:
 
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;
-
-protected:
-
-
-    //! @brief determines the dimensionality of a dof type
-    //! @param rDof ... specific dof type
-    //! @return dimension
-    int GetDofDimension(Node::eDof rDof);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -170,23 +170,30 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // #######################################
             ipCoordsSurface = integrationType->GetLocalIntegrationPointCoordinates(theIp);
 
+
             if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
-                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface,
+            {
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(ipCoordsSurface, surface,
                                                                                              elementPtr->GetKnots());
+                derivativeShapeFunctionsNatural =
+                        interpolationTypeCoords.DerivativeShapeFunctionsNaturalIGA(ipCoordsNatural, elementPtr->GetKnotIDs());
+                shapeFunctions = interpolationTypeDisps.ShapeFunctionsIGA(ipCoordsNatural, elementPtr->GetKnotIDs());
+            }
             else
+            {
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
-
-            Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
-
-            ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
-
-            // ########################### ############
+                derivativeShapeFunctionsNatural =
+                        interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
+                shapeFunctions = interpolationTypeDisps.ShapeFunctions(ipCoordsNatural);
+            }
+            
+            //Eigen::MatrixXd N = interpolationTypeCoords.MatrixN(ipCoordsNatural);
+            ipCoordsGlobal = elementPtr->InterpolateDofGlobal(ipCoordsNatural, NuTo::Node::eDof::COORDINATES); 
+            // #######################################
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
             // #######################################
 
-            derivativeShapeFunctionsNatural =
-                    interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
 
             const Eigen::Matrix2d jacobianStd =
                     elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates); // = [dX / dXi]
@@ -213,8 +220,7 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             surfaceNormalVector(0) = surfaceTangentVector(1, 0);
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
 
-            // calculate 2D shape functions
-            shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
+
 
             // calculate weighting factor
             double thickness = elementPtr->GetSection()->GetThickness();

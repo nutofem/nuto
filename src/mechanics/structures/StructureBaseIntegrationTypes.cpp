@@ -1,6 +1,7 @@
 #include <sstream>
 #include <iostream>
 #include "mechanics/structures/StructureBase.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"

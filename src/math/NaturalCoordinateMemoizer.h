@@ -1,84 +1,81 @@
 #pragma once
 #include <eigen3/Eigen/Core>
-#include <vector>
-#include <memory>
-
+#include <map>
 namespace NuTo
 {
 
-//! @brief transforms a vector of natural node coordinates to a reasonable id
-template <int TRaster>
-struct NaturalCoordianteToId
+template <typename TVector>
+struct CompareVector
 {
-    //! @brief 'rasterize' the natural coordinates (always [-1, 1]) into MaxId() equidistant blocks
-    template <typename TNaturalCoords>
-    size_t operator()(const TNaturalCoords& v) const
-    {
-        int id = 0;
-        constexpr float factor = 0.5 * TRaster;
-        constexpr float eps = 1.e-6;
-        // reverse the loop to get
-        // id = x + 10*y + 100*z
-        // instead of (unreversed)
-        // id = 100*x + 10*y + z
-        // IMO the first version is better to keep the data in 1D/2D closer together
-        for (int i = v.size() - 1; i >= 0; --i)
-        {
-            id *= TRaster;
-            id += factor * (v[i] + 1 - eps); // transformation from float[-1, 1] --> int[0, TRaster]
-        }
-        return id;
-    }
 
-    static constexpr size_t MaxId()
+    //! @brief defines a compare operator, following the compare concept
+    //! http://en.cppreference.com/w/cpp/concept/Compare
+    //! @remark Looks wierd, is fast. std::tie performs elementwise comparisons.
+    bool operator()(const TVector& l, const TVector& r) const
     {
-        return TRaster * TRaster * TRaster;
+        assert(l.rows() == r.rows());
+        switch (l.rows())
+        {
+        case 1:
+            return l[0] < r[0];
+        case 2:
+            return std::tie(l[0], l[1]) < std::tie(r[0], r[1]);
+        case 3:
+            return std::tie(l[0], l[1], l[2]) < std::tie(r[0], r[1], r[2]);
+        default:
+            throw;
+        }
     }
 };
 
-
-//! @brief provides a memoization of the a std::function<TResult(TNaturalCoords)>, mainly used for
-//!        element shape functions and their derivatives
-//! @param TResult ... return type of the function
-//! @param TNaturalCoords ... vector type of natural coordinates
-//! @param TIdHash ... function object that transforms TNaturalCoords into a vector id
-template <typename TResult, typename TNaturalCoords, typename TIdHash = NaturalCoordianteToId<16>>
-class NaturalCoordinateMemoizer
+// https://en.wikipedia.org/wiki/Memoization: Not to be confused with Memorization.
+template <typename TResult, typename TNaturalCoords, typename TCompare = CompareVector<TNaturalCoords>>
+class NaturalCoordinateMemoizerMap
 {
 public:
-
     //! @brief ctor
     //! @param function ... function for memoization
-    NaturalCoordinateMemoizer(std::function<TResult(TNaturalCoords)> function)
+    NaturalCoordinateMemoizerMap(std::function<TResult(TNaturalCoords)> function)
         : mFunction(function)
     {
-        mCache.resize(TIdHash::MaxId());
     }
 
-    //! @brief returns the value of the function for the given arguments. 
+    //! @brief returns the value of the function for the given arguments.
     //!        Repeated calls of Get() with the same arguments will return the memoized
     //!        result.
     //! @param v ... argument
     //! @return reference to the 'memoized' result
     const TResult& Get(const TNaturalCoords& v) const
     {
-        size_t id = TIdHash()(v);
-        if (mCache[id] == nullptr)
-            mCache[id] = std::make_unique<TResult>(mFunction(v));
-        return *mCache[id];
+        auto it = mCache.find(v);
+        if (it == mCache.end())
+        {
+// The memoizer is shared between all threads in the parallel assembly.
+// If it is still empty, all threads want to calculate and emplace the values
+// into the cache. This will cause problems like infinite recursions, segfaults
+// during map::rebalancing and so on. Thus: omp critical.
+// The 'hot' path however, this the code above, which is hopefully not
+// affected by the performance loss of omp critical.
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+            it = mCache.emplace_hint(it, v, mFunction(v));
+        }
+
+        return it->second;
     }
 
-    void ClearCache()
+    void ClearCache() const
     {
-        for (auto& ptr : mCache)
-            ptr = nullptr;
-        // mCache.clear(); somehow fails in gcc/release (clang or gcc/debug works though)
+        mCache.clear();
     }
 
 private:
-    //! @brief mutable to mark the Get() method const
-    mutable std::vector<std::unique_ptr<TResult>> mCache;
+    //! @brief mutable to mark Get() and ClearCache() const
+    mutable std::map<TNaturalCoords, TResult, TCompare> mCache;
 
     std::function<TResult(TNaturalCoords)> mFunction;
 };
+
+
 } /* NuTo */

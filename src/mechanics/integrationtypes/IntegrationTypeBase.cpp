@@ -14,7 +14,6 @@
 
 void NuTo::IntegrationTypeBase::Info(int rVerboseLevel) const
 {
-    std::cout << IntegrationTypeToString(GetEnumType()) << std::endl;
     if (rVerboseLevel > 2)
     {
         for (int count = 0; count < GetNumIntegrationPoints(); count++)
@@ -70,25 +69,6 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     }
 
     return ipCellInfo;
-}
-
-void NuTo::IntegrationTypeBase::AddIntegrationPoints(std::vector<std::vector<double>>& rArea,
-                                                     const unsigned short rOrder)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__,
-                             "Cannot add an IP to integration type " + IntegrationTypeToString(GetEnumType()) + ".");
-}
-
-void NuTo::IntegrationTypeBase::AddIntegrationPoint(const IntegrationPointBase& rIp)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__,
-                             "Cannot add an IP to integration type " + IntegrationTypeToString(GetEnumType()) + ".");
-}
-
-void NuTo::IntegrationTypeBase::DeleteIntegrationPoint(const int rIpNum)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__,
-                             "Cannot delete an IP to integration type " + IntegrationTypeToString(GetEnumType()) + ".");
 }
 
 #ifdef ENABLE_SERIALIZATION

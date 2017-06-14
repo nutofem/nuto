@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -59,13 +58,6 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
-
-    //! @brief returns an enum with the type of the integration type
-    //! @return enum type
-    eIntegrationType GetEnumType() const override
-    {
-        return eIntegrationType::IntegrationType1D2NLobatto4Ip;
-    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(

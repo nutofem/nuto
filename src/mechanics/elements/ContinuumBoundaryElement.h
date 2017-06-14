@@ -23,7 +23,7 @@ template<int TDim>
 class ContinuumBoundaryElement: public ElementBase
 {
 public:
-    ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId);
+    ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, const IntegrationTypeBase& integrationType, int rSurfaceId);
 
     virtual ~ContinuumBoundaryElement() = default;
 
