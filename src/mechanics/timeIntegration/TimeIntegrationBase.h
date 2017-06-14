@@ -106,7 +106,6 @@ public:
     {
         return mTimeStep;
     }
-
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
     {
@@ -125,25 +124,11 @@ public:
     	mMinTimeStep = rMinTimeStep;
     }
 
-    //! @brief returns the minimum time step for the time integration procedure
-    double GetMinTimeStep()const
-    {
-    	return mMinTimeStep;
-    }
-
     //! @brief sets the minimum time step for the time integration procedure
     void SetMinTimeStepPlot(double rMinTimeStepPlot)
     {
     	mMinTimeStepPlot = rMinTimeStepPlot;
     }
-
-    //! @brief returns the minimum time step for the time integration procedure
-    double GetMinTimeStepPlot()const
-    {
-    	return mMinTimeStepPlot;
-    }
-
-    void SetPlotElementGroups(std::vector<int> rPlotElementGroups);
 
     //! @brief returns the g
     std::vector<int> GetVecGroupNodesReactionForces()const
@@ -184,11 +169,6 @@ public:
     //! @param if delete is set, all the content of the directory will be removed
     void SetResultDirectory(std::string rResultDir, bool rDelete = false);
 
-    //! @brief returns the result directory
-    std::string GetResultDirectory()const
-    {
-    	return mResultDir;
-    }
 
     //! @brief sets automatic time stepping (on or off)
     void SetAutomaticTimeStepping(bool rAutomaticTimeStepping)
@@ -196,35 +176,6 @@ public:
     	mAutomaticTimeStepping = rAutomaticTimeStepping;
     }
 
-    //! @brief returns if automatic time stepping is turned on
-    bool GetAutomaticTimeStepping()const
-    {
-    	return mAutomaticTimeStepping;
-    }
-
-    //! @brief sets the coefficient matrix check (on or off)
-    void SetCheckCoefficientMatrix(bool rCheckCoefficientMatrix)
-    {
-        mCheckCoefficientMatrix = rCheckCoefficientMatrix;
-    }
-
-    //! @brief returns if the coefficient matrix check is turned on
-    bool GetCheckCoefficientMatrix() const
-    {
-        return mCheckCoefficientMatrix;
-    }
-
-    //! @brief Sets the export data file nodes bool
-    void SetExportDataFileNodes(bool rExportDataFileNodes)
-    {
-        mExportDataFileNodes = rExportDataFileNodes;
-    }
-
-    //! @brief Gets the export data file nodes bool
-    bool GetExportDataFileNodes() const
-    {
-        return mExportDataFileNodes;
-    }
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     virtual bool HasCriticalTimeStep()const = 0;
@@ -238,10 +189,6 @@ public:
         mCallback = rCallback;
     }
 
-    int GetIterationCount() const
-    {
-        return mIterationCount;
-    }
 
     //! @brief ... Adds a calculation step to each timestep
     //! param rActiveDofs ... active Dofs of the calculation step
@@ -300,7 +247,7 @@ protected:
     std::unique_ptr<SolverBase> mSolver;
 
     //time dependent load case number
-    int mTimeDependentLoadCase;
+    int mTimeDependentLoadCase = -1;
 	//includes for each time step the scalar factor for the load case
     //the time step is given relative to mTimeDelta
 	Eigen::MatrixXd mTimeDependentLoadFactor;
@@ -309,21 +256,21 @@ protected:
 	NuTo::StructureOutputBlockVector mLoadVectorTimeDependent;
 
 	//accumulated time (in case several loadings are looked at, one after another)
-	double mTime;
+	double mTime = 0.;
     //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
-	bool mAutomaticTimeStepping;
+	bool mAutomaticTimeStepping = false;
 	//initial time step (or at the end this is the last time step used)
-	double mTimeStep;
-    //maximum time step (for adaptive simulations)
-	double mMaxTimeStep;
-    //minimum time step (for adaptive simulations)
-	double mMinTimeStep;
+	double mTimeStep = 0.;
+
+	double mMaxTimeStep = 1.;
+	double mMinTimeStep = 0.;
+
 	//if set to true, store velocities at the nodes in each time step (required when postprocessing velocities)
-	bool mMergeActiveDofValuesOrder1;
+	bool mMergeActiveDofValuesOrder1 = true;
 	//if set to true, store acceleration at the nodes in each time step (required when postprocessing accelerations)
-	bool mMergeActiveDofValuesOrder2;
+	bool mMergeActiveDofValuesOrder2 = false;
 	//if set to true, checks the coefficient matrix in each sub step
-	bool mCheckCoefficientMatrix;
+	bool mCheckCoefficientMatrix = false;
     //! @brief If set to true, exports a data file for the nodes
     bool mExportDataFileNodes = true;
 
@@ -338,20 +285,18 @@ protected:
     boost::ptr_map<int,ResultBase> mResultMap;
 
 	//load step number is increased after each converged step (used for successive output)
-    int mLoadStep;
+    int mLoadStep = 0;
     //time step number is increased each time a value is added to the result matrices
-    int mTimeStepResult;
+    int mTimeStepResult = 0;
     //time step number is increased each time a vtk file is extracted
-    int mTimeStepVTK;
+    int mTimeStepVTK = 0;
 	//if the time between the current time step and the previous plotted step is larger than mMaxDeltaTimeStepPlot a vtk plot is performed
-    double mMinTimeStepPlot;
+    double mMinTimeStepPlot = 0.;
     //last time when a vtk file was plotted
-    double mLastTimePlot;
+    double mLastTimePlot = -1e99;
     //iteration count
-    int mIterationCount;
+    int mIterationCount = 0;
 
-    //groups of elements to be plotted separately
-    std::vector<int> mPlotElementGroups;
 
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
     std::vector<int> mVecGroupNodesReactionForces;
@@ -361,7 +306,7 @@ protected:
     //! @brief Stores wich Dofs are active in which calculation step
     std::vector<std::set<Node::eDof>> mStepActiveDofs;
 
-    bool mShowTime;
+    bool mShowTime = true;
 
 };
 } //namespace NuTo
