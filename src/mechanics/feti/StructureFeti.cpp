@@ -65,7 +65,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
     for (const auto& dofType : dofTypes)
     {
-        mNumLagrangeMultipliers += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
+        mNumLagrangeMultipliers += NuTo::Node::GetNumComponents(dofType, GetDimension()) * mNumInterfaceNodesTotal;
     }
 
     mNumLagrangeMultipliers += mNumTotalBoundaryDofIds;
