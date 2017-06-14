@@ -29,59 +29,14 @@ public:
     	mMuDampingMass = rMuDampingMass;
     }
 
-    double GetDampingCoefficientMass()const
-    {
-    	return mMuDampingMass;
-    }
-
     void SetToleranceForce(double rToleranceForce)
     {
     	mToleranceForce = rToleranceForce;
     }
 
-    double GetToleranceForce()const
-    {
-    	return mToleranceForce;
-    }
-
     void SetMaxNumIterations(int rMaxNumIterations)
     {
     	mMaxNumIterations = rMaxNumIterations;
-    }
-
-    int GetMaxNumIterations()const
-    {
-    	return mMaxNumIterations;
-    }
-
-    void SetNewmarkBeta(double rBeta)
-    {
-    	mBeta = rBeta;
-    }
-
-    double GetNewmarkBeta()const
-    {
-    	return mBeta;
-    }
-
-    void SetNewmarkGamma(double rGamma)
-    {
-    	mGamma = rGamma;
-    }
-
-    double GetNewmarkGamma()const
-    {
-    	return mGamma;
-    }
-
-    bool GetUseLumpedMass()const
-    {
-    	return mUseLumpedMass;
-    }
-
-    void SetUseLumpedMass(bool rUseLumpedMass)
-    {
-    	mUseLumpedMass = rUseLumpedMass;
     }
 
     //! @brief merges the dof values depending on the numTimeDerivatives and rMergeAll
@@ -102,8 +57,6 @@ public:
 #endif// SWIG
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const override;
 
 
 protected:
@@ -114,19 +67,22 @@ protected:
 
 
     //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
-	double mMuDampingMass;
-    //NewtonRaphson parameters
-    double mToleranceForce;
-	int mMaxNumIterations;
-	//Newmark parameters
-	double mBeta;
-	double mGamma;
-	double mInternalEnergy;
-	double mExternalEnergy;
-	double mKineticEnergy;
-	double mDampedEnergy;
+	double mMuDampingMass = 0;
 
-	bool mUseLumpedMass;
+        //NewtonRaphson parameters
+    double mToleranceForce = 1.e-6;
+	int mMaxNumIterations = 20;
+
+        //Newmark parameters
+	double mBeta = 0.25;
+	double mGamma = 0.5;
+
+	double mInternalEnergy = 0.;
+	double mExternalEnergy = 0.;
+	double mKineticEnergy = 0.;
+	double mDampedEnergy = 0.;
+
+	bool mUseLumpedMass = false;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
