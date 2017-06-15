@@ -1169,7 +1169,7 @@ public:
     //! @param rMax ... maximum radius
     void GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, double rMin, double rMax);
 
-    Group<NodeBase>& GroupGetNodeRadiusRange(Eigen::VectorXd center, double min, double max);
+    Group<NodeBase>& GroupGetNodeRadiusRange(Eigen::VectorXd center, double min = 0., double max = 1.e-6);
 
     //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
     //! @param rIdentGroup identifier for the group
