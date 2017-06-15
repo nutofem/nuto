@@ -70,26 +70,10 @@ public:
         : NewmarkDirect(rStructure)
         , mNumTotalActiveDofs(rStructure->GetNumTotalActiveDofs())
         , mNumTotalDofs(rStructure->GetNumTotalDofs())
+        , mStructureFeti(rStructure)
     {
     }
 
-    ///
-    /// \brief HasCriticalTimeStep
-    /// \return
-    ///
-    bool HasCriticalTimeStep() const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented!");
-    }
-
-    ///
-    /// \brief CalculateCriticalTimeStep
-    /// \return
-    ///
-    double CalculateCriticalTimeStep() const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented!");
-    }
 
     ///
     /// \brief GatherInterfaceRigidBodyModes
@@ -561,8 +545,7 @@ public:
     void CheckIfProjectionOfDminusFtimesLambdaEqualsZero(const VectorXd& d, const VectorXd& FtimesLambda,
                                                          const double tolerance = 1.e-2)
     {
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
-        const MatrixXd& P = structure->GetProjectionMatrix();
+        const MatrixXd& P = mStructureFeti->GetProjectionMatrix();
 
         constexpr double precision = 1.;
         VectorXd zero = P.transpose() * (d - FtimesLambda);
@@ -598,7 +581,6 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     VectorXd CalculateDisplacementGap(const VectorXd& residual, const double timeStep)
     {
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
         VectorXd pseudoInvVec = VectorXd::Zero(mNumTotalDofs);
         pseudoInvVec.head(mNumTotalActiveDofs) = mSolver.solve(residual.head(mNumTotalActiveDofs));
@@ -610,7 +592,7 @@ public:
                       MPI_COMM_WORLD);
 
 
-        displacementGap = displacementGap - structure->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
+        displacementGap = displacementGap - mStructureFeti->GetPrescribedDofVector() * CalculateLoadFactor(timeStep);
 
         return displacementGap;
     }
@@ -628,12 +610,11 @@ public:
 
         NuTo::Timer timer("Time for FetiSolve", mStructure->GetShowTime());
 
-        StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
 
-        const MatrixXd& rigidBodyModes = structure->GetRigidBodyModes();
+        const MatrixXd& rigidBodyModes = mStructureFeti->GetRigidBodyModes();
 
         // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
-        const MatrixXd& G = structure->GetG();
+        const MatrixXd& G = mStructureFeti->GetG();
 
         // GtransGinv.size() = (total number of rigid body modes) x (total number of rigid body modes)
         const MatrixXd GtransGinv = (G.transpose() * G).inverse();
@@ -669,26 +650,26 @@ public:
         mStructure->GetLogger() << "residual_mod.norm() \n" << residual_mod.norm() << "\n \n";
 
 
-        structure->GetLogger() << "*********************************** \n"
-                               << "**      Start Interface Problem  ** \n"
-                               << "*********************************** \n\n";
+        mStructure->GetLogger() << "*********************************** \n"
+                                << "**      Start Interface Problem  ** \n"
+                                << "*********************************** \n\n";
         int iterations = 0;
 
         switch (mIterativeSolver)
         {
         case eIterativeSolver::ConjugateGradient:
         {
-            iterations = ProjConjugateGradient(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjConjugateGradient(mStructureFeti->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
         case eIterativeSolver::BiconjugateGradientStabilized:
         {
-            iterations = ProjBiCgStab(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjBiCgStab(mStructureFeti->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
         case eIterativeSolver::ProjectedGmres:
         {
-            iterations = ProjGmres(structure->GetProjectionMatrix(), deltaLambda, displacementGap);
+            iterations = ProjGmres(mStructureFeti->GetProjectionMatrix(), deltaLambda, displacementGap);
             break;
         }
         default:
@@ -704,13 +685,13 @@ public:
         }
 
 
-        if (structure->mRank == 0)
+        if (mStructureFeti->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
 
 
-        structure->GetLogger() << "*********************************** \n"
-                               << "**      End   Interface Problem  ** \n"
-                               << "*********************************** \n\n";
+        mStructure->GetLogger() << "*********************************** \n"
+                                << "**      End   Interface Problem  ** \n"
+                                << "*********************************** \n\n";
 
         const VectorXd FtimesDeltaLambda = CalculateFx(deltaLambda);
         const VectorXd alphaGlobal = GtransGinv * G.transpose() * (displacementGap - FtimesDeltaLambda);
@@ -733,20 +714,20 @@ public:
         VectorXd delta_dof_active =
                 SolveForActiveDegreesOfFreedom(residual_mod, deltaLambda, rigidBodyModes, alphaLocal);
 
-        CheckContinuity(delta_dof_active, structure->mNumInterfaceNodesTotal);
+        CheckContinuity(delta_dof_active, mStructureFeti->mNumInterfaceNodesTotal);
 
-        StructureOutputBlockVector delta_dof_dt0(structure->GetDofStatus());
+        StructureOutputBlockVector delta_dof_dt0(mStructure->GetDofStatus());
         int offset = 0;
         for (const auto& dof : activeDofSet)
         {
-            const int numActiveDofs = structure->GetNumActiveDofs(dof);
+            const int numActiveDofs = mStructure->GetNumActiveDofs(dof);
 
             delta_dof_dt0.J[dof] = delta_dof_active.segment(offset, numActiveDofs);
             offset += numActiveDofs;
         }
 
         delta_dof_dt0.K[Node::eDof::DISPLACEMENTS] =
-                delta_dof_active.segment(offset, structure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS));
+                delta_dof_active.segment(offset, mStructure->GetNumDependentDofs(Node::eDof::DISPLACEMENTS));
 
         return delta_dof_dt0;
     }
@@ -872,7 +853,7 @@ public:
             //
             //            MPI_Barrier(MPI_COMM_WORLD);
 
-                        throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
 
             break;
         }
@@ -1023,7 +1004,6 @@ public:
 
         try
         {
-            StructureFeti* structure = static_cast<StructureFeti*>(mStructure);
             mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
             mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
@@ -1034,33 +1014,33 @@ public:
                                     << "**        calculate RBMs                  ** \n"
                                     << "******************************************** \n\n";
 
-            structure->CalculateRigidBodyModesTotalFETI();
-            mNumRigidBodyModes = structure->GetNumRigidBodyModes();
-            mNumRigidBodyModesTotal = structure->GetNumRigidBodyModesTotal();
+            mStructureFeti->CalculateRigidBodyModesTotalFETI();
+            mNumRigidBodyModes = mStructureFeti->GetNumRigidBodyModes();
+            mNumRigidBodyModesTotal = mStructureFeti->GetNumRigidBodyModesTotal();
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate connectivity matrix   ** \n"
                                     << "******************************************** \n\n";
 
-            structure->AssembleConnectivityMatrix();
-            mB = structure->GetConnectivityMatrix();
-            mNumLagrangeMultipliers = structure->mNumLagrangeMultipliers;
+            mStructureFeti->AssembleConnectivityMatrix();
+            mB = mStructureFeti->GetConnectivityMatrix();
+            mNumLagrangeMultipliers = mStructureFeti->mNumLagrangeMultipliers;
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate interface RBMs        ** \n"
                                     << "******************************************** \n\n";
 
-            structure->CalculateInterfaceRigidBodyModes();
+            mStructureFeti->CalculateInterfaceRigidBodyModes();
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate projection            ** \n"
                                     << "******************************************** \n\n";
 
-            structure->CalculateG();
-            structure->CalculateProjectionMatrix();
+            mStructureFeti->CalculateG();
+            mStructureFeti->CalculateProjectionMatrix();
 
-            structure->CheckProjectionMatrix();
-            structure->CheckProjectionOfCoarseGrid();
+            mStructureFeti->CheckProjectionMatrix();
+            mStructureFeti->CheckProjectionOfCoarseGrid();
 
             mStructure->GetLogger() << "******************************************** \n"
                                     << "**        calculate scaling               ** \n"
@@ -1394,6 +1374,8 @@ public:
     }
 
 private:
+    StructureFeti* mStructureFeti;
+
     // auxilliary member variables
     const int mNumTotalActiveDofs;
     const int mNumTotalDofs;
