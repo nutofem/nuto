@@ -276,7 +276,7 @@ void StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCe
 }
 
 
-Group<NodeBase>& StructureBase::GroupGetNodeRadiusRange(Eigen::VectorXd center, double min = 0., double max = 1.e-6)
+Group<NodeBase>& StructureBase::GroupGetNodeRadiusRange(Eigen::VectorXd center, double min, double max)
 {
     int groupId = GroupCreate(eGroupId::Nodes);
     GroupAddNodeRadiusRange(groupId, center, min, max);
