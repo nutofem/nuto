@@ -166,10 +166,7 @@ public:
     //! @return TRUE if rMember is in the group, FALSE otherwise
     bool Contain(int rId) const override
     {
-        if (this->find(rId) == this->end())
-            return false;
-        else
-            return true;
+        return this->find(rId) != this->end();
     }
 
 
