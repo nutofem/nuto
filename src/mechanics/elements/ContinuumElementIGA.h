@@ -23,6 +23,7 @@ public:
                         const Eigen::MatrixXd              &rKnots,
                         const Eigen::VectorXi              &rKnotIDs,
                         const InterpolationType            &rInterpolationType,
+                        const IntegrationTypeBase          &integrationType,
                         const DofStatus& dofStatus);
 
     ContinuumElementIGA(const ContinuumElementIGA& ) = default;

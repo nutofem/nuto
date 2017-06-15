@@ -40,7 +40,9 @@ class Element1DInXD: public ContinuumElement<1>
 
 public:
     Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
-            const InterpolationType& rInterpolationType, const DofStatus& dofStatus, int globalDimension);
+                  const InterpolationType& rInterpolationType, 
+                  const IntegrationTypeBase& integrationType,
+                  const DofStatus& dofStatus, int globalDimension);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

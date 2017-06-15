@@ -1,10 +1,9 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation2DIGA.h"
+#include "mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation2DIGA::Interpolation2DIGA(NuTo::Node::eDof rDofType,
                                              NuTo::Interpolation::eTypeOrder rTypeOrder,
@@ -47,29 +46,6 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation2DIGA::GetSurfaceEdgesCoordinate
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented yet");
 }
 
-int NuTo::Interpolation2DIGA::GetNumDofsPerNode() const
-{
-    switch (mDofType)
-    {
-    case NuTo::Node::eDof::COORDINATES:
-        return mDimension;
-    case NuTo::Node::eDof::DISPLACEMENTS:
-        return mDimension;
-    case NuTo::Node::eDof::TEMPERATURE:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
-        return 2;
-    case NuTo::Node::eDof::RELATIVEHUMIDITY:
-        return 1;
-    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
-        return 1;
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
-    }
-}
-
 /*******************/
 // Shape functions //
 /*******************/
@@ -98,16 +74,9 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(const Eigen::V
     return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const
+Eigen::VectorXd NuTo::Interpolation2DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return CalculateShapeFunctions(IPcoordinates, rKnotIDs);
+    return CalculateShapeFunctions(naturalCoordinates, rKnotIDs);
 }
 
 /***************/
@@ -122,7 +91,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatur
     return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(1, rCoordinates, spanIdx, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation2DIGA::DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(rKnotIDs.rows() == 2);
     assert(rKnotIDs(0) < mKnotsX.rows());
@@ -136,17 +105,6 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatur
     return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(1, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return CalculateDerivativeShapeFunctionsNatural(IPcoordinates, rKnotIDs);
-}
-
 /***************/
 // N-Matrix    //
 /***************/
@@ -157,7 +115,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd
     return ConstructMatrixN(shapeFunctions);
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(rKnotIDs.rows() == 2 );
     assert(rKnotIDs(0) < mKnotsX.rows());
@@ -171,18 +129,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd
     return ConstructMatrixN(ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights));
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const
-{
-    assert(!mUpdateRequired);
-    assert(rIP >=0 && rIP < mIPCoordinates.rows());
-
-    Eigen::Vector2d IPcoordinates;
-    IPcoordinates << mIPCoordinates(rIP, 0), mIPCoordinates(rIP, 1);
-
-    return CalculateMatrixN(IPcoordinates, rKnotIDs);
-}
-
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
+Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters,
                                                                      const Eigen::VectorXi& rKnotIDs,
                                                                      int rDerivative,
                                                                      int rDirection) const
@@ -237,7 +184,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen
 Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const
 {
     int numNodes = GetNumNodes();
-    int dimBlock = GetNumDofsPerNode();
+    int dimBlock = NuTo::Node::GetNumComponents(mDofType, 2);
 
     assert (rShapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
 
@@ -250,20 +197,20 @@ Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rSha
     return matrixN;
 }
 
-Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
+Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
 
     switch (rSurface)
     {
     case 0:
-        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1)), rKnots(1,0));
+        return Eigen::Vector2d(rNaturalSurfaceCoordinates(0), rKnots(1,0));
     case 1:
-        return Eigen::Vector2d(rKnots(0,1), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,0), rKnots(1,1)));
+        return Eigen::Vector2d(rKnots(0,1), rNaturalSurfaceCoordinates(0));
     case 2:
-        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,1), rKnots(0,0)), rKnots(1,1));
+        return Eigen::Vector2d(rNaturalSurfaceCoordinates(0), rKnots(1,1));
     case 3:
-        return Eigen::Vector2d(rKnots(0,0), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,1), rKnots(1,0)));
+        return Eigen::Vector2d(rKnots(0,0), rNaturalSurfaceCoordinates(0));
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
@@ -344,18 +291,6 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
-}
-
-void NuTo::Interpolation2DIGA::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-    int numIPs = rIntegrationType.GetNumIntegrationPoints();
-
-    mIPCoordinates.resize(numIPs, 2);
-
-    for (int iIP = 0; iIP < numIPs; ++iIP)
-        mIPCoordinates.row(iIP) = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-
-    mUpdateRequired = false;
 }
 
 int NuTo::Interpolation2DIGA::CalculateNumNodes() const

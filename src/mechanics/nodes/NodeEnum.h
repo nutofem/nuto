@@ -1,7 +1,6 @@
 #pragma once
 
 #include <limits>
-#include <map>
 #include <set>
 #include <string>
 
@@ -10,40 +9,35 @@ namespace NuTo
 namespace Node
 {
 
-enum class eDof : unsigned char {COORDINATES,
-                                 ROTATIONS,
-                                 TEMPERATURE,
-                                 DISPLACEMENTS,
-                                 FINESCALEDISPLACEMENTS,
-                                 NONLOCALDATA,
-                                 NONLOCALEQPLASTICSTRAIN,
-                                 NONLOCALTOTALSTRAIN,
-                                 NONLOCALEQSTRAIN,
-                                 WATERVOLUMEFRACTION,
-                                 RELATIVEHUMIDITY,
-                                 ELECTRICPOTENTIAL,
-                                 CRACKPHASEFIELD};
+enum class eDof : unsigned char
+{
+    COORDINATES,
+    TEMPERATURE,
+    DISPLACEMENTS,
+    NONLOCALEQSTRAIN,
+    WATERVOLUMEFRACTION,
+    RELATIVEHUMIDITY,
+    ELECTRICPOTENTIAL,
+    CRACKPHASEFIELD
+};
 
 //! @brief Gets a set of all Dofs
-const std::set<eDof> GetDofSet();
+std::set<eDof> GetDofSet();
 
-
-
-
-constexpr size_t maxDoFEnumValue = std::numeric_limits<unsigned char>::max();
+//! @brief Get number of components of a DOF type
+//! @param dofType DOF type
+//! @param dimension The dimension of the problem
+int GetNumComponents(eDof dofType, int dimension);
 
 constexpr unsigned short CombineDofs(eDof rDof1, eDof rDof2)
 {
+    constexpr size_t maxDoFEnumValue = std::numeric_limits<unsigned char>::max();
     return static_cast<unsigned short>(rDof1) * maxDoFEnumValue + static_cast<unsigned short>(rDof2);
 }
 
-const std::map<eDof, std::string> GetDofMap();
-
-
-const std::string DofToString(eDof rDof);
+std::string DofToString(eDof rDof);
 
 eDof DofToEnum(std::string rDof);
 
-
-}// namespace Node
-}// namespace NuTo
+} // namespace Node
+} // namespace NuTo

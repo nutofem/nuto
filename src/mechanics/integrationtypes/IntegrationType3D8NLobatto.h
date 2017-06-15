@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -117,21 +116,6 @@ namespace NuTo
         assert(rIpNum>=0 && rIpNum<T*T*T);
     	return mWeights[rIpNum];
 	}
-
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    template <int T>
-	eIntegrationType IntegrationType3D8NLobatto<T>::GetEnumType() const
-    {
-    	switch(T)
-		{
-	    case 3: return eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip;
-	    case 4: return eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip;
-	    case 5: return eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
-	    default:
-	    	throw MechanicsException("[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
-		}
-    }
 
 #ifdef ENABLE_VISUALIZE
     template <int T>

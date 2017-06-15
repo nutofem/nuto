@@ -170,7 +170,7 @@ void SimulationTest(std::vector<int> rN,
 
     auto meshInfo = NuTo::MeshGenerator::Grid(S, rL, rN);
 
-    for (auto& it : rDofIPTMap)
+    for (auto it : rDofIPTMap)
         S.InterpolationTypeAdd(meshInfo.second, it.first, it.second);
 
     S.ElementGroupSetSection(meshInfo.first, SEC);

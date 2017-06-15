@@ -38,7 +38,7 @@
 #include <iomanip>
 
 NuTo::InterpolationType::InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension) :
-        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mIntegrationType(nullptr), mDimension(rDimension)
+        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mDimension(rDimension)
 {
 }
 
@@ -131,10 +131,6 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         newType->mNodeIndices[i] = i;
         mNodeDofs[i].insert(rDofType);
     }
-
-
-    if (mIntegrationType != nullptr)
-        newType->UpdateIntegrationType(*mIntegrationType);
 }
 
 void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
@@ -231,10 +227,6 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     if (rDofType == Node::eDof::COORDINATES)
         UpdateNodeRenumberingIndices();
 
-    if (mIntegrationType != nullptr)
-        newType->UpdateIntegrationType(*mIntegrationType);
-
-
     if (mShapeType != Interpolation::eShapeType::INTERFACE)
     {
         // update the surface node ids for each dof
@@ -254,33 +246,18 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     }
 }
 
-void NuTo::InterpolationType::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-    if (mIntegrationType == &rIntegrationType)
-        return;
-
-    for (auto dofType : mDofs)
-        GetNonConst(dofType).UpdateIntegrationType(rIntegrationType);
-
-    mIntegrationType = &rIntegrationType;
-}
-
-bool NuTo::InterpolationType::HasIntegrationType() const
-{
-    return mIntegrationType != nullptr;
-}
-
-const NuTo::IntegrationTypeBase& NuTo::InterpolationType::GetCurrentIntegrationType() const
-{
-    if (HasIntegrationType())
-        return *mIntegrationType;
-
-    throw MechanicsException(__PRETTY_FUNCTION__, "CurrentIntegrationType not set.");
-}
 
 const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() const
 {
     return mShapeType;
+}
+
+void NuTo::InterpolationType::ClearCache() const
+{
+    for (const auto& interpolation : mInterpolations)
+    {
+        interpolation.second->ClearCache();
+    }
 }
 
 NuTo::eIntegrationType NuTo::InterpolationType::GetStandardIntegrationType() const
@@ -606,7 +583,6 @@ void NuTo::InterpolationType::serialize(Archive & ar, const unsigned int version
     ar & BOOST_SERIALIZATION_NVP(mNumActiveDofs);
     ar & BOOST_SERIALIZATION_NVP(mNodeDofs);
     ar & BOOST_SERIALIZATION_NVP(mNodeCoordinates);
-    ar & boost::serialization::make_nvp("mIntegrationType", const_cast<NuTo::IntegrationTypeBase*&>(mIntegrationType));
     ar & BOOST_SERIALIZATION_NVP(mNodeRenumberingIndices);
     ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
 #ifdef DEBUG_SERIALIZATION

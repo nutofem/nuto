@@ -24,10 +24,11 @@ struct Lobatto
     }
 };
 
-BOOST_AUTO_TEST_CASE(memoization)
+template <typename TMemoizer>
+void CheckMemoizer()
 {
-    
-    NuTo::NaturalCoordinateMemoizer<Eigen::Vector3d, Eigen::Vector3d> memo(CountedFunction);
+    counter = 0; 
+    TMemoizer memo(CountedFunction);
    
     Lobatto lobatto;
     for (int i = 0; i < 12; ++i)
@@ -35,7 +36,7 @@ BOOST_AUTO_TEST_CASE(memoization)
             BoostUnitTest::CheckVector(memo.Get(ip), ip, 3);
 
     // even though the method is called 12 times, it should only
-    // be evaluated once per integration point
+// be evaluated once per integration point
     int expectedCounter = lobatto.ips.size();
     BOOST_CHECK_EQUAL(counter, expectedCounter);
 
@@ -46,4 +47,10 @@ BOOST_AUTO_TEST_CASE(memoization)
 
     expectedCounter += lobatto.ips.size();
     BOOST_CHECK_EQUAL(counter, expectedCounter);
+}
+
+BOOST_AUTO_TEST_CASE(memoizationMap)
+{
+    using Memoizer = NuTo::NaturalCoordinateMemoizerMap<Eigen::Vector3d, Eigen::Vector3d>;
+    CheckMemoizer<Memoizer>();
 }

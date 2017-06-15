@@ -36,7 +36,9 @@ class Element2DInterface: public ElementBase
 
 public:
     Element2DInterface(const std::vector<NuTo::NodeBase*>& rNodes,
-            const InterpolationType& rInterpolationType, int globalDimension);
+                       const InterpolationType& rInterpolationType, 
+                       const IntegrationTypeBase& integrationType, 
+                       int globalDimension);
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law

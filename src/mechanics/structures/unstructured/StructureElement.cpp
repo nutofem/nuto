@@ -235,12 +235,8 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                        "COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) +
                                                " nodes. " + std::to_string(nodeVector.size()) + " are provided.");
 
-    if (not interpolationType.HasIntegrationType())
-    {
-        eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
-        IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
-        interpolationType.UpdateIntegrationType(*integrationType);
-    }
+    interpolationType.ClearCache();
+    const auto& integrationType = *GetPtrIntegrationType(interpolationType.GetStandardIntegrationType());
 
     ElementBase* ptrElement = nullptr;
     switch (interpolationType.GetShapeType())
@@ -260,11 +256,11 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                 "Please use approriate functions for element creation, this is IGA implementation.");
         break;
     case NuTo::Interpolation::eShapeType::IGA1D:
-        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
+        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType, GetDofStatus());
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::IGA2D:
-        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
+        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType, GetDofStatus());
         ptrElement->CheckElement();
         break;
     default:
@@ -302,12 +298,8 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                                                                     std::to_string(numNodesCoordinates) + " nodes. " +
                                                                     std::to_string(rNodes.size()) + " are provided.");
 
-    if (not interpolationType.HasIntegrationType())
-    {
-        eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
-        IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
-        interpolationType.UpdateIntegrationType(*integrationType);
-    }
+    interpolationType.ClearCache();
+    const auto& integrationType = *GetPtrIntegrationType(interpolationType.GetStandardIntegrationType());
 
     ElementBase* ptrElement = nullptr;
     switch (interpolationType.GetShapeType())
@@ -316,26 +308,26 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
         break;
     case NuTo::Interpolation::eShapeType::TRUSS1D:
-        ptrElement = new ContinuumElement<1>(rNodes, interpolationType, GetDofStatus());
+        ptrElement = new ContinuumElement<1>(rNodes, interpolationType, integrationType, GetDofStatus());
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::TRUSSXD:
-        ptrElement = new Element1DInXD(rNodes, interpolationType, GetDofStatus(), mDimension);
+        ptrElement = new Element1DInXD(rNodes, interpolationType, integrationType, GetDofStatus(), mDimension);
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::TRIANGLE2D:
     case NuTo::Interpolation::eShapeType::QUAD2D:
-        ptrElement = new ContinuumElement<2>(rNodes, interpolationType, GetDofStatus());
+        ptrElement = new ContinuumElement<2>(rNodes, interpolationType, integrationType, GetDofStatus());
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
     case NuTo::Interpolation::eShapeType::BRICK3D:
     case NuTo::Interpolation::eShapeType::PRISM3D:
-        ptrElement = new ContinuumElement<3>(rNodes, interpolationType, GetDofStatus());
+        ptrElement = new ContinuumElement<3>(rNodes, interpolationType, integrationType, GetDofStatus());
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::INTERFACE:
-        ptrElement = new Element2DInterface(rNodes, interpolationType, mDimension);
+        ptrElement = new Element2DInterface(rNodes, interpolationType, integrationType, mDimension);
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::IGA1D:
@@ -451,110 +443,113 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
             ElementBase* boundaryElement = nullptr;
             ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
 
-            eIntegrationType integrationType = eIntegrationType::NotSet;
-
             switch (elementPtr->GetLocalDimension())
             {
             case 1:
             {
+                const auto& integrationType = *GetPtrIntegrationType(eIntegrationType::IntegrationType0DBoundary);
                 auto& element = dynamic_cast<ContinuumElement<1>&>(*elementPtr);
                 if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<1>(element, surfaceId);
+                    boundaryElement = new ContinuumBoundaryElement<1>(element, integrationType, surfaceId);
                 else
                     boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<1>(element, surfaceId, rControlNode);
-                integrationType = eIntegrationType::IntegrationType0DBoundary;
+                            new ContinuumBoundaryElementConstrainedControlNode<1>(element, integrationType, surfaceId, rControlNode);
                 break;
             }
             case 2:
             {
-                auto& element = dynamic_cast<ContinuumElement<2>&>(*elementPtr);
-                if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<2>(element, surfaceId);
-                else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<2>(element, surfaceId, rControlNode);
-
+                eIntegrationType integrationTypeEnum;
                 // check for 2D types
-                switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                switch (interpolationType.GetStandardIntegrationType())
                 {
                 case eIntegrationType::IntegrationType2D3NGauss1Ip:
                 case eIntegrationType::IntegrationType2D4NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss1Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss3Ip:
                 case eIntegrationType::IntegrationType2D4NGauss4Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss2Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss6Ip:
                 case eIntegrationType::IntegrationType2D4NGauss9Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss3Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss12Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss5Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto9Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto3Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto16Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto4Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto25Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto5Ip;
                     break;
 
                 default:
-                    break;
+                    throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "Could not automatically determine integration type of the boundary element.");
                 }
+                const auto& integrationType = *GetPtrIntegrationType(integrationTypeEnum);
+                auto& element = dynamic_cast<ContinuumElement<2>&>(*elementPtr);
+                if (rControlNode == nullptr)
+                    boundaryElement = new ContinuumBoundaryElement<2>(element, integrationType, surfaceId);
+                else
+                    boundaryElement =
+                            new ContinuumBoundaryElementConstrainedControlNode<2>(element, integrationType, surfaceId, rControlNode);
+
                 break;
             }
             case 3:
             {
-                auto& element = dynamic_cast<ContinuumElement<3>&>(*elementPtr);
-                if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<3>(element, surfaceId);
-                else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<3>(element, surfaceId, rControlNode);
-
+                eIntegrationType integrationTypeEnum;
                 // check for 3D types
-                switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                switch (interpolationType.GetStandardIntegrationType())
                 {
                 case eIntegrationType::IntegrationType3D4NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D3NGauss1Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D4NGauss4Ip:
-                    integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D3NGauss3Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NGauss1Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NGauss4Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto9Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                     break;
 
                 default:
-                    break;
+                    throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "Could not automatically determine integration type of the boundary element.");
                 }
-
+                
+                const auto& integrationType = *GetPtrIntegrationType(integrationTypeEnum);
+                auto& element = dynamic_cast<ContinuumElement<3>&>(*elementPtr);
+                if (rControlNode == nullptr)
+                    boundaryElement = new ContinuumBoundaryElement<3>(element, integrationType, surfaceId);
+                else
+                    boundaryElement =
+                            new ContinuumBoundaryElementConstrainedControlNode<3>(element, integrationType, surfaceId, rControlNode);
                 break;
             }
             default:
@@ -566,11 +561,6 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
             mElementMap.insert(elementId, boundaryElement);
             newBoundaryElementIds.push_back(elementId);
 
-            if (integrationType == eIntegrationType::NotSet)
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "Could not automatically determine integration type of the boundary element.");
-
-            boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
             boundaryElement->SetConstitutiveLaw(constitutiveLaw);
         }
     }

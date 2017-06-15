@@ -16,7 +16,6 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
-#include "mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
@@ -38,25 +37,6 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(i
     return surfaceEdgeCoordinates;
 }
 
-int NuTo::Interpolation2D::GetNumDofsPerNode() const
-{
-    switch (mDofType)
-    {
-    case NuTo::Node::eDof::COORDINATES:
-    case NuTo::Node::eDof::DISPLACEMENTS:
-    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
-        return 2;
-    case NuTo::Node::eDof::TEMPERATURE:
-    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
-    case NuTo::Node::eDof::RELATIVEHUMIDITY:
-    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
-    case NuTo::Node::eDof::CRACKPHASEFIELD:
-    case NuTo::Node::eDof::ELECTRICPOTENTIAL:
-        return 1;
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
-    }
-}
 
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::Interpolation2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

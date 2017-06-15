@@ -325,11 +325,6 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeSetDisplacements(int rId, int rTimeDerivative, const Eigen::VectorXd& rDisplacements);
 
-    //! @brief sets the displacements of a node
-    //! @param rIdent node identifier
-    //! @param rRotations matrix (one column) with the rotations
-    void NodeSetRotations(int rId,const Eigen::VectorXd& rRotations);
-
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
@@ -386,21 +381,6 @@ public:
     //! @return A vector of ids that correspond to rDof of rNodeId
     std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
 #endif
-
-    //! @brief gets the rotations of a node
-    //! @param rNode node identifier
-    //! @param rRotation matrix (one column) with the rotations
-    void NodeGetRotations(int rNode, Eigen::VectorXd& rRotations)const;
-
-    //! @brief gets the global nonlocal eq plastic strain variables of a node
-    //! @param rNode node identifier
-    //! @return global (nodal) nonlocal eq plastic strain
-    void NodeGetNonlocalEqPlasticStrain(int rNode, Eigen::VectorXd& rNonlocalEqPlasticStrain)const;
-
-    //! @brief gets the global nonlocal total strain variables of a node
-    //! @param rNode node identifier
-    //! @return global (nodal) nonlocal total strain
-    void NodeGetNonlocalTotalStrain(int rNode, Eigen::VectorXd& rNonlocalTotalStrain)const;
 
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier

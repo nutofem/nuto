@@ -84,32 +84,6 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
     }
 }
 
-void NuTo::StructureBase::NodeSetRotations(int rNode, const Eigen::VectorXd& rRotations)
-{
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
-    NodeBase* nodePtr = NodeGetNodePtr(rNode);
-    this->mUpdateTmpStaticDataRequired = true;
-
-    if (rRotations.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "rotation matrix has to have a single column.");
-    try
-    {
-        if (rRotations.rows() != 1 and rRotations.rows() != 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The number of rotation components is either 1, 3.");
-
-        nodePtr->Set(Node::eDof::ROTATIONS, rRotations);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeSetRotations] Error setting rotations.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error setting rotations of node (unspecified exception).");
-    }
-}
-
 void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const Eigen::VectorXd& rDisplacements)
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -260,29 +234,7 @@ std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Nod
     }
 }
 
-void NuTo::StructureBase::NodeGetRotations(int rNode, Eigen::VectorXd& rRotations) const
-{
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    const NodeBase* nodePtr = NodeGetNodePtr(rNode);
-
-    try
-    {
-        if (nodePtr->GetNum(Node::eDof::ROTATIONS) != 1 and nodePtr->GetNum(Node::eDof::ROTATIONS) != 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node has neither 1(2D) or 3(3D) rotations.");
-
-        rRotations = nodePtr->Get(Node::eDof::ROTATIONS);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeGetRotations] Error getting rotations.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting rotations of node (unspecified exception).");
-    }
-}
 void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, Eigen::MatrixXd& rDisplacements)
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -403,58 +355,6 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::Matrix
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "Error getting coordinates of node (unspecified exception).");
         }
-    }
-}
-
-void NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain(int rNode, Eigen::VectorXd& rNonlocalEqPlasticStrain) const
-{
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
-    const NodeBase* nodePtr = NodeGetNodePtr(rNode);
-
-    try
-    {
-        if (nodePtr->GetNum(Node::eDof::NONLOCALEQPLASTICSTRAIN) != 2)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node does not have nonlocal equivalent plastic strains.");
-        }
-        rNonlocalEqPlasticStrain = nodePtr->Get(Node::eDof::NONLOCALEQPLASTICSTRAIN);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Error getting global damage.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "Error getting NodeGetNonlocalEqPlasticStrain of node (unspecified exception).");
-    }
-}
-
-void NuTo::StructureBase::NodeGetNonlocalTotalStrain(int rNode, Eigen::VectorXd& rNonlocalTotalStrain) const
-{
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    const NodeBase* nodePtr = NodeGetNodePtr(rNode);
-
-    try
-    {
-        int num = nodePtr->GetNum(Node::eDof::NONLOCALTOTALSTRAIN);
-        if (num != 1 and num != 3 and num != 6)
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "Number of nonlocal total strain components is either 1, 3 or 6 .");
-
-        rNonlocalTotalStrain = nodePtr->Get(Node::eDof::NONLOCALTOTALSTRAIN);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Error getting nonlocal total strain.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "Error getting nonlocal total strain of node (unspecified exception).");
     }
 }
 

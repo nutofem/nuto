@@ -93,7 +93,8 @@ using namespace NuTo;
 
 NuTo::StructureBase::StructureBase(int rDimension) :
     mAssembler(std::make_unique<Assembler>()),
-    mShowTime(true)
+    mShowTime(true),
+    mVerboseLevel(0)
 {
     if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {
@@ -708,7 +709,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
                Interpolation::eTypeOrder::EQUIDISTANT1);
         const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
-                Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+                Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(Eigen::VectorXd::Zero(dim)); // just as _some_ point, as said, constant
 
         // real coordinates of every node in rElement
         Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
@@ -752,7 +753,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
     }
 
-    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
+    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).ShapeFunctions(elementNaturalNodeCoords);
 
     std::vector<Constraint::Equation> equations(dim); // default construction of Equation with rhs = Constant = 0
     for (int iDim = 0; iDim < dim; ++iDim)

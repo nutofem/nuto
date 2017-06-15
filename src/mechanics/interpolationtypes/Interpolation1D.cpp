@@ -7,7 +7,6 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/Interpolation1D.h"
-#include "mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -28,31 +27,6 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation1D::GetSurfaceEdgesCoordinates(i
 {
     Eigen::VectorXd dummy; // has no influence in 1D
     return std::vector<Eigen::VectorXd>(1, this->CalculateNaturalSurfaceCoordinates(dummy, rSurface));
-}
-
-int NuTo::Interpolation1D::GetNumDofsPerNode() const
-{
-    switch (mDofType)
-    {
-    case NuTo::Node::eDof::COORDINATES:
-        return mDimension;
-    case NuTo::Node::eDof::DISPLACEMENTS:
-        return mDimension;
-    case NuTo::Node::eDof::TEMPERATURE:
-        return 1;
-    case NuTo::Node::eDof::ELECTRICPOTENTIAL:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
-        return 1;
-    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
-        return 2;
-    case NuTo::Node::eDof::RELATIVEHUMIDITY:
-        return 1;
-    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
-        return 1;
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
-    }
 }
 
 

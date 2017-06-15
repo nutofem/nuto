@@ -26,8 +26,8 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
                                                              int rSurfaceId,
                                                              const Group<ElementBase>* elementGroup,
                                                              const Group<NodeBase>* nodeGroup,
-                                                             const IntegrationTypeBase *rIntegrationType)
-    : ContinuumBoundaryElement<TDim>(rSlaveElement, rSurfaceId), mIntegrationType(rIntegrationType)
+                                                             const IntegrationTypeBase& integrationType)
+    : ContinuumBoundaryElement<TDim>(rSlaveElement, integrationType, rSurfaceId), mIntegrationType(&integrationType)
 {
     //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
@@ -161,7 +161,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
         Eigen::VectorXd referenceCoordinates(1);
         referenceCoordinates(0);
-        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(referenceCoordinates, surfaceId, elementPtr->GetKnots());
+        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(referenceCoordinates, surfaceId, elementPtr->GetKnots());
         Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
         double distance = (coordinatesMaster - coordinatedIPSlave).norm();
         if(minDistance < distance)

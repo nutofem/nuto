@@ -9,7 +9,6 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/MechanicsException.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
@@ -83,25 +82,10 @@ public:
     //! @return weight of integration points
     virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
 
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    virtual eIntegrationType GetEnumType() const = 0;
-
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel)const;
 
-    //! @brief creates new integration-cells/order/area
-    //! @param rArea (Input) polygonal surface of integration area
-    //! @param rOrder (Input) integration order (or number of integration points)
-    virtual void AddIntegrationPoints(std::vector< std::vector<double> > & rArea, const unsigned short rOrder);
-    
-    //! @brief adds a new integration point
-    //! @param rIp (Input) integration point
-    virtual void AddIntegrationPoint(const IntegrationPointBase & rIp);
-    // @brief deletes an integration point
-    // @param rIpNum (Input) integration point (counting from zero)
-    virtual void DeleteIntegrationPoint(const int rIpNum);
 
 #ifdef ENABLE_VISUALIZE
 
@@ -133,7 +117,7 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const  {};
+        std::vector<unsigned int>& VisualizationCellsIP) const {};
 #endif // ENABLE_VISUALIZE
 protected:
 };

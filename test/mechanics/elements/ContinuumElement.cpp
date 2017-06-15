@@ -52,14 +52,13 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
     interpolationType.AddDofInterpolation(Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
     IntegrationType1D2NGauss2Ip integrationType;
-    interpolationType.UpdateIntegrationType(integrationType);
 
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;
     dofs.insert(Node::eDof::TEMPERATURE);
     dofStatus.SetDofTypes(dofs);
     dofStatus.SetActiveDofTypes(dofs);
-    ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, dofStatus);
+    ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, integrationType, dofStatus);
 
     ConstitutiveInputMap inputMap;
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;

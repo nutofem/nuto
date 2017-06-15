@@ -65,7 +65,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
     for (const auto& dofType : dofTypes)
     {
-        mNumLagrangeMultipliers += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
+        mNumLagrangeMultipliers += NuTo::Node::GetNumComponents(dofType, GetDimension()) * mNumInterfaceNodesTotal;
     }
 
     mNumLagrangeMultipliers += mNumTotalBoundaryDofIds;
@@ -96,7 +96,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
                 }
             }
 
-        offsetRows += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
+        offsetRows += NuTo::Node::GetNumComponents(dofType, mDimension) * mNumInterfaceNodesTotal;
         // remove the mNumRigidBodyModes because it is only associated with displacements
         offsetCols += GetNumActiveDofs(dofType);
     }

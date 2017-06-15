@@ -71,8 +71,9 @@ class ElementBase
 
 public:
     //! @brief constructor
-    //! @param rInterpolationType ... interpolation type
-    ElementBase(const InterpolationType& rInterpolationType);
+    //! @param interpolationType ... interpolation type
+    //! @param integrationType ... integration type
+    ElementBase(const InterpolationType& interpolationType, const IntegrationTypeBase& integrationType);
 
     ElementBase(const ElementBase& ) = default;
     ElementBase(      ElementBase&&) = default;

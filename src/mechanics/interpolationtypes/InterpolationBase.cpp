@@ -8,7 +8,6 @@
 
 #include <eigen3/Eigen/Dense> // for ::determinant() 
 #include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
 NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
     mDofType(rDofType),
@@ -17,7 +16,6 @@ NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolat
     mNumDofs(-1),
     mNumNodes(-1),
     mTypeOrder(rTypeOrder),
-    mUpdateRequired(true),
     mDimension(rDimension)
 {
 }
@@ -53,7 +51,6 @@ int NuTo::InterpolationBase::GetNodeIndex(int rNodeDofIndex) const
 {
     assert(rNodeDofIndex < mNumNodes);
     assert((unsigned int) rNodeDofIndex < mNodeIndices.size());
-    assert(not mUpdateRequired);
 
     return mNodeIndices[rNodeDofIndex];
 }
@@ -68,7 +65,6 @@ int NuTo::InterpolationBase::GetSurfaceNodeIndex(int rSurface, int rNodeDofIndex
 {
     assert((unsigned int) rSurface < mSurfaceNodeIndices.size() && "Surface node indices not build.");
     assert((unsigned int) rNodeDofIndex < mSurfaceNodeIndices[rSurface].size() &&  "Surface node indices not build.");
-    assert(not mUpdateRequired);
 
     return mSurfaceNodeIndices[rSurface][rNodeDofIndex];
 }
@@ -130,7 +126,6 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
     ar & BOOST_SERIALIZATION_NVP(mNodeIndices);
 
     ar & BOOST_SERIALIZATION_NVP(mSurfaceNodeIndices);
-    ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
     ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
 
 #ifdef DEBUG_SERIALIZATION

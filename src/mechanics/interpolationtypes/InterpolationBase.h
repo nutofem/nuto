@@ -22,7 +22,6 @@
 
 namespace NuTo
 {
-class IntegrationTypeBase;
 enum class eIntegrationType;
 namespace Interpolation
 {
@@ -55,6 +54,8 @@ public:
     virtual NuTo::Interpolation::eTypeOrder GetTypeOrder() const;
 
     virtual int GetSplineDegree(int dir) const = 0;
+
+    virtual void ClearCache() const {}
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
@@ -110,21 +111,14 @@ public:
     //! @brief returns specific shape functions via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific shape functions
-    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const = 0;
+    virtual const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
     //! @brief returns specific N-matrix via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific N-matrix
-    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const = 0;
+    virtual const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
-    //! @brief calculates the shape functions for a specific dof
-    //! @param rCoordinates ... integration point coordinates
-    //! @param rDofType ... dof type
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
-    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const = 0;
 
     // --- IGA interpolation--- //
 
@@ -132,24 +126,19 @@ public:
     //! @param rIP ... id of the integration point
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (a transformation needs to be done, since integration point coordinates are in [-1, 1])
     //! @return ... specific shape functions
-    virtual Eigen::VectorXd CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
-
-    //! @brief returns the N matrix at a parameter for IGA elements
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //! @brief returns the N matrix for IGA elements at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     //! @param rCoordinates ... parameter
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
+    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //! @brief returns the N matrix at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     //! @param rParameters ... parameter on the curve
     //! @param rKnotIDs ... knot span
     //! @param rDerivative ... the order of derivative (only 0,1,2 possible)
     //! @param rDirection ... for 1D only 0 (in 2D 0(x) and 1(y))
-    virtual Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const = 0;
+    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const = 0;
 
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
@@ -158,24 +147,14 @@ public:
     //! @brief returns specific derivative shape functions natural via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific derivative shape functions natural
-    virtual const Eigen::MatrixXd& GetDerivativeShapeFunctionsNatural(int rIP) const = 0;
-
-    //! @brief returns specific derivative shape functions natural via coordinates
-    //! @param rCoordinates ... integration point coordinates
-    //! @return ... specific derivative shape functions natural
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
+    virtual const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const = 0;
 
     // --- IGA interpolation--- //
-
-    //! @brief returns specific derivative shape functions at an integration point
-    //! @param rIP ... id of the integration point
-    //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //! @brief returns specific derivative shape functions at a parameter, which fits to the knot vector
     //! @param rCoordinates ... parameter
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
+    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const = 0;
 
     //********************************************
     //       SURFACE PARAMETRIZATION
@@ -192,7 +171,7 @@ public:
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @param rKnots ... knots bounding the IGA element
     //! @return ... natural coordinates of the elements surface
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const = 0;
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
@@ -202,9 +181,6 @@ public:
 
     //! @brief returns the number of surfaces
     virtual int GetNumSurfaces() const = 0;
-
-    //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const = 0;
 
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const = 0;
@@ -234,6 +210,19 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 protected:
+    //! @brief calculates the shape functions for a specific dof
+    //! @param rCoordinates ... integration point coordinates
+    //! @param rDofType ... dof type
+    //! @return ... shape functions for the specific dof type
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
+    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief returns specific derivative shape functions natural via coordinates
+    //! @param rCoordinates ... integration point coordinates
+    //! @return ... specific derivative shape functions natural
+    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
@@ -244,10 +233,6 @@ protected:
     //! @param rSurface ... surface id
     //! @param rNaturalNodeCoordinate ... natural coordinate of the node to test
     virtual bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const = 0;
-
-    //! @brief calculate and store the shape functions and their derivatives
-    //! @param rIntegrationType ... integration type
-    virtual void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) {}
 
     //! @brief return the number node depending the shape and the order
     virtual int CalculateNumNodes() const = 0;
@@ -271,8 +256,6 @@ protected:
 
     // members for each surface
     std::vector<std::vector<int>> mSurfaceNodeIndices;
-
-    bool mUpdateRequired;
 
     //! @brief dimension = Structure.GetDimension()
     const int mDimension;
