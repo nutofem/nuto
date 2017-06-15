@@ -805,55 +805,51 @@ public:
         }
         case eFetiPreconditioner::Dirichlet:
         {
-            //            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-            //
-            //            std::set<int> internalDofIds;
-            //            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-            //            {
-            //                internalDofIds.insert(j);
-            //            }
-            //
-            //            std::vector<int> lagrangeMultiplierDofIds =
-            //                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
-            //
-            //            for (const auto& id : lagrangeMultiplierDofIds)
-            //            {
-            //                internalDofIds.erase(id);
-            //            }
-            //
-            //
-            //            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
-            //
-            //
-            //            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-            //            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
-            //            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
-            //            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
-            //
-            //            TimerExtractLocalMatrices.Reset();
-            //
-            //            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
-            //            SparseMatrix Sbb = Kbb - Kbi * luKii.solve(Kib);
-            //
-            //            //
-            //            //     | 0  0   |
-            //            // S = | 0  Sbb |
-            //            //
-            //            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-            //
-            //
-            //            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-            //                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-            //                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
-            //                            Sbb.coeff(rowId, colId);
-            //
-            //
-            //            mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
-            //
-            //
-            //            MPI_Barrier(MPI_COMM_WORLD);
+            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
 
-            throw MechanicsException(__PRETTY_FUNCTION__, "Dirichlet preconditioner is not implemented yet.");
+            std::set<int> internalDofIds;
+            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
+            {
+                internalDofIds.insert(j);
+            }
+
+            std::vector<int> lagrangeMultiplierDofIds =
+                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+
+            for (const auto& id : lagrangeMultiplierDofIds)
+            {
+                internalDofIds.erase(id);
+            }
+
+
+            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
+
+
+            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
+            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
+            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
+            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
+
+            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            SparseMatrix KiiInvTimesKib = luKii.solve(Kib);
+            SparseMatrix KbiTimesKiiInvTimesKib = Kbi * KiiInvTimesKib;
+            SparseMatrix Sbb = Kbb - KbiTimesKiiInvTimesKib;
+
+            //
+            //     | 0  0   |
+            // S = | 0  Sbb |
+            //
+            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
+
+
+            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
+                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
+                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
+                            Sbb.coeff(rowId, colId);
+            
+            mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
+
+            MPI_Barrier(MPI_COMM_WORLD);
 
             break;
         }
