@@ -84,3 +84,15 @@ BENCHMARK(Newton, NuTo, runner)
         newton.Solve(f, 0, solver);
     }
 }
+
+BENCHMARK(Newton, NuToLineSearch, runner)
+{
+    F f;
+    NuTo::LineSearchTrue<F> lineSearch(tolerance, 0.01);
+    NuTo::NewtonRaphson<F, NuTo::LineSearchTrue<F>> newton(lineSearch, 100);
+    DoubleSolver solver;
+    while (runner.KeepRunningTime(runtime))
+    {
+        newton.Solve(f, 0, solver);
+    }
+}

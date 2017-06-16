@@ -1,6 +1,8 @@
 #pragma once
 
 #include "MathException.h"
+#include "math/LineSearch.h"
+#include <tuple> // for std::tie
 
 namespace NuTo
 {
@@ -36,7 +38,7 @@ public:
     }
 };
 
-template <typename TFunction>
+template <typename TFunction, typename TLineSearch = NuTo::LineSearchFalse<TFunction>>
 class NewtonRaphson
 {
     using ResidualType = typename TFunction::ResidualType;
@@ -45,7 +47,13 @@ class NewtonRaphson
 
 public:
     NewtonRaphson(NormType tolerance, unsigned maxIterations = 20)
-        : mTolerance(tolerance)
+        : mLineSearch(tolerance)
+        , mMaxIterations(maxIterations)
+    {
+    }
+
+    NewtonRaphson(TLineSearch lineSearch, unsigned maxIterations = 20)
+        : mLineSearch(lineSearch)
         , mMaxIterations(maxIterations)
     {
     }
@@ -60,19 +68,21 @@ public:
         while (iteration < mMaxIterations)
         {
             DerivativeType dr = f.DR(x);
-            x -= solver.Solve(dr, r);
-            ++iteration;
-
-            r = f.R(x);
-            f.Info(iteration, x, r);
-            if (f.Norm(r) < mTolerance)
+            ResidualType dx = solver.Solve(dr, r);
+          
+            bool acceptSolution = false;
+            std::tie(acceptSolution, r, x) = mLineSearch(x, dx, f);
+            if (acceptSolution)
                 return x;
+
+            ++iteration;
+            f.Info(iteration, x, r);
         }
         throw NoConvergence(__PRETTY_FUNCTION__, "No convergence after " + std::to_string(iteration) + " iterations.");
     }
 
 private:
-    NormType mTolerance;
+    TLineSearch mLineSearch;
     unsigned mMaxIterations;
 };
 

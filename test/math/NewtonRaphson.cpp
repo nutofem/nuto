@@ -32,7 +32,6 @@ struct FInvalid : F
 {
     double R(const double& x) override
     {
-        std::cout << "HALP";
         return x * x + 1; 
     }
     
@@ -63,9 +62,19 @@ BOOST_AUTO_TEST_CASE(NewtonScalar)
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 {
     double tolerance = 1.e-10;
-    NuTo::NewtonRaphson<FInvalid> newton(tolerance, 100);
+    NuTo::NewtonRaphson<FInvalid> newton(tolerance, 10);
     FInvalid f;
     DoubleSolver solver;
     BOOST_CHECK_THROW(newton.Solve(f, 0, solver), NuTo::NoConvergence);
 }
 
+BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
+{
+    double tolerance = 1.e-10;
+    NuTo::LineSearchTrue<F> lineSearch(tolerance, 0.01);
+    NuTo::NewtonRaphson<F, NuTo::LineSearchTrue<F>> newton(lineSearch, 100);
+    F f;
+    DoubleSolver solver;
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
+}
