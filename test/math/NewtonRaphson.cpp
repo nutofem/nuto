@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(NewtonScalar)
     NuTo::NewtonRaphson<F> newton(tolerance, 100);
     F f;
     DoubleSolver solver;
-    auto result = newton.Solve(f, 0, solver);
-    BOOST_CHECK_CLOSE_FRACTION(result, -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)

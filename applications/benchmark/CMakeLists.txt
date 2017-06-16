@@ -40,3 +40,6 @@ if(ENABLE_GEOMETRYCONCRETE)
     target_link_libraries(DenseSpherePacking NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
     add_test(benchmark::DenseSpherePacking ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 endif()
+
+add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
+target_link_libraries(NewtonRaphsonBenchmark -lprofiler) 
