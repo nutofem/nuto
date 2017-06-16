@@ -16,7 +16,7 @@ struct F : NuTo::ResidualDerivative<double, double, double>
     {
         return 3. * x * x - 1;
     }
-    void Info(unsigned, const double&, const double&) const override
+    void Info(double, const double&, const double&) const override
     {
     }
 };
@@ -29,8 +29,8 @@ struct DoubleSolver
     }
 };
 
-constexpr double tolerance = 1.e-12;
-constexpr double runtime = 0.5;
+constexpr double tolerance = 1.e-10;
+constexpr double runtime = 0.1;
 
 BENCHMARK(Newton, hardcode, runner)
 {
@@ -55,25 +55,6 @@ BENCHMARK(Newton, hardcode, runner)
     }
 }
 
-BENCHMARK(Newton, hardcodeFunction, runner)
-{
-    F f;
-    DoubleSolver solver;
-    while (runner.KeepRunningTime(runtime))
-    {
-        double x = 0;
-        double r = f.R(x);
-        while (true)
-        {
-            double dr = f.DR(x);
-            x -= solver.Solve(dr, r);
-            r = f.R(x);
-            if (f.Norm(r) < tolerance)
-                break;
-        }
-    }
-}
-
 BENCHMARK(Newton, NuTo, runner)
 {
     F f;
@@ -88,8 +69,7 @@ BENCHMARK(Newton, NuTo, runner)
 BENCHMARK(Newton, NuToLineSearch, runner)
 {
     F f;
-    NuTo::LineSearchTrue<F> lineSearch(tolerance, 0.01);
-    NuTo::NewtonRaphson<F, NuTo::LineSearchTrue<F>> newton(lineSearch, 100);
+    NuTo::NewtonRaphson<F, true> newton(tolerance, 100);
     DoubleSolver solver;
     while (runner.KeepRunningTime(runtime))
     {

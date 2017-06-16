@@ -2,7 +2,6 @@
 
 #include "MathException.h"
 #include "math/LineSearch.h"
-#include <tuple> // for std::tie
 
 namespace NuTo
 {
@@ -17,7 +16,7 @@ struct Residual
 
     virtual TNorm Norm(const TResidual&) = 0;
     virtual TResidual R(const TResidual&) = 0;
-    virtual void Info(unsigned iteration, const TResidual& x, const TResidual& r) const = 0;
+    virtual void Info(double iteration, const TResidual& x, const TResidual& r) const = 0;
 };
 
 //! @brief interface to solve a problem R(x) = 0 with the use of the derivative
@@ -38,7 +37,12 @@ public:
     }
 };
 
-template <typename TFunction, typename TLineSearch = NuTo::LineSearchFalse<TFunction>>
+
+//! @brief Newton-Raphson algrithm. https://en.wikipedia.org/wiki/Newton%27s_method
+//! finds the root of TFunction::R(x) using the derivative TFunction::DR(x)
+//! @tparam TFunction ... implementation of the NuTo::ResidualDerivative interface
+//! @tparam TUseLinesearch ... option whether to use a line search optimization algorithm or not
+template <typename TFunction, bool TUseLinesearch = false>
 class NewtonRaphson
 {
     using ResidualType = typename TFunction::ResidualType;
@@ -52,13 +56,10 @@ public:
     {
     }
 
-    NewtonRaphson(TLineSearch lineSearch, unsigned maxIterations = 20)
-        : mLineSearch(lineSearch)
-        , mMaxIterations(maxIterations)
-    {
-    }
-
-    //! @brief solves the nonlinear equation R = 0
+    //! @brief solves the nonlinear equation TFunction::R(x) = 0
+    //! @param f ... defines function/derivative/norm
+    //! @param x ... start value 
+    //! @param solver ... solver that implements ResidualType Solve(DerivativeType, ResidualType)
     template <typename TSolver>
     ResidualType Solve(TFunction f, ResidualType x, TSolver& solver) const
     {
@@ -69,9 +70,9 @@ public:
         {
             DerivativeType dr = f.DR(x);
             ResidualType dx = solver.Solve(dr, r);
-          
+
             bool acceptSolution = false;
-            std::tie(acceptSolution, r, x) = mLineSearch(x, dx, f);
+            std::tie(acceptSolution, r, x) = mLineSearch.template Evaluate<TUseLinesearch>(x, dx, f);
             if (acceptSolution)
                 return x;
 
@@ -82,7 +83,7 @@ public:
     }
 
 private:
-    TLineSearch mLineSearch;
+    NuTo::LineSearch<TFunction> mLineSearch;
     unsigned mMaxIterations;
 };
 

@@ -21,7 +21,7 @@ struct F : NuTo::ResidualDerivative<double, double, double>
         return 3. * x * x - 1;
     }
 
-    void Info(unsigned i, const double& x, const double& r) const override
+    void Info(double i, const double& x, const double& r) const override
     {
         std::cout << std::setprecision(20);
         std::cout << i << "\t:" << x << "\t" << r << std::endl;
@@ -71,8 +71,7 @@ BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
 {
     double tolerance = 1.e-10;
-    NuTo::LineSearchTrue<F> lineSearch(tolerance, 0.01);
-    NuTo::NewtonRaphson<F, NuTo::LineSearchTrue<F>> newton(lineSearch, 100);
+    NuTo::NewtonRaphson<F, true> newton(tolerance, 100);
     F f;
     DoubleSolver solver;
     BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
