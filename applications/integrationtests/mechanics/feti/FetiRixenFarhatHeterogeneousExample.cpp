@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     structure.SetNumTimeDerivatives(0);
     structure.SetVerboseLevel(5);
     structure.SetShowTime(false);
-    structure.GetLogger().OpenFile("output" + std::to_string(rank));
+    structure.GetLogger().OpenFile("FetiRixenFarhatHeterogeneousExampleLogFile_" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
     std::string meshFile = "FetiRixenFarhatHeterogeneousExample.mesh" + std::to_string(rank);
@@ -169,9 +169,8 @@ int main(int argc, char* argv[])
                           << "*********************************** \n\n";
 
     NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
-    boost::filesystem::path resultPath(boost::filesystem::path(getenv("HOME")).string() +
-                                       std::string("/results/feti/linear_elastic/rixen_heterogeneous_example/") +
-                                       std::to_string(structure.mRank));
+    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() +
+                                       "/FetiRixenFarhatHeterogeneousExampleResultDir_" + std::to_string(rank));
 
     newmarkFeti.SetTimeStep(timeStep);
 
