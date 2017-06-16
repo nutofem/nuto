@@ -16,6 +16,12 @@ foreach(rank RANGE 0 1)
     endforeach()
 endforeach()
 
+foreach(rank RANGE 0 15)
+    foreach(mesh FetiRixenFarhatHeterogeneousExample.mesh)
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}${rank}" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}${rank}")
+    endforeach()
+endforeach()
+
 execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/Feti_compare.msh" "${CMAKE_CURRENT_BINARY_DIR}/Feti_compare.msh")
 
 ########################################################################################################################
@@ -36,7 +42,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(MPIEXEC mpirun)
         add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
-        
+
     foreach(test FetiMultiplicityScaling)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
@@ -47,4 +53,16 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(MPIEXEC mpirun)
         add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
+
+    foreach(test FetiRixenFarhatHeterogeneousExample)
+        add_executable(${test} ${test}.cpp)
+        target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+        if(ENABLE_VISUALIZE)
+            target_link_libraries(${test} NuToVisualize)
+        endif()
+        set(MPIEXEC_NUMPROC_FLAG -np 16)
+        set(MPIEXEC mpirun)
+        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    endforeach()
+
 endif()
