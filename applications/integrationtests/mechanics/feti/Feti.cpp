@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     structure.GetLogger().OpenFile("FetiTestOutputRank_" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "feti_beam_coarse_2_subdomains_24_ele.mesh" + std::to_string(rank);
+    std::string meshFile = "Feti.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);
@@ -244,7 +244,7 @@ std::map<int, VectorXd> ComputeReferenceSolution(int rank)
     structure.GetLogger().OpenFile("FetiTestOutputReferenceSolution_rank" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "feti_beam_coarse_2_subdomains_24_ele_compare.msh";
+    std::string meshFile = "Feti_compare.msh";
     auto eleGroupAndInterpolationTypeList = structure.ImportFromGmsh(meshFile);
 
     const int interpolationTypeId = eleGroupAndInterpolationTypeList[0].second;

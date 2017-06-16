@@ -68,9 +68,9 @@ public:
     ///
     NewmarkFeti(StructureFeti* rStructure)
         : NewmarkDirect(rStructure)
+        , mStructureFeti(rStructure)
         , mNumTotalActiveDofs(rStructure->GetNumTotalActiveDofs())
         , mNumTotalDofs(rStructure->GetNumTotalDofs())
-        , mStructureFeti(rStructure)
     {
     }
 
@@ -1372,6 +1372,10 @@ public:
     {
         mMaxNumFetiIterations = maxNumFetiIterations;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //          MEMBER VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 private:
     StructureFeti* mStructureFeti;
