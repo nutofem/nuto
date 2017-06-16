@@ -1,5 +1,9 @@
 add_subdirectory(uniaxial)
 
+if(ENABLE_MPI)
+    add_subdirectory(feti)
+endif()
+
 if(ENABLE_PYTHON)
     foreach(test
         Brick8N
@@ -30,14 +34,6 @@ foreach(mesh
     execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
 endforeach()
 
-set(MESH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/meshes")
-foreach(rank RANGE 0 3)
-    foreach(mesh
-            FetiMultiplicityScaling.mesh
-            )
-        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}${rank}" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}${rank}")
-    endforeach()
-endforeach()
 
 # generate tests
 foreach(test
@@ -79,59 +75,7 @@ foreach(test
     add_test(integration::mechanics::${test}.cpp ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
 
-    # create symlinks to the necessary mesh files
-    foreach(task
-            0
-            1
-            )
-        execute_process(
-                COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/feti_beam_coarse_2_subdomains_24_ele.mesh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_beam_coarse_2_subdomains_24_ele.mesh${task}"
-        )
-    endforeach()
-
-    execute_process(
-            COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh" "${CMAKE_CURRENT_BINARY_DIR}/feti_beam_coarse_2_subdomains_24_ele_compare.msh"
-    )
-
-    foreach(test
-            Feti
-            FetiGradientDamage
-            )
-        add_executable(${test} ${test}.cpp)
-        target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-        if(ENABLE_VISUALIZE)
-            target_link_libraries(${test} NuToVisualize)
-        endif()
-        if(MUMPS_FOUND)
-            target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-        endif()
-        set(MPIEXEC_NUMPROC_FLAG -np 2)
-        set(MPIEXEC mpirun)
-        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
-
-    endforeach()
-
-endif()
-
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
-
-    foreach(test
-            FetiMultiplicityScaling
-            )
-        add_executable(${test} ${test}.cpp)
-        target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-        if(ENABLE_VISUALIZE)
-            target_link_libraries(${test} NuToVisualize)
-        endif()
-        set(MPIEXEC_NUMPROC_FLAG -np 4)
-        set(MPIEXEC mpirun)
-        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
-    endforeach()
-
-endif()
 
 if(ENABLE_MPI)
     add_executable(MPI MPI.cpp)

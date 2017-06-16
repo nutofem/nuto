@@ -133,12 +133,6 @@ public:
     void AssembleConnectivityMatrix();
 
     ///
-    /// \brief AssembleBoundaryDofIds
-    ///
-    void AssembleBoundaryDofIds();
-
-
-    ///
     /// \brief ApplyVirtualConstraints
     /// \param nodeIdsBoundaries
     /// \param nodeIdsLoads
