@@ -50,7 +50,7 @@ class NewtonRaphson
     using DerivativeType = typename TFunction::DerivativeType;
 
 public:
-    NewtonRaphson(NormType tolerance, unsigned maxIterations = 20)
+    NewtonRaphson(NormType tolerance, int maxIterations = 20)
         : mLineSearch(tolerance)
         , mMaxIterations(maxIterations)
     {
@@ -63,7 +63,7 @@ public:
     template <typename TSolver>
     ResidualType Solve(TFunction f, ResidualType x, TSolver& solver) const
     {
-        unsigned iteration = 0;
+        int iteration = 0;
         ResidualType r = f.R(x);
         f.Info(iteration, x, r);
         while (iteration < mMaxIterations)
@@ -84,7 +84,7 @@ public:
 
 private:
     NuTo::LineSearch<TFunction> mLineSearch;
-    unsigned mMaxIterations;
+    int mMaxIterations;
 };
 
 } /* NuTo */
