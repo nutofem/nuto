@@ -432,7 +432,7 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
         throw MechanicsException(__PRETTY_FUNCTION__, "Structural dimension not supported yet.");
     }
 
-    MPI_Allreduce(&mNumRigidBodyModes, &mNumRigidBodyModesTotal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&mNumRigidBodyModesTotal, &mNumRigidBodyModes, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
     GetLogger() << "Number of rigid body modes:        \t" << mNumRigidBodyModes << "\n\n";
     GetLogger() << "Total number of rigid body modes:  \t" << mNumRigidBodyModesTotal << "\n\n";
