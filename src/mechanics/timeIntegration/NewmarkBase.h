@@ -66,14 +66,13 @@ protected:
 #endif  // ENABLE_SERIALIZATION
 
 
-    //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
-	double mMuDampingMass = 0;
+	double mMuDampingMass = 0; //!< damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
 
-        //NewtonRaphson parameters
+    //NewtonRaphson parameters
     double mToleranceForce = 1.e-6;
 	int mMaxNumIterations = 20;
 
-        //Newmark parameters
+    //Newmark parameters
 	double mBeta = 0.25;
 	double mGamma = 0.5;
 
