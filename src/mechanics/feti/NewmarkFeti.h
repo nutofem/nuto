@@ -805,7 +805,10 @@ public:
         }
         case eFetiPreconditioner::Dirichlet:
         {
+
+
             SparseMatrix H = hessian.ExportToEigenSparseMatrix();
+
 
             std::set<int> internalDofIds;
             for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
@@ -813,28 +816,51 @@ public:
                 internalDofIds.insert(j);
             }
 
-            std::vector<int> lagrangeMultiplierDofIds =
-                    static_cast<StructureFeti*>(mStructure)->CalculateLagrangeMultiplierIds();
+            std::vector<int> lagrangeMultiplierDofIds = mStructureFeti->CalculateLagrangeMultiplierIds();
 
             for (const auto& id : lagrangeMultiplierDofIds)
             {
                 internalDofIds.erase(id);
             }
 
-
             std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
-
 
             SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
             SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
             SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
             SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
 
-            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii(Kii);
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (mStructureFeti->mRank == 0)
+                std::cout << 854 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
+            Kii.makeCompressed();
+            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii;
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (mStructureFeti->mRank == 0)
+                std::cout << 855 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
+
+            luKii.compute(Kii);
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (mStructureFeti->mRank == 0)
+                std::cout << 856 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix KiiInvTimesKib = luKii.solve(Kib);
+            if (mStructureFeti->mRank == 0)
+                std::cout << 860 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix KbiTimesKiiInvTimesKib = Kbi * KiiInvTimesKib;
+            if (mStructureFeti->mRank == 0)
+                std::cout << 864 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix Sbb = Kbb - KbiTimesKiiInvTimesKib;
 
+            if (mStructureFeti->mRank == 0)
+                std::cout << 869 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
             //
             //     | 0  0   |
             // S = | 0  Sbb |
@@ -842,12 +868,32 @@ public:
             SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
 
 
+            if (mStructureFeti->mRank == 0)
+            {
+                std::cout << 878 << "\n";
+
+
+            }
+
+            for (auto const& i : lagrangeMultiplierDofIds)
+                mStructure->GetLogger() << i << "\n";
+
+            MPI_Barrier(MPI_COMM_WORLD);
+
+
             for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
                 for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
                     S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
                             Sbb.coeff(rowId, colId);
-            
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (mStructureFeti->mRank == 0)
+                std::cout << 886 << "\n";
+            MPI_Barrier(MPI_COMM_WORLD);
             mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
+
+            if (mStructureFeti->mRank == 0)
+                std::cout << 891 << "\n";
 
             MPI_Barrier(MPI_COMM_WORLD);
 
@@ -858,6 +904,7 @@ public:
         }
     }
 
+    /// \todo this function should not be a member of NewmarkFeti. Move it somewhere appropriate.
     template <class A, class B>
     Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
                                                  const B& colIds)
@@ -885,8 +932,7 @@ public:
             }
         }
 
-
-        //        mStructure->GetLogger() << "submatrix2 \n" << subMatrix2 << "\n\n";
+        subMatrix.makeCompressed();
 
         return subMatrix;
     }

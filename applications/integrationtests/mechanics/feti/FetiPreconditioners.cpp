@@ -3,7 +3,6 @@
 //
 
 
-
 #include <mpi.h>
 #include <boost/mpi.hpp>
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
@@ -19,9 +18,10 @@
 #include "mechanics/groups/Group.h"
 
 
-
 using std::cout;
 using std::endl;
+using boost::filesystem::path;
+using boost::filesystem::initial_path;
 using namespace NuTo;
 using namespace Constitutive;
 using namespace Interpolation;
@@ -40,7 +40,7 @@ constexpr double lengthX = 60.;
 constexpr double lengthY = 10.;
 const Vector2d coordinateAtBottomLeft(0., 0.);
 const Vector2d coordinateAtBottomRight(lengthX, 0.);
-const Vector2d coordinateAtLoad(0.5*lengthX, lengthY);
+const Vector2d coordinateAtLoad(25, lengthY);
 
 // material
 constexpr double youngsModulus = 123456;
@@ -50,6 +50,22 @@ constexpr double poissonsRatio = 0.2;
 constexpr double timeStep = 1.;
 constexpr double simulationTime = 1.0;
 constexpr double loadFactor = 13.37;
+
+
+void InitializeNewmarkFeti(NewmarkFeti<EigenSolver>& newmarkFeti, const std::string& resultPath, int loadId)
+{
+    Eigen::Matrix2d dispRHS;
+    dispRHS(0, 0) = 0;
+    dispRHS(1, 0) = simulationTime;
+    dispRHS(0, 1) = 0;
+    dispRHS(1, 1) = loadFactor;
+
+    newmarkFeti.SetTimeStep(timeStep);
+    newmarkFeti.SetToleranceIterativeSolver(1.e-8);
+    newmarkFeti.SetTimeDependentLoadCase(loadId, dispRHS);
+    newmarkFeti.SetResultDirectory(resultPath, true);
+    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
+}
 
 int main(int argc, char* argv[])
 {
@@ -70,7 +86,7 @@ int main(int argc, char* argv[])
     meshDimensions.push_back(lengthY);
 
     std::vector<int> numElements;
-    numElements.push_back(20);
+    numElements.push_back(15);
     numElements.push_back(10);
 
     auto importContainer = structure.CreateRectangularMesh2D(meshDimensions, numElements);
@@ -140,51 +156,16 @@ int main(int argc, char* argv[])
     int loadId = structure.LoadCreateNodeGroupForce(&groupNodeLoad, Vector2d::UnitY(), 0.);
 
     structure.GetLogger() << "*********************************** \n"
-                          << "**      visualization            ** \n"
-                          << "*********************************** \n\n";
-
-    structure.AddVisualizationComponent(structure.GroupGetElementsTotal(), eVisualizeWhat::DISPLACEMENTS);
-
-    structure.GetLogger() << "*********************************** \n"
                           << "**      integration scheme       ** \n"
                           << "*********************************** \n\n";
 
-    NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
-
-    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/FetiPreconditionersResultDir_" +
-                                       std::to_string(structure.mRank));
-
-    newmarkFeti.SetTimeStep(timeStep);
-    MPI_Barrier(MPI_COMM_WORLD);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
-    MPI_Barrier(MPI_COMM_WORLD);
-    newmarkFeti.SetToleranceIterativeSolver(1.e-8);
-    Eigen::Matrix2d dispRHS;
-    dispRHS(0, 0) = 0;
-    dispRHS(1, 0) = simulationTime;
-    dispRHS(0, 1) = 0;
-    dispRHS(1, 1) = loadFactor;
-    newmarkFeti.SetTimeDependentLoadCase(loadId, dispRHS);
-
-    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::None);
+    path resultPath(initial_path().string() + "/FetiPreconditionersResultDir_" + std::to_string(structure.mRank));
+    
+    NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+    InitializeNewmarkFeti(newmarkFeti, resultPath.string(), loadId);
+    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::Dirichlet);
     newmarkFeti.Solve(simulationTime);
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::Lumped);
-    newmarkFeti.Solve(2*simulationTime);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::Dirichlet);
-    newmarkFeti.Solve(3*simulationTime);
 
     MPI_Finalize();
 }
