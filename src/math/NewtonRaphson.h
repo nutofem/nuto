@@ -37,6 +37,13 @@ public:
     }
 };
 
+struct DoubleSolver
+{
+    static double Solve (double dr, double r)
+    {
+        return r / dr;
+    }
+};
 
 //! @brief Newton-Raphson algrithm. https://en.wikipedia.org/wiki/Newton%27s_method
 //! finds the root of TFunction::R(x) using the derivative TFunction::DR(x)
@@ -61,7 +68,7 @@ public:
     //! @param x ... start value 
     //! @param solver ... solver that implements ResidualType Solve(DerivativeType, ResidualType)
     template <typename TSolver>
-    ResidualType Solve(TFunction f, ResidualType x, TSolver& solver) const
+    ResidualType Solve(TFunction f, ResidualType x, TSolver&& solver) const
     {
         int iteration = 0;
         ResidualType r = f.R(x);

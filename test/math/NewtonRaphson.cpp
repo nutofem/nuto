@@ -41,22 +41,13 @@ struct FInvalid : F
     }
 };
 
-struct DoubleSolver
-{
-    double Solve (double dr, double r) const
-    {
-        return r / dr;
-    }
-};
-
 BOOST_AUTO_TEST_CASE(NewtonScalar)
 {
     double tolerance = 1.e-10;
     NuTo::NewtonRaphson<F> newton(tolerance, 100);
     F f;
-    DoubleSolver solver;
-    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
-    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, NuTo::DoubleSolver()), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, NuTo::DoubleSolver()), -2, tolerance);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
@@ -64,8 +55,7 @@ BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
     double tolerance = 1.e-10;
     NuTo::NewtonRaphson<FInvalid> newton(tolerance, 10);
     FInvalid f;
-    DoubleSolver solver;
-    BOOST_CHECK_THROW(newton.Solve(f, 0, solver), NuTo::NoConvergence);
+    BOOST_CHECK_THROW(newton.Solve(f, 0, NuTo::DoubleSolver()), NuTo::NoConvergence);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
@@ -73,7 +63,15 @@ BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
     double tolerance = 1.e-10;
     NuTo::NewtonRaphson<F, true> newton(tolerance, 100);
     F f;
-    DoubleSolver solver;
-    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
-    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, solver), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, NuTo::DoubleSolver()), -2, tolerance);
+    BOOST_CHECK_CLOSE_FRACTION(newton.Solve(f, 0, NuTo::DoubleSolver()), -2, tolerance);
 }
+
+BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)
+{
+    double tolerance = 1.e-10;
+    NuTo::NewtonRaphson<FInvalid, true> newton(tolerance, 10);
+    FInvalid f;
+    BOOST_CHECK_THROW(newton.Solve(f, 0, NuTo::DoubleSolver()), NuTo::NoConvergence);
+}
+
