@@ -226,9 +226,9 @@ public:
 
     void SetShowTime(bool showTime);
 protected:
-    //empty private construct required for serialization
 
 #ifdef ENABLE_SERIALIZATION
+    //empty private construct required for serialization
     TimeIntegrationBase() : mLoadVectorStatic(DofStatus()), mLoadVectorTimeDependent(DofStatus()) {};
 
     //empty private construct required for serialization
@@ -240,71 +240,52 @@ protected:
 
     const BlockFullVector<double>& UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0);
 
-    //structure belonging to the time integration scheme
-    StructureBase* mStructure;
+    StructureBase* mStructure; //!< structure belonging to the time integration scheme
 
-    /// \brief Sparse matrix solver
-    std::unique_ptr<SolverBase> mSolver;
+    std::unique_ptr<SolverBase> mSolver; //!< sparse matrix solver
 
-    //time dependent load case number
-    int mTimeDependentLoadCase = -1;
-	//includes for each time step the scalar factor for the load case
+    int mTimeDependentLoadCase = -1; //!< time dependent load case number
+
+    //includes for each time step the scalar factor for the load case
     //the time step is given relative to mTimeDelta
-	Eigen::MatrixXd mTimeDependentLoadFactor;
-    //external load vectors (static and time dependent)
-	NuTo::StructureOutputBlockVector mLoadVectorStatic;
-	NuTo::StructureOutputBlockVector mLoadVectorTimeDependent;
+    Eigen::MatrixXd mTimeDependentLoadFactor;
 
-	//accumulated time (in case several loadings are looked at, one after another)
-	double mTime = 0.;
-    //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
-	bool mAutomaticTimeStepping = false;
-	//initial time step (or at the end this is the last time step used)
-	double mTimeStep = 0.;
+    NuTo::StructureOutputBlockVector mLoadVectorStatic; //!< static external load vector
+    NuTo::StructureOutputBlockVector mLoadVectorTimeDependent; //!< dynamic external load vector
 
-	double mMaxTimeStep = 1.;
-	double mMinTimeStep = 0.;
+    double mTime = 0.; //!< accumulated time (in case several loadings are looked at, one after another)
+    bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
+    double mTimeStep = 0; //!< initial time step (or at the end this is the last time step used)
 
-	//if set to true, store velocities at the nodes in each time step (required when postprocessing velocities)
-	bool mMergeActiveDofValuesOrder1 = true;
-	//if set to true, store acceleration at the nodes in each time step (required when postprocessing accelerations)
-	bool mMergeActiveDofValuesOrder2 = false;
-	//if set to true, checks the coefficient matrix in each sub step
-	bool mCheckCoefficientMatrix = false;
-    //! @brief If set to true, exports a data file for the nodes
-    bool mExportDataFileNodes = true;
+    double mMaxTimeStep = 1.;
+    double mMinTimeStep = 0.;
+
+    bool mMergeActiveDofValuesOrder1 = true; //!< if set to true, store velocities at the nodes in each time step (required when postprocessing velocities)
+    bool mMergeActiveDofValuesOrder2 = false; //!< if set to true, store acceleration at the nodes in each time step (required when postprocessing accelerations)
+    bool mCheckCoefficientMatrix = false; //!< if set to true, checks the coefficient matrix in each sub step
+    bool mExportDataFileNodes = true; //!< if set to true, exports a data file for the nodes
 
     BlockScalar mToleranceResidual;
-	//************************
-	//* PostProcessing Stuff *
-	//************************
-    //result directory
-    std::string mResultDir;
+    //************************
+    //* PostProcessing Stuff *
+    //************************
+    std::string mResultDir; //!< result directory
 
-	//specifies what to plot (displacements, reaction forces, etc.)
-    boost::ptr_map<int,ResultBase> mResultMap;
+    boost::ptr_map<int,ResultBase> mResultMap; //!< specifies what to plot (displacements, reaction forces, etc.)
 
-	//load step number is increased after each converged step (used for successive output)
-    int mLoadStep = 0;
-    //time step number is increased each time a value is added to the result matrices
-    int mTimeStepResult = 0;
-    //time step number is increased each time a vtk file is extracted
-    int mTimeStepVTK = 0;
-	//if the time between the current time step and the previous plotted step is larger than mMaxDeltaTimeStepPlot a vtk plot is performed
-    double mMinTimeStepPlot = 0.;
-    //last time when a vtk file was plotted
-    double mLastTimePlot = -1e99;
-    //iteration count
-    int mIterationCount = 0;
+    int mLoadStep = 0; //!< load step number is increased after each converged step (used for successive output)
+    int mTimeStepResult = 0; //!< time step number is increased each time a value is added to the result matrices
+    int mTimeStepVTK = 0; //!< time step number is increased each time a vtk file is extracted
+    double mMinTimeStepPlot = 0; //!< if the time between the current time step and the previous plotted step is larger than mMaxDeltaTimeStepPlot a vtk plot is performed
+    double mLastTimePlot = -1e99; //!< last time when a vtk file was plotted
+    int mIterationCount = 0; //!< iteration count
 
 
-    // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
-    std::vector<int> mVecGroupNodesReactionForces;
+    std::vector<int> mVecGroupNodesReactionForces; //!< vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
 
     CallbackInterface* mCallback;
 
-    //! @brief Stores wich Dofs are active in which calculation step
-    std::vector<std::set<Node::eDof>> mStepActiveDofs;
+    std::vector<std::set<Node::eDof>> mStepActiveDofs; //!< stores wich Dofs are active in which calculation step
 
     bool mShowTime = true;
 

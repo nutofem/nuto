@@ -151,8 +151,7 @@ protected:
     double mMinLineSearchStep = 0.01;
     bool mPerformLineSearch = true;
 
-    //! @brief Controls the output verbosity (0 = silent)
-    int mVerboseLevel = 1;
+    int mVerboseLevel = 1; //!< controls the output verbosity (0 = silent)
 
 
 };
