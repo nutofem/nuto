@@ -43,7 +43,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
-    foreach(test FetiMultiplicityScaling)
+    foreach(test FetiMultiplicityScaling FetiPreconditioner)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
         if(ENABLE_VISUALIZE)
