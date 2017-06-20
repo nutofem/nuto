@@ -830,72 +830,26 @@ public:
             SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
             SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
 
-            MPI_Barrier(MPI_COMM_WORLD);
-            if (mStructureFeti->mRank == 0)
-                std::cout << 854 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
-            Kii.makeCompressed();
+
             Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii;
-
-            MPI_Barrier(MPI_COMM_WORLD);
-            if (mStructureFeti->mRank == 0)
-                std::cout << 855 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
-
             luKii.compute(Kii);
 
-            MPI_Barrier(MPI_COMM_WORLD);
-            if (mStructureFeti->mRank == 0)
-                std::cout << 856 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix KiiInvTimesKib = luKii.solve(Kib);
-            if (mStructureFeti->mRank == 0)
-                std::cout << 860 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix KbiTimesKiiInvTimesKib = Kbi * KiiInvTimesKib;
-            if (mStructureFeti->mRank == 0)
-                std::cout << 864 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
             SparseMatrix Sbb = Kbb - KbiTimesKiiInvTimesKib;
 
-            if (mStructureFeti->mRank == 0)
-                std::cout << 869 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
             //
             //     | 0  0   |
             // S = | 0  Sbb |
             //
             SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
 
-
-            if (mStructureFeti->mRank == 0)
-            {
-                std::cout << 878 << "\n";
-
-
-            }
-
-            for (auto const& i : lagrangeMultiplierDofIds)
-                mStructure->GetLogger() << i << "\n";
-
-            MPI_Barrier(MPI_COMM_WORLD);
-
-
             for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
                 for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
                     S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
                             Sbb.coeff(rowId, colId);
 
-            MPI_Barrier(MPI_COMM_WORLD);
-            if (mStructureFeti->mRank == 0)
-                std::cout << 886 << "\n";
-            MPI_Barrier(MPI_COMM_WORLD);
             mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
-
-            if (mStructureFeti->mRank == 0)
-                std::cout << 891 << "\n";
-
-            MPI_Barrier(MPI_COMM_WORLD);
 
             break;
         }

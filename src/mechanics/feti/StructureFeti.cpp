@@ -436,7 +436,6 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
 
     GetLogger() << "Number of rigid body modes:        \t" << mNumRigidBodyModes << "\n\n";
     GetLogger() << "Total number of rigid body modes:  \t" << mNumRigidBodyModesTotal << "\n\n";
-    //    GetLogger() << "Rigid body modes:  \n"        << mRigidBodyModes   << "\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
