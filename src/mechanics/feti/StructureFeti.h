@@ -283,18 +283,7 @@ public:
 
         lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
                                         mPrescribedDisplacementDofIds.end());
-
-
-        NodeInfo(10);
-
-        GetLogger() << "Boundary" << "\n";
-        for (const auto& i : mBoundaryDofIds)
-            GetLogger() << i << "\n";
-
-        GetLogger() << "Prescribed" << "\n";
-        for (const auto& i : mPrescribedDisplacementDofIds)
-            GetLogger() << i << "\n";
-
+        
         return lagrangeMultiplierDofIds;
     }
     /// \brief Assembles vector for multiplicity scaling
