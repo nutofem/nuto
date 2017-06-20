@@ -10,12 +10,12 @@ struct F : NuTo::ResidualDerivative<double, double, double>
     {
         return std::fabs(x);
     }
-    
+
     virtual double R(const double& x) override
     {
-        return x * x * x - x + 6; 
+        return x * x * x - x + 6;
     }
-    
+
     virtual double DR(const double& x) override
     {
         return 3. * x * x - 1;
@@ -28,18 +28,33 @@ struct F : NuTo::ResidualDerivative<double, double, double>
     }
 };
 
-struct FInvalid : F 
+struct FInvalid : F
 {
     double R(const double& x) override
     {
-        return x * x + 1; 
+        return x * x + 1;
     }
-    
+
     double DR(const double& x) override
     {
         return 2 * x;
     }
 };
+
+BOOST_AUTO_TEST_CASE(NewtonScalarNew)
+{
+    double tolerance = 1.e-10;
+    auto R = [](double x) { return x * x * x - x + 6; };
+    auto DR = [](double x) { return 3. * x * x - 1; };
+    auto Norm = [](double x) { return std::abs(x); };
+
+    //auto Info = [](auto r) {std::cout << r << std::endl;};
+
+    auto problem = NuTo::DefineNonlinearProblem(R, DR, Norm, tolerance); 
+
+    auto result = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100);
+    BOOST_CHECK_CLOSE_FRACTION(result, -2, tolerance);
+}
 
 BOOST_AUTO_TEST_CASE(NewtonScalar)
 {
@@ -74,4 +89,3 @@ BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)
     FInvalid f;
     BOOST_CHECK_THROW(newton.Solve(f, 0, NuTo::DoubleSolver()), NuTo::NoConvergence);
 }
-

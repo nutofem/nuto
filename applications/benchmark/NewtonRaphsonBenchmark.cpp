@@ -2,6 +2,7 @@
 #include "math/NewtonRaphson.h"
 #include <cmath>
 
+
 struct F : NuTo::ResidualDerivative<double, double, double>
 {
     double Norm(const double& x) override
@@ -21,8 +22,25 @@ struct F : NuTo::ResidualDerivative<double, double, double>
     }
 };
 
+
 constexpr double tolerance = 1.e-10;
 constexpr double runtime = 0.1;
+
+BENCHMARK(Newton, NuToFunction, runner)
+{
+    auto R = [](double x) { return x * x * x - x + 6; };
+    auto DR = [](double x) { return 3. * x * x - 1; };
+    auto Norm = [](double x) { return std::abs(x); };
+
+    auto problem = NuTo::DefineNonlinearProblem(R, DR, Norm, tolerance);
+    while (runner.KeepRunningTime(runtime))
+    {
+        auto x = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100);
+        if (std::fabs(x + 2) > 1.e-10)
+            throw;
+    }
+}
+
 
 BENCHMARK(Newton, hardcode, runner)
 {
@@ -46,6 +64,7 @@ BENCHMARK(Newton, hardcode, runner)
             throw;
     }
 }
+
 
 BENCHMARK(Newton, NuTo, runner)
 {
