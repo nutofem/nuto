@@ -2,37 +2,22 @@
 #include "math/NewtonRaphson.h"
 #include <cmath>
 
-
-struct F : NuTo::ResidualDerivative<double, double, double>
-{
-    double Norm(const double& x) override
-    {
-        return std::fabs(x);
-    }
-    double R(const double& x) override
-    {
-        return x * x * x - x + 6;
-    }
-    double DR(const double& x) override
-    {
-        return 3. * x * x - 1;
-    }
-    void Info(double, const double&, const double&) const override
-    {
-    }
-};
-
-
 constexpr double tolerance = 1.e-10;
-constexpr double runtime = 0.1;
+constexpr double runtime = .1;
 
-BENCHMARK(Newton, NuToFunction, runner)
+auto Problem()
 {
     auto R = [](double x) { return x * x * x - x + 6; };
     auto DR = [](double x) { return 3. * x * x - 1; };
     auto Norm = [](double x) { return std::abs(x); };
+    return NuTo::DefineNonlinearProblem(R, DR, Norm, tolerance); 
+}
 
-    auto problem = NuTo::DefineNonlinearProblem(R, DR, Norm, tolerance);
+BENCHMARK(Newton, NuToFunction, runner)
+{
+    auto problem = Problem();
+    //NuTo::NoLineSearch<decltype(problem), double> linesearch;
+    //const auto linesearch = NuTo::NoLineSearch();
     while (runner.KeepRunningTime(runtime))
     {
         auto x = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100);
@@ -41,6 +26,16 @@ BENCHMARK(Newton, NuToFunction, runner)
     }
 }
 
+BENCHMARK(Newton, NuToFunctionLineSearch, runner)
+{
+    auto problem = Problem();
+    while (runner.KeepRunningTime(runtime))
+    {
+        auto x = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100, NuTo::LineSearch());
+        if (std::fabs(x + 2) > 1.e-10)
+            throw;
+    }
+}
 
 BENCHMARK(Newton, hardcode, runner)
 {
@@ -65,23 +60,3 @@ BENCHMARK(Newton, hardcode, runner)
     }
 }
 
-
-BENCHMARK(Newton, NuTo, runner)
-{
-    F f;
-    NuTo::NewtonRaphson<F> newton(tolerance, 100);
-    while (runner.KeepRunningTime(runtime))
-    {
-        newton.Solve(f, 0, NuTo::DoubleSolver());
-    }
-}
-
-BENCHMARK(Newton, NuToLineSearch, runner)
-{
-    F f;
-    NuTo::NewtonRaphson<F, true> newton(tolerance, 100);
-    while (runner.KeepRunningTime(runtime))
-    {
-        newton.Solve(f, 0, NuTo::DoubleSolver());
-    }
-}

@@ -1,76 +1,67 @@
 #pragma once
-#include <tuple>
 
 namespace NuTo
 {
-
-//! @brief Evaluates the results of a single newton raphson iteration
-//! @Tparam TFunction ... Objects that implements the NuTo::Residual interface
-template <typename TFunction>
+//! @brief Performs the line search algorithm based on the results of a single newton iteration step
 class LineSearch
 {
-    using ResidualType = typename TFunction::ResidualType;
-    using NormType = typename TFunction::NormType;
-
 public:
-    LineSearch(NormType tolerance)
-        : mTolerance(tolerance)
+    //! @brief ctor
+    //! @param maxNumLineSearchSteps ... maximal number of line search steps
+    constexpr LineSearch(int maxNumLineSearchSteps = 6)
+        : mMaxNumLineSearchStep(maxNumLineSearchSteps)
     {
     }
 
-    //! @brief evaluates the inputs based on the TUseLinesearch option
-    //! @tparam TUseLinesearch ... to use or not to use
-    //! @param x ... previous value of the argument x
-    //! @param dx ... delta x from the solve
-    //! @param f ... function that hat R(x) and Norm(R)
-    //! @return ... tuple containing [tolerance reached?, new residual, new x]. These various return values are
-    //! an optimization to avoid duplicate calculations
-    template <bool TUseLinesearch>
-    std::tuple<bool, ResidualType, ResidualType> Evaluate(ResidualType x, ResidualType dx, TFunction f) const
+    //! @brief actual line search implementation
+    //! @remark several return arguments are used to help inlining everything. A lot of time went into actual
+    //! benchmarking. Dunno why, but the a previous version that avoids the return arguments and returns various values
+    //! in a std::tuple was significantly slower (10%) in a benchmark for a scalar function
+    //! @param problem ... class that implements NormFunction, ResidualFunction and mTolerance
+    //! @param r ... residual, return argument, see remark
+    //! @param x ... value of the argument x, return argument, see remark
+    //! @param dx ... dx from the solver
+    template <typename TProblem, typename TX>
+    bool operator()(TProblem&& problem, TX* r, TX* x, TX dx) const
     {
-        if (TUseLinesearch)
-            return With(x, dx, f);
-        else
-            return Without(x, dx, f);
+        double alpha = 1.;
+        int lineSearchStep = 0;
+        const auto x0 = *x;
+        const auto previousNorm = problem.NormFunction(problem.ResidualFunction(*x));
+        while (lineSearchStep < mMaxNumLineSearchStep)
+        {
+            *x = x0 - alpha * dx;
+            *r = problem.ResidualFunction(*x);
+            const auto trialNorm = problem.NormFunction(*r);
+
+            if (trialNorm < problem.mTolerance)
+                return true;
+
+            alpha *= 0.5;
+            lineSearchStep++;
+
+            if (trialNorm < (1. - alpha) * previousNorm)
+                return false;
+        }
+        return false; // max steps reached
     }
 
 private:
+    int mMaxNumLineSearchStep;
+};
 
-    //! @brief calculates the new residual R(x - dx) and compares its norm to the tolerance
-    //! @params see Evaluate()
-    std::tuple<bool, ResidualType, ResidualType> Without(ResidualType x, ResidualType dx, TFunction f) const
+
+//! @brief just a normal continuation of the newton scheme without using line search while keeping the interface of
+//! NuTo::LineSearch
+class NoLineSearch
+{
+public:
+    template <typename TProblem, typename TX>
+    bool operator()(TProblem&& problem, TX* r, TX* x, TX dx) const
     {
-        x -= dx;
-        ResidualType r = f.R(x);
-        return std::make_tuple(f.Norm(r) < mTolerance, r, x);
+        *x -= dx;
+        *r = problem.ResidualFunction(*x);
+        return problem.NormFunction(*r) < problem.mTolerance;
     }
-
-    //! @param actually performs linesearch. Applies the x - alpha*dx with decreasing alpha in (0,1)
-    //! to ensure a quadratic convergence of newton iteration
-    //! @params see Evaluate()
-    std::tuple<bool, ResidualType, ResidualType> With(ResidualType x, ResidualType dx, TFunction f) const
-    {
-        constexpr double minLineSearchStep = 0.01; // 0.5**6 > 0.01 > 0.5**7. Stops after 6 line search steps
-        double alpha = 1.;
-        NormType norm = f.Norm(f.R(x));
-        while (true)
-        {
-            ResidualType xTrial = x - alpha * dx;
-            ResidualType rTrial = f.R(xTrial);
-            NormType normTrial = f.Norm(rTrial);
-
-            if (normTrial < mTolerance)
-                return std::make_tuple(true, rTrial, xTrial);
-
-            alpha *= 0.5;
-            f.Info(alpha, xTrial, rTrial);
-            if (alpha < minLineSearchStep)
-                return std::make_tuple(false, rTrial, xTrial);
-            if (normTrial < (1. - alpha) * norm)
-                return std::make_tuple(false, rTrial, xTrial);
-        }
-    }
-
-    NormType mTolerance;
 };
 } /* NuTo */
