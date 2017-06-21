@@ -283,8 +283,7 @@ public:
 
         lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
                                         mPrescribedDisplacementDofIds.end());
-
-
+        
         return lagrangeMultiplierDofIds;
     }
     /// \brief Assembles vector for multiplicity scaling
