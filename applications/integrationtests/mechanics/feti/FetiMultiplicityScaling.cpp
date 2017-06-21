@@ -5,6 +5,8 @@
 
 #include <ctime>
 #include <chrono>
+#include <mechanics/feti/FetiLumpedPreconditioner.h>
+#include <mechanics/feti/FetiDirichletPreconditioner.h>
 
 #include "mechanics/feti/NewmarkFeti.h"
 #include "mechanics/feti/StructureFeti.h"
@@ -29,7 +31,6 @@ using Eigen::MatrixXd;
 using Eigen::Vector2d;
 using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner;
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 
@@ -155,10 +156,10 @@ int main(int argc, char* argv[])
     newmarkFeti.SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetToleranceIterativeSolver(1.e-8);
     newmarkFeti.SetMaxNumberOfFetiIterations(100);
-
+    newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
     newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::Lumped);
-    newmarkFeti.SetFetiScaling(FetiScaling::None);
+    newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
 
     Eigen::Matrix2d dispRHS;
     dispRHS(0, 0) = 0;

@@ -30,7 +30,6 @@ using Eigen::VectorXd;
 using Eigen::Vector2d;
 using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NewmarkFeti<EigenSolver>::eFetiPreconditioner;
 using FetiIterativeSolver = NewmarkFeti<EigenSolver>::eIterativeSolver;
 
 // geometry
@@ -163,7 +162,6 @@ int main(int argc, char* argv[])
     
     NewmarkFeti<EigenSolver> newmarkFeti(&structure);
     InitializeNewmarkFeti(newmarkFeti, resultPath.string(), loadId);
-    newmarkFeti.SetFetiPreconditioner(FetiPreconditioner::Dirichlet);
     newmarkFeti.Solve(simulationTime);
 
 

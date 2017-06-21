@@ -5,7 +5,10 @@
 #pragma once
 
 #include <mpi.h>
+
 #include "eigen3/Eigen/Sparse"
+
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
 
 namespace NuTo
 {
@@ -14,6 +17,13 @@ class FetiPreconditioner
 public:
 using SparseMatrixType = Eigen::SparseMatrix<double>;
 using VectorType = Eigen::VectorXd;
+
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) = 0;
+
+    virtual void AddScaling(const SparseMatrixType& scalingMatrix)
+    {
+        mLocalPreconditioner = scalingMatrix * mLocalPreconditioner * scalingMatrix;
+    }
 
     //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
     virtual VectorType ApplyOnTheLeft(const VectorType& x)
@@ -24,7 +34,7 @@ using VectorType = Eigen::VectorXd;
         return vec;
     }
 
-private:
+protected:
     SparseMatrixType mLocalPreconditioner;
 };
 }// namespace NuTo

@@ -11,10 +11,26 @@ namespace NuTo
 class FetiLumpedPreconditioner : public FetiPreconditioner
 {
 public:
+
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) override
+    {
+        const int numTotalDofs = B.cols();
+
+        auto K = hessian.JJ.ExportToEigenSparseMatrix();
+        K.conservativeResize(numTotalDofs, numTotalDofs);
+
+        mLocalPreconditioner = B * K * B.transpose();
+    }
+
     //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
     VectorType ApplyOnTheLeft(const VectorType& x) override
     {
-        return x;
+        assert(mLocalPreconditioner.cols() == x.rows());
+
+        VectorType vec = mLocalPreconditioner * x;
+        MPI_Allreduce(MPI_IN_PLACE, vec.data(), vec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        return vec;
     }
 };
 } // namespace NuTo

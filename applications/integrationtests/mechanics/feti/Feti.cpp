@@ -31,7 +31,6 @@ using Eigen::VectorXd;
 using Eigen::Vector2d;
 using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NewmarkFeti<EigenSolver>::eFetiPreconditioner;
 using FetiIterativeSolver = NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NewmarkFeti<EigenSolver>::eFetiScaling;
 

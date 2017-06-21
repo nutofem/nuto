@@ -189,7 +189,6 @@ int main(int argc, char* argv[])
     newmarkFeti.SetToleranceResidual(eDof::NONLOCALEQSTRAIN, toleranceNlEqStrain);
     newmarkFeti.SetToleranceIterativeSolver(1.e-4);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
-    newmarkFeti.SetFetiPreconditioner(NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner::Lumped);
 
     Eigen::Matrix2d dispRHS;
     dispRHS(0, 0) = 0;

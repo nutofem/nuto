@@ -11,6 +11,10 @@ namespace NuTo
 class FetiIdentityPreconditioner : public FetiPreconditioner
 {
 public:
+
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) override
+    {}
+
     //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
     VectorType ApplyOnTheLeft(const VectorType& x) override
     {
