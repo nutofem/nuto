@@ -2,14 +2,27 @@
 
 namespace NuTo
 {
+namespace NewtonRaphson
+{
+
+struct VoidInfo
+{
+    template <typename... TAny>
+    void operator()(TAny...) const
+    {
+    }
+};
+
 //! @brief Performs the line search algorithm based on the results of a single newton iteration step
-class LineSearch
+template <typename TInfo>
+class LineSearchImplementation
 {
 public:
     //! @brief ctor
     //! @param maxNumLineSearchSteps ... maximal number of line search steps
-    constexpr LineSearch(int maxNumLineSearchSteps = 6)
-        : mMaxNumLineSearchStep(maxNumLineSearchSteps)
+    constexpr LineSearchImplementation(TInfo info, int maxNumLineSearchSteps)
+        : mInfo(info)
+        , mMaxNumLineSearchStep(maxNumLineSearchSteps)
     {
     }
 
@@ -34,6 +47,8 @@ public:
             *r = problem.ResidualFunction(*x);
             const auto trialNorm = problem.NormFunction(*r);
 
+            mInfo(lineSearchStep, alpha, trialNorm);
+
             if (trialNorm < problem.mTolerance)
                 return true;
 
@@ -47,9 +62,16 @@ public:
     }
 
 private:
+    TInfo mInfo;
     int mMaxNumLineSearchStep;
 };
 
+
+template <typename TInfo = VoidInfo>
+LineSearchImplementation<TInfo> LineSearch(TInfo info = VoidInfo(), int mMaxNumLineSearchStep = 6)
+{
+    return LineSearchImplementation<TInfo>(info, mMaxNumLineSearchStep);
+}
 
 //! @brief just a normal continuation of the newton scheme without using line search while keeping the interface of
 //! NuTo::LineSearch
@@ -64,4 +86,6 @@ public:
         return problem.NormFunction(*r) < problem.mTolerance;
     }
 };
-} /* NuTo */
+
+}  /* NewtonRaphson */
+}  /* NuTo */

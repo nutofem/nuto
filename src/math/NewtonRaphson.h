@@ -5,6 +5,8 @@
 
 namespace NuTo
 {
+namespace NewtonRaphson
+{
 
 class NoConvergence : public NuTo::MathException
 {
@@ -23,39 +25,44 @@ struct DoubleSolver
     }
 };
 
-template <typename TR, typename TDR, typename TNorm, typename TTol>
-struct NonlinearProblem
+template <typename TR, typename TDR, typename TNorm, typename TTol, typename TInfo>
+struct Problem
 {
     TR ResidualFunction;
     TDR DerivativeFunction;
     TNorm NormFunction;
     TTol mTolerance;
+    TInfo InfoFunction;
 };
 
-template <typename TR, typename TDR, typename TNorm, typename TTol>
-auto DefineNonlinearProblem(TR residual, TDR derivative, TNorm norm, TTol tolerance)
+template <typename TR, typename TDR, typename TNorm, typename TTol, typename TInfo = VoidInfo>
+auto DefineProblem(TR residual, TDR derivative, TNorm norm, TTol tolerance, TInfo info = VoidInfo())
 {
-    return NonlinearProblem<TR, TDR, TNorm, TTol>({residual, derivative, norm, tolerance});
+    return Problem<TR, TDR, TNorm, TTol, TInfo>({residual, derivative, norm, tolerance, info});
 }
 
 
 template <typename TNonlinearProblem, typename TX, typename TSolver, typename TLineSearchAlgorithm = NoLineSearch>
-auto Newton(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterations = 20,
+auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterations = 20,
             TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
 {
     auto x = x0;
     auto r = problem.ResidualFunction(x);
 
     int iteration = 0;
+    problem.InfoFunction(iteration, x, r);
     while (iteration < maxIterations)
     {
         const auto dr = problem.DerivativeFunction(x);
         const auto dx = solver.Solve(dr, r);
 
         ++iteration;
+        problem.InfoFunction(iteration, x, r);
+
         if (lineSearch(problem, &r, &x, dx))
             return x;
     }
     throw NoConvergence(__PRETTY_FUNCTION__, "No convergence after " + std::to_string(iteration) + " iterations.");
 }
+} /* NewtonRaphson */
 } /* NuTo */

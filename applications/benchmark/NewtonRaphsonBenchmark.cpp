@@ -5,33 +5,53 @@
 constexpr double tolerance = 1.e-10;
 constexpr double runtime = .1;
 
-auto Problem()
+auto ValidProblem()
 {
     auto R = [](double x) { return x * x * x - x + 6; };
     auto DR = [](double x) { return 3. * x * x - 1; };
     auto Norm = [](double x) { return std::abs(x); };
-    return NuTo::DefineNonlinearProblem(R, DR, Norm, tolerance); 
+    return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance);
+}
+
+auto InfoProblem()
+{
+    auto R = [](double x) { return x * x * x - x + 6; };
+    auto DR = [](double x) { return 3. * x * x - 1; };
+    auto Norm = [](double x) { return std::abs(x); };
+    auto Info = [](int i, double x, double r) { std::cout << "NewtonStep: " << i << '\t' << x << '\t' << r << '\n'; };
+    return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance, Info);
 }
 
 BENCHMARK(Newton, NuToFunction, runner)
 {
-    auto problem = Problem();
-    //NuTo::NoLineSearch<decltype(problem), double> linesearch;
-    //const auto linesearch = NuTo::NoLineSearch();
+    auto problem = ValidProblem();
     while (runner.KeepRunningTime(runtime))
     {
-        auto x = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100);
+        auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
         if (std::fabs(x + 2) > 1.e-10)
             throw;
     }
 }
 
-BENCHMARK(Newton, NuToFunctionLineSearch, runner)
+BENCHMARK(Newton, NuToFunctionWithInfoToCout, runner)
 {
-    auto problem = Problem();
+    auto problem = InfoProblem();
     while (runner.KeepRunningTime(runtime))
     {
-        auto x = NuTo::Newton(problem, 0., NuTo::DoubleSolver(), 100, NuTo::LineSearch());
+        auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
+        if (std::fabs(x + 2) > 1.e-10)
+            throw;
+    }
+}
+
+
+BENCHMARK(Newton, NuToFunctionLineSearch, runner)
+{
+    auto problem = ValidProblem();
+    while (runner.KeepRunningTime(runtime))
+    {
+        auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100,
+                                            NuTo::NewtonRaphson::LineSearch());
         if (std::fabs(x + 2) > 1.e-10)
             throw;
     }
@@ -59,4 +79,3 @@ BENCHMARK(Newton, hardcode, runner)
             throw;
     }
 }
-
