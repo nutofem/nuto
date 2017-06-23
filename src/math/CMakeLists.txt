@@ -4,6 +4,7 @@ set(NuToMathSources
     EigenSolverArpack.cpp
     Interpolation.cpp
     LinearInterpolation.cpp
+    Polynomial.cpp
     SparseMatrixCSR.cpp
     SparseMatrixCSRGeneral.cpp
     SparseMatrixCSRSymmetric.cpp

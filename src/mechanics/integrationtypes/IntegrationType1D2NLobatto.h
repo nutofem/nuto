@@ -1,4 +1,7 @@
-#pragma once
+// $Id$
+#ifndef IntegrationType1D2NLobatto_H
+#define IntegrationType1D2NLobatto_H
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -8,22 +11,24 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#include <vector>
 #include "mechanics/integrationtypes/IntegrationType1D.h"
 
 namespace NuTo
 {
-//! @author Peter Otto, BAM
-//! @date May 2016
-//! @brief ... integration types in 1D with two nodes Lobatto integration and 6 integration points
-class   IntegrationType1D2NLobatto6Ip : public IntegrationType1D
+//! @author Philipp Mueller, BAM
+//! @date Jun 2017
+//! @brief ... integration types in 1D with Lobatto integration
+class   IntegrationType1D2NLobatto : public IntegrationType1D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
 
 public:
+
     //! @brief constructor
-    IntegrationType1D2NLobatto6Ip();
+    IntegrationType1D2NLobatto(int numIps);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -33,11 +38,11 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType1D2NLobatto6Ip" << std::endl;
+    std::cout << "start serialize IntegrationType1D2NLobatto" << std::endl;
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType1D2NLobatto6Ip" << std::endl;
+    std::cout << "finish serialize IntegrationType1D2NLobatto" << std::endl;
 #endif
     }
 #endif // ENABLE_SERIALIZATION
@@ -66,13 +71,16 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 private:
+    int nIps;
     //! @brief ... integration points coordinates
-    double iPts[6];
+    std::vector<double> iPts;
     //! @brief ... weights for the integration
-    double weights[6];
+    std::vector<double> weights;
 };
 } // namespace
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto6Ip)
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto)
 #endif
+
+#endif //IntegrationType1D2NLobatto_H

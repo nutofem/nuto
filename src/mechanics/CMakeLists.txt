@@ -77,11 +77,8 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NGauss3Ip.cpp
     integrationtypes/IntegrationType1D2NGauss4Ip.cpp
     integrationtypes/IntegrationType1D2NGauss5Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
-    integrationtypes/IntegrationType2D3NGauss13Ip.cpp
+    integrationtypes/IntegrationType1D2NLobatto.cpp
+   integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
     integrationtypes/IntegrationType2D3NGauss3Ip.cpp

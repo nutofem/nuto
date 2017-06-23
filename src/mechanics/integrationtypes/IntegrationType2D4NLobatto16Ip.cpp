@@ -12,13 +12,13 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
 
 
 //! @brief constructor
 NuTo::IntegrationType2D4NLobatto16Ip::IntegrationType2D4NLobatto16Ip()
 {
-    NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
+    NuTo::IntegrationType1D2NLobatto Lobatto1D2N4Ip(4);
     Eigen::VectorXd coordinates1D2N4Ip(4);
     Eigen::VectorXd weights1D2N4Ip(4);
 

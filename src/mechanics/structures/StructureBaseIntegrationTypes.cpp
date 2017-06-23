@@ -9,9 +9,6 @@
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
@@ -83,13 +80,13 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss5Ip();
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto3Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(3);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto4Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(4);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto5Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(5);
             break;
         case NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss13Ip();
