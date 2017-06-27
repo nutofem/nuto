@@ -169,6 +169,17 @@ public:
     //! @param if delete is set, all the content of the directory will be removed
     void SetResultDirectory(std::string rResultDir, bool rDelete = false);
 
+    //! @brief getter for the result directory
+    std::string GetResultDirectory() const
+    {
+        return mResultDir;
+    }
+
+    //! @brief getter for iteration count, initialized to zero, incremented on each iteration.
+    int GetNumIterations() const
+    {
+        return mIterationCount;
+    }
 
     //! @brief sets automatic time stepping (on or off)
     void SetAutomaticTimeStepping(bool rAutomaticTimeStepping)

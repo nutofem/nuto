@@ -243,6 +243,11 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, std::string rDir)
     rTimeIntegration.SetResultDirectory(resultDir, true);
 }
 
+void Info(const NuTo::TimeIntegrationBase& timeIntegration)
+{
+    std::cout << "Solve required " << timeIntegration.GetNumIterations() << " iterations. Result files written to " << timeIntegration.GetResultDirectory() << ".\n";
+}
+
 void Check1D2D3D()
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " Setup");
@@ -388,6 +393,9 @@ void Check1D2D3D()
         BOOST_CHECK_CLOSE_FRACTION(damage1D, damage3D, 1.e-3);
     }
     timer.Reset(std::string(__FUNCTION__) + " Cleanup");
+    Info(myIntegrationScheme1D);
+    Info(myIntegrationScheme2D);
+    Info(myIntegrationScheme3D);
 }
 
 bool useRobinBoundaryElements = true;
