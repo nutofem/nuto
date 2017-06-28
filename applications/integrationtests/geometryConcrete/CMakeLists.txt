@@ -6,7 +6,7 @@ if(ENABLE_GEOMETRYCONCRETE)
             input2D_test.dat
             input3D_test.dat
             )
-            create_symlink("${inputfile}")
+            create_symlink("${inputFile}")
         endforeach()
 
         foreach(test
