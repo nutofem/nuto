@@ -69,7 +69,7 @@ void Run()
     std::cout << "***********************************" << std::endl;
     
     const boost::filesystem::path resultDir(boost::filesystem::initial_path().string() + "/results_interface_elements/");
-    const boost::filesystem::path meshFile(boost::filesystem::initial_path().string() + "/InterfaceElements.msh");
+    const boost::filesystem::path meshFile(boost::filesystem::initial_path().string() + "/meshes/InterfaceElements.msh");
     
     NuTo::Structure myStructure(Parameters::mDimension);
     myStructure.SetVerboseLevel(10);

@@ -21,19 +21,7 @@ if(ENABLE_PYTHON)
     endforeach()
 endif()
 
-# copy meshes
-foreach(mesh
-    2D
-    PlateWithHole
-    InterfaceElements
-    ConstraintsNodeToElementMatrixMesh2d
-    ConstraintsNodeToElementFiberMesh2d
-    ConstraintsNodeToElementMatrixMesh3d
-    ConstraintsNodeToElementFiberMesh3d
-    )
-    execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
-endforeach()
-
+create_symlink("meshes")
 
 # generate tests
 foreach(test

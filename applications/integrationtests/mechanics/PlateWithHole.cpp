@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(PlateWithHole)
     boost::filesystem::path binaryPath = std::string(binary);
     binaryPath.remove_filename();
 
-    std::string meshFile = binaryPath.string() + "/PlateWithHole.msh";
+    std::string meshFile = binaryPath.string() + "/meshes/PlateWithHole.msh";
 
     NuTo::Structure s(2);
     auto meshInfo = s.ImportFromGmsh(meshFile);

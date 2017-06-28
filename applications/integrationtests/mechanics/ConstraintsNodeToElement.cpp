@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE(run2d)
         std::cout << "***********************************" << std::endl;
 
         const boost::filesystem::path resultDir             (boost::filesystem::initial_path().string() + "/results_ConstraintsNodeToElement2d/");
-        const boost::filesystem::path meshFilePathMatrix    (boost::filesystem::initial_path().string() + "/ConstraintsNodeToElementMatrixMesh2d.msh");
-        const boost::filesystem::path meshFilePathFiber     (boost::filesystem::initial_path().string() + "/ConstraintsNodeToElementFiberMesh2d.msh");
+        const boost::filesystem::path meshFilePathMatrix    (boost::filesystem::initial_path().string() + "/meshes/ConstraintsNodeToElementMatrixMesh2d.msh");
+        const boost::filesystem::path meshFilePathFiber     (boost::filesystem::initial_path().string() + "/meshes/ConstraintsNodeToElementFiberMesh2d.msh");
 
         NuTo::Structure s(dimension);
         s.SetVerboseLevel(10);
@@ -265,8 +265,8 @@ BOOST_AUTO_TEST_CASE(run3d)
     std::cout << "***********************************" << std::endl;
 
     const boost::filesystem::path resultDir             (boost::filesystem::initial_path().string() + "/results_ConstraintsNodeToElement3d/");
-    const boost::filesystem::path meshFilePathMatrix(boost::filesystem::initial_path().string() + "/ConstraintsNodeToElementMatrixMesh3d.msh");
-    const boost::filesystem::path meshFilePathFiber(boost::filesystem::initial_path().string() + "/ConstraintsNodeToElementFiberMesh3d.msh");
+    const boost::filesystem::path meshFilePathMatrix(boost::filesystem::initial_path().string() + "/meshes/ConstraintsNodeToElementMatrixMesh3d.msh");
+    const boost::filesystem::path meshFilePathFiber(boost::filesystem::initial_path().string() + "/meshes/ConstraintsNodeToElementFiberMesh3d.msh");
 
 
     NuTo::Structure s(dimension);

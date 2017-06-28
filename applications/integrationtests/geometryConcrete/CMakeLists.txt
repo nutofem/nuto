@@ -6,8 +6,7 @@ if(ENABLE_GEOMETRYCONCRETE)
             input2D_test.dat
             input3D_test.dat
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
-                "${CMAKE_CURRENT_SOURCE_DIR}/${inputFile}" "${CMAKE_CURRENT_BINARY_DIR}/${inputFile}")
+            create_symlink("${inputfile}")
         endforeach()
 
         foreach(test
