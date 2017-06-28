@@ -1,6 +1,4 @@
-// $Id$
-#ifndef IntegrationType1D2NLobatto_H
-#define IntegrationType1D2NLobatto_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -71,16 +69,13 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 private:
-    int nIps;
     //! @brief ... integration points coordinates
-    std::vector<double> iPts;
+    std::vector<double> mIPts;
     //! @brief ... weights for the integration
-    std::vector<double> weights;
+    std::vector<double> mWeights;
 };
 } // namespace
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto)
 #endif
-
-#endif //IntegrationType1D2NLobatto_H

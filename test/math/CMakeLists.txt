@@ -17,6 +17,10 @@ add_unit_test(SparseMatrixCSRVector2General
         math/SparseMatrixCSR.cpp
     )
 
+add_unit_test(Polynomial
+        math/Polynomial.cpp
+    )
+
 
 add_unit_test(NaturalCoordinateMemoizer)
 add_unit_test(Gmres)
