@@ -7,28 +7,30 @@
 #include "visualize/DataArray.h"
 #include "visualize/VisualizeException.h"
 
+using namespace NuTo;
 
-int ToVtkCellType(NuTo::eCellTypes type)
+int ToVtkCellType(eCellTypes type)
 {
     switch (type)
     {
-    case NuTo::eCellTypes::VERTEX:
+    case eCellTypes::VERTEX:
         return 1;
-    case NuTo::eCellTypes::HEXAHEDRON:
+    case eCellTypes::HEXAHEDRON:
         return 12;
-    case NuTo::eCellTypes::LINE:
+    case eCellTypes::LINE:
         return 3;
-    case NuTo::eCellTypes::QUAD:
+    case eCellTypes::QUAD:
         return 9;
-    case NuTo::eCellTypes::TETRAEDER:
+    case eCellTypes::TETRAEDER:
         return 10;
-    case NuTo::eCellTypes::TRIANGLE:
+    case eCellTypes::TRIANGLE:
         return 5;
-    case NuTo::eCellTypes::POLYGON:
+    case eCellTypes::POLYGON:
         return 7;
-    case NuTo::eCellTypes::WEDGE:
+    case eCellTypes::WEDGE:
         return 13;
     }
+    throw VisualizeException(__PRETTY_FUNCTION__, "Unknown cell type");
 }
 
 Eigen::VectorXd TransformData(Eigen::VectorXd data)
@@ -49,7 +51,7 @@ using DataType = float;
 
 //! @brief extracts point data and cell data into a DataArray object
 template <typename TContainer>
-NuTo::Visualize::DataArray<DataType> ExtractData(const TContainer& container, std::string name, int dataIndex)
+Visualize::DataArray<DataType> ExtractData(const TContainer& container, std::string name, int dataIndex)
 {
     const int numComponents = container.begin()->GetData(dataIndex).rows();
 
@@ -62,10 +64,10 @@ NuTo::Visualize::DataArray<DataType> ExtractData(const TContainer& container, st
         for (int i = 0; i < dataItem.size(); ++i)
             data.push_back(dataItem[i]);
     }
-    return NuTo::Visualize::DataArray<DataType>(name, numComponents, std::move(data));
+    return Visualize::DataArray<DataType>(name, numComponents, std::move(data));
 }
 
-NuTo::Visualize::DataArray<DataType> ExtractCoordinates(const std::vector<NuTo::Visualize::Point>& points)
+Visualize::DataArray<DataType> ExtractCoordinates(const std::vector<Visualize::Point>& points)
 {
     std::vector<DataType> data;
     data.reserve(points.size() * 3);
@@ -76,18 +78,18 @@ NuTo::Visualize::DataArray<DataType> ExtractCoordinates(const std::vector<NuTo::
         data.push_back(coordinates[1]);
         data.push_back(coordinates[2]);
     }
-    return NuTo::Visualize::DataArray<DataType>("points", 3, std::move(data));
+    return Visualize::DataArray<DataType>("points", 3, std::move(data));
 }
 
 //! @brief collection of DataArrays for the return type of ExtractCellInfos()
 struct CellInfos
 {
-    NuTo::Visualize::DataArray<unsigned> connectivity;
-    NuTo::Visualize::DataArray<unsigned> offsets;
-    NuTo::Visualize::DataArray<uint8_t> types;
+    Visualize::DataArray<unsigned> connectivity;
+    Visualize::DataArray<unsigned> offsets;
+    Visualize::DataArray<uint8_t> types;
 };
 
-CellInfos ExtractCellInfos(const std::vector<NuTo::Visualize::Cell>& cells)
+CellInfos ExtractCellInfos(const std::vector<Visualize::Cell>& cells)
 {
     std::vector<unsigned> connectivity;
     std::vector<unsigned> offsets;
@@ -105,15 +107,14 @@ CellInfos ExtractCellInfos(const std::vector<NuTo::Visualize::Cell>& cells)
         vtkCellTypes.push_back(cellType);
     }
 
-    NuTo::Visualize::DataArray<unsigned> dataConnectivity("connectivity", 0, std::move(connectivity));
-    NuTo::Visualize::DataArray<unsigned> dataOffsets("offsets", 0, std::move(offsets));
-    NuTo::Visualize::DataArray<uint8_t> dataCellTypes("types", 0, std::move(vtkCellTypes));
+    Visualize::DataArray<unsigned> dataConnectivity("connectivity", 0, std::move(connectivity));
+    Visualize::DataArray<unsigned> dataOffsets("offsets", 0, std::move(offsets));
+    Visualize::DataArray<uint8_t> dataCellTypes("types", 0, std::move(vtkCellTypes));
     return CellInfos({std::move(dataConnectivity), std::move(dataOffsets), std::move(dataCellTypes)});
 }
 
 template <typename TDataTye>
-void WriteDataArray(std::ofstream& file, const NuTo::Visualize::DataArray<TDataTye>& dataArray, bool binary,
-                    int* offset)
+void WriteDataArray(std::ofstream& file, const Visualize::DataArray<TDataTye>& dataArray, bool binary, int* offset)
 {
     if (binary)
         dataArray.WriteBinaryHeader(file, offset);
@@ -121,7 +122,7 @@ void WriteDataArray(std::ofstream& file, const NuTo::Visualize::DataArray<TDataT
         dataArray.WriteAscii(file);
 }
 
-void NuTo::Visualize::XMLWriter::Export(std::string filename, const UnstructuredGrid& unstructuredGrid, bool binary)
+void Visualize::XMLWriter::Export(std::string filename, const UnstructuredGrid& unstructuredGrid, bool binary)
 {
     const auto& points = unstructuredGrid.mPoints;
     const auto& cells = unstructuredGrid.mCells;
@@ -139,7 +140,7 @@ void NuTo::Visualize::XMLWriter::Export(std::string filename, const Unstructured
 
     std::ofstream file(filename);
     if (!file.is_open())
-        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
+        throw VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
     // header #########################################################################################################
     file << R"(<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian")";
     if (binary)
