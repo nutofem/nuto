@@ -5,7 +5,7 @@
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRGeneral.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -13,7 +13,7 @@ namespace NuTo
 template<>
 SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
-    throw MathException(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
+    throw Exception(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
 }
 
 template<>
@@ -55,13 +55,13 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const Eigen::MatrixXd& rF
 template<>
 void SparseMatrixCSRGeneral<int>::Gauss(Eigen::MatrixXi& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
-    throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
 
 template<>
 void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
-    throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
 
 template<>
@@ -107,7 +107,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<in
         }
         if (std::abs(pivot) < tolerance)
         {
-            throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+            throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
 
         // now swap the columns
@@ -133,7 +133,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<in
         {
             if (this->mRowIndex[tmpRow] == this->mRowIndex[tmpRow + 1])
             {
-                throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+                throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
             }
             else
             {
@@ -308,7 +308,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         }
         if (std::abs(pivot) < tolerance)
         {
-            throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+            throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
 
         // now swap the columns
@@ -335,7 +335,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         {
             if (this->mRowIndex[tmpRow] == this->mRowIndex[tmpRow + 1])
             {
-                throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+                throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
             }
             else
             {
@@ -497,7 +497,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 template<>
 void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi &rStart, int &maximumEigenvalue, double tol)
 {
-	throw MathException(__PRETTY_FUNCTION__, "not implemented for this data-type.");
+	throw Exception(__PRETTY_FUNCTION__, "not implemented for this data-type.");
 }
 
 template<>
@@ -553,7 +553,7 @@ void SparseMatrixCSRGeneral<T>::Save ( const std::string &filename, std::string 
         std::ofstream ofs(filename.c_str(), std::ios_base::binary);
         if (!ofs.is_open())
         {
-            throw MathException(__PRETTY_FUNCTION__, "Error opening file.");
+            throw Exception(__PRETTY_FUNCTION__, "Error opening file.");
         }
 
         // write data to file
@@ -578,7 +578,7 @@ void SparseMatrixCSRGeneral<T>::Save ( const std::string &filename, std::string 
         }
         else
         {
-            throw MathException(__PRETTY_FUNCTION__, "File type not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "File type not implemented.");
         }
 
         // close file
@@ -587,15 +587,15 @@ void SparseMatrixCSRGeneral<T>::Save ( const std::string &filename, std::string 
     catch (boost::archive::archive_exception& e)
     {
         std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
-        throw MathException(s);
+        throw Exception(s);
     }
-    catch (MathException& e)
+    catch (Exception& e)
     {
         throw;
     }
     catch (std::exception& e)
     {
-        throw MathException(e.what());
+        throw Exception(e.what());
     }
 }
 
@@ -611,7 +611,7 @@ void SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::str
 		std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
 		if(! ifs.is_open())
 		{
-			throw MathException("[NuTo::SparseMatrixCSRGeneral::Restore] Error opening file.");
+			throw Exception("[NuTo::SparseMatrixCSRGeneral::Restore] Error opening file.");
 		}
 
 		std::string typeIdString;
@@ -621,7 +621,7 @@ void SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::str
 			oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
@@ -631,7 +631,7 @@ void SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::str
 			oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
@@ -641,13 +641,13 @@ void SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::str
 			ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRGeneral::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
 		else
 		{
-			throw MathException ( "[NuTo::SparseMatrixCSRGeneral::Restore]File type not implemented" );
+			throw Exception ( "[NuTo::SparseMatrixCSRGeneral::Restore]File type not implemented" );
 		}
 		// close file
 		ifs.close();
@@ -655,15 +655,15 @@ void SparseMatrixCSRGeneral<T>::Restore ( const std::string &filename,  std::str
 	catch ( boost::archive::archive_exception& e )
 	{
 		std::string s ( std::string ( "[NuTo::SparseMatrixCSRGeneral::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
-		throw MathException ( s );
+		throw Exception ( s );
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 }
 

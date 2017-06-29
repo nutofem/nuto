@@ -5,7 +5,7 @@
 // parent
 #include "optimize/Optimizer.h"
 
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 
 
 namespace NuTo
@@ -93,7 +93,7 @@ public:
 			 mObjectiveType=CONDITION_NUMBER_OF_PRECOND_MATRIX;
 		else
 		{
-			throw OptimizeException("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType "+upperCaseObjectiveType +" does not exist.");
+			throw Exception("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType "+upperCaseObjectiveType +" does not exist.");
 		}
     }
 

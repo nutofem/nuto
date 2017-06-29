@@ -23,6 +23,6 @@ BOOST_AUTO_TEST_CASE(DofTypeMembers)
 
 BOOST_AUTO_TEST_CASE(DofTypeEmpty)
 {
-    BOOST_CHECK_THROW(NuTo::DofType("", 1, 0), NuTo::MechanicsException);
-    BOOST_CHECK_THROW(NuTo::DofType("Something", 0, 0), NuTo::MechanicsException);
+    BOOST_CHECK_THROW(NuTo::DofType("", 1, 0), NuTo::Exception);
+    BOOST_CHECK_THROW(NuTo::DofType("Something", 0, 0), NuTo::Exception);
 }

@@ -127,7 +127,7 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
             globalNodeValues.segment(iNode * numDofsPerNode, mGlobalDimension) = node.Get(Node::eDof::DISPLACEMENTS, rTimeDerivative);
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
+            throw Exception(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
         }
     }
 
@@ -169,7 +169,7 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
             }
                 break;
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
+                throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
@@ -204,7 +204,7 @@ void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector
         }
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 
@@ -221,7 +221,7 @@ int NuTo::Element1DInXD::GetNumDofsPerNode(Node::eDof rDofType) const
     case NuTo::Node::eDof::DISPLACEMENTS:
         return mGlobalDimension;
     default:
-        throw NuTo::MechanicsException("[NuTo::Element1DInXD::GetNumDofsPerNode] dof type not found.");
+        throw NuTo::Exception("[NuTo::Element1DInXD::GetNumDofsPerNode] dof type not found.");
     }
 }
 

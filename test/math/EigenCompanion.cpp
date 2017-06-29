@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include "math/EigenCompanion.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 BOOST_AUTO_TEST_CASE(AppendRows)
 {
@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(AppendRows)
     BOOST_CHECK_EQUAL(top, expected);
 
     Eigen::MatrixXd wrongBottom = Eigen::Matrix<double, 1, 3>::Ones();
-    BOOST_CHECK_THROW(NuTo::EigenCompanion::AppendRows(top, wrongBottom), NuTo::MathException);
+    BOOST_CHECK_THROW(NuTo::EigenCompanion::AppendRows(top, wrongBottom), NuTo::Exception);
 }
 
 BOOST_AUTO_TEST_CASE(ReadWriteFile)

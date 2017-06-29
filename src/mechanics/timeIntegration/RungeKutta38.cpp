@@ -65,7 +65,7 @@ double NuTo::RungeKutta38::GetStageTimeFactor(int rStage)const
 		s = 1.0;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKutta38::GetStageTimeFactor] rStage<4.");
+		throw Exception("[NuTo::RungeKutta38::GetStageTimeFactor] rStage<4.");
 	}
 	return s;
 }
@@ -91,7 +91,7 @@ bool NuTo::RungeKutta38::HasTimeChanged(int rStage)const
 		s = true;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKutta38::HasTimeChanged] rStage<4.");
+		throw Exception("[NuTo::RungeKutta38::HasTimeChanged] rStage<4.");
 	}
 	return s;
 }
@@ -119,7 +119,7 @@ void NuTo::RungeKutta38::GetStageDerivativeFactor(std::vector<double>& rWeight, 
 		rWeight[2] = 1.0;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKutta38::GetStageDerivativeFactor] rStage<4.");
+		throw Exception("[NuTo::RungeKutta38::GetStageDerivativeFactor] rStage<4.");
 	}
 }
 
@@ -143,7 +143,7 @@ double NuTo::RungeKutta38::GetStageWeights(int rStage)const
 		s = 1./8.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKutta38::GetStageWeights] rStage<4.");
+		throw Exception("[NuTo::RungeKutta38::GetStageWeights] rStage<4.");
 	}
 	return s;
 }
@@ -184,7 +184,7 @@ void NuTo::RungeKutta38::Restore (const std::string &filename, std::string rType
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="XML")
@@ -192,7 +192,7 @@ void NuTo::RungeKutta38::Restore (const std::string &filename, std::string rType
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="TEXT")
@@ -200,25 +200,25 @@ void NuTo::RungeKutta38::Restore (const std::string &filename, std::string rType
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKutta38::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else
         {
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[RungeKutta38::Restore]Unhandled exception." );
+        throw Exception ( "[RungeKutta38::Restore]Unhandled exception." );
     }
 }
 
@@ -253,26 +253,26 @@ void NuTo::RungeKutta38::Save (const std::string &filename, std::string rType )c
         }
         else
         {
-            throw MechanicsException ( "[RungeKutta38::Save]File type not implemented." );
+            throw Exception ( "[RungeKutta38::Save]File type not implemented." );
         }
     }
     catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[RungeKutta38::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";
-        throw MathException ( s );
+        throw Exception ( s );
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[RungeKutta38::Save] Unhandled exception." );
+        throw Exception ( "[RungeKutta38::Save] Unhandled exception." );
     }
 }
 

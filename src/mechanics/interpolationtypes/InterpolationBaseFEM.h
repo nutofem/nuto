@@ -9,7 +9,7 @@
 
 #include "math/NaturalCoordinateMemoizer.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -72,17 +72,17 @@ public:
 
     virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
     virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
     virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
+        throw Exception(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
     }
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
@@ -95,7 +95,7 @@ public:
 
     virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
     //********************************************
@@ -106,7 +106,7 @@ public:
 
     Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
     virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
@@ -117,12 +117,12 @@ public:
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
     int GetSurfaceDegree(int rSurface) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
+        throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
 

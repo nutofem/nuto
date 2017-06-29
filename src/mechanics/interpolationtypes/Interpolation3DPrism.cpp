@@ -5,7 +5,7 @@
  *      Author: Thomas Titscher
  */
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -26,7 +26,7 @@ NuTo::eIntegrationType NuTo::Interpolation3DPrism::GetStandardIntegrationType() 
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return NuTo::eIntegrationType::IntegrationType3D6NGauss2x3Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -39,7 +39,7 @@ Eigen::VectorXd NuTo::Interpolation3DPrism::CalculateShapeFunctions(const Eigen:
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::ShapeFunctionsPrismOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -52,7 +52,7 @@ Eigen::MatrixXd NuTo::Interpolation3DPrism::CalculateDerivativeShapeFunctionsNat
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::DerivativeShapeFunctionsPrismOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -65,7 +65,7 @@ Eigen::VectorXd NuTo::Interpolation3DPrism::CalculateNaturalNodeCoordinates(int 
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::NodeCoordinatesPrismOrder2(rNodeIndexDof);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -78,7 +78,7 @@ int NuTo::Interpolation3DPrism::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return 18;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -101,7 +101,7 @@ Eigen::VectorXd NuTo::Interpolation3DPrism::CalculateNaturalSurfaceCoordinates(c
     case 4:
         return Eigen::Vector3d(0.5 + 0.5*beta, 0.5 - 0.5*beta, alpha);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -134,7 +134,7 @@ Eigen::MatrixXd NuTo::Interpolation3DPrism::CalculateDerivativeNaturalSurfaceCoo
         break;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
     }
     return dXidAlpha;
 }
@@ -178,6 +178,6 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation3DPrism::GetSurfaceEdgesCoordina
         surfaceEdgeCoordinates[3] = Eigen::Vector3d(0, 1, 1);
         return surfaceEdgeCoordinates;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "PRISM3D has exactly five surfaces, 0 to 4. You tried to access " + std::to_string(rSurface) + ".");
     }
 }

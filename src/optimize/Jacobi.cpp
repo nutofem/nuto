@@ -177,26 +177,26 @@ void NuTo::Jacobi::Save ( const std::string &filename, std::string rType)const
 		}
 		else
 		{
-			throw MathException ( "[Jacobi::Save]File type not implemented." );
+			throw Exception ( "[Jacobi::Save]File type not implemented." );
 		}
 	}
 	catch ( boost::archive::archive_exception &e )
 	{
 		std::string s ( std::string ( "[Jacobi::Save]File save exception in boost - " ) +std::string ( e.what() ) );
 		std::cout << s << "\n";
-		throw MathException ( s );
+		throw Exception ( s );
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::Save]Unhandled exception." );
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
 	}
 }
 
@@ -217,7 +217,7 @@ void NuTo::Jacobi::Restore ( const std::string &filename,  std::string rType)
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -232,10 +232,10 @@ void NuTo::Jacobi::Restore ( const std::string &filename,  std::string rType)
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -250,10 +250,10 @@ void NuTo::Jacobi::Restore ( const std::string &filename,  std::string rType)
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -265,20 +265,20 @@ void NuTo::Jacobi::Restore ( const std::string &filename,  std::string rType)
         }
 		else
 		{
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    catch ( MathException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MathException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MathException ( "[Matrix::Restore]Unhandled exception." );
+        throw Exception ( "[Matrix::Restore]Unhandled exception." );
     }
 }
 #endif // ENABLE_SERIALIZATION

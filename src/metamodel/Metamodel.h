@@ -8,7 +8,7 @@
 #include <random>
 #include <vector>
 
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include "metamodel/SupportPoints.h"
 
 
@@ -75,7 +75,7 @@ public:
     virtual void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
             Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax)const
     {
-        throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
+        throw Exception("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
 
     //! @brief calculate the sample mean for each support point using original support point coordinates

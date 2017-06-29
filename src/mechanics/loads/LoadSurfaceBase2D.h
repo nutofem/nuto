@@ -10,7 +10,7 @@
 #include <boost/serialization/utility.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>
@@ -126,7 +126,7 @@ public:
                 *tempPtr = reinterpret_cast<ContinuumElement<2>*>(itCast->second);
             }
             else
-                throw MechanicsException("[NuTo::LoadSurfaceBase2D] The Element2D-Pointer could not be updated.");
+                throw Exception("[NuTo::LoadSurfaceBase2D] The Element2D-Pointer could not be updated.");
         }
     }
 #endif // ENABLE_SERIALIZATION

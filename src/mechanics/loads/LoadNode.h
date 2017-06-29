@@ -78,7 +78,7 @@ public:
             *temp = reinterpret_cast<NodeBase*>(it->second);
         }
         else
-            throw MechanicsException("[NuTo::LoadBase::LoadNode] The NodeBase-Pointer could not be updated.");
+            throw Exception("[NuTo::LoadBase::LoadNode] The NodeBase-Pointer could not be updated.");
     }
 #endif // ENABLE_SERIALIZATION
 

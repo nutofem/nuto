@@ -27,6 +27,6 @@ void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure,
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
 	if (dofValues.rows()!=mData.cols())
-		throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
+		throw Exception(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 	mData.row(rTimeStepPlot) = dofValues.transpose();
 }

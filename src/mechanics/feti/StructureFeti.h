@@ -290,10 +290,10 @@ public:
     SparseMatrix MultiplicityScaling()
     {
         if (not(GetDimension() == 2))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
 
         if (GetDofStatus().GetDofTypes().size() > 1)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
 
         // \todo special care needs to be taken for multiple dofs
         const double dim = GetDimension();

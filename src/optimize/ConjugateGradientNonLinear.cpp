@@ -56,7 +56,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
     //check, if callback handler is set
     if (mpCallbackHandler==nullptr)
-        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine mObjective function and derivatives.");
+        throw Exception("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine mObjective function and derivatives.");
 
     // calculate mObjective
     mObjective = mpCallbackHandler->Objective();
@@ -596,26 +596,26 @@ void NuTo::ConjugateGradientNonLinear::Save ( const std::string &filename, std::
 		}
 		else
 		{
-			throw MathException (__PRETTY_FUNCTION__, "File type not implemented." );
+			throw Exception (__PRETTY_FUNCTION__, "File type not implemented." );
 		}
 	}
 	catch ( boost::archive::archive_exception &e )
 	{
 		std::string s( __PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
 		std::cout << s << "\n";
-		throw MathException ( s );
+		throw Exception ( s );
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::Save]Unhandled exception." );
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
 	}
 }
 
@@ -636,7 +636,7 @@ void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  s
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -651,10 +651,10 @@ void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  s
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -669,10 +669,10 @@ void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  s
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
             if ( tmpString!=GetTypeId() )
-                throw OptimizeException ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
              ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
                  & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
@@ -684,20 +684,20 @@ void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  s
         }
 		else
 		{
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    catch ( MathException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MathException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MathException ( "[Matrix::Restore]Unhandled exception." );
+        throw Exception ( "[Matrix::Restore]Unhandled exception." );
     }
 }
 #endif // ENABLE_SERIALIZATION

@@ -365,9 +365,9 @@ void NuTo::NeuralNetwork::Jacobian(Eigen::MatrixXd& rJacobian, std::vector<doubl
         numNeurons+=mvNumNeurons[currentLayer];
 
     if ((int)pO.size()!=numNeurons)
-        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
     if ((int)pA.size()!=numNeurons)
-        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
 
     // set input of input layer
     //memcpy(&(pO[0]),&(mSupportPoints.GetTransformedSupportPointsInput().data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -464,7 +464,7 @@ void NuTo::NeuralNetwork::BuildDerived()
         mNumBiases += mvNumNeurons[currentLayer+1];
         //check if all transfer functions are set
         if (mvTransferFunction[currentLayer]==nullptr)
-            throw MetamodelException("NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
+            throw Exception("NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
     }
 
     int numParameters(mNumWeights+mNumBiases);
@@ -615,7 +615,7 @@ void NuTo::NeuralNetwork::BuildDerived()
                 {
                     vAlphaNew[theAlpha]=1e-12;
                     printf("gammas[%d] = %g (%g/%g)\n",theAlpha,gammas[theAlpha]/sumW2[theAlpha],gammas[theAlpha],sumW2[theAlpha]);
-                    throw NuTo::MetamodelException("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
+                    throw NuTo::Exception("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
                 }
             }
 
@@ -781,7 +781,7 @@ void NuTo::NeuralNetwork::ForwardPropagateInput(std::vector<double>& pA, std::ve
 void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction)
 {
     if (rLayer>=mNumLayers)
-        throw MetamodelException("Metamodel::SetTransferFunction - Layer out of size.");
+        throw Exception("Metamodel::SetTransferFunction - Layer out of size.");
 
     switch (rTransferFunction)
     {
@@ -831,7 +831,7 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
         mvTransferFunction[rLayer] = new PosLinTransferFunction();
         break;
     default:
-        throw MetamodelException("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
+        throw Exception("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
         break;
     }
 }
@@ -840,12 +840,12 @@ void NuTo::NeuralNetwork::SetParameters(const Eigen::MatrixXd& Parameters)
 {
     if (Parameters.rows()!=mNumWeights+mNumBiases)
     {
-        throw MetamodelException("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
+        throw Exception("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
     }
 
     if (Parameters.cols()!=1)
     {
-        throw MetamodelException("Metamodel::SetParameters - Number of Columns is not equal to one.");
+        throw Exception("Metamodel::SetParameters - Number of Columns is not equal to one.");
     }
 
     const double *pCurParameter = Parameters.data();
@@ -898,7 +898,7 @@ void NuTo::NeuralNetwork::SolveTransformed(const Eigen::MatrixXd& rInputCoordina
 
     if (rInputCoordinates.rows()!=dimInput)
     {
-        throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
+        throw Exception("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     rOutputCoordinates.resize(dimOutput, rInputCoordinates.cols());
@@ -920,7 +920,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 {
     if (!mBayesian)
     {
-        throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence interval is only possible with Bayesian neural networks.");
+        throw Exception("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence interval is only possible with Bayesian neural networks.");
     }
     int dimInput = mSupportPoints.GetDimInput(),
     dimOutput = mSupportPoints.GetDimOutput();
@@ -945,7 +945,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 
     if (rInputCoordinates.rows()!=dimInput)
     {
-        throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
+        throw Exception("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     mvCovariance = mvCovarianceInv.inverse();
@@ -1003,7 +1003,7 @@ void NuTo::NeuralNetwork::GetAlphas (Eigen::VectorXd& rAlpha)const
 
     if (mNumLayers==1)
     {
-        throw MetamodelException("Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
+        throw Exception("Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
     }
     //for the first layer, each input has its own alpha
     for (int cntCurrentNeuron=0; cntCurrentNeuron<mvNumNeurons[1]; cntCurrentNeuron++, curBias++)
@@ -1043,7 +1043,7 @@ void NuTo::NeuralNetwork::GetPosInAlphaVector (std::vector<int>& rPosInAlphaVect
 
     if (mNumLayers==1)
     {
-        throw MetamodelException("Metamodel::GetPosInAlphaVector - without hidden layer the definition of alpha is not implemented.");
+        throw Exception("Metamodel::GetPosInAlphaVector - without hidden layer the definition of alpha is not implemented.");
     }
     //for the first layer, each input has its own alpha
     for (int cntCurrentNeuron=0; cntCurrentNeuron<mvNumNeurons[1]; cntCurrentNeuron++, curBias++)
@@ -1156,7 +1156,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
 			oba & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
-				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else if (rType=="XML")
@@ -1164,7 +1164,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
 			oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
-				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else if (rType=="TEXT")
@@ -1172,25 +1172,25 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 			boost::archive::text_iarchive ota ( ifs, std::ios::binary );
 			ota & boost::serialization::make_nvp ( "Object_type", tmpString );
 			if ( tmpString!=GetTypeId() )
-				throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
 		}
 		else
 		{
-			throw MathException ( "[Matrix::Restore]File type not implemented" );
+			throw Exception ( "[Matrix::Restore]File type not implemented" );
 		}
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::Restore]Unhandled exception." );
+		throw Exception ( "[Matrix::Restore]Unhandled exception." );
 	}
 }
 
@@ -1226,26 +1226,26 @@ void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )
 		}
 		else
 		{
-			throw MathException(__PRETTY_FUNCTION__, "File type not implemented." );
+			throw Exception(__PRETTY_FUNCTION__, "File type not implemented." );
 		}
 	}
 	catch ( boost::archive::archive_exception& e )
 	{
 		std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
 		std::cout << s << "\n";
-		throw MathException ( s );
+		throw Exception ( s );
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::Save]Unhandled exception." );
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
 	}
 }
 

@@ -44,52 +44,38 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
 
     for (auto &itElement : *elementGroup)
     {
-        try
+        ElementBase* base = itElement.second;
+        //check if plane element
+        ContinuumElement<TDim>* elementPtr = dynamic_cast<ContinuumElement<TDim>*>(base);
+        const InterpolationType& interpolationType = elementPtr->GetInterpolationType();
+
+        //loop over all surfaces
+        for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
         {
-            ElementBase* base = itElement.second;
-            //check if plane element
-            ContinuumElement<TDim>* elementPtr = dynamic_cast<ContinuumElement<TDim>*>(base);
-            const InterpolationType& interpolationType = elementPtr->GetInterpolationType();
+            bool addSurface = true;
+            surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
+            int numSurfaceNodes = surfaceNodeIndices.rows();
+            surfaceNodes.resize(numSurfaceNodes);
 
-            //loop over all surfaces
-            for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
+            for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
             {
-                bool addSurface = true;
-                surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
-                int numSurfaceNodes = surfaceNodeIndices.rows();
-                surfaceNodes.resize(numSurfaceNodes);
+                surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
+            }
 
-                for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
+            //check, if all surface nodes are in the node group
+            for (auto& surfaceNode : surfaceNodes)
+            {
+                if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
-                }
-
-                //check, if all surface nodes are in the node group
-                for (auto& surfaceNode : surfaceNodes)
-                {
-                    if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
-                    {
-                        // this surface has at least one node that is not in the list, continue
-                        addSurface = false;
-                    }
-                }
-
-                if (addSurface)
-                {
-                    mElementsMaster.push_back(std::make_pair(elementPtr, iSurface));
+                    // this surface has at least one node that is not in the list, continue
+                    addSurface = false;
                 }
             }
-        } catch (NuTo::MechanicsException &e)
-        {
-            std::stringstream ss;
-            ss << itElement.first;
-            e.AddMessage("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
-            throw;
-        } catch (...)
-        {
-            std::stringstream ss;
-            ss << itElement.first;
-            throw NuTo::MechanicsException("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
+
+            if (addSurface)
+            {
+                mElementsMaster.push_back(std::make_pair(elementPtr, iSurface));
+            }
         }
     }
 }
@@ -125,7 +111,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(std::map<Eleme
         case Element::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
 }

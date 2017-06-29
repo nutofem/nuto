@@ -1,7 +1,7 @@
 #include <string>
 
 #include "math/SparseMatrixCSRVector2Symmetric.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -19,7 +19,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std
         std::ofstream ofs(filename.c_str(), std::ios_base::binary);
         if (!ofs.is_open())
         {
-            throw MathException(__PRETTY_FUNCTION__, "Error opening file.");
+            throw Exception(__PRETTY_FUNCTION__, "Error opening file.");
         }
 
         // write data to file
@@ -44,7 +44,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std
         }
         else
         {
-            throw MathException(__PRETTY_FUNCTION__, "File type not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "File type not implemented.");
         }
 
         // close file
@@ -53,15 +53,15 @@ void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std
     catch (boost::archive::archive_exception& e)
     {
         std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
-        throw MathException(s);
+        throw Exception(s);
     }
-    catch (MathException& e)
+    catch (Exception& e)
     {
         throw;
     }
     catch (std::exception& e)
     {
-        throw MathException(e.what());
+        throw Exception(e.what());
     }
 }
 
@@ -77,7 +77,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 		std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
 		if(! ifs.is_open())
 		{
-			throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Error opening file.");
+			throw Exception("[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Error opening file.");
 		}
 
 		std::string typeIdString;
@@ -87,7 +87,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 			oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
@@ -97,7 +97,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 			oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
@@ -107,13 +107,13 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 			ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
 			if ( typeIdString != this->GetTypeId() )
 			{
-				throw MathException ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+				throw Exception ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
 			}
 			ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
 		}
 		else
 		{
-			throw MathException ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore]File type not implemented" );
+			throw Exception ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore]File type not implemented" );
 		}
 		// close file
 		ifs.close();
@@ -121,15 +121,15 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 	catch ( boost::archive::archive_exception& e )
 	{
 		std::string s ( std::string ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
-		throw MathException ( s );
+		throw Exception ( s );
 	}
-	catch ( MathException &e )
+	catch ( Exception &e )
 	{
         throw;
 	}
 	catch ( std::exception &e )
 	{
-		throw MathException ( e.what() );
+		throw Exception ( e.what() );
 	}
 }
 

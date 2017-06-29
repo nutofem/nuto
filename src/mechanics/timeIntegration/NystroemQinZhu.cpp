@@ -53,7 +53,7 @@ double NuTo::NystroemQinZhu::GetStageTimeFactor(int rStage)const
 		s = (3.+sqrt(3.))/6.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::NystroemQinZhu::GetStageTimeFactor] error with stage number.");
+		throw Exception("[NuTo::NystroemQinZhu::GetStageTimeFactor] error with stage number.");
 	}
 	return s;
 }
@@ -76,7 +76,7 @@ bool NuTo::NystroemQinZhu::HasTimeChanged(int rStage)const
 		s = true;
 		break;
 	default:
-		throw MechanicsException("[NuTo::NystroemQinZhu::HasTimeChanged] error with stage number.");
+		throw Exception("[NuTo::NystroemQinZhu::HasTimeChanged] error with stage number.");
 	}
 	return s;
 }
@@ -99,7 +99,7 @@ void NuTo::NystroemQinZhu::GetStageDerivativeFactor(std::vector<double>& rWeight
 		rWeight[1] = sqrt(3.)/6.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::NystroemQinZhu::GetStageDerivativeFactor] error with stage number.");
+		throw Exception("[NuTo::NystroemQinZhu::GetStageDerivativeFactor] error with stage number.");
 	}
 }
 
@@ -120,7 +120,7 @@ double NuTo::NystroemQinZhu::GetStageWeights1(int rStage)const
 		s = (1.+sqrt(3.))/24.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::NystroemQinZhu::GetStageWeights1] error with stage number.");
+		throw Exception("[NuTo::NystroemQinZhu::GetStageWeights1] error with stage number.");
 	}
 	return s;
 }
@@ -142,7 +142,7 @@ double NuTo::NystroemQinZhu::GetStageWeights2(int rStage)const
 		s = (3.+2.*sqrt(3.))/12.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::NystroemQinZhu::GetStageWeights2] error with stage number.");
+		throw Exception("[NuTo::NystroemQinZhu::GetStageWeights2] error with stage number.");
 	}
 	return s;
 }
@@ -195,7 +195,7 @@ void NuTo::NystroemQinZhu::Restore (const std::string &filename, std::string rTy
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="XML")
@@ -203,7 +203,7 @@ void NuTo::NystroemQinZhu::Restore (const std::string &filename, std::string rTy
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="TEXT")
@@ -211,25 +211,25 @@ void NuTo::NystroemQinZhu::Restore (const std::string &filename, std::string rTy
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[NystroemQinZhu::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else
         {
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[NystroemQinZhu::Restore]Unhandled exception." );
+        throw Exception ( "[NystroemQinZhu::Restore]Unhandled exception." );
     }
 }
 
@@ -264,26 +264,26 @@ void NuTo::NystroemQinZhu::Save (const std::string &filename, std::string rType 
         }
         else
         {
-            throw MechanicsException ( "[NystroemQinZhu::Save]File type not implemented." );
+            throw Exception ( "[NystroemQinZhu::Save]File type not implemented." );
         }
     }
     catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[NystroemQinZhu::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";
-        throw MathException ( s );
+        throw Exception ( s );
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[NystroemQinZhu::Save] Unhandled exception." );
+        throw Exception ( "[NystroemQinZhu::Save] Unhandled exception." );
     }
 }
 

@@ -25,7 +25,7 @@ EngineeringStress<3> EngineeringStress<2>::As3D(ePlaneState rPlaneState) const
     stress[5] = (*this)[2];
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     return stress;
@@ -48,7 +48,7 @@ double EngineeringStress<2>::GetVonMisesStress(ePlaneState rPlaneState) const
 {
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     const auto& s = data();

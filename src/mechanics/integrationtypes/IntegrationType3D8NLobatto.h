@@ -47,7 +47,7 @@ namespace NuTo
 	    	break;
 	    }
 	    default:
-	    	throw MechanicsException("[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
+	    	throw Exception("[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
 		}
 
 		assert (integrationType1D->GetNumIntegrationPoints()==T);

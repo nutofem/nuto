@@ -3,7 +3,7 @@
 
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixEnum.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 //! @brief ... constructor
 //! @param rNumRows_ ... number of rows
@@ -94,11 +94,11 @@ void NuTo::SparseMatrixCSRGeneral<T>::AddValue(int rRow, int rColumn, const T& r
     // check bounds
     if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
     {
-        throw MathException("[SparseMatrixCSRGeneral::addEntry] row index is out of bounds.");
+        throw Exception("[SparseMatrixCSRGeneral::addEntry] row index is out of bounds.");
     }
     if (rColumn >= this->mNumColumns || rColumn<0)
     {
-        throw MathException("[SparseMatrixCSRGeneral::addEntry] column index is out of bounds.");
+        throw Exception("[SparseMatrixCSRGeneral::addEntry] column index is out of bounds.");
     }
 
     if (this->mOneBasedIndexing)
@@ -216,11 +216,11 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator+ (cons
 {
 	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
 	}
 	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
 	}
 	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
 	for (int row = 0; row < this->GetNumRows(); row++)
@@ -289,11 +289,11 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator- (cons
 {
 	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+] invalid matrix dimensions.");
 	}
 	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+] both matrices must have zero based indexing.");
 	}
 	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), this->GetNumColumns());
 	for (int row = 0; row < this->GetNumRows(); row++)
@@ -362,11 +362,11 @@ NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator-=  (c
 {
 	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator-=] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator-=] invalid matrix dimensions.");
 	}
 	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator-=] both matrices must have zero based indexing.");
+		throw Exception("[SparseMatrixCSRGeneral::operator-=] both matrices must have zero based indexing.");
 	}
 	for (int row = 0; row < rOther.GetNumRows(); row++)
 	{
@@ -387,11 +387,11 @@ NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::operator+=  (c
 {
 	if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+=] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+=] invalid matrix dimensions.");
 	}
 	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator+=] both matrices must have zero based indexing.");
+		throw Exception("[SparseMatrixCSRGeneral::operator+=] both matrices must have zero based indexing.");
 	}
 	for (int row = 0; row < rOther.GetNumRows(); row++)
 	{
@@ -411,11 +411,11 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (cons
 {
 	if (this->GetNumColumns() != rOther.GetNumRows())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
 	}
 	if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator*] both matrices must have zero based indexing.");
+		throw Exception("[SparseMatrixCSRGeneral::operator*] both matrices must have zero based indexing.");
 	}
 	SparseMatrixCSRGeneral<T> result(this->GetNumRows(), rOther.GetNumColumns());
 
@@ -458,7 +458,7 @@ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>
 
 	if (this->GetNumColumns() != rMatrix.rows())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
+		throw Exception("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");
 	}
 	Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
@@ -513,7 +513,7 @@ Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::
 {
 	if (this->GetNumRows() != rMatrix.rows())
 	{
-		throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
+		throw Exception(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
 	}
 
 	Eigen::Matrix<T, Eigen::Dynamic,Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.cols());
@@ -594,11 +594,11 @@ void NuTo::SparseMatrixCSRGeneral<T>::RemoveEntry(int rRow, int rColumn)
 	// check bounds
 	if (rRow >= (int)this->mRowIndex.size() - 1 || rRow<0)
 	{
-		throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] row index is out of bounds.");
+		throw Exception("[SparseMatrixCSRGeneral::RemoveEntry] row index is out of bounds.");
 	}
 	if (rColumn >= this->mNumColumns || rColumn<0)
 	{
-		throw MathException("[SparseMatrixCSRGeneral::RemoveEntry] column index is out of bounds.");
+		throw Exception("[SparseMatrixCSRGeneral::RemoveEntry] column index is out of bounds.");
 	}
 	if (this->mOneBasedIndexing)
 	{

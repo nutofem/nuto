@@ -1,4 +1,4 @@
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -29,7 +29,7 @@ NuTo::eIntegrationType NuTo::Interpolation1DIGA::GetStandardIntegrationType() co
     case 4: // (4+4+1)/2 = 4.5 ips or (4+4+3)/2 = 5.5 ips lobatto
         return NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(mDegree) + " IGA not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(mDegree) + " IGA not implemented");
     }
 }
 
@@ -123,7 +123,7 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::Vect
         break;
     }
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
         break;
     }
 

@@ -23,7 +23,7 @@ int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure)const
 
     //all nodes have to have the same dimension (number of displacement components)
     if(groupNode.GetNumMembers() < 1)
-    	throw MechanicsException("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
+    	throw Exception("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
 
     return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
 }

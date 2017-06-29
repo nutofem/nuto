@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
 
     // should throw exception, because conductivity is below zero
     conductivity = -1.0;
-    BOOST_CHECK_THROW(setConductivity(conductivity), NuTo::MechanicsException);
+    BOOST_CHECK_THROW(setConductivity(conductivity), NuTo::Exception);
 }
 
 BOOST_AUTO_TEST_CASE(dofCombinations)

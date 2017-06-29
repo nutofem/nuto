@@ -7,7 +7,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include "metamodel/MinMaxTransformation.h"
 
 
@@ -36,11 +36,11 @@ void NuTo::MinMaxTransformation::Build(const Eigen::MatrixXd& rCoordinates)
 {
     if ( rCoordinates.cols() == 0)
 	{
-	    throw MetamodelException("MinMaxTransformation::build - numberOfPoints must be greater than zero");
+	    throw Exception("MinMaxTransformation::build - numberOfPoints must be greater than zero");
 	}
     if ( rCoordinates.rows() <= mCoordinate)
     {
-        throw MetamodelException("MinMaxTransformation::build - coordinate to be transformed is out of range - check the dimension of your Matrix.");
+        throw Exception("MinMaxTransformation::build - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
     const double *theptr = &rCoordinates.data()[mCoordinate];
 	mMin = *theptr;
@@ -62,11 +62,11 @@ void NuTo::MinMaxTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)
 {
     if ( rCoordinates.cols() == 0)
     {
-        throw MetamodelException("MinMaxTransformation::TransformForward - numberOfPoints must be greater than zero");
+        throw Exception("MinMaxTransformation::TransformForward - numberOfPoints must be greater than zero");
     }
     if ( rCoordinates.rows() <= mCoordinate)
     {
-        throw MetamodelException("MinMaxTransformation::TransformForward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
+        throw Exception("MinMaxTransformation::TransformForward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
     double *theptr =  &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
@@ -74,12 +74,12 @@ void NuTo::MinMaxTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)
 	
 	if (deltaBound==0 )
 	{
-        throw MetamodelException("MinMaxTransformation::TransformForward - delta of prescribed bounds equal to zero");
+        throw Exception("MinMaxTransformation::TransformForward - delta of prescribed bounds equal to zero");
 	}
 
 	if (deltaValue==0)
 	{
-        throw MetamodelException("MinMaxTransformation::TransformForward - interval between min and max value of given points has size zero");
+        throw Exception("MinMaxTransformation::TransformForward - interval between min and max value of given points has size zero");
 	}
 
     for (int count=0; count<rCoordinates.cols(); count++,theptr+=rCoordinates.rows())
@@ -92,11 +92,11 @@ void NuTo::MinMaxTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates
 {
     if ( rCoordinates.cols() == 0)
     {
-        throw MetamodelException("MinMaxTransformation::TransformBackward - numberOfPoints must be greater than zero");
+        throw Exception("MinMaxTransformation::TransformBackward - numberOfPoints must be greater than zero");
     }
     if ( rCoordinates.rows() <= mCoordinate)
     {
-        throw MetamodelException("MinMaxTransformation::TransformBackward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
+        throw Exception("MinMaxTransformation::TransformBackward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
     double *theptr =  &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
@@ -104,12 +104,12 @@ void NuTo::MinMaxTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates
 	
 	if (deltaBound==0 )
 	{
-        throw MetamodelException("MinMaxTransformation::TransformBackward - delta of prescribed bounds equal to zero");
+        throw Exception("MinMaxTransformation::TransformBackward - delta of prescribed bounds equal to zero");
 	}
 
 	if (deltaValue==0)
 	{
-        throw MetamodelException("MinMaxTransformation::TransformBackward - interval between min and max value of given points has size zero");
+        throw Exception("MinMaxTransformation::TransformBackward - interval between min and max value of given points has size zero");
 	}
 
     for (int count=0; count<rCoordinates.cols(); count++,theptr+=rCoordinates.rows())

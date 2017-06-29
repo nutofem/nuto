@@ -28,7 +28,7 @@ NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)
     {
         std::stringstream out;
         out << rIdent;
-        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+        throw Exception("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
     }
 }
 
@@ -41,7 +41,7 @@ const NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)const
     {
         std::stringstream out;
         out << rIdent;
-        throw MechanicsException("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
+        throw Exception("[NuTo::Structure::NodeGetNodePtr] Node with id " + out.str() +" does not exist.");
     }
 }
 
@@ -53,7 +53,7 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
         if (it->second==rNode)
             return it->first;
     }
-    throw MechanicsException("[NuTo::Structure::GetNodeId] Node does not exist.");
+    throw Exception("[NuTo::Structure::GetNodeId] Node does not exist.");
 }
 
 const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() const
@@ -161,7 +161,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen
 {
 
     if (rCoordinates.rows() != mDimension)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Dimension of the coordinate vector does not fit the dimension of the structure");
+        throw Exception(__PRETTY_FUNCTION__, "Dimension of the coordinate vector does not fit the dimension of the structure");
 
     NodeBase* nodePtr = nullptr;
 
@@ -197,7 +197,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
     boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
     if(it != this->mNodeMap.end())
     {
-        throw MechanicsException("[NuTo::Structure::NodeCreate] Node already exists.");
+        throw Exception("[NuTo::Structure::NodeCreate] Node already exists.");
     }
 
     std::set<Node::eDof> dofs;
@@ -234,7 +234,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::
     boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
     if(it != this->mNodeMap.end())
     {
-        throw MechanicsException("[NuTo::Structure::NodeCreateDOFs] Node already exists.");
+        throw Exception("[NuTo::Structure::NodeCreateDOFs] Node already exists.");
     }
 
     std::set<Node::eDof> dofs;
@@ -246,17 +246,9 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::
     boost::tokenizer<boost::char_separator<char> > tok(rDOFs, sep);
     for (boost::tokenizer<boost::char_separator<char> >::iterator beg = tok.begin(); beg != tok.end(); ++beg)
     {
-        try
-        {
-            std::string dofString = *beg;
-            Node::eDof dofEnum = Node::DofToEnum(dofString);
-            dofs.insert(dofEnum);
-        }
-        catch (NuTo::MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::Structure::NodeCreate] invalid dof type: " + *beg + ".");
-            throw;
-        }
+        std::string dofString = *beg;
+        Node::eDof dofEnum = Node::DofToEnum(dofString);
+        dofs.insert(dofEnum);
     }
 
     NodeBase* nodePtr = NodePtrCreate(dofs, rCoordinates);
@@ -292,7 +284,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
     boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
     if(it != this->mNodeMap.end())
     {
-        throw MechanicsException("[NuTo::Structure::NodeCreateDOFs] Node already exists.");
+        throw Exception("[NuTo::Structure::NodeCreateDOFs] Node already exists.");
     }
 
     rDOFs.insert(Node::eDof::COORDINATES);
@@ -329,7 +321,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
     boost::ptr_map<int,NodeBase>::iterator itNode = mNodeMap.find(rNodeNumber);
     if (itNode==this->mNodeMap.end())
     {
-        throw MechanicsException("[NuTo::Structure::NodeDelete] Node with the given id does not exist.");
+        throw Exception("[NuTo::Structure::NodeDelete] Node with the given id does not exist.");
     }
     else
     {
@@ -348,7 +340,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
                         std::stringstream outNode, outElement;
                         outNode << rNodeNumber;
                         outElement << (elemIt->first);
-                        throw MechanicsException( "[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " + outElement.str() + ", delete element first");
+                        throw Exception( "[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " + outElement.str() + ", delete element first");
                     }
                 }
             }
@@ -377,33 +369,12 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         return;
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    try
-    {
-        UpdateDofStatus();
-        std::vector<NodeBase*> nodes;
-        this->GetNodesTotal(nodes);
-        GetAssembler().BuildGlobalDofs(nodes);
-        UpdateDofStatus();
-    }
-    catch (MathException& e)
-    {
-        e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error building global dof numbering. \n");
-        if (not rCallerName.empty())
-            e.AddMessage(std::string(" -- was called by [") + rCallerName + "]");
-
-        throw;
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error building global dof numbering. \n");
-        if (not rCallerName.empty())
-            e.AddMessage(std::string(" -- was called by [") + rCallerName + "]");
-
-        throw;
-    }
+    UpdateDofStatus();
+    std::vector<NodeBase*> nodes;
+    this->GetNodesTotal(nodes);
+    GetAssembler().BuildGlobalDofs(nodes);
+    UpdateDofStatus();
 }
-
-
 
 
 NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTimeDerivative) const
@@ -446,10 +417,10 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
     for (auto dofType : DofTypesGetActive())
     {
         if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
-            throw MechanicsException(__PRETTY_FUNCTION__,  "invalid dimension of active dof vector for " + Node::DofToString(dofType));
+            throw Exception(__PRETTY_FUNCTION__,  "invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
         if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
-            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
+            throw Exception(__PRETTY_FUNCTION__, "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
         auto& actDofValues = rActiveDofValues[dofType];
         auto& depDofValues = rDependentDofValues[dofType];
@@ -547,7 +518,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     //find it
     if (mNodeMap.erase(rId)!=1)
     {
-        throw MechanicsException("[NuTo::Structure::NodeExchangePtr] Pointer to node (to exchange) does not exist.");
+        throw Exception("[NuTo::Structure::NodeExchangePtr] Pointer to node (to exchange) does not exist.");
     }
 
     mNodeMap.insert(rId,rNewPtr);

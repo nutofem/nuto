@@ -73,7 +73,7 @@ double NuTo::RungeKuttaCashKarp::GetStageTimeFactor(int rStage)const
 		s = 7./8.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageTimeFactor] rStage<6.");
+		throw Exception("[NuTo::RungeKuttaCashKarp::GetStageTimeFactor] rStage<6.");
 	}
 	return s;
 }
@@ -105,7 +105,7 @@ bool NuTo::RungeKuttaCashKarp::HasTimeChanged(int rStage)const
 		s = true;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKuttaCashKarp::HasTimeChanged] rStage<6.");
+		throw Exception("[NuTo::RungeKuttaCashKarp::HasTimeChanged] rStage<6.");
 	}
 	return s;
 }
@@ -146,7 +146,7 @@ void NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor(std::vector<double>& rWe
 		rWeight[4] = 253./4096.;
 		break;
 	default:
-		throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor] rStage<6.");
+		throw Exception("[NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor] rStage<6.");
 	}
 }
 
@@ -178,7 +178,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage)const
 			s = 0.;
 			break;
 		default:
-			throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+			throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
 		}
 	}
 	if (orderCashKarp==2)
@@ -204,7 +204,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage)const
 			s = 0.;
 			break;
 		default:
-			throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+			throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
 		}
 	}
 	if (orderCashKarp==3)
@@ -230,7 +230,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage)const
 			s = 0.;
 			break;
 		default:
-			throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+			throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
 		}
 	}
 	if (orderCashKarp==4)
@@ -256,7 +256,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage)const
 			s = 0.25;
 			break;
 		default:
-			throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+			throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
 		}
 	}
 	if (orderCashKarp==5)
@@ -282,7 +282,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage)const
 			s = 512./1771.;
 			break;
 		default:
-			throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+			throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
 		}
 	}
 	return s;
@@ -324,7 +324,7 @@ void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string
             boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
             oba & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="XML")
@@ -332,7 +332,7 @@ void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string
             boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
             oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else if (rType=="TEXT")
@@ -340,25 +340,25 @@ void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string
             boost::archive::text_iarchive ota ( ifs, std::ios::binary );
             ota & boost::serialization::make_nvp ( "Object_type", tmpString );
             if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                throw Exception ( "[RungeKuttaCashKarp::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
             ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
         }
         else
         {
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[RungeKuttaCashKarp::Restore]Unhandled exception." );
+        throw Exception ( "[RungeKuttaCashKarp::Restore]Unhandled exception." );
     }
 }
 
@@ -393,26 +393,26 @@ void NuTo::RungeKuttaCashKarp::Save (const std::string &filename, std::string rT
         }
         else
         {
-            throw MechanicsException ( "[RungeKuttaCashKarp::Save]File type not implemented." );
+            throw Exception ( "[RungeKuttaCashKarp::Save]File type not implemented." );
         }
     }
     catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[RungeKuttaCashKarp::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";
-        throw MathException ( s );
+        throw Exception ( s );
     }
-    catch ( MechanicsException &e )
+    catch ( Exception &e )
     {
         throw;
     }
     catch ( std::exception &e )
     {
-        throw MechanicsException ( e.what() );
+        throw Exception ( e.what() );
     }
     catch ( ... )
     {
-        throw MechanicsException ( "[RungeKuttaCashKarp::Save] Unhandled exception." );
+        throw Exception ( "[RungeKuttaCashKarp::Save] Unhandled exception." );
     }
 }
 

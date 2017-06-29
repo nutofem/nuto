@@ -126,7 +126,7 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, ePlaneSt
         strain3D[5] = v[2];
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, 
+        throw Exception(__PRETTY_FUNCTION__, 
                 "Specify section behavior, either PLANE_STRAIN or PLANE_STRESS");
     }
     return strain3D;

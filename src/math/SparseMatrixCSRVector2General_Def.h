@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include "math/SparseMatrixCSRVector2.h"
 
 namespace NuTo

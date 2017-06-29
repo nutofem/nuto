@@ -65,7 +65,7 @@ public:
     			mHarmonicExtrapolationTolerance = *rHarmonicExtrapolationTolerance;
 			}
 		} else {
-			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicConstraint] Set HarmonicConstraint at first!");
+			throw Exception("[NuTo::JumpDirect::SetHarmonicConstraint] Set HarmonicConstraint at first!");
 		}
 
     }
@@ -88,23 +88,23 @@ public:
     void SetHarmonicExcitation(const NuTo::FullMatrix<double,Eigen::Dynamic,3>& rHarmonicFactor)
     {
     	if (mTimeDependentConstraint == -1 && mTimeDependentLoadCase == -1) {
-    		throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation can be only applied to the time dependent constraint or load case.");
+    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation can be only applied to the time dependent constraint or load case.");
 		}
 
     	if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1) {
-    		throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
+    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
 		}
 
     	if (rHarmonicFactor.rows()>1)
-    		throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] currently a monoharmonic constraint is implemented, number of rows must be 1.");
+    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] currently a monoharmonic constraint is implemented, number of rows must be 1.");
 
     	//check, whether frequencies and number of cycles are positive
     	for (int count=0; count<rHarmonicFactor.rows(); count++)
     	{
     		if (rHarmonicFactor(count,1)<=0.)
-    			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the frequency should always be positive.");
+    			throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the frequency should always be positive.");
     		if (rHarmonicFactor(count,2)<=1.)
-    			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] number of cycles should be at least 1.");
+    			throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] number of cycles should be at least 1.");
     	}
 
     	mHarmonicExcitation = true;
@@ -122,7 +122,7 @@ public:
     double CalculateTimeDependentConstraintFactor(double curTime)
     {
     	if (mTimeDependentConstraintFactor.rows()==0)
-    		throw MechanicsException("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
+    		throw Exception("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
 
     	// calculate the end time of the time dependent constraint. After this time the constraint is harmonic
     	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0));
@@ -166,7 +166,7 @@ public:
 			// check that the TimeDependentLoadFactor is set
 			if (mTimeDependentLoadFactor.rows()==0)
 			{
-				throw MechanicsException("[NuTo::JumpDirect::CalculateExternalLoad] TimeDependentLoadFactor not set.");
+				throw Exception("[NuTo::JumpDirect::CalculateExternalLoad] TimeDependentLoadFactor not set.");
 			}
 			// extract excitation parameters
 			double frequency(mHarmonicFactor(0,1));

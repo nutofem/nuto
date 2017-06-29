@@ -33,7 +33,7 @@ int StructureBase::GroupGetId(GroupBase* rGroup) const
         if (it->second == rGroup)
             return it->first;
     }
-    throw MechanicsException("[Structure::GroupGetId] Group does not exist.");
+    throw Exception("[Structure::GroupGetId] Group does not exist.");
 }
 
 int StructureBase::GroupCreate(const std::string& rType)
@@ -59,7 +59,7 @@ int StructureBase::GroupCreate(const std::string& rType)
         }
         else
         {
-            throw MechanicsException("[StructureBase::GroupCreate] Group type not implemented.");
+            throw Exception("[StructureBase::GroupCreate] Group type not implemented.");
         }
     }
     return groupNumber;
@@ -78,7 +78,7 @@ void StructureBase::GroupCreate(int id, eGroupId rEnumType)
 {
     boost::ptr_map<int, GroupBase>::iterator it = mGroupMap.find(id);
     if (it != mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupCreate] Group id already exists.");
+        throw Exception("[StructureBase::GroupCreate] Group id already exists.");
 
     switch (rEnumType)
     {
@@ -89,7 +89,7 @@ void StructureBase::GroupCreate(int id, eGroupId rEnumType)
         mGroupMap.insert(id, new Group<NodeBase>);
         break;
     default:
-        throw MechanicsException("[StructureBase::GroupCreate] Group type not implemented.");
+        throw Exception("[StructureBase::GroupCreate] Group type not implemented.");
     }
 }
 
@@ -101,7 +101,7 @@ void StructureBase::GroupDelete(int rIdentGroup)
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == this->mGroupMap.end())
     {
-        throw MechanicsException("[StructureBase::GroupDelete] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupDelete] Group with the given identifier does not exist.");
     }
     else
     {
@@ -114,9 +114,9 @@ void StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
 {
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupAddNode] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupAddNode] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException("[StructureBase::GroupAddNode] A node can be added only to a node group.");
+        throw Exception("[StructureBase::GroupAddNode] A node can be added only to a node group.");
 
     itGroup->second->AddMember(rIdNode, NodeGetNodePtr(rIdNode));
 }
@@ -125,9 +125,9 @@ void StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
 {
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupAddElement] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupAddElement] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException("[StructureBase::GroupAddElement] An element can be added only to an element group.");
+        throw Exception("[StructureBase::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
 }
@@ -138,14 +138,14 @@ void StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection,
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
     if (rDirection < 0 || rDirection > mDimension)
-        throw MechanicsException("[StructureBase::GroupAddNodeCoordinateRange] The direction is either 0(x),1(Y) or "
+        throw Exception("[StructureBase::GroupAddNodeCoordinateRange] The direction is either 0(x),1(Y) or "
                                  "2(Z) and has to be smaller than the dimension of the structure.");
 
     std::vector<std::pair<int, NodeBase*>> nodeVector;
@@ -187,18 +187,18 @@ void StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,
 
     boost::ptr_map<int, GroupBase>::iterator itGroupOld = mGroupMap.find(rIdentOldGroup);
     if (itGroupOld == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] Old group with the given identifier does not exist.");
     if (itGroupOld->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroupNew = mGroupMap.find(rIdentNewGroup);
     if (itGroupNew == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] New group with the given identifier does not exist.");
     if (itGroupNew->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
 
@@ -222,10 +222,10 @@ void StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bool(Nod
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeFunction] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException("[StructureBase::GroupAddNodeFunction] A node can be added only to a node group.");
+        throw Exception("[StructureBase::GroupAddNodeFunction] A node can be added only to a node group.");
 
     std::vector<std::pair<int, NodeBase*>> nodeVector;
     this->GetNodesTotal(nodeVector);
@@ -244,17 +244,17 @@ void StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCe
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeRadiusRange] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException("[StructureBase::GroupAddNodeRadiusRange] A node can be added only to a node group.");
+        throw Exception("[StructureBase::GroupAddNodeRadiusRange] A node can be added only to a node group.");
 
     if (rCenter.rows() != mDimension || rCenter.cols() != 1)
-        throw MechanicsException("[StructureBase::GroupAddNodeRadiusRange] The center point must have the same number "
+        throw Exception("[StructureBase::GroupAddNodeRadiusRange] The center point must have the same number "
                                  "of coordinates as the dimension of the structure.");
 
     if (rMin > rMax)
-        throw MechanicsException("[StructureBase::GroupAddNodeRadiusRange] The minimum radius must not be larger than "
+        throw Exception("[StructureBase::GroupAddNodeRadiusRange] The minimum radius must not be larger than "
                                  "the maximum radius.");
 
     std::vector<std::pair<int, NodeBase*>> nodeVector;
@@ -290,22 +290,22 @@ void StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::Vect
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCylinderRadiusRange] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupAddNodeCylinderRadiusRange] A node can be added only to a node group.");
 
     if (rCenter.rows() != mDimension || rCenter.cols() != 1)
-        throw MechanicsException("[StructureBase::GroupAddNodeCylinderRadiusRange] The center point must have the same "
+        throw Exception("[StructureBase::GroupAddNodeCylinderRadiusRange] The center point must have the same "
                                  "number of coordinates as the dimension of the structure.");
 
     if (rDirection.rows() != mDimension || rDirection.cols() != 1)
-        throw MechanicsException("[StructureBase::GroupAddNodeCylinderRadiusRange] The direction point must have the "
+        throw Exception("[StructureBase::GroupAddNodeCylinderRadiusRange] The direction point must have the "
                                  "same number of coordinates as the dimension of the structure.");
 
     if (rMin > rMax)
-        throw MechanicsException("[StructureBase::GroupAddNodeCylinderRadiusRange] The minimum radius must not be "
+        throw Exception("[StructureBase::GroupAddNodeCylinderRadiusRange] The minimum radius must not be "
                                  "larger than the maximum radius.");
 
     switch (mDimension)
@@ -373,7 +373,7 @@ void StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::Vect
         break;
     }
     default:
-        throw MechanicsException("[StructureBase::GroupAddNodeCylinderRadiusRange] Only implemented for 2D and 3D.");
+        throw Exception("[StructureBase::GroupAddNodeCylinderRadiusRange] Only implemented for 2D and 3D.");
     }
 }
 
@@ -457,23 +457,14 @@ void StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rElementGrou
     for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end();
          ++itElement)
     {
-        try
+        ElementBase* element = itElement->second;
+        for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
         {
-            ElementBase* element = itElement->second;
-            for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
-            {
-                NodeBase* nodePtr = element->GetNode(iNode);
-                int nodeId = nodeToId[nodePtr];
+            NodeBase* nodePtr = element->GetNode(iNode);
+            int nodeId = nodeToId[nodePtr];
 
-                if (not nodeGroup->Contain(nodeId))
-                    nodeGroup->AddMember(nodeId, nodePtr);
-            }
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[StructureBase::GroupAddNodesFromElements] Error for element " +
-                         std::to_string(ElementGetId(itElement->second)) + ".");
-            throw;
+            if (not nodeGroup->Contain(nodeId))
+                nodeGroup->AddMember(nodeId, nodePtr);
         }
     }
 }
@@ -493,10 +484,10 @@ int StructureBase::GroupUnion(int rIdentGroup1, int rIdentGroup2)
 
     boost::ptr_map<int, GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupUnite] Group1 with the given identifier does not exist.");
     boost::ptr_map<int, GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupUnite] Group2 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupUnite] Group2 with the given identifier does not exist.");
 
     int groupNumber = GetUnusedId(mGroupMap);
     // insert the member
@@ -511,10 +502,10 @@ int StructureBase::GroupDifference(int rIdentGroup1, int rIdentGroup2)
 
     boost::ptr_map<int, GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupDifference] Group1 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupDifference] Group1 with the given identifier does not exist.");
     boost::ptr_map<int, GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupDifference] Group2 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupDifference] Group2 with the given identifier does not exist.");
 
     int groupNumber = GetUnusedId(mGroupMap);
 
@@ -529,10 +520,10 @@ int StructureBase::GroupIntersection(int rIdentGroup1, int rIdentGroup2)
 
     boost::ptr_map<int, GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupIntersection] Group1 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupIntersection] Group1 with the given identifier does not exist.");
     boost::ptr_map<int, GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2 == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupIntersection] Group2 with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupIntersection] Group2 with the given identifier does not exist.");
 
     int groupNumber = GetUnusedId(mGroupMap);
     // insert the member
@@ -544,11 +535,11 @@ int StructureBase::GroupSymmetricDifference(int rIdentGroup1, int rIdentGroup2)
 {
     boost::ptr_map<int, GroupBase>::iterator itGroup1 = mGroupMap.find(rIdentGroup1);
     if (itGroup1 == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupSymmetricDifference] Group1 with the given identifier does not exist.");
     boost::ptr_map<int, GroupBase>::iterator itGroup2 = mGroupMap.find(rIdentGroup2);
     if (itGroup2 == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::GroupSymmetricDifference] Group2 with the given identifier does not exist.");
 
     int groupNumber = GetUnusedId(mGroupMap);
@@ -563,7 +554,7 @@ int StructureBase::GroupGetNumMembers(int rIdentGroup) const
 
     boost::ptr_map<int, GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
 
     return (*itGroup).second->GetNumMembers();
 }
@@ -574,7 +565,7 @@ std::vector<int> StructureBase::GroupGetMemberIds(int rIdentGroup) const
 
     boost::ptr_map<int, GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupGetNumMembers] Group with the given identifier does not exist.");
 
     return (*itGroup).second->GetMemberIds();
 }
@@ -585,7 +576,7 @@ bool StructureBase::GroupContainsMember(int rIdentGroup, int rMember) const
 
     boost::ptr_map<int, GroupBase>::const_iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException("[StructureBase::GroupContains] Group with the given identifier does not exist.");
+        throw Exception("[StructureBase::GroupContains] Group with the given identifier does not exist.");
 
     return (*itGroup).second->Contain(rMember);
 }
@@ -596,7 +587,7 @@ GroupBase* StructureBase::GroupGetGroupPtr(int rIdent)
     boost::ptr_map<int, GroupBase>::iterator it = this->mGroupMap.find(rIdent);
     if (it == this->mGroupMap.end())
     {
-        throw MechanicsException("[StructureBase::GroupGetGroupPtr] Group does not exist.");
+        throw Exception("[StructureBase::GroupGetGroupPtr] Group does not exist.");
     }
     return it->second;
 }
@@ -607,7 +598,7 @@ const GroupBase* StructureBase::GroupGetGroupPtr(int rIdent) const
     boost::ptr_map<int, GroupBase>::const_iterator it = this->mGroupMap.find(rIdent);
     if (it == this->mGroupMap.end())
     {
-        throw MechanicsException("[StructureBase::GroupGetGroupPtr] Group does not exist.");
+        throw Exception("[StructureBase::GroupGetGroupPtr] Group does not exist.");
     }
     return it->second;
 }

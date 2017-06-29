@@ -1,6 +1,6 @@
 #include <eigen3/Eigen/Core>
 #include "base/Timer.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -11,7 +11,7 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
     // set default solver parameters
     // this->orderingType = 2;          // set ordering to METIS
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -24,7 +24,7 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
     Solution(rRhs, rSolution);
     CleanUp();
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -39,12 +39,12 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	// check rMatrix
 	if (rMatrix.HasZeroBasedIndexing())
 	{
-		throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
 	}
 	int matrixDimension = rMatrix.GetNumRows();
 	if (matrixDimension != rMatrix.GetNumColumns())
 	{
-		throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix is not square.");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "matrix is not square.");
 	}
 	const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
 	// extract rows from rowIndex
@@ -116,7 +116,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	dmumps_c(&mSolver);
 	if (mSolver.info[0] < 0)
 	{
-		throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 	}
 
 	timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
@@ -134,10 +134,10 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 		default:
 			break;
 		}
-		throw NuTo::MathException(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 	}
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -154,7 +154,7 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const Eigen::VectorXd& rRhs, Eigen:
 	if (mSolver.n != rRhs.rows())
 	{
 		std::cout << "n " << mSolver.n <<  "dim rhs " << rRhs.rows() << std::endl;
-		throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
 	}
 	int rhsNumColumns = rRhs.cols();
 
@@ -170,11 +170,11 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const Eigen::VectorXd& rRhs, Eigen:
 		dmumps_c(&mSolver);
 		if (mSolver.info[0] < 0)
 		{
-			throw NuTo::MathException(__PRETTY_FUNCTION__, "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+			throw NuTo::Exception(__PRETTY_FUNCTION__, "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 		}
 	}
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -189,10 +189,10 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -204,12 +204,12 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix is not square.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "matrix is not square.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     // extract rows from rowIndex
@@ -230,7 +230,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     // check Schur Indices
     if (matrixDimension < rSchurIndices.rows())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of schur indices vector.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid dimension of schur indices vector.");
     }
 
     // add indices by one, since the external interface always counts from zero and mumps requires one based indexing
@@ -291,7 +291,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
     timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
@@ -302,7 +302,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     if (mSolver.info[0] < 0)
     {
         std::cout << "mSolver info " << mSolver.info[0] << "\n";
-    	throw NuTo::MathException(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
 
@@ -312,7 +312,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
 
     rSchurComplement = rSchurComplementTranspose.transpose();
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
@@ -332,6 +332,6 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
         return "unknown error code";
     }
 #else // HAVE_MUMPS
-    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }

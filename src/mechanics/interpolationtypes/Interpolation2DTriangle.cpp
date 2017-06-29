@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -30,7 +30,7 @@ NuTo::eIntegrationType NuTo::Interpolation2DTriangle::GetStandardIntegrationType
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -47,7 +47,7 @@ Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(const Eig
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::ShapeFunctionsTriangleOrder4(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -64,7 +64,7 @@ Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctions
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder4(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -81,7 +81,7 @@ Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalNodeCoordinates(i
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::NodeCoordinatesTriangleOrder4(rNodeIndexDof);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -99,7 +99,7 @@ int NuTo::Interpolation2DTriangle::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return 15;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -115,7 +115,7 @@ Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinate
     case 2:
         return Eigen::Vector2d(0, .5 * (1 - rNaturalSurfaceCoordinates(0)));
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -131,6 +131,6 @@ Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurface
     case 2:
         return Eigen::Vector2d(0, -.5);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
     }
 }

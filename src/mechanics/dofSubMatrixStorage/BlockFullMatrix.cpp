@@ -1,6 +1,6 @@
 #include <sstream>
 #include <iostream>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -132,7 +132,7 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
                 s << "[" << __PRETTY_FUNCTION__ << "] Submatrix row dimension mismatch. \n";
                 s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numRows << " rows \n";
                 s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has " << numRowsReference << " rows \n";
-                throw MechanicsException(s.str());
+                throw Exception(s.str());
             }
         }
     }
@@ -152,7 +152,7 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
                 s << "[" << __PRETTY_FUNCTION__ << "] Submatrix column dimension mismatch. \n";
                 s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numCols << " columns \n";
                 s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has " << numColsReference << " columns \n";
-                throw MechanicsException(s.str());
+                throw Exception(s.str());
             }
         }
     }

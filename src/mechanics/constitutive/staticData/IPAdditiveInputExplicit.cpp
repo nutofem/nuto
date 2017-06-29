@@ -146,7 +146,7 @@ void IPAdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputMap& 
                         assert(itOutput.second->GetIsCalculated() == false &&
                                 "Currently, it is not supported that multiple sublaws write to the same derivative.");
                         if(sublawOutput->second->GetIsCalculated() == false)
-                            throw MechanicsException(__PRETTY_FUNCTION__,
+                            throw Exception(__PRETTY_FUNCTION__,
                                     "The value " + Constitutive::OutputToString(sublawOutput->first) +
                                     ", which is necessary to determine " +
                                     Constitutive::OutputToString(itOutput.first) +

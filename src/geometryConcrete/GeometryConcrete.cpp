@@ -49,21 +49,7 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
 
     double timeEnd = .5*rParticleDistance/mAbsoluteGrowthRate;
 
-    try
-    {
-        handler.Simulate(mNumEventsMax, timeEnd, mSecondsWallTimeMax, mSecondsPrint, mInitialTimeBarrier);
-    } catch (NuTo::Exception& e)
-    {
-        e.AddMessage("The simulation stopped with an exception. \n");
-        if (mContinueOnException)
-        {
-            std::cout << e.ErrorMessage() << "\n but I'll continue.";
-        }
-        else
-        {
-            throw;
-        }
-    }
+    handler.Simulate(mNumEventsMax, timeEnd, mSecondsWallTimeMax, mSecondsPrint, mInitialTimeBarrier);
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen)<< std::endl;
 
@@ -94,21 +80,7 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
 
     double timeEnd = (1. / (1. - rShrinkage) - 1.) / mRelativeGrowthRate;
 
-    try
-    {
-        handler.Simulate(mNumEventsMax, timeEnd, mSecondsWallTimeMax, mSecondsPrint, mInitialTimeBarrier);
-    } catch (NuTo::Exception& e)
-    {
-        e.AddMessage("The simulation failed. \n");
-        if (mContinueOnException)
-        {
-            std::cout << e.ErrorMessage() << "\n but I'll continue.";
-        }
-        else
-        {
-            throw;
-        }
-    }
+    handler.Simulate(mNumEventsMax, timeEnd, mSecondsWallTimeMax, mSecondsPrint, mInitialTimeBarrier);
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen)<< std::endl;
 

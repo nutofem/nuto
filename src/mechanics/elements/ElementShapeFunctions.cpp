@@ -6,7 +6,7 @@
  */
 #include <cassert>
 #include "mechanics/elements/ElementShapeFunctions.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -21,7 +21,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder1(int rNodeIndex)
     case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
     case 1: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..1)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..1)");
     }
 }
 
@@ -46,7 +46,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder2(int rNodeIndex)
     case 1: return Eigen::Matrix<double, 1, 1>::Constant(0.);
     case 2: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..2)");
     }
 }
 
@@ -79,7 +79,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder3(int rNodeIndex)
     case 2: return Eigen::Matrix<double, 1, 1>::Constant(1. / 3.);
     case 3: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..3)");
     }
 }
 
@@ -121,7 +121,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder4(int rNodeIndex)
     case 3: return Eigen::Matrix<double, 1, 1>::Constant(0.5);
     case 4: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..4)");
     }
 }
 
@@ -165,7 +165,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder3(int rNodeIndex)
     case 2: return Eigen::Matrix<double, 1, 1>::Constant(0.447213595499957928);
     case 3: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..3)");
     }
 }
 
@@ -206,7 +206,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder4(int rNodeIndex)
     case 3: return Eigen::Matrix<double, 1, 1>::Constant(0.654653670707977087);
     case 4: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..4)");
     }
 }
 
@@ -254,7 +254,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder1(int rNodeIndex)
     case 1: return Eigen::Vector2d(1.0, 0.0);
     case 2: return Eigen::Vector2d(0.0, 1.0);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
+        throw Exception(__PRETTY_FUNCTION__, "node index out of range (0..2)");
     }
 }
 
@@ -294,7 +294,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder2(int rNodeIndex)
     case 4: return Eigen::Vector2d(0.5, 0.5);
     case 5: return Eigen::Vector2d(0.0, 0.5);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..5)");
     }
 }
 
@@ -356,7 +356,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder3(int rNodeIndex)
     case 8: return Eigen::Vector2d(1. / 3., 2. / 3.);
     case 9: return Eigen::Vector2d(0., 1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..9)");
     }
 }
 
@@ -441,7 +441,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder4(int rNodeIndex)
     case 13: return Eigen::Vector2d(.25, .75);
     case 14: return Eigen::Vector2d(.00, 1.00);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..14)");
     }
 }
 
@@ -536,7 +536,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder1(int rNodeIndex)
     case 2: return Eigen::Vector2d(1.0, 1.0);
     case 3: return Eigen::Vector2d(-1.0, 1.0);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..3)");
     }
 }
 
@@ -581,7 +581,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder2(int rNodeIndex)
     case 6: return Eigen::Vector2d(0.0, 1.0);
     case 7: return Eigen::Vector2d(-1.0, 0.0);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..7)");
     }
 }
 
@@ -835,7 +835,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder1(int rNodeIndex)
     case 2: return Eigen::Vector3d(0.0, 1.0, 0.0);
     case 3: return Eigen::Vector3d(0.0, 0.0, 1.0);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..4)");
     }
 }
 
@@ -887,7 +887,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder2(int rNodeIndex)
     case 8: return Eigen::Vector3d(0.0, 0.5, 0.5);
     case 9: return Eigen::Vector3d(0.5, 0.0, 0.5);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..9)");
     }
 
 }
@@ -996,7 +996,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex)
     case 6: return Eigen::Vector3d(1., 1., 1.);
     case 7: return Eigen::Vector3d(-1., 1., 1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..7)");
     }
 }
 
@@ -1104,7 +1104,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
     case 19: return Eigen::Vector3d(-1., 0., 1.);
 
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..19)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..19)");
     }
 }
 
@@ -1547,7 +1547,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder1(int rNodeIndex)
     case 4: return Eigen::Vector3d( 1., 0.,  1.);
     case 5: return Eigen::Vector3d( 0., 1.,  1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..5)");
     }
 }
 
@@ -1627,7 +1627,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex)
     case 17: return Eigen::Vector3d( .5, .5,  0.);
 
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..14)");
     }
 }
 
@@ -1762,7 +1762,7 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder1(int rNodeIndex)
     case 2: return Eigen::Vector2d(+1, +1);
     case 3: return Eigen::Vector2d(-1, +1);
     default:
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
     }
 }
 
@@ -1791,7 +1791,7 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex)
     case 4: return Eigen::Vector2d(0, +1);
     case 5: return Eigen::Vector2d(-1, +1);
     default:
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..5)");
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..5)");
     }
 }
 
@@ -1828,7 +1828,7 @@ Eigen::MatrixXd NodeCoordinatesInterface3dOrder1(int rNodeIndex)
     case 2: return Eigen::Vector3d(+1, +1, 0);
     case 3: return Eigen::Vector3d(-1, +1, 0);
     default:
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
     }
 }
 
@@ -2003,7 +2003,7 @@ Eigen::VectorXd BasisFunctionsRat(double rParameter, int spanIdx, int rDegree, c
 Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
 {
     if(der < 0 || der > 2)
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t der greater than 2 not implemented, possible values 0,1,2!");
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t der greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, rParameter, spanIdx, rDegree, rKnots);
 
@@ -2089,7 +2089,7 @@ Eigen::MatrixXd BasisFunctionsAndDerivatives2DRat(int                    der,
                                                   const Eigen::MatrixXd &rWeights)
 {
     if(der < 0 || der >2)
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd xBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(0), rSpanIdx(0), rDegree(0), rKnotsX);
     Eigen::MatrixXd yBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(1), rSpanIdx(1), rDegree(1), rKnotsY);

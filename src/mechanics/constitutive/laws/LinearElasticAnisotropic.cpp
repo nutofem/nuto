@@ -13,7 +13,7 @@
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -93,7 +93,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticAnisotropic::GetConstitutiveInputs
         default:
             continue;
 //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-//            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+//            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
         }
     }
 
@@ -243,7 +243,7 @@ double NuTo::LinearElasticAnisotropic::GetParameterDouble(NuTo::Constitutive::eC
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -257,7 +257,7 @@ void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eCon
         this->mRho = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -278,7 +278,7 @@ Eigen::VectorXd NuTo::LinearElasticAnisotropic::GetParameterFullVectorDouble(NuT
         return stiffnessFlattened;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -299,7 +299,7 @@ void NuTo::LinearElasticAnisotropic::SetParameterFullVectorDouble(NuTo::Constitu
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -346,7 +346,7 @@ void NuTo::LinearElasticAnisotropic::CheckParameters() const
     for (int ii=0; ii<6; ii++) {
         for (int jj=0; jj<ii; jj++) {
             if (mStiffness(ii,jj) != mStiffness(jj,ii)) {
-                throw NuTo::MechanicsException(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
+                throw NuTo::Exception(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
                                                + std::to_string(ii) + "," + std::to_string(jj) + "] = "
                                                + std::to_string(mStiffness(ii,jj)) + "\n"
                                                + "(entry [" + std::to_string(jj) + "," + std::to_string(ii) + "] = "

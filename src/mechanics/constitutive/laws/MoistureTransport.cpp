@@ -629,7 +629,7 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
 
             if (staticData.GetCurrentJunctionPoint() < 0)
             {
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error calculating sorption curve - junction point < 0");
+                throw NuTo::Exception(__PRETTY_FUNCTION__, "Error calculating sorption curve - junction point < 0");
             }
         }
     }
@@ -638,27 +638,27 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
 void NuTo::MoistureTransport::CheckValueInLimits(std::string rCallingFunction, double rValue, double rLimLower, double rLimUpper) const
 {
     if(rValue < rLimLower || rValue > rLimUpper)
-        throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") exceeds limits ["+std::to_string(rLimLower)+","+std::to_string(rLimUpper)+"]");
+        throw NuTo::Exception(rCallingFunction,"Value(" + std::to_string(rValue) + ") exceeds limits ["+std::to_string(rLimLower)+","+std::to_string(rLimUpper)+"]");
 }
 
 void NuTo::MoistureTransport::CheckValuePositive(std::string rCallingFunction, double rValue, bool rCountZeroAsPositive) const
 {
     if (rValue<0.0 || (!rCountZeroAsPositive && rValue <= 0.0))
-        throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") not positive");
+        throw NuTo::Exception(rCallingFunction,"Value(" + std::to_string(rValue) + ") not positive");
 }
 
 void NuTo::MoistureTransport::CheckSorptionCoefficients(std::string rCallingFunction, Eigen::VectorXd rSorptionCoefficients) const
 {
     if (rSorptionCoefficients.rows() < 3 || rSorptionCoefficients.rows() > 4)
-        throw NuTo::MechanicsException(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+        throw NuTo::Exception(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
     if (rSorptionCoefficients.rows() == 4 && rSorptionCoefficients(0)!=0.0)
-        throw NuTo::MechanicsException(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
+        throw NuTo::Exception(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
     for(int i =0; i<rSorptionCoefficients.rows(); ++i)
     {
         if(rSorptionCoefficients(i)!=0)
             return;
     }
-    throw NuTo::MechanicsException(rCallingFunction,"All sorption coefficients are zero!");
+    throw NuTo::Exception(rCallingFunction,"All sorption coefficients are zero!");
 }
 
 
@@ -832,7 +832,7 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         default:
             continue;
 //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-//            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+//            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
         }
     }
 
@@ -858,7 +858,7 @@ bool NuTo::MoistureTransport::GetParameterBool(NuTo::Constitutive::eConstitutive
         return mEnableSorptionHysteresis;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+        throw Exception(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
 
     }
 }
@@ -880,7 +880,7 @@ void NuTo::MoistureTransport::SetParameterBool(NuTo::Constitutive::eConstitutive
         return;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+        throw Exception(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
 
     }
 }
@@ -929,7 +929,7 @@ double NuTo::MoistureTransport::GetParameterDouble(NuTo::Constitutive::eConstitu
         return mDensitySaturatedWaterVapor;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+        throw Exception(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1001,7 +1001,7 @@ void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstituti
         return;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+        throw Exception(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1019,7 +1019,7 @@ Eigen::VectorXd NuTo::MoistureTransport::GetParameterFullVectorDouble(NuTo::Cons
         return mDesorptionCoeff;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+        throw Exception(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1050,7 +1050,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                     break;
                 }
                 default:
-                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    throw NuTo::Exception(__PRETTY_FUNCTION__,"The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
 
             }
             return;
@@ -1076,14 +1076,14 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                 }
                 default:
                 {
-                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    throw NuTo::Exception(__PRETTY_FUNCTION__,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
                 }
             }
             return;
         }
         default:
         {
-            throw MechanicsException(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
+            throw Exception(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1100,7 +1100,7 @@ double                                      NuTo::MoistureTransport::GetEquilibr
 
     if (rCoeffs.rows() < 3 || rCoeffs.rows() > 4)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the sorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,"The vector for the sorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
     }
     if (rCoeffs.rows() == 3)
     {
@@ -1113,7 +1113,7 @@ double                                      NuTo::MoistureTransport::GetEquilibr
     {
         if (rCoeffs(0)!=0.0)
         {
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The first desorption coefficients (constant term) has to be zero");
+            throw NuTo::Exception(__PRETTY_FUNCTION__,"The first desorption coefficients (constant term) has to be zero");
         }
         return rCoeffs(1) * rRelativeHumidity +
                rCoeffs(2) * rRelativeHumidity * rRelativeHumidity +

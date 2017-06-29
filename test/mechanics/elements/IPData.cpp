@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
     NuTo::IntegrationType1D2NGauss2Ip integrationType2;
 
     NuTo::IPData data(integrationType1);
-    BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(0), NuTo::MechanicsException);
+    BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(0), NuTo::Exception);
     BOOST_CHECK(not data.HasConstitutiveLawAssigned(0));
 
     data.SetConstitutiveLaw(law);

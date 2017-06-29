@@ -8,7 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <iostream>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/sections/SectionPlane.h"
 
 using namespace NuTo;

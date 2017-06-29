@@ -1,6 +1,6 @@
 // $Id$
 #include <assert.h>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeScalarSource.h"
@@ -36,11 +36,11 @@ void NuTo::LoadNodeScalarSource::AddLoadToGlobalSubVectors(StructureOutputBlockV
     }
     catch (std::bad_cast & b)
     {
-        throw MechanicsException("[NuTo::LoadNodeScalarSource::AddLoad] Node has no electric potential or its dimension is not equivalent to the 1.");
+        throw Exception("[NuTo::LoadNodeScalarSource::AddLoad] Node has no electric potential or its dimension is not equivalent to the 1.");
     }
     catch (...)
     {
-        throw MechanicsException("[NuTo::LoadNodeScalarSource::AddLoad] Error getting potential of node (unspecified exception).");
+        throw Exception("[NuTo::LoadNodeScalarSource::AddLoad] Error getting potential of node (unspecified exception).");
     }
 }
 

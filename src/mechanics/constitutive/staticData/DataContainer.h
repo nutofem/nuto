@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <vector>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 
@@ -46,7 +46,7 @@ public:
     Type& GetData(unsigned int rTimeStep = 0)
     {
         if (rTimeStep > GetNumData() - 1)
-            throw MechanicsException(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) + ". Number of allocated time steps: " + std::to_string(GetNumData()));
+            throw Exception(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) + ". Number of allocated time steps: " + std::to_string(GetNumData()));
         return mData.at(rTimeStep);
     }
 
@@ -54,7 +54,7 @@ public:
     void AllocateAdditionalData(unsigned int rNumAdditionalData)
     {
         if (mData.empty())
-            throw MechanicsException(__PRETTY_FUNCTION__, "No static data allocated yet.");
+            throw Exception(__PRETTY_FUNCTION__, "No static data allocated yet.");
 
         for (unsigned int i = 0; i < rNumAdditionalData; ++i)
         {
@@ -67,7 +67,7 @@ public:
     void ShiftToPast()
     {
         if (GetNumData() < 2)
-            throw MechanicsException(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");
+            throw Exception(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");
 
         mData.pop_back();
         mData.insert(mData.begin(), mData[0]);
@@ -77,7 +77,7 @@ public:
     void ShiftToFuture()
     {
         if (GetNumData() < 2)
-            throw MechanicsException(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");
+            throw Exception(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");
 
         mData.erase(mData.begin());
         mData.push_back(mData.back());

@@ -30,7 +30,7 @@ NuTo::ConstitutiveIOMap<IOEnum>& NuTo::ConstitutiveIOMap<IOEnum>::Merge(const Co
         // i.e. you can't change the order of the two conditionals
         if (this->count(it.first) != 0 and this->at(it.first) != nullptr)
         {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Duplicate key in constitutive maps.");
+            throw Exception(__PRETTY_FUNCTION__, "Duplicate key in constitutive maps.");
         }
         // if the map has no object associated with that key, simply add the key
         if (it.second == nullptr)

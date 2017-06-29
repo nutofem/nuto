@@ -57,7 +57,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
 
     if (mMaxTimeStep == 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
+        throw Exception(__PRETTY_FUNCTION__, "max time step is set to zero.");
 
     double curTime = mTime;
     double timeStep = mTimeStep;
@@ -78,7 +78,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         {
             if (mStepActiveDofs[i].empty())
             {
-                throw MechanicsException(__PRETTY_FUNCTION__,
+                throw Exception(__PRETTY_FUNCTION__,
                                          "Calculation step " + std::to_string(i) + " has no active DOFs.");
             }
         }
@@ -207,7 +207,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     if (mToleranceResidual < residual_mod.CalculateInfNorm())
     {
         mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-        throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+        throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
 
     CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
@@ -240,7 +240,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
 
         if (timeStep < mMinTimeStep)
-            throw MechanicsException(__PRETTY_FUNCTION__,
+            throw Exception(__PRETTY_FUNCTION__,
                                      "time step is smaller than minimum - no convergence is obtained.");
 
         // calculate Delta_BRhs and Delta_ExtForce
@@ -442,13 +442,13 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     {
                         mStructure->GetLogger() << "The minimal time step achieved, the actual time step is "
                                                 << timeStep << "\n";
-                        throw MechanicsException(__PRETTY_FUNCTION__,
+                        throw Exception(__PRETTY_FUNCTION__,
                                                  "No convergence, the current time step is too short.");
                     }
                 }
                 else
                 {
-                    throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
+                    throw Exception(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
                                                                   "iterations, either use automatic time stepping, "
                                                                   "reduce the time step or the minimal line search cut "
                                                                   "back factor.");
@@ -465,10 +465,10 @@ void NuTo::NewmarkDirect::CalculateMuDampingMatrix(StructureOutputBlockMatrix& r
     if (mMuDampingMass != 0)
     {
         if (mStructure->GetNumTimeDerivatives() < 2)
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+            throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                                      "] MuDampingMass requires a mass matrix (2nd time derivatives).");
         //        if (!rHessian2.IsConstant())
-        //            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a
+        //            throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a
         //            constant mass matrix.");
 
         rHessian_dt1.Resize(mStructure->GetDofStatus().GetNumActiveDofsMap(),

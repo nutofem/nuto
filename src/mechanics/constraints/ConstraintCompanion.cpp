@@ -22,7 +22,7 @@ std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> di
             // TODO This check is not meaningful at the moment, since this method returns the
             // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
             // if you try to constrain the Z component of the temperature. Which would be wrong.
-            throw MechanicsException(__PRETTY_FUNCTION__, "Dimension mismatch");
+            throw Exception(__PRETTY_FUNCTION__, "Dimension mismatch");
 
         eqs.push_back(Equation({Term(node, component, 1)}, rhs));
     }
@@ -54,7 +54,7 @@ Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction 
         // TODO This check is not meaningful at the moment, since this method returns the
         // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
         // if you try to constrain the Z component of the temperature. Which would be wrong.
-        throw MechanicsException(__PRETTY_FUNCTION__, "Dimension mismatch");
+        throw Exception(__PRETTY_FUNCTION__, "Dimension mismatch");
 
     direction.normalize();
     Equation e(rhs);

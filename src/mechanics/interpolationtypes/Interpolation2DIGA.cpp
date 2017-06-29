@@ -1,4 +1,4 @@
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -37,13 +37,13 @@ NuTo::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() co
     case 3: // (3+3+1)/2 = 3.5 ips or (3+3+3)/2 = 4.5 ips lobatto
         return NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(std::max(mDegree(0), mDegree(1))) + " IGA not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(std::max(mDegree(0), mDegree(1))) + " IGA not implemented");
     }
 }
 
 std::vector<Eigen::VectorXd> NuTo::Interpolation2DIGA::GetSurfaceEdgesCoordinates(int rSurface) const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented yet");
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented yet");
 }
 
 /*******************/
@@ -174,7 +174,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::MatrixNDerivativeIGA(const Eigen::Vect
         break;
     }
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
         break;
     }
 
@@ -212,7 +212,7 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinatesIGA(
     case 3:
         return Eigen::Vector2d(rKnots(0,0), rNaturalSurfaceCoordinates(0));
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -230,7 +230,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeNaturalSurfaceCoord
     case 3:
         return Eigen::Vector2d(0, -1);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -272,7 +272,7 @@ Eigen::VectorXi NuTo::Interpolation2DIGA::GetSurfaceNodeIndices(int rSurface) co
         return indices;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -289,7 +289,7 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
     case 3:
         return mDegree(1);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 

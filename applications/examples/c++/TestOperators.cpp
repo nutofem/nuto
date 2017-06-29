@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
@@ -85,7 +85,7 @@ int main()
         std::cout << "* operator" << std::endl;
         std::cout << (A_sy * 0.1).ConvertToFullMatrix() << std::endl;
     }
-    catch (NuTo::MathException& e)
+    catch (NuTo::Exception& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
     }
