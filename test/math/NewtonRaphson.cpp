@@ -33,13 +33,17 @@ BOOST_AUTO_TEST_CASE(NewtonScalar)
 
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
 {
-    auto result = Solve(ValidProblem(), 0., DoubleSolver(), 20, LineSearch());
+    int numIterations = 0;
+    auto result = Solve(ValidProblem(), 0., DoubleSolver(), 20, LineSearch(), &numIterations);
     BOOST_CHECK_CLOSE_FRACTION(result, -2, tolerance);
+    BOOST_CHECK(numIterations > 0);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 {
-    BOOST_CHECK_THROW(Solve(InvalidProblem(), 0., DoubleSolver(), 100), NoConvergence);
+    int numIterations = 0;
+    BOOST_CHECK_THROW(Solve(InvalidProblem(), 0., DoubleSolver(), 100, NoLineSearch(), &numIterations), NoConvergence);
+    BOOST_CHECK_EQUAL(numIterations, 100);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)

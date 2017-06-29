@@ -76,8 +76,14 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterat
         problem.InfoFunction(iteration, x, r);
 
         if (lineSearch(problem, &r, &x, dx))
+        {
+            if (numIterations)
+                *numIterations = iteration;
             return x;
+        }
     }
+    if (numIterations)
+        *numIterations = iteration;
     throw NoConvergence(__PRETTY_FUNCTION__, "No convergence after " + std::to_string(iteration) + " iterations.");
 }
 } /* NewtonRaphson */
