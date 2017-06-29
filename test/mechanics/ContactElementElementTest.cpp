@@ -18,7 +18,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGaussNIp.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"

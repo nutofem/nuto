@@ -316,12 +316,10 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                     if (mCheckCoefficientMatrix)    mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
 
-
                     // ******************************************************
                     delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
                     delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
                     // ******************************************************
-
 
                     //perform a line search
                     double alpha = 1;

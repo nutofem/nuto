@@ -23,15 +23,11 @@ public:
 
     //! Contact element
     Eigen::MatrixXd mMortarGapMatrix;
-    Eigen::MatrixXd mMortarGapMatrixPenalty;
     Eigen::VectorXd mMortarGapVector;
-    Eigen::VectorXd mJacobianbyWeight;
+    Eigen::MatrixXd mMortarGapMatrixPenalty;
+    Eigen::VectorXd mMortarNodalPressure;
+    Eigen::VectorXd mJacobianByWeight;
     Eigen::VectorXd mShapeFunctionsIntegral;
-    std::unordered_map<int, int> mMappingGlobal2LocalDof;
-
-    Eigen::MatrixXd mHessianContribution;
-    Eigen::MatrixXd mForceContribution;
-
 
     // Misc
     // --------------------------------------------------------------------------------------------

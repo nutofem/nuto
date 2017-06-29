@@ -496,10 +496,16 @@ public:
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
 
     virtual const ContinuumContactElement<2,1>& AsContinuumContactElement21() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,1>.");}
 
     virtual ContinuumContactElement<2,1>& AsContinuumContactElement21()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,1>.");}
+
+    virtual const ContinuumContactElement<2,2>& AsContinuumContactElement22() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,2>.");}
+
+    virtual ContinuumContactElement<2,2>& AsContinuumContactElement22()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,2>.");}
 
 
 #ifdef ENABLE_SERIALIZATION

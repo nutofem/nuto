@@ -65,32 +65,48 @@ public:
 
     void AddGlobalRowDofsElementMaster(int row, int col) const;
 
-    void GapMatrixMortar(EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                         const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId);
+    void GapMatrixMortarContact(EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId,
+                                bool rAssembleForce,
+                                bool rAssembleDerivative);
 
-    void CalculateElementOutputsLocal(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput,
-                                      EvaluateDataContinuumBoundary<TDimSlave>                       &rData,
-                                      const std::pair<const ContinuumElement<TDimSlave> *, int>      &rElementAndSurfaceId);
+    void GapMatrixMortarTying(const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId,
+                              Eigen::MatrixXd &D,
+                              Eigen::MatrixXd &M);
 
-    void CalculateElementOutputsLocalForce(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
-    void CalculateElementOutputsLocalForceDerivative(const EvaluateDataContinuumBoundary<TDimSlave> &rData, const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId);
-    void CalculateElementOutputsLocalGapMatrix(const EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                                               const std::pair<const ContinuumElement<TDimSlave>*,int>  &rElementAndSurfaceId,
-                                               Eigen::MatrixXd& D, Eigen::MatrixXd& M);
+    const ContinuumElementIGA<TDimMaster>* Projection(const Eigen::VectorXd &coordinatesIPSlave,
+                                                      const std::pair<const ContinuumElement<TDimSlave>*, int> &rElementAndSurfaceId,
+                                                      Eigen::VectorXd &rProjectionVector,
+                                                      Eigen::VectorXd &rParameterMinMaster);
 
-    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput) const;
+    void AssembleMortarTypeContact(const EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                   const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId,
+                                   bool rAssembleGapVector = true);
 
+    void AssembleNonMortarTypeContact(const EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                      const std::pair<const ContinuumElement<TDimSlave>*,int> &rElementAndSurfaceId,
+                                      bool rAssembleForce, bool rAssembleDerivative);
 
-    void CalculateElementOutputContactForce(BlockFullVector<double>& rInternalGradient) const;
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput);
 
-    void CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix) const;
+    void CalculateElementOutputContactForce(BlockFullVector<double>& rInternalGradient);
+
+    void CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix);
 
     void GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum,
                                                            Eigen::VectorXd &rCoordinatesIPSlave,
                                                            Eigen::VectorXd &rParamsIPSlave,
                                                            const std::pair<const ContinuumElement<TDimSlave> *, int> &rElementAndSurfaceId) const;
 
-    void ComputeGapMatrix(Eigen::MatrixXd& D, Eigen::MatrixXd& M);
+    void ComputeIndicesForElementAssemblyMeshTying(const std::pair<const ContinuumElement<TDimSlave> *, int> &rSlaveElementAndSurfaceId,
+                                                   const ContinuumElement<TDimMaster> *rMasterElement,
+                                                   Eigen::VectorXi &indicesNodesSlave,
+                                                   Eigen::VectorXi &indicesNodesMaster);
+
+    void ComputeMeshTyingMatrix(Eigen::MatrixXd& D,
+                                Eigen::MatrixXd& M,
+                                std::unordered_map<int, int> &mappingGlobal2LocalSlaveNode,
+                                std::unordered_map<int, int> &mappingGlobal2LocalMasterNode);
 
     const ContinuumContactElement<1,1>& AsContinuumContactElement11() const override
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
@@ -99,10 +115,16 @@ public:
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
 
     const ContinuumContactElement<2,1>& AsContinuumContactElement21() const override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,1>.");}
 
     ContinuumContactElement<2,1>& AsContinuumContactElement21() override
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<1,1>.");}
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,1>.");}
+
+    const ContinuumContactElement<2,2>& AsContinuumContactElement22() const override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,2>.");}
+
+    ContinuumContactElement<2,2>& AsContinuumContactElement22() override
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<2,2>.");}
 
 protected:
     std::vector<std::pair<const ContinuumElement<TDimSlave>*, int> > mElementsSlave;
@@ -115,29 +137,50 @@ protected:
     std::vector<Eigen::VectorXd> mKnots;
 
     std::unordered_map<int, int> mMappingGlobal2LocalDof;
-
     std::unordered_map<int, int> mMappingGlobal2LocalSlaveNodes;
+    std::unordered_map<int, int> mMappingGlobal2LocalMasterNodes;
 
     int mNumDofs;
     int mNumSlaveDofs;
     int mNumMasterDofs;
+
     int mNumSlaveNodes;
+    int mNumMasterNodes;
+
     bool mDofMappingComputed;
     bool mSlaveNodesMappingComputed;
+    bool mMasterNodesMappingComputed;
+
 
     const ConstitutiveBase* mConstitutiveContactLaw;
 
     int mContactType;
 
+    // *** the result of the contact algorithm *** //
 
-    Eigen::VectorXd mContactForce;
-    Eigen::VectorXd mMortarGap;
+    Eigen::MatrixXd mGapMatrixMeshTying; // both mortar and non-mortar
+    bool mGapMatrixMeshTyingAssembled;
 
-    Eigen::MatrixXd mDerivativeContactForce;
+    Eigen::MatrixXd mGapMatrix; // both mortar and non-mortar
+    bool mGapMatrixAssembled;
+
+    Eigen::VectorXd mMortarGlobalGapVector; // contact type = 0: mortar
+    bool mMortarGlobalGapVectorAssembled;
+
+    Eigen::VectorXd mSlaveShapeFunctionsWeight; // int_{\Gamma_c}R_A^s\;d\Gamma
+    bool mSlaveShapeFunctionsWeightAssembled;
+
+    Eigen::VectorXd mGlobalNodalPressure; // contact type = 1: nonmortar
+    bool mGlobalNodalPressureAssembled;
+
+    Eigen::MatrixXd mGapMatrixPenalty; // contact type = 1: nonmortar
+    bool mGapMatrixPenaltyAssembled;
+
+    // *** the assembly takes place here, so mapping needed local - global dof numbers *** //
 
     void FillMappingGlobalLocalDofs();
-
     void FillMappingGlobalLocalSlaveNodes();
+    void FillMappingGlobalLocalMasterNodes();
 };
 } /* namespace NuTo */
 

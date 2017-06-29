@@ -11,7 +11,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGaussNIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
@@ -87,8 +87,50 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
         case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss5Ip();
             break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss6Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<6>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss7Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<7>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss8Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<8>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss9Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<9>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss10Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<10>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss11Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<11>();
+            break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss12Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<12>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss13Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<13>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss14Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<14>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss15Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<15>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss16Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<16>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss17Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<17>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss18Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<18>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss19Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<19>();
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss20Ip:
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGaussNIp<20>();
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto3Ip();

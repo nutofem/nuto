@@ -18,7 +18,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGaussNIp.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -63,189 +63,189 @@
 #define PRINTRESULT true
 
 
-void QuarterCircle(const std::string &path,
-                   const std::string &fileNameSlave,
-                   NuTo::Structure *myStructure,
-                   double rE_Slave,
-                   NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
-                   NuTo::eIntegrationType rIntegrationTypeDisps)
-{
-#ifdef _OPENMP
-    int numThreads = 4;
-    myStructure->SetNumProcessors(numThreads);
-#endif
-    double nue = 0.0;
-    double rho = 0.;
+//void QuarterCircle(const std::string &path,
+//                   const std::string &fileNameSlave,
+//                   NuTo::Structure *myStructure,
+//                   double rE_Slave,
+//                   NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
+//                   NuTo::eIntegrationType rIntegrationTypeDisps)
+//{
+//#ifdef _OPENMP
+//    int numThreads = 4;
+//    myStructure->SetNumProcessors(numThreads);
+//#endif
+//    double nue = 0.0;
+//    double rho = 0.;
 
-    ///////////////////////////////////////////////////////////////////////
-    // ====> create SLAVE mesh from gmsh (smth. impacting a rectangle)   //
-    ///////////////////////////////////////////////////////////////////////
+//    ///////////////////////////////////////////////////////////////////////
+//    // ====> create SLAVE mesh from gmsh (smth. impacting a rectangle)   //
+//    ///////////////////////////////////////////////////////////////////////
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndicesSlave = myStructure->ImportFromGmsh(path + fileNameSlave,
-                                                                                                          NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
-                                                                                                          NuTo::IpData::eIpDataType::NOIPDATA);
+//    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndicesSlave = myStructure->ImportFromGmsh(path + fileNameSlave,
+//                                                                                                          NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+//                                                                                                          NuTo::IpData::eIpDataType::NOIPDATA);
 
-    int slaveInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
-    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
-    int slaveElementsGroupId = groupIndicesSlave.GetValue(0, 0);
-    myStructure->ElementGroupSetInterpolationType(slaveElementsGroupId, slaveInterpolationType);
-    myStructure->ElementConvertToInterpolationType(slaveElementsGroupId);
-    myStructure->InterpolationTypeSetIntegrationType(slaveInterpolationType,rIntegrationTypeDisps,NuTo::IpData::eIpDataType::STATICDATA);
+//    int slaveInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+//    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
+//    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
+//    int slaveElementsGroupId = groupIndicesSlave.GetValue(0, 0);
+//    myStructure->ElementGroupSetInterpolationType(slaveElementsGroupId, slaveInterpolationType);
+//    myStructure->ElementConvertToInterpolationType(slaveElementsGroupId);
+//    myStructure->InterpolationTypeSetIntegrationType(slaveInterpolationType,rIntegrationTypeDisps,NuTo::IpData::eIpDataType::STATICDATA);
 
-    int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, slaveElementsGroupId,  NuTo::Node::eDof::DISPLACEMENTS);
+//    int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, slaveElementsGroupId,  NuTo::Node::eDof::DISPLACEMENTS);
 
-    // ===> build contact elements slave elements
-    auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
-    {
-        double Tol = 1.e-4;
-        //double angleincr = (15. * M_PI)/180.0;
-        //double anglemax = 3.*M_PI/2. + angleincr;
-        double radius = 1.;
-        if ( rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0 )
-        {
-            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-            double r = sqrt(x*x+y*y);
-            //double angle = std::atan2(y,x);
-            if (r <= radius + Tol && r >= radius - Tol && x >= -0.03 && x <= 0.03)//angle <= anglemax)
-            {
-                return true;
-            }
-        }
-        return false;
-    };  // LambdaGetSlaveNodesLower
+//    // ===> build contact elements slave elements
+//    auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
+//    {
+//        double Tol = 1.e-4;
+//        //double angleincr = (15. * M_PI)/180.0;
+//        //double anglemax = 3.*M_PI/2. + angleincr;
+//        double radius = 1.;
+//        if ( rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0 )
+//        {
+//            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+//            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+//            double r = sqrt(x*x+y*y);
+//            //double angle = std::atan2(y,x);
+//            if (r <= radius + Tol && r >= radius - Tol && x >= -0.03 && x <= 0.03)//angle <= anglemax)
+//            {
+//                return true;
+//            }
+//        }
+//        return false;
+//    };  // LambdaGetSlaveNodesLower
 
-    myStructure->GroupGetNodesTotal();
+//    myStructure->GroupGetNodesTotal();
 
-    int groupNodesSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupNodesSlaveLower, slaveNodesGroupId, LambdaGetSlaveNodesLower);
-    NuTo::FullVector<int, Eigen::Dynamic> membersNodesSlaveLower = myStructure->GroupGetMemberIds(groupNodesSlaveLower);
+//    int groupNodesSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure->GroupAddNodeFunction(groupNodesSlaveLower, slaveNodesGroupId, LambdaGetSlaveNodesLower);
+//    NuTo::FullVector<int, Eigen::Dynamic> membersNodesSlaveLower = myStructure->GroupGetMemberIds(groupNodesSlaveLower);
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesSlaveC;
-    myStructure->NodeGroupGetCoordinates(groupNodesSlaveLower, coordinatesSlaveC);
+//    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesSlaveC;
+//    myStructure->NodeGroupGetCoordinates(groupNodesSlaveLower, coordinatesSlaveC);
 
-    int groupElementsSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Elements);
-    myStructure->GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
-    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupElementsSlaveLower);
+//    int groupElementsSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+//    myStructure->GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
+//    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupElementsSlaveLower);
 
-    auto LambdaGetSlaveNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
-    {
-        double Tol = 1.e-6;
-        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0)
-        {
-            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-            if ((y >= 0. - Tol && y <= 0. + Tol))
-            {
-                return true;
-            }
-        }
-        return false;
-    };  // LambdaGetSlaveNodesUpper
+//    auto LambdaGetSlaveNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
+//    {
+//        double Tol = 1.e-6;
+//        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0)
+//        {
+//            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+//            if ((y >= 0. - Tol && y <= 0. + Tol))
+//            {
+//                return true;
+//            }
+//        }
+//        return false;
+//    };  // LambdaGetSlaveNodesUpper
 
 
-    int groupNodesSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupNodesSlaveUpper, slaveNodesGroupId, LambdaGetSlaveNodesUpper);
-    members = myStructure->GroupGetMemberIds(groupNodesSlaveUpper);
+//    int groupNodesSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure->GroupAddNodeFunction(groupNodesSlaveUpper, slaveNodesGroupId, LambdaGetSlaveNodesUpper);
+//    members = myStructure->GroupGetMemberIds(groupNodesSlaveUpper);
 
-    int groupElementsSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Elements);
-    myStructure->GroupAddElementsFromNodes(groupElementsSlaveUpper, groupNodesSlaveUpper, false);
-    members = myStructure->GroupGetMemberIds(groupElementsSlaveUpper);
+//    int groupElementsSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+//    myStructure->GroupAddElementsFromNodes(groupElementsSlaveUpper, groupNodesSlaveUpper, false);
+//    members = myStructure->GroupGetMemberIds(groupElementsSlaveUpper);
 
-    auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-    {
-        double Tol = 1.e-6;
-        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS) > 0)
-        {
-            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-            if (x >= -Tol && x <= Tol)
-            {
-                return true;
-            }
-        }
-        return false;
-    };  // LambdaGetNodesLeft
+//    auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
+//    {
+//        double Tol = 1.e-6;
+//        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS) > 0)
+//        {
+//            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+//            if (x >= -Tol && x <= Tol)
+//            {
+//                return true;
+//            }
+//        }
+//        return false;
+//    };  // LambdaGetNodesLeft
 
-    //     DBC for the left side
-    int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
+//    //     DBC for the left side
+//    int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
 
-    NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
-    myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
+//    NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
+//    myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
 
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+//    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
 
-    direction << 1, 0;
-    for(int i = 0; i < rMembersLeft.rows(); i++)
-    {
-        myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
-    }
+//    direction << 1, 0;
+//    for(int i = 0; i < rMembersLeft.rows(); i++)
+//    {
+//        myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
+//    }
 
-    direction << 0, 1;
-    for(int i = 0; i < membersNodesSlaveLower.rows(); i++)
-    {
-        myStructure->ConstraintLinearSetDisplacementNode(membersNodesSlaveLower(i), direction, 0.0);
-    }
+//    direction << 0, 1;
+//    for(int i = 0; i < membersNodesSlaveLower.rows(); i++)
+//    {
+//        myStructure->ConstraintLinearSetDisplacementNode(membersNodesSlaveLower(i), direction, 0.0);
+//    }
 
-      ///////////////////
-    // ===> material //
-    ///////////////////
+//      ///////////////////
+//    // ===> material //
+//    ///////////////////
 
-    double Thickness = 1.;
-    int section = myStructure->SectionCreate("PLANE_STRESS");
-    myStructure->SectionSetThickness(section, Thickness);
-    myStructure->ElementTotalSetSection(section);
+//    double Thickness = 1.;
+//    int section = myStructure->SectionCreate("PLANE_STRESS");
+//    myStructure->SectionSetThickness(section, Thickness);
+//    myStructure->ElementTotalSetSection(section);
 
-    int constitutiveLawSlave = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, rE_Slave);
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+//    int constitutiveLawSlave = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+//    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, rE_Slave);
+//    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+//    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
 
-    myStructure->ElementGroupSetConstitutiveLaw(slaveElementsGroupId, constitutiveLawSlave);
+//    myStructure->ElementGroupSetConstitutiveLaw(slaveElementsGroupId, constitutiveLawSlave);
 
-    std::string resultDir = "./ResultsStaticQuarterCircle";
-    //set result directory
-    if (boost::filesystem::exists(resultDir))
-    {
-        if (boost::filesystem::is_directory(resultDir))
-        {
-            boost::filesystem::remove_all(resultDir);
-        }
-    }
+//    std::string resultDir = "./ResultsStaticQuarterCircle";
+//    //set result directory
+//    if (boost::filesystem::exists(resultDir))
+//    {
+//        if (boost::filesystem::is_directory(resultDir))
+//        {
+//            boost::filesystem::remove_all(resultDir);
+//        }
+//    }
 
-    // create result directory
-    boost::filesystem::create_directory(resultDir);
+//    // create result directory
+//    boost::filesystem::create_directory(resultDir);
 
-    // ===> Neumann BCs
-    myStructure->SetNumLoadCases(1);
-    myStructure->LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, 10.);
+//    // ===> Neumann BCs
+//    myStructure->SetNumLoadCases(1);
+//    myStructure->LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, 10.);
 
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeBuildGlobalDofs();
+//    myStructure->CalculateMaximumIndependentSets();
+//    myStructure->NodeBuildGlobalDofs();
 
-    myStructure->SolveGlobalSystemStaticElastic();
+//    myStructure->SolveGlobalSystemStaticElastic();
 
-    int visualizationGroup = myStructure->GroupGetElementsTotal();
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+//    int visualizationGroup = myStructure->GroupGetElementsTotal();
+//    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+//    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+//    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-    myStructure->ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+//    myStructure->ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
 
-}
+//}
 
 void AddIGALayer(NuTo::Structure *myStructure,
-                const std::function<bool(NuTo::NodeBase *)> &rFunction,
-                int &groupFENodes,
-                int &groupFE,
-                int rNodesGroupId,
-                int rDegree,
-                Eigen::MatrixXd &A,
-                int &groupElementsIGAlayer,
-                int &groupNodesIGAlayer,
-                Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rElements,
-                int &countDBC)
+                 const std::function<bool(NuTo::NodeBase *)> &rFunction,
+                 int &groupFENodes,
+                 int &groupFE,
+                 int rNodesGroupId,
+                 int rDegree,
+                 Eigen::MatrixXd &A,
+                 int &groupElementsIGAlayer,
+                 int &groupNodesIGAlayer,
+                 Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rElements,
+                 int &countDBC)
 {
     // Nodes on the part to interpolate
     groupFENodes = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
@@ -419,7 +419,6 @@ void ContactHertzQuarterCircle(const std::string &path,
         return false;
     };  // LambdaGetSlaveNodesUpper
 
-
     groupNodesSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
     myStructure->GroupAddNodeFunction(groupNodesSlaveUpper, slaveNodesGroupId, LambdaGetSlaveNodesUpper);
     members = myStructure->GroupGetMemberIds(groupNodesSlaveUpper);
@@ -433,8 +432,8 @@ void ContactHertzQuarterCircle(const std::string &path,
     //////////////////////////////
 
     NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndicesMaster = myStructure->ImportFromGmsh(path + fileNameMaster,
-                                                                                                          NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
-                                                                                                          NuTo::IpData::eIpDataType::NOIPDATA);
+                                                                                                           NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                                                                                                           NuTo::IpData::eIpDataType::NOIPDATA);
 
     int masterInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
     myStructure->InterpolationTypeAdd(masterInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
@@ -1085,7 +1084,7 @@ int main(int argc, char* argv[])
     contactAlgo = 1;
 
     resultDir = "./ResultsContactStaticDoubleIGA";
-    penalty = 5.e11;
+    penalty = 1.e9;
     run(resultDir,
         path,
         fileNameSlave,
@@ -1097,8 +1096,8 @@ int main(int argc, char* argv[])
         10,
         contactAlgo,
         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
-        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
-        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+        NuTo::Interpolation::eTypeOrder::LOBATTO2,
+        NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip,
         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
         true);
 

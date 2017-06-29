@@ -3,10 +3,10 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-NuTo::NURBSCurve::NURBSCurve(const Eigen::MatrixXd &rKnots,
-                                 const Eigen::MatrixXd &rControlPoints,
-                                 const Eigen::VectorXd &rWeights,
-                                 int rDegree)
+NuTo::NURBSCurve::NURBSCurve(const Eigen::VectorXd &rKnots,
+                             const Eigen::MatrixXd &rControlPoints,
+                             const Eigen::VectorXd &rWeights,
+                             int rDegree)
 {
     int numKnots = rKnots.rows();
     int numControlPoints = rControlPoints.rows();
@@ -26,7 +26,8 @@ NuTo::NURBSCurve::NURBSCurve(const Eigen::MatrixXd &rKnots,
 
 NuTo::NURBSCurve::NURBSCurve(int                    rDegree,
                              const Eigen::MatrixXd &rPoints,
-                             Eigen::MatrixXd       &A)
+                             Eigen::MatrixXd       &A,
+                             NuTo::NURBSCurve::mParametrization rParametrizationMethod)
 {
     assert(rDegree > 0);    
     mDegree = rDegree;
@@ -37,7 +38,18 @@ NuTo::NURBSCurve::NURBSCurve(int                    rDegree,
 
     mControlPoints.resize(numPoints, dim);
 
-    Eigen::VectorXd rParameters = ParametrizationChordLengthMethod(rPoints);
+    Eigen::VectorXd rParameters;
+    switch (rParametrizationMethod) {
+    case mParametrization::chord:
+        rParameters = ParametrizationChordLengthMethod(rPoints);
+        break;
+    case mParametrization::centripetal:
+        rParameters = ParametrizationCentripetalMethod(rPoints);
+        break;
+    default:
+        break;
+    }
+
     ParametrizationKnotVector(rParameters);
 
     mWeights.resize(numPoints, 1);
@@ -233,7 +245,7 @@ Eigen::VectorXd NuTo::NURBSCurve::ParametrizationChordLengthMethod(const Eigen::
 
     Eigen::VectorXd rParameters;
     rParameters.resize(numPoints);
-    rParameters.setZero();
+    rParameters.setZero(numPoints);
 
     rParameters[0] = 0.;
     rParameters[numPoints - 1] = 1.;
@@ -382,6 +394,7 @@ void NuTo::NURBSCurve::InsertKnot(double rKnotToInsert, int rMultiplicity)
     int k = ShapeFunctionsIGA::FindSpan(rKnotToInsert, mDegree, mKnots);
     int initialMultiplicity = GetMultiplicityOfKnot(rKnotToInsert);
     assert(initialMultiplicity + rMultiplicity <= mDegree);
+
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots() + rMultiplicity);
 
@@ -389,13 +402,24 @@ void NuTo::NURBSCurve::InsertKnot(double rKnotToInsert, int rMultiplicity)
     for(int i = 1 ; i <= rMultiplicity; i++)   newKnots(k + i) = rKnotToInsert;
     for(int i = k + 1; i < GetNumKnots(); i++) newKnots(rMultiplicity + i) = mKnots(i);
 
-    // control points
-    Eigen::MatrixXd newControlPoints(GetNumControlPoints() + rMultiplicity, GetDimension());
-    Eigen::MatrixXd Rw(mDegree+1, GetDimension());
+    // since we're dealing with NURBS curves, a projection is needed ...
+    Eigen::MatrixXd controlPointsProjected(mControlPoints.rows(), GetDimension()+1);
+    controlPointsProjected.block(0, 0, mControlPoints.rows(), mControlPoints.cols()) = mControlPoints;
 
-    for(int i = 0; i <= k - mDegree; i++) newControlPoints.row(i) = mControlPoints.row(i);
-    for(int i = k - initialMultiplicity; i < GetNumControlPoints(); i++) newControlPoints.row(i + rMultiplicity) = mControlPoints.row(i);
-    for(int i = 0; i <= mDegree - initialMultiplicity; i++) Rw.row(i) = mControlPoints.row(k - mDegree + i);
+    int col = mControlPoints.cols();
+    for(int i = 0; i < mControlPoints.rows(); i++)
+        controlPointsProjected(i, col) = mWeights(i);
+
+    for(int i = 0; i < controlPointsProjected.rows(); i++)
+        for(int j = 0; j < controlPointsProjected.cols() - 1; j++)
+            controlPointsProjected(i, j) *= mWeights(i);
+
+    Eigen::MatrixXd newControlPoints(GetNumControlPoints() + rMultiplicity, GetDimension()+1);
+    Eigen::MatrixXd Rw(mDegree+1, GetDimension() + 1);
+
+    for(int i = 0; i <= k - mDegree; i++) newControlPoints.row(i) = controlPointsProjected.row(i);
+    for(int i = k - initialMultiplicity; i < GetNumControlPoints(); i++) newControlPoints.row(i + rMultiplicity) = controlPointsProjected.row(i);
+    for(int i = 0; i <= mDegree - initialMultiplicity; i++) Rw.row(i) = controlPointsProjected.row(k - mDegree + i);
 
     int L = 0;
     for(int j = 1; j <= rMultiplicity; j++)
@@ -413,7 +437,10 @@ void NuTo::NURBSCurve::InsertKnot(double rKnotToInsert, int rMultiplicity)
     for(int i = L + 1; i < k - initialMultiplicity; i++) newControlPoints.row(i) = Rw.row(i-L);
 
     mKnots = newKnots;
-    mControlPoints = newControlPoints;
+
+    mWeights = newControlPoints.col(newControlPoints.cols() - 1);
+    mControlPoints.resize(newControlPoints.rows(), GetDimension());
+    for(int i = 0; i < newControlPoints.rows(); i++) mControlPoints.row(i) = newControlPoints.block(i,0, 1, GetDimension())/mWeights(i);
 }
 
 
@@ -431,6 +458,10 @@ void NuTo::NURBSCurve::RefineKnots(const Eigen::VectorXd &rKnotsToInsert)
     int col = mControlPoints.cols();
     for(int i = 0; i <  mControlPoints.rows(); i++)
         controlPointsProjected(i, col) = mWeights(i);
+
+    for(int i = 0; i < controlPointsProjected.rows(); i++)
+        for(int j = 0; j < controlPointsProjected.cols() - 1; j++)
+            controlPointsProjected(i, j) *= mWeights(i);
 
     // new control points
     Eigen::MatrixXd newControlPoints(GetNumControlPoints() + numInsert, GetDimension()+1);
@@ -518,7 +549,7 @@ void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSl
         error = std::fabs(b);
         numIter++;
     }
-    std::cout << "Number of iterations: " << numIter << std::endl;
+//    std::cout << "Number of iterations: " << numIter << std::endl;
 }
 
 Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCurve::buildIGAStructure(NuTo::Structure &rStructure,

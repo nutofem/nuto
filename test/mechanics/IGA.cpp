@@ -486,8 +486,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     int groupNodes  = myStructure->GroupCreate("Nodes");
     int groupElements = myStructure->GroupCreate("Elements");
 
-    Eigen::VectorXi nodeIDs;
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes, nodeIDs);
+    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
 
     myStructure->Info();
 
@@ -662,8 +661,7 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, const
     int groupNodes  = myStructure->GroupCreate("Nodes");
     int groupElements = myStructure->GroupCreate("Elements");
 
-    Eigen::VectorXi nodeIDs;
-    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes, nodeIDs);
+    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
 
     /** create section **/
     double Thickness = 1.;

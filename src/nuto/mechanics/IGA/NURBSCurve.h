@@ -26,6 +26,9 @@ class Structure;
 class NURBSCurve
 {
 public:
+
+    enum mParametrization {chord, centripetal};
+
     /** Constructors **/
 
     //! @brief ... default constructor
@@ -35,7 +38,7 @@ public:
     //! @param rDegree ... degree of the polynomial
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
-    NURBSCurve(const Eigen::MatrixXd &rKnots,
+    NURBSCurve(const Eigen::VectorXd &rKnots,
                const Eigen::MatrixXd &rControlPoints,
                const Eigen::VectorXd &rWeights,
                int rDegree);
@@ -43,9 +46,11 @@ public:
     //! @brief ... constructor (interpolation of a point sequence)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
+    //! @param rParametrizationMethod ... the method of parametrization (by default chord length method)
     NURBSCurve(int rDegree,
                const Eigen::MatrixXd &rPoints,
-               Eigen::MatrixXd       &A);
+               Eigen::MatrixXd       &A,
+               mParametrization rParametrizationMethod=chord);
 
     /** Getter **/
 
@@ -203,10 +208,6 @@ public:
                                                                                          int rGroupNodes,
                                                                                          const std::string &rInterpolation,
                                                                                          Eigen::VectorXi &nodeIDs) const;
-
-
-    /** Degree elevation **/
-
 
 private:
     //! @brief Knot vector (in isogeometric framework each segment between two knots is an element)

@@ -129,10 +129,7 @@ public:
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
-    virtual const Eigen::VectorXd GetIntegrationPointVolume() const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
-    }
+    virtual const Eigen::VectorXd GetIntegrationPointVolume() const override;
 
     //! @brief getter for alpha parameter
     double GetAlpha() const

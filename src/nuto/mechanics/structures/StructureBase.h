@@ -261,7 +261,7 @@ public:
 
 #ifndef SWIG
 
-    void SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, BlockScalar &error, int rMaxNumIter, int rLoadCase = 0);
+    void SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, int rMaxNumIter, int rLoadCase = 0);
 
 #endif //SWIG
 

@@ -266,7 +266,7 @@ Eigen::VectorXd NuTo::ContinuumElementIGALayer<TDim>::InterpolateDofGlobalCurren
     Eigen::VectorXd nodalInit    = this->ExtractNodeValues(rTimeDerivative, rDofTypeInit);
     Eigen::VectorXd nodalCurrent = this->ExtractNodeValues(rTimeDerivative, rDofTypeCurrent);
 
-    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates, this->mKnotIDs);
+    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates);
 
     return matrixN * (nodalInit + nodalCurrent);
 }

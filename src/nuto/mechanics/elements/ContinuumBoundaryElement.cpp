@@ -753,6 +753,33 @@ const SectionBase *ContinuumBoundaryElement<TDim>::GetSection() const
 }
 
 template <int TDim>
+const Eigen::VectorXd ContinuumBoundaryElement<TDim>::GetIntegrationPointVolume() const
+{
+    const InterpolationBase& interpolationTypeCoords = mInterpolationType->Get(Node::eDof::COORDINATES);
+     Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
+
+    Eigen::VectorXd volume(GetNumIntegrationPoints());
+    for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
+    {
+        Eigen::Matrix<double,TDim-1,1>  ipCoordsSurface = CalculateIPCoordinatesSurface(theIP);
+        Eigen::Matrix<double,TDim,1>    ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
+
+        // #######################################
+        // ##  Calculate the surface jacobian
+        // ## = || [dX / dXi] * [dXi / dAlpha] ||
+        // #######################################
+        Eigen::MatrixXd derivativeShapeFunctionsNatural     = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+        const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
+
+        const Eigen::MatrixXd derivativeNaturalSurfaceCoordinates   = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId); // = [dXi / dAlpha]
+        double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();
+        volume[theIP] = detJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+    }
+
+    return volume;
+}
+
+template <int TDim>
 Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const
 {
     return mBaseElement->ExtractNodeValues(rTimeDerivative, rDof);

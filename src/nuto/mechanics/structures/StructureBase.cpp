@@ -41,7 +41,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGaussNIp.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
@@ -119,8 +119,36 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)]=
         NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss6Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<6>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss7Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<7>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss8Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<8>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss9Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<9>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss10Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<10>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss11Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<11>::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip)]=
-        NuTo::IntegrationType1D2NGauss12Ip::GetStrIdentifierStatic();
+        NuTo::IntegrationType1D2NGaussNIp<12>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss13Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<13>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss14Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<14>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss15Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<15>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss16Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<16>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss17Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<17>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss18Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<18>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss19Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<19>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss20Ip)]=
+        NuTo::IntegrationType1D2NGaussNIp<20>::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)]=
         NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)]=
@@ -964,93 +992,87 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     residual.ApplyCMatrix(GetConstraintMatrix());
 
     // reuse deltaDof_dt0
+
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
 
     deltaDof_dt0.K = NodeCalculateDependentDofValues(deltaDof_dt0.J);
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, BlockScalar &error, int rMaxNumIter, int rLoadCase)
+void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, int rMaxNumIter, int rLoadCase)
 {
-    int numIter = 0;
+    if (GetNumTimeDerivatives() > 0)
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Only use this method for a system with 0 time derivatives.");
 
-    StructureOutputBlockVector delta(GetDofStatus(), true);
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    StructureOutputBlockVector  u(GetDofStatus(), true); // e.g. disp
-    u = NodeExtractDofValues(0);
-    BlockFullVector<double> residual_mod(GetDofStatus());
+    const DofStatus& dofStatus = GetDofStatus();
 
-//    while(error > tol && numIter < maxNumIter)
-//    {
-//        auto rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
-//        rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
+    StructureOutputBlockVector  extForce(dofStatus, true);
+    StructureOutputBlockVector  intForce(dofStatus, true);
 
-//        // solve
-//        auto hessian0 = BuildGlobalHessian0();
-//        hessian0.ApplyCMatrix(GetConstraintMatrix());
+    StructureOutputBlockVector  residual(dofStatus, true);
+    BlockFullVector<double>     residual_mod(dofStatus);
 
-//        delta.J = SolveBlockSystem(hessian0.JJ, residual_mod);
-//        delta.K = GetConstraintMatrix()*delta.J*(-1.);
+    StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
+    StructureOutputBlockVector  trial_dof_dt0(dofStatus, true);
 
-//        u += delta;
+    StructureOutputBlockMatrix  hessian0(dofStatus, true);
 
-//        NodeMergeDofValues(0, u);
-//        numIter++;
-//        error = residual_mod.CalculateNormL2();
-//        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
-//    }
+    const auto& cmat = this->GetConstraintMatrix();
 
-    // the rhs aka. residual
-    auto rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0;
+    evaluate_InternalGradient_Hessian0      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    evaluate_InternalGradient_Hessian0      [eStructureOutput::HESSIAN0] = &hessian0;
+
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
+    evaluate_InternalGradient               [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+
+    ConstitutiveInputMap inputMap;
+    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
+
+    Evaluate(inputMap, evaluate_InternalGradient);
+
+    extForce = BuildGlobalExternalLoadVector(rLoadCase);
+
+    dof_dt0 = NodeExtractDofValues(0);
+    dof_dt0.K = NodeCalculateDependentDofValues(dof_dt0.J);
+
+    auto rhs = intForce - extForce;
     rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
 
-    error = residual_mod.CalculateNormL2();
+    BlockScalar normResidual = residual_mod.CalculateInfNorm();
 
-    while(error > tol && numIter < rMaxNumIter)
+    int iteration = 0;
+    while(!(normResidual < tol) && iteration < rMaxNumIter)
     {
+        Evaluate(inputMap, evaluate_InternalGradient_Hessian0);
+
         // solve
-        auto hessian0 = BuildGlobalHessian0();
-        hessian0.ApplyCMatrix(GetConstraintMatrix());
+        hessian0.ApplyCMatrix(cmat);
+        delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
+        delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
 
-        delta.J = SolveBlockSystem(hessian0.JJ, residual_mod);
-        delta.K = NodeCalculateDependentDofValues(delta.J);
+        //calculate line search trial state
+        trial_dof_dt0 = dof_dt0 + delta_dof_dt0;
+        NodeMergeDofValues(0, trial_dof_dt0.J, trial_dof_dt0.K);
+        ElementTotalUpdateTmpStaticData();
 
-        u -= delta;
+        Evaluate(inputMap, evaluate_InternalGradient);
 
-        NodeMergeDofValues(0, u);
+        residual = intForce - extForce;
+        residual.ApplyCMatrix(residual_mod, cmat);
 
-        // calculate the residual again to get the error
-        rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
-        rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
+        normResidual = residual_mod.CalculateInfNorm();
 
-        numIter++;
-        error = residual_mod.CalculateNormL2();
-        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
+        dof_dt0 = trial_dof_dt0;
+
+        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << normResidual << std::endl;
+
+        iteration++;
     }
-
-//    while(error > tol && numIter < rMaxNumIter)
-//    {
-//        auto rhs = BuildGlobalExternalLoadVector(rLoadCase) - BuildGlobalInternalGradient();
-//        rhs.ApplyCMatrix(GetConstraintMatrix());
-
-//        // solve
-//        auto hessian0 = BuildGlobalHessian0();
-//        hessian0.ApplyCMatrix(GetConstraintMatrix());
-
-//        delta.J = SolveBlockSystem(hessian0.JJ, rhs.J);
-//        delta.K = NodeCalculateDependentDofValues(delta.J);
-
-//        u += delta;
-
-//        NodeMergeDofValues(0, u);
-//        numIter++;
-//        error = delta.J.CalculateNormL2();
-//        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
-//    }
-
-    if(numIter >= rMaxNumIter) std::cout << "!!!!!!StructureBase::SolveGlobalSystemStaticElasticContact: Maximum number of Newton iterations exceeded!" << std::endl;
 }
-
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {
