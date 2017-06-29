@@ -7,18 +7,13 @@ namespace Math {
 
 namespace Polynomial {
 
-//! @brief value of legendre polynomial
-//! @param n polynomial order
-//! @param x argument of polynomial
-//! @return value of polynomial at x
-double Legendre(int n, double x);
-
-//! @brief value of the k-th derivative of legendre polynomial
+//! @brief value of the k-th derivative of legendre polynomial 
+//! @remark this includes the 0-th derivative, the actual legendre polynomial
 //! @param n polynomial order
 //! @param x argument of polynomial
 //! @param k derivative order
 //! @return value of polynomial at x
-double LegendreDeriv(int n, double x, int k);
+double Legendre(int n, double x, int k = 0);
 
 //! @brief roots of legendre polynomial
 //! @param n polynomial order

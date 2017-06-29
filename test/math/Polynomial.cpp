@@ -1,6 +1,5 @@
 #include "math/Polynomial.h"
 #include "BoostUnitTest.h"
-#include <iostream>
 
 BOOST_AUTO_TEST_CASE(LegendreRoots) {
     std::vector< std::vector <double> > legendreRootsKnown{
