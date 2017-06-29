@@ -2,6 +2,9 @@
 #include "math/NewtonRaphson.h"
 #include <cmath>
 #include <iostream>
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseMatrixCSRGeneral.h"
+
 
 constexpr double tolerance = 1.e-10;
 using namespace NuTo::NewtonRaphson;
@@ -42,4 +45,49 @@ BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)
 {
     BOOST_CHECK_THROW(Solve(InvalidProblem(), 0., DoubleSolver(), 20, LineSearch()), NoConvergence);
+}
+
+auto ValidMatrixProblem()
+{
+    auto R = [](Eigen::VectorXd x) {
+        Eigen::VectorXd r(2);
+        r[0] = x[0] * x[0] * x[0] - x[0] + 6;
+        r[1] = x[1] - 1;
+        return r;
+    };
+    auto DR = [](Eigen::VectorXd x) {
+        NuTo::SparseMatrixCSRGeneral<double> m(2, 2);
+        m.AddValue(0, 0, 3 * x[0] * x[0] - 1);
+        m.AddValue(1, 1, 1);
+        return m;
+    };
+    auto Norm = [](Eigen::VectorXd x) { return x.norm(); };
+    return DefineProblem(R, DR, Norm, tolerance);
+}
+
+
+struct MumpsWrapper
+{
+    Eigen::VectorXd Solve(NuTo::SparseMatrixCSRGeneral<double>& DR, const Eigen::VectorXd& R)
+    {
+        Eigen::VectorXd v;
+        DR.SetOneBasedIndexing();
+        mSolver.Solve(DR, R, v);
+        return v;
+    }
+    NuTo::SparseDirectSolverMUMPS mSolver;
+};
+
+BOOST_AUTO_TEST_CASE(NewtonSparse)
+{
+    Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
+    auto result = Solve(ValidMatrixProblem(), x0, MumpsWrapper(), 100);
+    BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
+}
+
+BOOST_AUTO_TEST_CASE(NewtonSparseLineSearch)
+{
+    Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
+    auto result = Solve(ValidMatrixProblem(), x0, MumpsWrapper(), 20, LineSearch());
+    BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
 }

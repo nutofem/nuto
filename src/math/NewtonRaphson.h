@@ -69,8 +69,8 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterat
     problem.InfoFunction(iteration, x, r);
     while (iteration < maxIterations)
     {
-        const auto dr = problem.DerivativeFunction(x);
-        const auto dx = solver.Solve(dr, r);
+        auto dr = problem.DerivativeFunction(x);
+        auto dx = solver.Solve(dr, r);
 
         ++iteration;
         problem.InfoFunction(iteration, x, r);
