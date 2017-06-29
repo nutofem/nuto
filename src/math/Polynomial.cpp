@@ -1,5 +1,6 @@
 #include "math/Polynomial.h"
-#include <algorithm>
+#include <boost/range/algorithm/sort.hpp>
+#include <boost/range/algorithm/transform.hpp>
 #include <cmath>
 #include <vector>
 
@@ -18,7 +19,7 @@ double NuTo::Math::Polynomial::Legendre(int n, double x, int k)
 double FindLegendreRoot(double guess, int n, int derivative)
 {
     using namespace NuTo::Math::Polynomial;
-    constexpr double tol = 1e-15;
+    const double tol = 1e-15;
     double x = guess;
     while (true)
     {
@@ -31,12 +32,9 @@ double FindLegendreRoot(double guess, int n, int derivative)
 
 std::vector<double> FindLegendreRoots(std::vector<double> guess, int n, int derivative)
 {
-    std::vector<double> xs;
-    xs.reserve(guess.size());
-    for (double x : guess)
-        xs.push_back(FindLegendreRoot(x, n, derivative));
-    std::sort(xs.begin(), xs.end());
-    return xs;
+    auto findRoot = [=](double guess){ return FindLegendreRoot(guess, n, derivative); };
+    boost::range::transform(guess, guess.begin(), findRoot);
+    return boost::range::sort(guess);
 }
 
 std::vector<double> FirstGuess(int n)
