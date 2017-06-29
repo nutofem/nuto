@@ -10,15 +10,15 @@ BOOST_AUTO_TEST_CASE(AverageBasics)
     BOOST_CHECK_EQUAL(a.mNum, 0);
     BOOST_CHECK_SMALL(a.mCurrentAverage, e);
 
-    a.Add(5.);
+    a(5.);
     BOOST_CHECK_EQUAL(a.mNum, 1);
     BOOST_CHECK_CLOSE(a.mCurrentAverage, 5., e);
     
-    a.Add(5.);
+    a(5.);
     BOOST_CHECK_EQUAL(a.mNum, 2);
     BOOST_CHECK_CLOSE(a.mCurrentAverage, 5., e);
     
-    a.Add(2.);
+    a(2.);
     BOOST_CHECK_EQUAL(a.mNum, 3);
     BOOST_CHECK_CLOSE(a.mCurrentAverage, 4., e);
 }
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(AveragePrecision)
     {
         auto number = ints(rng);
         sum += number; 
-        a.Add(number);
+        a(number);
     }
     long double mean = static_cast<double>(sum)/n;
     BOOST_CHECK_CLOSE_FRACTION(a.mCurrentAverage, mean, e);

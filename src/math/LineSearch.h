@@ -5,10 +5,11 @@ namespace NuTo
 namespace NewtonRaphson
 {
 
+//! @brief takes any argument and does nothing... 
 struct VoidInfo
 {
     template <typename... TAny>
-    void operator()(TAny...) const
+    void operator()(TAny&&...) const
     {
     }
 };
@@ -66,7 +67,7 @@ private:
     int mMaxNumLineSearchStep;
 };
 
-
+//! @brief convienient instantiation of the NuTo::LineSearchImplementation with template deduction
 template <typename TInfo = VoidInfo>
 LineSearchImplementation<TInfo> LineSearch(TInfo info = VoidInfo(), int mMaxNumLineSearchStep = 6)
 {

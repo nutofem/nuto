@@ -8,7 +8,7 @@ struct Average
     long double mCurrentAverage = 0;
     int mNum = 0;
 
-    void Add(int x)
+    void operator()(int x)
     {
         mCurrentAverage = (x + mNum * mCurrentAverage)/(mNum + 1);
         mNum++;
