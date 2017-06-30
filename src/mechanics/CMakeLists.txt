@@ -249,10 +249,8 @@ if(ENABLE_MPI)
     target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
 endif()
 
-# install library
 install(TARGETS NuToMechanics
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION lib
     )
 
 if(ENABLE_MPI)

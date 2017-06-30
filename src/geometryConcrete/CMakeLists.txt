@@ -36,8 +36,6 @@ else()
     target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath)
 endif()
 
-# install library
 install(TARGETS NuToGeometryConcrete
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION lib
     )

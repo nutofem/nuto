@@ -15,8 +15,6 @@ sources_to_objects("${NuToMetamodelSources}" NuToMetamodelObjects)
 add_library(NuToMetamodel ${NuToMetamodelObjects})
 target_link_libraries(NuToMetamodel NuToOptimize NuToMath NuToBase)
 
-# install library
 install(TARGETS NuToMetamodel
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION lib
     )

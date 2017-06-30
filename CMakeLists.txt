@@ -91,12 +91,6 @@ if(ENABLE_COVERAGE)
     include(Coverage)
 endif()
 
-# set relative paths for install
-set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
-set(NUTO_LIBRARIES_INSTALL_PATH "lib${LIB_SUFFIX}")
-set(NUTO_INCLUDE_INSTALL_PATH "include")
-
-
 # search for MKL
 if(ENABLE_MKL)
     message(STATUS "Checking for MKL LAPACK and MKL SOLVER ...")
@@ -298,6 +292,10 @@ if(ENABLE_CUSTOM_EXAMPLES)
     add_subdirectory(applications/custom)
 endif()
 
+install(DIRECTORY src/
+    DESTINATION include/nuto
+    FILES_MATCHING PATTERN "*.h"
+    )
 
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")

@@ -17,11 +17,9 @@ set(NuToMathSources
 
 sources_to_objects("${NuToMathSources}" NuToMathObjects)
 
-# build static library
 add_library(NuToMath ${NuToMathObjects})
 target_link_libraries(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
 
-# install library
 install(TARGETS NuToMath
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
+    LIBRARY DESTINATION lib
+    )
