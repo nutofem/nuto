@@ -13,7 +13,7 @@
 
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
-#include "math/Polynomial.h"
+#include "math/Legendre.h"
 
 // constructor
 NuTo::IntegrationType1D2NLobatto::IntegrationType1D2NLobatto(int nIps)

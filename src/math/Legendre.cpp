@@ -1,4 +1,4 @@
-#include "math/Polynomial.h"
+#include "math/Legendre.h"
 #include <boost/range/algorithm/sort.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <cmath>
