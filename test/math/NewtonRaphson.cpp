@@ -4,10 +4,15 @@
 #include <iostream>
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRGeneral.h"
-
+#include <complex>
 
 constexpr double tolerance = 1.e-10;
 using namespace NuTo::NewtonRaphson;
+
+/* ##################################################
+ * ##              SCALAR REAL TESTS               ##
+ * ################################################## */
+
 auto ValidProblem()
 {
     auto R = [](double x) { return x * x * x - x + 6; };
@@ -17,11 +22,12 @@ auto ValidProblem()
     return DefineProblem(R, DR, Norm, tolerance, Info);
 }
 
+template <typename T>
 auto InvalidProblem()
 {
-    auto R = [](double x) { return x * x + 1; };
-    auto DR = [](double x) { return 2. * x; };
-    auto Norm = [](double x) { return std::abs(x); };
+    auto R = [](T x) { return x * x + 1.; };
+    auto DR = [](T x) { return 2. * x; };
+    auto Norm = [](T x) { return std::abs(x); };
     return DefineProblem(R, DR, Norm, tolerance);
 }
 
@@ -42,14 +48,39 @@ BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 {
     int numIterations = 0;
-    BOOST_CHECK_THROW(Solve(InvalidProblem(), 0., DoubleSolver(), 100, NoLineSearch(), &numIterations), NoConvergence);
+    BOOST_CHECK_THROW(Solve(InvalidProblem<double>(), 0., DoubleSolver(), 100, NoLineSearch(), &numIterations), NoConvergence);
     BOOST_CHECK_EQUAL(numIterations, 100);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)
 {
-    BOOST_CHECK_THROW(Solve(InvalidProblem(), 0., DoubleSolver(), 20, LineSearch()), NoConvergence);
+    BOOST_CHECK_THROW(Solve(InvalidProblem<double>(), 0., DoubleSolver(), 20, LineSearch()), NoConvergence);
 }
+
+/* ##################################################
+ * ##            SCALAR COMPLEX TESTS              ##
+ * ################################################## */
+
+struct ComplexSolver
+{
+    std::complex<double> Solve(std::complex<double> DR, std::complex<double> R)
+    {
+        return R / DR;
+    }
+};
+
+BOOST_AUTO_TEST_CASE(NewtonScalarComplex)
+{
+    auto root1 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, .1), ComplexSolver(), 100);
+    BOOST_CHECK_SMALL(std::abs(root1 - std::complex<double>(0.,1.)), tolerance);
+    
+    auto root2 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, -.1), ComplexSolver(), 100);
+    BOOST_CHECK_SMALL(std::abs(root2 - std::complex<double>(0.,-1.)), tolerance);
+}
+
+/* ##################################################
+ * ##              VECTOR REAL TESTS               ##
+ * ################################################## */
 
 auto ValidMatrixProblem()
 {
@@ -68,7 +99,6 @@ auto ValidMatrixProblem()
     auto Norm = [](Eigen::VectorXd x) { return x.norm(); };
     return DefineProblem(R, DR, Norm, tolerance);
 }
-
 
 struct MumpsWrapper
 {
