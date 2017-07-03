@@ -3,12 +3,8 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
@@ -62,22 +58,22 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
             ptrIntegrationType = new NuTo::IntegrationType0DBoundary();
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss1Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(1);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss2Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(2);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NBoundaryGauss3Ip();
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss3Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(3);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss4Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(4);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss5Ip();
+            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(5);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(3);
