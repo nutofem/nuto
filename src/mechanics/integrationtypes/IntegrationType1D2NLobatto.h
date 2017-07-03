@@ -9,22 +9,24 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#include <vector>
 #include "mechanics/integrationtypes/IntegrationType1D.h"
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, BAM
-//! @date November 2013
-//! @brief ... integration types in 1D with two nodes Lobatto integration and 3 integration points
-class IntegrationType1D2NLobatto5Ip : public IntegrationType1D
+//! @author Philipp Mueller, BAM
+//! @date Jun 2017
+//! @brief ... integration types in 1D with Lobatto integration
+class   IntegrationType1D2NLobatto : public IntegrationType1D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
 
 public:
+
     //! @brief constructor
-    IntegrationType1D2NLobatto5Ip();
+    IntegrationType1D2NLobatto(int numIps);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -34,15 +36,14 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType1D2NLobatto5Ip" << std::endl;
+    std::cout << "start serialize IntegrationType1D2NLobatto" << std::endl;
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D);
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType1D2NLobatto5Ip" << std::endl;
+    std::cout << "finish serialize IntegrationType1D2NLobatto" << std::endl;
 #endif
     }
 #endif // ENABLE_SERIALIZATION
-
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -69,13 +70,12 @@ public:
 #endif // ENABLE_VISUALIZE
 private:
     //! @brief ... integration points coordinates
-    double iPts[5];
+    std::vector<double> mIPts;
     //! @brief ... weights for the integration
-    double weights[5];
+    std::vector<double> mWeights;
 };
 } // namespace
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto5Ip)
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto)
 #endif
-

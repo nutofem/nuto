@@ -18,6 +18,7 @@ add_unit_test(SparseMatrixCSRVector2General
     )
 
 
+add_unit_test(Legendre)
 add_unit_test(NaturalCoordinateMemoizer)
 add_unit_test(Gmres)
 

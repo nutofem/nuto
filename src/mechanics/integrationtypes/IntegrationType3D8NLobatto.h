@@ -14,6 +14,7 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType3D8NLobatto_Def.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
 
 namespace NuTo
 {
@@ -24,9 +25,9 @@ namespace NuTo
 	    mCoordinates.resize(T*T*T);
 	    mWeights.resize(T*T*T);
 
-	    NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
-	    NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
-	    NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
+        NuTo::IntegrationType1D2NLobatto Lobatto1D2N3Ip(3);
+        NuTo::IntegrationType1D2NLobatto Lobatto1D2N4Ip(4);
+        NuTo::IntegrationType1D2NLobatto Lobatto1D2N5Ip(5);
 
 	    NuTo::IntegrationType1D* integrationType1D(nullptr);
 		switch(T)

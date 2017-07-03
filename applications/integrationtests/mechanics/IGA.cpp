@@ -14,9 +14,6 @@
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
