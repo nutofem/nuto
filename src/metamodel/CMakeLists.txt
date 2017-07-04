@@ -1,4 +1,4 @@
-set(NuToMetamodelSources
+set(MetamodelSources
     Metamodel.cpp
     NeuralNetwork.cpp
     TransferFunction.cpp
@@ -9,12 +9,15 @@ set(NuToMetamodelSources
     PolynomialLeastSquaresFitting.cpp
     )
 
-sources_to_objects("${NuToMetamodelSources}" NuToMetamodelObjects)
+sources_to_objects("${MetamodelSources}" MetamodelObjects)
 
-# build static library
-add_library(NuToMetamodel ${NuToMetamodelObjects})
-target_link_libraries(NuToMetamodel NuToOptimize NuToMath NuToBase)
+add_library(Metamodel ${MetamodelObjects})
+set_target_properties(Metamodel PROPERTIES
+    OUTPUT_NAME NuToMetamodel
+    )
 
-install(TARGETS NuToMetamodel
+target_link_libraries(Metamodel Optimize Math Base)
+
+install(TARGETS Metamodel EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )

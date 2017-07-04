@@ -1,6 +1,6 @@
 configure_file(Version.cpp ${CMAKE_CURRENT_BINARY_DIR}/Version.cpp)
 
-set(NuToBaseSources
+set(BaseSources
     Logger.cpp
     CallbackInterface.cpp
     serializeStream/SerializeStreamBase.cpp
@@ -9,11 +9,15 @@ set(NuToBaseSources
     Timer.cpp
     )
 
-sources_to_objects("${NuToBaseSources}" NuToBaseObjects)
+sources_to_objects("${BaseSources}" BaseObjects)
 
-add_library(NuToBase ${NuToBaseObjects} ${CMAKE_CURRENT_BINARY_DIR}/Version.cpp)
-target_link_libraries(NuToBase ${Boost_LIBRARIES})
+add_library(Base ${BaseObjects} ${CMAKE_CURRENT_BINARY_DIR}/Version.cpp)
+set_target_properties(Base PROPERTIES
+    OUTPUT_NAME NuToBase
+    )
 
-install(TARGETS NuToBase
+target_link_libraries(Base ${Boost_LIBRARIES})
+
+install(TARGETS Base EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )

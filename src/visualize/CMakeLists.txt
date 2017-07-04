@@ -1,4 +1,4 @@
-set(NuToVisualizeSources
+set(VisualizeSources
     Cell.cpp
     ComponentName.cpp
     Point.cpp
@@ -7,10 +7,13 @@ set(NuToVisualizeSources
     DataArray.cpp
 )
 
-sources_to_objects("${NuToVisualizeSources}" NuToVisualizeObjects)
+sources_to_objects("${VisualizeSources}" VisualizeObjects)
 
-add_library(NuToVisualize ${NuToVisualizeObjects})
+add_library(Visualize ${VisualizeObjects})
+set_target_properties(Visualize PROPERTIES
+    OUTPUT_NAME NuToVisualize
+    )
 
-install(TARGETS NuToVisualize
+install(TARGETS Visualize EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )

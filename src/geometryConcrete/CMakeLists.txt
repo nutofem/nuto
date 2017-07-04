@@ -1,4 +1,4 @@
-set(NuToGeometryConcreteCollisionSources
+set(GeometryConcreteCollisionSources
     collision/collidables/CollidableBase.cpp
     collision/collidables/CollidableParticleBase.cpp
     collision/collidables/CollidableParticleSphere.cpp
@@ -14,28 +14,31 @@ set(NuToGeometryConcreteCollisionSources
     collision/handler/ParticleHandler.cpp
     )
 
-set(NuToGeometryConcreteGradingCurveSources
+set(GeometryConcreteGradingCurveSources
     takeAndPlace/ParticleCreator.cpp
     )
 
-set(NuToGeometryConcreteSources
+set(GeometryConcreteSources
     GeometryConcrete.cpp
     InputReader.cpp
     Specimen.cpp
-    ${NuToGeometryConcreteCollisionSources}
-    ${NuToGeometryConcreteGradingCurveSources}
+    ${GeometryConcreteCollisionSources}
+    ${GeometryConcreteGradingCurveSources}
     )
 
-sources_to_objects("${NuToGeometryConcreteSources}" NuToGeometryConcreteObjects)
+sources_to_objects("${GeometryConcreteSources}" GeometryConcreteObjects)
 
-# build static library
-add_library(NuToGeometryConcrete ${NuToGeometryConcreteObjects})
+add_library(GeometryConcrete ${GeometryConcreteObjects})
+set_target_properties(GeometryConcrete PROPERTIES
+    OUTPUT_NAME NuToGeometryConcrete
+    )
+
 if(ENABLE_VISUALIZE)
-    target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath NuToVisualize)
+    target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math Visualize)
 else()
-    target_link_libraries(NuToGeometryConcrete ${Boost_LIBRARIES} NuToBase NuToMath)
+    target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math)
 endif()
 
-install(TARGETS NuToGeometryConcrete
+install(TARGETS GeometryConcrete EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )

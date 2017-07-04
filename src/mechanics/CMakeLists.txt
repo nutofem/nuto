@@ -252,12 +252,12 @@ if(ENABLE_MPI)
     target_link_libraries(Mechanics ${MPI_LIBRARIES})
 endif()
 
-install(TARGETS Mechanics EXPORT MechanicsTargets
+install(TARGETS Mechanics EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )
 
-install(EXPORT MechanicsTargets
-    FILE NuToMechanicsTargets.cmake
+install(EXPORT NuToTargets
+    FILE NuToTargets.cmake
     NAMESPACE NuTo::
     DESTINATION lib/cmake/NuTo
     )

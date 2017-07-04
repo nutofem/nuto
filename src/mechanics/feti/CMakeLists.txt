@@ -1,5 +1,8 @@
-add_library(NuToFeti FetiSolver.cpp StructureFeti.cpp NewmarkFeti.cpp)
+add_library(FetiLib FetiSolver.cpp StructureFeti.cpp NewmarkFeti.cpp)
+set_target_properties(FetiLib PROPERTIES
+    OUTPUT_NAME NuToFeti
+    )
 
-install(TARGETS NuToFeti
+install(TARGETS FetiLib EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )
