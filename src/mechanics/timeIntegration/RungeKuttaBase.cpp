@@ -112,7 +112,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     hessian2.CwiseInvert();
 
     double curTime  = 0;
-    auto extLoad = CalculateCurrentExternalLoad(curTime);
+    auto extLoad = CalculateCurrentExternalLoad(mTime);
     auto intForce = mStructure->BuildGlobalInternalGradient();
 
     std::vector<StructureOutputBlockVector> d_dof_dt0_tmp(this->GetNumStages(), mStructure->GetDofStatus());
@@ -152,10 +152,12 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
                 UpdateConstraints(mTime);
                
-                extLoad = CalculateCurrentExternalLoad(curTime);
+                extLoad = CalculateCurrentExternalLoad(mTime);
             }
             dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
             mStructure->NodeMergeDofValues(0,dof_dt0_tmp);
+            dof_dt1_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_tmp.J);
+            mStructure->NodeMergeDofValues(1,dof_dt1_tmp);
             mStructure->ElementTotalUpdateTmpStaticData();
 
             //calculate internal force (with update of history variables = true)
@@ -184,6 +186,8 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         //std::cout << "final disp_j_new " << disp_j_new(0) << std::endl;
         dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
         mStructure->NodeMergeDofValues(0,dof_dt0_new);
+        dof_dt1_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_new.J);
+        mStructure->NodeMergeDofValues(1,dof_dt1_new);
         mStructure->ElementTotalUpdateTmpStaticData();
         mStructure->ElementTotalUpdateStaticData();
         //std::cout << "delta disp between time steps" <<  (disp_j-disp_j_new).norm() << std::endl;
