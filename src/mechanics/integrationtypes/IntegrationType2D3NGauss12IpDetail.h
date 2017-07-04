@@ -56,13 +56,10 @@ public:
     double GetIntegrationPointWeight(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
-    void GetVisualizationCells(
-        unsigned int& NumVisualizationPoints,
-        std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells,
-        std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const override;
+    IpCellInfo GetVisualizationCells() const override
+    {
+        return mIpCellInfo;
+    }
 #endif // ENABLE_VISUALIZE
 
 protected:
@@ -70,10 +67,7 @@ protected:
     std::vector<Eigen::Vector2d> mIntegrationPointCoordinates;
     std::vector<double> mIntegrationPointWeights;
 #ifdef ENABLE_VISUALIZE
-    std::vector<double> mVisualizationPointCoordinates;
-    std::vector<unsigned int> mVisualizationCellIndices;
-    std::vector<unsigned int> mVisualizationCellIPIndices;
-    std::vector<NuTo::eCellTypes> mVisualizationCellTypes;
+    IntegrationTypeBase::IpCellInfo mIpCellInfo;
 #endif // ENABLE_VISUALIZE
 };
 }

@@ -30,7 +30,6 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType);
 
 
     //create element
@@ -42,6 +41,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     myStructure.ElementsCreate(interpolationType, nodeNumbers);
     myStructure.ElementTotalConvertToInterpolationType();
 
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType);
 
     //Calculate maximum independent sets for parallelization (openmp)
     myStructure.CalculateMaximumIndependentSets();
@@ -83,7 +83,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
 
-    myStructure.ExportVtkDataFileElements("./voronoi.vtk");
+    myStructure.ExportVtkDataFileElements("./voronoi.vtu");
 
 }
 

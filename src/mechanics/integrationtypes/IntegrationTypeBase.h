@@ -12,7 +12,7 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif //ENABLE_VISUALIZE
+#endif // ENABLE_VISUALIZE
 
 
 namespace NuTo
@@ -22,8 +22,8 @@ class IntegrationPointBase;
 
 namespace Element
 {
-    enum class eElementType;
-}// namespace Element
+enum class eElementType;
+} // namespace Element
 
 
 //! @author Jörg F. Unger, ISM
@@ -33,15 +33,15 @@ class IntegrationTypeBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
+#endif // ENABLE_SERIALIZATION
 
 public:
     IntegrationTypeBase() = default;
     IntegrationTypeBase(const IntegrationTypeBase&) = default;
     IntegrationTypeBase(IntegrationTypeBase&&) = default;
 
-    IntegrationTypeBase& operator= (const IntegrationTypeBase&) = default;
-    IntegrationTypeBase& operator= (IntegrationTypeBase&&) = default;
+    IntegrationTypeBase& operator=(const IntegrationTypeBase&) = default;
+    IntegrationTypeBase& operator=(IntegrationTypeBase&&) = default;
 
     //! @brief ... destructor
     virtual ~IntegrationTypeBase() = default;
@@ -50,16 +50,15 @@ public:
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
     {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationTypeBase" << std::endl;
+        std::cout << "start serialize IntegrationTypeBase" << std::endl;
 #endif
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationTypeBase" << std::endl;
+        std::cout << "finish serialize IntegrationTypeBase" << std::endl;
 #endif
-
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -84,7 +83,7 @@ public:
 
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is
-    void Info(int rVerboseLevel)const;
+    void Info(int rVerboseLevel) const;
 
 
 #ifdef ENABLE_VISUALIZE
@@ -93,7 +92,7 @@ public:
     {
         int visualizeCellId = -1; // global visualize id, set later by visualizer
         std::vector<int> pointIds;
-        eCellTypes cellType; 
+        eCellTypes cellType;
         int ipId;
     };
 
@@ -111,20 +110,17 @@ public:
 
     virtual IpCellInfo GetVisualizationCells() const;
 
-    virtual void GetVisualizationCells(
-        unsigned int& NumVisualizationPoints,
-        std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells,
-        std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const {};
+    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                       std::vector<double>& VisualizationPointLocalCoordinates,
+                                       unsigned int& NumVisualizationCells,
+                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                       std::vector<unsigned int>& VisualizationCellsIncidence,
+                                       std::vector<unsigned int>& VisualizationCellsIP) const {};
 #endif // ENABLE_VISUALIZE
 protected:
 };
-}//namespace NuTo
+} // namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationTypeBase)
 #endif // ENABLE_SERIALIZATION
-
-

@@ -67,34 +67,31 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
 
 
     std::vector<Eigen::Vector2d> points;
-    std::vector<std::array<unsigned int,3>> cells;
+    using PolygonIds = std::vector<unsigned int>;
+    std::vector<PolygonIds> polygons;
+    voronoi.CalculateVisualizationCellsPolygon(points, polygons); 
 
-    voronoi.CalculateVisualizationCellsTriangle(points, cells, mVisualizationCellIPIndices);
+    std::cout << polygons.size() << std::endl;
 
-    unsigned int numPoints = points.size();
-    unsigned int numCells = cells.size();
-
-    mVisualizationPointCoordinates.resize(numPoints*2);
-    mVisualizationCellIndices.resize(numCells*3);
-    mVisualizationCellTypes.resize(numCells);
-
-
-    for (unsigned int i = 0; i < numPoints; ++i)
+    mIpCellInfo.vertices.clear();
+    mIpCellInfo.cells.clear();
+    for (const auto& point : points)
     {
-        mVisualizationPointCoordinates[2*i  ] = points[i].x();
-        mVisualizationPointCoordinates[2*i+1] = points[i].y();
+        std::cout << point.transpose() << std::endl;
+        mIpCellInfo.vertices.push_back({-1, point});
     }
 
-    for (unsigned int i = 0; i < numCells; ++i)
+    for (int id = 0; id < static_cast<int>(polygons.size()); ++id)
     {
-        mVisualizationCellTypes[i] = NuTo::eCellTypes::TRIANGLE;
-        mVisualizationCellIndices[3*i  ] = cells[i][0];
-        mVisualizationCellIndices[3*i+1] = cells[i][1];
-        mVisualizationCellIndices[3*i+2] = cells[i][2];
+        std::vector<int> polyInt;
+        for (unsigned i : polygons[id])
+        {
+            polyInt.push_back(i);
+            std::cout << i << '\t';
+        }
+        std::cout << std::endl;
+        mIpCellInfo.cells.push_back({-1, polyInt, eCellTypes::POLYGON, id});
     }
-
-
-
 
 #endif // ENABLE_VISUALIZE
 
@@ -128,22 +125,6 @@ double NuTo::IntegrationType2D3NGauss12IpDetail::GetIntegrationPointWeight(int r
 
     return mIntegrationPointWeights[rIpNum];
 }
-
-#ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D3NGauss12IpDetail::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
-{
-
-    NumVisualizationPoints = mVisualizationPointCoordinates.size() / 2;
-    NumVisualizationCells = mVisualizationCellIPIndices.size();
-
-    VisualizationPointLocalCoordinates = mVisualizationPointCoordinates;
-    VisualizationCellsIncidence = mVisualizationCellIndices;
-    VisualizationCellsIP = mVisualizationCellIPIndices;
-    VisualizationCellType = mVisualizationCellTypes;
-
-}
-#endif // ENABLE_VISUALIZE
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
