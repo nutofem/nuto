@@ -20,16 +20,7 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
                        0 , 0 , 0 , 0   , 1   , 0 ,
                        0 , 0 , 0 , 0   , 0   , 1 ;
 
-    Eigen::VectorXd stiffnessFlattened(36);
-    int count = 0;
-    for (int ii=0; ii< 6; ii++) {
-        for (int jj=0; jj< 6; jj++) {
-            stiffnessFlattened(count) = stiffnessTensor(ii,jj);
-            count++;
-        }
-    }
-
-    anisotropicLaw.SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter::STIFFNESS,stiffnessFlattened);
+    anisotropicLaw.SetParameterMatrixDouble(Constitutive::eConstitutiveParameter::STIFFNESS,stiffnessTensor);
 
     ConstitutiveInputMap input_map;
     ConstitutiveOutputMap output_map;

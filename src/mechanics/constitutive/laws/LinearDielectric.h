@@ -58,12 +58,17 @@ public:
     //! @brief Gets a parameter of the constitutive law which is selected by an enum.
     //! @param rIdentifier Enum to identify the requested parameter
     //! @return Value of the requested variable
-    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::MatrixXd GetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief Sets a parameter of the constitutive law which is selected by an enum.
     //! @param rIdentifier Enum to identify the requested parameter
     //! @param rValue New value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
+    virtual void SetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue) override;
+
+    //! @brief Sets a parameter of the constitutive law which is selected by an enum.
+    //! @param rIdentifier Enum to identify the requested parameter
+    //! @param rValue New value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
     //! @brief Gets a set of all constitutive output enums that are compatible with the constitutive law.
     //! @return Set of all constitutive output enums that are compatible with the constitutive law

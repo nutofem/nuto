@@ -94,38 +94,11 @@ BOOST_AUTO_TEST_CASE(displacementBoundary)
     //          material law
     // **************************************************************************
 
-    Eigen::VectorXd myStiffnessFlattened(36);
-    int count = 0;
-    for (int ii=0; ii< 6; ii++) {
-        for (int jj=0; jj< 6; jj++) {
-            myStiffnessFlattened(count) = myStiffness(ii,jj);
-            count++;
-        }
-    }
-
-    Eigen::VectorXd myPiezoFlattened(18);
-    count = 0;
-    for (int ii=0; ii< 3; ii++) {
-        for (int jj=0; jj< 6; jj++) {
-            myPiezoFlattened(count) = myPiezo(ii,jj);
-            count++;
-        }
-    }
-
-    Eigen::VectorXd myDielectricFlattened(9);
-    count = 0;
-    for (int ii=0; ii< 3; ii++) {
-        for (int jj=0; jj< 3; jj++) {
-            myDielectricFlattened(count) = myDielectric(ii,jj);
-            count++;
-        }
-    }
-
     int myLaw = s.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_PIEZOELECTRIC);
     s.ConstitutiveLawSetParameterDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::DENSITY,densityPZT);
-    s.ConstitutiveLawSetParameterFullVectorDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::STIFFNESS,myStiffnessFlattened);
-    s.ConstitutiveLawSetParameterFullVectorDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR,myDielectricFlattened);
-    s.ConstitutiveLawSetParameterFullVectorDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR,myPiezoFlattened);
+    s.ConstitutiveLawSetParameterMatrixDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::STIFFNESS,myStiffness);
+    s.ConstitutiveLawSetParameterMatrixDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR,myDielectric);
+    s.ConstitutiveLawSetParameterMatrixDouble(myLaw,NuTo::Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR,myPiezo);
 
     s.ElementTotalSetConstitutiveLaw(myLaw);
 

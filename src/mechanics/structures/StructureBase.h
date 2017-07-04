@@ -909,6 +909,18 @@ public:
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, Eigen::VectorXd  rValue);
 
+    //! @brief ... gets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @return ... value of the requested variable
+    Eigen::MatrixXd ConstitutiveLawGetParameterMatrixDouble(int rIdent, const std::string& rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, const std::string& rIdentifier, Eigen::MatrixXd  rValue);
+
 
 #ifndef SWIG
 
@@ -947,6 +959,18 @@ public:
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd  rValue);
+
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... value of the requested variable
+    Eigen::MatrixXd ConstitutiveLawGetParameterMatrixDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
+
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd  rValue);
 #endif
 
     //! @brief ... set damage law

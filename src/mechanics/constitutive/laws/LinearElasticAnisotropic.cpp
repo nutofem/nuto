@@ -261,41 +261,27 @@ void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eCon
     }
 }
 
-Eigen::VectorXd NuTo::LinearElasticAnisotropic::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd NuTo::LinearElasticAnisotropic::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
-        Eigen::VectorXd stiffnessFlattened(36);
-        int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                stiffnessFlattened(count) = this->mStiffness(ii,jj);
-                count++;
-            }
-        }
-        return stiffnessFlattened;
+        return mStiffness;
     }
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-void NuTo::LinearElasticAnisotropic::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
+void NuTo::LinearElasticAnisotropic::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
 {
     //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
     switch(rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
-        int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                this->mStiffness(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mStiffness = rValue;
         break;
     }
     default:

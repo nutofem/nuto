@@ -161,41 +161,42 @@ bool LinearDielectric::CheckHaveParameter(Constitutive::eConstitutiveParameter r
     }
 }
 
-Eigen::VectorXd NuTo::LinearDielectric::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd NuTo::LinearDielectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        Eigen::VectorXd permittivityFlattened(9);
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                permittivityFlattened(count) = this->mPermittivity(ii,jj);
-                count++;
-            }
-        }
-        return permittivityFlattened;
+        return mPermittivity;
     }
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-void NuTo::LinearDielectric::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
+void NuTo::LinearDielectric::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
 {
-    //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
     switch(rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                this->mPermittivity(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mPermittivity = rValue;
+        break;
+    }
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+    }
+}
+
+void NuTo::LinearDielectric::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+{
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
+    {
+        mPermittivity << rValue,      0,      0,
+                              0, rValue,      0,
+                              0,      0, rValue;
         break;
     }
     default:

@@ -243,6 +243,16 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
     ConstitutiveLawSetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
+Eigen::MatrixXd NuTo::StructureBase::ConstitutiveLawGetParameterMatrixDouble(int rIdent, const std::string &rIdentifier) const
+{
+    return ConstitutiveLawGetParameterMatrixDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
+}
+
+void NuTo::StructureBase::ConstitutiveLawSetParameterMatrixDouble(int rIdent, const std::string &rIdentifier, Eigen::MatrixXd rValue)
+{
+    ConstitutiveLawSetParameterMatrixDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
+}
+
 bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     try
@@ -314,6 +324,31 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
         ConstitutiveLawPtr->SetParameterFullVectorDouble(rIdentifier, rValue);
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
+        throw;
+    }
+}
+
+Eigen::MatrixXd NuTo::StructureBase::ConstitutiveLawGetParameterMatrixDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    try
+    {
+        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        return constitutiveLawPtr->GetParameterMatrixDouble(rIdentifier);
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
+        throw;
+    }
+}
+void NuTo::StructureBase::ConstitutiveLawSetParameterMatrixDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetParameterMatrixDouble(rIdentifier, rValue);
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");

@@ -130,6 +130,16 @@ public:
     //! @param rValue ... new value for requested variable
     virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue);
 
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... value of the requested variable
+    virtual Eigen::MatrixXd GetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
+
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue);
+
 
     //! @brief checks parameters, throws if the check failed
     static void CheckParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);

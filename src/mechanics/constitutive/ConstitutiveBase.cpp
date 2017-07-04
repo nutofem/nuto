@@ -86,6 +86,22 @@ void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eC
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
 
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @return ... value of the requested variable
+Eigen::MatrixXd NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterMatrixDouble] This constitutive law has no variables of type Eigen::MatrixXd.");
+}
+
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterMatrixDouble] This constitutive law has no variables of type Eigen::MatrixXd.");
+}
+
 //! @brief checks parameters, throws if the check failed
 void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {

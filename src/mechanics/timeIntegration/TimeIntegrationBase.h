@@ -112,6 +112,17 @@ public:
     	mMaxTimeStep = rMaxTimeStep;
     }
 
+    //! @brief returns the accumulated global time
+    double GetTime()const
+    {
+        return mTime;
+    }
+    //! @brief sets the accumulated global time
+    void SetTime(double rTime)
+    {
+        mTime = rTime;
+    }
+
     //! @brief returns the maximum time step for the time integration procedure
     double GetMaxTimeStep()const
     {
