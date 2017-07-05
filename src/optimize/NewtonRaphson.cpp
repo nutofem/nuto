@@ -1,14 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "optimize/NewtonRaphson.h"
 #include "optimize/OptimizeException.h"
 
@@ -206,8 +195,3 @@ void NuTo::NewtonRaphson::LineSearch(Eigen::VectorXd &rXold, const double rFold,
 	}
 }
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewtonRaphson)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

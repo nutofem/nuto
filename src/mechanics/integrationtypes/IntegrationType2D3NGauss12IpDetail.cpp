@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
@@ -126,61 +117,3 @@ double NuTo::IntegrationType2D3NGauss12IpDetail::GetIntegrationPointWeight(int r
     return mIntegrationPointWeights[rIpNum];
 }
 
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template<class Archive>
-void NuTo::IntegrationType2D3NGauss12IpDetail::load(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType2D3NGauss12Ip" << std::endl;
-#endif
-    int size = 0;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
-
-    ar & BOOST_SERIALIZATION_NVP(size);
-    mIntegrationPointCoordinates.resize(size);
-    ar & boost::serialization::make_nvp("mIntegrationPointCoordinates", boost::serialization::make_array(mIntegrationPointCoordinates.data(), size));
-
-    ar & BOOST_SERIALIZATION_NVP(size);
-    mIntegrationPointWeights.resize(size);
-    ar & boost::serialization::make_array(mIntegrationPointWeights.data(), size);
-#ifdef ENABLE_VISUALIZE
-    ar & boost::serialization::make_array(mVisualizationPointCoordinates.data(), mVisualizationPointCoordinates.size());
-    ar & boost::serialization::make_array(mVisualizationCellIndices.data(), mVisualizationCellIndices.size());
-    ar & boost::serialization::make_array(mVisualizationCellIPIndices.data(), mVisualizationCellIPIndices.size());
-    ar & boost::serialization::make_array(mVisualizationCellTypes.data(), mVisualizationCellTypes.size());
-#endif // ENABLE_VISUALIZE
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType2D3NGauss12Ip" << std::endl;
-#endif
-}
-
-template<class Archive>
-void NuTo::IntegrationType2D3NGauss12IpDetail::save(Archive & ar, const unsigned int version)const
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType2D3NGauss12Ip" << std::endl;
-#endif
-    int size = 0;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
-
-    size = mIntegrationPointCoordinates.size();
-    ar & BOOST_SERIALIZATION_NVP(size);
-    ar & boost::serialization::make_array(mIntegrationPointCoordinates.data(), size);
-
-    size = mIntegrationPointWeights.size();
-    ar & BOOST_SERIALIZATION_NVP(size);
-    ar & boost::serialization::make_nvp("mIntegrationPointCoordinates", boost::serialization::make_array(mIntegrationPointWeights.data(), size));
-
-#ifdef ENABLE_VISUALIZE
-    ar & boost::serialization::make_array(mVisualizationPointCoordinates.data(), mVisualizationPointCoordinates.size());
-    ar & boost::serialization::make_array(mVisualizationCellIndices.data(), mVisualizationCellIndices.size());
-    ar & boost::serialization::make_array(mVisualizationCellIPIndices.data(), mVisualizationCellIPIndices.size());
-    ar & boost::serialization::make_array(mVisualizationCellTypes.data(), mVisualizationCellTypes.size());
-#endif // ENABLE_VISUALIZE
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType2D3NGauss12Ip" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D3NGauss12IpDetail)
-#endif // ENABLE_SERIALIZATION

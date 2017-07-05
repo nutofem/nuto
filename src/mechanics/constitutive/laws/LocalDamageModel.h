@@ -18,20 +18,8 @@ class ConstitutivePlaneState;
 class LocalDamageModel: public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
-
 public:
     LocalDamageModel();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     typedef double StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<double>;
@@ -139,6 +127,3 @@ private:
 
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::LocalDamageModel)
-#endif // ENABLE_SERIALIZATION

@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
@@ -30,21 +21,6 @@ HeatConduction::HeatConduction() : ConstitutiveBase()
     mRho = 0.0;
     SetParametersValid();
 }
-
-#ifdef ENABLE_SERIALIZATION
-template <class Archive> void HeatConduction::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize HeatConduction" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mK) &
-            BOOST_SERIALIZATION_NVP(mCt) & BOOST_SERIALIZATION_NVP(mRho);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize HeatConduction" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(HeatConduction)
-#endif // ENABLE_SERIALIZATION
 
 ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(
         const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType&) const

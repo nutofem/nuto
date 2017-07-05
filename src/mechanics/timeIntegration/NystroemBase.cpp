@@ -1,14 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "math/SparseDirectSolverMUMPS.h"
 
 #include "math/SparseMatrixCSRVector2.h"
@@ -36,30 +25,6 @@ void NuTo::NystroemBase::Info()const
 {
 	TimeIntegrationBase::Info();
 }
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::NystroemBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::NystroemBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::NystroemBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::NystroemBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::NystroemBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::NystroemBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
-{
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of NystroemBase" << "\n";
-    #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase)
-           & BOOST_SERIALIZATION_NVP(mTimeStep)
-           & BOOST_SERIALIZATION_NVP(mUseDiagonalMassMatrix);
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of NystroemBase" << "\n";
-    #endif
-}
-
-#endif // ENABLE_SERIALIZATION
 
 
 //! @brief perform the time integration
@@ -239,8 +204,3 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NystroemBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

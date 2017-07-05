@@ -21,10 +21,6 @@ class ConstitutiveStaticDataBondStressSlip;
 class FibreMatrixBondStressSlip: public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
-
 public:
     typedef double StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<double>;
@@ -37,14 +33,6 @@ public:
     //! @brief Create constitutive law for fibre-matrix interface.
     //! @param dimension Global dimension of the structure the fibres are embedded in.
     FibreMatrixBondStressSlip(int dimension);
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -134,6 +122,3 @@ private:
 
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::FibreMatrixBondStressSlip)
-#endif // ENABLE_SERIALIZATION

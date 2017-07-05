@@ -34,23 +34,11 @@ class ConstitutiveTangentNonlocal;
 class Element1DInXD: public ContinuumElement<1>
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-
 public:
     Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
                   const InterpolationType& rInterpolationType, 
                   const IntegrationTypeBase& integrationType,
                   const DofStatus& dofStatus, int globalDimension);
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
     Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof) const override;
     const Eigen::VectorXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const;
@@ -96,6 +84,3 @@ private:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Element1DInXD)
-#endif

@@ -1,11 +1,6 @@
 #pragma once
 
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/MechanicsException.h"
 #include <memory>
 #include <eigen3/Eigen/Core>
@@ -26,10 +21,6 @@ namespace Constitutive
 
 class ConstitutiveIOBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
 

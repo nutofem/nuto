@@ -19,10 +19,6 @@ struct NodeDofInfo
 //! @brief ... standard class for all nodes
 class NodeDof: public NodeBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    NodeDof() {}
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ctor
     //! @param contains the information for each dof type
@@ -75,13 +71,6 @@ public:
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 protected:
     //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const override;
@@ -98,6 +87,3 @@ private:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::NodeDof)
-#endif // ENABLE_SERIALIZATION

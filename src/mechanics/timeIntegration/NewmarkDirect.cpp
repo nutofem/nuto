@@ -1,13 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp> #include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "base/CallbackInterface.h"
 #include "base/Timer.h"
@@ -677,28 +667,3 @@ NuTo::NewmarkDirect::BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& r
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-// serializes the class
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::NewmarkDirect::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of NewmarkDirect"
-              << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase) & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of NewmarkDirect"
-              << "\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewmarkDirect)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

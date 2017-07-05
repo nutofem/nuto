@@ -1,12 +1,6 @@
 // $Id$
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include <map>
-#endif // ENABLE_SERIALIZATION
-
 #include <vector>
 #include <string>
 
@@ -23,9 +17,6 @@ enum class eGroupId;
 //! @brief ... standard abstract class for all groups
 class GroupBase
 {
-#ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 	//! @brief constructor
@@ -33,19 +24,6 @@ public:
 
 	//! @brief ... destructor
     virtual ~GroupBase(){}
-
-#ifdef ENABLE_SERIALIZATION
-	//! @brief serializes the class
-	//! @param ar         archive
-	//! @param version    version
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version);
-
-    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
-    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the Address in the map
-    //! @param mNodeMapCast   std::map containing the old and new Addresses
-    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)=0;
-#endif // ENABLE_SERIALIZATION
 
 	//! @brief gives the number of group members
 	//! @return number of group members
@@ -149,10 +127,4 @@ protected:
 
 }; //class definition
 }
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 

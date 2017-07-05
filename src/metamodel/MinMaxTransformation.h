@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "metamodel/Transformation.h"
 
 namespace NuTo
@@ -15,9 +10,6 @@ namespace NuTo
 //! @brief abstract base class for the Transformations
 class MinMaxTransformation : public Transformation
 {
-#ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 	//! @brief constructor
@@ -33,14 +25,6 @@ public:
     //! @brief destructor
 	~MinMaxTransformation()
 	{}
-
-#ifdef ENABLE_SERIALIZATION
-	//! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
     //! @brief build the transformation using the given Points
     //! @param rCoordinates ... input point coordinates
@@ -65,9 +49,4 @@ protected:
     MinMaxTransformation() : Transformation(){}
 };
 } // namespace nuto
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::MinMaxTransformation)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION
 

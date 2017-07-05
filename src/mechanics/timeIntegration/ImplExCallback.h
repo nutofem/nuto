@@ -1,7 +1,3 @@
-//
-// Created by Thomas Titscher on 1/17/17.
-//
-
 #pragma once
 
 namespace NuTo
@@ -38,3 +34,4 @@ private:
 };
 
 } // namespace NuTo
+

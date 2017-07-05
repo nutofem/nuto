@@ -6,13 +6,6 @@
 
 #include "base/Timer.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <string>
-#include <fstream>
-#endif
-
 void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const Eigen::MatrixXd& rFull, double rTolerance = 1e-6)
 {
     const Eigen::MatrixXd tmp = rSparse.ConvertToFullMatrix();
@@ -349,86 +342,6 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
 
 void SerializationTest()
 {
-#ifdef ENABLE_SERIALIZATION
-
-    NuTo::Timer timer("SerializationTest::Vector2General");
-
-
-    std::string fileName = "SparseMatrixSerialize.dat";
-    NuTo::SparseMatrixCSRVector2General<double> v = NuTo::SparseMatrixCSRVector2General<double>::Random(100, 100, 0.1);
-    {
-        std::ofstream toFile(fileName);
-        boost::archive::text_oarchive archive(toFile);
-        archive << v;
-
-        // archive and filestream close on destruction...
-    }
-    {
-        std::ifstream fromFile(fileName);
-        boost::archive::text_iarchive archive(fromFile);
-
-        NuTo::SparseMatrixCSRVector2General<double> q;
-        archive >> q;
-
-        q.AddScal(v, -1.);
-        double maxError = q.AbsMax();
-        if (maxError > 1.e-6)
-        {
-            std::cout << "max error: " << maxError << std::endl;
-            throw NuTo::MathException(__PRETTY_FUNCTION__, "SerializationTest::Vector2General failed.");
-        }
-        // archive and filestream close on destruction...
-    }
-
-    timer.Reset("SerializationTest::Vector2 (BasePtr)");
-
-    {
-        std::ofstream toFile(fileName);
-        boost::archive::text_oarchive archive(toFile);
-        NuTo::SparseMatrixCSRVector2<double>* basePtr = &v;
-        archive << basePtr;
-    }
-    {
-        std::ifstream fromFile(fileName);
-        boost::archive::text_iarchive archive(fromFile);
-
-        NuTo::SparseMatrixCSRVector2<double>* basePtr = nullptr;
-        archive >> basePtr;
-        basePtr->AddScal(v, -1.);
-        double maxError = basePtr->AbsMax();
-        if (maxError > 1.e-6)
-        {
-            std::cout << "max error: " << maxError << std::endl;
-            throw NuTo::MathException(__PRETTY_FUNCTION__, "SerializationTest::Vector2 (BasePtr) failed.");
-        }
-    }
-
-//    timer.Reset("SerializationTest::Unique (BasePtr)");
-//    {
-//        std::ofstream toFile(fileName);
-//        boost::archive::text_oarchive archive(toFile);
-//        std::unordered_map<int, std::unique_ptr<NuTo::SparseMatrixCSRVector2<double>>> map;
-//        map[0] = std::unique_ptr<NuTo::SparseMatrixCSRVector2<double>>(new NuTo::SparseMatrixCSRVector2General<double>(v));
-//        archive << map;
-//    }
-//    {
-//        std::ifstream fromFile(fileName);
-//        boost::archive::text_iarchive archive(fromFile);
-//
-//        std::unordered_map<int, std::unique_ptr<NuTo::SparseMatrixCSRVector2<double>>> map;
-//        archive >> map;
-//        map[0]->AddScal(v, -1.);
-//        double maxError = map[0]->AbsMax();
-//        if (maxError > 1.e-6)
-//        {
-//            std::cout << "max error: " << maxError << std::endl;
-//            throw NuTo::MathException(__PRETTY_FUNCTION__, "SerializationTest::Unique (BasePtr) failed.");
-//        }
-//    }
-
-
-
-#endif
 }
 
 int main()

@@ -12,9 +12,6 @@ template <class T> class SparseMatrixCSRVector2Symmetric;
 template <class T>
 class SparseMatrixCSRSymmetric : public SparseMatrixCSR<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class NuTo::SparseMatrixCSRVector2Symmetric<T>;
 public:
     //! @brief ... constructor
@@ -96,26 +93,6 @@ public:
     const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const override;
 #endif
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-    	ar & boost::serialization::make_nvp("SparseMatrixCSRSymmetric",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
-    }
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType);
-#endif // ENABLE_SERIALIZATION
 protected:
 };
 }

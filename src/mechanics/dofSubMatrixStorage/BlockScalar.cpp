@@ -6,16 +6,6 @@
 #include <iostream>
 #include <iomanip>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 //! @brief constructor
 //! @param rDofStatus ... reference to DofStatus
 NuTo::BlockScalar::BlockScalar(const NuTo::DofStatus &rDofStatus)
@@ -209,28 +199,3 @@ void NuTo::BlockScalar::Info() const
     std::cout << std::endl;
 }
 
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::BlockScalar::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::BlockScalar::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::BlockScalar::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::BlockScalar::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::BlockScalar::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::BlockScalar::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::BlockScalar::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of BlockScalar" << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(BlockStorageBase);
-    ar& BOOST_SERIALIZATION_NVP(mData);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of BlockScalar" << "\n";
-#endif
-}
-
-
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockScalar)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION

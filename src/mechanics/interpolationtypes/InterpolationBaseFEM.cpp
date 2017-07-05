@@ -6,16 +6,6 @@
  *      Author: ttitsche
  */
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "math/CustomBoostSerializationExtensions.h"
-#endif // ENABLE_SERIALIZATION
-
 #include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolationtypes/InterpolationBaseFEM.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -141,32 +131,3 @@ void InterpolationBaseFEM::Initialize()
         mNodeCoordinates[i] = CalculateNaturalNodeCoordinates(i);
 }
 
-#ifdef ENABLE_SERIALIZATION
-InterpolationBaseFEM::InterpolationBaseFEM()
-{
-}
-
-template void InterpolationBaseFEM::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void InterpolationBaseFEM::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize InterpolationBaseFEM" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
-    ar& boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
-    ar& boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
-    ar& boost::serialization::make_nvp("mMatrixN", mMatrixN);
-    ar& boost::serialization::make_nvp("mDerivativeShapeFunctionsNatural", mDerivativeShapeFunctionsNatural);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize InterpolationBaseFEM" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(InterpolationBaseFEM)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(InterpolationBaseFEM)
-#endif // ENABLE_SERIALIZATION

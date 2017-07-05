@@ -9,10 +9,6 @@
 
 
 // Other:
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
 
 
 
@@ -26,11 +22,6 @@ class StructureBase;
 //! @brief ... abstract class to handle callback routines
 class CallbackInterface
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
     CallbackInterface() = default;
@@ -43,9 +34,3 @@ public:
 };
 
 } /* namespace NuTo */
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::CallbackInterface)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackInterface)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

@@ -2,10 +2,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 #include "mechanics/timeIntegration/NewmarkBase.h"
 
@@ -21,9 +17,6 @@ class StructureOutputBlockVector;
 //! @brief ... standard class for implicit timeintegration (static Newton Raphson or NewmarkDirect for dynamics)
 class NewmarkDirect : public NewmarkBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -69,16 +62,6 @@ public:
         }
     }
 
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-#endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
@@ -156,11 +139,6 @@ protected:
 
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkDirect)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

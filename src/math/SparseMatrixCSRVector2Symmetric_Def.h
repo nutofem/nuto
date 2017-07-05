@@ -15,9 +15,6 @@ template <class T> class SparseMatrixCSRVector2General;
 template <class T>
 class SparseMatrixCSRVector2Symmetric : public SparseMatrixCSRVector2<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class SparseMatrixCSRSymmetric<T>;
     friend class SparseMatrixCSRVector2General<T>;
 public:
@@ -63,18 +60,6 @@ public:
     //! @brief ... write nonzero matrix entries into a matrix
     //! @return ... the matrix
     virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType);
-#endif // ENABLE_SERIALIZATION
 
 #ifndef SWIG
     friend SparseMatrixCSRVector2Symmetric<T> operator+ (SparseMatrixCSRVector2Symmetric<T> rLhs, const SparseMatrixCSRVector2Symmetric<T> &rRhs )
@@ -176,36 +161,7 @@ public:
 #endif
 
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization SparseMatrixCSRVector2Symmetric \n";
-#endif
-        ar & boost::serialization::make_nvp("SparseMatrixCSRVector2Symmetric",boost::serialization::base_object< SparseMatrixCSRVector2<T> >(*this));
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization SparseMatrixCSRVector2Symmetric \n";
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
-
-
 protected:
 };
 }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-namespace boost{
-template <class T>
-struct is_virtual_base_of <NuTo::SparseMatrixCSRVector2<T>, NuTo::SparseMatrixCSRVector2Symmetric<T>>: public mpl:: true_ {};
-}
-BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2Symmetric<double>)
-BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2Symmetric<int>)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION
 

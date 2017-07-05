@@ -4,16 +4,6 @@
 
 #include "mechanics/MechanicsException.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "math/CustomBoostSerializationExtensions.h"
-#endif  // ENABLE_SERIALIZATION
-
 #include <vector>
 
 namespace NuTo
@@ -25,12 +15,6 @@ namespace NuTo
 class InterpolationBaseIGA : public InterpolationBase
 {
 friend class InterpolationType;
-
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    InterpolationBaseIGA();
-#endif
 
 public:
     InterpolationBaseIGA(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
@@ -93,26 +77,6 @@ public:
     virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override = 0;
 
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-#endif  // ENABLE_SERIALIZATION
-
 protected:
 
     virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override = 0;
@@ -135,9 +99,5 @@ protected:
     }
 };
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationBaseIGA)
-#endif
 
 

@@ -6,12 +6,6 @@ namespace NuTo
 {
 class Interpolation1DIGA: public InterpolationBaseIGA
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief default constructor for serialization
-protected:
-    Interpolation1DIGA(){}
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -130,14 +124,6 @@ public:
         return 2;
     }
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
 private:
 
     //! @brief return the number node depending the shape and the order
@@ -159,9 +145,5 @@ private:
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DIGA)
-#endif
 
 

@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <vector>
 #include "optimize/OptimizeException.h"
 #include <eigen3/Eigen/Core>
@@ -17,20 +12,10 @@ namespace NuTo
 //! @brief Abstract class to handle callback routines
 class CallbackHandler
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     CallbackHandler() = default;
     virtual ~CallbackHandler() = default;
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template <class Archive> void serialize(Archive& ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     virtual void SetParameters(const Eigen::MatrixXd& rParameters)
     {
@@ -63,16 +48,5 @@ public:
         throw OptimizeException(__PRETTY_FUNCTION__, "Hessian function not implemented in CallbackHandler object.");
     }
 
-#ifdef ENABLE_SERIALIZATION
-    virtual void Save(const std::string& filename, std::string rType) const {}
-    virtual void Restore(const std::string& filename, std::string rType) {}
-#endif // ENABLE_SERIALIZATION
-
 };
 } // namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::CallbackHandler)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandler)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

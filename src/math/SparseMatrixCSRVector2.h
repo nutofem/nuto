@@ -4,18 +4,6 @@
 #include <cassert>
 #include <fstream>  //for file acces
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/archive_exception.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "math/SparseMatrix.h"
 
 namespace NuTo
@@ -28,9 +16,6 @@ template <class T> class SparseMatrixCSRGeneral;
 template <class T>
 class SparseMatrixCSRVector2 : public SparseMatrix<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class NuTo::SparseMatrixCSRGeneral<T>;
 
 public:
@@ -137,27 +122,6 @@ public:
             this->mOneBasedIndexing = false;
         }
     }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of SparseMatrixCSRVector2" << std::endl;
-#endif
-        ar & boost::serialization::make_nvp("SparseMatrixCSRVector2",boost::serialization::base_object< SparseMatrix<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mColumns)
-           & BOOST_SERIALIZATION_NVP(mValues);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of SparseMatrixCSRVector2" << std::endl;
-#endif
-   }
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION
 
 
     //! @brief ... multiplies the matrix with an scalar value
@@ -422,10 +386,4 @@ private:
 
 };
 }
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::SparseMatrixCSRVector2<double>)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::SparseMatrixCSRVector2<int>)
-#endif  // SWIG
-#endif  // ENABLE_SERIALIZATION
 

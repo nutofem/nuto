@@ -74,9 +74,6 @@ class InterpolationType;
 class LinearElasticEngineeringStress: public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
 
     LinearElasticEngineeringStress();
@@ -151,14 +148,6 @@ public:
     	return false;
     }
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
-
 
 protected:
     //! @brief ... Young's modulus \f$ E \f$
@@ -173,8 +162,4 @@ protected:
 };
 
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::LinearElasticEngineeringStress)
-#endif //ENABLE_SERIALIZATION
 

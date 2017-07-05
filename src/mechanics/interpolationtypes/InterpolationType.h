@@ -7,10 +7,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 #include <eigen3/Eigen/Core>
 #include <boost/ptr_container/ptr_map.hpp>
@@ -36,11 +32,6 @@ namespace Node
 
 class InterpolationType
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief standard constructor for serialization (const member is set to SPRING)
-    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING), mDimension(0) {}
-#endif  // ENABLE_SERIALIZATION
 public:
     InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension);
 
@@ -137,14 +128,6 @@ public:
     void PrintNodeCoordinates() const;
     const Eigen::MatrixX2i& GetNodeRenumberingIndices() const;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
 private:
 
     //! @brief returns a nonconst reference to the object, stress that with the name
@@ -198,9 +181,5 @@ private:
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationType)
-#endif
 
 

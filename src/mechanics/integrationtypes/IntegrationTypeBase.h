@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include <iostream>
-#endif // ENABLE_SERIALIZATION
-
 #include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/MechanicsException.h"
@@ -31,9 +25,6 @@ enum class eElementType;
 //! @brief ... standard abstract class for all integration types
 class IntegrationTypeBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     IntegrationTypeBase() = default;
@@ -45,22 +36,6 @@ public:
 
     //! @brief ... destructor
     virtual ~IntegrationTypeBase() = default;
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialize IntegrationTypeBase" << std::endl;
-#endif
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialize IntegrationTypeBase" << std::endl;
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
 
     virtual int GetDimension() const = 0;
 
@@ -121,6 +96,3 @@ protected:
 };
 } // namespace NuTo
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationTypeBase)
-#endif // ENABLE_SERIALIZATION

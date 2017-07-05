@@ -10,16 +10,6 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "math/CustomBoostSerializationExtensions.h"
-#endif  // ENABLE_SERIALIZATION
-
 namespace NuTo
 {
 enum class eIntegrationType;
@@ -39,12 +29,6 @@ namespace Node
 class InterpolationBase
 {
 friend class InterpolationType;
-
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    InterpolationBase();
-#endif
 
 public:
     InterpolationBase(NuTo::Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDimension);
@@ -189,26 +173,6 @@ public:
 
     virtual int GetSurfaceDegree(int rSurface) const = 0;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-#endif  // ENABLE_SERIALIZATION
-
 protected:
     //! @brief calculates the shape functions for a specific dof
     //! @param rCoordinates ... integration point coordinates
@@ -261,9 +225,5 @@ protected:
     const int mDimension;
 };
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationBase)
-#endif
 
 

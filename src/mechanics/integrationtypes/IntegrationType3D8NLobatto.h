@@ -1,14 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
@@ -78,15 +69,6 @@ namespace NuTo
 	}
 
 #ifndef SWIG
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template <int T>
-    template<class Archive>
-    void IntegrationType3D8NLobatto<T>::serialize(Archive & ar, const unsigned int version)
-    {}
-#endif // ENABLE_SERIALIZATION
 #endif //SWIG
 
     //! @brief returns the local coordinates of an integration point

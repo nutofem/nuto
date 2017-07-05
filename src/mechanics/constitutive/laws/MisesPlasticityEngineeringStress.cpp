@@ -1,13 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/utility.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <iostream>
 #include "base/Logger.h"
 
@@ -37,36 +27,6 @@ NuTo::MisesPlasticityEngineeringStress::MisesPlasticityEngineeringStress() : Con
     mH.resize(1);
     SetParametersValid();
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::MisesPlasticityEngineeringStress::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::MisesPlasticityEngineeringStress::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize MisesPlasticityEngineeringStress" << "\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-       & BOOST_SERIALIZATION_NVP(mE)
-       & BOOST_SERIALIZATION_NVP(mNu)
-       & BOOST_SERIALIZATION_NVP(mSigma)
-       & BOOST_SERIALIZATION_NVP(mH)
-       & BOOST_SERIALIZATION_NVP(mRho)
-       & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize MisesPlasticityEngineeringStress" << "\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::MisesPlasticityEngineeringStress)
-#endif // ENABLE_SERIALIZATION
 
 NuTo::ConstitutiveInputMap NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(
         const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const

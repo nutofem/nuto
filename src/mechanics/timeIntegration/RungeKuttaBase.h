@@ -2,10 +2,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 
 namespace NuTo
@@ -15,24 +11,11 @@ namespace NuTo
 //! @brief ... standard class for implicit timeintegration (Newmark, but you can use it for statics as well with setting the flag isDynamic to false)
 class RungeKuttaBase : public TimeIntegrationBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
     //! @brief constructor
     RungeKuttaBase(StructureBase* rStructure);
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-#endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
@@ -58,16 +41,8 @@ public:
 
 protected:
     //empty private construct required for serialization
-#ifdef ENABLE_SERIALIZATION
-    RungeKuttaBase(){};
-#endif  // ENABLE_SERIALIZATION
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::RungeKuttaBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

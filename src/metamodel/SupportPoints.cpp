@@ -1,13 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #include <boost/math/distributions/normal.hpp>
 
 #include "metamodel/MetamodelException.h"
@@ -547,30 +537,3 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(c
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::SupportPoints::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::SupportPoints::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize SupportPoints" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_NVP(mSPOrigInput)
-       & BOOST_SERIALIZATION_NVP(mSPOrigOutput)
-       & BOOST_SERIALIZATION_NVP(mSPTransInput)
-       & BOOST_SERIALIZATION_NVP(mSPTransOutput)
-       & BOOST_SERIALIZATION_NVP(mWeight)
-       & BOOST_SERIALIZATION_NVP(mlTransformationInput)
-       & BOOST_SERIALIZATION_NVP(mlTransformationOutput)
-       & BOOST_SERIALIZATION_NVP(mTransformationBuild);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize SupportPoints" << std::endl;
-#endif
-}
-#endif // ENABLE_SERIALIZATION

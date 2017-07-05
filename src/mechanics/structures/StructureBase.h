@@ -7,10 +7,6 @@
 #include <string>
 #include <vector>
 #include <eigen3/Eigen/Core>
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <mechanics/MechanicsEnums.h>
@@ -97,9 +93,6 @@ typedef ConstitutiveIOMap<Constitutive::eOutput> ConstitutiveOutputMap;
 //! @brief ... standard abstract class for all mechanical structures
 class StructureBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
     friend class NewmarkIndirect;
     friend class NewmarkDirect;
     friend class VelocityVerlet;
@@ -110,34 +103,6 @@ public:
 
     //! @brief deconstructor
     virtual ~StructureBase();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    virtual void SaveUpdate (const std::string &filename, std::string rType ) const
-    {
-        (void)filename;
-        (void)rType;
-    }
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    virtual void RestoreUpdate (const std::string &filename, std::string rType )
-    {
-        (void)filename;
-        (void)rType;
-    }
-
-#endif  // ENABLE_SERIALIZATION
 
     //! @brief gives the dimension of the Structure
     //! @return Structural dimension (1,2 or 3)
@@ -1544,15 +1509,6 @@ protected:
     unsigned short mVerboseLevel;
 
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief ... standard constructor just for the serialization routine
-    StructureBase() :
-            mConstraintMatrix(mDofStatus, false),
-            mConstraintMappingRHS(mDofStatus, false),
-            mConstraintRHS(mDofStatus)
-    {}
-#endif  // ENABLE_SERIALIZATION
-
 #ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
@@ -1594,9 +1550,3 @@ protected:
 
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION

@@ -1,11 +1,6 @@
 #pragma once
 
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/ResultBase.h"
 
 
@@ -24,9 +19,6 @@ namespace IpData
 //! @brief Outputs integration point values
 class ResultElementIpData : public ResultBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
     //! @param rFileName:   file name
@@ -66,9 +58,3 @@ private:
 };
 }// namespace NuTo
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultElementIpValue)
-#endif      // SWIG
-#endif      // ENABLE_SERIALIZATION

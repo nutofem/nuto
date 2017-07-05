@@ -16,11 +16,6 @@ template <typename T> class BlockFullVector;
 template <typename T>
 class BlockFullMatrix: public BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    BlockFullMatrix() {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
 
@@ -92,11 +87,6 @@ public:
 
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief Returns the class name as a string
-    std::string GetTypeId()const;
-#endif
-
 
 private:
     std::unordered_map<std::pair<Node::eDof, Node::eDof>, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Node::eDofPairHash> mData;
@@ -105,8 +95,3 @@ private:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullMatrix<double>)
-#endif
-#endif

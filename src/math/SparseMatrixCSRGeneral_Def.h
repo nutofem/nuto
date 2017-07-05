@@ -12,9 +12,6 @@ template <class T> class SparseMatrixCSRVector2General;
 template <class T>
 class SparseMatrixCSRGeneral : public SparseMatrixCSR<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class NuTo::SparseMatrixCSRVector2General<T>;
 public:
     //! @brief ... constructor
@@ -144,33 +141,6 @@ public:
 #endif
 
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialize SparseMatrixCSRGeneral \n";
-#endif
-    	ar & boost::serialization::make_nvp("SparseMatrixCSRGeneral",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
-    	ar & BOOST_SERIALIZATION_NVP(mNumColumns);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialize SparseMatrixCSRGeneral \n";
-#endif
-    }
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType);
-#endif // ENABLE_SERIALIZATION
 protected:
     //! @brief ... number of columns
     int mNumColumns;

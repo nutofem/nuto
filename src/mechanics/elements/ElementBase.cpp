@@ -1,14 +1,5 @@
 #include "mechanics/elements/ElementBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <iostream>
 
 #include <boost/foreach.hpp>
@@ -62,36 +53,6 @@ NuTo::ElementBase::ElementBase(const InterpolationType& interpolationType, const
         mIPData(integrationType)
 {}
 
-
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::ElementBase::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::ElementBase::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ElementBase " << std::endl;
-#endif
-    ar& boost::serialization::make_nvp("mInterpolationType", const_cast<InterpolationType*&>(mInterpolationType));
-    ar& boost::serialization::make_nvp("mElementData", mElementData);
-
-// the element data has to be saved on the main structure due to problems with a recursion on the stack (nonlocal data
-// contains ptr to elements)
-// the idea is to first serialize all the elements in the table, and afterwards update the pointers of the element data
-// in the element data routine
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ElementBase" << std::endl;
-#endif
-}
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
-#endif // ENABLE_SERIALIZATION
 
 
 void NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)

@@ -1,8 +1,4 @@
 #pragma once
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
 
 
 #include <random>
@@ -20,23 +16,12 @@ namespace NuTo
 //! @brief ... standard abstract class for all metamodels in NuTo
 class Metamodel
 {
-#ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
 	//! @brief constructor
     Metamodel();
     virtual ~Metamodel() = default;
     
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
     void Build();
     virtual void BuildDerived()=0;
     
@@ -136,9 +121,3 @@ protected:
     unsigned short mVerboseLevel;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::Metamodel)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Metamodel)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

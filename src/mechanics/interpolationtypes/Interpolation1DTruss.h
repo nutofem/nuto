@@ -18,12 +18,6 @@ namespace NuTo
 **/
 class Interpolation1DTruss: public Interpolation1D
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief default constructor for serialization
-protected:
-    Interpolation1DTruss(){}
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -40,13 +34,6 @@ public:
     {
         return 2;
     }
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 protected:
 
     Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndexDof) const override;
@@ -62,14 +49,5 @@ private:
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DTruss)
-namespace boost
-{
-template<>
-struct is_virtual_base_of<NuTo::Interpolation1D, NuTo::Interpolation1DTruss>: public mpl::true_ {};
-}
-#endif
 
 

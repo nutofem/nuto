@@ -2,10 +2,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include <boost/math/constants/constants.hpp>
@@ -18,9 +14,6 @@ namespace NuTo
 //! @brief ... standard class for implicit time integration including cycle jump based on a Fourier formulation
 class JumpDirect : public NewmarkDirect
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -337,26 +330,6 @@ public:
     // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
     void CalculateFourierCoefficientsCoupledDofs(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
     		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k);
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    //! @brief ... save the object to a file
-    void Restore (const std::string &filename, std::string rType );
-
-	//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-	void Save (const std::string &filename, std::string rType )const;
-#endif // ENABLE_SERIALIZATION
 
     //! @brief performs the time integration
     //! @param rTimeDelta ... length of the simulation
@@ -371,10 +344,6 @@ public:
     virtual std::string GetTypeId()const;
 
 protected:
-#ifdef ENABLE_SERIALIZATION
-    //empty private construct required for serialization
-    JumpDirect(){};
-#endif // ENABLE_SERIALIZATION
 
 	double mMinLineSearchStep;
 	bool mHarmonicExcitation;
@@ -384,11 +353,6 @@ protected:
 	NuTo::FullMatrix<double,Eigen::Dynamic,3> mHarmonicFactor;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::JumpDirect)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

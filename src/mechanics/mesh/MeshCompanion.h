@@ -68,3 +68,4 @@ std::map<const NuTo::NodeBase*, int> GetNodeToIdMap(Structure& rS);
 
 } // namespace MeshCompanion
 } // namespace NuTo
+

@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#endif // ENABLE_SERIALIZATION
-
 #include <set>
 
 namespace NuTo
@@ -24,12 +18,6 @@ namespace Node
 //! @remark ... all child classes are expected to hold the data of their subtypes, not references or pointers.
 class BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    BlockStorageBase():mDofStatus(DofStatus()) {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
 
@@ -87,8 +75,3 @@ protected:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockStorageBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

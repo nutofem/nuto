@@ -18,9 +18,6 @@ class Logger;
 //! @brief ...
 class GradientDamageEngineeringStress : public ConstitutiveBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     typedef double StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<double>;
@@ -94,14 +91,6 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
-
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override {return false;}
@@ -170,6 +159,3 @@ protected:
 };
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::GradientDamageEngineeringStress)
-#endif // ENABLE_SERIALIZATION

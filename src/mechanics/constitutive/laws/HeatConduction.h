@@ -18,9 +18,6 @@ class InterpolationType;
 class HeatConduction: public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     HeatConduction();
 
@@ -91,14 +88,6 @@ public:
     	return false;
     }
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief Serializes the class.
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
-
 
 protected:
     //! @brief Thermal conduction coefficient \f$ k \f$
@@ -121,6 +110,3 @@ protected:
 
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::HeatConduction)
-#endif //ENABLE_SERIALIZATION

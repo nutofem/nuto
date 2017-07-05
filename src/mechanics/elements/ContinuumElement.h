@@ -18,11 +18,6 @@ template <int TDim> struct EvaluateDataContinuum;
 template <int TDim>
 class ContinuumElement: public ElementBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    ContinuumElement()=default;
-#endif // ENABLE_SERIALIZATION
 
     friend class ContinuumBoundaryElement<TDim>;
 
@@ -187,28 +182,6 @@ protected:
     virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
 
-#ifdef ENABLE_SERIALIZATION
-private:
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
-    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the Address in the map
-    //! @param mNodeMapCast   std::map containing the old and new Addresses
-    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override;
-
-#endif  // ENABLE_SERIALIZATION
 };
 
 } /* namespace NuTo */

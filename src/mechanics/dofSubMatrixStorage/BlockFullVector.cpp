@@ -8,16 +8,6 @@
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 template <typename T>
 NuTo::BlockFullVector<T>::BlockFullVector(const DofStatus& rDofStatus) : BlockStorageBase(rDofStatus)
 {
@@ -283,39 +273,3 @@ template void NuTo::BlockFullVector<int>::SerializeBlockFullVector(NuTo::Seriali
 template void NuTo::BlockFullVector<double>::SerializeBlockFullVector(NuTo::SerializeStreamIn&);
 template void NuTo::BlockFullVector<double>::SerializeBlockFullVector(NuTo::SerializeStreamOut&);
 
-#ifdef ENABLE_SERIALIZATION
-
-
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<double>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullVector<int>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<typename T>
-template<class Archive>
-void NuTo::BlockFullVector<T>::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize BlockFullVector" << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(BlockStorageBase);
-    ar& BOOST_SERIALIZATION_NVP(mData);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize BlockFullVector \n";
-#endif
-}
-
-
-
-
-
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockFullVector<double>)
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockFullVector<int>)
-#endif //ENABLE_SERIALIZATION

@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <vector>
 #include <boost/ptr_container/ptr_map.hpp>
 
@@ -34,9 +29,6 @@ namespace IpData
 //! @brief ... standard abstract class for all mechanical structures
 class TimeIntegrationBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
     TimeIntegrationBase(StructureBase* rStructure);
@@ -233,14 +225,6 @@ public:
     }
 #endif
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;
 
@@ -249,13 +233,6 @@ public:
     void SetShowTime(bool showTime);
 protected:
 
-#ifdef ENABLE_SERIALIZATION
-    //empty private construct required for serialization
-    TimeIntegrationBase() : mLoadVectorStatic(DofStatus()), mLoadVectorTimeDependent(DofStatus()) {};
-
-    //empty private construct required for serialization
-    NewmarkDirect() : mToleranceResidual(DofStatus()) {};
-#endif // ENABLE_SERIALIZATION
     void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
 
     const BlockFullVector<double>& UpdateAndGetConstraintRHS(double rCurrentTime);
@@ -313,9 +290,3 @@ protected:
 
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::TimeIntegrationBase)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION

@@ -135,26 +135,3 @@ int NuTo::Interpolation1DIGA::CalculateNumNodes() const
     return mDegree+1;
 }
 
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Interpolation1DIGA::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation1DIGA" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseIGA);
-    ar & boost::serialization::make_nvp("mKnots", mKnots);
-    ar & boost::serialization::make_nvp("mDegree", mDegree);
-    ar & boost::serialization::make_nvp("mIPCoordinates", mIPCoordinates);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation1DIGA" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DIGA)
-#endif  // ENABLE_SERIALIZATION

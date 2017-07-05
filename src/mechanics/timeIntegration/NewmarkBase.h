@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 
 namespace NuTo
@@ -13,9 +9,6 @@ namespace NuTo
 //! @brief ... standard class for implicit timeintegration (Newmark, but you can use it for statics as well with setting the flag isDynamic to false)
 class NewmarkBase : public TimeIntegrationBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -47,23 +40,8 @@ public:
     void MergeDofValues(const StructureOutputBlockVector& rDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, bool rMergeAll);
 
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-#endif // ENABLE_SERIALIZATION
-
-
 
 protected:
-
-#ifdef ENABLE_SERIALIZATION
-    NewmarkBase(){};
-#endif  // ENABLE_SERIALIZATION
 
 
 	double mMuDampingMass = 0; //!< damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
@@ -84,11 +62,6 @@ protected:
 	bool mUseLumpedMass = false;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

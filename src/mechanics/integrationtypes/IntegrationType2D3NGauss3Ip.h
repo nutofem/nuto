@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/integrationtypes/IntegrationType2D.h"
 
 namespace NuTo
@@ -14,21 +9,10 @@ namespace NuTo
 //! @brief ... integration types in 2D with three nodes Gauss integration and 1 integration point
 class IntegrationType2D3NGauss3Ip : public IntegrationType2D
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
     IntegrationType2D3NGauss3Ip();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -62,7 +46,4 @@ protected:
 
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D3NGauss3Ip)
-#endif // ENABLE_SERIALIZATION
 

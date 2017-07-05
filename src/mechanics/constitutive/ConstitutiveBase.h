@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <eigen3/Eigen/Dense>
 
 #include <functional>
@@ -57,9 +52,6 @@ using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 class ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
     ConstitutiveBase(): mParametersValid(false){};
@@ -184,13 +176,6 @@ public:
     //! if one check fails, an exception is thrown
     virtual void CheckParameters() const = 0;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 protected:
     //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
     bool mParametersValid;

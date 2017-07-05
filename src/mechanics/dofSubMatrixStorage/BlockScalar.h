@@ -16,11 +16,6 @@ namespace NuTo
 //! @brief ...
 class BlockScalar : public BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    BlockScalar() {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
 
@@ -157,8 +152,3 @@ private:
 
 } //namespace NuTo
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockScalar)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

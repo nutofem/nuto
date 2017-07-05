@@ -1,15 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/export.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <random>
 #include <eigen3/Eigen/Core>
 #include "math/MathException.h"
@@ -29,9 +19,6 @@ enum class eSparseMatrixType;
 template <class T>
 class SparseMatrix
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief ... constructor
@@ -207,25 +194,6 @@ public:
 
 
 
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of SparseMatrix" << std::endl;
-#endif
-        ar & boost::serialization::make_nvp("Matrix",boost::serialization::base_object< Matrix<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mOneBasedIndexing)
-           & BOOST_SERIALIZATION_NVP(mPositiveDefinite);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of SparseMatrix" << std::endl;
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
 
     //! @brief Calculate the largest matrix entry
     //! @param rResultOutput ... largest matrix entry

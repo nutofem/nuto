@@ -18,11 +18,6 @@ namespace NuTo
 **/
 class Interpolation2DQuad: public Interpolation2D
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief just for serialization
-    Interpolation2DQuad(){}
-#endif  // ENABLE_SERIALIZATION
 public:
     Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
@@ -36,14 +31,6 @@ public:
     {
         return 4;
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
 protected:
 
@@ -60,8 +47,4 @@ private:
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation2DQuad)
-#endif
 

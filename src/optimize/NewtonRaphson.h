@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "optimize/NonlinearSolverBase.h"
 
 namespace NuTo
@@ -13,9 +9,6 @@ namespace NuTo
 //! @brief ... standard class for solving system of nonlinear equations
 class NewtonRaphson : public NonlinearSolverBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -37,32 +30,6 @@ public:
     {
     	return mCheckNewtonRaphson;
     }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version){}
-#endif// SWIG
-
-    //////! @brief ... save the object to a file
-    //////! @param filename ... filename
-    //////! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const
-    {
-
-    }
-    //////! @brief ... restore the object from a file
-    //////! @param filename ... filename
-    //////! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType)
-    {
-
-    }
-
-#endif // ENABLE_SERIALIZATION
 
 
     //! @brief perform iteration
@@ -89,11 +56,6 @@ protected:
     bool mCheckNewtonRaphson;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NewtonRaphson)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

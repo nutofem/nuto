@@ -3,12 +3,6 @@
 
 using namespace NuTo;
 
-#ifdef ENABLE_SERIALIZATION
-#include "math/CustomBoostSerializationExtensions.h"
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
-
 NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
     : NodeBase::NodeBase()
 {
@@ -133,28 +127,3 @@ NodeBase* NodeDof::Clone() const
     return new NodeDof(*this);
 }
 
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NodeDof::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NodeDof::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize NodeDof"
-              << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase) & BOOST_SERIALIZATION_NVP(mDofValues) &
-            BOOST_SERIALIZATION_NVP(mDofNumbers);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize NodeDof \n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NodeDof)
-#endif // ENABLE_SERIALIZATION

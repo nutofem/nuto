@@ -44,7 +44,3 @@ void NuTo::LoadNodeScalarSource::AddLoadToGlobalSubVectors(StructureOutputBlockV
     }
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadNodeScalarSource)
-BOOST_CLASS_TRACKING(NuTo::LoadNodeScalarSource, track_always)
-#endif

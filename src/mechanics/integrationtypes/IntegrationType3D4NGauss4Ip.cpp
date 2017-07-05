@@ -167,6 +167,3 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
 }
 #endif // ENABLE_VISUALIZE
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType3D4NGauss4Ip)
-#endif

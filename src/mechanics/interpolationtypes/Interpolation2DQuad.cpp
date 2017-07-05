@@ -153,17 +153,3 @@ int NuTo::Interpolation2DQuad::CalculateNumNodes() const
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-template<class Archive>
-void NuTo::Interpolation2DQuad::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation2D\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation2D);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation2D\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation2DQuad)
-#endif

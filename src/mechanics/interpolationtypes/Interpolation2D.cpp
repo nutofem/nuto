@@ -5,15 +5,6 @@
  *      Author: ttitsche
  */
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
 
@@ -38,23 +29,3 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(i
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Interpolation2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Interpolation2D::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation2D\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseFEM);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation2D\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation2D)
-#endif

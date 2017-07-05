@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/vector.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #include <iostream>
 #include <cfloat>
 #include <string>
@@ -22,9 +18,6 @@ namespace NuTo
 //! @brief ... standard abstract class for all optimizers in NuTo
 class Optimizer
 {
-#ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     enum class eOptimizationReturnAttributes
     {
@@ -51,27 +44,6 @@ public:
 	}
 
     virtual ~Optimizer() = default;
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {    
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-           & BOOST_SERIALIZATION_NVP(mpCallbackHandler)
-           & BOOST_SERIALIZATION_NVP(mpCallbackHandlerGrid)
-           & BOOST_SERIALIZATION_NVP(mObjective)
-           & BOOST_SERIALIZATION_NVP(mvParameters)
-           & BOOST_SERIALIZATION_NVP(mParameters)
-           & BOOST_SERIALIZATION_NVP(mvEqualConstraints)
-           & BOOST_SERIALIZATION_NVP(mvInEqualConstraints)
-           & BOOST_SERIALIZATION_NVP(mIsBuild)
-           & BOOST_SERIALIZATION_NVP(mMinObjective);
-    }
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
     void SetCallback(NuTo::CallbackHandler* rpCallbackHandler)
 	{
@@ -170,10 +142,4 @@ protected:
     bool mShowTime;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Optimize)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 

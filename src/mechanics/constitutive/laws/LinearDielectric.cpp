@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
@@ -30,21 +21,6 @@ LinearDielectric::LinearDielectric() : ConstitutiveBase()
 //                     0, 0, 1;
     SetParametersValid();
 }
-
-#ifdef ENABLE_SERIALIZATION
-template <class Archive> void LinearDielectric::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize LinearDielectric" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mK) &
-            BOOST_SERIALIZATION_NVP(mCt) & BOOST_SERIALIZATION_NVP(mRho);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize LinearDielectric" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(LinearDielectric)
-#endif // ENABLE_SERIALIZATION
 
 ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(
         const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType&) const

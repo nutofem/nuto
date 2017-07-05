@@ -4,16 +4,6 @@
 
 #include <iostream>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "base/Logger.h"
 #include "mechanics/MechanicsException.h"
 
@@ -181,24 +171,3 @@ void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger)
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }
 
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::ConstitutiveBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::ConstitutiveBase::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize constitutive Base" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_NVP(mParametersValid);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Constitutive Base" << std::endl;
-#endif
-}
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveBase)
-#endif // ENABLE_SERIALIZATION

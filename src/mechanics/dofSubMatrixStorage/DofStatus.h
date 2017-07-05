@@ -2,11 +2,6 @@
 
 
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <set>
 #include <map>
 
@@ -22,10 +17,6 @@ namespace Node
 //! @remark gets modified by the structure after each change of the active/inactive dof types
 class DofStatus
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 public:
 
 #ifndef SWIG
@@ -133,8 +124,3 @@ private:
 };
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::DofStatus)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

@@ -20,9 +20,6 @@ class InterpolationType;
 class LinearElasticAnisotropic: public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
 
     LinearElasticAnisotropic();
@@ -106,14 +103,6 @@ public:
     {
     	return false;
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 
 protected:

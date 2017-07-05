@@ -1,15 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "boost/filesystem.hpp"
 
 #include "base/Timer.h"
@@ -351,47 +339,6 @@ void NuTo::TimeIntegrationBase::SetActiveDofsCalculationStep(int rStepNum, const
 {
     mStepActiveDofs[rStepNum] = rActiveDofs;
 }
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::TimeIntegrationBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of TimeIntegrationBase" << "\n";
-#endif
-
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-    & BOOST_SERIALIZATION_NVP(mTimeDependentConstraint)
-    & BOOST_SERIALIZATION_NVP(mTimeDependentConstraintFactor)
-    //       & BOOST_SERIALIZATION_NVP(mMapTimeDependentConstraint)
-    & BOOST_SERIALIZATION_NVP(mTimeDependentLoadCase)
-    & BOOST_SERIALIZATION_NVP(mTimeDependentLoadFactor)
-    //       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic)
-    //       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent)
-    & BOOST_SERIALIZATION_NVP(mTime)
-    & BOOST_SERIALIZATION_NVP(mTimeStepResult)
-    & BOOST_SERIALIZATION_NVP(mTimeStepVTK)
-    & BOOST_SERIALIZATION_NVP(mLoadStep)
-    & BOOST_SERIALIZATION_NVP(mTimeStep)
-    & BOOST_SERIALIZATION_NVP(mMaxTimeStep)
-    & BOOST_SERIALIZATION_NVP(mMinTimeStep)
-    & BOOST_SERIALIZATION_NVP(mLoadStep)
-    & BOOST_SERIALIZATION_NVP(mMinTimeStepPlot)
-    & BOOST_SERIALIZATION_NVP(mLastTimePlot)
-    & BOOST_SERIALIZATION_NVP(mPlotElementGroups)
-    & BOOST_SERIALIZATION_NVP(mResultDir)
-    & BOOST_SERIALIZATION_NVP(mAutomaticTimeStepping);
-#ifdef DEBUG_SERIALIZATION
-std::cout << "finish serialization of structure base" << "\n";
-#endif
-}
-#endif  // ENABLE_SERIALIZATION
 
 void NuTo::TimeIntegrationBase::Info()const
 {

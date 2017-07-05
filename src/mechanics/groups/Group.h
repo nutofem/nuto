@@ -1,19 +1,6 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/utility/identity_type.hpp>
-#else
 #include <map>
-#endif // ENABLE_SERIALIZATION
 
 #include <algorithm>
 #include "mechanics/groups/GroupBase.h"
@@ -29,9 +16,6 @@ class NodeBase;
 template <class T>
 class Group : public GroupBase, public std::map<int, T*>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
@@ -40,92 +24,6 @@ public:
         , std::map<int, T*>()
     {
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes (saves) the class
-    //! @param ar         archive
-    //! @param version    version
-    template <class Archive>
-    void save(Archive& ar, const unsigned int version) const
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start saving Group<T>" << std::endl;
-#endif
-        // save the Addresses in another map
-        std::map<int, std::uintptr_t> mapCast;
-        for (typename std::map<int, T*>::const_iterator it = this->begin(); it != this->end(); it++)
-        {
-            mapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
-        }
-
-        // serialize this map containing Addresses
-        ar& boost::serialization::make_nvp("map", mapCast);
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish saving Group<T>" << std::endl;
-#endif
-    }
-
-    //! @brief deserializes (loads) the class
-    //! @param ar         archive
-    //! @param version    version
-    template <class Archive>
-    void load(Archive& ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start loading Group<T>" << std::endl;
-#endif
-        std::map<int, std::uintptr_t> mapCast;
-        ar& boost::serialization::make_nvp("map", mapCast);
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
-
-        for (std::map<int, std::uintptr_t>::iterator it = mapCast.begin(); it != mapCast.end(); it++)
-        {
-            this->insert(std::pair<int, T*>(it->first, reinterpret_cast<T*>(it->second)));
-        }
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish loading Group<T>" << std::endl;
-#endif
-    }
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    //    //! @brief deserializes (loads) the class
-    //    //! @param ar         archive
-    //    //! @param version    version
-    //    template<class Archive>
-    //    void serialize(Archive & ar, const unsigned int version)
-    //    {
-    //#ifdef DEBUG_SERIALIZATION
-    //        std::cout << "start loading Group<T>" << std::endl;
-    //#endif
-    //        std::map<int,std::uintptr_t>* mapCast = dynamic_cast<std::map<int,std::uintptr_t>* >(this);
-    //        ar & boost::serialization::make_nvp ("map", *mapCast );
-    //        dynamic_cast<std::map<int,T*>* >(this) = mapCast;
-
-    //        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
-
-
-    //#ifdef DEBUG_SERIALIZATION
-    //        std::cout << "finish loading Group<T>" << std::endl;
-    //#endif
-    //    }
-
-    void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override
-    {
-        for (typename std::map<int, T*>::iterator it = this->begin(); it != this->end(); it++)
-        {
-            std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast =
-                    mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(it->second));
-            if (itCast != mNodeMapCast.end())
-            {
-                it->second = reinterpret_cast<T*>(itCast->second);
-            }
-            else
-                throw MechanicsException("[NuTo::Group] The NodeBase/ElementBase-Pointer could not be updated.");
-        }
-    }
-#endif // ENABLE_SERIALIZATION
 
     //! @brief gives the number of group members
     //! @return number of group members
@@ -278,11 +176,3 @@ public:
     void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
 };
 } // namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::NodeBase>)
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::ElementBase>)
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::NodeBase*>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::ElementBase*>)))
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

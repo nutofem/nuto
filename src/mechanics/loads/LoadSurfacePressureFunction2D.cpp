@@ -18,6 +18,3 @@ void LoadSurfacePressureFunction2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoord
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadSurfacePressureFunction2D)
-#endif

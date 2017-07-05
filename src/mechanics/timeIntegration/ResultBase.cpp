@@ -1,9 +1,4 @@
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <boost/filesystem.hpp>
 #include "math/EigenCompanion.h"
 

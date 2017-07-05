@@ -16,21 +16,10 @@ template <typename T> class BlockFullVector;
 //! @brief ...
 class ElementOutputBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     ElementOutputBase();
 
     virtual ~ElementOutputBase();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
     virtual BlockFullMatrix<double>& GetBlockFullMatrixDouble();
 
@@ -57,8 +46,4 @@ public:
 
 
 
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputBase)
-#endif // ENABLE_SERIALIZATION
 

@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 
 namespace NuTo
@@ -13,9 +9,6 @@ namespace NuTo
 //! @brief ... standard class for implicit timeintegration (Newmark, but you can use it for statics as well with setting the flag isDynamic to false)
 class RungeKutta38 : public RungeKuttaBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
@@ -31,27 +24,6 @@ public:
     //! @brief calculate the critical time step for explicit routines
     //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
     double CalculateCriticalTimeStep()const override;
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    //! @brief ... save the object to a file
-    void Restore (const std::string &filename, std::string rType );
-
-	//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-	void Save (const std::string &filename, std::string rType )const;
-#endif // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const override;
@@ -76,17 +48,9 @@ public:
 
 protected:
     //empty private construct required for serialization
-#ifdef ENABLE_SERIALIZATION
-    RungeKutta38(){};
-#endif  // ENABLE_SERIALIZATION
 
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::RungeKutta38)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

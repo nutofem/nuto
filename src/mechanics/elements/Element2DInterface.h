@@ -30,10 +30,6 @@ struct EvaluateData
 class Element2DInterface: public ElementBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-
 public:
     Element2DInterface(const std::vector<NuTo::NodeBase*>& rNodes,
                        const InterpolationType& rInterpolationType, 

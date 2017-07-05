@@ -229,6 +229,3 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadSurfaceBase3D)
-#endif

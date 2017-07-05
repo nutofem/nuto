@@ -1,15 +1,5 @@
 #include <iostream>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
 void NuTo::IntegrationTypeBase::Info(int rVerboseLevel) const
@@ -71,7 +61,3 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     return ipCellInfo;
 }
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationTypeBase)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationTypeBase)
-#endif // ENABLE_SERIALIZATION

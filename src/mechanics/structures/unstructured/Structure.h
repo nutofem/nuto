@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 #include "mechanics/structures/StructureBase.h"
 #include <set>
@@ -25,9 +21,6 @@ namespace Interpolation
 
 class Structure: public StructureBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief Typedefinitions
@@ -47,52 +40,6 @@ public:
     //! @brief destructor
     virtual ~Structure();
 
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    template<class Archive>
-    void loadImplement(Archive & ar);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    template<class Archive>
-    void saveImplement(Archive & ar) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-#endif// SWIG
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Save (const std::string &filename, std::string rType ) const override;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore (const std::string &filename, std::string rType ) override;
-
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    virtual void SaveUpdate (const std::string &filename, std::string rType ) const override;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    virtual void RestoreUpdate (const std::string &filename, std::string rType ) override;
-
-#endif // ENABLE_SERIALIZATION
 
 #ifndef SWIG
 
@@ -573,12 +520,6 @@ public:
 
 protected:
 #ifndef SWIG
-#ifdef ENABLE_SERIALIZATION
-    //! @brief ... standard constructor just for the serialization routine
-    Structure()
-    {
-    }
-#endif  // ENABLE_SERIALIZATION
 #endif
 
 #ifndef SWIG
@@ -625,8 +566,3 @@ protected:
     boost::ptr_map<int, ElementBase> mElementMap;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::Structure)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

@@ -16,11 +16,6 @@
 
 
 
-#ifdef ENABLE_SERIALIZATION
-#include "math/CustomBoostSerializationExtensions.h"
-#endif
-
-
 NuTo::Element1DInXD::Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
                                    const InterpolationType& rInterpolationType,
                                    const IntegrationTypeBase& integrationType,
@@ -280,25 +275,3 @@ void NuTo::Element1DInXD::CheckElement()
 }
 
 
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Element1DInXD::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Element1DInXD::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Element1DInXD::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Element1DInXD::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Element1DInXD::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template void NuTo::Element1DInXD::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Element1DInXD::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Element1DInXD" << std::endl;
-#endif
-    typedef ContinuumElement<1> ContinuumElement1D;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContinuumElement1D);
-    ar & BOOST_SERIALIZATION_NVP(mRotationMatrix);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Element1DInXD" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Element1DInXD)
-#endif

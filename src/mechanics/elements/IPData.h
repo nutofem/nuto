@@ -58,9 +58,6 @@ public:
     void NuToSerializeLoad(SerializeStreamIn& rStream);
 
 private:
-#ifdef ENABLE_SERIALIZATION
-    IPData() {};
-#endif // ENABLE_SERIALIZATION
 
     //! @brief integration type pointer
     //! @remark this is only set via references. So no checks for nullptr, please. It is no reference because of slicing

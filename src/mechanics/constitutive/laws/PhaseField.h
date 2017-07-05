@@ -38,9 +38,6 @@ namespace Constitutive
 //! "A review on phase-field models of brittle fracture and a new fast hybrid formulation"
 class PhaseField : public ConstitutiveBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief      Constructor
     //! @param[in]  rYoungsModulus Young's Modulus
@@ -120,14 +117,6 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
-
     //! @brief Returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override {return false;}
@@ -170,6 +159,3 @@ private:
 };
 }// namespace NuTo
 
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::PhaseField)
-#endif // ENABLE_SERIALIZATION

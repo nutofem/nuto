@@ -2,10 +2,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 
 namespace NuTo
@@ -16,24 +12,11 @@ namespace NuTo
 //! see for example Hairer, Lubich and Wanner ("Geometrical numerical integration")
 class NystroemBase : public TimeIntegrationBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
 
     //! @brief constructor
     NystroemBase(StructureBase* rStructure);
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif// SWIG
-#endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
@@ -71,19 +54,11 @@ public:
 
 protected:
     //empty private construct required for serialization
-#ifdef ENABLE_SERIALIZATION
-    NystroemBase(){};
-#endif  // ENABLE_SERIALIZATION
 private:
     //use diagonal mass matrix (standard is true, only for test cases use false)
     bool mUseDiagonalMassMatrix;
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NystroemBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
 
 
 

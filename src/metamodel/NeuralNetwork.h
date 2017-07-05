@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/vector.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "metamodel/Metamodel.h"
 #include "optimize/CallbackHandler.h"
 
@@ -23,9 +17,6 @@ class TransferFunction;
 //! @brief Standard abstract class for all metamodels in NuTo
 class NeuralNetwork : public virtual Metamodel, public virtual CallbackHandler
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 public:
 enum eTransferFunctions {
        Empty=0,
@@ -41,24 +32,6 @@ enum eTransferFunctions {
 	//! @brief constructor
 	//! @param rvNumNeurons ... number of neurons in each hidden layer
     NeuralNetwork (std::vector<int> rvNumNeurons);
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-#endif
-#endif  // ENABLE_SERIALIZATION
 
 	void BuildDerived() override;
 	void SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction);
@@ -177,18 +150,6 @@ enum eTransferFunctions {
     void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const override;
     void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
             Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax) const override;
-#ifdef ENABLE_SERIALIZATION
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    //! @brief ... save the object to a file
-    virtual void Restore (const std::string &filename, std::string rType );
-
-	//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-	virtual void Save (const std::string &filename, std::string rType )const;
-#endif // ENABLE_SERIALIZATION
 
 protected:                                                                 
     void ForwardPropagateInput(std::vector<double> &pA, std::vector<double> &pO)const;
@@ -252,8 +213,3 @@ protected:
     NeuralNetwork ();
 };
 } //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NeuralNetwork)
-#endif //SWIG
-#endif  // ENABLE_SERIALIZATION

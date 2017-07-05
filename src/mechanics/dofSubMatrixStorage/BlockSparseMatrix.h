@@ -26,11 +26,6 @@ template <class T> class SparseMatrixCSRVector2Symmetric;
 //! @brief ... class for all block sparse matrices without any operations, except *BlockFullVector
 class BlockSparseMatrix: public BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    BlockSparseMatrix() {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ctor
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
@@ -155,8 +150,3 @@ private:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockSparseMatrix)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

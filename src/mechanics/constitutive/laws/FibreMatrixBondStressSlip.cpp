@@ -5,15 +5,6 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/elements/ElementEnum.h"
@@ -467,36 +458,6 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
             throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::FibreMatrixBondStressSlip::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize FibreMatrixBondStressSlip" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-    & BOOST_SERIALIZATION_NVP(mMaxBondStress)
-    & BOOST_SERIALIZATION_NVP(mResidualBondStress)
-    & BOOST_SERIALIZATION_NVP(mSlipAtMaxBondStress)
-    & BOOST_SERIALIZATION_NVP(mSlipAtResidualBondStress)
-    & BOOST_SERIALIZATION_NVP(mNormalStiffness)
-    & BOOST_SERIALIZATION_NVP(m1DivAlpha);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize FibreMatrixBondStressSlip" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::FibreMatrixBondStressSlip)
-#endif // ENABLE_SERIALIZATION
 
 
 bool NuTo::FibreMatrixBondStressSlip::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const

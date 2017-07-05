@@ -9,21 +9,10 @@ namespace NuTo
 //! @brief ... Integration in 2D with 9 integration points
 class IntegrationType2D4NGauss9Ip : public IntegrationType2D
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
     IntegrationType2D4NGauss9Ip();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -54,7 +43,4 @@ protected:
 
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D4NGauss9Ip)
-#endif // ENABLE_SERIALIZATION
 

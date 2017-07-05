@@ -6,17 +6,6 @@
 #include <iostream>
 #include <fstream>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/archive_exception.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
 #include <boost/foreach.hpp>
 
 
@@ -33,9 +22,6 @@ template <class T> class SparseMatrixCSRVector2General;
 template <class T>
 class SparseMatrixCSR : public SparseMatrix<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class SparseMatrixCSRVector2General<T>;
 
 public:
@@ -207,26 +193,6 @@ public:
             this->mOneBasedIndexing = false;
         }
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialize SparseMatrixCSR \n";
-#endif
-        ar & boost::serialization::make_nvp("SparseMatrix",boost::serialization::base_object< SparseMatrix<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mColumns)
-        & BOOST_SERIALIZATION_NVP(mRowIndex)
-        & BOOST_SERIALIZATION_NVP(mValues);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finisch serialize SparseMatrixCSR \n";
-#endif
-   }
-#endif  // ENABLE_SERIALIZATION
 
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value

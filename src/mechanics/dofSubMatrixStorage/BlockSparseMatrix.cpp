@@ -18,11 +18,6 @@
 
 #include "eigen3/Eigen/Sparse"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/utility.hpp> // for std::pair
-#include "math/CustomBoostSerializationExtensions.h"
-#endif // ENABLE_SERIALIZATION
-
 
 NuTo::BlockSparseMatrix::BlockSparseMatrix(const DofStatus& rDofStatus, bool rCanBeSymmetric) :
         BlockStorageBase(rDofStatus), mCanBeSymmetric(rCanBeSymmetric)
@@ -487,31 +482,3 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlo
     return rOut;
 }
 }
-#ifdef ENABLE_SERIALIZATION
-
-
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::BlockSparseMatrix::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::BlockSparseMatrix::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize BlockSparseMatrix" << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(BlockStorageBase)
-      & BOOST_SERIALIZATION_NVP(mData);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize BlockSparseMatrix \n";
-#endif
-}
-
-
-
-
-
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockSparseMatrix)
-#endif //ENABLE_SERIALIZATION

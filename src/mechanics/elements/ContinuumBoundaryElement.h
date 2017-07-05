@@ -139,10 +139,6 @@ public:
 
 protected:
 
-#ifdef ENABLE_SERIALIZATION
-    ContinuumBoundaryElement() {}
-#endif // ENABLE_SERIALIZATION
-
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
 
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,

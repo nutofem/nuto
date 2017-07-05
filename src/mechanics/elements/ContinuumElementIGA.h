@@ -10,11 +10,6 @@ namespace NuTo
 template <int TDim>
 class ContinuumElementIGA: public ContinuumElement<TDim>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    ContinuumElementIGA()=default;
-#endif // ENABLE_SERIALIZATION
 
     friend class ContinuumBoundaryElement<TDim>;
 
@@ -83,22 +78,6 @@ protected:
     virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const override;
 
 
-#ifdef ENABLE_SERIALIZATION
-private:
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-#endif  // ENABLE_SERIALIZATION
 };
 
 } /* namespace NuTo */

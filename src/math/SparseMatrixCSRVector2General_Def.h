@@ -17,9 +17,6 @@ template <class T> class SparseMatrixCSRVector2Symmetric;
 template <class T>
 class SparseMatrixCSRVector2General : public SparseMatrixCSRVector2<T>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
     friend class SparseMatrixCSRVector2Symmetric<T>;
 public:
     //! @brief ... constructor
@@ -72,18 +69,6 @@ public:
     //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
     //! @return symmetric part
     SparseMatrixCSRVector2Symmetric<T> SymmetricPart() const;
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief ... save the object to a file
-    //! @param filename ... filename
-    //! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const;
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType);
-#endif // ENABLE_SERIALIZATION
 
 #ifndef SWIG
     friend SparseMatrixCSRVector2General<T> operator+ (SparseMatrixCSRVector2General<T> rLhs, const SparseMatrixCSRVector2General<T> &rRhs )
@@ -239,39 +224,10 @@ public:
     const NuTo::SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const override;
 #endif
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization SparseMatrixCSRVector2General \n";
-#endif
-        ar & boost::serialization::make_nvp("SparseMatrixCSRVector2General",boost::serialization::base_object< SparseMatrixCSRVector2<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mNumColumns);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization SparseMatrixCSRVector2General \n";
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
-
 protected:
     //! @brief ... number of columns
     int mNumColumns;
 
 };
 }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-namespace boost{
-template <class T>
-struct is_virtual_base_of <NuTo::SparseMatrixCSRVector2<T>, NuTo::SparseMatrixCSRVector2General<T>>: public mpl:: true_ {};
-}
-BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2General<double>)
-BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2General<int>)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION
 

@@ -1,15 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <boost/ptr_container/ptr_list.hpp>
 
 #ifdef _OPENMP
@@ -115,58 +103,6 @@ int NuTo::StructureBase::GetDimension() const
 {
     return mDimension;
 }
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::StructureBase::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::StructureBase::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    mLogger << "start serialization of structure base"
-            << "\n";
-#endif
-
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
-    ar& BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
-    ar& BOOST_SERIALIZATION_NVP(mDimension);
-    ar& BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMap);
-    ar& BOOST_SERIALIZATION_NVP(mNumLoadCases);
-    ar& BOOST_SERIALIZATION_NVP(mLoadMap);
-    ar& BOOST_SERIALIZATION_NVP(mGroupMap);
-    ar& BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
-    ar& BOOST_SERIALIZATION_NVP(mSectionMap);
-    ar& BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
-    ar& BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
-#ifdef ENABLE_VISUALIZE
-    //    ar & BOOST_SERIALIZATION_NVP(mGroupeVisualizeWhatsMap);
-    std::cout << "WARNING: Visualization components are not serialized!\n";
-#endif
-    ar& BOOST_SERIALIZATION_NVP(mDofStatus);
-    ar& BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMatrix);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMappingRHS);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintRHS);
-    ar& BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
-    ar& BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
-    ar& BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
-#ifdef _OPENMP
-    // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them afterwards
-    // see Structure::loadImplement and Structure::saveImplement
-    ar& BOOST_SERIALIZATION_NVP(mNumProcessors);
-#endif // _OPENMP
-    ar& boost::serialization::make_nvp("mLogger", mLogger);
-#ifdef DEBUG_SERIALIZATION
-    mLogger << "finish serialization of structure base"
-            << "\n";
-#endif
-}
-#endif // ENABLE_SERIALIZATION
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::StructureBase::Info() const
@@ -1199,8 +1135,3 @@ void StructureBase::SetVerboseLevel(unsigned short verboseLevel)
     mVerboseLevel = verboseLevel;
 }
 
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

@@ -2,16 +2,6 @@
 // ElementDataNonlocalBase.cpp
 // created Apr 22, 2010 by Joerg F. Unger
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementOutputBase.h"

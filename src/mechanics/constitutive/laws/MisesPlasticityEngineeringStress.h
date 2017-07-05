@@ -12,9 +12,6 @@ class Logger;
 //! @brief Mises plasticity with isotropic and kinematic hardening.
 class MisesPlasticityEngineeringStress: public ConstitutiveBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     MisesPlasticityEngineeringStress();
 
@@ -130,14 +127,6 @@ public:
     	return false;
     }
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
-
 protected:
     //! @brief ... Young's modulus \f$ E \f$
     double mE;
@@ -175,6 +164,3 @@ protected:
     double GetHardeningModulus(double rEpsilonPEq, double& rDHDEpsilonP)const;
 };
 }  //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::MisesPlasticityEngineeringStress)
-#endif // ENABLE_SERIALIZATION
