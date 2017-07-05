@@ -1,4 +1,3 @@
-# $Id$
 
 # find the Arpack library 
 #

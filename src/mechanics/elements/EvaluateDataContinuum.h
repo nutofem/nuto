@@ -2,7 +2,7 @@
 
 namespace NuTo
 {
-template<int TDim>
+template <int TDim>
 struct EvaluateDataContinuum
 {
 public:
@@ -26,7 +26,7 @@ public:
     //! @return the N-Matrix
     const Eigen::MatrixXd* GetNMatrix(Node::eDof dof)
     {
-        if(mN.size() != 0)
+        if (mN.size() != 0)
             return mN.at(dof);
         else
             return &(mNIGA.at(dof));

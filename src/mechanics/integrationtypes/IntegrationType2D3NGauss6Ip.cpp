@@ -22,14 +22,21 @@ Eigen::VectorXd NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoord
 
     switch (rIpNum)
     {
-    case 0: return Eigen::Vector2d({a, a});
-    case 1: return Eigen::Vector2d({1 - 2 * a, a});
-    case 2: return Eigen::Vector2d({a, 1 - 2 * a});
-    case 3: return Eigen::Vector2d({b, b});
-    case 4: return Eigen::Vector2d({1 - 2 * b, b});
-    case 5: return Eigen::Vector2d({b, 1 - 2 * b});
+    case 0:
+        return Eigen::Vector2d({a, a});
+    case 1:
+        return Eigen::Vector2d({1 - 2 * a, a});
+    case 2:
+        return Eigen::Vector2d({a, 1 - 2 * a});
+    case 3:
+        return Eigen::Vector2d({b, b});
+    case 4:
+        return Eigen::Vector2d({1 - 2 * b, b});
+    case 5:
+        return Eigen::Vector2d({b, 1 - 2 * b});
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
@@ -64,17 +71,23 @@ double NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight(int rIpNum) 
     case 5:
         return d;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D3NGauss6Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D3NGauss6Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
 
-    // only 3 integration points (1,2,3) are visualised. TODO: Voronoi decomposition + triangulation for proper visualisation
+    // only 3 integration points (1,2,3) are visualised. TODO: Voronoi decomposition + triangulation for proper
+    // visualisation
 
     NumVisualizationPoints = 7;
 
@@ -95,8 +108,8 @@ void NuTo::IntegrationType2D3NGauss6Ip::GetVisualizationCells(unsigned int& NumV
     VisualizationPointLocalCoordinates.push_back(0.5);
 
     // Point 4
-    VisualizationPointLocalCoordinates.push_back(1./3.);
-    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1. / 3.);
+    VisualizationPointLocalCoordinates.push_back(1. / 3.);
 
     // Point 5
     VisualizationPointLocalCoordinates.push_back(0.5);
@@ -133,4 +146,3 @@ void NuTo::IntegrationType2D3NGauss6Ip::GetVisualizationCells(unsigned int& NumV
     VisualizationCellsIP.push_back(5);
 }
 #endif // ENABLE_VISUALIZE
-

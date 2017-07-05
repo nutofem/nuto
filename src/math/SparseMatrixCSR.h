@@ -14,7 +14,8 @@
 
 namespace NuTo
 {
-template <class T> class SparseMatrixCSRVector2General;
+template <class T>
+class SparseMatrixCSRVector2General;
 
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
@@ -28,7 +29,8 @@ public:
     //! @brief ... constructor
     //! @param rNumRows_ ... number of rows
     //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
-    SparseMatrixCSR(int rNumRows_, unsigned int rNumReserveEntries_ = 0) : SparseMatrix<T>()
+    SparseMatrixCSR(int rNumRows_, unsigned int rNumReserveEntries_ = 0)
+        : SparseMatrix<T>()
     {
         // check for overflow
         assert(rNumRows_ < INT_MAX);
@@ -39,13 +41,13 @@ public:
     }
     virtual ~SparseMatrixCSR() = default;
 
-    SparseMatrixCSR(const SparseMatrixCSR<T>&  rOther) = default;
+    SparseMatrixCSR(const SparseMatrixCSR<T>& rOther) = default;
 
 #ifndef SWIG
-    SparseMatrixCSR(      SparseMatrixCSR<T>&& rOther) = default;
+    SparseMatrixCSR(SparseMatrixCSR<T>&& rOther) = default;
 
-    SparseMatrixCSR<T>& operator =(const SparseMatrixCSR<T>&   rOther) = default;
-    SparseMatrixCSR<T>& operator =(      SparseMatrixCSR<T>&&  rOther) = default;
+    SparseMatrixCSR<T>& operator=(const SparseMatrixCSR<T>& rOther) = default;
+    SparseMatrixCSR<T>& operator=(SparseMatrixCSR<T>&& rOther) = default;
 
 #endif // SWIG
 
@@ -137,8 +139,9 @@ public:
     //! @brief Print info about the object
     void Info() const override
     {
-        std::cout << "number of rows: " << this->mRowIndex.size() - 1  << std::endl;
-        std::cout << "number of nonzero entries: " << this->mValues.size() << "(" << this->mColumns.size() << ")" << std::endl;
+        std::cout << "number of rows: " << this->mRowIndex.size() - 1 << std::endl;
+        std::cout << "number of nonzero entries: " << this->mValues.size() << "(" << this->mColumns.size() << ")"
+                  << std::endl;
         std::cout << "capacity: " << this->mValues.capacity() << "(" << this->mColumns.capacity() << ")" << std::endl;
         std::cout << "mValues: ";
         for (unsigned int entry_count = 0; entry_count < this->mValues.size(); entry_count++)
@@ -163,7 +166,7 @@ public:
     //! @brief ... switch to one based indexing (only internal indexing, interface still uses zero based indexing)
     void SetOneBasedIndexing() override
     {
-        if (! this->mOneBasedIndexing)
+        if (!this->mOneBasedIndexing)
         {
             for (unsigned int entry_count = 0; entry_count < this->mColumns.size(); entry_count++)
             {
@@ -197,10 +200,10 @@ public:
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value
     //! @return ... the multiplied matrix (sparse csr storage)
-    SparseMatrixCSR<T>& operator*=  ( const T &rOther )
+    SparseMatrixCSR<T>& operator*=(const T& rOther)
     {
-		BOOST_FOREACH( T &val, this->mValues )
-			val *= rOther;
+        BOOST_FOREACH (T& val, this->mValues)
+            val *= rOther;
         return *this;
     }
 
@@ -210,23 +213,24 @@ public:
     //! @param rResultOutput ... maximum matrix entry
     virtual void MaxEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
-        if (mValues.size()==0)
-            throw MathException("[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
+        if (mValues.size() == 0)
+            throw MathException(
+                    "[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 
         unsigned int curRow(0);
         rRowOutput = curRow;
         rColumnOutput = mColumns[0];
-        for (unsigned int count=1; count<mValues.size(); count++)
+        for (unsigned int count = 1; count < mValues.size(); count++)
         {
-            while (mRowIndex[curRow]<(int)count)
+            while (mRowIndex[curRow] < (int)count)
                 curRow++;
-            if (mValues[count]>rResultOutput)
+            if (mValues[count] > rResultOutput)
             {
                 rResultOutput = mValues[count];
                 rColumnOutput = (int)mColumns[count];
-                rRowOutput    = (int)curRow;
+                rRowOutput = (int)curRow;
             }
         }
     }
@@ -237,41 +241,46 @@ public:
     //! @param rResultOutput ... minimum matrix entry
     virtual void MinEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
-        if (mValues.size()==0)
-            throw MathException("[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
+        if (mValues.size() == 0)
+            throw MathException(
+                    "[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 
         unsigned int curRow(0);
         rRowOutput = curRow;
         rColumnOutput = mColumns[0];
-        for (unsigned int count=1; count<mValues.size(); count++)
+        for (unsigned int count = 1; count < mValues.size(); count++)
         {
-            while (mRowIndex[curRow]<(int)count)
+            while (mRowIndex[curRow] < (int)count)
                 curRow++;
-            if (mValues[count]<rResultOutput)
+            if (mValues[count] < rResultOutput)
             {
                 rResultOutput = mValues[count];
                 rColumnOutput = (int)mColumns[count];
-                rRowOutput    = (int)curRow;
+                rRowOutput = (int)curRow;
             }
         }
     }
 
-    //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
+    //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a
+    //! prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
-    //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
+    //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry
+    //! (absolute values))
     int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) override;
 
 
-    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
+    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting
+    //! for stiffness matrices to use the same matrix structure
     void SetZeroEntries() override
     {
-    	for (unsigned int count=0; count<mValues.size(); count++)
-    	{
-    		mValues[count] = 0;
-    	}
+        for (unsigned int count = 0; count < mValues.size(); count++)
+        {
+            mValues[count] = 0;
+        }
     }
+
 protected:
     //! @brief value of nonzero matrix entries
     std::vector<T> mValues;

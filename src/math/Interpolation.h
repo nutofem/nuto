@@ -4,13 +4,13 @@
 #include <vector>
 #include <functional>
 
-namespace NuTo {
+namespace NuTo
+{
 namespace Math
 {
 class Interpolation
 {
 public:
-
     //! create interpolation object; call with data array
     Interpolation(std::vector<std::array<double, 2>> data, unsigned numNeighborPoints);
 
@@ -27,7 +27,6 @@ public:
     std::function<double(double)> df = [this](double x) { return derivative(x); };
 
 protected:
-
     std::vector<std::array<double, 2>> mData;
 
     unsigned mNumNeighborPoints;

@@ -17,9 +17,8 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::ThermalStrains:
 
 
 template <int TDim>
-void ThermalStrains::Evaluate(
-        const ConstitutiveInputMap &rConstitutiveInput,
-        const ConstitutiveOutputMap &rConstitutiveOutput)
+void ThermalStrains::Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                              const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     const int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
@@ -32,7 +31,8 @@ void ThermalStrains::Evaluate(
     // if a function is attached, use that; if not use the linear expansion coefficient
     if (mNonlinearExpansionFunction)
     {
-        if (temperature < 0.0) temperature = 0.0;
+        if (temperature < 0.0)
+            temperature = 0.0;
         strain = mNonlinearExpansionFunction(temperature);
     }
     else
@@ -43,13 +43,13 @@ void ThermalStrains::Evaluate(
 
     for (auto& itOutput : rConstitutiveOutput)
     {
-        switch(itOutput.first)
+        switch (itOutput.first)
         {
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
         {
             Eigen::Matrix<double, voigtDim, 1>& engineeringStrain =
-                static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
-            for(unsigned int i = 0; i < TDim; ++i)
+                    static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
+            for (unsigned int i = 0; i < TDim; ++i)
                 engineeringStrain[i] = strain[0];
             itOutput.second->SetIsCalculated(true);
             break;
@@ -57,8 +57,8 @@ void ThermalStrains::Evaluate(
         case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
         {
             ConstitutiveVector<voigtDim>& engineeringStrain =
-                *static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get());
-            for(unsigned int i = 0; i < TDim; ++i)
+                    *static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get());
+            for (unsigned int i = 0; i < TDim; ++i)
                 engineeringStrain[i] = strain[0];
             itOutput.second->SetIsCalculated(true);
             break;
@@ -66,9 +66,9 @@ void ThermalStrains::Evaluate(
         case NuTo::Constitutive::eOutput::D_STRAIN_D_TEMPERATURE:
         {
             Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature =
-                static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
+                    static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
             dStrainDTemperature.setZero();
-            for(unsigned int i=0; i<TDim; ++i)
+            for (unsigned int i = 0; i < TDim; ++i)
             {
                 //! \todo derivative is really positive, yet the strain itself
                 //! needs to be negative in the corresponding hessian
@@ -76,7 +76,7 @@ void ThermalStrains::Evaluate(
             }
             itOutput.second->SetIsCalculated(true);
         }
-            break;
+        break;
 
         case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
@@ -99,7 +99,7 @@ bool ThermalStrains::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof
 }
 
 ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-        const InterpolationType&) const
+                                                           const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -128,15 +128,14 @@ ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOut
 
 void NuTo::ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-            mExpansionCoefficient = rValue;
-            return;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                    "Constitutive law does not have the parameter "
-                    + Constitutive::ConstitutiveParameterToString(rIdentifier));
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        mExpansionCoefficient = rValue;
+        return;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
+                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -150,9 +149,9 @@ void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double,
     mNonlinearExpansionFunction = ExpansionFunction;
 }
 
-template void ThermalStrains::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
-                                                  const ConstitutiveOutputMap &rConstitutiveOutput);
-template void ThermalStrains::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
-                                                  const ConstitutiveOutputMap &rConstitutiveOutput);
-template void ThermalStrains::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
-                                                  const ConstitutiveOutputMap &rConstitutiveOutput);
+template void ThermalStrains::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void ThermalStrains::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void ThermalStrains::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);

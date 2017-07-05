@@ -6,7 +6,6 @@ namespace NuTo
 class ImplExCallback
 {
 public:
-
     virtual ~ImplExCallback() = default;
 
     //! @brief is called after an ImplEx step
@@ -34,4 +33,3 @@ private:
 };
 
 } // namespace NuTo
-

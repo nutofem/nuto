@@ -13,10 +13,11 @@
 using namespace NuTo;
 
 InterpolationBaseFEM::InterpolationBaseFEM(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDimension)
-    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension),
-    mShapeFunctions([=] (const Eigen::VectorXd& v) { return CalculateShapeFunctions(v);}),
-    mMatrixN([=] (const Eigen::VectorXd& v) { return CalculateMatrixN(v);}),
-    mDerivativeShapeFunctionsNatural([=] (const Eigen::VectorXd& v) { return CalculateDerivativeShapeFunctionsNatural(v);})
+    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
+    , mShapeFunctions([=](const Eigen::VectorXd& v) { return CalculateShapeFunctions(v); })
+    , mMatrixN([=](const Eigen::VectorXd& v) { return CalculateMatrixN(v); })
+    , mDerivativeShapeFunctionsNatural(
+              [=](const Eigen::VectorXd& v) { return CalculateDerivativeShapeFunctionsNatural(v); })
 {
 }
 
@@ -71,7 +72,8 @@ const Eigen::MatrixXd& InterpolationBaseFEM::MatrixN(const Eigen::VectorXd& natu
     return mMatrixN.Get(naturalCoordinates);
 }
 
-const Eigen::MatrixXd& InterpolationBaseFEM::DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const
+const Eigen::MatrixXd&
+InterpolationBaseFEM::DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const
 {
     return mDerivativeShapeFunctionsNatural.Get(naturalCoordinates);
 }
@@ -130,4 +132,3 @@ void InterpolationBaseFEM::Initialize()
     for (int i = 0; i < mNumNodes; ++i)
         mNodeCoordinates[i] = CalculateNaturalNodeCoordinates(i);
 }
-

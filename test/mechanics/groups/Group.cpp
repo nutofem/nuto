@@ -25,7 +25,6 @@ struct GroupTestFixture
 
         nodeGroupTwo.AddMember(3, &node3);
         nodeGroupTwo.AddMember(4, &node4);
-
     }
 
     Group<NodeBase> nodeGroupOne;

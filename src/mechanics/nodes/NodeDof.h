@@ -17,7 +17,7 @@ struct NodeDofInfo
 //! @author Thomas Titscher, BAM
 //! @date July 2016
 //! @brief ... standard class for all nodes
-class NodeDof: public NodeBase
+class NodeDof : public NodeBase
 {
 public:
     //! @brief ctor
@@ -63,7 +63,7 @@ public:
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
     //! @param rValue ... dof value
-    void Set(Node::eDof rDof, int rTimeDerivative , const Eigen::VectorXd& rValue) override;
+    void Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue) override;
 
     //! @brief returns a set containing all dof types
     std::set<Node::eDof> GetDofTypes() const override;
@@ -76,14 +76,11 @@ protected:
     virtual void Info(std::ostream& out) const override;
 
 private:
-
     //! @brief stores the dof values (std::vector for time derivatives, VectorXd for values)
     std::map<Node::eDof, std::vector<Eigen::VectorXd>> mDofValues;
 
     //! @brief stores the global dof numbers in a dynamic integer vector
     std::map<Node::eDof, Eigen::VectorXi> mDofNumbers;
-
 };
 
 } /* namespace NuTo */
-

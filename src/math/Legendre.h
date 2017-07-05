@@ -2,12 +2,15 @@
 
 #include <vector>
 
-namespace NuTo {
-namespace Math {
+namespace NuTo
+{
+namespace Math
+{
 
-namespace Polynomial {
+namespace Polynomial
+{
 
-//! @brief value of the k-th derivative of legendre polynomial 
+//! @brief value of the k-th derivative of legendre polynomial
 //! @remark this includes the 0-th derivative, the actual legendre polynomial
 //! @param n polynomial order
 //! @param x argument of polynomial

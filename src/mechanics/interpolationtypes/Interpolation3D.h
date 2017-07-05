@@ -12,7 +12,7 @@
 namespace NuTo
 {
 
-class Interpolation3D: public InterpolationBaseFEM
+class Interpolation3D : public InterpolationBaseFEM
 {
 public:
     Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
@@ -21,8 +21,6 @@ public:
     {
         return 3;
     }
-
 };
 
 } /* namespace NuTo */
-

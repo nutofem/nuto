@@ -25,4 +25,3 @@ void SectionTruss::Info(std::ostream& out) const
 {
     out << "    Truss section with area " << mArea << "\n";
 }
-

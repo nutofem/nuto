@@ -8,15 +8,17 @@ namespace NuTo
 
 // forward declarations
 class InterpolationType;
-template<typename IOEnum> class ConstitutiveIOMap;
-template <int TDim> class EngineeringStrain;
-template <int TDim> class EngineeringStress;
+template <typename IOEnum>
+class ConstitutiveIOMap;
+template <int TDim>
+class EngineeringStrain;
+template <int TDim>
+class EngineeringStress;
 namespace Constitutive
 {
-    enum class eInput;
+enum class eInput;
 }
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
-
 
 
 class EngineeringStressHelper
@@ -35,11 +37,8 @@ public:
     static std::tuple<double, double, double> CalculateCoefficients3D(double rE, double rNu);
 
 
-
     template <int TDim>
-    static NuTo::EngineeringStress<TDim> GetStress(const NuTo::EngineeringStrain<TDim>& rElasticStrain,
-                                                   double rE,
+    static NuTo::EngineeringStress<TDim> GetStress(const NuTo::EngineeringStrain<TDim>& rElasticStrain, double rE,
                                                    double rNu, ePlaneState rPlaneState = ePlaneState::PLANE_STRESS);
 };
 } /* namespace NuTo */
-

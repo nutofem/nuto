@@ -538,24 +538,21 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::StructureBase::NodeTotalAddToVisualize(
-        Visualize::UnstructuredGrid& visualizer,
-        const std::vector<eVisualizeWhat>& visualizeComponents) const
+void NuTo::StructureBase::NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                                  const std::vector<eVisualizeWhat>& visualizeComponents) const
 {
     std::vector<const NodeBase*> nodeVec;
     this->GetNodesTotal(nodeVec);
     NodeVectorAddToVisualize(visualizer, visualizeComponents, nodeVec);
 }
 
-void NuTo::StructureBase::NodeVectorAddToVisualize(
-        Visualize::UnstructuredGrid& visualizer,
-        const std::vector<eVisualizeWhat>& visualizeComponents,
-        const std::vector<const NodeBase*>& nodes) const
+void NuTo::StructureBase::NodeVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                                   const std::vector<eVisualizeWhat>& visualizeComponents,
+                                                   const std::vector<const NodeBase*>& nodes) const
 {
     using Node::eDof;
 
-    auto NodeData3D = [=](const NodeBase* node, eDof dof, int timeDerivative)
-    {
+    auto NodeData3D = [=](const NodeBase* node, eDof dof, int timeDerivative) {
         auto data = node->Get(dof, timeDerivative);
         return EigenCompanion::To3D(data);
     };
@@ -572,7 +569,7 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
          * What value should be assigned to "Rotation" of Node 1? --> Problem.
          *
          * Near future solution: Independent interpolation, nodes have only one dof
-         * --> NodesDispl.vtu, NodesTemp.vtu, NodesRotation.vtu. 
+         * --> NodesDispl.vtu, NodesTemp.vtu, NodesRotation.vtu.
          *  TODO for future self.
          *
          *  For now, only displacements (+derivatives) are visualized (as before...).
@@ -592,24 +589,21 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(
             {
             case eVisualizeWhat::DISPLACEMENTS:
             {
-                visualizer.SetPointData(pointId, name, 
-                                              NodeData3D(node, Node::eDof::DISPLACEMENTS, 0));
+                visualizer.SetPointData(pointId, name, NodeData3D(node, Node::eDof::DISPLACEMENTS, 0));
             }
             break;
             case eVisualizeWhat::VELOCITY:
             {
                 if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                     break;
-                visualizer.SetPointData(pointId, name,
-                                              NodeData3D(node, Node::eDof::DISPLACEMENTS, 1));
+                visualizer.SetPointData(pointId, name, NodeData3D(node, Node::eDof::DISPLACEMENTS, 1));
             }
             break;
             case eVisualizeWhat::ACCELERATION:
             {
                 if (node->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                     break;
-                visualizer.SetPointData(pointId, name,
-                                              NodeData3D(node, Node::eDof::DISPLACEMENTS, 2));
+                visualizer.SetPointData(pointId, name, NodeData3D(node, Node::eDof::DISPLACEMENTS, 2));
             }
             break;
             default:

@@ -12,19 +12,17 @@ class Transformation
 {
 
 public:
-	virtual ~Transformation(){};
+    virtual ~Transformation(){};
     //! @brief build the transformation using the given Points
-	virtual void Build(const Eigen::MatrixXd& rCoordinates)=0;
+    virtual void Build(const Eigen::MatrixXd& rCoordinates) = 0;
 
-    //! @brief transform the given points 
-    virtual void TransformForward(Eigen::MatrixXd& rCoordinates)const=0;
+    //! @brief transform the given points
+    virtual void TransformForward(Eigen::MatrixXd& rCoordinates) const = 0;
 
-    //! @brief transform the given points 
-    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates)const=0;
+    //! @brief transform the given points
+    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates) const = 0;
 
 protected:
-
 };
 
 } // namespace nuto
-

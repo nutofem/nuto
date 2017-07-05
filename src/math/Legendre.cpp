@@ -32,7 +32,7 @@ double FindLegendreRoot(double guess, int n, int derivative)
 
 std::vector<double> FindLegendreRoots(std::vector<double> guess, int n, int derivative)
 {
-    auto findRoot = [=](double guess){ return FindLegendreRoot(guess, n, derivative); };
+    auto findRoot = [=](double guess) { return FindLegendreRoot(guess, n, derivative); };
     boost::range::transform(guess, guess.begin(), findRoot);
     return boost::range::sort(guess);
 }

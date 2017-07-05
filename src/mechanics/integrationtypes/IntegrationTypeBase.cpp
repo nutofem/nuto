@@ -34,12 +34,13 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
     IpCellInfo ipCellInfo;
     if (NumVisualizationCells == 0)
         return ipCellInfo;
- 
+
 
     // transform cell vertex coordinates
     const int dim = VisualizationPointLocalCoordinates.size() / NumVisualizationPoints;
-    Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dim, NumVisualizationPoints);
-    
+    Eigen::MatrixXd visualizationPointNaturalCoordinates =
+            Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dim, NumVisualizationPoints);
+
     ipCellInfo.vertices.resize(NumVisualizationPoints);
     for (unsigned i = 0; i < NumVisualizationPoints; ++i)
         ipCellInfo.vertices[i].localCoords = visualizationPointNaturalCoordinates.col(i);
@@ -60,4 +61,3 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizatio
 
     return ipCellInfo;
 }
-

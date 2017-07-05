@@ -45,4 +45,3 @@ void LoadNodeForces2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ext
         }
     }
 }
-

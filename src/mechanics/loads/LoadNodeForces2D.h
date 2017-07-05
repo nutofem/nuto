@@ -21,11 +21,10 @@ public:
     void AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const override;
 
 protected:
-    double mValue;  //!< prescribed absolute value of the force at the node
+    double mValue; //!< prescribed absolute value of the force at the node
     double mDirection[2]; //!< direction of the applied force (normalized)
 
 private:
     LoadNodeForces2D() = default;
 };
-}//namespace NuTo
-
+} // namespace NuTo

@@ -18,10 +18,10 @@ public:
         // x0  x1  x2  x3 ...
         // y0  y1  y2  y3 ...
         // z0  z1  z2  z3 ...
-        for (int i                      = 0; i < numRows; ++i)
+        for (int i = 0; i < numRows; ++i)
             nodeBlockCoordinates.col(i) = rNodeValues.block<TDim, 1>(TDim * i, 0);
 
-        mJacobian    = nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
+        mJacobian = nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
         mInvJacobian = mJacobian.inverse();
         mDetJacobian = mJacobian.determinant();
     }

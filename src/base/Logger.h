@@ -31,37 +31,39 @@ public:
     void SetQuiet(bool rQuiet);
 
     //! @brief ..Writes a message to the log and to console
-    template<typename T> void Out(const T & rObject, bool rEof)
+    template <typename T>
+    void Out(const T& rObject, bool rEof)
     {
         if (!mQuiet)
         {
             std::cout << rObject << (rEof ? "\n" : "");
             std::cout.flush();
         }
-        if(mLogFile.is_open())
+        if (mLogFile.is_open())
         {
-        	mLogFile << rObject << (rEof ? "\n" : "");
+            mLogFile << rObject << (rEof ? "\n" : "");
             mLogFile.flush();
         }
     }
 
     //! @brief Info routine that prints general information about the object (detail according to verbose level)
-	void Info() const
-	{
-		std::cout << "LogFileName " << mLogFileName << " is quiet " << mQuiet << std::endl;
-	}
+    void Info() const
+    {
+        std::cout << "LogFileName " << mLogFileName << " is quiet " << mQuiet << std::endl;
+    }
 
 
 protected:
-    std::ofstream mLogFile;     //!< Logfile for output.
-    std::string mLogFileName;   //!< LogfileName for output.
-    int mQuiet;                 //!< If true, no writing to console.;
+    std::ofstream mLogFile; //!< Logfile for output.
+    std::string mLogFileName; //!< LogfileName for output.
+    int mQuiet; //!< If true, no writing to console.;
 };
 
 //! Generic output command.
-template <typename T> Logger& operator<<(Logger &rLogger, const T &rObject)
+template <typename T>
+Logger& operator<<(Logger& rLogger, const T& rObject)
 {
-	rLogger.Out(rObject, false);
+    rLogger.Out(rObject, false);
     return rLogger;
 }
-} //namespace NuTo
+} // namespace NuTo

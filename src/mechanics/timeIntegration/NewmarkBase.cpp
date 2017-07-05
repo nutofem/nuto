@@ -1,8 +1,8 @@
 // $Id: Newmark.cpp 575 2011-09-20 18:05:35Z unger3 $
 
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
@@ -17,12 +17,14 @@
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
-NuTo::NewmarkBase::NewmarkBase (StructureBase* rStructure)
-    : TimeIntegrationBase (rStructure)
+NuTo::NewmarkBase::NewmarkBase(StructureBase* rStructure)
+    : TimeIntegrationBase(rStructure)
 {
 }
 
-void NuTo::NewmarkBase::MergeDofValues(const StructureOutputBlockVector& rDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
+void NuTo::NewmarkBase::MergeDofValues(const StructureOutputBlockVector& rDof_dt0,
+                                       const StructureOutputBlockVector& rDof_dt1,
+                                       const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
 {
     mStructure->NodeMergeDofValues(0, rDof_dt0.J, rDof_dt0.K);
 
@@ -43,6 +45,3 @@ void NuTo::NewmarkBase::MergeDofValues(const StructureOutputBlockVector& rDof_dt
     }
     mStructure->ElementTotalUpdateTmpStaticData();
 }
-
-
-

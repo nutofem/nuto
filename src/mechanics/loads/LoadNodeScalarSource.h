@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #include "mechanics/loads/LoadNode.h"
@@ -23,10 +22,11 @@ public:
     void AddLoadToGlobalSubVectors(StructureOutputBlockVector& externalLoad) const override;
 
 protected:
-    double mValue;     //!< prescribed value of the node
+    double mValue; //!< prescribed value of the node
 
 private:
-    LoadNodeScalarSource(){}
+    LoadNodeScalarSource()
+    {
+    }
 };
-}//namespace NuTo
-
+} // namespace NuTo

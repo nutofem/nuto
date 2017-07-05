@@ -12,11 +12,10 @@
 namespace NuTo
 {
 
-class Interpolation1DInterface: public Interpolation1DTruss
+class Interpolation1DInterface : public Interpolation1DTruss
 {
 
 public:
-
     Interpolation1DInterface(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief determines the standard integration type depending on shape, type and order
@@ -44,13 +43,15 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural coordinates of the elements surface
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                       int rSurface) const override;
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
+    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                                 int rSurface) const override;
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const override
@@ -59,11 +60,8 @@ public:
     }
 
 private:
-
     //! @brief return the number node depending the shape and the order
     int CalculateNumNodes() const override;
-
 };
 
 } /* namespace NuTo */
-

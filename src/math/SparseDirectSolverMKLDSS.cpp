@@ -1,4 +1,3 @@
-// $Id$
 
 #include <ctime>
 
@@ -11,7 +10,8 @@
 #include <mkl_dss.h>
 #endif
 
-NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS() : SparseDirectSolver()
+NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS()
+    : SparseDirectSolver()
 {
 #ifdef HAVE_MKL_DSS
     this->mRefinement = true;
@@ -21,7 +21,8 @@ NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS() : SparseDirectSolver(
 }
 
 #ifdef HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs,
+                                           Eigen::VectorXd& rSolution)
 {
     // timing
     clock_t startTime = clock();
@@ -29,7 +30,8 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve] one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::MathException(
+                "[SparseDirectSolverMKLDSS::solve] one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -47,11 +49,11 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
         throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve] invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = rRhs.GetNumColumns();
-    const double *rhsValues = rRhs.GetEigenMatrix().data();
+    const double* rhsValues = rRhs.GetEigenMatrix().data();
 
     // prepare solution matrix
-    rSolution.Resize(matrixDimension,rhsNumColumns);
-    const double *solutionValues = rSolution.GetEigenMatrix().data();
+    rSolution.Resize(matrixDimension, rhsNumColumns);
+    const double* solutionValues = rSolution.GetEigenMatrix().data();
 
     // initialize solver
     _MKL_DSS_HANDLE_t handle;
@@ -79,7 +81,8 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     {
         symmetry = MKL_DSS_NON_SYMMETRIC;
     }
-    error = dss_define_structure(handle, symmetry, &matrixRowIndex[0], matrixDimension, matrixDimension, &matrixColumns[0], matrixNumEntries);
+    error = dss_define_structure(handle, symmetry, &matrixRowIndex[0], matrixDimension, matrixDimension,
+                                 &matrixColumns[0], matrixNumEntries);
     switch (error)
     {
     case MKL_DSS_SUCCESS:
@@ -95,7 +98,8 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_TOO_FEW_VALUES:
         throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too few entries.");
     case MKL_DSS_TOO_MANY_VALUES:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too many entries.");
+        throw NuTo::MathException(
+                "[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too many entries.");
     default:
         throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: unknown error code.");
     }
@@ -120,9 +124,7 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     {
         clock_t endTime = clock();
         std::cout << "[SparseDirectSolverMKLDSS::solve] Time for reordering and symbolic factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
+                  << static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC << " seconds" << std::endl;
         startTime = endTime;
     }
 
@@ -158,9 +160,7 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     {
         clock_t endTime = clock();
         std::cout << "[SparseDirectSolverMKLDSS::solve] Time for numerical factorization: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
+                  << static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC << " seconds" << std::endl;
         startTime = endTime;
     }
 
@@ -192,16 +192,14 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     {
         clock_t endTime = clock();
         std::cout << "[SparseDirectSolverMKLDSS::solve] Time for back substitution: "
-                  << static_cast<double>(endTime - startTime)/CLOCKS_PER_SEC
-                  << " seconds"
-                  << std::endl;
+                  << static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC << " seconds" << std::endl;
         startTime = endTime;
     }
 
     if (this->mVerboseLevel > 1)
     {
         double statOut[4];
-        //char statIn[] = "ReorderTime,FactorTime,SolveTime,Flops,Peakmem,Factormem,Solvemem";
+        // char statIn[] = "ReorderTime,FactorTime,SolveTime,Flops,Peakmem,Factormem,Solvemem";
         error = dss_statistics(handle, options, "Flops,Peakmem,Factormem,Solvemem", statOut);
         switch (error)
         {
@@ -216,20 +214,17 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
         default:
             throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
         }
-        std::cout << "[SparseDirectSolverMKLDSS::solve] Peak memory symbolic factorization: "
-                  << statOut[1] << " KBytes"
+        std::cout << "[SparseDirectSolverMKLDSS::solve] Peak memory symbolic factorization: " << statOut[1] << " KBytes"
                   << std::endl;
-        std::cout << "[SparseDirectSolverMKLDSS::solve] Permanent memory symbolic factorization: "
-                  << statOut[2] << " KBytes"
-                  << std::endl;
-        std::cout << "[SparseDirectSolverMKLDSS::solve] Memory numerical factorization and solution: "
-                  << statOut[3] << " KBytes"
-                  << std::endl;
+        std::cout << "[SparseDirectSolverMKLDSS::solve] Permanent memory symbolic factorization: " << statOut[2]
+                  << " KBytes" << std::endl;
+        std::cout << "[SparseDirectSolverMKLDSS::solve] Memory numerical factorization and solution: " << statOut[3]
+                  << " KBytes" << std::endl;
         if (this->mVerboseLevel > 2)
         {
-            std::cout << "[SparseDirectSolverMKLDSS::solve] Number of floating point operations required for factorization: "
-                      << statOut[0] << " MFLOS"
-                      << std::endl;
+            std::cout << "[SparseDirectSolverMKLDSS::solve] Number of floating point operations required for "
+                         "factorization: "
+                      << statOut[0] << " MFLOS" << std::endl;
             if (symmetry == MKL_DSS_SYMMETRIC && type == MKL_DSS_INDEFINITE)
             {
                 error = dss_statistics(handle, options, "Inertia", statOut);
@@ -246,14 +241,11 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
                 default:
                     throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
                 }
-                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of positive eigenvalues: "
-                          << statOut[0]
+                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of positive eigenvalues: " << statOut[0]
                           << std::endl;
-                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of negative eigenvalues: "
-                          << statOut[1]
+                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of negative eigenvalues: " << statOut[1]
                           << std::endl;
-                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of zero eigenvalues: "
-                          << statOut[2]
+                std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of zero eigenvalues: " << statOut[2]
                           << std::endl;
             }
         }
@@ -272,9 +264,10 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
         throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_delete: unknown error code.");
     }
 }
-#else// HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
+#else // HAVE_MKL_DSS
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs,
+                                           Eigen::VectorXd& rSolution)
 {
-	throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
+    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
 }
 #endif // HAVE_MKL_DSS

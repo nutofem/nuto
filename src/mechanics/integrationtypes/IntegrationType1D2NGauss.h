@@ -8,11 +8,10 @@ namespace NuTo
 //! @author Philipp Mueller, BAM
 //! @date Jun 2017
 //! @brief ... integration types in 1D with Gauss integration
-class   IntegrationType1D2NGauss : public IntegrationType1D
+class IntegrationType1D2NGauss : public IntegrationType1D
 {
 
 public:
-
     //! @brief constructor
     IntegrationType1D2NGauss(int numIps);
 
@@ -31,13 +30,12 @@ public:
     double GetIntegrationPointWeight(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
-    void GetVisualizationCells(
-        unsigned int& NumVisualizationPoints,
-        std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells,
-        std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const override;
+    void GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                               std::vector<double>& VisualizationPointLocalCoordinates,
+                               unsigned int& NumVisualizationCells,
+                               std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                               std::vector<unsigned int>& VisualizationCellsIncidence,
+                               std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 private:
     //! @brief ... integration points coordinates
@@ -46,4 +44,3 @@ private:
     std::vector<double> mWeights;
 };
 } // namespace
-

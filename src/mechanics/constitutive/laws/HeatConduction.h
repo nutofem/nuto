@@ -14,8 +14,9 @@ class InterpolationType;
 //!
 //! Heat change: \f$\dot{Q} = ρ c_T \dot{T}\f$
 //!
-//! Conductivity matrix: \f$C_{ij} = \frac{\partial q_i}{\partial g_j} = - k \delta_{ij} \text{ where } g_i = \frac{\partial T}{\partial x_i}\f$
-class HeatConduction: public ConstitutiveBase
+//! Conductivity matrix: \f$C_{ij} = \frac{\partial q_i}{\partial g_j} = - k \delta_{ij} \text{ where } g_i =
+//! \frac{\partial T}{\partial x_i}\f$
+class HeatConduction : public ConstitutiveBase
 {
 
 public:
@@ -31,25 +32,21 @@ public:
     //! @param rConstitutiveOutput Desired constitutive outputs
     //! @param rInterpolationType Interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                               const InterpolationType& rInterpolationType) const override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
-    template<int TDim>
-    void Evaluate(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput);
+    template <int TDim>
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
     //! @brief Checks if the constitutive law has a specific parameter.
     //! @param rIdentifier Enum to identify the requested parameter
@@ -82,10 +79,11 @@ public:
     //! @param rLogger Stream for the output
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-    //! @brief Returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated).
+    //! @brief Returns true, if a material model has tmp static data (which has to be updated before stress or stiffness
+    //! are calculated).
     bool HaveTmpStaticData() const override
     {
-    	return false;
+        return false;
     }
 
 
@@ -105,8 +103,5 @@ protected:
         Eigen::Matrix<double, TDim, 1> mTemperatureGradient;
         double mTemperatureChange;
     };
-
 };
-
 }
-

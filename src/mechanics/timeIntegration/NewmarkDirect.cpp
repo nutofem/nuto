@@ -665,5 +665,3 @@ NuTo::NewmarkDirect::BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& r
         return result;
     }
 }
-
-

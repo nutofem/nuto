@@ -53,5 +53,6 @@ double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd
     return 0.5 * sum;
 }
 
-void NuTo::NonlinearSolverBase::Info() const {}
-
+void NuTo::NonlinearSolverBase::Info() const
+{
+}

@@ -4,8 +4,8 @@
 
 using namespace NuTo;
 
-void CallbackHandlerPython::SetCallbackFunctions(
-        PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian)
+void CallbackHandlerPython::SetCallbackFunctions(PyObject* args_parameters, PyObject* args_objective,
+                                                 PyObject* args_gradient, PyObject* args_hessian)
 {
     // check if mObjective routine is callable
     if (!PyCallable_Check(args_parameters))
@@ -132,7 +132,8 @@ void CallbackHandlerPython::Hessian(Eigen::MatrixXd& rHessian) const
     int dim = (int)sqrt(PyList_GET_SIZE(result));
     if (dim * dim != PyList_GET_SIZE(result))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__,
+        throw(OptimizeException(
+                __PRETTY_FUNCTION__,
                 "The python list for the hessian matrix should have NumParameters*NumParameters entries."));
     }
 

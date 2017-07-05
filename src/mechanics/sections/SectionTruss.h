@@ -21,13 +21,10 @@ protected:
 
     //! @brief Constructor
     //! @param area Cross-section area
-   SectionTruss(double area);
+    SectionTruss(double area);
 
     //! @brief Cross-section area
     double mArea;
 };
 
 } // namespace
-
-
-

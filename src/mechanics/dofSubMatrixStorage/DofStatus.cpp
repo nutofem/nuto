@@ -10,7 +10,8 @@
 #include <boost/algorithm/string.hpp>
 
 
-NuTo::DofStatus::DofStatus() : mHasInteractingConstraints(false)
+NuTo::DofStatus::DofStatus()
+    : mHasInteractingConstraints(false)
 {
 }
 
@@ -20,24 +21,23 @@ std::ostream& operator<<(std::ostream& out, const DofStatus& dofStatus)
 {
     out << "[---DofStatus:---]\n";
     out << "Existing DOF types:\n";
-    for(auto dof : dofStatus.mDofTypes)
+    for (auto dof : dofStatus.mDofTypes)
     {
         out << Node::DofToString(dof) << "; ";
     }
     out << "Active DOF types:\n";
-    for(auto dof : dofStatus.mActiveDofTypes)
+    for (auto dof : dofStatus.mActiveDofTypes)
     {
         out << Node::DofToString(dof) << "; ";
     }
-    for(auto dof : dofStatus.mNumActiveDofs)
+    for (auto dof : dofStatus.mNumActiveDofs)
     {
         out << "Number of active Dofs of type " << Node::DofToString(dof.first) << ": " << dof.second << "\n";
     }
-    for(auto dof : dofStatus.mNumDependentDofs)
+    for (auto dof : dofStatus.mNumDependentDofs)
     {
         out << "Number of dependent Dofs of type " << Node::DofToString(dof.first) << ": " << dof.second << "\n";
     }
     return out;
 }
 } // namespace NuTo
-

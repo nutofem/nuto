@@ -14,7 +14,8 @@ class CallbackHandlerPython : public CallbackHandler
 {
 
 public:
-    CallbackHandlerPython() : CallbackHandler()
+    CallbackHandlerPython()
+        : CallbackHandler()
     {
         mCallbackSetParameters = nullptr;
         mCallbackObjective = nullptr;
@@ -22,8 +23,8 @@ public:
         mCallbackHessian = nullptr;
     }
 
-    void SetCallbackFunctions(
-            PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian);
+    void SetCallbackFunctions(PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient,
+                              PyObject* args_hessian);
 
     void SetParameters(const Eigen::MatrixXd& rParameters) override;
 

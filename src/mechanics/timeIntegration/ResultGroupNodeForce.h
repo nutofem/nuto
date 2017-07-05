@@ -21,23 +21,21 @@ public:
 
     NuTo::eTimeIntegrationResultType GetResultType() const override;
 
-    Eigen::VectorXd CalculateValues(const StructureBase& rStructure,
-    		const Eigen::VectorXd& rResidual_j,
-    		const Eigen::VectorXd& rResidual_k) const override;
+    Eigen::VectorXd CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j,
+                                    const Eigen::VectorXd& rResidual_k) const override;
 
     std::string GetTypeId() const
     {
-    	return std::string("ResultGroupNodeForce");
+        return std::string("ResultGroupNodeForce");
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override
     {
-
     }
 
 protected:
 };
 }
 
-//namespace NuTo
+// namespace NuTo

@@ -11,8 +11,8 @@ class StructureBase;
 
 namespace IpData
 {
-    enum class eIpStaticDataType;
-}// namespace IpData
+enum class eIpStaticDataType;
+} // namespace IpData
 
 //! @author Philip Huschke
 //! @date October 2015
@@ -40,7 +40,7 @@ public:
     //! @brief returns the class name
     std::string GetTypeId() const
     {
-    	return std::string("ResultElementIpValue");
+        return std::string("ResultElementIpValue");
     }
 
     //! @brief this is used to cast an object of ResultBase to an object of ResultElementIpData
@@ -50,11 +50,10 @@ public:
     }
 
     //! @brief ... Info routine that prints general information about the object
-    void Info()const override;
+    void Info() const override;
 
 private:
     int mElementId;
     NuTo::IpData::eIpStaticDataType mIpDataType;
 };
-}// namespace NuTo
-
+} // namespace NuTo

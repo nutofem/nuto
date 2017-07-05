@@ -1,4 +1,3 @@
-# $Id$
 
 # find the metis package (try to find the metis header and the metis library)
 #

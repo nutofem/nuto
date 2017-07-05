@@ -7,8 +7,8 @@ namespace NuTo
 {
 namespace IpData
 {
-    enum class eIpStaticDataType;
-}// namespace IpData
+enum class eIpStaticDataType;
+} // namespace IpData
 
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
@@ -16,11 +16,13 @@ namespace IpData
 class ElementOutputIpData : public ElementOutputBase
 {
 public:
-    ElementOutputIpData() {}
+    ElementOutputIpData()
+    {
+    }
 
     ElementOutputIpData(IpData::eIpStaticDataType rIpDataType)
     {
-        mIpData[rIpDataType].resize(0,0);
+        mIpData[rIpDataType].resize(0, 0);
     }
 
 

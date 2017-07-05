@@ -9,8 +9,8 @@ class DofStatus;
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -20,11 +20,12 @@ class BlockStorageBase
 {
 
 public:
-
-
     //! @brief ctor
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
-    BlockStorageBase(const DofStatus& rDofStatus) : mDofStatus(rDofStatus) {}
+    BlockStorageBase(const DofStatus& rDofStatus)
+        : mDofStatus(rDofStatus)
+    {
+    }
 
 
     virtual ~BlockStorageBase();
@@ -69,9 +70,7 @@ public:
 
 
 protected:
-
     const DofStatus& mDofStatus;
 };
 
 } /* namespace NuTo */
-

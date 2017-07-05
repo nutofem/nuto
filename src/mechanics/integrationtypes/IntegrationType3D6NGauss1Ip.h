@@ -11,7 +11,6 @@ class IntegrationType3D6NGauss1Ip : public IntegrationType3D
 {
 
 public:
-
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return rCoordinates (result)
@@ -31,8 +30,5 @@ public:
 #endif // ENABLE_VISUALIZE
 
 protected:
-
-
 };
 }
-

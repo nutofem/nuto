@@ -13,12 +13,12 @@ class ElementOutputDummy : public ElementOutputBase
 {
 public:
     ElementOutputDummy()
-    {}
+    {
+    }
 
     ElementOutputDummy* Clone() const override
     {
-    	return new ElementOutputDummy(*this);
+        return new ElementOutputDummy(*this);
     }
-
 };
 }

@@ -27,7 +27,7 @@ void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const 
 {
     for (const auto& point : rPoints)
     {
-        auto shapeFunctions           = r.GetShapeFunctions(point);
+        auto shapeFunctions = r.GetShapeFunctions(point);
         auto derivativeShapeFunctions = r.GetDerivativeShapeFunctions(point);
 
         auto cdf = derivativeShapeFunctions;
@@ -49,7 +49,7 @@ void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r)
     for (int iNode = 0; iNode < r.GetNumNodes(); ++iNode)
     {
         auto localNodeCoordinates = r.GetLocalCoords(iNode);
-        auto N                    = r.GetShapeFunctions(localNodeCoordinates);
+        auto N = r.GetShapeFunctions(localNodeCoordinates);
         for (int i = 0; i < r.GetNumNodes(); ++i)
         {
             if (i == iNode)

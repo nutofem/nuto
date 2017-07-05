@@ -9,10 +9,13 @@ class IntegrationType1D : public IntegrationTypeBase
 
 public:
     //! @brief constructor
-    IntegrationType1D() {}
+    IntegrationType1D()
+    {
+    }
 
-    int GetDimension() const override { return 1; }
+    int GetDimension() const override
+    {
+        return 1;
+    }
 };
 } // namespace nuto
-
-

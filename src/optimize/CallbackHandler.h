@@ -19,8 +19,8 @@ public:
 
     virtual void SetParameters(const Eigen::MatrixXd& rParameters)
     {
-        throw OptimizeException(
-                __PRETTY_FUNCTION__, "SetParameters function not implemented in CallbackHandler object.");
+        throw OptimizeException(__PRETTY_FUNCTION__,
+                                "SetParameters function not implemented in CallbackHandler object.");
     }
 
     virtual double Objective() const
@@ -47,6 +47,5 @@ public:
     {
         throw OptimizeException(__PRETTY_FUNCTION__, "Hessian function not implemented in CallbackHandler object.");
     }
-
 };
 } // namespace NuTo

@@ -1,8 +1,7 @@
 #pragma once
 
 #ifdef HAVE_MUMPS
-extern "C"
-{
+extern "C" {
 #include <dmumps_c.h>
 }
 #endif // HAVE_MUMPS
@@ -14,7 +13,8 @@ extern "C"
 namespace NuTo
 {
 // forward declarations
-template<class T> class SparseMatrixCSR;
+template <class T>
+class SparseMatrixCSR;
 class EigenSolverArpack;
 
 //! @author Stefan Eckardt, ISM
@@ -22,7 +22,8 @@ class EigenSolverArpack;
 //! @brief ... interface for the MUMPS sparse direct solver
 class SparseDirectSolverMUMPS : public SparseDirectSolver
 {
-	friend class NuTo::EigenSolverArpack;
+    friend class NuTo::EigenSolverArpack;
+
 public:
     //! @brief ... default constructor
     SparseDirectSolverMUMPS();
@@ -36,9 +37,11 @@ public:
 
     //! @brief ... calculates the Schurcomplement
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
-    //! @param rSchurIndices ... vector storing the indices of the global matrix to be condensed to (zero based indexing)
+    //! @param rSchurIndices ... vector storing the indices of the global matrix to be condensed to (zero based
+    //! indexing)
     //! @param rSchurComplement ... Schur complement
-    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices,
+                         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
 
     //! @brief ... prepare the solver, and perform all the steps up to the factorization of the matrix
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
@@ -54,7 +57,6 @@ public:
     void CleanUp();
 
 protected:
-
 #ifdef HAVE_MUMPS
 
     DMUMPS_STRUC_C mSolver;
@@ -65,8 +67,5 @@ protected:
     //! @param error ... error code
     //! @return error message as std::string
     std::string GetErrorString(int error) const;
-
-
 };
 }
-

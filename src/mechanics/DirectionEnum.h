@@ -11,7 +11,7 @@ enum class eDirection
 
 inline int ToComponentIndex(eDirection direction)
 {
-    return static_cast<int>(direction); 
+    return static_cast<int>(direction);
 }
 
 } // namespace NuTo

@@ -1,8 +1,8 @@
 #include <boost/assign/ptr_map_inserter.hpp>
 
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include <boost/spirit/include/classic_core.hpp>
 
@@ -40,14 +40,14 @@
 #include "mechanics/mesh/MeshCompanion.h"
 #include "mechanics/structures/Assembler.h"
 
-NuTo::Structure::Structure(int rDimension) :
-        StructureBase(rDimension)
+NuTo::Structure::Structure(int rDimension)
+    : StructureBase(rDimension)
 {
 }
 
 NuTo::Structure::~Structure()
 {
-	mElementMap.clear();
+    mElementMap.clear();
 }
 
 void NuTo::Structure::Info() const
@@ -58,7 +58,8 @@ void NuTo::Structure::Info() const
 }
 
 
-void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput)
+void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
+                               std::map<eStructureOutput, StructureOutputBase*>& rStructureOutput)
 {
     std::string outputs = " ";
     for (auto it : rStructureOutput)
@@ -67,7 +68,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     Timer timer(std::string(__FUNCTION__) + outputs, GetShowTime(), GetLogger());
 
     if (rStructureOutput.empty())
-        return;     // ! ---> may occur if matrices have been identified as constant
+        return; // ! ---> may occur if matrices have been identified as constant
 
     NodeBuildGlobalDofs();
 
@@ -82,90 +83,99 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
 #ifdef _OPENMP
     std::string exceptionMessage = "";
-    if (mNumProcessors!=0)
+    if (mNumProcessors != 0)
     {
         omp_set_num_threads(mNumProcessors);
     }
 
-    if (mMIS.size()==0)
+    if (mMIS.size() == 0)
     {
         CalculateMaximumIndependentSets();
     }
-    for (unsigned int misCounter=0; misCounter<mMIS.size(); misCounter++)
+    for (unsigned int misCounter = 0; misCounter < mMIS.size(); misCounter++)
     {
-#pragma omp parallel shared(rStructureOutput) //firstprivate(elementOutputMap)
+#pragma omp parallel shared(rStructureOutput) // firstprivate(elementOutputMap)
         {
 #endif // _OPENMP
-    // The allocation of the elementOutputMap is inside the openmp block
-    // since the every thread needs a copy of the map.
-    // This special case cannot (to my knowledge) be handled with the
-    // omp firstprivate directive, since a copy of a shared_ptr is
-    // not a deep copy of the underlying data - which makes perfectly sense.
+            // The allocation of the elementOutputMap is inside the openmp block
+            // since the every thread needs a copy of the map.
+            // This special case cannot (to my knowledge) be handled with the
+            // omp firstprivate directive, since a copy of a shared_ptr is
+            // not a deep copy of the underlying data - which makes perfectly sense.
 
-    // BEWARE (!!!) Do not perform a SetZero on the rStructureOutput here
-    // since it will remove the allocation of other MIS.
+            // BEWARE (!!!) Do not perform a SetZero on the rStructureOutput here
+            // since it will remove the allocation of other MIS.
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
 
-    // allocate element outputs and resize the structure outputs
-    for (auto iteratorOutput : rStructureOutput)
-    {
-        switch (iteratorOutput.first)
-        {
-        case NuTo::eStructureOutput::HESSIAN0:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN1:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN2:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN2_LUMPED:
-        {
-            elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::INTERNAL_GRADIENT:
-        {
-            elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
-        {
-            elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
-            break;
-        }
-        default:
-        {
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + std::string("] Output request not implemented."));
-        }
-        }
-    }
-    // calculate element contribution
-    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
-    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+            // allocate element outputs and resize the structure outputs
+            for (auto iteratorOutput : rStructureOutput)
+            {
+                switch (iteratorOutput.first)
+                {
+                case NuTo::eStructureOutput::HESSIAN0:
+                {
+                    elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+                            std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
+                    break;
+                }
+                case NuTo::eStructureOutput::HESSIAN1:
+                {
+                    elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
+                            std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
+                    break;
+                }
+                case NuTo::eStructureOutput::HESSIAN2:
+                {
+                    elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] =
+                            std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
+                    break;
+                }
+                case NuTo::eStructureOutput::HESSIAN2_LUMPED:
+                {
+                    elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
+                            std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+                    break;
+                }
+                case NuTo::eStructureOutput::INTERNAL_GRADIENT:
+                {
+                    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
+                            std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+                    break;
+                }
+                case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
+                {
+                    elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+                    break;
+                }
+                default:
+                {
+                    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                                   std::string("] Output request not implemented."));
+                }
+                }
+            }
+            // calculate element contribution
+            elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
+                    std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+            elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] =
+                    std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 #ifdef _OPENMP
-    for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
-    {
+            for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end();
+                 elementIter++)
+            {
 #pragma omp single nowait
-        {
-            ElementBase* elementPtr = *elementIter;
-            // in OpenMP, exceptions may not leave the parallel region
-            try
-            {
-                elementPtr->Evaluate(rInput, elementOutputMap);
-            }
-            catch (std::exception& e)
-            {
-                exceptionMessage = e.what();
-            }
+                {
+                    ElementBase* elementPtr = *elementIter;
+                    // in OpenMP, exceptions may not leave the parallel region
+                    try
+                    {
+                        elementPtr->Evaluate(rInput, elementOutputMap);
+                    }
+                    catch (std::exception& e)
+                    {
+                        exceptionMessage = e.what();
+                    }
 
 #else
     for (auto elementIter : this->mElementMap)
@@ -174,81 +184,105 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
         elementPtr->Evaluate(rInput, elementOutputMap);
 #endif
 
-        const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
-        const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+                    const auto& elementVectorGlobalDofsRow =
+                            elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+                    const auto& elementVectorGlobalDofsColumn =
+                            elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 
-        for (auto& iteratorOutput : rStructureOutput)
-        {
-            StructureOutputBase* structureOutput = iteratorOutput.second;
+                    for (auto& iteratorOutput : rStructureOutput)
+                    {
+                        StructureOutputBase* structureOutput = iteratorOutput.second;
 
-            switch (iteratorOutput.first)
-            {
-            case NuTo::eStructureOutput::HESSIAN0:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                break;
-            }
-            case NuTo::eStructureOutput::HESSIAN1:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                break;
-            }
+                        switch (iteratorOutput.first)
+                        {
+                        case NuTo::eStructureOutput::HESSIAN0:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    GetDofStatus().HasInteractingConstraints());
+                            break;
+                        }
+                        case NuTo::eStructureOutput::HESSIAN1:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    GetDofStatus().HasInteractingConstraints());
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::HESSIAN2:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, true); // always calculate the KJ and KK
-                                                                                                                                                                                                          // since its most likely only needed once,
-                                                                                                                                                                                                          // and causes troubles in the test files.
-                break;
-            }
+                        case NuTo::eStructureOutput::HESSIAN2:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    true); // always calculate the KJ and KK
+                            // since its most likely only needed once,
+                            // and causes troubles in the test files.
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::HESSIAN2_LUMPED:
-            {
-                const auto& elementVector = elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
+                        case NuTo::eStructureOutput::HESSIAN2_LUMPED:
+                        {
+                            const auto& elementVector =
+                                    elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
+                                            ->GetBlockFullVectorDouble();
 
-                structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
-                break;
-            }
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(
+                                    elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::INTERNAL_GRADIENT:
-            {
-                const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+                        case NuTo::eStructureOutput::INTERNAL_GRADIENT:
+                        {
+                            const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
+                                                                ->GetBlockFullVectorDouble();
 
-                structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
-                break;
-            }
+                            structureOutput->AsStructureOutputBlockVector().AddElementVector(
+                                    elementVector, elementVectorGlobalDofsRow);
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
-                break;
+                        case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
+                            break;
 
-            default:
-            {
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) + " requested but not implemented.");
-            }
-            }
-        }
+                        default:
+                        {
+                            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                                           StructureOutputToString(iteratorOutput.first) +
+                                                                   " requested but not implemented.");
+                        }
+                        }
+                    }
 
 #ifdef _OPENMP
-    }
-}   // end loop over elements
-}   // end parallel region
-}   // end loop over independent sets
+                }
+            } // end loop over elements
+        } // end parallel region
+    } // end loop over independent sets
 
     if (exceptionMessage != "")
         throw MechanicsException(exceptionMessage);
 #else
-    }   // end loop over elements
+    } // end loop over elements
 #endif
-
 }
 
 
 void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTimeIntegrationScheme)
 {
-    assert(mNumTimeDerivatives==1 && "Using this function for 0 time derivatives seems to make no sense. More than one time derivative is not implemented so far!");
+    assert(mNumTimeDerivatives == 1 && "Using this function for 0 time derivatives seems to make no sense. More than "
+                                       "one time derivative is not implemented so far!");
 
 
     constexpr const unsigned int maxIterations = 20;
@@ -258,15 +292,12 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     rTimeIntegrationScheme.CalculateStaticAndTimeDependentExternalLoad();
 
 
-
-
-
     // declare necessary variables
-    StructureOutputBlockMatrix Hessian_1(GetDofStatus(),true);
+    StructureOutputBlockMatrix Hessian_1(GetDofStatus(), true);
 
-    StructureOutputBlockVector delta_dof_dt1 (GetDofStatus(),true);
+    StructureOutputBlockVector delta_dof_dt1(GetDofStatus(), true);
 
-    StructureOutputBlockVector dof_dt1(GetDofStatus(),true);
+    StructureOutputBlockVector dof_dt1(GetDofStatus(), true);
     StructureOutputBlockVector residual(GetDofStatus(), true);
     StructureOutputBlockVector trialResidual(GetDofStatus(), true);
     StructureOutputBlockVector intForce(GetDofStatus(), true);
@@ -284,7 +315,7 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     ConstitutiveInputMap StructureInputs;
     StructureInputs[Constitutive::eInput::CALCULATE_INITIALIZE_VALUE_RATES] = nullptr;
 
-    Evaluate(StructureInputs,StructureOutputsTrial);
+    Evaluate(StructureInputs, StructureOutputsTrial);
 
     extForce = rTimeIntegrationScheme.CalculateCurrentExternalLoad(0);
 
@@ -294,26 +325,25 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     unsigned int iteration = 0;
 
 
-    while(residual.J.CalculateInfNorm()>rTimeIntegrationScheme.GetToleranceResidual())
+    while (residual.J.CalculateInfNorm() > rTimeIntegrationScheme.GetToleranceResidual())
     {
         ++iteration;
-        if(iteration > maxIterations)
-            throw MechanicsException(__PRETTY_FUNCTION__,"No convergence while solving for initial value rates!");
+        if (iteration > maxIterations)
+            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence while solving for initial value rates!");
         trialResidual = intForce - extForce;
 
 
         trialResidual.J -= Hessian_1.JJ * delta_dof_dt1.J;
 
-        delta_dof_dt1.J = SolveBlockSystem(Hessian_1.JJ,residual.J);
+        delta_dof_dt1.J = SolveBlockSystem(Hessian_1.JJ, residual.J);
 
         dof_dt1.J += delta_dof_dt1.J;
 
-        NodeMergeDofValues(1,dof_dt1.J,dof_dt1.K);
+        NodeMergeDofValues(1, dof_dt1.J, dof_dt1.K);
 
-        Evaluate(StructureInputs,StructureOutputsTrial);
+        Evaluate(StructureInputs, StructureOutputsTrial);
 
-        residual = intForce -extForce;
-
+        residual = intForce - extForce;
     }
 }
 
@@ -333,17 +363,20 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
         std::map<NodeBase*, NodeBase*> old2NewNodePointer;
         std::map<ElementBase*, ElementBase*> old2NewElementPointer;
         CopyAndTranslate(rOffset, old2NewNodePointer, old2NewElementPointer);
-    } catch (NuTo::MechanicsException &e)
+    }
+    catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error translating and copying structure.");
         throw;
-    } catch (...)
+    }
+    catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error translating and copying structure.");
     }
 }
 
-void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
+void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer,
+                                       std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
     if (rOffset.rows() != mDimension)
         throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
@@ -371,7 +404,7 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
 
         newNode->Set(Node::eDof::COORDINATES, node->Get(Node::eDof::COORDINATES) + rOffset);
     }
-    //renumbering of dofs for global matrices required
+    // renumbering of dofs for global matrices required
     GetAssembler().SetNodeVectorChanged();
 
     std::vector<ElementBase*> elements;
@@ -398,15 +431,15 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBa
         ElementBase* newElementPtr = ElementGetElementPtr(newElementId);
         rOld2NewElementPointer[oldElementPtr] = newElementPtr;
 
-        //set integration type
+        // set integration type
         const IntegrationTypeBase& integrationType = oldElementPtr->GetIntegrationType();
         newElementPtr->SetIntegrationType(integrationType);
 
-        //set section
+        // set section
         std::shared_ptr<const Section> section = oldElementPtr->GetSection();
         newElementPtr->SetSection(section);
 
-        //set constitutive model
+        // set constitutive model
         ConstitutiveBase& constitutive = oldElementPtr->GetConstitutiveLaw(0);
         newElementPtr->SetConstitutiveLaw(constitutive);
     }
@@ -458,6 +491,3 @@ void NuTo::Structure::NuToSerializeLoad(SerializeStreamIn& rStream)
         rStream.Separator();
     }
 }
-
-
-

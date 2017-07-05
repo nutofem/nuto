@@ -21,23 +21,22 @@ public:
     Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const override;
 
     //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
-    int GetNumData(const StructureBase& rStructure)const override;
+    int GetNumData(const StructureBase& rStructure) const override;
 
-    NuTo::eTimeIntegrationResultType GetResultType()const override;
+    NuTo::eTimeIntegrationResultType GetResultType() const override;
 
     std::string GetTypeId() const
     {
-    	return std::string("ResultNodeAcceleration");
+        return std::string("ResultNodeAcceleration");
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override
     {
-
     }
 
 protected:
 };
 }
 
-//namespace NuTo
+// namespace NuTo

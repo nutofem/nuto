@@ -126,4 +126,3 @@ NodeBase* NodeDof::Clone() const
 {
     return new NodeDof(*this);
 }
-

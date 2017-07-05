@@ -55,4 +55,3 @@ void NuTo::ImplEx::SetImplExCallback(std::shared_ptr<ImplExCallback> r)
 {
     mImplExCallback = r;
 }
-

@@ -28,26 +28,29 @@ int main()
     int LIN = 0;
     int CSDA = 1;
     s.ConstitutiveLawCreate(LIN, eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::YOUNGS_MODULUS,       20000.);
-    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::POISSONS_RATIO,       0.0);
+    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::YOUNGS_MODULUS, 20000.);
+    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::POISSONS_RATIO, 0.0);
 
     const double thickness = 0.1;
 
     s.ConstitutiveLawCreate(CSDA, eConstitutiveType::LOCAL_DAMAGE_MODEL);
-    constexpr double fractureEnergy         = 0.1;
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::YOUNGS_MODULUS,       200.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO,       0.0);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH,     4.);
+    constexpr double fractureEnergy = 0.1;
+    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::YOUNGS_MODULUS, 200.);
+    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4./200., 4. * thickness / fractureEnergy));
+    s.ConstitutiveLawSetDamageLaw(CSDA, DamageLawExponential::Create(4. / 200., 4. * thickness / fractureEnergy));
 
     auto prism = NuTo::MeshCompanion::ElementPrismsCreate(s, gMatrix, gAggreg, thickness);
     s.ElementTotalSetConstitutiveLaw(LIN);
     s.ElementGroupSetConstitutiveLaw(prism.first, CSDA);
 
-    s.InterpolationTypeAdd(ids[0].second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(ids[1].second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(prism.second,  NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(ids[0].second, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(ids[1].second, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(prism.second, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     s.ElementTotalConvertToInterpolationType();
 
@@ -55,24 +58,25 @@ int main()
     s.NodeInfo(10);
 
     auto& nodeFixXYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({-5, 0, 0}));
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+    s.Constraints().Add(
+            NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Constraint::Component(nodeFixXYZ, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
     auto& nodeFixYZ = s.NodeGetAtCoordinate(Eigen::Vector3d({5, 0, 0}));
     s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Component(nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
+                        NuTo::Constraint::Component(nodeFixYZ, {NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
     int groupNodeFixZ = s.GroupCreate(NuTo::eGroupId::Nodes);
-    s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, 2}), 0, 2*thickness);
+    s.GroupAddNodeRadiusRange(groupNodeFixZ, Eigen::Vector3d({0, 0, 2}), 0, 2 * thickness);
     auto& groupZ = *s.GroupGetGroupPtr(groupNodeFixZ)->AsGroupNode();
 
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Component(groupZ, {NuTo::eDirection::Y}));
-    
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupZ, {NuTo::eDirection::Y}));
+
     double deltaD = .5;
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+    s.Constraints().Add(
+            NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Constraint::Component(groupZ, {NuTo::eDirection::Z}, NuTo::Constraint::RhsRamp(1, deltaD)));
-    
+
     s.NodeBuildGlobalDofs();
     std::cout << s.GetNumTotalActiveDofs() << std::endl;
     std::cout << s.GetNumTotalDependentDofs() << std::endl;

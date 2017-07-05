@@ -16,5 +16,3 @@ void LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, 
     assert(std::abs(rNormal.norm() - 1.) < 1e-5);
     rLoadVector = rNormal * (-mPressure);
 }
-
-

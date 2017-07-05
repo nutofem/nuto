@@ -16,22 +16,27 @@ NuTo::IntegrationType2D4NGauss4Ip::IntegrationType2D4NGauss4Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<4);
+    assert(rIpNum >= 0 && rIpNum < 4);
     switch (rIpNum)
     {
-    case 0 : return Eigen::Vector2d({-0.577350269189626, -0.577350269189626});
-    case 1 : return Eigen::Vector2d({+0.577350269189626, -0.577350269189626});
-    case 2 : return Eigen::Vector2d({+0.577350269189626, +0.577350269189626});
-    case 3 : return Eigen::Vector2d({-0.577350269189626, +0.577350269189626});
+    case 0:
+        return Eigen::Vector2d({-0.577350269189626, -0.577350269189626});
+    case 1:
+        return Eigen::Vector2d({+0.577350269189626, -0.577350269189626});
+    case 2:
+        return Eigen::Vector2d({+0.577350269189626, +0.577350269189626});
+    case 3:
+        return Eigen::Vector2d({-0.577350269189626, +0.577350269189626});
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D4NGauss4Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D4NGauss4Ip::GetNumIntegrationPoints() const
 {
     return 4;
 }
@@ -39,19 +44,18 @@ int NuTo::IntegrationType2D4NGauss4Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     return 1;
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D4NGauss4Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D4NGauss4Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 9;
 
@@ -126,4 +130,3 @@ void NuTo::IntegrationType2D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(3);
 }
 #endif // ENABLE_VISUALIZE
-

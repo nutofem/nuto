@@ -11,15 +11,15 @@ namespace NuTo
 
 namespace Interpolation
 {
-    enum class eShapeType;
-    enum class eTypeOrder;
-}// namespace Interpolation
+enum class eShapeType;
+enum class eTypeOrder;
+} // namespace Interpolation
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures
 
-class Structure: public StructureBase
+class Structure : public StructureBase
 {
 
 public:
@@ -44,18 +44,19 @@ public:
 #ifndef SWIG
 
     //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
-    virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme) override;
+    virtual void CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme) override;
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) override;
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput,
+                          std::map<eStructureOutput, StructureOutputBase*>& rStructureOutput) override;
 
 #endif
 
 
-//*************************************************
-//************ Node routines        ***************
-//***  defined in structures/StructureNode.cpp  ***
-//*************************************************
+    //*************************************************
+    //************ Node routines        ***************
+    //***  defined in structures/StructureNode.cpp  ***
+    //*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
     int GetNumNodes() const override;
@@ -84,7 +85,7 @@ public:
     //! @brief returns const reference to mNodeMap
     //! @return mNodeMap
     const boost::ptr_map<int, NodeBase>& NodeGetNodeMap() const;
-#endif //SWIG
+#endif // SWIG
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
@@ -145,8 +146,8 @@ public:
     //! @param node number
     //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, Eigen::VectorXd rCoordinates);
-#endif //SWIG
+    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
+#endif // SWIG
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
@@ -171,19 +172,22 @@ public:
 
     virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) override
     {
-        NodeMergeDofValues(0,rDofValues);
+        NodeMergeDofValues(0, rDofValues);
     }
 
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) override;
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues,
+                                    const NuTo::BlockFullVector<double>& rDependentDofValues) override;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number
+    //! of active dofs)
     //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const override;
+    virtual NuTo::BlockFullVector<double>
+    NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const override;
 
-    Eigen::Matrix<double, 3,3> DoubleMatrix(const Eigen::Matrix<double, 3, 3>& matrix)
+    Eigen::Matrix<double, 3, 3> DoubleMatrix(const Eigen::Matrix<double, 3, 3>& matrix)
     {
-        return 2.0*matrix;
+        return 2.0 * matrix;
     }
 
 #ifndef SWIG
@@ -197,20 +201,22 @@ public:
 
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still
+    //! identical
     //! @param rId ... old node id
     //! @param rOldPtr ... old node ptr
     //! @param rNewPtr ... new node ptr
     //! @param rElements (optional) ... vector of all elements that contain the node - speedup!
-    void NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr, std::vector<ElementBase*> rElements = std::vector<ElementBase*>() );
+    void NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr,
+                         std::vector<ElementBase*> rElements = std::vector<ElementBase*>());
 
 
-#endif //SWIG
+#endif // SWIG
 
-//*************************************************
-//************ Element routines     ***************
-//**  defined in structures/StructureElement.cpp **
-//*************************************************
+    //*************************************************
+    //************ Element routines     ***************
+    //**  defined in structures/StructureElement.cpp **
+    //*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
     int GetNumElements() const override;
@@ -239,7 +245,7 @@ public:
     /// \brief Set an interpolation type for all elements
     /// \param rInterpolationTypeId
     void ElementTotalSetInterpolationType(const int rInterpolationTypeId);
-#endif //SWIG
+#endif // SWIG
 
     //! @brief returns a vector with the node ids of an element
     //! @param identifier
@@ -249,33 +255,30 @@ public:
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel) const override;
 
-//***************************************************//
-//************ ElementCreate routines ***************//
-//***************************************************//
+    //***************************************************//
+    //************ ElementCreate routines ***************//
+    //***************************************************//
 
     //---------------------------------------------------------------------------------------------------------------------------
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data
+    //! structures
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rNodeNumbers ... node indices
     //! @param rKnots ... knots defining the element
     //! @param rKnotIDs ... starting knot ids of the element in each element direction
     //! @return element id
-    int ElementCreate(int rInterpolationTypeId,
-                      const Eigen::VectorXi &rNodeNumbers,
-                      const Eigen::MatrixXd &rKnots,
-                      const Eigen::VectorXi &rKnotIDs);
+    int ElementCreate(int rInterpolationTypeId, const Eigen::VectorXi& rNodeNumbers, const Eigen::MatrixXd& rKnots,
+                      const Eigen::VectorXi& rKnotIDs);
 
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data
+    //! structures
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rNodeNumbers  ... node indices
     //! @param rKnots ... knots defining the element
     //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    void ElementCreate(int rElementNumber,
-                       int rInterpolationTypeId,
-                       const Eigen::VectorXi &rNodeNumbers,
-                       const Eigen::MatrixXd &rKnots,
-                       const Eigen::VectorXi &rKnotIDs);
+    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const Eigen::VectorXi& rNodeNumbers,
+                       const Eigen::MatrixXd& rKnots, const Eigen::VectorXi& rKnotIDs);
     //---------------------------------------------------------------------------------------------------------------------------
 
     //! @brief Creates an element
@@ -307,13 +310,15 @@ public:
     void ElementConvertToInterpolationType(int rGroupNumberElements);
 
     //! @brief changes the node structure to match the interpolation type for all elements
-    //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
+    //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance
+    //! in the mesh)
     //! @param rMeshSize approximate size of the elements
     void ElementTotalConvertToInterpolationType(double rNodeDistanceMerge, double rMeshSize);
 
     //! @brief changes the node structure to match the interpolation type
     //! @param rGroupNumberElements group for elements (coordinates only) to be converted
-    //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
+    //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance
+    //! in the mesh)
     //! @param rMeshSize approximate size of the elements
     void ElementConvertToInterpolationType(int rGroupNumberElements, double rNodeDistanceMerge, double rMeshSize);
 
@@ -334,18 +339,15 @@ public:
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodes node vector
-    int ElementCreate(int rInterpolationTypeId,
-                      std::vector<NodeBase*> rNodes);
+    int ElementCreate(int rInterpolationTypeId, std::vector<NodeBase*> rNodes);
 
     //! @brief Creates an element
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodes node vector
-    void ElementCreate(int rElementNumber,
-                       int rInterpolationTypeId,
-                       std::vector<NodeBase*> rNodes);
+    void ElementCreate(int rElementNumber, int rInterpolationTypeId, std::vector<NodeBase*> rNodes);
 
-#endif //SWIG
+#endif // SWIG
 
     //! @brief creates boundary elements and add them to an element group
     //! @param rElementGroupId ... group id including the base elements
@@ -360,7 +362,8 @@ public:
     //! @param  rInterfaceInterpolationType: interpolation type of the interface elements
     //! @param  rFibreInterpolationType: interpolation type of the interface elements
     //! @return returns a pair with the group ids of the new fiber and interface elements
-    std::pair<int,int> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rFibreInterpolationType);
+    std::pair<int, int> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType,
+                                                int rFibreInterpolationType);
 
     //! @brief Import from gmsh
     //!        Creates groups according to gmsh's physical entities and creates an interpolation types for each group
@@ -421,19 +424,17 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
-    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType,
+                              NuTo::Interpolation::eTypeOrder rTypeOrder);
 
 
     //! @brief adds a dof to a interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
-    void InterpolationTypeAdd(int rInterpolationTypeId,
-                              NuTo::Node::eDof rDofType,
-                              Interpolation::eTypeOrder rTypeOrder,
-                              const Eigen::VectorXi &rDegree,
-                              const std::vector<Eigen::VectorXd> &rKnots,
-                              const Eigen::MatrixXd &rWeights);
+    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder,
+                              const Eigen::VectorXi& rDegree, const std::vector<Eigen::VectorXd>& rKnots,
+                              const Eigen::MatrixXd& rWeights);
 
     //! @brief returns the interpolation type for a given interpolation type id
     //! @param rInterpolationTypeId ... interpolation type id
@@ -456,8 +457,9 @@ public:
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
     //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
     //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-    void CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
-#endif //SWIG
+    void CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer,
+                          std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
+#endif // SWIG
 
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
@@ -484,7 +486,8 @@ public:
     //! @param rDirection either 0,1,2 for x,y, or z
     //! @param rMin ... minimum value
     //! @param rMax ... maximum value
-    void GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax);
+    void GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection,
+                                                     double rMin, double rMax);
 
     //! @brief adds all elements to an element group and returns its id
     int GroupGetElementsTotal();
@@ -509,13 +512,15 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
-    //*************************************************
-    //************ DOF routine          ***************
-    //**  defined in structures/Structure.cpp *********
-    //*************************************************
+//*************************************************
+//************ DOF routine          ***************
+//**  defined in structures/Structure.cpp *********
+//*************************************************
 #ifndef SWIG
     bool IsActiveDofId(int rDofId, Node::eDof rDofType) const
-    { return (rDofId < GetNumActiveDofs(rDofType)); }
+    {
+        return (rDofId < GetNumActiveDofs(rDofType));
+    }
 #endif // SWIG
 
 protected:
@@ -530,7 +535,7 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const override;
+    void GetElementsTotal(std::vector<std::pair<int, const ElementBase*>>& rElements) const override;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
@@ -538,7 +543,7 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements) override;
+    void GetElementsTotal(std::vector<std::pair<int, ElementBase*>>& rElements) override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
@@ -546,7 +551,7 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const override;
+    void GetNodesTotal(std::vector<std::pair<int, const NodeBase*>>& rNodes) const override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
@@ -554,7 +559,7 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes) override;
+    void GetNodesTotal(std::vector<std::pair<int, NodeBase*>>& rNodes) override;
 #endif
 
     //! @brief deletes a node
@@ -565,4 +570,4 @@ protected:
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;
 };
-} //namespace NuTo
+} // namespace NuTo

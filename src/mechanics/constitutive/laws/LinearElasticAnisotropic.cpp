@@ -18,15 +18,11 @@
 
 #include <boost/current_function.hpp>
 
-NuTo::LinearElasticAnisotropic::LinearElasticAnisotropic() :
-        ConstitutiveBase()
+NuTo::LinearElasticAnisotropic::LinearElasticAnisotropic()
+    : ConstitutiveBase()
 {
-    mStiffness << 0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 1,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0;
+    mStiffness << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0;
     mRho = 0.;
     SetParametersValid();
 }
@@ -35,8 +31,8 @@ NuTo::LinearElasticAnisotropic::LinearElasticAnisotropic() :
 ////! @brief serializes the class
 ////! @param ar         archive
 ////! @param version    version
-//template<class Archive>
-//void NuTo::LinearElasticAnisotropic::serialize(Archive & ar, const unsigned int version)
+// template<class Archive>
+// void NuTo::LinearElasticAnisotropic::serialize(Archive & ar, const unsigned int version)
 //{
 //#ifdef DEBUG_SERIALIZATION
 //    std::cout << "start serialize LinearElasticAnisotropic" << std::endl;
@@ -50,7 +46,7 @@ NuTo::LinearElasticAnisotropic::LinearElasticAnisotropic() :
 //    std::cout << "finish serialize LinearElasticAnisotropic" << std::endl;
 //#endif
 //}
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElasticAnisotropic)
+// BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElasticAnisotropic)
 //#endif // ENABLE_SERIALIZATION
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAnisotropic::CreateIPLaw()
@@ -59,7 +55,9 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAn
 }
 
 
-NuTo::ConstitutiveInputMap NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap
+NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                      const InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -83,8 +81,10 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticAnisotropic::GetConstitutiveInputs
             break;
         default:
             continue;
-//            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-//            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+            //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
+            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+            //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
+            //            law.");
         }
     }
 
@@ -93,88 +93,89 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticAnisotropic::GetConstitutiveInputs
 
 namespace NuTo // template specialization in same namespace as definition
 {
-template<>
-void NuTo::LinearElasticAnisotropic::Evaluate<1>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
+template <>
+void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     std::cout << "Not implemented" << std::endl;
 }
 
 
-template<>
-void NuTo::LinearElasticAnisotropic::Evaluate<2>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
+template <>
+void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     std::cout << "Not implemented" << std::endl;
 }
 
 
-template<>
-void NuTo::LinearElasticAnisotropic::Evaluate<3>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
+template <>
+void NuTo::LinearElasticAnisotropic::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
-            {
-                ConstitutiveIOBase& engineeringStress = *itOutput.second;
-                engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
-                const auto& engineeringStrain =
+            const auto& engineeringStrain =
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
 
-                // transform vectors to eigen vectors
-                // let eigen do the matrix multiply
-                // and transform back: This can certainly be done better.
-                Eigen::VectorXd engStress(6);
-                Eigen::VectorXd engStrain(6);
-                for (int ii=0; ii<6; ii++) {
-                    engStrain(ii) = engineeringStrain[ii];
-                }
-
-                engStress = this->mStiffness * engStrain;
-
-                for (int ii=0; ii<6; ii++) {
-                    engineeringStress[ii] = engStress(ii);
-                }
-
-                break;
-            }
-            case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+            // transform vectors to eigen vectors
+            // let eigen do the matrix multiply
+            // and transform back: This can certainly be done better.
+            Eigen::VectorXd engStress(6);
+            Eigen::VectorXd engStrain(6);
+            for (int ii = 0; ii < 6; ii++)
             {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsMatrix<6, 6>(itOutput.first, __PRETTY_FUNCTION__);
-
-                for (int ii=0; ii<6; ii++) {
-                    for (int jj=0; jj<6; jj++) {
-                        tangent(ii,jj) = this->mStiffness(ii,jj);
-                    }
-                }
-
-                break;
+                engStrain(ii) = engineeringStrain[ii];
             }
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+
+            engStress = this->mStiffness * engStrain;
+
+            for (int ii = 0; ii < 6; ii++)
             {
-                itOutput.second->AsEngineeringStrain3D() =
+                engineeringStress[ii] = engStress(ii);
+            }
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<6, 6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            for (int ii = 0; ii < 6; ii++)
+            {
+                for (int jj = 0; jj < 6; jj++)
+                {
+                    tangent(ii, jj) = this->mStiffness(ii, jj);
+                }
+            }
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        {
+            itOutput.second->AsEngineeringStrain3D() =
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
-                break;
-            }
-            case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
-                break;
-//            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
-//            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
-//            {
-//                //nothing to be done for update routine
-//                continue;
-//            }
-            default:
-                continue;
+            break;
+        }
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+            break;
+        //            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        //            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        //            {
+        //                //nothing to be done for update routine
+        //                continue;
+        //            }
+        default:
+            continue;
         }
         itOutput.second->SetIsCalculated(true);
     }
@@ -183,9 +184,8 @@ void NuTo::LinearElasticAnisotropic::Evaluate<3>(
 } // namespace NuTo
 
 
-bool NuTo::LinearElasticAnisotropic::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
-                                                                          NuTo::Node::eDof rDofCol,
-                                                                          int rTimeDerivative) const
+bool NuTo::LinearElasticAnisotropic::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,
+                                                                   int rTimeDerivative) const
 {
     assert(rTimeDerivative == 0 or rTimeDerivative == 1 or rTimeDerivative == 2);
     switch (rTimeDerivative)
@@ -201,9 +201,8 @@ bool NuTo::LinearElasticAnisotropic::CheckDofCombinationComputable(NuTo::Node::e
         default:
             return false;
         }
-
     }
-        break;
+    break;
     default:
         return false;
     }
@@ -212,24 +211,24 @@ bool NuTo::LinearElasticAnisotropic::CheckDofCombinationComputable(NuTo::Node::e
 
 bool NuTo::LinearElasticAnisotropic::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::DENSITY:
-        case Constitutive::eConstitutiveParameter::STIFFNESS:
-        {
-            return true;
-        }
-        default:
-        {
-            return false;
-        }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    case Constitutive::eConstitutiveParameter::STIFFNESS:
+    {
+        return true;
+    }
+    default:
+    {
+        return false;
+    }
     }
 }
 
 
 double NuTo::LinearElasticAnisotropic::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
@@ -239,10 +238,11 @@ double NuTo::LinearElasticAnisotropic::GetParameterDouble(NuTo::Constitutive::eC
 }
 
 
-void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                        double rValue)
 {
     ConstitutiveBase::CheckParameterDouble(rIdentifier, rValue);
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DENSITY:
         this->mRho = rValue;
@@ -252,9 +252,10 @@ void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eCon
     }
 }
 
-Eigen::MatrixXd NuTo::LinearElasticAnisotropic::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd
+NuTo::LinearElasticAnisotropic::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
@@ -265,10 +266,11 @@ Eigen::MatrixXd NuTo::LinearElasticAnisotropic::GetParameterMatrixDouble(NuTo::C
     }
 }
 
-void NuTo::LinearElasticAnisotropic::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
+void NuTo::LinearElasticAnisotropic::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                              Eigen::MatrixXd rValue)
 {
-    //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
-    switch(rIdentifier)
+    // ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
@@ -288,11 +290,11 @@ bool NuTo::LinearElasticAnisotropic::CheckOutputTypeCompatibility(NuTo::Constitu
     case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
     case Constitutive::eOutput::ENGINEERING_STRESS:
     case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
-//    case Constitutive::eOutput::UPDATE_STATIC_DATA:
-//    case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
-    {
-        return true;
-    }
+        //    case Constitutive::eOutput::UPDATE_STATIC_DATA:
+        //    case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        {
+            return true;
+        }
     default:
     {
         return false;
@@ -320,14 +322,17 @@ void NuTo::LinearElasticAnisotropic::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, mRho);
     // Check stiffness tensor components
     // Symmetry test
-    for (int ii=0; ii<6; ii++) {
-        for (int jj=0; jj<ii; jj++) {
-            if (mStiffness(ii,jj) != mStiffness(jj,ii)) {
-                throw NuTo::MechanicsException(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
-                                               + std::to_string(ii) + "," + std::to_string(jj) + "] = "
-                                               + std::to_string(mStiffness(ii,jj)) + "\n"
-                                               + "(entry [" + std::to_string(jj) + "," + std::to_string(ii) + "] = "
-                                               + std::to_string(mStiffness(jj,ii)) + ".");
+    for (int ii = 0; ii < 6; ii++)
+    {
+        for (int jj = 0; jj < ii; jj++)
+        {
+            if (mStiffness(ii, jj) != mStiffness(jj, ii))
+            {
+                throw NuTo::MechanicsException(
+                        BOOST_CURRENT_FUNCTION,
+                        "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," + std::to_string(jj) +
+                                "] = " + std::to_string(mStiffness(ii, jj)) + "\n" + "(entry [" + std::to_string(jj) +
+                                "," + std::to_string(ii) + "] = " + std::to_string(mStiffness(jj, ii)) + ".");
             }
         }
     }

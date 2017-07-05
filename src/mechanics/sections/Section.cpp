@@ -36,6 +36,3 @@ bool Section::IsPlaneStrain() const
 void Section::Info(std::ostream& out) const
 {
 }
-
-
-

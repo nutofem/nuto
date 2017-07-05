@@ -16,5 +16,3 @@ void LoadSurfacePressureFunction2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoord
 {
     rLoadVector = mLoadFunction(rCoordinates);
 }
-
-

@@ -14,7 +14,8 @@
 
 using namespace NuTo;
 
-HeatConduction::HeatConduction() : ConstitutiveBase()
+HeatConduction::HeatConduction()
+    : ConstitutiveBase()
 {
     mK = 0.0;
     mCt = 0.0;
@@ -22,8 +23,8 @@ HeatConduction::HeatConduction() : ConstitutiveBase()
     SetParametersValid();
 }
 
-ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(
-        const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType&) const
+ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                           const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -61,14 +62,17 @@ ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(
 
 bool HeatConduction::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
 {
-    if (timeDerivative == 2) return false;
-    else if (dofRow == Node::eDof::TEMPERATURE and dofCol == Node::eDof::TEMPERATURE) return true;
-    else return false;
+    if (timeDerivative == 2)
+        return false;
+    else if (dofRow == Node::eDof::TEMPERATURE and dofCol == Node::eDof::TEMPERATURE)
+        return true;
+    else
+        return false;
 }
 
 template <int TDim>
-void HeatConduction::Evaluate(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+void HeatConduction::Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                              const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
 
@@ -222,9 +226,9 @@ void HeatConduction::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mRho);
 }
 
-template void HeatConduction::Evaluate<1>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void HeatConduction::Evaluate<2>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void HeatConduction::Evaluate<3>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);

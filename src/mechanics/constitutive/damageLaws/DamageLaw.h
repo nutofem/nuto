@@ -9,10 +9,12 @@ namespace Constitutive
 class DamageLaw
 {
 public:
-
     //! @brief ctor with common member variable for all damage laws
     //! @param kappa0 initial kappa, values below kappa0 do not cause damage
-    DamageLaw(double kappa0) : mKappa0(kappa0) {}
+    DamageLaw(double kappa0)
+        : mKappa0(kappa0)
+    {
+    }
 
     //! @brief dtor
     virtual ~DamageLaw() = default;
@@ -38,7 +40,7 @@ public:
     }
 
     //! @brief trivial getter for kappa0
-    //! @return kappa0 
+    //! @return kappa0
     double GetKappa0() const
     {
         return mKappa0;
@@ -50,7 +52,7 @@ protected:
     //! @param kappa history variable
     //! @return damage
     virtual double Damage(const double kappa) const = 0;
-    
+
     //! @brief protected virtual method for the damage derivative calculation
     //!        the case kappa <= kappa0 is already covered in the public interface
     //! @param kappa history variable

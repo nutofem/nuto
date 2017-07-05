@@ -9,10 +9,11 @@ class IntegrationType2D : public IntegrationTypeBase
 
 public:
     //! @brief constructor
-    IntegrationType2D() {};
+    IntegrationType2D(){};
 
-    int GetDimension() const override { return 2; }
-
+    int GetDimension() const override
+    {
+        return 2;
+    }
 };
 }
-

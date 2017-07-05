@@ -37,4 +37,3 @@ bool SectionPlane::IsPlaneStrain() const
 {
     return mIsPlaneStrain;
 }
-

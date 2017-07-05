@@ -9,7 +9,9 @@
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 
-NuTo::BlockStorageBase::~BlockStorageBase() {}
+NuTo::BlockStorageBase::~BlockStorageBase()
+{
+}
 
 int NuTo::BlockStorageBase::GetNumColumns() const
 {

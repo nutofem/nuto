@@ -9,11 +9,11 @@ class IntegrationType3D : public IntegrationTypeBase
 
 public:
     //! @brief constructor
-    IntegrationType3D() {};
+    IntegrationType3D(){};
 
-    int GetDimension() const override { return 3; }
-
+    int GetDimension() const override
+    {
+        return 3;
+    }
 };
 } // namespace nuto
-
-

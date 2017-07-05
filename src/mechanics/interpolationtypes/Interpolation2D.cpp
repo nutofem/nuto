@@ -8,10 +8,10 @@
 #include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
 
-NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                       int rDimension)
+    : InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
 {
-
 }
 
 std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(int rSurface) const
@@ -27,5 +27,3 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(i
     }
     return surfaceEdgeCoordinates;
 }
-
-

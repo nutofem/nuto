@@ -25,9 +25,9 @@ NuTo::IntegrationType2D4NLobatto16Ip::IntegrationType2D4NLobatto16Ip()
     mPts.resize(GetNumIntegrationPoints());
     int ipNum = 0;
     for (int i = 0; i < 4; i++)
-        for (int j= 0; j < 4; j++)
+        for (int j = 0; j < 4; j++)
         {
-            mWeights[ipNum] = weights1D2N4Ip[i]*weights1D2N4Ip[j];
+            mWeights[ipNum] = weights1D2N4Ip[i] * weights1D2N4Ip[j];
             mPts[ipNum][0] = coordinates1D2N4Ip[j];
             mPts[ipNum][1] = coordinates1D2N4Ip[i];
             ipNum++;
@@ -39,16 +39,17 @@ NuTo::IntegrationType2D4NLobatto16Ip::IntegrationType2D4NLobatto16Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    if (rIpNum>=0 && rIpNum<16)
+    if (rIpNum >= 0 && rIpNum < 16)
         return mPts[rIpNum];
     else
-        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D4NLobatto16Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D4NLobatto16Ip::GetNumIntegrationPoints() const
 {
     return 16;
 }
@@ -56,20 +57,19 @@ int NuTo::IntegrationType2D4NLobatto16Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D4NLobatto16Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D4NLobatto16Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    if (rIpNum>=0 && rIpNum<16) return mWeights[rIpNum];
-    throw MechanicsException("[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+    if (rIpNum >= 0 && rIpNum < 16)
+        return mWeights[rIpNum];
+    throw MechanicsException(
+            "[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType2D4NLobatto16Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
+        unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
+        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 25;
 
@@ -178,7 +178,7 @@ void NuTo::IntegrationType2D4NLobatto16Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(+1.);
 
 
-NumVisualizationCells = 16;
+    NumVisualizationCells = 16;
 
     // cell 0
     VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
@@ -307,7 +307,5 @@ NumVisualizationCells = 16;
     VisualizationCellsIncidence.push_back(24);
     VisualizationCellsIncidence.push_back(23);
     VisualizationCellsIP.push_back(15);
-
 }
 #endif // ENABLE_VISUALIZE
-

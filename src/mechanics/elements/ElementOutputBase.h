@@ -8,8 +8,10 @@ namespace NuTo
 class ElementOutputIpData;
 
 
-template <typename T> class BlockFullMatrix;
-template <typename T> class BlockFullVector;
+template <typename T>
+class BlockFullMatrix;
+template <typename T>
+class BlockFullVector;
 
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
@@ -33,17 +35,12 @@ public:
 
     virtual void SetSymmetry(bool rSymmetric);
 
-    virtual bool GetSymmetry()const;
+    virtual bool GetSymmetry() const;
 
     virtual void SetConstant(bool rConstant);
 
-    virtual bool GetConstant()const;
+    virtual bool GetConstant() const;
 
     virtual ElementOutputBase* Clone() const = 0;
 };
-
 }
-
-
-
-

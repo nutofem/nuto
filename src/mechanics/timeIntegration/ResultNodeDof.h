@@ -18,7 +18,6 @@ class NodeBase;
 class ResultNodeDof : public ResultBase
 {
 public:
-
     //! @brief constructor
     ResultNodeDof(const std::string& rIdent, int rNodeId);
 
@@ -30,15 +29,15 @@ public:
 
     ResultNodeDof* AsResultNodeDof() override
     {
-    	return this;
+        return this;
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info()const override;
+    void Info() const override;
 
 protected:
     int mNodeId;
 };
 }
 
-//namespace NuTo
+// namespace NuTo

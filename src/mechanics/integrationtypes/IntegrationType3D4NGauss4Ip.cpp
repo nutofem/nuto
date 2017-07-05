@@ -15,30 +15,29 @@ NuTo::IntegrationType3D4NGauss4Ip::IntegrationType3D4NGauss4Ip()
 
 Eigen::VectorXd NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<4);
+    assert(rIpNum >= 0 && rIpNum < 4);
     return mCoordinates[rIpNum];
 }
 
-int NuTo::IntegrationType3D4NGauss4Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType3D4NGauss4Ip::GetNumIntegrationPoints() const
 {
     return 4;
 }
 
-double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    return 1./24.;
+    return 1. / 24.;
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
-	NumVisualizationPoints = 15; //Identical with the nodes + centroid of faces + centroid
+    NumVisualizationPoints = 15; // Identical with the nodes + centroid of faces + centroid
 
     // Point 0
     VisualizationPointLocalCoordinates.push_back(0);
@@ -166,4 +165,3 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(3);
 }
 #endif // ENABLE_VISUALIZE
-

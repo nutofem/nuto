@@ -38,14 +38,22 @@ class StructureOutputBase;
 class StructureOutputBlockMatrix;
 class StructureOutputBlockVector;
 class TimeIntegrationBase;
-template<typename IOEnum> class ConstitutiveIOMap;
-template<class T> class BlockFullMatrix;
-template<class T> class BlockFullVector;
-template<class T> class Group;
-template<class T> class SparseMatrixCSRSymmetric;
-template<class T> class SparseMatrixCSRGeneral;
-template<class T> class SparseMatrixCSRVector2General;
-template<class T> class SparseMatrixCSRVector2Symmetric;
+template <typename IOEnum>
+class ConstitutiveIOMap;
+template <class T>
+class BlockFullMatrix;
+template <class T>
+class BlockFullVector;
+template <class T>
+class Group;
+template <class T>
+class SparseMatrixCSRSymmetric;
+template <class T>
+class SparseMatrixCSRGeneral;
+template <class T>
+class SparseMatrixCSRVector2General;
+template <class T>
+class SparseMatrixCSRVector2Symmetric;
 
 enum class eError;
 enum class eGroupId;
@@ -57,32 +65,32 @@ enum class eDirection;
 
 namespace Constitutive
 {
-    class DamageLaw;
-    enum class eConstitutiveParameter;
-    enum class eConstitutiveType;
-    enum class eInput;
-    enum class eOutput;
-}// namespace Constitutive
+class DamageLaw;
+enum class eConstitutiveParameter;
+enum class eConstitutiveType;
+enum class eInput;
+enum class eOutput;
+} // namespace Constitutive
 
 namespace Constraint
 {
-    class Constraints;
+class Constraints;
 }
 
 namespace Element
 {
-    enum class eOutput;
-}// namespace Element
+enum class eOutput;
+} // namespace Element
 
 namespace IpData
 {
-    enum class eIpStaticDataType;
-}// namespace IpData
+enum class eIpStaticDataType;
+} // namespace IpData
 
 namespace Visualize
 {
-    class UnstructuredGrid;
-}// namespace Visualize
+class UnstructuredGrid;
+} // namespace Visualize
 
 typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
 typedef ConstitutiveIOMap<Constitutive::eOutput> ConstitutiveOutputMap;
@@ -96,6 +104,7 @@ class StructureBase
     friend class NewmarkIndirect;
     friend class NewmarkDirect;
     friend class VelocityVerlet;
+
 public:
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -106,14 +115,14 @@ public:
 
     //! @brief gives the dimension of the Structure
     //! @return Structural dimension (1,2 or 3)
-    int GetDimension()const;
+    int GetDimension() const;
 
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
-    void ExportVtkDataFileElements(const std::string& rResultFileName, bool binary=true);
+    void ExportVtkDataFileElements(const std::string& rResultFileName, bool binary = true);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rResultFileName ... file name
@@ -140,36 +149,48 @@ public:
     //! @param visualization type, i.e. voronoi cell, extrapolated...
     void SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType);
 
-    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
-    void DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents) const;
+    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents
+    //! for an element plot
+    void DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer,
+                                    const std::vector<eVisualizeWhat>& visualizeComponents) const;
 
-    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for a node plot
-    void DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents) const;
-
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents, const std::vector<ElementBase*>& elements);
-
-    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents, const std::vector<ElementBase*>& elements, const eVisualizationType rVisualizationType);
+    //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents
+    //! for a node plot
+    void DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer,
+                                 const std::vector<eVisualizeWhat>& visualizeComponents) const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
+    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                     const std::vector<eVisualizeWhat>& visualizeComponents,
+                                     const std::vector<ElementBase*>& elements);
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                     const std::vector<eVisualizeWhat>& visualizeComponents,
+                                     const std::vector<ElementBase*>& elements,
+                                     const eVisualizationType rVisualizationType);
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                    const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
+    void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
+                                    const std::vector<eVisualizeWhat>& visualizeComponents);
 
     //! @brief ... returns the map that contains the visualization components to be exported for each element group
     std::map<int, std::vector<eVisualizeWhat>>& GetGroupVisualizeComponentsMap(void);
-#endif //SWIG
+#endif // SWIG
 
 
 #ifndef SWIG
 
     //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
-    virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme);
+    virtual void CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme);
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) = 0;
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput,
+                          std::map<eStructureOutput, StructureOutputBase*>& rStructureOutput) = 0;
 
 
 #endif // SWIG
@@ -191,7 +212,7 @@ public:
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian(eStructureOutput rOutput);
 
-#endif //SWIG
+#endif // SWIG
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0();
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian1();
@@ -204,39 +225,41 @@ public:
     //! @return  ... StructureOutputBlockVector containing the external loads
     NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector();
 
-    NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix, const NuTo::BlockFullVector<double>& rVector) const;
+    NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix,
+                                                   const NuTo::BlockFullVector<double>& rVector) const;
 
 
     void SolveGlobalSystemStaticElastic();
 
-    void Contact(const std::vector<int> &rElementGroups);
+    void Contact(const std::vector<int>& rElementGroups);
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);
 
     bool CheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
 
 private: // keep the method definitions close together
-    bool CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rDiff, double rRelativeTolerance, bool rPrintWrongMatrices);
-public:
+    bool CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rDiff,
+                                 double rRelativeTolerance, bool rPrintWrongMatrices);
 
-//*************************************************
-//************ Node routines        ***************
-//***  defined in structures/StructureNode.cpp  ***
-//*************************************************
+public:
+    //*************************************************
+    //************ Node routines        ***************
+    //***  defined in structures/StructureNode.cpp  ***
+    //*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
-    virtual int GetNumNodes() const =0;
+    virtual int GetNumNodes() const = 0;
 
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
-    virtual NodeBase* NodeGetNodePtr(int rIdent)=0;
+    virtual NodeBase* NodeGetNodePtr(int rIdent) = 0;
 
 #ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
-    virtual const NodeBase* NodeGetNodePtr(int rIdent)const=0;
+    virtual const NodeBase* NodeGetNodePtr(int rIdent) const = 0;
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
@@ -246,8 +269,8 @@ public:
     //! @brief gives the identifier of a node
     //! @param reference to a node
     //! @return identifier
-    virtual int NodeGetId(const NodeBase* rNode)const=0;
-#endif //SWIG
+    virtual int NodeGetId(const NodeBase* rNode) const = 0;
+#endif // SWIG
     //! @brief ... returns the (first) node that has the specified coordinates within the range
     //! @param rCoordinates
     //! @param rRange
@@ -270,19 +293,19 @@ public:
 
     //! @brief delete node
     //! @param rIdent ... node identifier
-    virtual void NodeDelete(const int rIdent)=0;
+    virtual void NodeDelete(const int rIdent) = 0;
 
     //! @brief info about the nodes in the Structure
-    virtual void NodeInfo(int mVerboseLevel)const=0;
+    virtual void NodeInfo(int mVerboseLevel) const = 0;
 
     //! @brief numbers the dofs in the structure
     //! @param rCallerName ... if the method throws it is nice to know by whom it was called.
-    virtual void NodeBuildGlobalDofs(std::string rCallerName = "")=0;
+    virtual void NodeBuildGlobalDofs(std::string rCallerName = "") = 0;
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeSetDisplacements(int rId,const Eigen::VectorXd& rDisplacements);
+    void NodeSetDisplacements(int rId, const Eigen::VectorXd& rDisplacements);
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
@@ -320,9 +343,10 @@ public:
     //! @brief gets the coordinates of a node
     //! @param rNode node identifier
     //! @param rCoordinates matrix (one column) with the coordinates
-    void NodeGetCoordinates(int rNode, Eigen::VectorXd& rCoordinates)const;
+    void NodeGetCoordinates(int rNode, Eigen::VectorXd& rCoordinates) const;
 
-    //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
+    //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change
+    //! between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rCoordinates matrix (rows/nodes columns/coordinates)
     void NodeGroupGetCoordinates(int rNodeGroup, Eigen::MatrixXd& rCoordinates);
@@ -330,13 +354,13 @@ public:
     //! @brief gets the displacements of a node
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rNode, Eigen::VectorXd& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, Eigen::VectorXd& rDisplacements) const;
 
     //! @brief gets the displacements of a node
     //! @param rIdent node identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 velocity,2 acceleration)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rNode, int rTimeDerivative, Eigen::VectorXd& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, int rTimeDerivative, Eigen::VectorXd& rDisplacements) const;
 
 
 #ifndef SWIG
@@ -344,10 +368,11 @@ public:
     //! @param rNodeId node     identifier
     //! @param rDof             degree of freedom
     //! @return A vector of ids that correspond to rDof of rNodeId
-    std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
+    std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof) const;
 #endif
 
-    //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
+    //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change
+    //! between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
     void NodeGroupGetDisplacements(int rNodeGroup, Eigen::MatrixXd& rDisplacements);
@@ -374,9 +399,12 @@ public:
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) = 0;
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number
+    //! of active dofs)
+    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is
+    //! number of active dofs)
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues,
+                                    const NuTo::BlockFullVector<double>& rDependentDofValues) = 0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -384,14 +412,18 @@ public:
     virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number
+    //! of active dofs)
+    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is
+    //! number of active dofs)
     virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues) = 0;
 
     //! @brief calculate dependent dof values (for the zeroth time derivative)
-    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number
+    //! of active dofs)
     //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const = 0;
+    virtual NuTo::BlockFullVector<double>
+    NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const = 0;
 
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
@@ -410,50 +442,53 @@ public:
     void NodeInternalForce(const NodeBase* rNodePtr, Eigen::VectorXd& rNodeForce);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const;
+    void NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                 const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const;
 
     //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
-    void NodeVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer, const std::vector<NuTo::eVisualizeWhat>& virualizeComponents, const std::vector<const NodeBase*>& nodes) const;
+    void NodeVectorAddToVisualize(Visualize::UnstructuredGrid& visualizer,
+                                  const std::vector<NuTo::eVisualizeWhat>& virualizeComponents,
+                                  const std::vector<const NodeBase*>& nodes) const;
 
-#endif //SWIG
+#endif // SWIG
 
-//*************************************************
-//************ Element routines     ***************
-//**  defined in structures/StructureElement.cpp **
-//*************************************************
+    //*************************************************
+    //************ Element routines     ***************
+    //**  defined in structures/StructureElement.cpp **
+    //*************************************************
     //! @brief returns the number of elements
     //! @return number of elements
-    virtual int GetNumElements() const =0;
+    virtual int GetNumElements() const = 0;
 
 #ifndef SWIG
     //! @brief a reference to an element
     //! @param identifier
     //! @return reference to an element
-    virtual ElementBase* ElementGetElementPtr(int rIdent)=0;
+    virtual ElementBase* ElementGetElementPtr(int rIdent) = 0;
 
     //! @brief a reference to an element
     //! @param identifier
     //! @return reference to an element
-    virtual const ElementBase* ElementGetElementPtr(int rIdent)const=0;
+    virtual const ElementBase* ElementGetElementPtr(int rIdent) const = 0;
 
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
-    virtual int ElementGetId(const ElementBase* rElement)const=0;
+    virtual int ElementGetId(const ElementBase* rElement) const = 0;
 
     //! @brief info about one single element
     //! @param rElement (Input) ... pointer to the element
     //! @param rVerboseLevel (Input) ... level of verbosity
-    virtual void ElementInfo(const ElementBase* rElement, int rVerboseLevel)const=0;
+    virtual void ElementInfo(const ElementBase* rElement, int rVerboseLevel) const = 0;
 
-#endif //SWIG
+#endif // SWIG
 
     //! @brief delete element
     //! @param rIdent ... element identifier
-    virtual void ElementDelete(int rIdent)=0;
+    virtual void ElementDelete(int rIdent) = 0;
 
     //! @brief info about the elements in the Structure
-    virtual void ElementInfo(int rVerboseLevel)const=0;
+    virtual void ElementInfo(int rVerboseLevel) const = 0;
 
 #ifndef SWIG
 
@@ -499,17 +534,27 @@ public:
     //! @return BlockFullVector containing the global column dofs
     BlockFullVector<int> ElementBuildGlobalDofsColumn(ElementBase& rElement);
 
-    bool ElementCheckHessian0(ElementBase& rElement, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
+    bool ElementCheckHessian0(ElementBase& rElement, double rDelta, double rRelativeTolerance,
+                              bool rPrintWrongMatrices = true);
 
 #endif // SWIG
 
-    NuTo::BlockFullMatrix<double> ElementBuildHessian0        (int rElementId);
-    NuTo::BlockFullMatrix<double> ElementBuildHessian1        (int rElementId);
-    NuTo::BlockFullMatrix<double> ElementBuildHessian2        (int rElementId);
+    NuTo::BlockFullMatrix<double> ElementBuildHessian0(int rElementId);
+    NuTo::BlockFullMatrix<double> ElementBuildHessian1(int rElementId);
+    NuTo::BlockFullMatrix<double> ElementBuildHessian2(int rElementId);
 
-    NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId) { return ElementBuildInternalGradient(*ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsRow   (int rElementId) { return ElementBuildGlobalDofsRow   (*ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsColumn(int rElementId) { return ElementBuildGlobalDofsColumn(*ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId)
+    {
+        return ElementBuildInternalGradient(*ElementGetElementPtr(rElementId));
+    }
+    NuTo::BlockFullVector<int> ElementBuildGlobalDofsRow(int rElementId)
+    {
+        return ElementBuildGlobalDofsRow(*ElementGetElementPtr(rElementId));
+    }
+    NuTo::BlockFullVector<int> ElementBuildGlobalDofsColumn(int rElementId)
+    {
+        return ElementBuildGlobalDofsColumn(*ElementGetElementPtr(rElementId));
+    }
 
     bool ElementCheckHessian0(int rElementId, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true)
     {
@@ -538,7 +583,7 @@ public:
     //! @param rConstitutive material pointer
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
 
-#endif //SWIG
+#endif // SWIG
 
     //! @brief Modifies the section of a group of elements
     //! @param groupId Identifier for the group of elements
@@ -572,7 +617,7 @@ public:
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
     Eigen::MatrixXd ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
 
-#endif //SWIG
+#endif // SWIG
 
     //! @brief calculates static ip data
     //! @param rElemIdent  element number
@@ -671,30 +716,34 @@ public:
     //! @return volume of the structure in 3D /area in 2D/ length in 1D
     double ElementGroupGetVolume(int rGroupId);
 
-    //! @brief calculate the largest element eigenvalue for all elements solving the generalized eigenvalue problem Ku=lambda Mu
+    //! @brief calculate the largest element eigenvalue for all elements solving the generalized eigenvalue problem
+    //! Ku=lambda Mu
     //! this is used for the estimation of the critical time step
     double ElementTotalCalculateLargestElementEigenvalue();
 
-    //! @brief calculate the largest element eigenvalue for a group of elements solving the generalized eigenvalue problem Ku=lambda Mu
+    //! @brief calculate the largest element eigenvalue for a group of elements solving the generalized eigenvalue
+    //! problem Ku=lambda Mu
     //! this is used for the estimation of the critical time step
     double ElementGroupCalculateLargestElementEigenvalue(int rGroupId);
 
     //! @brief ... create a constraint equation
     //! @param rConstraint ... constraint id
     //! @param rNode ... node id in the first constraint equation term
-    //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
+    //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS,
+    //! TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
 
-    //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an element
+    //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an
+    //! element
     //! @param rNode ... node id in the first constraint equation term
     //! @param rElement ... element group id
-    //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
-    //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
-    void ConstraintLinearEquationNodeToElementCreate(int rNode,
-                                                     int rElementGroup,
-                                                     NuTo::Node::eDof rDofType,
+    //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS,
+    //! TEMPERATURES)
+    //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour
+    //! algorithm
+    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType,
                                                      const double rTolerance = 1.e-6,
                                                      Eigen::Vector3d rNodeCoordOffset = Eigen::Vector3d::Zero());
 
@@ -726,25 +775,26 @@ public:
 
     //! @brief adds a surface load to 2D plane elements (2D)
     //! @param rElementGroupId ... specifies the elements with surface loads
-    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group,
+    //! the
     // surface is considered to be loaded
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
-    int LoadSurfaceConstDirectionCreate2D(int rElementGroupId, int rNodeGroupId,
-    		const Eigen::VectorXd& rLoadVector);
+    int LoadSurfaceConstDirectionCreate2D(int rElementGroupId, int rNodeGroupId, const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
-    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group,
+    //! the
     // surface is considered to be loaded
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
-    int LoadSurfaceConstDirectionCreate3D(int rElementGroupId, int rNodeGroupId,
-    		const Eigen::VectorXd& rLoadVector);
+    int LoadSurfaceConstDirectionCreate3D(int rElementGroupId, int rNodeGroupId, const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
-    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group,
+    //! the
     // surface is considered to be loaded
     //! @param rPressure value ... normal to the surface, positive for compression
     //! @return integer id to delete or modify the load
@@ -752,17 +802,17 @@ public:
 
     //! @brief adds a surface load pressure-function to 2D elements
     //! @param rElementGroupId ... specifies the elements with surface loads
-    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the surface is considered to be loaded
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group,
+    //! the surface is considered to be loaded
     //! @param rLoadFunction ... pressure function on the boundary
     //! @return integer id to delete or modify the load
-    int LoadSurfacePressureFunctionCreate2D(
-                                            int rElementGroupId,
-                                            int rNodeGroupId,
-                                            const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction);
+    int LoadSurfacePressureFunctionCreate2D(int rElementGroupId, int rNodeGroupId,
+                                            const std::function<Eigen::Vector2d(Eigen::Vector2d)>& rLoadFunction);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
-    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group,
+    //! the
     // surface is considered to be loaded
     //! @param rPressure value ... normal to the surface, positive for compression
     //! @return integer id to delete or modify the load
@@ -872,7 +922,8 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, Eigen::VectorXd  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier,
+                                                     Eigen::VectorXd rValue);
 
     //! @brief ... gets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
@@ -884,7 +935,7 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, const std::string& rIdentifier, Eigen::MatrixXd  rValue);
+    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, const std::string& rIdentifier, Eigen::MatrixXd rValue);
 
 
 #ifndef SWIG
@@ -917,25 +968,29 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    Eigen::VectorXd ConstitutiveLawGetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
+    Eigen::VectorXd ConstitutiveLawGetParameterFullVectorDouble(int rIdent,
+                                                                Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier,
+                                                     Eigen::VectorXd rValue);
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    Eigen::MatrixXd ConstitutiveLawGetParameterMatrixDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
+    Eigen::MatrixXd ConstitutiveLawGetParameterMatrixDouble(int rIdent,
+                                                            Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd  rValue);
+    void ConstitutiveLawSetParameterMatrixDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier,
+                                                 Eigen::MatrixXd rValue);
 #endif
 
     //! @brief ... set damage law
@@ -948,7 +1003,8 @@ public:
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
-    double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, Eigen::VectorXd rCoeffs) const;
+    double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity,
+                                                            Eigen::VectorXd rCoeffs) const;
 
 //    //VHIRTHAMTODO Delete???
 //    //! @brief ... adds a constitutive law to a multi physics model
@@ -994,12 +1050,12 @@ public:
     //*************************************************
     //! @brief ... Info routine that prints general information about the groups
     //! @param rVerboseLevel describes how detailed the information is
-    void GroupInfo(int rVerboseLevel)const;
+    void GroupInfo(int rVerboseLevel) const;
 
     //! @brief gives the identifier of an element
     //! @param reference to an element
     //! @return identifier
-    int GroupGetId(GroupBase* rGroup)const;
+    int GroupGetId(GroupBase* rGroup) const;
 
     //! @brief ... get the pointer to a group from the group identifier
     //! @param rIdent ... group identifier
@@ -1114,18 +1170,17 @@ public:
     Group<NodeBase>& GroupGetNodesAtCoordinate(eDirection direction, double value, double tolerance = 1.e-6);
 
 
-
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param rIdentGroup identifier for the group
     //! @param rFunction std::function
-    void GroupAddNodeFunction(int rIdentGroup, std::function<bool (NodeBase*)> rFunction);
+    void GroupAddNodeFunction(int rIdentGroup, std::function<bool(NodeBase*)> rFunction);
 
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param rIdentNewGroup identifier for the group where to add the nodes
     //! @param rIdentOldGroup identifier for the group where the ids are searched
     //! @param rFunction std::function
-    void GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction);
+    void GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup, std::function<bool(NuTo::NodeBase*)> rFunction);
 #endif
 
     //! @brief ... Adds an element to an element group
@@ -1136,7 +1191,8 @@ public:
     //! @brief ... Adds all elements to a group whose nodes are in the given node group
     //! @param rElementGroupId identifier for the element group
     //! @param rNodeGroupId identifier for the node group
-    //! @param rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
+    //! @param rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group,
+    //! if set
     //! to false, the element is select if at least one node is in the node group
     void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId, bool rHaveAllNodes);
 
@@ -1160,29 +1216,30 @@ public:
 
     Group<NodeBase>& GroupGetNodeRadiusRange(Eigen::VectorXd center, double min = 0., double max = 1.e-6);
 
-    //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
+    //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified
+    //! range
     //! @param rIdentGroup identifier for the group
     //! @param rCenter center of the cylinder
     //! @param rAxis axis of the cylinder
     //! @param rMin ... minimum radius
     //! @param rMax ... maximum radius
-    void GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter,
-    		 Eigen::VectorXd rDirection, double rMin, double rMax);
+    void GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, Eigen::VectorXd rDirection,
+                                         double rMin, double rMax);
 
     //! @brief ... Returns the number of members in a group
     //! @param rIdentGroup identifier for the group
     //! @return ... number of members
-    int GroupGetNumMembers(int rIdentGroup)const;
+    int GroupGetNumMembers(int rIdentGroup) const;
 
     //! @brief ... Returns a vector with the members of a group
     //! @param rIdentGroup identifier for the group
     //! @return ... vector of members
-    std::vector<int> GroupGetMemberIds(int rIdentGroup)const;
+    std::vector<int> GroupGetMemberIds(int rIdentGroup) const;
 
     //! @brief ... checks for a member in a group
     //! @param rIdentGroup identifier for the group
     //! @return ... rMember id (element id, node id etc.)
-    bool GroupContainsMember(int rIdentGroup, int rMember)const;
+    bool GroupContainsMember(int rIdentGroup, int rMember) const;
 
     //*************************************************************
     //************ Integration type routines     ******************
@@ -1191,7 +1248,7 @@ public:
     //! @brief ... Info routine that prints general information about the allocated integration types
     //! an integration type is only allocated if required (from created elements)
     //! @param rVerboseLevel describes how detailed the information is
-    void IntegrationTypeInfo(int rVerboseLevel)const;
+    void IntegrationTypeInfo(int rVerboseLevel) const;
 
 #ifndef SWIG
     //! @brief ... Returns a pointer to an integration type
@@ -1203,26 +1260,26 @@ public:
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
     NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::eIntegrationType rIdentIntegrationType);
-#endif //SWIG
+#endif // SWIG
 
     //*************************************************
     //************    Logger routines    ***************
     //*************************************************
-	//! @brief opens a logger file for the output to a log file
-	//! @param rFileName file name
-	void LoggerOpenFile(std::string rFileName);
+    //! @brief opens a logger file for the output to a log file
+    //! @param rFileName file name
+    void LoggerOpenFile(std::string rFileName);
 
-	//! @brief set the logger to be quiet (output only to file, if set)
-	//! @param rQuiet (true for quiet logger, false for output to standard output)
-	void LoggerSetQuiet(bool rQuiet);
+    //! @brief set the logger to be quiet (output only to file, if set)
+    //! @param rQuiet (true for quiet logger, false for output to standard output)
+    void LoggerSetQuiet(bool rQuiet);
 
 #ifndef SWIG
-	//! @brief returns the logger
-	inline Logger& GetLogger()const
-	{
-		return mLogger;
-	}
-#endif //SWIG
+    //! @brief returns the logger
+    inline Logger& GetLogger() const
+    {
+        return mLogger;
+    }
+#endif // SWIG
 
 
     //*************************************************
@@ -1230,12 +1287,12 @@ public:
     //**  defined in structures/StructureBase.cpp **
     //*************************************************
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
-	void SetNumTimeDerivatives(int rNumTimeDerivatives);
+    void SetNumTimeDerivatives(int rNumTimeDerivatives);
 
-	//! @brief ... return number of time derivatives (0 : static, 1: velocities, 2: accelerations)
-	int GetNumTimeDerivatives()const;
+    //! @brief ... return number of time derivatives (0 : static, 1: velocities, 2: accelerations)
+    int GetNumTimeDerivatives() const;
 
-	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;
 
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
@@ -1244,7 +1301,7 @@ public:
 
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
-    double GetToleranceStiffnessEntries()const;
+    double GetToleranceStiffnessEntries() const;
 
     //! @brief returns the number of degrees of freedom
     //! @return ... number of degrees of freedom
@@ -1328,7 +1385,6 @@ public:
     const NuTo::DofStatus& GetDofStatus() const;
 
 
-
     //! @brief returns the number of degrees of freedom for dof type rDof
     //! @param rDofType ... dof type
     //! @return ... number of degrees of freedom
@@ -1354,7 +1410,8 @@ public:
     //! @param rIsConstitutiveInput ... is/is not constitutive input
     void DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput);
 
-    //! @brief writes the current state of the structure (nodal values, history variables and global time) as a binary file
+    //! @brief writes the current state of the structure (nodal values, history variables and global time) as a binary
+    //! file
     //! @param filename ... file name
     //! @param globalTime ... global time
     void WriteRestartFile(std::string filename, double globalTime);
@@ -1366,39 +1423,44 @@ public:
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
-    virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* currently no members to serialize */};
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream){/* currently no members to serialize */};
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize input stream
-    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) {/* currently no members to serialize */};
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream){/* currently no members to serialize */};
 
-    //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
-    //for an update on the coarse scale
-    //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
-    //this routine saves the current state before an update in the Newton Raphson iteration is performed
-    //this only happens for more than one load step (either prescibed or with automatic load control)
-    virtual void SaveStructure(std::stringstream& rSaveStringStream)const
+    //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be
+    //! performed
+    // for an update on the coarse scale
+    // as a consequence, in an iterative solution with updates in between the initial state has to be restored after
+    // leaving the routine
+    // this routine saves the current state before an update in the Newton Raphson iteration is performed
+    // this only happens for more than one load step (either prescibed or with automatic load control)
+    virtual void SaveStructure(std::stringstream& rSaveStringStream) const
     {
-    	throw MechanicsException("[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
+        throw MechanicsException(
+                "[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
     }
 
     virtual void RestoreStructure(std::stringstream& rSaveStringStream)
     {
-    	throw MechanicsException("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
+        throw MechanicsException(
+                "[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
     void SetUpdateTmpStaticDataRequired()
     {
-    	mUpdateTmpStaticDataRequired = true;
-}
+        mUpdateTmpStaticDataRequired = true;
+    }
 
-    //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
-    double ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector);
+    //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem
+    //! Ku=lambda Mu
+    double ElementCalculateLargestElementEigenvalue(const std::vector<ElementBase*>& rElementVector);
 
-	//! @brief returns whether or not the dof is constitutive input at least in one InrepolationType
-	//! @param rInterpolationTypeId ... interpolation type id
-	//! @param rDofType ... dof type
-	bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
+    //! @brief returns whether or not the dof is constitutive input at least in one InrepolationType
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rDofType ... dof type
+    bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
 
     ///
@@ -1431,7 +1493,6 @@ public:
     }
 
 protected:
-
     //! @brief finds an unused ID in rMap
     //! @param rMap hopefully any kind of map, boost, std, ...
     //! @return unused ID
@@ -1449,10 +1510,8 @@ protected:
     }
 
 
-
-
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
-	int mNumTimeDerivatives;
+    int mNumTimeDerivatives;
 
     int mDimension;
 
@@ -1460,31 +1519,33 @@ protected:
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase
-    boost::ptr_map<int,ConstitutiveBase> mConstitutiveLawMap;
+    boost::ptr_map<int, ConstitutiveBase> mConstitutiveLawMap;
 
     //! @brief ... map storing node loads
     //! @sa LoadBase
-    boost::ptr_map<int,LoadBase> mLoadMap;
+    boost::ptr_map<int, LoadBase> mLoadMap;
 
     //! @brief ... map storing the groups and a pointer to the objects
     //! @sa GroupBase
-    boost::ptr_map<int,GroupBase> mGroupMap;
+    boost::ptr_map<int, GroupBase> mGroupMap;
 
     //! @brief ... map storing the name and the pointer to the integration types
     //! @sa IntegrationTypeBase
-    boost::ptr_map<std::string,IntegrationTypeBase> mIntegrationTypeMap;
+    boost::ptr_map<std::string, IntegrationTypeBase> mIntegrationTypeMap;
 
     //! @brief ... map storing the interpolation types
     //! @sa InterpolationType
-    boost::ptr_map<int,InterpolationType> mInterpolationTypeMap;
+    boost::ptr_map<int, InterpolationType> mInterpolationTypeMap;
 
-    //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
+    //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the
+    //! output (VTK) file
     std::map<int, std::vector<eVisualizeWhat>> mGroupVisualizeComponentsMap;
 
     //! @brief ... map storing the type of visualization for the output (VTK) file
     std::map<int, eVisualizationType> mGroupVisualizationType;
 
-    //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
+    //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and
+    //! stiffness routines are called
     bool mHaveTmpStaticData;
 
     //! @brief is set to false, if the structure is changed (nodes, elements) or (DOFs at the nodes)
@@ -1496,12 +1557,13 @@ protected:
 
 #ifdef _OPENMP
     //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
-    mutable std::vector<std::vector<ElementBase*> > mMIS;
+    mutable std::vector<std::vector<ElementBase*>> mMIS;
     //@brief number of processors used in an openmp simulation
     int mNumProcessors;
 #endif
 
-    //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
+    //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const
+    //! routines
     mutable Logger mLogger;
 
     bool mShowTime;
@@ -1516,7 +1578,7 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    virtual void GetElementsTotal(std::vector<std::pair<int,const ElementBase*> >& rElements) const = 0;
+    virtual void GetElementsTotal(std::vector<std::pair<int, const ElementBase*>>& rElements) const = 0;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
@@ -1524,7 +1586,7 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    virtual void GetElementsTotal(std::vector<std::pair<int,ElementBase*> >&  rElements) = 0;
+    virtual void GetElementsTotal(std::vector<std::pair<int, ElementBase*>>& rElements) = 0;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
@@ -1532,7 +1594,7 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    virtual void GetNodesTotal(std::vector<std::pair<int,const NodeBase*> >& rNodes) const = 0;
+    virtual void GetNodesTotal(std::vector<std::pair<int, const NodeBase*>>& rNodes) const = 0;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
@@ -1540,13 +1602,12 @@ protected:
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    virtual void GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNodes) = 0;
+    virtual void GetNodesTotal(std::vector<std::pair<int, NodeBase*>>& rNodes) = 0;
 #endif
 
     //! @brief ... get all elements of a group in a vector
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer
-    void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements);
-
+    void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector<ElementBase*>& rElements);
 };
-} //namespace NuTo
+} // namespace NuTo

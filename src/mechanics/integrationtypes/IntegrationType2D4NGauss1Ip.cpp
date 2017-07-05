@@ -16,14 +16,14 @@ NuTo::IntegrationType2D4NGauss1Ip::IntegrationType2D4NGauss1Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum==0);
-	return Eigen::Vector2d({0., 0.});
+    assert(rIpNum == 0);
+    return Eigen::Vector2d({0., 0.});
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D4NGauss1Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D4NGauss1Ip::GetNumIntegrationPoints() const
 {
     return 1;
 }
@@ -31,20 +31,19 @@ int NuTo::IntegrationType2D4NGauss1Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D4NGauss1Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D4NGauss1Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     return 4;
 }
 
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 4;
 
@@ -75,4 +74,3 @@ void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(0);
 }
 #endif // ENABLE_VISUALIZE
-

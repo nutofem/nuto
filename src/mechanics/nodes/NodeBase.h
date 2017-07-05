@@ -10,8 +10,8 @@ namespace NuTo
 {
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @author Thomas Titscher, BAM
 //! @date July 2016
@@ -21,10 +21,14 @@ class NodeBase
 
 public:
     //! @brief constructor
-    NodeBase() {}
+    NodeBase()
+    {
+    }
 
     //! @brief destructor
-    virtual ~NodeBase() {}
+    virtual ~NodeBase()
+    {
+    }
 
     //! @brief Print information about the node
     friend std::ostream& operator<<(std::ostream& out, const NodeBase& node);
@@ -44,7 +48,7 @@ public:
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
     //! @return number of derivatives
-    virtual int GetNumTimeDerivatives(Node::eDof rDof)const
+    virtual int GetNumTimeDerivatives(Node::eDof rDof) const
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
@@ -142,7 +146,7 @@ public:
     }
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-    virtual NodeBase* Clone()const=0;
+    virtual NodeBase* Clone() const = 0;
 
 protected:
     //! @brief Outstream function for "virtual friend idiom"
@@ -151,5 +155,4 @@ protected:
 
 std::ostream& operator<<(std::ostream& out, const NodeBase& node);
 
-}//namespace NuTo
-
+} // namespace NuTo

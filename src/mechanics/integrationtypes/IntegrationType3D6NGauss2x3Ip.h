@@ -33,8 +33,5 @@ public:
 #endif // ENABLE_VISUALIZE
 
 protected:
-
-
 };
 }
-

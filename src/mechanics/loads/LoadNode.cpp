@@ -6,4 +6,3 @@ NuTo::LoadNode::LoadNode(const NodeBase* rNode)
     , mNode(rNode)
 {
 }
-

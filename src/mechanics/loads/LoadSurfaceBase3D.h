@@ -45,4 +45,3 @@ protected:
     IntegrationTypeBase* mIntegrationTypeQuadLobatto4;
 };
 } // namespace NuTo
-

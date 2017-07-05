@@ -173,10 +173,10 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
 
             if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
             {
-                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(ipCoordsSurface, surface,
-                                                                                             elementPtr->GetKnots());
-                derivativeShapeFunctionsNatural =
-                        interpolationTypeCoords.DerivativeShapeFunctionsNaturalIGA(ipCoordsNatural, elementPtr->GetKnotIDs());
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(
+                        ipCoordsSurface, surface, elementPtr->GetKnots());
+                derivativeShapeFunctionsNatural = interpolationTypeCoords.DerivativeShapeFunctionsNaturalIGA(
+                        ipCoordsNatural, elementPtr->GetKnotIDs());
                 shapeFunctions = interpolationTypeDisps.ShapeFunctionsIGA(ipCoordsNatural, elementPtr->GetKnotIDs());
             }
             else
@@ -186,9 +186,9 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                         interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
                 shapeFunctions = interpolationTypeDisps.ShapeFunctions(ipCoordsNatural);
             }
-            
-            //Eigen::MatrixXd N = interpolationTypeCoords.MatrixN(ipCoordsNatural);
-            ipCoordsGlobal = elementPtr->InterpolateDofGlobal(ipCoordsNatural, NuTo::Node::eDof::COORDINATES); 
+
+            // Eigen::MatrixXd N = interpolationTypeCoords.MatrixN(ipCoordsNatural);
+            ipCoordsGlobal = elementPtr->InterpolateDofGlobal(ipCoordsNatural, NuTo::Node::eDof::COORDINATES);
             // #######################################
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
@@ -221,7 +221,6 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
 
 
-
             // calculate weighting factor
             double thickness = elementPtr->GetSection()->GetThickness();
             double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
@@ -246,11 +245,11 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                     }
                     else
                     {
-                        externalLoad.K[Node::eDof::DISPLACEMENTS](theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
+                        externalLoad.K[Node::eDof::DISPLACEMENTS](
+                                theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
                     }
                 }
             }
         }
     }
 }
-

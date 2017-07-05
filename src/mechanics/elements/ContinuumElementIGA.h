@@ -8,21 +8,18 @@ namespace NuTo
 {
 
 template <int TDim>
-class ContinuumElementIGA: public ContinuumElement<TDim>
+class ContinuumElementIGA : public ContinuumElement<TDim>
 {
 
     friend class ContinuumBoundaryElement<TDim>;
 
 public:
-    ContinuumElementIGA(const std::vector<NuTo::NodeBase*> &rNodes,
-                        const Eigen::MatrixXd              &rKnots,
-                        const Eigen::VectorXi              &rKnotIDs,
-                        const InterpolationType            &rInterpolationType,
-                        const IntegrationTypeBase          &integrationType,
-                        const DofStatus& dofStatus);
+    ContinuumElementIGA(const std::vector<NuTo::NodeBase*>& rNodes, const Eigen::MatrixXd& rKnots,
+                        const Eigen::VectorXi& rKnotIDs, const InterpolationType& rInterpolationType,
+                        const IntegrationTypeBase& integrationType, const DofStatus& dofStatus);
 
-    ContinuumElementIGA(const ContinuumElementIGA& ) = default;
-    ContinuumElementIGA(      ContinuumElementIGA&&) = default;
+    ContinuumElementIGA(const ContinuumElementIGA&) = default;
+    ContinuumElementIGA(ContinuumElementIGA&&) = default;
 
     virtual ~ContinuumElementIGA() = default;
 
@@ -52,33 +49,38 @@ public:
 
     //! @brief returns the knots of the element
     //! @return reference on the matrix containing the knots
-    const Eigen::MatrixXd& GetKnots() const override  {return mKnots;}
+    const Eigen::MatrixXd& GetKnots() const override
+    {
+        return mKnots;
+    }
 
     //! @brief returns the knots of the element
     //! @return reference on the matrix containing the knots
-    const Eigen::VectorXi& GetKnotIDs() const override  {return mKnotIDs;}
+    const Eigen::VectorXi& GetKnotIDs() const override
+    {
+        return mKnotIDs;
+    }
 
-    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
+    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates,
+                                         Node::eDof rDofType) const override;
 
-    Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const override;
+    Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter,
+                                                          int rDerivative, int rDirection) const override;
 
 protected:
-
     //! @brief ... knots (e.g. 2D \f$\begin{pmatrix}\xi_i & \xi_{i+1} \\ \mu_j & \mu_{j+1}\end{pmatrix}\f$)
     Eigen::MatrixXd mKnots;
 
     //! @brief ... knot ids
     Eigen::VectorXi mKnotIDs;
 
-    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element
+    //! length/area/volum is negative)
     void CheckElement() override;
 
-    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &data, int rTheIP) const override;
+    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim>& data, int rTheIP) const override;
 
     virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const override;
-
-
 };
 
 } /* namespace NuTo */
-

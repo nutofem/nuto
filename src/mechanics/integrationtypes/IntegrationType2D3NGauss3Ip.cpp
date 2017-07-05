@@ -16,36 +16,40 @@ NuTo::IntegrationType2D3NGauss3Ip::IntegrationType2D3NGauss3Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<3);
+    assert(rIpNum >= 0 && rIpNum < 3);
     switch (rIpNum)
     {
-    case 0 : return Eigen::Vector2d({1./6., 1./6.});
-    case 1 : return Eigen::Vector2d({4./6., 1./6.});
-    case 2 : return Eigen::Vector2d({1./6., 4./6.});
+    case 0:
+        return Eigen::Vector2d({1. / 6., 1. / 6.});
+    case 1:
+        return Eigen::Vector2d({4. / 6., 1. / 6.});
+    case 2:
+        return Eigen::Vector2d({1. / 6., 4. / 6.});
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
 
-Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoordinates()const
+Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoordinates() const
 {
-    Eigen::MatrixXd naturalCoordinates(2,3);
-    naturalCoordinates(0,0) = 1./6.;
-    naturalCoordinates(1,0) = 1./6.;
+    Eigen::MatrixXd naturalCoordinates(2, 3);
+    naturalCoordinates(0, 0) = 1. / 6.;
+    naturalCoordinates(1, 0) = 1. / 6.;
 
-    naturalCoordinates(0,1) = 4./6.;
-    naturalCoordinates(1,1) = 1./6.;
+    naturalCoordinates(0, 1) = 4. / 6.;
+    naturalCoordinates(1, 1) = 1. / 6.;
 
-    naturalCoordinates(0,2) = 1./6.;
-    naturalCoordinates(1,2) = 4./6.;
+    naturalCoordinates(0, 2) = 1. / 6.;
+    naturalCoordinates(1, 2) = 4. / 6.;
 
     return naturalCoordinates;
 }
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints() const
 {
     return 3;
 }
@@ -53,19 +57,18 @@ int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    return 1/6.;
+    return 1 / 6.;
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D3NGauss3Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D3NGauss3Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 7;
 
@@ -86,8 +89,8 @@ void NuTo::IntegrationType2D3NGauss3Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(0.5);
 
     // Point 4
-    VisualizationPointLocalCoordinates.push_back(1./3.);
-    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1. / 3.);
+    VisualizationPointLocalCoordinates.push_back(1. / 3.);
 
     // Point 5
     VisualizationPointLocalCoordinates.push_back(0.5);
@@ -124,4 +127,3 @@ void NuTo::IntegrationType2D3NGauss3Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(2);
 }
 #endif // ENABLE_VISUALIZE
-

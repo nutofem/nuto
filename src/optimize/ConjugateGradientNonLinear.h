@@ -26,20 +26,35 @@ public:
 
     int Optimize() override;
 
-    inline void SetMaxGradientCalls(int rMaxGradientCalls) { mMaxGradientCalls = rMaxGradientCalls; }
+    inline void SetMaxGradientCalls(int rMaxGradientCalls)
+    {
+        mMaxGradientCalls = rMaxGradientCalls;
+    }
 
-    inline void SetMaxHessianCalls(int rMaxHessianCalls) { mMaxHessianCalls = rMaxHessianCalls; }
+    inline void SetMaxHessianCalls(int rMaxHessianCalls)
+    {
+        mMaxHessianCalls = rMaxHessianCalls;
+    }
 
-    inline void SetMaxIterations(int rMaxIterations) { mMaxIterations = rMaxIterations; }
+    inline void SetMaxIterations(int rMaxIterations)
+    {
+        mMaxIterations = rMaxIterations;
+    }
 
-    inline void SetAccuracyGradient(double rAccuracyGradient) { mAccuracyGradient = rAccuracyGradient; }
+    inline void SetAccuracyGradient(double rAccuracyGradient)
+    {
+        mAccuracyGradient = rAccuracyGradient;
+    }
 
     inline void SetMinDeltaObjBetweenRestarts(double rMinDeltaObjBetweenRestarts)
     {
         mMinDeltaObjBetweenRestarts = rMinDeltaObjBetweenRestarts;
     }
 
-    inline void SetShowSteps(int rShowSteps) { mShowSteps = rShowSteps; }
+    inline void SetShowSteps(int rShowSteps)
+    {
+        mShowSteps = rShowSteps;
+    }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;

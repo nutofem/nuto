@@ -19,4 +19,3 @@ BOOST_AUTO_TEST_CASE(CreateAndPrint)
     BOOST_CHECK_THROW(section->GetCircumference(), NuTo::MechanicsException);
     BOOST_CHECK_THROW(section->IsPlaneStrain(), NuTo::MechanicsException);
 }
-

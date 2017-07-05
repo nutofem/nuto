@@ -14,18 +14,18 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
     const double d = 0.053145049844816;
 
     mIntegrationPointCoordinates.clear();
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    a    ,     a    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - 2 * a,     a    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    a    , 1 - 2 * a));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    b    ,     b    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - 2 * b,     b    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    b    , 1 - 2 * b));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    c    ,     d    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    d    ,     c    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - c - d,     c    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - c - d,     d    ));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    c    , 1 - c - d));
-    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(    d    , 1 - c - d));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(a, a));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - 2 * a, a));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(a, 1 - 2 * a));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(b, b));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - 2 * b, b));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(b, 1 - 2 * b));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(c, d));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(d, c));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - c - d, c));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(1 - c - d, d));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(c, 1 - c - d));
+    mIntegrationPointCoordinates.push_back(Eigen::Vector2d(d, 1 - c - d));
 
     const double e = 0.025422453185103;
     const double f = 0.058393137863189;
@@ -49,18 +49,17 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
     DelaunayVoronoi voronoi(mIntegrationPointCoordinates, true);
 
     std::vector<Eigen::Vector2d> boundaryPoints(3);
-    boundaryPoints[0] = Eigen::Vector2d(0.,0.);
-    boundaryPoints[1] = Eigen::Vector2d(1.,0.);
-    boundaryPoints[2] = Eigen::Vector2d(0.,1.);
+    boundaryPoints[0] = Eigen::Vector2d(0., 0.);
+    boundaryPoints[1] = Eigen::Vector2d(1., 0.);
+    boundaryPoints[2] = Eigen::Vector2d(0., 1.);
 
     voronoi.SetBoundary(boundaryPoints);
-
 
 
     std::vector<Eigen::Vector2d> points;
     using PolygonIds = std::vector<unsigned int>;
     std::vector<PolygonIds> polygons;
-    voronoi.CalculateVisualizationCellsPolygon(points, polygons); 
+    voronoi.CalculateVisualizationCellsPolygon(points, polygons);
 
     std::cout << polygons.size() << std::endl;
 
@@ -85,7 +84,6 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
     }
 
 #endif // ENABLE_VISUALIZE
-
 }
 
 //! @brief returns the local coordinates of an integration point
@@ -94,7 +92,8 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
 Eigen::VectorXd NuTo::IntegrationType2D3NGauss12IpDetail::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum >= 12)
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 
     return mIntegrationPointCoordinates[rIpNum];
 }
@@ -112,8 +111,8 @@ int NuTo::IntegrationType2D3NGauss12IpDetail::GetNumIntegrationPoints() const
 double NuTo::IntegrationType2D3NGauss12IpDetail::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum >= 12)
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
 
     return mIntegrationPointWeights[rIpNum];
 }
-

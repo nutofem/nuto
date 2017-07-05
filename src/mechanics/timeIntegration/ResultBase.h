@@ -29,30 +29,30 @@ public:
 
     void SetIdent(const std::string& rIdent);
 
-    std::string GetIdent()const;
+    std::string GetIdent() const;
 
     void Resize(const StructureBase& rStructure, int rNumResultSteps, bool rInitialize);
 
-    void WriteToFile(const std::string& rResultDir, int rNumTimeSteps)const;
+    void WriteToFile(const std::string& rResultDir, int rNumTimeSteps) const;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
-    virtual int GetNumData(const StructureBase& rStructure)const=0;
+    virtual int GetNumData(const StructureBase& rStructure) const = 0;
 
-    virtual NuTo::eTimeIntegrationResultType GetResultType()const = 0;
+    virtual NuTo::eTimeIntegrationResultType GetResultType() const = 0;
 
     virtual ResultNodeDof* AsResultNodeDof()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultTime* AsResultTime()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
 
@@ -64,11 +64,10 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const
     {
-
     }
 
 protected:
     std::string mIdent;
     Eigen::MatrixXd mData;
 };
-} //namespace NuTo
+} // namespace NuTo

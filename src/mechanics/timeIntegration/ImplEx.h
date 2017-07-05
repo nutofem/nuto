@@ -14,10 +14,9 @@ namespace NuTo
 
 class ImplExCallback;
 
-class ImplEx: public ImplicitExplicitBase
+class ImplEx : public ImplicitExplicitBase
 {
 public:
-
     ImplEx(StructureBase* rStructure);
 
 
@@ -36,7 +35,6 @@ public:
     void SetImplExCallback(std::shared_ptr<ImplExCallback> r);
 
 protected:
-
     //! @brief ... assess the solution and return the new time step
     //! @return ... bool : true - accept solution, false - reject solution
     bool CheckExtrapolationAndAdjustTimeStep() override;
@@ -46,12 +44,9 @@ protected:
     void ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep) override;
 
 private:
-
     double mExtrapolationErrorThreshold;
 
     std::shared_ptr<ImplExCallback> mImplExCallback;
-
 };
 
 } /* namespace NuTo */
-

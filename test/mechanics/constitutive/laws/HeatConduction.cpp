@@ -12,11 +12,9 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
 {
     // set up constitutive law
     HeatConduction heat_conduction;
-    std::function<void(double)> setConductivity = std::bind(
-            &NuTo::ConstitutiveBase::SetParameterDouble,
-            &heat_conduction,
-            Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY,
-            std::placeholders::_1);
+    std::function<void(double)> setConductivity =
+            std::bind(&NuTo::ConstitutiveBase::SetParameterDouble, &heat_conduction,
+                      Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, std::placeholders::_1);
 
     double conductivity = 5.0;
     setConductivity(conductivity);
@@ -31,11 +29,9 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
 
     // compare to expected output
     Eigen::Matrix<double, 3, 3> expected_conductivity;
-    expected_conductivity << conductivity, 0, 0,
-                             0, conductivity, 0,
-                             0, 0, conductivity;
-    Eigen::Matrix<double, 3, 3> calculated_conductivity =
-            *static_cast<ConstitutiveMatrix<3,3>*>(output_map.at(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
+    expected_conductivity << conductivity, 0, 0, 0, conductivity, 0, 0, 0, conductivity;
+    Eigen::Matrix<double, 3, 3> calculated_conductivity = *static_cast<ConstitutiveMatrix<3, 3>*>(
+            output_map.at(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
     BOOST_CHECK_EQUAL(calculated_conductivity, expected_conductivity);
 
     // should throw exception, because conductivity is below zero

@@ -13,10 +13,9 @@ class AdditiveOutput;
 namespace Constitutive
 {
 
-class IPAdditiveOutput: public IPConstitutiveLawBase
+class IPAdditiveOutput : public IPConstitutiveLawBase
 {
 public:
-
     //! @brief constructor
     //! @param rLaw underlying constitutive law
     IPAdditiveOutput(AdditiveOutput& rLaw);
@@ -53,8 +52,9 @@ public:
         try
         {
             IPConstitutiveLawBase* ConstitutiveLaw = GetSublawIP(rCLPtr);
-            if(ConstitutiveLaw == nullptr)
-                throw MechanicsException(__PRETTY_FUNCTION__,"The requested static data/constitutive law is not attached to this law!");
+            if (ConstitutiveLaw == nullptr)
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "The requested static data/constitutive law is not attached to this law!");
             return ConstitutiveLaw->GetData<TLaw>();
         }
         catch (std::bad_cast& e)
@@ -64,17 +64,16 @@ public:
     }
 
 protected:
-    template<int TDim>
+    template <int TDim>
     void AdditiveOutputEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput);
-
+                                const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveOutputEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -83,7 +82,7 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveOutputEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -92,21 +91,18 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveOutputEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
     }
 
 protected:
-
     //! @brief Searches for a specific IP constitutive law and returns it
     //! @param rCLPtr The constitutive law of the IP constitutive law that is requested
     //! @return Searched IP constitutive law - nullptr if law is not found
     virtual IPConstitutiveLawBase* GetSublawIP(ConstitutiveBase* rCLPtr) override;
 
 private:
-
-
     AdditiveOutput& mLaw;
     boost::ptr_vector<IPConstitutiveLawBase> mSublawIPs;
 };

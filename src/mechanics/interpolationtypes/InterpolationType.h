@@ -21,14 +21,14 @@ enum class eIntegrationType;
 
 namespace Interpolation
 {
-    enum class eShapeType;
-    enum class eTypeOrder;
-}// namespace Interpolation
+enum class eShapeType;
+enum class eTypeOrder;
+} // namespace Interpolation
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 class InterpolationType
 {
@@ -41,7 +41,8 @@ public:
 
     //! @brief adds a dof type and the corresponding interpolation of IGA type
     //! @param rDofType ... dof type
-    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights);
+    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi& rDegree,
+                             const std::vector<Eigen::VectorXd>& rKnots, const Eigen::MatrixXd& rWeights);
 
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type
@@ -129,7 +130,6 @@ public:
     const Eigen::MatrixX2i& GetNodeRenumberingIndices() const;
 
 private:
-
     //! @brief returns a nonconst reference to the object, stress that with the name
     //! @param rDofType ... dof type
     InterpolationBase& GetNonConst(Node::eDof rDofType);
@@ -139,8 +139,10 @@ private:
     bool CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const;
 
     //! @brief Calculates index pairs that - if swapped - change the orientation of the element.
-    //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to swapping xi and eta coordinates
-    //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling it here is sufficient.
+    //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to
+    //! swapping xi and eta coordinates
+    //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling
+    //! it here is sufficient.
     void UpdateNodeRenumberingIndices();
 
     Node::eDof GetDofWithHighestStandardIntegrationOrder() const;
@@ -177,9 +179,6 @@ private:
 
     //! @brief dimension = Structure.GetDimension()
     const int mDimension;
-
 };
 
 } /* namespace NuTo */
-
-

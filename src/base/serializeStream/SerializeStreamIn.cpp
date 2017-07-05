@@ -18,15 +18,17 @@ void NuTo::SerializeStreamIn::Separator()
     if (mIsBinary)
     {
         char data;
-        mFileStream.read(reinterpret_cast<char *>(&data), sizeof(SEPARATOR));
+        mFileStream.read(reinterpret_cast<char*>(&data), sizeof(SEPARATOR));
         if (data != *SEPARATOR)
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Expected Separator \'" + std::string(SEPARATOR) + "\', got \'" + data + "\'");
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                  "Expected Separator \'" + std::string(SEPARATOR) + "\', got \'" + data + "\'");
     }
     else
     {
         std::string line;
         std::getline(mFileStream, line);
         if (line != std::string(SEPARATOR))
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Expected Separator " + std::string(SEPARATOR) + ", got " + line);
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                  "Expected Separator " + std::string(SEPARATOR) + ", got " + line);
     }
 }

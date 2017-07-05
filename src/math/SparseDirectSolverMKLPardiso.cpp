@@ -1,4 +1,3 @@
-// $Id$
 
 #include <ctime>
 
@@ -14,32 +13,36 @@
 #include "math/SparseDirectSolverMKLPardiso.h"
 
 
-NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirectSolver()
+NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso()
+    : SparseDirectSolver()
 {
 #ifdef HAVE_MKL_PARDISO
     // set default solver parameters
-    this->mOrderingType = 2;          // set ordering to METIS
-    this->mNumRefinementSteps  = 0;   // maximum number of iterative refinement steps
+    this->mOrderingType = 2; // set ordering to METIS
+    this->mNumRefinementSteps = 0; // maximum number of iterative refinement steps
     this->mPivotingPerturbation = -1; // set pivoting perturbation to default values
-    this->mScaling = -1;              // enable nonsymmetric permutation and mScaling MPS only for unsymmetric matrices (MKL default)
-    this->mWeightedMatching = -1;     // enable maximum weighted matching algorithm only for unsymmetric matrices (MKL default)
+    this->mScaling = -1; // enable nonsymmetric permutation and mScaling MPS only for unsymmetric matrices (MKL default)
+    this->mWeightedMatching =
+            -1; // enable maximum weighted matching algorithm only for unsymmetric matrices (MKL default)
 #else // HAVE_MKL_PARDISO
     throw NuTo::MathException("MKL Pardiso-solver was not found on your system (check cmake)");
 #endif // HAVE_MKL_PARDISO
 }
 
 #ifdef HAVE_MKL_PARDISO
-void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
+void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix,
+                                               const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__ + " Reordering and symbolic factorization");
-    
+
     mkl_set_num_threads(2);
     std::cout << "number of threads: " << mkl_get_max_threads() << std::endl;
 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse rMatrix is required for this solver.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__,
+                                  "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -72,11 +75,11 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
         throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = rRhs.cols();
-    const double *rhsValues = rRhs.data();
+    const double* rhsValues = rRhs.data();
 
     // prepare solution matrix
-    rSolution.Resize(matrixDimension,rhsNumColumns);
-    const double *solutionValues = rSolution.data();
+    rSolution.Resize(matrixDimension, rhsNumColumns);
+    const double* solutionValues = rSolution.data();
 
     // initialize solver data
     int parameters[64];
@@ -157,149 +160,92 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     {
         pt[count] = 0;
     }
-    int maxfct(1);  // Maximum number of numerical factorizations.
-    int mnum(1);    // Which factorization to use.
-    int msglvl(0);  // Print statistical information in file
-    int error(0);   // Initialize error flag
+    int maxfct(1); // Maximum number of numerical factorizations.
+    int mnum(1); // Which factorization to use.
+    int msglvl(0); // Print statistical information in file
+    int error(0); // Initialize error flag
     double ddum(0); // Double dummy
-    int idum(0);    // Integer dummy
+    int idum(0); // Integer dummy
 
     // Reordering and Symbolic Factorization.
     // This step also allocates all memory that is necessary for the factorization.
     int phase = 11;
-    PARDISO (pt,
-             &maxfct,
-             &mnum,
-             &matrixType,
-             &phase,
-             &matrixDimension,
-             const_cast<double*>(&matrixValues[0]),
-             const_cast<int*>(&matrixRowIndex[0]),
-             const_cast<int*>(&matrixColumns[0]),
-             &idum,
-             &rhsNumColumns,
-             parameters,
-             &msglvl,
-             &ddum,
-             &ddum,
-             &error);
+    PARDISO(pt, &maxfct, &mnum, &matrixType, &phase, &matrixDimension, const_cast<double*>(&matrixValues[0]),
+            const_cast<int*>(&matrixRowIndex[0]), const_cast<int*>(&matrixColumns[0]), &idum, &rhsNumColumns,
+            parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException(__PRETTY_FUNCTION__,
+                                  "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
-    
+
     timer.Restart(__PRETTY_FUNCTION__ + " Numerical factorization");
 
     phase = 22;
-    PARDISO (pt,
-             &maxfct,
-             &mnum,
-             &matrixType,
-             &phase,
-             &matrixDimension,
-             const_cast<double*>(&matrixValues[0]),
-             const_cast<int*>(&matrixRowIndex[0]),
-             const_cast<int*>(&matrixColumns[0]),
-             &idum,
-             &rhsNumColumns,
-             parameters,
-             &msglvl,
-             &ddum,
-             &ddum,
-             &error);
+    PARDISO(pt, &maxfct, &mnum, &matrixType, &phase, &matrixDimension, const_cast<double*>(&matrixValues[0]),
+            const_cast<int*>(&matrixRowIndex[0]), const_cast<int*>(&matrixColumns[0]), &idum, &rhsNumColumns,
+            parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " +
+                                  this->GetErrorString(error) + ".");
     }
-    
+
     timer.Reset(__PRETTY_FUNCTION__ + "Back substitution and iterative refinement.");
 
     phase = 33;
-    PARDISO (pt,
-             &maxfct,
-             &mnum,
-             &matrixType,
-             &phase,
-             &matrixDimension,
-             const_cast<double*>(&matrixValues[0]),
-             const_cast<int*>(&matrixRowIndex[0]),
-             const_cast<int*>(&matrixColumns[0]),
-             &idum,
-             &rhsNumColumns,
-             parameters,
-             &msglvl,
-             const_cast<double*>(rhsValues),
-             const_cast<double*>(solutionValues),
-             &error);
+    PARDISO(pt, &maxfct, &mnum, &matrixType, &phase, &matrixDimension, const_cast<double*>(&matrixValues[0]),
+            const_cast<int*>(&matrixRowIndex[0]), const_cast<int*>(&matrixColumns[0]), &idum, &rhsNumColumns,
+            parameters, &msglvl, const_cast<double*>(rhsValues), const_cast<double*>(solutionValues), &error);
     if (error != 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException(
+                "[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " +
+                this->GetErrorString(error) + ".");
     }
 
-	if (this->mVerboseLevel > 1)
-	{
-		std::cout << "[SparseDirectSolverMKLPardiso::solve] Peak memory symbolic factorization: "
-				  << parameters[14] << " KBytes"
-				  << std::endl;
-		std::cout << "[SparseDirectSolverMKLPardiso::solve] Permanent memory symbolic factorization: "
-				  << parameters[15] << " KBytes"
-				  << std::endl;
-		std::cout << "[SparseDirectSolverMKLPardiso::solve] Memory numerical factorization and solution: "
-				  << parameters[16] << " KBytes"
-				  << std::endl;
-		if (this->mVerboseLevel > 2)
-		{
-			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of floating point operations required for factorization: "
-					  << parameters[18] << " MFLOS"
-					  << std::endl;
-			if (matrixType == -2)
-			{
-				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of positive eigenvalues: "
-						  << parameters[21]
-						  << std::endl;
-				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of negative eigenvalues: "
-						  << parameters[22]
-						  << std::endl;
-				std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of zero eigenvalues: "
-						  << matrixDimension - parameters[21] - parameters[22]
-						  << std::endl;
-			}
-			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of nonzeros in factors: "
-					  << parameters[17]
-					  << std::endl;
-			std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of performed iterative refinement steps: "
-					  << parameters[6]
-					  << std::endl;
-			if (matrixType != 2)
-			{
-				std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of perturbed pivots: "
-						  << parameters[13]
-						  << std::endl;
-			}
-		}
+    if (this->mVerboseLevel > 1)
+    {
+        std::cout << "[SparseDirectSolverMKLPardiso::solve] Peak memory symbolic factorization: " << parameters[14]
+                  << " KBytes" << std::endl;
+        std::cout << "[SparseDirectSolverMKLPardiso::solve] Permanent memory symbolic factorization: " << parameters[15]
+                  << " KBytes" << std::endl;
+        std::cout << "[SparseDirectSolverMKLPardiso::solve] Memory numerical factorization and solution: "
+                  << parameters[16] << " KBytes" << std::endl;
+        if (this->mVerboseLevel > 2)
+        {
+            std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of floating point operations required for "
+                         "factorization: "
+                      << parameters[18] << " MFLOS" << std::endl;
+            if (matrixType == -2)
+            {
+                std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of positive eigenvalues: "
+                          << parameters[21] << std::endl;
+                std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of negative eigenvalues: "
+                          << parameters[22] << std::endl;
+                std::cout << "[SparseDirectSolverMKLPardiso::solve] Inertia: number of zero eigenvalues: "
+                          << matrixDimension - parameters[21] - parameters[22] << std::endl;
+            }
+            std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of nonzeros in factors: " << parameters[17]
+                      << std::endl;
+            std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of performed iterative refinement steps: "
+                      << parameters[6] << std::endl;
+            if (matrixType != 2)
+            {
+                std::cout << "[SparseDirectSolverMKLPardiso::solve] Number of perturbed pivots: " << parameters[13]
+                          << std::endl;
+            }
+        }
     }
 
     // Termination and release of memory
     phase = -1;
-    PARDISO (pt,
-             &maxfct,
-             &mnum,
-             &matrixType,
-             &phase,
-             &matrixDimension,
-             &ddum,
-             const_cast<int*>(&matrixRowIndex[0]),
-             const_cast<int*>(&matrixColumns[0]),
-             &idum,
-             &rhsNumColumns,
-             parameters,
-             &msglvl,
-             &ddum,
-             &ddum,
-             &error);
+    PARDISO(pt, &maxfct, &mnum, &matrixType, &phase, &matrixDimension, &ddum, const_cast<int*>(&matrixRowIndex[0]),
+            const_cast<int*>(&matrixColumns[0]), &idum, &rhsNumColumns, parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Termination phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Termination phase: " +
+                                  this->GetErrorString(error) + ".");
     }
 }
 

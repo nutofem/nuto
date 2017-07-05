@@ -1,7 +1,6 @@
 #pragma once
 
 
-
 #include <set>
 #include <map>
 
@@ -10,15 +9,14 @@ namespace NuTo
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @brief class to store state of the current dof setup
 //! @remark gets modified by the structure after each change of the active/inactive dof types
 class DofStatus
 {
 public:
-
 #ifndef SWIG
 
     DofStatus();
@@ -42,7 +40,7 @@ public:
 
     void SetDofTypes(const std::set<Node::eDof>& rDofTypes)
     {
-            mDofTypes = rDofTypes;
+        mDofTypes = rDofTypes;
     }
 
     bool HasInteractingConstraints() const
@@ -104,10 +102,9 @@ public:
             mSymmetricDofTypes.erase(rDofType);
     }
 
-#endif //SWIG
+#endif // SWIG
 
 private:
-
     std::map<Node::eDof, int> mNumActiveDofs;
     std::map<Node::eDof, int> mNumDependentDofs;
 
@@ -118,9 +115,5 @@ private:
     std::set<Node::eDof> mSymmetricDofTypes;
 
     bool mHasInteractingConstraints;
-
-
-
 };
 } /* namespace NuTo */
-

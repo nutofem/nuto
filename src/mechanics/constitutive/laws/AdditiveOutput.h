@@ -9,11 +9,11 @@ namespace NuTo
 class AdditiveOutput : public AdditiveBase
 {
 public:
-
     //! @brief constructor
     AdditiveOutput(const int& rNumTimeDerivatives)
         : AdditiveBase(rNumTimeDerivatives)
-    {}
+    {
+    }
 
     // has no ip static data itself
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
@@ -27,7 +27,8 @@ public:
     NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                           const ConstitutiveOutputMap& rConstitutiveOutput)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::MechanicsException(
+                __PRETTY_FUNCTION__,
                 "Additive Law cannot be evaluated. Its IPAdditiveOutputs should be evaluated instead.");
     }
 

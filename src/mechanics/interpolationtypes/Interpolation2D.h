@@ -12,7 +12,7 @@
 namespace NuTo
 {
 
-class Interpolation2D: public InterpolationBaseFEM
+class Interpolation2D : public InterpolationBaseFEM
 {
 
 public:
@@ -22,15 +22,14 @@ public:
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                       "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
     }
 
     virtual int GetLocalDimension() const override
     {
         return 2;
     }
-
 };
 
 } /* namespace NuTo */
-

@@ -32,4 +32,3 @@ private:
     LoadSurfacePressureFunction2D() = default;
 };
 } // namespace NuTo
-

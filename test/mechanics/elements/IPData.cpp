@@ -54,26 +54,25 @@ BOOST_AUTO_TEST_CASE(IPData_Copy_Move_Values)
     data.SetConstitutiveLaw(law);
     data.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
 
-    NuTo::IPData data2(data);   // copy construction
+    NuTo::IPData data2(data); // copy construction
     BOOST_CHECK_EQUAL(&integrationType, &data2.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data2.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data2.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
     NuTo::IPData data3(integrationType);
-    data3 = data;               // copy assignment
+    data3 = data; // copy assignment
     BOOST_CHECK_EQUAL(&integrationType, &data3.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data3.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data3.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
-    NuTo::IPData data4(std::move(data));  // move construction
+    NuTo::IPData data4(std::move(data)); // move construction
     BOOST_CHECK_EQUAL(&integrationType, &data4.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data4.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data4.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
     NuTo::IPData data5(integrationType);
-    data5 = std::move(data2);    // move assignment
+    data5 = std::move(data2); // move assignment
     BOOST_CHECK_EQUAL(&integrationType, &data5.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data5.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data5.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
-
 }

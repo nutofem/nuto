@@ -4,8 +4,8 @@
 using namespace NuTo;
 
 
-SectionFibreMatrixBond::SectionFibreMatrixBond(double circumference):
-mCircumference(circumference)
+SectionFibreMatrixBond::SectionFibreMatrixBond(double circumference)
+    : mCircumference(circumference)
 {
 }
 
@@ -26,4 +26,3 @@ void SectionFibreMatrixBond::Info(std::ostream& out) const
 {
     out << "    Fibre matrix bond section with circumference: " << mCircumference << "\n";
 }
-

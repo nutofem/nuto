@@ -13,279 +13,281 @@
 
 NuTo::InputReader::InputReader(std::string rFileName)
 {
-	OpenFile(rFileName);
+    OpenFile(rFileName);
 }
 
 void NuTo::InputReader::OpenFile(std::string rFileName)
 {
-	mFile.open(rFileName.c_str(), std::ios::in);
-	if (!mFile.is_open())
-		throw Exception(__PRETTY_FUNCTION__, "File " "" + rFileName + "" " not found.");
+    mFile.open(rFileName.c_str(), std::ios::in);
+    if (!mFile.is_open())
+        throw Exception(__PRETTY_FUNCTION__, "File "
+                                             "" + rFileName +
+                                                     ""
+                                                     " not found.");
 }
 
 void NuTo::InputReader::ReadFile()
 {
-	ReadSimulationParameters();
-	ReadBoundingBox();
+    ReadSimulationParameters();
+    ReadBoundingBox();
 
 
-	ReadGradingCurve();
+    ReadGradingCurve();
 
-	mShrinkage = ReadNumber();
+    mShrinkage = ReadNumber();
 
-	CheckInputs();
+    CheckInputs();
 }
 
 void NuTo::InputReader::ReadSimulationParameters()
 {
-	mDirectory = ReadString();
+    mDirectory = ReadString();
 
-	mNumEventsMax = ReadNumber();
-	mTimeMax = ReadNumber();
-	mTimePrintOut = ReadNumber();
-	mInitialTimeBarrier = ReadNumber();
-	mRandomVelocityRange = ReadNumber();
-	mRelativeGrowthRate = ReadNumber();
-	mAbsoluteGrowthRate = ReadNumber();
-	mNumThreads = ReadNumber();
+    mNumEventsMax = ReadNumber();
+    mTimeMax = ReadNumber();
+    mTimePrintOut = ReadNumber();
+    mInitialTimeBarrier = ReadNumber();
+    mRandomVelocityRange = ReadNumber();
+    mRelativeGrowthRate = ReadNumber();
+    mAbsoluteGrowthRate = ReadNumber();
+    mNumThreads = ReadNumber();
 }
 
 void NuTo::InputReader::ReadBoundingBox()
 {
-	mTypeOfSpecimen = ReadNumber();
-	Eigen::VectorXd boxVector = ReadVector();
-	if (boxVector.rows() != 6)
-	{
-		std::stringstream exceptionStream;
-		exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.rows() << " components in input file, expected 6.";
-		throw Exception(exceptionStream.str());
-	}
-	mBoundingBox = Eigen::MatrixXd(3, 2);
-	mBoundingBox << boxVector[0], boxVector[1], boxVector[2], boxVector[3], boxVector[4], boxVector[5];
+    mTypeOfSpecimen = ReadNumber();
+    Eigen::VectorXd boxVector = ReadVector();
+    if (boxVector.rows() != 6)
+    {
+        std::stringstream exceptionStream;
+        exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.rows()
+                        << " components in input file, expected 6.";
+        throw Exception(exceptionStream.str());
+    }
+    mBoundingBox = Eigen::MatrixXd(3, 2);
+    mBoundingBox << boxVector[0], boxVector[1], boxVector[2], boxVector[3], boxVector[4], boxVector[5];
 
-	mIs2D = ReadBool();
+    mIs2D = ReadBool();
 }
 
 void NuTo::InputReader::ReadGradingCurve()
 {
-	int nSieves = ReadNumber();
-	mGradingCurve = Eigen::MatrixXd(nSieves, 3);
-	for (int i = 0; i < nSieves; ++i)
-	{
-		Eigen::VectorXd gradingCurveVector = ReadVector();
-		if (gradingCurveVector.rows() != 3)
-		{
-			std::stringstream exceptionStream;
-			exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.rows() << " components in input file, expected 3.";
-			throw Exception(exceptionStream.str());
-		}
-		mGradingCurve.row(i) = gradingCurveVector.transpose();
-	}
-	mVolumeFraction = ReadNumber();
-	mAbsoluteDistance = ReadNumber();
-
+    int nSieves = ReadNumber();
+    mGradingCurve = Eigen::MatrixXd(nSieves, 3);
+    for (int i = 0; i < nSieves; ++i)
+    {
+        Eigen::VectorXd gradingCurveVector = ReadVector();
+        if (gradingCurveVector.rows() != 3)
+        {
+            std::stringstream exceptionStream;
+            exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.rows()
+                            << " components in input file, expected 3.";
+            throw Exception(exceptionStream.str());
+        }
+        mGradingCurve.row(i) = gradingCurveVector.transpose();
+    }
+    mVolumeFraction = ReadNumber();
+    mAbsoluteDistance = ReadNumber();
 }
 
 void NuTo::InputReader::SkipToNextData()
 {
-	const int skipLength = 1000;
-	char skipText[skipLength];
-	char skipEqualSign;
-	mFile.get(skipText, skipLength, '=');
-	mFile.get(skipEqualSign);
+    const int skipLength = 1000;
+    char skipText[skipLength];
+    char skipEqualSign;
+    mFile.get(skipText, skipLength, '=');
+    mFile.get(skipEqualSign);
 }
 
 bool NuTo::InputReader::ReadBool()
 {
-	SkipToNextData();
+    SkipToNextData();
 
-	char value;
-	std::vector<char> positive = { 'T', 't', 'Y', 'y', '1' };
-	mFile >> value;
-	for (char& c : positive)
-		if (c == value)
-			return true;
+    char value;
+    std::vector<char> positive = {'T', 't', 'Y', 'y', '1'};
+    mFile >> value;
+    for (char& c : positive)
+        if (c == value)
+            return true;
 
-	return false;
+    return false;
 }
 
 double NuTo::InputReader::ReadNumber()
 {
-	SkipToNextData();
+    SkipToNextData();
 
-	double number;
-	mFile >> number;
-	return number;
+    double number;
+    mFile >> number;
+    return number;
 }
 
 Eigen::VectorXd NuTo::InputReader::ReadVector()
 {
-	SkipToNextData();
+    SkipToNextData();
 
-	std::vector<double> readVector;
-	double number;
+    std::vector<double> readVector;
+    double number;
 
-	char skipComma = ',';
+    char skipComma = ',';
 
-	while (skipComma == ',')
-	{
-		mFile >> number;
-		readVector.push_back(number);
-		mFile.get(skipComma);
-	}
+    while (skipComma == ',')
+    {
+        mFile >> number;
+        readVector.push_back(number);
+        mFile.get(skipComma);
+    }
 
-	return Eigen::VectorXd::Map(readVector.data(), readVector.size());
+    return Eigen::VectorXd::Map(readVector.data(), readVector.size());
 }
 
 std::string NuTo::InputReader::ReadString()
 {
-	SkipToNextData();
-	char directory[1000];
-	mFile.get(directory, ';');
+    SkipToNextData();
+    char directory[1000];
+    mFile.get(directory, ';');
 
-	std::string str = directory;
+    std::string str = directory;
 
-	// remove ';'
-	str.erase(str.size() - 1);
+    // remove ';'
+    str.erase(str.size() - 1);
 
-	// remove whitespaces
-	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
+    // remove whitespaces
+    str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
 
-	return str;
+    return str;
 }
 
 void NuTo::InputReader::Close()
 {
-	mFile.close();
+    mFile.close();
 }
 
 void NuTo::InputReader::mThrow(const std::string& rMsg) const
-		{
-	throw Exception("[NuTo::InputReader::CheckInputs] " + rMsg);
+{
+    throw Exception("[NuTo::InputReader::CheckInputs] " + rMsg);
 }
 
 void NuTo::InputReader::CheckInputs() const
 {
 
-	if(mRelativeGrowthRate < 0.)
-		mThrow("growthRates >= 0.0 !");
+    if (mRelativeGrowthRate < 0.)
+        mThrow("growthRates >= 0.0 !");
 
-	if(mAbsoluteDistance < 0.)
-		mThrow("absoluteDistance >= 0.0 !");
+    if (mAbsoluteDistance < 0.)
+        mThrow("absoluteDistance >= 0.0 !");
 
-	if(mVolumeFraction <= 0.)
-		mThrow("volumeFraction > 0.0 !");
+    if (mVolumeFraction <= 0.)
+        mThrow("volumeFraction > 0.0 !");
 
-	if(mShrinkage >= 1. || mShrinkage < 0.)
-		mThrow("0.0 <= shrinkage < 1.0 !");
-
+    if (mShrinkage >= 1. || mShrinkage < 0.)
+        mThrow("0.0 <= shrinkage < 1.0 !");
 }
 
 void NuTo::InputReader::PrintInput()
 {
 
-	std::cout << "          INPUT PARAMETERS" << std::endl;
-	std::cout << "======================================" << std::endl;
-	std::cout << std::endl << "     SIMULATION PARAMETERS   " << std::endl;
-	std::cout << " directory:                  " << mDirectory << std::endl;
-	std::cout << " max. number of events:      " << mNumEventsMax << std::endl;
-	std::cout << " max. simulation time [s]:   " << mTimeMax << std::endl;
-	std::cout << " time between printouts [s]: " << mTimePrintOut << std::endl;
-	std::cout << " initial time barrier:       " << mInitialTimeBarrier << std::endl;
-	std::cout << " random velocity range:      " << mRandomVelocityRange << std::endl;
-	std::cout << " growth rates:               " << mRelativeGrowthRate << std::endl;
-	std::cout << " number of threads:          " << mNumThreads << std::endl;
-	std::cout << "======================================" << std::endl;
-	std::cout << std::endl << "        BOUNDING BOX" << std::endl;
-	std::cout << "    box type:                " << mTypeOfSpecimen << std::endl;
-	std::cout << "    x-Range  " << mBoundingBox(0, 0) << " to " << mBoundingBox(0, 1) << std::endl;
-	std::cout << "    y-Range  " << mBoundingBox(1, 0) << " to " << mBoundingBox(1, 1) << std::endl;
-	std::cout << "    z-Range  " << mBoundingBox(2, 0) << " to " << mBoundingBox(2, 1) << std::endl;
-	std::cout << std::endl << "          PARTICLES   " << std::endl;
-	std::cout << "======================================" << std::endl;
-	std::cout << "The particles are defined by the following grading curve: " << std::endl;
-	std::cout << mGradingCurve << std::endl;
-	std::cout << " volume fraction: " << mVolumeFraction << std::endl;
-	std::cout << " absolute distance: " << mAbsoluteDistance << std::endl;
-
+    std::cout << "          INPUT PARAMETERS" << std::endl;
+    std::cout << "======================================" << std::endl;
+    std::cout << std::endl << "     SIMULATION PARAMETERS   " << std::endl;
+    std::cout << " directory:                  " << mDirectory << std::endl;
+    std::cout << " max. number of events:      " << mNumEventsMax << std::endl;
+    std::cout << " max. simulation time [s]:   " << mTimeMax << std::endl;
+    std::cout << " time between printouts [s]: " << mTimePrintOut << std::endl;
+    std::cout << " initial time barrier:       " << mInitialTimeBarrier << std::endl;
+    std::cout << " random velocity range:      " << mRandomVelocityRange << std::endl;
+    std::cout << " growth rates:               " << mRelativeGrowthRate << std::endl;
+    std::cout << " number of threads:          " << mNumThreads << std::endl;
+    std::cout << "======================================" << std::endl;
+    std::cout << std::endl << "        BOUNDING BOX" << std::endl;
+    std::cout << "    box type:                " << mTypeOfSpecimen << std::endl;
+    std::cout << "    x-Range  " << mBoundingBox(0, 0) << " to " << mBoundingBox(0, 1) << std::endl;
+    std::cout << "    y-Range  " << mBoundingBox(1, 0) << " to " << mBoundingBox(1, 1) << std::endl;
+    std::cout << "    z-Range  " << mBoundingBox(2, 0) << " to " << mBoundingBox(2, 1) << std::endl;
+    std::cout << std::endl << "          PARTICLES   " << std::endl;
+    std::cout << "======================================" << std::endl;
+    std::cout << "The particles are defined by the following grading curve: " << std::endl;
+    std::cout << mGradingCurve << std::endl;
+    std::cout << " volume fraction: " << mVolumeFraction << std::endl;
+    std::cout << " absolute distance: " << mAbsoluteDistance << std::endl;
 }
 
 double NuTo::InputReader::GetAbsoluteDistance() const
 {
-	return mAbsoluteDistance;
+    return mAbsoluteDistance;
 }
 
 Eigen::MatrixXd NuTo::InputReader::GetBoundingBox() const
 {
-	return mBoundingBox;
+    return mBoundingBox;
 }
 
 int NuTo::InputReader::GetTypeOfSpecimen() const
 {
-	return mTypeOfSpecimen;
+    return mTypeOfSpecimen;
 }
 
 Eigen::MatrixXd NuTo::InputReader::GetGradingCurve() const
 {
-	return mGradingCurve;
+    return mGradingCurve;
 }
 
 double NuTo::InputReader::GetRelativeGrowthRate() const
 {
-	return mRelativeGrowthRate;
+    return mRelativeGrowthRate;
 }
 
 double NuTo::InputReader::GetInitialTimeBarrier() const
 {
-	return mInitialTimeBarrier;
+    return mInitialTimeBarrier;
 }
 
 long NuTo::InputReader::GetNumEventsMax() const
 {
-	return mNumEventsMax;
+    return mNumEventsMax;
 }
 
 double NuTo::InputReader::GetRandomVelocityRange() const
 {
-	return mRandomVelocityRange;
+    return mRandomVelocityRange;
 }
 
 double NuTo::InputReader::GetTimeMax() const
 {
-	return mTimeMax;
+    return mTimeMax;
 }
 
 double NuTo::InputReader::GetTimePrintOut() const
 {
-	return mTimePrintOut;
+    return mTimePrintOut;
 }
 
 double NuTo::InputReader::GetVolumeFraction() const
 {
-	return mVolumeFraction;
+    return mVolumeFraction;
 }
 
 int NuTo::InputReader::GetNumThreads() const
 {
-	return mNumThreads;
+    return mNumThreads;
 }
 
 const std::string& NuTo::InputReader::GetDirectory() const
 {
-	return mDirectory;
+    return mDirectory;
 }
 
 bool NuTo::InputReader::Is2D() const
 {
-	return mIs2D;
+    return mIs2D;
 }
 
 double NuTo::InputReader::GetShrinkage() const
 {
-	return mShrinkage;
+    return mShrinkage;
 }
 
 double NuTo::InputReader::GetAbsoluteGrowthRate() const
 {
-	return mAbsoluteGrowthRate;
+    return mAbsoluteGrowthRate;
 }

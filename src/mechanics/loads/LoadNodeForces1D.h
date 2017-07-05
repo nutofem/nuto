@@ -29,4 +29,3 @@ private:
     LoadNodeForces1D() = default;
 };
 } // namespace NuTo
-

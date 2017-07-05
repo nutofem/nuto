@@ -18,6 +18,4 @@ protected:
     LoadNode() = default;
     const NodeBase* mNode;
 };
-}//namespace NuTo
-
-
+} // namespace NuTo

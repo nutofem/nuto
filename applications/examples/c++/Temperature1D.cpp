@@ -38,8 +38,7 @@ int main()
 
     int interpolationType = MeshGenerator::Grid(structure, {length}, {num_elements}).second;
 
-    structure.InterpolationTypeAdd(interpolationType, Node::eDof::TEMPERATURE,
-                                     Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeAdd(interpolationType, Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeSetIntegrationType(interpolationType, "IntegrationType1D2NGauss2Ip");
     structure.ElementTotalConvertToInterpolationType();
 
@@ -49,8 +48,8 @@ int main()
 
     // create material law
     auto material = structure.ConstitutiveLawCreate("Heat_Conduction");
-    structure.ConstitutiveLawSetParameterDouble(material, 
-        Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
+    structure.ConstitutiveLawSetParameterDouble(material, Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY,
+                                                conductivity);
     structure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads

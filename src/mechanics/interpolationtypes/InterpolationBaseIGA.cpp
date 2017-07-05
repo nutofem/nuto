@@ -14,4 +14,3 @@ void InterpolationBaseIGA::Initialize()
     mNumNodes = CalculateNumNodes();
     mNumDofs = mNumNodes * Node::GetNumComponents(mDofType, mDimension);
 }
-

@@ -8,7 +8,8 @@
 namespace NuTo
 {
 class IntegrationTypeBase;
-template<int TDim> class ContinuumElement;
+template <int TDim>
+class ContinuumElement;
 class StructureBase;
 
 //! @brief Abstract class for all surface loads in 2D
@@ -29,12 +30,14 @@ public:
     //! @param rNormal Normal to the surface (pointing outwards)
     //! @param rLoadVector Load vector
     virtual void CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
-                                      Eigen::Vector2d& rLoadVector)const=0;
+                                      Eigen::Vector2d& rLoadVector) const = 0;
 
 protected:
-    LoadSurfaceBase2D(){ }
+    LoadSurfaceBase2D()
+    {
+    }
 
-    std::vector<std::pair<const ContinuumElement<2>*, int> > mElements2D;
+    std::vector<std::pair<const ContinuumElement<2>*, int>> mElements2D;
     IntegrationTypeBase* mIntegrationType2NPtr;
     IntegrationTypeBase* mIntegrationType3NPtr;
     IntegrationTypeBase* mIntegrationType4NPtr;
@@ -43,5 +46,4 @@ protected:
     IntegrationTypeBase* mIntegrationType4NPtrLobatto;
     IntegrationTypeBase* mIntegrationType5NPtrLobatto;
 };
-}//namespace NuTo
-
+} // namespace NuTo

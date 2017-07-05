@@ -28,16 +28,14 @@ public:
 
     std::string GetTypeId() const
     {
-    	return std::string("ResultNodeDisp");
+        return std::string("ResultNodeDisp");
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override
     {
-
     }
 
 protected:
 };
 }
-

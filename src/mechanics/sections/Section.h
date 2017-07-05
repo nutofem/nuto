@@ -5,7 +5,7 @@
 
 namespace NuTo
 {
- 
+
 //! @brief Abstract base class for sections
 class Section
 {

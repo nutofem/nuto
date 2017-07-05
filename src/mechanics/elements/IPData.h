@@ -16,7 +16,6 @@ class SerializeStreamIn;
 class IPData
 {
 public:
-
     IPData(const IntegrationTypeBase& rIntegrationType);
 
     //! @brief allocates a new IPConstitiveLaw according to rLaw for each integration point
@@ -58,7 +57,6 @@ public:
     void NuToSerializeLoad(SerializeStreamIn& rStream);
 
 private:
-
     //! @brief integration type pointer
     //! @remark this is only set via references. So no checks for nullptr, please. It is no reference because of slicing
     const IntegrationTypeBase* mIntegrationType;

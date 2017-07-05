@@ -18,33 +18,37 @@ class InterpolationType;
 class ElementBase;
 class InterpolationType;
 class Logger;
-template<typename IOEnum> class ConstitutiveIOMap;
+template <typename IOEnum>
+class ConstitutiveIOMap;
 
 namespace Element
 {
-    enum class eElementType;
-}// namespace Element
+enum class eElementType;
+} // namespace Element
 
 namespace Constitutive
 {
-    class DamageLaw;
-    enum class eConstitutiveParameter;
-    enum class eConstitutiveType;
-    enum class eInput;
-    enum class eOutput;
+class DamageLaw;
+enum class eConstitutiveParameter;
+enum class eConstitutiveType;
+enum class eInput;
+enum class eOutput;
 
 class DidNotConverge : public std::runtime_error
 {
 public:
-    DidNotConverge() : std::runtime_error("Constitutive law did not converge") {}
+    DidNotConverge()
+        : std::runtime_error("Constitutive law did not converge")
+    {
+    }
 };
 
-}// namespace Constitutive
+} // namespace Constitutive
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
 using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
@@ -54,13 +58,14 @@ class ConstitutiveBase
 
 public:
     //! @brief ... constructor
-    ConstitutiveBase(): mParametersValid(false){};
+    ConstitutiveBase()
+        : mParametersValid(false){};
 
-    ConstitutiveBase(const ConstitutiveBase& ) = default;
-    ConstitutiveBase(      ConstitutiveBase&&) = default;
+    ConstitutiveBase(const ConstitutiveBase&) = default;
+    ConstitutiveBase(ConstitutiveBase&&) = default;
 
-    ConstitutiveBase& operator =(const ConstitutiveBase& ) = default;
-    ConstitutiveBase& operator =(      ConstitutiveBase&&) = default;
+    ConstitutiveBase& operator=(const ConstitutiveBase&) = default;
+    ConstitutiveBase& operator=(ConstitutiveBase&&) = default;
 
     //! @brief ... constructor
     virtual ~ConstitutiveBase() = default;
@@ -78,8 +83,7 @@ public:
     //! @param rDofRow Row DOF.
     //! @param rDofCol Column DOF.
     //! @param rTimeDerivative Time derivative.
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
-            int rTimeDerivative) const = 0;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const = 0;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -168,19 +172,18 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
-    virtual bool HaveTmpStaticData() const=0;
+    virtual bool HaveTmpStaticData() const = 0;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrown
     virtual void CheckParameters() const = 0;
 
 protected:
-    //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
+    //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and
+    //! <B>false</B> otherwise
     bool mParametersValid;
-
 };
-
-
 }

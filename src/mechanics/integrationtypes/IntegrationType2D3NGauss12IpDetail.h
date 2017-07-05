@@ -7,7 +7,8 @@ namespace NuTo
 
 //! @author Thomas Titscher
 //! @date August 2015
-//! @brief ... 6th order integration in 2D with 12 points and visualization for every integration point via voronoi cells
+//! @brief ... 6th order integration in 2D with 12 points and visualization for every integration point via voronoi
+//! cells
 class IntegrationType2D3NGauss12IpDetail : public IntegrationType2D
 {
 
@@ -37,7 +38,6 @@ public:
 #endif // ENABLE_VISUALIZE
 
 protected:
-
     std::vector<Eigen::Vector2d> mIntegrationPointCoordinates;
     std::vector<double> mIntegrationPointWeights;
 #ifdef ENABLE_VISUALIZE
@@ -45,4 +45,3 @@ protected:
 #endif // ENABLE_VISUALIZE
 };
 }
-
