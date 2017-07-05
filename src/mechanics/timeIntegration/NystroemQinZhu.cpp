@@ -1,19 +1,8 @@
 // $Id: NystroemQinZhu.cpp 575 2011-09-20 18:05:35Z unger3 $
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
@@ -24,20 +13,22 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NystroemQinZhu::NystroemQinZhu (StructureBase* rStructure)  : NystroemBase (rStructure)
+NuTo::NystroemQinZhu::NystroemQinZhu(StructureBase* rStructure)
+    : NystroemBase(rStructure)
 {
 }
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::NystroemQinZhu::Info()const
+void NuTo::NystroemQinZhu::Info() const
 {
-	TimeIntegrationBase::Info();
+    TimeIntegrationBase::Info();
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-double NuTo::NystroemQinZhu::GetStageTimeFactor(int rStage)const
+double NuTo::NystroemQinZhu::GetStageTimeFactor(int rStage) const
 {
 	assert(rStage<3);
 	double s;
@@ -58,9 +49,10 @@ double NuTo::NystroemQinZhu::GetStageTimeFactor(int rStage)const
 	return s;
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-bool NuTo::NystroemQinZhu::HasTimeChanged(int rStage)const
+bool NuTo::NystroemQinZhu::HasTimeChanged(int rStage) const
 {
 	assert(rStage<3);
 	bool s;
@@ -83,7 +75,7 @@ bool NuTo::NystroemQinZhu::HasTimeChanged(int rStage)const
 
 
 //! @brief ... return scaling for the intermediate stage for y (a in Butcher tableau)
-void NuTo::NystroemQinZhu::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage)const
+void NuTo::NystroemQinZhu::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage) const
 {
 	assert(rStage<3);
 	assert(rWeight.size()==2);
@@ -104,7 +96,7 @@ void NuTo::NystroemQinZhu::GetStageDerivativeFactor(std::vector<double>& rWeight
 }
 
 //! @brief ... return weights for the intermediate stage for y (b in Butcher tableau)
-double NuTo::NystroemQinZhu::GetStageWeights1(int rStage)const
+double NuTo::NystroemQinZhu::GetStageWeights1(int rStage) const
 {
 	assert(rStage<3);
 	double s;
@@ -126,7 +118,7 @@ double NuTo::NystroemQinZhu::GetStageWeights1(int rStage)const
 }
 
 //! @brief ... return weights for the intermediate stage for y (b in Butcher tableau)
-double NuTo::NystroemQinZhu::GetStageWeights2(int rStage)const
+double NuTo::NystroemQinZhu::GetStageWeights2(int rStage) const
 {
 	assert(rStage<3);
 	double s;
@@ -286,8 +278,3 @@ void NuTo::NystroemQinZhu::Save (const std::string &filename, std::string rType 
         throw Exception ( "[NystroemQinZhu::Save] Unhandled exception." );
     }
 }
-
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NystroemQinZhu)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

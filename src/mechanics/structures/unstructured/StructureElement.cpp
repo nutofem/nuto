@@ -256,11 +256,13 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
                 "Please use approriate functions for element creation, this is IGA implementation.");
         break;
     case NuTo::Interpolation::eShapeType::IGA1D:
-        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType, GetDofStatus());
+        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType,
+                                                GetDofStatus());
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::IGA2D:
-        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType, GetDofStatus());
+        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType,
+                                                GetDofStatus());
         ptrElement->CheckElement();
         break;
     default:
@@ -452,8 +454,8 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                 if (rControlNode == nullptr)
                     boundaryElement = new ContinuumBoundaryElement<1>(element, integrationType, surfaceId);
                 else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<1>(element, integrationType, surfaceId, rControlNode);
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
                 break;
             }
             case 2:
@@ -499,8 +501,8 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                 if (rControlNode == nullptr)
                     boundaryElement = new ContinuumBoundaryElement<2>(element, integrationType, surfaceId);
                 else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<2>(element, integrationType, surfaceId, rControlNode);
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
 
                 break;
             }
@@ -542,14 +544,14 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     throw Exception(__PRETTY_FUNCTION__,
                                          "Could not automatically determine integration type of the boundary element.");
                 }
-                
+
                 const auto& integrationType = *GetPtrIntegrationType(integrationTypeEnum);
                 auto& element = dynamic_cast<ContinuumElement<3>&>(*elementPtr);
                 if (rControlNode == nullptr)
                     boundaryElement = new ContinuumBoundaryElement<3>(element, integrationType, surfaceId);
                 else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<3>(element, integrationType, surfaceId, rControlNode);
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
                 break;
             }
             default:

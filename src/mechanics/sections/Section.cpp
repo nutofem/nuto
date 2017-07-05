@@ -45,27 +45,3 @@ bool Section::IsPlaneStrain() const
 void Section::Info(std::ostream& out) const
 {
 }
-
-
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::Section::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::Section::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::Section::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::Section::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::Section::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::Section::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::Section::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Section" << std::endl;
-#endif
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Section" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Section)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Section)
-#endif // ENABLE_SERIALIZATION

@@ -45,8 +45,3 @@ void LoadNodeForces2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ext
         }
     }
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadNodeForces2D)
-BOOST_CLASS_TRACKING(LoadNodeForces2D, track_always)
-#endif

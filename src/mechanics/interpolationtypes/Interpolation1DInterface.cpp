@@ -5,8 +5,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation1DInterface.h"
 
-NuTo::Interpolation1DInterface::Interpolation1DInterface(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        NuTo::Interpolation1DTruss::Interpolation1DTruss(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation1DInterface::Interpolation1DInterface(NuTo::Node::eDof rDofType,
+                                                         NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension)
+    : NuTo::Interpolation1DTruss::Interpolation1DTruss(rDofType, rTypeOrder, rDimension)
 
 {
     Initialize();
@@ -18,7 +19,7 @@ NuTo::eIntegrationType NuTo::Interpolation1DInterface::GetStandardIntegrationTyp
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
     {
-//        return NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip;
+        //        return NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip;
         return NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip;
     }
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
@@ -56,7 +57,8 @@ Eigen::VectorXd NuTo::Interpolation1DInterface::CalculateShapeFunctions(const Ei
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -69,13 +71,16 @@ Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunction
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                                   int rSurface) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates] not implemented");
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates] not implemented");
 }
@@ -91,11 +96,4 @@ int NuTo::Interpolation1DInterface::CalculateNumNodes() const
     default:
         throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
-
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DInterface)
-#endif
-

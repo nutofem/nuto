@@ -1,19 +1,6 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/utility/identity_type.hpp>
-#else
 #include <map>
-#endif // ENABLE_SERIALIZATION
 
 #include <algorithm>
 #include "mechanics/groups/GroupBase.h"
@@ -29,9 +16,6 @@ class NodeBase;
 template <class T>
 class Group : public GroupBase, public std::map<int, T*>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
@@ -278,11 +262,3 @@ public:
     void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
 };
 } // namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::NodeBase>)
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::ElementBase>)
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::NodeBase*>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::ElementBase*>)))
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

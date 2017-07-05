@@ -1,4 +1,3 @@
-// $Id$
 
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/Group.h"
@@ -39,25 +38,3 @@ void NuTo::GroupBase::ExchangePtr(int rId, NodeBase* rOldNodePtr, NodeBase* rNew
 {
     throw Exception("[NuTo::GroupBase::ExchangePtr] Exchanging node ptr is only allowed for node groups.");
 }
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::GroupBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::GroupBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::GroupBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::GroupBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::GroupBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::GroupBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::GroupBase::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize GroupBase" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_NVP(mName);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize GroupBase" << std::endl;
-#endif
-}
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
-#endif // ENABLE_SERIALIZATION

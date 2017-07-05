@@ -18,6 +18,6 @@ BOOST_AUTO_TEST_CASE(Assembly)
     BOOST_TEST_MESSAGE("\nTODO: implement the actual assembly class...\n");
     BOOST_CHECK(false);
 
-    //Eigen::Vector3d expected = Eigen::Vector3d({157, 42, 6174});
-    //BoostUnitTest::CheckVector(assembly.stomething..., expected, 3);
+    // Eigen::Vector3d expected = Eigen::Vector3d({157, 42, 6174});
+    // BoostUnitTest::CheckVector(assembly.stomething..., expected, 3);
 }

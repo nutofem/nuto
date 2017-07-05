@@ -6,7 +6,8 @@
 namespace NuTo
 {
 // forward declarations
-template<class T> class SparseMatrixCSR;
+template <class T>
+class SparseMatrixCSR;
 
 //! @brief ... interface for the PARDISO sparse solver
 class SparseDirectSolverPardiso : public SparseDirectSolver
@@ -22,18 +23,19 @@ public:
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
     void Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution);
 
-    //! @brief ... use the nested dissection alogrithm from the METIS-package for for the fill-in reducing odering of the coefficient matrix
+    //! @brief ... use the nested dissection alogrithm from the METIS-package for for the fill-in reducing odering of
+    //! the coefficient matrix
     //! @sa mOrderingType
     inline void SetOrderingMETIS()
     {
-        this->mOrderingType = 2;  // set ordering to METIS
+        this->mOrderingType = 2; // set ordering to METIS
     }
 
     //! @brief ... use the minimum degree alogrithm for for the fill-in reducing odering of the coefficient matrix
     //! @sa mOrderingType
     inline void SetOrderingMinimumDegree()
     {
-        this->mOrderingType = 0;  // set ordering to METIS
+        this->mOrderingType = 0; // set ordering to METIS
     }
 
     //! @brief ... set the maximum number of iterative refinement steps aplied in the solution phase
@@ -44,7 +46,8 @@ public:
         this->mNumRefinementSteps = rNumRefinementSteps_;
     }
 
-    //! @brief ... set the perturbation for small pivots. Small pivots will be perturbed with epsilon = 10^(-orderOfMagnitude).
+    //! @brief ... set the perturbation for small pivots. Small pivots will be perturbed with epsilon =
+    //! 10^(-orderOfMagnitude).
     //! @param rOrderOfMagnitude ... absolute value of the order of magnitude of the perturbation for small pivots
     //! @sa mPivotingPerturbation
     inline void SetPivotingPerturbation(unsigned int rOrderOfMagnitude)
@@ -132,7 +135,8 @@ protected:
     //! @brief ... controls maximum weighted matching algorithm
     //! @sa enableWeightedMatching, disableWeightedMatching
     /*!
-        "PARDISO can use a maximum weighted matching algorithm to permute large elements close the diagonal. This strategy
+        "PARDISO can use a maximum weighted matching algorithm to permute large elements close the diagonal. This
+       strategy
         adds an additional level of reliability to our factorization ..." [Intel MKL-Manual]
 
         If the value of weightedMatching is negative, the maximum weighted matching algorithm is only enabled for
@@ -152,8 +156,6 @@ protected:
         "Specifies the number of threads"
     */
     int mNumThreads;
-
-
 
 
 #endif // HAVE_PARDISO

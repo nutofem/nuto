@@ -63,7 +63,7 @@ class InterpolationType;
  *    \varepsilon_{yy}\\
  *    \gamma_{xy}
  *  \end{bmatrix},
- * \f} 
+ * \f}
  * where \f$ E \f$ is the Young's modulus, \f$ \nu \f$ is the Poisson's ratio,
  * \f$ \boldsymbol{\sigma} \f$ are the components of the Cauchy stress vector,
  * and \f$ \boldsymbol{\varepsilon} \f$ are the components of the Engineering strain vector.
@@ -71,14 +71,10 @@ class InterpolationType;
  */
 //! @author Jörg F. Unger, ISM
 //! @date July 2012
-class LinearElasticEngineeringStress: public ConstitutiveBase
+class LinearElasticEngineeringStress : public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
-
     LinearElasticEngineeringStress();
 
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
@@ -88,23 +84,22 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                               const InterpolationType& rInterpolationType) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -126,7 +121,6 @@ public:
     ///////////////////////////////////////////////////////////////////////////
 
 
-
     //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
     //! @return ... set of all constitutive output enums that are compatible with the constitutive law
     virtual bool CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const override;
@@ -144,20 +138,13 @@ public:
     //! @param rLogger stream for the output
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override
     {
-    	return false;
+        return false;
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 
 protected:
@@ -169,12 +156,5 @@ protected:
 
     //! @brief ... density \f$ \rho \f$
     double mRho;
-
 };
-
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::LinearElasticEngineeringStress)
-#endif //ENABLE_SERIALIZATION
-

@@ -16,26 +16,27 @@
 
 void ApplyBCs(NuTo::Structure& s)
 {
-    constexpr double lx        = 4;
-    constexpr double ly        = 4;
+    constexpr double lx = 4;
+    constexpr double ly = 4;
 
-    auto& groupLeft  = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0.);
+    auto& groupLeft = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0.);
     auto& groupRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
     auto& groupLower = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 0);
     auto& groupUpper = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, ly);
 
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLeft, {NuTo::eDirection::X}));
     s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Component(groupLeft, {NuTo::eDirection::X}));
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
+                        NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
 
     int groupElementBCUpper = s.GroupCreate(NuTo::eGroupId::Elements);
     int groupElementBCRight = s.GroupCreate(NuTo::eGroupId::Elements);
     s.GroupAddElementsFromNodes(groupElementBCRight, s.GroupGetId(&groupRight), false);
     s.GroupAddElementsFromNodes(groupElementBCUpper, s.GroupGetId(&groupUpper), false);
-    
-    s.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, s.GroupGetId(&groupRight), NuTo::Test::PlateWithHoleAnalytical::PressureRight);
-    s.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, s.GroupGetId(&groupUpper), NuTo::Test::PlateWithHoleAnalytical::PressureTop);
+
+    s.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, s.GroupGetId(&groupRight),
+                                          NuTo::Test::PlateWithHoleAnalytical::PressureRight);
+    s.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, s.GroupGetId(&groupUpper),
+                                          NuTo::Test::PlateWithHoleAnalytical::PressureTop);
 }
 
 void CheckSolution(NuTo::Structure& s, double tolerance)
@@ -50,7 +51,7 @@ void CheckSolution(NuTo::Structure& s, double tolerance)
         {
             auto numericStressNuTo = ipStress.col(iIP);
             Eigen::Vector3d numericStress(numericStressNuTo[0], numericStressNuTo[1], numericStressNuTo[5]);
-            auto analyticStress  = NuTo::Test::PlateWithHoleAnalytical::AnalyticStress(ipCoords.col(iIP));
+            auto analyticStress = NuTo::Test::PlateWithHoleAnalytical::AnalyticStress(ipCoords.col(iIP));
             auto error = (analyticStress - numericStress).norm() / analyticStress.norm();
             BOOST_CHECK_SMALL(error, tolerance);
         }

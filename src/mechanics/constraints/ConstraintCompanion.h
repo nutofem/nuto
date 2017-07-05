@@ -11,10 +11,10 @@ class Group;
 namespace Constraint
 {
 
-    //! @brief linear function
-    //! @param timeEnd ... end time 
-    //! @param valueEnd ... end value
-    //! @return ... linear function crossing (0,0) and (timeEnd, valueEnd)
+//! @brief linear function
+//! @param timeEnd ... end time
+//! @param valueEnd ... end value
+//! @return ... linear function crossing (0,0) and (timeEnd, valueEnd)
 inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
 {
     return [=](double time) { return valueEnd * time / timeEnd; };
@@ -22,11 +22,11 @@ inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
 
 
 //! @brief constant function
-//! @param constantValue ... constant value 
+//! @param constantValue ... constant value
 //! @return ... constant function f(t) = constant value
 inline RhsFunction RhsConstant(double constantValue)
 {
-    return [=](double time) { return constantValue; }; 
+    return [=](double time) { return constantValue; };
 }
 
 
@@ -56,7 +56,7 @@ std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> di
 //! @param directions ... vector of directions (X, Y, Z)
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... vector of constraint equations
-std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions,  RhsFunction rhs);
+std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions, RhsFunction rhs);
 
 //! @param node ... node reference
 //! @param direction ... directions (X, Y, Z)

@@ -2,35 +2,27 @@
 // ElementDataNonlocalBase.cpp
 // created Apr 22, 2010 by Joerg F. Unger
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 
 #include "base/Exception.h"
 #include "mechanics/elements/ElementOutputBase.h"
 
 
 NuTo::ElementOutputBase::ElementOutputBase()
-{}
+{
+}
 
 
 NuTo::ElementOutputBase::~ElementOutputBase()
-{}
+{
+}
 
 
-NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble()
+NuTo::BlockFullMatrix<double>& NuTo::ElementOutputBase::GetBlockFullMatrixDouble()
 {
     throw Exception(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output matrix is not of type BlockFullMatrix<double>"));
 }
 
-NuTo::BlockFullVector<double> &NuTo::ElementOutputBase::GetBlockFullVectorDouble()
+NuTo::BlockFullVector<double>& NuTo::ElementOutputBase::GetBlockFullVectorDouble()
 {
     throw Exception(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output vector is not of type BlockFullVector<double>"));
 }
@@ -55,7 +47,7 @@ void NuTo::ElementOutputBase::SetSymmetry(bool rSymmetric)
 	throw Exception("[ElementOutputBase::SetSymmetry] symmetry is not stored.");
 }
 
-bool NuTo::ElementOutputBase::GetSymmetry()const
+bool NuTo::ElementOutputBase::GetSymmetry() const
 {
 	throw Exception("[ElementOutputBase::SetSymmetry] symmetry is not stored.");
 }
@@ -65,14 +57,12 @@ void NuTo::ElementOutputBase::SetConstant(bool rConstant)
 	throw Exception("[ElementOutputBase::SetConstant] constness is not stored.");
 }
 
-bool NuTo::ElementOutputBase::GetConstant()const
+bool NuTo::ElementOutputBase::GetConstant() const
 {
 	throw Exception("[ElementOutputBase::GetConstant] constness is not stored.");
 }
 
 NuTo::ElementOutputBase* NuTo::ElementOutputBase::Clone() const
 {
-	return nullptr;
+    return nullptr;
 }
-
-

@@ -1,15 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "optimize/NonlinearSolverBase.h"
 #include "base/Exception.h"
 
@@ -65,29 +53,6 @@ double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd
     return 0.5 * sum;
 }
 
-void NuTo::NonlinearSolverBase::Info() const {}
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::NonlinearSolverBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::NonlinearSolverBase::serialize(Archive & ar, const unsigned int version)
+void NuTo::NonlinearSolverBase::Info() const
 {
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of NonlinearSolverBase" << "\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-       & BOOST_SERIALIZATION_NVP(mTolResidual)
-       & BOOST_SERIALIZATION_NVP(mTolSolution)
-       & BOOST_SERIALIZATION_NVP(mMaxIterationsNumber)
-       & BOOST_SERIALIZATION_NVP(mParameter);
-//       & BOOST_SERIALIZATION_NVP(mResidualFunction);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of NonlinearSolverBase" << "\n";
-#endif
 }
-#endif  // ENABLE_SERIALIZATION

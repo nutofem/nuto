@@ -9,8 +9,9 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 
 NuTo::IPData::IPData(const IntegrationTypeBase& rIntegrationType)
-: mIntegrationType(&rIntegrationType)
-{}
+    : mIntegrationType(&rIntegrationType)
+{
+}
 
 void NuTo::IPData::SetConstitutiveLaw(NuTo::ConstitutiveBase& rLaw)
 {

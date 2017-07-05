@@ -15,7 +15,8 @@ namespace Visualize
 //! @brief ... visualization of unstructured grids
 class UnstructuredGrid
 {
-friend class XMLWriter;
+    friend class XMLWriter;
+
 public:
     //! @brief ... export to Vtu datafile
     //! @param filename ... filename including ".vtu"

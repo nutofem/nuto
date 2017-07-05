@@ -14,7 +14,6 @@
 #include "mechanics/groups/Group.h"
 
 
-
 using std::cout;
 using std::endl;
 using namespace NuTo;
@@ -33,7 +32,7 @@ constexpr double lengthX = 60.;
 constexpr double lengthY = 10.;
 const Vector2d coordinateAtBottomLeft(0., 0.);
 const Vector2d coordinateAtBottomRight(lengthX, 0.);
-const Vector2d coordinateAtLoad(0.5*lengthX, lengthY);
+const Vector2d coordinateAtLoad(0.5 * lengthX, lengthY);
 
 // material
 constexpr double nonlocalRadius = 4; // mm

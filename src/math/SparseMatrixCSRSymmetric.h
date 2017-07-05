@@ -1,4 +1,3 @@
-// $Id$
 
 #pragma once
 
@@ -12,7 +11,8 @@
 //! @param rDimension_ ... dimension (number of rows and number of columns) of square matrix
 //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
 template <class T>
-NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(int rDimension, int rNumReserveEntries) : SparseMatrixCSR<T>(rDimension, rNumReserveEntries)
+NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(int rDimension, int rNumReserveEntries)
+    : SparseMatrixCSR<T>(rDimension, rNumReserveEntries)
 {
 }
 
@@ -21,34 +21,35 @@ NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(int rDimension, int 
 //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
 template <class T>
 NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCSRSymmetric<T>& rOther)
-         : SparseMatrixCSR<T>(rOther)
+    : SparseMatrixCSR<T>(rOther)
 {
-
 }
 
 //! @brief ... constructor
 //! @param rDimension_ ... dimension (number of rows and number of columns) of square matrix
 //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
 template <class T>
-NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCSRVector2Symmetric<T>& rOther) : SparseMatrixCSR<T>(rOther.GetNumRows())
+NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCSRVector2Symmetric<T>& rOther)
+    : SparseMatrixCSR<T>(rOther.GetNumRows())
 {
-	int numEntries = rOther.GetNumEntries();
+    int numEntries = rOther.GetNumEntries();
     this->mValues.resize(numEntries);
     this->mColumns.resize(numEntries);
 
     int theEntry(0);
-	assert(rOther.mValues.size() == rOther.mColumns.size());
-    for (int row = 0; row<rOther.GetNumRows(); row++)
+    assert(rOther.mValues.size() == rOther.mColumns.size());
+    for (int row = 0; row < rOther.GetNumRows(); row++)
     {
-	    this->mRowIndex[row] = theEntry + this->mOneBasedIndexing;
-    	for (unsigned int colCount=0; colCount<rOther.mValues[row].size(); colCount++)
-    	{
-    		assert(rOther.mValues[row].size() == rOther.mColumns[row].size());
-    		assert(theEntry<numEntries);
-    		this->mValues[theEntry] = rOther.mValues[row][colCount];
-    		this->mColumns[theEntry] = rOther.mColumns[row][colCount]-rOther.mOneBasedIndexing+this->mOneBasedIndexing;
-      		theEntry++;
-    	}
+        this->mRowIndex[row] = theEntry + this->mOneBasedIndexing;
+        for (unsigned int colCount = 0; colCount < rOther.mValues[row].size(); colCount++)
+        {
+            assert(rOther.mValues[row].size() == rOther.mColumns[row].size());
+            assert(theEntry < numEntries);
+            this->mValues[theEntry] = rOther.mValues[row][colCount];
+            this->mColumns[theEntry] =
+                    rOther.mColumns[row][colCount] - rOther.mOneBasedIndexing + this->mOneBasedIndexing;
+            theEntry++;
+        }
     }
     this->mRowIndex[rOther.GetNumRows()] = theEntry + this->mOneBasedIndexing;
 }
@@ -58,7 +59,7 @@ NuTo::SparseMatrixCSRSymmetric<T>::SparseMatrixCSRSymmetric(const SparseMatrixCS
 template <class T>
 bool NuTo::SparseMatrixCSRSymmetric<T>::IsSymmetric() const
 {
-	return true;
+    return true;
 }
 
 //! @brief ... returns the number of columns
@@ -66,7 +67,7 @@ bool NuTo::SparseMatrixCSRSymmetric<T>::IsSymmetric() const
 template <class T>
 int NuTo::SparseMatrixCSRSymmetric<T>::GetNumColumns() const
 {
-	return this->mRowIndex.size() -  1;
+    return this->mRowIndex.size() - 1;
 }
 
 //! @brief ... add nonzero entry to matrix
@@ -144,8 +145,8 @@ void NuTo::SparseMatrixCSRSymmetric<T>::AddValue(int rRow, int rColumn, const T&
 }
 
 //! @brief ... return the matrix type
-template<class T>
-NuTo::eSparseMatrixType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType()const
+template <class T>
+NuTo::eSparseMatrixType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType() const
 {
     return NuTo::eSparseMatrixType::CSRSYMMETRIC;
 }
@@ -154,53 +155,54 @@ NuTo::eSparseMatrixType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType()
 template <class T>
 void NuTo::SparseMatrixCSRSymmetric<T>::Info() const
 {
-	SparseMatrixCSR<T>::Info();
+    SparseMatrixCSR<T>::Info();
 }
 
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRSymmetric<T>::ConvertToFullMatrix() const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRSymmetric<T>::ConvertToFullMatrix() const
 {
-    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> m = Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::Zero(this->GetNumRows(), this->GetNumColumns());
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> m =
+            Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(this->GetNumRows(), this->GetNumColumns());
     std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
-	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
-	if (this->mOneBasedIndexing)
-	{
-		unsigned int row = 0;
-		while (row < this->mRowIndex.size() - 1)
-		{
-			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
-			{
-				m(row, (*columnIterator) - 1) = *valueIterator;
-				if (static_cast<int>(row)!=(*columnIterator) - 1)
-				    m((*columnIterator) - 1) = row, *valueIterator;
-				columnIterator++;
-				valueIterator++;
-			}
-			row++;
-		}
-	}
-	else
-	{
-		unsigned int row = 0;
-		while (row < this->mRowIndex.size() - 1)
-		{
-			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
-			{
-				// set upper triangle and diagonal entries
-				m(row, *columnIterator) = *valueIterator;
-				// set lower triangle entries
-				if (static_cast<int>(row) != *columnIterator)
-				{
-					m(*columnIterator, row) = *valueIterator;
-				}
-				columnIterator++;
-				valueIterator++;
-			}
-			row++;
-		}
-	}
+    typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
+    if (this->mOneBasedIndexing)
+    {
+        unsigned int row = 0;
+        while (row < this->mRowIndex.size() - 1)
+        {
+            for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row + 1]; entry_count++)
+            {
+                m(row, (*columnIterator) - 1) = *valueIterator;
+                if (static_cast<int>(row) != (*columnIterator) - 1)
+                    m((*columnIterator) - 1) = row, *valueIterator;
+                columnIterator++;
+                valueIterator++;
+            }
+            row++;
+        }
+    }
+    else
+    {
+        unsigned int row = 0;
+        while (row < this->mRowIndex.size() - 1)
+        {
+            for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row + 1]; entry_count++)
+            {
+                // set upper triangle and diagonal entries
+                m(row, *columnIterator) = *valueIterator;
+                // set lower triangle entries
+                if (static_cast<int>(row) != *columnIterator)
+                {
+                    m(*columnIterator, row) = *valueIterator;
+                }
+                columnIterator++;
+                valueIterator++;
+            }
+            row++;
+        }
+    }
     return m;
 }
 
@@ -209,12 +211,12 @@ Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRSymmetric<T>
 template <class T>
 void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows)
 {
-	// check for overflow
-	assert(rNumRows < INT_MAX);
-	assert(rNumRows >= 0);
+    // check for overflow
+    assert(rNumRows < INT_MAX);
+    assert(rNumRows >= 0);
 
-	// resize
-	SparseMatrixCSR<T>::Resize(rNumRows);
+    // resize
+    SparseMatrixCSR<T>::Resize(rNumRows);
 }
 
 //! @brief ... resize matrix
@@ -236,13 +238,11 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows_, int rNumColumns_)
 template <class T>
 NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSparseMatrixCSRSymmetric()
 {
-	return *this;
+    return *this;
 }
 
 template <class T>
-const NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSparseMatrixCSRSymmetric()const
+const NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSparseMatrixCSRSymmetric() const
 {
-	return *this;
+    return *this;
 }
-
-

@@ -5,22 +5,22 @@
 namespace NuTo
 {
 
-class ConstitutiveScalar: public ConstitutiveVector<1>
+class ConstitutiveScalar : public ConstitutiveVector<1>
 {
 public:
-    ConstitutiveScalar()                                        = default;
-    ConstitutiveScalar(const ConstitutiveScalar& )              = default;
-    ConstitutiveScalar(      ConstitutiveScalar&&)              = default;
+    ConstitutiveScalar() = default;
+    ConstitutiveScalar(const ConstitutiveScalar&) = default;
+    ConstitutiveScalar(ConstitutiveScalar&&) = default;
 
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override
     {
         return std::make_unique<ConstitutiveScalar>(*this);
     }
 
-    virtual ~ConstitutiveScalar()                               = default;
+    virtual ~ConstitutiveScalar() = default;
 
-    ConstitutiveScalar& operator=(const ConstitutiveScalar& )   = default;
-    ConstitutiveScalar& operator=(      ConstitutiveScalar&&)   = default;
+    ConstitutiveScalar& operator=(const ConstitutiveScalar&) = default;
+    ConstitutiveScalar& operator=(ConstitutiveScalar&&) = default;
 
     virtual Eigen::Matrix<double, 1, 1>& AsVector() override
     {
@@ -31,7 +31,6 @@ public:
     {
         return *this;
     }
-
 };
 
 } /* namespace NuTo */

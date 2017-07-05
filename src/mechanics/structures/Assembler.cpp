@@ -129,12 +129,12 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     mNodeVectorChanged = false;
     GetConstraints().SetHaveChanged(false);
 
-    // Build the Rhs once at the global time 0. 
-    // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS. 
-    // This is required for static solutions that do not use a time integration 
+    // Build the Rhs once at the global time 0.
+    // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS.
+    // This is required for static solutions that do not use a time integration
     // scheme. In those cases the RHS is not continuously updated and needs to
     // be calculated at some point. This point is here.
-    ConstraintUpdateRhs(0); 
+    ConstraintUpdateRhs(0);
 }
 
 NuTo::BlockFullVector<double> NuTo::Assembler::BuildRhsBeforeGaussElimination(double time) const

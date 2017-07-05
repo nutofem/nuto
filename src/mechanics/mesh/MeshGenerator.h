@@ -57,6 +57,5 @@ public:
     //! @param rRadius ... radius of the cylinder
     //! @param rHeight ... height of the cylinder
     static std::function<Eigen::Vector3d(Eigen::Vector3d)> GetCylinderMapping(double rRadius, double rHeight);
-
 };
 }

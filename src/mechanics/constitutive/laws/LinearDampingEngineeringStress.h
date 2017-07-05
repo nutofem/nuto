@@ -26,8 +26,7 @@ public:
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                               Node::eDof rDofCol,
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
                                                int rTimeDerivative) const override;
 
     //! @brief ... check parameters of the constitutive relationship
@@ -38,15 +37,15 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType GetType() const override;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const override;
 
@@ -65,9 +64,7 @@ public:
     virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
 
-
 private:
-
     double mDampingCoefficient;
 };
 

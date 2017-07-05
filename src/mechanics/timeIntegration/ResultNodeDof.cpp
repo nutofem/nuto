@@ -9,9 +9,10 @@
 #include "mechanics/timeIntegration/ResultNodeDof.h"
 #include "mechanics/nodes/NodeBase.h"
 
-NuTo::ResultNodeDof::ResultNodeDof(const std::string& rIdent, int rNodeId) : ResultBase(rIdent)
+NuTo::ResultNodeDof::ResultNodeDof(const std::string& rIdent, int rNodeId)
+    : ResultBase(rIdent)
 {
-	mNodeId = rNodeId;
+    mNodeId = rNodeId;
 }
 
 void NuTo::ResultNodeDof::Info() const
@@ -20,7 +21,7 @@ void NuTo::ResultNodeDof::Info() const
 
 void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
 {
-	assert(rTimeStepPlot>=0);
+    assert(rTimeStepPlot >= 0);
     Eigen::VectorXd dofValues = this->CalculateValues(rStructure);
 	if (rTimeStepPlot>=mData.rows())
 	{

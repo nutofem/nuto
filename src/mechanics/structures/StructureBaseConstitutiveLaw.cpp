@@ -133,7 +133,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         this->mConstitutiveLawMap.insert(rIdent, ConstitutiveLawPtr);
         if (ConstitutiveLawPtr->HaveTmpStaticData())
             mHaveTmpStaticData = true;
-    } else
+    }
+    else
     {
         throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Constitutive law already exists.");
     }
@@ -186,7 +187,8 @@ const NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiv
 
 int NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBase* rConstitutiveLawPtr) const
 {
-    for (boost::ptr_map<int, ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it != mConstitutiveLawMap.end(); ++it)
+    for (boost::ptr_map<int, ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin();
+         it != mConstitutiveLawMap.end(); ++it)
     {
         if (it->second == rConstitutiveLawPtr)
         {
@@ -199,7 +201,8 @@ int NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBase* rCon
 void NuTo::StructureBase::ConstitutiveLawInfo(unsigned short rVerboseLevel) const
 {
     std::cout << "Number of constitutive laws: " << this->GetNumConstitutiveLaws() << std::endl;
-    for (boost::ptr_map<int, ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin(); it != mConstitutiveLawMap.end(); ++it)
+    for (boost::ptr_map<int, ConstitutiveBase>::const_iterator it = mConstitutiveLawMap.begin();
+         it != mConstitutiveLawMap.end(); ++it)
     {
         std::cout << "  Constitutive law: " << it->first << std::endl;
         it->second->Info(rVerboseLevel, mLogger);
@@ -213,62 +216,84 @@ void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerbos
     ConstitutiveLawPtr->Info(rVerboseLevel, mLogger);
 }
 
-bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, const std::string &rIdentifier) const
+bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, const std::string& rIdentifier) const
 {
     return ConstitutiveLawGetParameterBool(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, const std::string &rIdentifier, bool rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, const std::string& rIdentifier, bool rValue)
 {
-   ConstitutiveLawSetParameterBool(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
+    ConstitutiveLawSetParameterBool(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
-double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, const std::string &rIdentifier) const
+double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, const std::string& rIdentifier) const
 {
     return ConstitutiveLawGetParameterDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, const std::string &rIdentifier, double rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, const std::string& rIdentifier, double rValue)
 {
     ConstitutiveLawSetParameterDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
-Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier) const
+Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent,
+                                                                                 const std::string& rIdentifier) const
 {
     return ConstitutiveLawGetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier, Eigen::VectorXd rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier,
+                                                                      Eigen::VectorXd rValue)
 {
     ConstitutiveLawSetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
-bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd NuTo::StructureBase::ConstitutiveLawGetParameterMatrixDouble(int rIdent,
+                                                                             const std::string& rIdentifier) const
+{
+    return ConstitutiveLawGetParameterMatrixDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
+}
+
+void NuTo::StructureBase::ConstitutiveLawSetParameterMatrixDouble(int rIdent, const std::string& rIdentifier,
+                                                                  Eigen::MatrixXd rValue)
+{
+    ConstitutiveLawSetParameterMatrixDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
+}
+
+bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent,
+                                                          NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     return constitutiveLawPtr->GetParameterBool(rIdentifier);
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent,
+                                                          NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                          bool rValue)
 {
     ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     constitutiveLawPtr->SetParameterBool(rIdentifier, rValue);
 }
 
 
-double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+double
+NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent,
+                                                       NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     return constitutiveLawPtr->GetParameterDouble(rIdentifier);
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent,
+                                                            NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                            double rValue)
 {
     ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     constitutiveLawPtr->SetParameterDouble(rIdentifier, rValue);
 }
 
-Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(
+        int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
     return constitutiveLawPtr->GetParameterFullVectorDouble(rIdentifier);
@@ -287,7 +312,8 @@ void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int lawId, std::shared_ptr
     constitutiveLawPtr->SetDamageLaw(damageLaw);
 }
 
-double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, Eigen::VectorXd rCoeffs) const
+double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity,
+                                                                             Eigen::VectorXd rCoeffs) const
 {
     double EquilibriumWaterVolumeFraction = 0.0;
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);

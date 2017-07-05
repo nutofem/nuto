@@ -39,8 +39,3 @@ void LoadNodeForces1D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ext
         externalLoad.K[Node::eDof::DISPLACEMENTS](dof, 0) += this->mDirection * this->mValue;
     }
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadNodeForces1D)
-BOOST_CLASS_TRACKING(LoadNodeForces1D, track_always)
-#endif

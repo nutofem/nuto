@@ -36,7 +36,7 @@ int StructureBase::LoadCreateScalarSource(const NodeBase* rNode, double rValue)
     loadPtr = new LoadNodeScalarSource(rNode, rValue);
 
     // insert load in load map
-    this->mLoadMap.insert(id,loadPtr);
+    this->mLoadMap.insert(id, loadPtr);
     return id;
 }
 

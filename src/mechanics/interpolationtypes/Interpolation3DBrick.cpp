@@ -11,8 +11,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation3DBrick.h"
 
-NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        Interpolation3D::Interpolation3D(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                                 int rDimension)
+    : Interpolation3D::Interpolation3D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }
@@ -55,7 +56,8 @@ Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const Eigen:
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -112,7 +114,9 @@ int NuTo::Interpolation3DBrick::CalculateNumNodes() const
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                               int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     double alpha = rNaturalSurfaceCoordinates(0);
@@ -121,23 +125,24 @@ Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(c
     switch (rSurface)
     {
     case 0:
-        return Eigen::Vector3d( beta,alpha,  -1.);
+        return Eigen::Vector3d(beta, alpha, -1.);
     case 1:
-        return Eigen::Vector3d(alpha,  -1., beta);
+        return Eigen::Vector3d(alpha, -1., beta);
     case 2:
-        return Eigen::Vector3d(  -1., beta,alpha);
+        return Eigen::Vector3d(-1., beta, alpha);
     case 3:
-        return Eigen::Vector3d(alpha, beta,   1.);
+        return Eigen::Vector3d(alpha, beta, 1.);
     case 4:
-        return Eigen::Vector3d( beta,   1.,alpha);
+        return Eigen::Vector3d(beta, 1., alpha);
     case 5:
-        return Eigen::Vector3d(   1.,alpha, beta);
+        return Eigen::Vector3d(1., alpha, beta);
     default:
         throw Exception(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     Eigen::MatrixXd dXidAlpha = Eigen::Matrix<double, 3, 2>::Zero();
@@ -180,8 +185,7 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation3DBrick::GetSurfaceEdgesCoordina
     // returns exactly three nodes, (-1,-1).T; (1,-1).T; (1,1).T and (-1,1).T
     Eigen::Matrix<double, 2, 4> alpha = Eigen::Matrix<double, 2, 4>::Zero(); // row1 = alpha, row2 = beta
 
-    alpha << -1.,  1.,  1., -1.,
-             -1., -1.,  1.,  1.;
+    alpha << -1., 1., 1., -1., -1., -1., 1., 1.;
     std::vector<Eigen::VectorXd> surfaceEdgeCoordinates(numNodes);
     for (int i = 0; i < numNodes; ++i)
     {

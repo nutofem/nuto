@@ -39,8 +39,10 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     // Create input data
     ConstitutiveInputMap inputMap;
 
-    inputMap[Constitutive::eInput::ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::ENGINEERING_STRAIN);
-    inputMap[Constitutive::eInput::PLANE_STATE] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::PLANE_STATE);
+    inputMap[Constitutive::eInput::ENGINEERING_STRAIN] =
+            ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::ENGINEERING_STRAIN);
+    inputMap[Constitutive::eInput::PLANE_STATE] =
+            ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::PLANE_STATE);
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[0] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[1] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[2] = 0.0;
@@ -48,14 +50,15 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     // ask for stress as output
     ConstitutiveOutputMap outputMap;
     outputMap[Constitutive::eOutput::ENGINEERING_STRESS] =
-        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
+            ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
 
     // evaluate the additive input law
     auto additiveIP = additiveLaw.CreateIPLaw();
     additiveIP->Evaluate<2>(inputMap, outputMap);
 
     // compare to expected results
-    const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());
+    const auto& stress =
+            *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());
     Eigen::Matrix<double, 3, 1> expectedStress;
     expectedStress << 2.0, 2.0, 0.0;
     BOOST_CHECK_SMALL((stress - expectedStress).norm(), 1e-16);

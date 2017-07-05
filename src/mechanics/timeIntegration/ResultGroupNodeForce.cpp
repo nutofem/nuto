@@ -12,14 +12,15 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
-NuTo::ResultGroupNodeForce::ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId) : ResultGroupNodeDof(rIdent, rGroupNodeId)
+NuTo::ResultGroupNodeForce::ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId)
+    : ResultGroupNodeDof(rIdent, rGroupNodeId)
 {
 }
 
 //! @brief number of dofs (e.g. number of displacement components of a node
-int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure)const
+int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure) const
 {
-	const Group<NodeBase>& groupNode = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
+    const Group<NodeBase>& groupNode = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
 
     //all nodes have to have the same dimension (number of displacement components)
     if(groupNode.GetNumMembers() < 1)
@@ -34,7 +35,9 @@ NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() con
 }
 
 
-Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k) const
+Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure,
+                                                            const Eigen::VectorXd& rResidual_j,
+                                                            const Eigen::VectorXd& rResidual_k) const
 {
     const Group<NodeBase>& nodeGroup = *GetGroupNodePtr(rStructure);
     const int dim = rStructure.GetDimension();

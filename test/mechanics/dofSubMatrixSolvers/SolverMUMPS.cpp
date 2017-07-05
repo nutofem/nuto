@@ -7,5 +7,3 @@ BOOST_AUTO_TEST_CASE(SolverMUMPS)
     NuTo::SolverMUMPS s;
     SolveAndCheckSystem(s);
 }
-
-

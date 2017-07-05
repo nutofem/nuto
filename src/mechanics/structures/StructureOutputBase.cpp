@@ -3,10 +3,12 @@
 #include "StructureOutputBase.h"
 
 NuTo::StructureOutputBase::StructureOutputBase()
-{}
+{
+}
 
 NuTo::StructureOutputBase::~StructureOutputBase()
-{}
+{
+}
 
 NuTo::StructureOutputBlockMatrix& NuTo::StructureOutputBase::AsStructureOutputBlockMatrix()
 {
@@ -23,7 +25,7 @@ void NuTo::StructureOutputBase::SetSymmetry(bool rSymmetric)
     throw Exception("[StructureOutputBase::SetSymmetry] symmetry is not stored.");
 }
 
-bool NuTo::StructureOutputBase::IsSymmetric()const
+bool NuTo::StructureOutputBase::IsSymmetric() const
 {
     throw Exception("[StructureOutputBase::SetSymmetry] symmetry is not stored.");
 }

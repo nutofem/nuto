@@ -11,21 +11,10 @@ namespace NuTo
 //! @brief ... integration types in 1D with two nodes Gauss integration and 2 integration points
 class IntegrationType2D4NLobatto9Ip : public IntegrationType2D
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
     IntegrationType2D4NLobatto9Ip();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -42,13 +31,12 @@ public:
     double GetIntegrationPointWeight(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
-    void GetVisualizationCells(
-        unsigned int& NumVisualizationPoints,
-        std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells,
-        std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const override;
+    void GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                               std::vector<double>& VisualizationPointLocalCoordinates,
+                               unsigned int& NumVisualizationCells,
+                               std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                               std::vector<unsigned int>& VisualizationCellsIncidence,
+                               std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 
 private:
@@ -59,7 +47,3 @@ private:
     std::vector<double> mWeights;
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D4NLobatto9Ip)
-#endif // ENABLE_SERIALIZATION
-

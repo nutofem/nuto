@@ -4,11 +4,11 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 
 
-
 NuTo::AdditiveBase::AdditiveBase(const int& rNumTimeDerivatives)
     : mNumTimeDerivatives(rNumTimeDerivatives)
 {
-    // Even though you get the number of time derivatives during construction, it might change later. So we set the size to 3 (disp, vel, acc) to avoid problems.
+    // Even though you get the number of time derivatives during construction, it might change later. So we set the size
+    // to 3 (disp, vel, acc) to avoid problems.
     mComputableDofCombinations.resize(3);
 }
 
@@ -34,12 +34,12 @@ void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiv
 void NuTo::AdditiveBase::AddCalculableDofCombinations(NuTo::ConstitutiveBase& rConstitutiveLaw)
 {
     std::set<Node::eDof> allDofs = Node::GetDofSet();
-    for (unsigned int i = 0;  i < mComputableDofCombinations.size(); ++i)
+    for (unsigned int i = 0; i < mComputableDofCombinations.size(); ++i)
         for (auto itRow : allDofs)
             for (auto itCol : allDofs)
             {
-                if (rConstitutiveLaw.CheckDofCombinationComputable(itRow,itCol,i))
-                        mComputableDofCombinations[i].emplace(itRow,itCol);
+                if (rConstitutiveLaw.CheckDofCombinationComputable(itRow, itCol, i))
+                    mComputableDofCombinations[i].emplace(itRow, itCol);
             }
 }
 
@@ -57,22 +57,23 @@ bool NuTo::AdditiveBase::HaveTmpStaticData() const
 {
     for (auto& sublaw : mSublaws)
     {
-        if(sublaw->HaveTmpStaticData())
+        if (sublaw->HaveTmpStaticData())
             return true;
     }
     return false;
 }
 
 bool NuTo::AdditiveBase::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,
-        int rTimeDerivative) const
+                                                       int rTimeDerivative) const
 {
-    return mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof, Node::eDof>(rDofRow, rDofCol))
-        != mComputableDofCombinations[rTimeDerivative].end();
+    return mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof, Node::eDof>(rDofRow, rDofCol)) !=
+           mComputableDofCombinations[rTimeDerivative].end();
 }
 
 
-NuTo::ConstitutiveInputMap NuTo::AdditiveBase::GetConstitutiveInputs(
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap
+NuTo::AdditiveBase::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                          const NuTo::InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -95,5 +96,4 @@ NuTo::ConstitutiveBase& NuTo::AdditiveBase::GetSublaw(int rIndex)
     {
         throw Exception(__PRETTY_FUNCTION__, "Error accessing sublaw");
     }
-
 }

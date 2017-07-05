@@ -1,14 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -64,8 +53,6 @@ void NuTo::VelocityVerlet::serialize(Archive& ar, const unsigned int version)
               << "\n";
 #endif
 }
-
-#endif // ENABLE_SERIALIZATION
 
 
 //! @brief perform the time integration

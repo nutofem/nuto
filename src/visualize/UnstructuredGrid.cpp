@@ -25,7 +25,6 @@ int UnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 }
 
 
-
 void UnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
 {
     for (auto pointId : pointIds)
@@ -62,7 +61,7 @@ void UnstructuredGrid::SetPointData(int pointIndex, const std::string& name, dou
 
 void UnstructuredGrid::SetPointData(int pointIndex, const std::string& name, Eigen::VectorXd data)
 {
-    mPoints[pointIndex].SetData(GetPointDataIndex(name), data); 
+    mPoints[pointIndex].SetData(GetPointDataIndex(name), data);
 }
 
 void UnstructuredGrid::SetCellData(int cellIndex, const std::string& name, double data)
@@ -72,7 +71,7 @@ void UnstructuredGrid::SetCellData(int cellIndex, const std::string& name, doubl
 
 void UnstructuredGrid::SetCellData(int cellIndex, const std::string& name, Eigen::VectorXd data)
 {
-    mCells[cellIndex].SetData(GetCellDataIndex(name), data); 
+    mCells[cellIndex].SetData(GetCellDataIndex(name), data);
 }
 
 int UnstructuredGrid::GetPointDataIndex(const std::string& name) const

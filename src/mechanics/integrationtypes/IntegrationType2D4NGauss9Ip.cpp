@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
@@ -25,18 +16,27 @@ NuTo::IntegrationType2D4NGauss9Ip::IntegrationType2D4NGauss9Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<9);
+    assert(rIpNum >= 0 && rIpNum < 9);
     switch (rIpNum)
     {
-    case 0 : return Eigen::Vector2d({ -0.774596669241483, -0.774596669241483});
-    case 1 : return Eigen::Vector2d({  0.774596669241483, -0.774596669241483});
-    case 2 : return Eigen::Vector2d({  0.774596669241483,  0.774596669241483});
-    case 3 : return Eigen::Vector2d({ -0.774596669241483,  0.774596669241483});
-    case 4 : return Eigen::Vector2d({  0.0,               -0.774596669241483});
-    case 5 : return Eigen::Vector2d({  0.774596669241483,  0.0});
-    case 6 : return Eigen::Vector2d({  0.0,                0.774596669241483});
-    case 7 : return Eigen::Vector2d({ -0.774596669241483,  0.0});
-    case 8 : return Eigen::Vector2d({  0.0,                0.0});
+    case 0:
+        return Eigen::Vector2d({-0.774596669241483, -0.774596669241483});
+    case 1:
+        return Eigen::Vector2d({0.774596669241483, -0.774596669241483});
+    case 2:
+        return Eigen::Vector2d({0.774596669241483, 0.774596669241483});
+    case 3:
+        return Eigen::Vector2d({-0.774596669241483, 0.774596669241483});
+    case 4:
+        return Eigen::Vector2d({0.0, -0.774596669241483});
+    case 5:
+        return Eigen::Vector2d({0.774596669241483, 0.0});
+    case 6:
+        return Eigen::Vector2d({0.0, 0.774596669241483});
+    case 7:
+        return Eigen::Vector2d({-0.774596669241483, 0.0});
+    case 8:
+        return Eigen::Vector2d({0.0, 0.0});
     default:
         throw Exception("[NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -45,7 +45,7 @@ Eigen::VectorXd NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoord
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D4NGauss9Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D4NGauss9Ip::GetNumIntegrationPoints() const
 {
     return 9;
 }
@@ -53,36 +53,36 @@ int NuTo::IntegrationType2D4NGauss9Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<9);
+    assert(rIpNum >= 0 && rIpNum < 9);
     switch (rIpNum)
     {
-    case 0 :
+    case 0:
         return 0.308641975; // 5/9 * 5/9
         break;
-    case 1 :
+    case 1:
         return 0.308641975; // 5/9 * 5/9
         break;
-    case 2 :
+    case 2:
         return 0.308641975; // 5/9 * 5/9
         break;
-    case 3 :
+    case 3:
         return 0.308641975; // 5/9 * 5/9
         break;
-    case 4 :
+    case 4:
         return 0.493827160; // 5/9 * 8/9
         break;
-    case 5 :
+    case 5:
         return 0.493827160; // 5/9 * 8/9
         break;
-    case 6 :
+    case 6:
         return 0.493827160; // 5/9 * 8/9
         break;
-    case 7 :
+    case 7:
         return 0.493827160; // 5/9 * 8/9
         break;
-    case 8 :
+    case 8:
         return 0.790123456; // 8/9 * 8/9
         break;
     default:
@@ -91,13 +91,12 @@ double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum)c
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 16;
 
@@ -107,11 +106,11 @@ void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(-1);
 
     // Point 1
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
     VisualizationPointLocalCoordinates.push_back(-1);
 
     // Point 2
-    VisualizationPointLocalCoordinates.push_back(+1./3);
+    VisualizationPointLocalCoordinates.push_back(+1. / 3);
     VisualizationPointLocalCoordinates.push_back(-1);
 
     // Point 3
@@ -121,36 +120,36 @@ void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(
     // second row
     // Point 4
     VisualizationPointLocalCoordinates.push_back(-1);
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
 
     // Point 5
-    VisualizationPointLocalCoordinates.push_back(-1./3);
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
 
     // Point 6
-    VisualizationPointLocalCoordinates.push_back(+1./3);
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(+1. / 3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
 
     // Point 7
     VisualizationPointLocalCoordinates.push_back(1);
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
 
     // third row
     // Point 8
     VisualizationPointLocalCoordinates.push_back(-1);
-    VisualizationPointLocalCoordinates.push_back(1./3);
+    VisualizationPointLocalCoordinates.push_back(1. / 3);
 
     // Point 9
-    VisualizationPointLocalCoordinates.push_back(-1./3);
-    VisualizationPointLocalCoordinates.push_back(1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
+    VisualizationPointLocalCoordinates.push_back(1. / 3);
 
     // Point 10
-    VisualizationPointLocalCoordinates.push_back(+1./3);
-    VisualizationPointLocalCoordinates.push_back(1./3);
+    VisualizationPointLocalCoordinates.push_back(+1. / 3);
+    VisualizationPointLocalCoordinates.push_back(1. / 3);
 
     // Point 11
     VisualizationPointLocalCoordinates.push_back(1);
-    VisualizationPointLocalCoordinates.push_back(1./3);
+    VisualizationPointLocalCoordinates.push_back(1. / 3);
 
     // fourth row
     // Point 12
@@ -158,11 +157,11 @@ void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(1);
 
     // Point 13
-    VisualizationPointLocalCoordinates.push_back(-1./3);
+    VisualizationPointLocalCoordinates.push_back(-1. / 3);
     VisualizationPointLocalCoordinates.push_back(1);
 
     // Point 14
-    VisualizationPointLocalCoordinates.push_back(+1./3);
+    VisualizationPointLocalCoordinates.push_back(+1. / 3);
     VisualizationPointLocalCoordinates.push_back(1);
 
     // Point 15
@@ -242,28 +241,5 @@ void NuTo::IntegrationType2D4NGauss9Ip::GetVisualizationCells(
     VisualizationCellsIncidence.push_back(15);
     VisualizationCellsIncidence.push_back(14);
     VisualizationCellsIP.push_back(2);
-
 }
 #endif // ENABLE_VISUALIZE
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NGauss9Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::IntegrationType2D4NGauss9Ip::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType2D4NGauss9Ip" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType2D4NGauss9Ip" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D4NGauss9Ip)
-#endif // ENABLE_SERIALIZATION

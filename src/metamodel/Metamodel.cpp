@@ -1,13 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "metamodel/MinMaxTransformation.h"
 #include "metamodel/ZeroMeanUnitVarianceTransformation.h"
 #include "metamodel/Metamodel.h"
@@ -34,8 +24,8 @@ void NuTo::Metamodel::AppendMinMaxTransformationInput(int rCoordinate, double rM
 
 void NuTo::Metamodel::AppendMinMaxTransformationInput(double rMin, double rMax)
 {
-    for (int count=0; count<mSupportPoints.GetDimInput(); count++)
-		AppendMinMaxTransformationInput(count, rMin, rMax);
+    for (int count = 0; count < mSupportPoints.GetDimInput(); count++)
+        AppendMinMaxTransformationInput(count, rMin, rMax);
 }
 
 void NuTo::Metamodel::AppendMinMaxTransformationOutput(int rCoordinate, double rMin, double rMax)
@@ -51,8 +41,8 @@ void NuTo::Metamodel::AppendMinMaxTransformationOutput(int rCoordinate, double r
 
 void NuTo::Metamodel::AppendMinMaxTransformationOutput(double rMin, double rMax)
 {
-    for (int count=0; count<mSupportPoints.GetDimOutput(); count++)
-		AppendMinMaxTransformationOutput(count, rMin, rMax);
+    for (int count = 0; count < mSupportPoints.GetDimOutput(); count++)
+        AppendMinMaxTransformationOutput(count, rMin, rMax);
 }
 
 // add zero mean, unit variance transformation to inputs
@@ -60,17 +50,17 @@ void NuTo::Metamodel::AppendZeroMeanUnitVarianceTransformationInput()
 {
     for (int count = 0; count < this->mSupportPoints.GetDimInput(); count++)
     {
-		this->AppendZeroMeanUnitVarianceTransformationInput(count);
+        this->AppendZeroMeanUnitVarianceTransformationInput(count);
     }
 }
 void NuTo::Metamodel::AppendZeroMeanUnitVarianceTransformationInput(int rCoordinate)
 {
-    if( (rCoordinate < 0) || (rCoordinate >= this->mSupportPoints.GetDimInput()) )
+    if ((rCoordinate < 0) || (rCoordinate >= this->mSupportPoints.GetDimInput()))
     {
 	    throw Exception("Metamodel::AppendMinMaxTransformationOutput - coordinate is out of range (larger than dimInput).");
     }
-	ZeroMeanUnitVarianceTransformation *newTransformation = new ZeroMeanUnitVarianceTransformation(rCoordinate);
-	mSupportPoints.AppendTransformationInput(newTransformation);
+    ZeroMeanUnitVarianceTransformation* newTransformation = new ZeroMeanUnitVarianceTransformation(rCoordinate);
+    mSupportPoints.AppendTransformationInput(newTransformation);
 }
 
 // add zero mean, unit variance transformation to outputs
@@ -78,30 +68,30 @@ void NuTo::Metamodel::AppendZeroMeanUnitVarianceTransformationOutput()
 {
     for (int count = 0; count < this->mSupportPoints.GetDimOutput(); count++)
     {
-		this->AppendZeroMeanUnitVarianceTransformationOutput(count);
+        this->AppendZeroMeanUnitVarianceTransformationOutput(count);
     }
 }
 void NuTo::Metamodel::AppendZeroMeanUnitVarianceTransformationOutput(int rCoordinate)
 {
-    if( (rCoordinate < 0) || (rCoordinate >= this->mSupportPoints.GetDimOutput()) )
+    if ((rCoordinate < 0) || (rCoordinate >= this->mSupportPoints.GetDimOutput()))
     {
 	    throw Exception("Metamodel::AppendMinMaxTransformationOutput - coordinate is out of range (larger than dimOutput).");
     }
-	ZeroMeanUnitVarianceTransformation *newTransformation = new ZeroMeanUnitVarianceTransformation(rCoordinate);
-	mSupportPoints.AppendTransformationOutput(newTransformation);
+    ZeroMeanUnitVarianceTransformation* newTransformation = new ZeroMeanUnitVarianceTransformation(rCoordinate);
+    mSupportPoints.AppendTransformationOutput(newTransformation);
 }
 
-Eigen::MatrixXd NuTo::Metamodel::GetOriginalSupportPointsInput()const
+Eigen::MatrixXd NuTo::Metamodel::GetOriginalSupportPointsInput() const
 {
     return mSupportPoints.GetOrigSupportPointsInput();
 }
 
-Eigen::MatrixXd NuTo::Metamodel::GetOriginalSupportPointsOutput()const
+Eigen::MatrixXd NuTo::Metamodel::GetOriginalSupportPointsOutput() const
 {
     return mSupportPoints.GetOrigSupportPointsOutput();
 }
 
-Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsInput()const
+Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsInput() const
 {
 	if (!mSupportPoints.IsTransformationBuild())
 	    throw Exception("Metamodel::GetTransformedSupportPoints - build the transformation first.");
@@ -109,7 +99,7 @@ Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsInput()const
 	return mSupportPoints.GetTransformedSupportPointsInput();
 }
 
-Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsOutput()const
+Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsOutput() const
 {
 	if (!mSupportPoints.IsTransformationBuild())
 	    throw Exception("Metamodel::GetTransformedSupportPoints - build the transformation first.");
@@ -117,7 +107,8 @@ Eigen::MatrixXd NuTo::Metamodel::GetTransformedSupportPointsOutput()const
 	return mSupportPoints.GetTransformedSupportPointsOutput();
 }
 
-void NuTo::Metamodel::SetSupportPoints(int rDimInput, int rDimOutput, Eigen::MatrixXd rInputCoordinates, Eigen::MatrixXd rOutputCoordinates)
+void NuTo::Metamodel::SetSupportPoints(int rDimInput, int rDimOutput, Eigen::MatrixXd rInputCoordinates,
+                                       Eigen::MatrixXd rOutputCoordinates)
 {
     if (rDimInput!=rInputCoordinates.rows())
 	    throw Exception("Metamodel::SetSupportPoints - dimension of input  must be equal to number of rows in the input matrix.");
@@ -133,8 +124,8 @@ void NuTo::Metamodel::SetSupportPoints(int rDimInput, int rDimOutput, Eigen::Mat
 
 void NuTo::Metamodel::BuildTransformation()
 {
-	if (!mSupportPoints.IsTransformationBuild())
-		mSupportPoints.BuildTransformation();
+    if (!mSupportPoints.IsTransformationBuild())
+        mSupportPoints.BuildTransformation();
 }
 
 void NuTo::Metamodel::InitRandomNumberGenerator(int rSeed)
@@ -144,40 +135,43 @@ void NuTo::Metamodel::InitRandomNumberGenerator(int rSeed)
 
 double NuTo::Metamodel::RandomDouble()
 {
-    return std::uniform_real_distribution<double>(0.0, 1.0)(mRandomNumberGenerator); // interval [0, 1)  ( equals dSFMT close_open)
-//    or
-//    std::uniform_real_distribution<double> distr(0.0, 1.0); // interval [0, 1)  ( equals dSFMT close_open)
-//    return distr(mRandomNumberGenerator);
+    return std::uniform_real_distribution<double>(0.0, 1.0)(
+            mRandomNumberGenerator); // interval [0, 1)  ( equals dSFMT close_open)
+    //    or
+    //    std::uniform_real_distribution<double> distr(0.0, 1.0); // interval [0, 1)  ( equals dSFMT close_open)
+    //    return distr(mRandomNumberGenerator);
 }
 
-void NuTo::Metamodel::Solve(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const
+void NuTo::Metamodel::Solve(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const
 {
-    //apply transformation of inputs
+    // apply transformation of inputs
     Eigen::MatrixXd rInputCoordinatesTransformed = rInputCoordinates;
     mSupportPoints.TransformForwardInput(rInputCoordinatesTransformed);
 
-    //solve the submodule
+    // solve the submodule
     SolveTransformed(rInputCoordinatesTransformed, rOutputCoordinates);
-    
-    //apply transformation of outputs
+
+    // apply transformation of outputs
     mSupportPoints.TransformForwardOutput(rOutputCoordinates);
 }
 
-void NuTo::Metamodel::SolveConfidenceInterval(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
-                             Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax)const
+void NuTo::Metamodel::SolveConfidenceInterval(const Eigen::MatrixXd& rInputCoordinates,
+                                              Eigen::MatrixXd& rOutputCoordinates,
+                                              Eigen::MatrixXd& rOutputCoordinatesMin,
+                                              Eigen::MatrixXd& rOutputCoordinatesMax) const
 {
-    //apply transformation of inputs
+    // apply transformation of inputs
     Eigen::MatrixXd rInputCoordinatesTransformed = rInputCoordinates;
     mSupportPoints.TransformForwardInput(rInputCoordinatesTransformed);
-    
-    //solve the submodule
-    SolveConfidenceIntervalTransformed(rInputCoordinatesTransformed, rOutputCoordinates, rOutputCoordinatesMin, rOutputCoordinatesMax);
-    
-    //apply transformation of outputs
+
+    // solve the submodule
+    SolveConfidenceIntervalTransformed(rInputCoordinatesTransformed, rOutputCoordinates, rOutputCoordinatesMin,
+                                       rOutputCoordinatesMax);
+
+    // apply transformation of outputs
     mSupportPoints.TransformForwardOutput(rOutputCoordinates);
     mSupportPoints.TransformForwardOutput(rOutputCoordinatesMin);
     mSupportPoints.TransformForwardOutput(rOutputCoordinatesMax);
-    
 }
 void NuTo::Metamodel::Build()
 {
@@ -189,13 +183,13 @@ void NuTo::Metamodel::Build()
 
     if (!mSupportPoints.IsTransformationBuild())
         mSupportPoints.BuildTransformation();
-        
+
     BuildDerived();
 }
 
-void NuTo::Metamodel::Info()const
+void NuTo::Metamodel::Info() const
 {
-	mSupportPoints.Info();
+    mSupportPoints.Info();
 }
 
 // calculate the sample mean for each support point using original support point coordinates
@@ -206,21 +200,24 @@ void NuTo::Metamodel::GetOriginalSupportPointsMeanValue(Eigen::MatrixXd& rInputM
 }
 
 // calculate the sample mean for each support point using transformed support point coordinates
-void NuTo::Metamodel::GetTransformedSupportPointsMeanValue(Eigen::MatrixXd& rInputMean, Eigen::MatrixXd& rOutputMean) const
+void NuTo::Metamodel::GetTransformedSupportPointsMeanValue(Eigen::MatrixXd& rInputMean,
+                                                           Eigen::MatrixXd& rOutputMean) const
 {
     this->mSupportPoints.GetMeanValueTransformedInput(rInputMean);
     this->mSupportPoints.GetMeanValueTransformedOutput(rOutputMean);
 }
 
 // calculate the sample variance for each support point using original support point coordinates
-void NuTo::Metamodel::GetOriginalSupportPointsVariance(Eigen::MatrixXd& rInputVariance, Eigen::MatrixXd& rOutputVariance) const
+void NuTo::Metamodel::GetOriginalSupportPointsVariance(Eigen::MatrixXd& rInputVariance,
+                                                       Eigen::MatrixXd& rOutputVariance) const
 {
     this->mSupportPoints.GetVarianceOriginalInput(rInputVariance);
     this->mSupportPoints.GetVarianceOriginalOutput(rOutputVariance);
 }
 
 // calculate the sample variance for each support point using transformed support point coordinates
-void NuTo::Metamodel::GetTransformedSupportPointsVariance(Eigen::MatrixXd& rInputVariance, Eigen::MatrixXd& rOutputVariance) const
+void NuTo::Metamodel::GetTransformedSupportPointsVariance(Eigen::MatrixXd& rInputVariance,
+                                                          Eigen::MatrixXd& rOutputVariance) const
 {
     this->mSupportPoints.GetVarianceTransformedInput(rInputVariance);
     this->mSupportPoints.GetVarianceTransformedOutput(rOutputVariance);
@@ -266,26 +263,3 @@ void Metamodel::SetVerboseLevel(unsigned short verboseLevel)
 {
     mVerboseLevel = verboseLevel;
 }
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::Metamodel::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Metamodel::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Metamodel::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::Metamodel::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Metamodel::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Metamodel::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Metamodel::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Metamodel" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-       & BOOST_SERIALIZATION_NVP(mSupportPoints);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Metamodel" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Metamodel)
-#endif  // ENABLE_SERIALIZATION

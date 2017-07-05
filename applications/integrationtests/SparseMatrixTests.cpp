@@ -6,17 +6,10 @@
 
 #include "base/Timer.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <string>
-#include <fstream>
-#endif
-
 void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const Eigen::MatrixXd& rFull, double rTolerance = 1e-6)
 {
     const Eigen::MatrixXd tmp = rSparse.ConvertToFullMatrix();
-    if ((tmp-rFull).cwiseAbs().maxCoeff() > rTolerance)
+    if ((tmp - rFull).cwiseAbs().maxCoeff() > rTolerance)
     {
         std::cout << "############ SPARSE ############ \n" << tmp << std::endl;
         std::cout << "############# FULL ############# \n" << rFull << std::endl;
@@ -27,8 +20,6 @@ void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const Eigen::Mat
     {
         throw NuTo::Exception("Sparse matrix is zero...");
     }
-
-
 }
 
 void SparseMatrixVector2GeneralSymmetricTests()
@@ -41,10 +32,10 @@ void SparseMatrixVector2GeneralSymmetricTests()
     const int seedS2 = 6174;
 
 
-    const auto G1 = NuTo::SparseMatrixCSRVector2General<double>::Random(dim,dim,.5, seedG1);
-    const auto G2 = NuTo::SparseMatrixCSRVector2General<double>::Random(dim,dim,.5, seedG2);
-    const auto S1 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim,.5, seedS1);
-    const auto S2 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim,.5, seedS2);
+    const auto G1 = NuTo::SparseMatrixCSRVector2General<double>::Random(dim, dim, .5, seedG1);
+    const auto G2 = NuTo::SparseMatrixCSRVector2General<double>::Random(dim, dim, .5, seedG2);
+    const auto S1 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim, .5, seedS1);
+    const auto S2 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim, .5, seedS2);
 
     const Eigen::MatrixXd fG1 = G1.ConvertToFullMatrix();
     const Eigen::MatrixXd fG2 = G2.ConvertToFullMatrix();
@@ -55,42 +46,42 @@ void SparseMatrixVector2GeneralSymmetricTests()
      * General
      */
     timer.Reset("SparseMatrixVector2Tests:: G1 + G2");
-    ThrowIfNotEqual(G1 + G2, fG1+fG2);
+    ThrowIfNotEqual(G1 + G2, fG1 + fG2);
 
     timer.Reset("SparseMatrixVector2Tests:: G1 - G2");
-    ThrowIfNotEqual(G1 - G2, fG1-fG2);
+    ThrowIfNotEqual(G1 - G2, fG1 - fG2);
 
     timer.Reset("SparseMatrixVector2Tests:: G1 * G2");
-    ThrowIfNotEqual(G1 * G2, fG1*fG2);
+    ThrowIfNotEqual(G1 * G2, fG1 * fG2);
 
     timer.Reset("SparseMatrixVector2Tests:: G1 * 42");
-    ThrowIfNotEqual(G1 * 42, fG1*42);
+    ThrowIfNotEqual(G1 * 42, fG1 * 42);
 
     timer.Reset("SparseMatrixVector2Tests:: G1.AddScal(G2,2)");
     auto tmpG = G1;
-    tmpG.AddScal(G2,2.);
-    ThrowIfNotEqual(tmpG, fG1+fG2*2);
+    tmpG.AddScal(G2, 2.);
+    ThrowIfNotEqual(tmpG, fG1 + fG2 * 2);
 
     /*
      * Symmetric
      */
 
     timer.Reset("SparseMatrixVector2Tests:: S1 + S2");
-    ThrowIfNotEqual(S1 + S2, fS1+fS2);
+    ThrowIfNotEqual(S1 + S2, fS1 + fS2);
 
     timer.Reset("SparseMatrixVector2Tests:: S1 - S2");
-    ThrowIfNotEqual(S1 - S2, fS1-fS2);
+    ThrowIfNotEqual(S1 - S2, fS1 - fS2);
 
-//    timer.Reset("SparseMatrixVector2Tests:: S1 * S2");
-//    ThrowIfNotEqual(S1 * S2, fS1*fS2);
+    //    timer.Reset("SparseMatrixVector2Tests:: S1 * S2");
+    //    ThrowIfNotEqual(S1 * S2, fS1*fS2);
 
     timer.Reset("SparseMatrixVector2Tests:: S1 * 42");
-    ThrowIfNotEqual(S1 * 42, fS1*42);
+    ThrowIfNotEqual(S1 * 42, fS1 * 42);
 
     timer.Reset("SparseMatrixVector2Tests:: S1.AddScal(S2,2)");
     auto tmpS = S1;
-    tmpS.AddScal(S2,2.);
-    ThrowIfNotEqual(tmpS, fS1+fS2*2);
+    tmpS.AddScal(S2, 2.);
+    ThrowIfNotEqual(tmpS, fS1 + fS2 * 2);
 
     /*
      * mixed
@@ -110,12 +101,8 @@ void SparseMatrixVector2GeneralSymmetricTests()
 
     timer.Reset("SparseMatrixVector2Tests:: G1.AddScal(S,2)");
     tmpG = G1;
-    tmpG.AddScal(S1,2.);
-    ThrowIfNotEqual(tmpG, fG1+fS1*2);
-
-
-
-
+    tmpG.AddScal(S1, 2.);
+    ThrowIfNotEqual(tmpG, fG1 + fS1 * 2);
 }
 
 void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity, double rScalar)
@@ -152,8 +139,8 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
 
         timer.Reset("SparseMatrixVector2Tests - General::operator");
 
-        H2 += JJ*rScalar;
-        H2 -= (Cm.Transpose() * KJ + JK * Cm)*rScalar;
+        H2 += JJ * rScalar;
+        H2 -= (Cm.Transpose() * KJ + JK * Cm) * rScalar;
         H2 += (Cm.Transpose() * KK * Cm) * rScalar;
 
 
@@ -161,7 +148,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         // compare
         auto diff = H2 - bH1.AsSparseMatrixCSRVector2General();
         double tolerance = 1.e-8;
-        double diffMaxMin = diff.Max()-diff.Min();
+        double diffMaxMin = diff.Max() - diff.Min();
         if (diffMaxMin > tolerance)
         {
             std::cout << diffMaxMin << std::endl;
@@ -181,7 +168,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         R2 += Cm.Transpose() * RK;
 
         Eigen::VectorXd diffVec = R1 - R2;
-        double diffVecMaxMin = diffVec.maxCoeff()-diffVec.minCoeff();
+        double diffVecMaxMin = diffVec.maxCoeff() - diffVec.minCoeff();
         if (diffVecMaxMin > tolerance)
         {
             std::cout << diffVecMaxMin << std::endl;
@@ -228,8 +215,8 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
 
         timer.Reset("SparseMatrixVector2Tests - Symmetric::operator");
 
-        H2 += JJ*rScalar;
-        H2 -= (Cm.Transpose() * KJ + JK * Cm)*rScalar;
+        H2 += JJ * rScalar;
+        H2 -= (Cm.Transpose() * KJ + JK * Cm) * rScalar;
         H2 += (Cm.Transpose() * KKg * Cm) * rScalar;
 
 
@@ -237,7 +224,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         // compare
         auto diff = H2 - bH1.AsSparseMatrixCSRVector2Symmetric();
         double tolerance = 1.e-8;
-        double diffMaxMin = diff.Max()-diff.Min();
+        double diffMaxMin = diff.Max() - diff.Min();
         if (diffMaxMin > tolerance)
         {
             std::cout << diffMaxMin << std::endl;
@@ -245,27 +232,24 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
             throw NuTo::Exception("[SparseMatrixVector2Tests - Symmetric] ApplyCMatrix incorrect.");
         }
     }
-
-
-
-
 }
 
 
 void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
 {
     NuTo::Timer timer("GaussEliminationTests::Init");
-    NuTo::SparseMatrixCSRVector2General<double> cMatVector2 = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDepDofs, rNumActDofs + rNumDepDofs, rDensity);
+    NuTo::SparseMatrixCSRVector2General<double> cMatVector2 =
+            NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDepDofs, rNumActDofs + rNumDepDofs, rDensity);
     timer.Reset("GaussEliminationTests::Init");
     NuTo::SparseMatrixCSRVector2General<double> RHSVector2(rNumDepDofs, rNumDepDofs);
     for (int i = 0; i < rNumDepDofs; ++i)
-        RHSVector2.AddValue(i,i,1.);
+        RHSVector2.AddValue(i, i, 1.);
 
     NuTo::SparseMatrixCSRVector2<double>& cMatVector2ref = cMatVector2;
     NuTo::SparseMatrixCSRVector2<double>& RHSVector2ref = RHSVector2;
 
-    NuTo::SparseMatrixCSRGeneral<double>        cMat(cMatVector2);
-    NuTo::SparseMatrixCSRGeneral<double>        RHS(RHSVector2);
+    NuTo::SparseMatrixCSRGeneral<double> cMat(cMatVector2);
+    NuTo::SparseMatrixCSRGeneral<double> RHS(RHSVector2);
 
 
     std::vector<int> mappingInitialToNewOrderingVector2;
@@ -280,8 +264,6 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     cMatVector2ref.Gauss(RHSVector2ref, mappingNewToInitialOrderingVector2, mappingInitialToNewOrderingVector2);
 
     timer.Reset("GaussEliminationTests::checks");
-
-
 
 
     // check results
@@ -305,9 +287,9 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
         throw NuTo::Exception("[GaussEliminationTests] wrong diffRHS");
     }
 
-    std::vector<int> tmpMapping(rNumDepDofs+rNumActDofs);
-    std::iota(tmpMapping.begin()              , tmpMapping.begin() + rNumDepDofs, rNumActDofs);
-    std::iota(tmpMapping.begin() + rNumDepDofs, tmpMapping.end()                , 0);
+    std::vector<int> tmpMapping(rNumDepDofs + rNumActDofs);
+    std::iota(tmpMapping.begin(), tmpMapping.begin() + rNumDepDofs, rNumActDofs);
+    std::iota(tmpMapping.begin() + rNumDepDofs, tmpMapping.end(), 0);
 
     timer.Reset("GaussEliminationTests::ReorderColumns-CSRGeneral");
 
@@ -326,8 +308,6 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
         std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
         throw NuTo::Exception("[GaussEliminationTests] wrong cMat after renumbering.");
     }
-
-
 
 
     timer.Reset("GaussEliminationTests::RemoveLastColumns-CSRGeneral");
@@ -438,7 +418,7 @@ int main()
         SparseMatrixVector2GeneralSymmetricTests();
         SparseMatrixVector2Tests(10, 5, 1, 1);
 
-//        SparseMatrixVector2Tests(1e6, 1e3, 0.0001, 2);
+        //        SparseMatrixVector2Tests(1e6, 1e3, 0.0001, 2);
 
         GaussEliminationTests(12, 3, 1);
         SerializationTest();

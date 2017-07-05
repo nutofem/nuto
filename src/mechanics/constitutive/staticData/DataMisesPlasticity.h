@@ -18,6 +18,7 @@ template <int TDim>
 class DataMisesPlasticity
 {
     friend class MisesPlasticityEngineeringStress;
+
 public:
     DataMisesPlasticity();
 
@@ -67,7 +68,7 @@ private:
     //! @brief defines the serialization of this class
     //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeDataMisesPlasticity(TStream &rStream);
+    void SerializeDataMisesPlasticity(TStream& rStream);
 };
 
 } // namespace StaticData

@@ -22,100 +22,93 @@ class EventListHandler;
 class Event
 {
 public:
+    typedef std::vector<Event*> LocalEvents;
 
-	typedef std::vector<Event*> LocalEvents;
+    //! @brief ... statistics
+    enum EventType
+    {
+        SphereCollision,
+        WallCollision,
+        WallTransfer
+    };
 
-	//! @brief ... statistics
-	enum EventType {
-		SphereCollision,
-		WallCollision,
-		WallTransfer
-	};
+    //! @brief ... identifier for null events
+    static const double EVENTNULL;
 
-	//! @brief ... identifier for null events
-	static const double EVENTNULL;
-
-	//! @brief ... constructor, initialized with the two CollidableBase objects  involved in this collision
-	//! @param rTime ... event time
-	//! @param rFirst ... first CollidableBase involved
-	//! @param rSecond ... second CollidableBase involved
-	Event(double rTime, CollidableBase* rFirst, CollidableBase* rSecond, int rType);
+    //! @brief ... constructor, initialized with the two CollidableBase objects  involved in this collision
+    //! @param rTime ... event time
+    //! @param rFirst ... first CollidableBase involved
+    //! @param rSecond ... second CollidableBase involved
+    Event(double rTime, CollidableBase* rFirst, CollidableBase* rSecond, int rType);
 
     //! @brief ... copy constructor
     Event(const Event& rEvent) = default;
 
 #ifndef SWIG
-	Event& operator=(const NuTo::Event&) = default;
+    Event& operator=(const NuTo::Event&) = default;
     Event(Event&& rEvent) = default;
     Event& operator=(Event&&) = default;
 #endif
 
-	//! @brief ... important operator for the event list sorting
-	//! ... sort priority: time >> collidables
-	bool operator < (const Event& rOther) const;
+    //! @brief ... important operator for the event list sorting
+    //! ... sort priority: time >> collidables
+    bool operator<(const Event& rOther) const;
 
-	//! @brief ... determines, whether two events are equal
-	bool operator == (Event const& rRhs) const;
+    //! @brief ... determines, whether two events are equal
+    bool operator==(Event const& rRhs) const;
 
-	//! @brief ... determines, whether two events are unequal
-	bool operator != (Event const& rRhs) const;
+    //! @brief ... determines, whether two events are unequal
+    bool operator!=(Event const& rRhs) const;
 
 
+    //! @brief ... destructor
+    //! removes itself (this) from the local event lists of both collidables
+    ~Event();
 
-	//! @brief ... destructor
-	//! removes itself (this) from the local event lists of both collidables
-	~Event();
+    //! @brief ... getter for mTime
+    //! @return ... time of event
+    double GetTime() const;
 
-	//! @brief ... getter for mTime
-	//! @return ... time of event
-	double GetTime() const;
+    //! @brief ... creates new events for mFirst and mSecond
+    //! (--> automatically added to local event lists, see constructor)
+    //! stores them to the global event list
+    //! @param rEvents ... global event list
+    void AddNewEvents(EventListHandler& rEvents) const;
 
-	//! @brief ... creates new events for mFirst and mSecond
-	//! (--> automatically added to local event lists, see constructor)
-	//! stores them to the global event list
-	//! @param rEvents ... global event list
-	void AddNewEvents(EventListHandler& rEvents) const;
+    //! @brief ... removes all events in the local event lists of rEvent
+    //! @param rEvents ... global event list
+    void EraseOldEvents(EventListHandler& rEvents) const;
 
-	//! @brief ... removes all events in the local event lists of rEvent
-	//! @param rEvents ... global event list
-	void EraseOldEvents(EventListHandler& rEvents) const;
+    //! @brief ... performs the collision of mFirst vs. mSecond
+    void PerformCollision() const;
 
-	//! @brief ... performs the collision of mFirst vs. mSecond
-	void PerformCollision() const;
+    //! @brief adds itself (this) to the local event lists of both collidables
+    void AddLocalEvent();
 
-	//! @brief adds itself (this) to the local event lists of both collidables
-	void AddLocalEvent();
-
-	//! @brief ... getter for type
-	int GetType() const;
+    //! @brief ... getter for type
+    int GetType() const;
 
 protected:
+    //! @brief ... first CollidableBase involved
+    CollidableBase* mFirst;
 
-	//! @brief ... first CollidableBase involved
-	CollidableBase* mFirst;
-
-	//! @brief ... second CollidableBase involved
-	CollidableBase* mSecond;
+    //! @brief ... second CollidableBase involved
+    CollidableBase* mSecond;
 
 private:
+    //! @brief ... event time
+    double mTime;
 
-	//! @brief ... event time
-	double mTime;
-
-	//! @brief ... member of CollidableBase::EventType
-	int mType;
+    //! @brief ... member of CollidableBase::EventType
+    int mType;
 
 #ifndef SWIG
-	friend std::ostream& operator<<(std::ostream& rOutStream,
-			const Event& rEvent);
+    friend std::ostream& operator<<(std::ostream& rOutStream, const Event& rEvent);
 #endif
 
-	//! @brief ... output
-	//! @param rOutStream ... return argument, gets modified
-	void Print(std::ostream& rOutStream) const;
-
+    //! @brief ... output
+    //! @param rOutStream ... return argument, gets modified
+    void Print(std::ostream& rOutStream) const;
 };
 
 } /* namespace NuTo */
-
-

@@ -3,7 +3,7 @@
 #include <fstream>
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -38,7 +38,8 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     coordinate << 0.0;
     node1.Set(Node::eDof::COORDINATES, 0, coordinate);
     dTemperatureDTime << 1.0;
-    node1.Set(Node::eDof::TEMPERATURE, 1, dTemperatureDTime); // set first time derivative for internal gradient calculation
+    node1.Set(Node::eDof::TEMPERATURE, 1,
+              dTemperatureDTime); // set first time derivative for internal gradient calculation
 
     coordinate << 1.0;
     node2.Set(Node::eDof::COORDINATES, 0, coordinate);
@@ -51,7 +52,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     InterpolationType interpolationType(truss, 1);
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
     interpolationType.AddDofInterpolation(Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
-    IntegrationType1D2NGauss2Ip integrationType;
+    IntegrationType1D2NGauss integrationType(2);
 
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;
@@ -62,8 +63,10 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
 
     ConstitutiveInputMap inputMap;
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
-    outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
-    outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
+    outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
+    outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
     outputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
 
     auto area = SectionTruss::Create(1.0);
@@ -86,7 +89,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     auto blockhessian1 = outputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
     auto hessian1 = blockhessian1.Get("Temperature", "Temperature");
     Eigen::Matrix<double, 2, 2> expected_hessian1;
-    expected_hessian1 << 1.0/3.0, 1.0/6.0, 1.0/6.0, 1.0/3.0;
+    expected_hessian1 << 1.0 / 3.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 3.0;
     BOOST_CHECK_SMALL((hessian1 - expected_hessian1).norm(), 1e-15);
 
     auto blockgradient = outputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();

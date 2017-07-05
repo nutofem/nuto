@@ -7,9 +7,9 @@
 using namespace NuTo::Constitutive;
 
 void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
-        Constitutive::eInput rModiesInput)
+                                                     Constitutive::eInput rModiesInput)
 {
-    if(rModiesInput == Constitutive::eInput::NONE)
+    if (rModiesInput == Constitutive::eInput::NONE)
     {
         if (mMainLaw != nullptr)
             throw Exception(__PRETTY_FUNCTION__,
@@ -27,13 +27,13 @@ void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rCo
 }
 
 
-NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-        const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap
+NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   const NuTo::InterpolationType& rInterpolationType) const
 {
     // Get Inputs for output returning constitutive law
     ConstitutiveInputMap mainLawConstitutiveInputMap(
-        mMainLaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType));
+            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType));
 
     // Get Inputs for input modifying constitutive laws
     ConstitutiveInputMap sublawsConstitutiveInputMap;
@@ -47,8 +47,8 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(
         // INFO regarding the template function call: The dimension can be chosen freely, because the created object is
         // never used. Should be 1 because of the lowest construction costs.  Alternative would be to copy the called
         // function and replace all objects with nullptr. But then you have to maintain 2 nearly identical functions.
-        ConstitutiveOutputMap sublawOutputMap = GetSublawOutputMap<1>(mainLawConstitutiveInputMap,
-                rConstitutiveOutput, i);
+        ConstitutiveOutputMap sublawOutputMap =
+                GetSublawOutputMap<1>(mainLawConstitutiveInputMap, rConstitutiveOutput, i);
 
         // Don't merge the sublaw inputs directly into the main laws input map!  ---> When more than one sublaw is
         // attached the inputs of the first might effect the following laws outputs - have a look at the line above!
@@ -64,13 +64,14 @@ NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputExplicit::GetType() con
 }
 
 
-NuTo::Constitutive::eOutput NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(
-        NuTo::Constitutive::eOutput rParameter, NuTo::Constitutive::eOutput rMainDerivative) const
+NuTo::Constitutive::eOutput
+NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::eOutput rParameter,
+                                                     NuTo::Constitutive::eOutput rMainDerivative) const
 {
     switch (rParameter)
     {
     case Constitutive::eOutput::ENGINEERING_STRAIN:
-        switch(rMainDerivative)
+        switch (rMainDerivative)
         {
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
             return Constitutive::eOutput::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY;
@@ -95,9 +96,10 @@ NuTo::Constitutive::eOutput NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw
 
 
 template <int TDim>
-NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
-        const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
-        int rSublawIndex) const
+NuTo::ConstitutiveOutputMap
+NuTo::AdditiveInputExplicit::GetSublawOutputMap(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
+                                                const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                                int rSublawIndex) const
 {
     ConstitutiveOutputMap modifiedOutputMap;
 
@@ -108,17 +110,17 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
         {
         case Constitutive::eOutput::SHRINKAGE_STRAIN_VISUALIZE:
         case Constitutive::eOutput::THERMAL_STRAIN:
-            modifiedOutputMap.emplace(itMainLawOutput.first,itMainLawOutput.second->clone());
+            modifiedOutputMap.emplace(itMainLawOutput.first, itMainLawOutput.second->clone());
             break;
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
-            if(mInputsToModify[rSublawIndex] == Constitutive::eInput::ENGINEERING_STRAIN)
+            if (mInputsToModify[rSublawIndex] == Constitutive::eInput::ENGINEERING_STRAIN)
             {
                 Constitutive::eOutput derivativeOutputEnum =
-                    GetDerivativeEnumSublaw(Constitutive::eOutput::ENGINEERING_STRAIN, itMainLawOutput.first);
+                        GetDerivativeEnumSublaw(Constitutive::eOutput::ENGINEERING_STRAIN, itMainLawOutput.first);
                 modifiedOutputMap.emplace(derivativeOutputEnum,
-                    ConstitutiveIOBase::makeConstitutiveIO<TDim>(derivativeOutputEnum));
+                                          ConstitutiveIOBase::makeConstitutiveIO<TDim>(derivativeOutputEnum));
             }
             break;
         case Constitutive::eOutput::UPDATE_STATIC_DATA:
@@ -139,8 +141,9 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
             switch (itMainLawInput.first)
             {
             case Constitutive::eInput::ENGINEERING_STRAIN:
-                modifiedOutputMap.emplace(Constitutive::eOutput::ENGINEERING_STRAIN,
-                    ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::eOutput::ENGINEERING_STRAIN));
+                modifiedOutputMap.emplace(
+                        Constitutive::eOutput::ENGINEERING_STRAIN,
+                        ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::eOutput::ENGINEERING_STRAIN));
 
                 break;
             default:
@@ -154,13 +157,15 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
     return modifiedOutputMap;
 }
 
-template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<1>(
-        const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
-        int rSublawIndex) const;
-template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<2>(
-        const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
-        int rSublawIndex) const;
-template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<3>(
-        const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
-        int rSublawIndex) const;
-
+template NuTo::ConstitutiveOutputMap
+NuTo::AdditiveInputExplicit::GetSublawOutputMap<1>(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
+                                                   const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                                   int rSublawIndex) const;
+template NuTo::ConstitutiveOutputMap
+NuTo::AdditiveInputExplicit::GetSublawOutputMap<2>(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
+                                                   const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                                   int rSublawIndex) const;
+template NuTo::ConstitutiveOutputMap
+NuTo::AdditiveInputExplicit::GetSublawOutputMap<3>(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
+                                                   const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                                   int rSublawIndex) const;

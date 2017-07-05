@@ -43,7 +43,6 @@ BOOST_AUTO_TEST_CASE(AccessParameters)
 
     BOOST_CHECK_EQUAL(lawBase.GetParameterDouble(eConstitutiveParameter::ENDURANCE_STRESS), 42.);
     BOOST_CHECK_EQUAL(lawBase.GetParameterDouble(eConstitutiveParameter::FATIGUE_PARAMETER), .1337);
-
 }
 
 
@@ -66,9 +65,8 @@ NuTo::GradientDamageFatigueEngineeringStress GetLaw()
 
 double GetK0(const ConstitutiveBase& rLaw)
 {
-    return rLaw.GetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH)
-         / rLaw.GetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS);
-
+    return rLaw.GetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH) /
+           rLaw.GetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS);
 }
 
 template <int TDim>
@@ -89,30 +87,29 @@ ConstitutiveInputMap GetInputMap(EngineeringStrain<TDim> rStrain, double rEeq)
 BOOST_AUTO_TEST_CASE(StaticLoading)
 {
     auto law = GetLaw();
-    IPConstitutiveLaw<GradientDamageFatigueEngineeringStress> iplaw(law, Eigen::Vector2d(0.,0.));
+    IPConstitutiveLaw<GradientDamageFatigueEngineeringStress> iplaw(law, Eigen::Vector2d(0., 0.));
     auto& staticData = iplaw.GetStaticData();
-    staticData.SetData(Eigen::Vector2d(0.,0.));
+    staticData.SetData(Eigen::Vector2d(0., 0.));
 
     double k0 = GetK0(law);
 
-    auto input = GetInputMap<2>({0.5*k0, 0, 0}, 0.5*k0);
+    auto input = GetInputMap<2>({0.5 * k0, 0, 0}, 0.5 * k0);
     NuTo::Test::ConstitutiveTangentTester<2> tester(iplaw, 1.e-8, 1.e-6);
 
-//    BOOST_CHECK(tester.CheckTangent(input,
-//                                    eInput::ENGINEERING_STRAIN,
-//                                    eOutput::ENGINEERING_STRESS,
-//                                    eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
-//
-//    BOOST_CHECK(tester.CheckTangent(input,
-//                                    eInput::NONLOCAL_EQ_STRAIN,
-//                                    eOutput::ENGINEERING_STRESS,
-//                                    eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN));
-//
-//    BOOST_CHECK(tester.CheckTangent(input,
-//                                    eInput::ENGINEERING_STRAIN,
-//                                    eOutput::LOCAL_EQ_STRAIN,
-//                                    eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN));
-
+    //    BOOST_CHECK(tester.CheckTangent(input,
+    //                                    eInput::ENGINEERING_STRAIN,
+    //                                    eOutput::ENGINEERING_STRESS,
+    //                                    eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+    //
+    //    BOOST_CHECK(tester.CheckTangent(input,
+    //                                    eInput::NONLOCAL_EQ_STRAIN,
+    //                                    eOutput::ENGINEERING_STRESS,
+    //                                    eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN));
+    //
+    //    BOOST_CHECK(tester.CheckTangent(input,
+    //                                    eInput::ENGINEERING_STRAIN,
+    //                                    eOutput::LOCAL_EQ_STRAIN,
+    //                                    eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN));
 }
 
 } // namespace GradientDamageFatigueTest

@@ -11,8 +11,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
-NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eDof rDofType,
+                                                       NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension)
+    : Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }
@@ -51,7 +52,8 @@ Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(const Eig
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -103,7 +105,9 @@ int NuTo::Interpolation2DTriangle::CalculateNumNodes() const
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                                  int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -119,7 +123,8 @@ Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinate
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)

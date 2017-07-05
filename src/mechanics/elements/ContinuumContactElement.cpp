@@ -23,13 +23,13 @@
 
 template <int TDim>
 NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement,
-                                                             int rSurfaceId,
-                                                             const Group<ElementBase>* elementGroup,
+                                                             int rSurfaceId, const Group<ElementBase>* elementGroup,
                                                              const Group<NodeBase>* nodeGroup,
                                                              const IntegrationTypeBase& integrationType)
-    : ContinuumBoundaryElement<TDim>(rSlaveElement, integrationType, rSurfaceId), mIntegrationType(&integrationType)
+    : ContinuumBoundaryElement<TDim>(rSlaveElement, integrationType, rSurfaceId)
+    , mIntegrationType(&integrationType)
 {
-    //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
+    // since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
     for (auto node : *nodeGroup)
     {
@@ -38,11 +38,11 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
 
     // std::cout << "number of loaded nodes " << nodeGroup->GetNumMembers() << std::endl;
 
-    //loop over all elements
+    // loop over all elements
     Eigen::VectorXi surfaceNodeIndices;
     std::vector<const NodeBase*> surfaceNodes;
 
-    for (auto &itElement : *elementGroup)
+    for (auto& itElement : *elementGroup)
     {
         ElementBase* base = itElement.second;
         //check if plane element
@@ -80,21 +80,22 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
     }
 }
 
-template<int TDim>
-void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                                                  EvaluateDataContinuumBoundary<TDim> &rData,
-                                                                  int rTheIP,
-                                                                  const ConstitutiveInputMap& constitutiveInput,
-                                                                  const ConstitutiveOutputMap& constitutiveOutput) const
+template <int TDim>
+void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInput,
+        const ConstitutiveOutputMap& constitutiveOutput) const
 {
-    rData.mDetJxWeightIPxSection = this->CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
+    rData.mDetJxWeightIPxSection =
+            this->CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
 
     for (auto it : rElementOutput)
     {
         switch (it.first)
         {
         case Element::eOutput::GAP_MATRIX_MORTAR:
-            CalculateElementOutputGapMatrixMortar(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
+            CalculateElementOutputGapMatrixMortar(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput,
+                                                  rTheIP);
             break;
         case Element::eOutput::INTERNAL_GRADIENT:
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
@@ -116,17 +117,15 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(std::map<Eleme
     }
 }
 
-template<int TDim>
+template <int TDim>
 void NuTo::ContinuumContactElement<TDim>::ProjectIntegrationPointOnMaster()
 {
-
 }
 
-template<int TDim>
-void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double>& rGapMatrix,
-                                                                                EvaluateDataContinuumBoundary<TDim> &rData,
-                                                                                const ConstitutiveOutputMap& constitutiveOutput,
-                                                                                int rTheIP) const
+template <int TDim>
+void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
+        BlockFullMatrix<double>& rGapMatrix, EvaluateDataContinuumBoundary<TDim>& rData,
+        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
 {
     // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
 
@@ -136,7 +135,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
     // ===> Get the starting point for iteration
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::VectorXd parameterMin;
-    for(auto &it : mElementsMaster)
+    for (auto& it : mElementsMaster)
     {
         const auto* elementPtr = it.first;
         int surfaceId = it.second;
@@ -144,13 +143,15 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         // ===> Get the position on the master curve/surface
         // ===> Compare and set to minimum if though
 
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
+        const InterpolationBase& interpolationTypeCoords =
+                elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
         Eigen::VectorXd referenceCoordinates(1);
         referenceCoordinates(0);
-        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(referenceCoordinates, surfaceId, elementPtr->GetKnots());
+        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinatesIGA(
+                referenceCoordinates, surfaceId, elementPtr->GetKnots());
         Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
         double distance = (coordinatesMaster - coordinatedIPSlave).norm();
-        if(minDistance < distance)
+        if (minDistance < distance)
         {
             minDistance = distance;
             parameterMin = parameter;
@@ -160,7 +161,8 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
     // ===> Newton for projection (get \xi^m_*, n^m_*)
 
 
-    // ===> Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*), n^*) d\Gamma
+    // ===> Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s),
+    // ShapeFunctionsMaster(\xi^*), n^*) d\Gamma
 }
 
 template class NuTo::ContinuumContactElement<1>;

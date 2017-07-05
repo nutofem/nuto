@@ -1,4 +1,4 @@
-#include <limits>       // std::numeric_limits
+#include <limits> // std::numeric_limits
 #include "math/EigenSolverArpack.h"
 #include "math/EigenSolverArpackEnum.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -11,32 +11,29 @@
 NuTo::EigenSolverArpack::EigenSolverArpack()
 {
 #ifdef HAVE_ARPACK
-	mDriver  = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
-	mWhich = NuTo::EIGEN_SOLVER_ARPACK::eWhich::LM;
-    mTolerance = std::numeric_limits<double>::epsilon();//machine precision
-    mSigmaR = 0.; //real shift used for spectral transformations
-    mSigmaI = 0.; //imag shift used for spectral transformations
+    mDriver = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
+    mWhich = NuTo::EIGEN_SOLVER_ARPACK::eWhich::LM;
+    mTolerance = std::numeric_limits<double>::epsilon(); // machine precision
+    mSigmaR = 0.; // real shift used for spectral transformations
+    mSigmaI = 0.; // imag shift used for spectral transformations
     mShowTime = true;
 #else
     throw Exception(__PRETTY_FUNCTION__, "NuTo wasn't compiled with ARPACK.");
 #endif
 }
 
-void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
-                                    const NuTo::SparseMatrix<double> *rM,
-                                    int rNumEigenValues,
-                                    Eigen::MatrixXd &rEigenValues,
-                                    Eigen::MatrixXd &rEigenVectors)
+void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const NuTo::SparseMatrix<double>* rM,
+                                    int rNumEigenValues, Eigen::MatrixXd& rEigenValues, Eigen::MatrixXd& rEigenVectors)
 {
 #ifdef HAVE_ARPACK
     NuTo::Timer(__FUNCTION__, GetShowTime());
-    char whichEigenValue[3];  //LA SA SM BE
+    char whichEigenValue[3]; // LA SA SM BE
 
     if (rK.IsSymmetric())
     {
-	    //use dsaupd_ and dseupd_
-    	switch (mWhich)
-		{
+        // use dsaupd_ and dseupd_
+        switch (mWhich)
+        {
         case NuTo::EIGEN_SOLVER_ARPACK::eWhich::LA:
 			whichEigenValue[0] = 'L';
 			whichEigenValue[1] = 'A';
@@ -95,8 +92,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 		}
     }
 
-    int ido=0; //return value for the reverse communication loop
-    char bmat; //standard 'I' or general 'G' eigenvalue problem
+    int ido = 0; // return value for the reverse communication loop
+    char bmat; // standard 'I' or general 'G' eigenvalue problem
     int n = rK.GetNumRows();
     if (n!=rK.GetNumColumns())
     	throw Exception(__PRETTY_FUNCTION__, "only square matrices are supported");
@@ -105,30 +102,31 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
     if (rNumEigenValues>=n-1)
     	throw Exception(__PRETTY_FUNCTION__, "the number of extracted eigenvalues must be less smaller than n-1 (n:dimension of matrix)");
 
-    double tol_err = mTolerance; //solution tolerance (stopping criterion)
-    std::vector<double> resid(n);  //residual vector
-    int ncv=std::min(2*nev+1, n);    //number of Arnoldi vectors used, describes the size of array v
-    //std::cout << "ncv " << ncv << " nev " << nev << std::endl;
-    std::vector<double> v(n*ncv);
-    int ldv=n; //leading dimension of v
+    double tol_err = mTolerance; // solution tolerance (stopping criterion)
+    std::vector<double> resid(n); // residual vector
+    int ncv = std::min(2 * nev + 1, n); // number of Arnoldi vectors used, describes the size of array v
+    // std::cout << "ncv " << ncv << " nev " << nev << std::endl;
+    std::vector<double> v(n * ncv);
+    int ldv = n; // leading dimension of v
 
     int iParam[11];
-    iParam[0]  = 1; //1: exact shifts  0: given by the user via reverse communication
-    iParam[1]  = 0; //not used
-    iParam[2]  = 500; //input: maximum number of Arnoldi update iterations, output: actual number used (dimension of Krylow subspace)
-    iParam[3]  = 1; //blocksize, has to be set to 1
-    iParam[4]  = 0; //number of converged Ritz values (eigenvalues) that fulfill the convergence property)
-    iParam[5]  = 0; //not used
-    //iParam[6]  = 1; // set in a following switch case mDriver
-    iParam[7]  = 0; //used as output to the user for iParam==0, gives the number of shifts the user has to provide
-    iParam[8]  = 0; //output: total number of OP*x operations (matrix * vector)
-    iParam[9]  = 0; //output: total number of B*x operations (matrix * vector)
-    iParam[10] = 0; //output: total number of reorthogonalization steps
+    iParam[0] = 1; // 1: exact shifts  0: given by the user via reverse communication
+    iParam[1] = 0; // not used
+    iParam[2] = 500; // input: maximum number of Arnoldi update iterations, output: actual number used (dimension of
+                     // Krylow subspace)
+    iParam[3] = 1; // blocksize, has to be set to 1
+    iParam[4] = 0; // number of converged Ritz values (eigenvalues) that fulfill the convergence property)
+    iParam[5] = 0; // not used
+    // iParam[6]  = 1; // set in a following switch case mDriver
+    iParam[7] = 0; // used as output to the user for iParam==0, gives the number of shifts the user has to provide
+    iParam[8] = 0; // output: total number of OP*x operations (matrix * vector)
+    iParam[9] = 0; // output: total number of B*x operations (matrix * vector)
+    iParam[10] = 0; // output: total number of reorthogonalization steps
 
-    int iPntr[14]; //output : Pointer to mark the starting locations in the WORKD and WORKL
-                   //arrays for matrices/vectors used by the Arnoldi iteration.
+    int iPntr[14]; // output : Pointer to mark the starting locations in the WORKD and WORKL
+    // arrays for matrices/vectors used by the Arnoldi iteration.
 
-    Eigen::MatrixXd workd(n,3);
+    Eigen::MatrixXd workd(n, 3);
     int lworkl;
 
     int info(0);
@@ -335,15 +333,15 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
     }
     else
     {
-    	lworkl=3*ncv*(ncv+6);
-		switch (this->mDriver)
-		{
-		case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DNDRV1:
-			bmat = 'I';
-			iParam[6] = 1; //dndrv1
-			solverRequired = false;
-			break;
-		case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DNDRV2:
+        lworkl = 3 * ncv * (ncv + 6);
+        switch (this->mDriver)
+        {
+        case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DNDRV1:
+            bmat = 'I';
+            iParam[6] = 1; // dndrv1
+            solverRequired = false;
+            break;
+        case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DNDRV2:
             bmat = 'I';
 			iParam[6] = 3; //dndrv2
 			solverRequired = true;
@@ -400,29 +398,25 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
     }
     std::vector<double> workl(lworkl);
 
-    //initialize solver (factorization of M) for all other than the regular mode
+    // initialize solver (factorization of M) for all other than the regular mode
     if (solverRequired)
     {
-    	solveMatrix->SetOneBasedIndexing();
-    	solver.Factorization(*solveMatrix);
+        solveMatrix->SetOneBasedIndexing();
+        solver.Factorization(*solveMatrix);
     }
 
     do
     {
-    	if (rK.IsSymmetric())
-    	{
-            ARPACKWRAP::dsaupd_(&ido, &bmat, &n, whichEigenValue, &nev,
-                                &tol_err, &resid[0], &ncv, &v[0], &ldv,
-                                iParam, iPntr, workd.data(), &workl[0],
-                                &lworkl, &info);
-    	}
-    	else
-    	{
-            ARPACKWRAP::dnaupd_ (&ido, &bmat, &n, whichEigenValue, &nev,
-                                 &tol_err, &resid[0], &ncv, &v[0], &ldv,
-                                 iParam, iPntr,  workd.data(), &workl[0],
-                                 &lworkl, &info);
-    	}
+        if (rK.IsSymmetric())
+        {
+            ARPACKWRAP::dsaupd_(&ido, &bmat, &n, whichEigenValue, &nev, &tol_err, &resid[0], &ncv, &v[0], &ldv, iParam,
+                                iPntr, workd.data(), &workl[0], &lworkl, &info);
+        }
+        else
+        {
+            ARPACKWRAP::dnaupd_(&ido, &bmat, &n, whichEigenValue, &nev, &tol_err, &resid[0], &ncv, &v[0], &ldv, iParam,
+                                iPntr, workd.data(), &workl[0], &lworkl, &info);
+        }
 
     	if (info!=0)
     	{
@@ -507,14 +501,31 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
         	}
         	break;
         case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV4:
-        	switch(ido)
-        	{
-        	case -1:
-        		//compute M*v = y (store temporary in pos 1
-                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0]-1]),n));
-        		//solve OP * w = y
-        		solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n), solution);
-        		Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = solution;
+            switch (ido)
+            {
+            case -1:
+                // compute M*v = y (store temporary in pos 1
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n));
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 1:
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[2] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 2:
+                // compute M*v = w
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n));
+                break;
+            case 99:
+                break;
+            default:
+                throw MathException(__PRETTY_FUNCTION__, "ido flag of dnaupd_/dsaupd_ not supported.");
+            }
             break;
         	case 1:
         		//solve OP * w = y
@@ -532,14 +543,31 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
         	}
         	break;
         case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV5:
-        	switch(ido)
-        	{
-        	case -1:
-        		//compute M*v = y (store temporary in pos 1
-                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0]-1]),n));
-        		//solve OP * w = y
-        		solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n), solution);
-        		Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = solution;
+            switch (ido)
+            {
+            case -1:
+                // compute M*v = y (store temporary in pos 1
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n));
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 1:
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[2] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 2:
+                // compute M*v = w
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n));
+                break;
+            case 99:
+                break;
+            default:
+                throw MathException(__PRETTY_FUNCTION__, "ido flag of dnaupd_/dsaupd_ not supported.");
+            }
             break;
         	case 1:
         		//solve OP * w = y
@@ -557,15 +585,36 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
         	}
         	break;
         case NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV6:
-        	switch(ido)
-        	{
-        	case -1:
-        		//compute (A+mSigmaR*M)*v = y (store temporary in pos 1
-                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0]-1]),n))
-                + rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0]-1]),n)*mSigmaR);
-        		//solve OP * w = y
-        		solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n), solution);
-        		Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1]-1]),n) = solution;
+            switch (ido)
+            {
+            case -1:
+                // compute (A+mSigmaR*M)*v = y (store temporary in pos 1
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n)) +
+                        rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n) * mSigmaR);
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 1:
+                // compute (A+mSigmaR*M)*v = y (store temporary in pos 1
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rK.operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[2] - 1]), n)) +
+                        rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n) * mSigmaR);
+                // solve OP * w = y
+                solver.Solution(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n), solution);
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) = solution;
+                break;
+            case 2:
+                // compute M*v = w
+                Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[1] - 1]), n) =
+                        rM->operator*(Eigen::Map<Eigen::VectorXd>(&(workd.data()[iPntr[0] - 1]), n));
+                break;
+            case 99:
+                break;
+            default:
+                throw MathException(__PRETTY_FUNCTION__, "ido flag of dnaupd_/dsaupd_ not supported.");
+            }
             break;
         	case 1:
         		//compute (A+mSigmaR*M)*v = y (store temporary in pos 1
@@ -588,10 +637,9 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
         default:
         	throw Exception(__PRETTY_FUNCTION__, "mode/driver not correctly implemented.");
         }
-    }
-    while (ido!=99);
+    } while (ido != 99);
 
-    if (info==0)
+    if (info == 0)
     {
     	std::vector<int> select(ncv);
     	int rVec(1); //0: don't calculate eigenvectors or 1: calculate eigenvectors
@@ -640,8 +688,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
 
 std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetLargest(const SparseMatrix<double>& rM)
 {
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigenValues;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigenVectors;
 
     if (rM.IsSymmetric())
     {
@@ -654,20 +702,20 @@ std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetLargest(const Spa
         mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
     }
     Solve(rM, nullptr, 1, eigenValues, eigenVectors);
-    return std::make_pair(eigenValues(0,0), eigenVectors.col(0));
+    return std::make_pair(eigenValues(0, 0), eigenVectors.col(0));
 }
 
 std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetSmallest(const SparseMatrix<double>& rM)
 {
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigenValues;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigenVectors;
 
     if (rM.IsSymmetric())
     {
         mDriver = EIGEN_SOLVER_ARPACK::eDriver::DSDRV2;
         mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
         Solve(rM, nullptr, 1, eigenValues, eigenVectors);
-        return std::make_pair(eigenValues(0,0), eigenVectors.col(0));
+        return std::make_pair(eigenValues(0, 0), eigenVectors.col(0));
     }
     else
     {
@@ -679,6 +727,6 @@ std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetSmallest(const Sp
         mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
 
         Solve(MTM, nullptr, 1, eigenValues, eigenVectors);
-        return std::make_pair(std::sqrt(eigenValues(0,0)), eigenVectors.col(0));
+        return std::make_pair(std::sqrt(eigenValues(0, 0)), eigenVectors.col(0));
     }
 }

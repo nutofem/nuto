@@ -4,7 +4,7 @@
 BENCHMARK(LinearElasticity, CompleteRun, runner)
 {
     std::vector<int> numElements{10, 10, 100}; // i.e. 10k Elements
-    while(runner.KeepRunningIterations(1))
+    while (runner.KeepRunningIterations(1))
     {
         NuTo::Benchmark::LinearElasticBenchmarkStructure s(numElements);
         s.SetupVisualization();

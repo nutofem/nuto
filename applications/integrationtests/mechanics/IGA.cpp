@@ -14,9 +14,6 @@
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
@@ -46,34 +43,40 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
     int numElementsX = 1;
     int numElementsY = 1;
 
-    Eigen::Vector2i degree(2,2);
+    Eigen::Vector2i degree(2, 2);
 
-    int numKnotsX = 2*(degree(0)+1) + numElementsX - 1;
-    int numKnotsY = 2*(degree(1)+1) + numElementsY - 1;
+    int numKnotsX = 2 * (degree(0) + 1) + numElementsX - 1;
+    int numKnotsY = 2 * (degree(1) + 1) + numElementsY - 1;
 
     Eigen::VectorXd knotsX(numKnotsX);
     Eigen::VectorXd knotsY(numKnotsY);
 
-    for (int i = 0; i <= degree(0); i++) knotsX(i) = 0.;
-    for (int i = degree(0) + 1; i <= degree(0) + numElementsX - 1 ; i++) knotsX(i) = knotsX(i-1) + 1./numElementsX;
-    for (int i = degree(0) + numElementsX ; i < numKnotsX; i++) knotsX(i) = 1;
+    for (int i = 0; i <= degree(0); i++)
+        knotsX(i) = 0.;
+    for (int i = degree(0) + 1; i <= degree(0) + numElementsX - 1; i++)
+        knotsX(i) = knotsX(i - 1) + 1. / numElementsX;
+    for (int i = degree(0) + numElementsX; i < numKnotsX; i++)
+        knotsX(i) = 1;
 
-    for (int i = 0; i <= degree(1); i++) knotsY(i) = 0.;
-    for (int i = degree(1) + 1; i <= degree(1) + numElementsY - 1 ; i++) knotsY(i) = knotsY(i-1) + 1./numElementsY;
-    for (int i = degree(1) + numElementsY ; i < numKnotsY; i++) knotsY(i) = 1;
+    for (int i = 0; i <= degree(1); i++)
+        knotsY(i) = 0.;
+    for (int i = degree(1) + 1; i <= degree(1) + numElementsY - 1; i++)
+        knotsY(i) = knotsY(i - 1) + 1. / numElementsY;
+    for (int i = degree(1) + numElementsY; i < numKnotsY; i++)
+        knotsY(i) = 1;
 
-    int numControlPointsX = (numKnotsX -1) - degree(0);
-    int numControlPointsY = (numKnotsY -1) - degree(1);
+    int numControlPointsX = (numKnotsX - 1) - degree(0);
+    int numControlPointsY = (numKnotsY - 1) - degree(1);
 
     Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> controlPoints(numControlPointsY, numControlPointsX);
 
-    double incrx = (Length/(numControlPointsX-1));
-    double incry = (Height/(numControlPointsY-1));
-    for(int i = 0; i < numControlPointsY; i++)
+    double incrx = (Length / (numControlPointsX - 1));
+    double incry = (Height / (numControlPointsY - 1));
+    for (int i = 0; i < numControlPointsY; i++)
     {
-        for(int j = 0; j < numControlPointsX; j++)
+        for (int j = 0; j < numControlPointsX; j++)
         {
-            controlPoints(i,j) = Eigen::Vector2d(x0 + incrx*j, y0 + incry*i);
+            controlPoints(i, j) = Eigen::Vector2d(x0 + incrx * j, y0 + incry * i);
         }
     }
 
@@ -94,20 +97,20 @@ void SolveAndVisualize(NuTo::Structure* s, std::string name)
 
     std::string resultDir = "./ResultsIGA";
     boost::filesystem::create_directory(resultDir);
-    s->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu");
-    s->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu");
+    s->ExportVtkDataFileElements(resultDir + "/Elements" + name + ".vtu");
+    s->ExportVtkDataFileNodes(resultDir + "/Nodes" + name + ".vtu");
 }
 
 BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
 {
     /** parameters **/
-    double  YoungsModulus = 20000.;
-    double  PoissonRatio = 0.3;
-    double  Height = 5.;
+    double YoungsModulus = 20000.;
+    double PoissonRatio = 0.3;
+    double Height = 5.;
     // there should be no dependency, because the pressure at the boundary is predefined
-    double  thickness = 2.123548;
-    double  Length = 10;
-    double  Stress = 10.;
+    double thickness = 2.123548;
+    double Length = 10;
+    double Stress = 10.;
 
 
     NuTo::BSplineSurface surface = buildRect2D(0, 0, Height, Length);
@@ -120,14 +123,16 @@ BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
 
     /** create constitutive law **/
     int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
-    s->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                         YoungsModulus);
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
+                                         PoissonRatio);
 
     std::set<NuTo::Node::eDof> setOfDOFS;
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    int groupNodes  = s->GroupCreate("Nodes");
+    int groupNodes = s->GroupCreate("Nodes");
     int groupElements = s->GroupCreate("Elements");
 
     surface.buildIGAStructure(*s, setOfDOFS, groupElements, groupNodes);
@@ -139,13 +144,13 @@ BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
     s->ElementTotalSetSection(mySection);
 
     /** Boundary condition **/
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
+    for (int i = 0; i < surface.GetNumControlPoints(1); i++)
     {
-        const auto& node = *s->NodeGetNodePtr(i*surface.GetNumControlPoints(0));
+        const auto& node = *s->NodeGetNodePtr(i * surface.GetNumControlPoints(0));
         s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node, {NuTo::eDirection::X}));
     }
 
-    for(int i = 0; i <  surface.GetNumControlPoints(0); i++)
+    for (int i = 0; i < surface.GetNumControlPoints(0); i++)
     {
         const auto& node = *s->NodeGetNodePtr(i);
         s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node, {NuTo::eDirection::Y}));
@@ -153,15 +158,15 @@ BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
 
     // right boundary
     int groupNumberNodesLeft = s->GroupCreate("NODES");
-    for(int i = 1; i <=  surface.GetNumControlPoints(1); i++)
+    for (int i = 1; i <= surface.GetNumControlPoints(1); i++)
     {
-        s->GroupAddNode(groupNumberNodesLeft, i*surface.GetNumControlPoints(0) - 1);
+        s->GroupAddNode(groupNumberNodesLeft, i * surface.GetNumControlPoints(0) - 1);
     }
 
     int groupNumberElementsLeft = s->GroupCreate("ELEMENTS");
-    for(int i = 1; i <= surface.GetNumIGAElements(1); i++)
+    for (int i = 1; i <= surface.GetNumIGAElements(1); i++)
     {
-        s->GroupAddElement(groupNumberElementsLeft, i*surface.GetNumIGAElements(0) - 1);
+        s->GroupAddElement(groupNumberElementsLeft, i * surface.GetNumIGAElements(0) - 1);
     }
 
     s->LoadSurfacePressureCreate2D(groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
@@ -173,7 +178,7 @@ BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
 
     SolveAndVisualize(s, "Rectangle1");
 
-    double displacementCorrect = (Stress*Length)/YoungsModulus;
+    double displacementCorrect = (Stress * Length) / YoungsModulus;
     for (int id : s->GroupGetMemberIds(groupNumberNodesLeft))
     {
         auto displ = s->NodeGetNodePtr(id)->Get(NuTo::Node::eDof::DISPLACEMENTS);
@@ -196,25 +201,25 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
 
     Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> controlPts(noPtsX, noPtsY);
 
-    controlPts(0,0) = Eigen::Vector2d(-1, 0);
-    controlPts(0,1) = Eigen::Vector2d(-1, 0.4142135623730951);
-    controlPts(0,2) = Eigen::Vector2d(-0.4142135623730951, 1);
-    controlPts(0,3) = Eigen::Vector2d(0,1);
+    controlPts(0, 0) = Eigen::Vector2d(-1, 0);
+    controlPts(0, 1) = Eigen::Vector2d(-1, 0.4142135623730951);
+    controlPts(0, 2) = Eigen::Vector2d(-0.4142135623730951, 1);
+    controlPts(0, 3) = Eigen::Vector2d(0, 1);
 
-    controlPts(1,0) = Eigen::Vector2d(-2.5,  0);
-    controlPts(1,1) = Eigen::Vector2d(-2.5,  0.75);
-    controlPts(1,2) = Eigen::Vector2d(-0.75, 2.5);
-    controlPts(1,3) = Eigen::Vector2d( 0,    2.5);
+    controlPts(1, 0) = Eigen::Vector2d(-2.5, 0);
+    controlPts(1, 1) = Eigen::Vector2d(-2.5, 0.75);
+    controlPts(1, 2) = Eigen::Vector2d(-0.75, 2.5);
+    controlPts(1, 3) = Eigen::Vector2d(0, 2.5);
 
-    controlPts(2,0) = Eigen::Vector2d(-4,0);
-    controlPts(2,1) = Eigen::Vector2d(-4,4);
-    controlPts(2,2) = Eigen::Vector2d(-4,4);
-    controlPts(2,3) = Eigen::Vector2d(0,4);
+    controlPts(2, 0) = Eigen::Vector2d(-4, 0);
+    controlPts(2, 1) = Eigen::Vector2d(-4, 4);
+    controlPts(2, 2) = Eigen::Vector2d(-4, 4);
+    controlPts(2, 3) = Eigen::Vector2d(0, 4);
 
     Eigen::MatrixXd weights(noPtsX, noPtsY);
     weights.setOnes(noPtsX, noPtsY);
-    weights(0,1) = (1. + 1./sqrt(2))/2.;
-    weights(0,2) = (1. + 1./sqrt(2))/2.;
+    weights(0, 1) = (1. + 1. / sqrt(2)) / 2.;
+    weights(0, 2) = (1. + 1. / sqrt(2)) / 2.;
 
 
     Eigen::VectorXd knotsX(7);
@@ -222,11 +227,11 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
     Eigen::VectorXd knotsY(6);
     knotsY << 0, 0, 0, 1, 1, 1;
 
-    Eigen::Vector2i degree(2,2);
+    Eigen::Vector2i degree(2, 2);
 
     NuTo::BSplineSurface surface(degree, knotsX, knotsY, controlPts, weights);
 
-    for(int i = 0; i < refine; i++)
+    for (int i = 0; i < refine; i++)
     {
         surface.DuplicateKnots(0);
         surface.DuplicateKnots(1);
@@ -240,7 +245,7 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    int groupNodes  = s->GroupCreate("Nodes");
+    int groupNodes = s->GroupCreate("Nodes");
     int groupElements = s->GroupCreate("Elements");
 
     surface.buildIGAStructure(*s, setOfDOFS, groupElements, groupNodes);
@@ -251,10 +256,12 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
 
     /** create constitutive law **/
     double YoungsModulus = 1.e5;
-    double PoissonRatio  = 0.3;
+    double PoissonRatio = 0.3;
     int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
-    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonRatio);
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                         YoungsModulus);
+    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
+                                         PoissonRatio);
 
     s->ElementTotalSetConstitutiveLaw(myMatLin);
     s->ElementTotalSetSection(mySection);
@@ -263,17 +270,17 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
     // Boundary condition //
     /**********************/
 
-    int groupElementsLeft  = s->GroupCreate("ELEMENTS");
+    int groupElementsLeft = s->GroupCreate("ELEMENTS");
     int groupElementsUpper = s->GroupCreate("ELEMENTS");
 
-    int start = (surface.GetNumIGAElements(1)-1) * surface.GetNumIGAElements(0);
-    for(int i = start; i < start + surface.GetNumIGAElements(0)/2; i++)
+    int start = (surface.GetNumIGAElements(1) - 1) * surface.GetNumIGAElements(0);
+    for (int i = start; i < start + surface.GetNumIGAElements(0) / 2; i++)
     {
         s->GroupAddElement(groupElementsLeft, i);
     }
 
-    start += surface.GetNumIGAElements(0)/2;
-    for(int i = start; i < surface.GetNumIGAElements(); i++)
+    start += surface.GetNumIGAElements(0) / 2;
+    for (int i = start; i < surface.GetNumIGAElements(); i++)
     {
         s->GroupAddElement(groupElementsUpper, i);
     }
@@ -283,11 +290,15 @@ BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
     auto& groupBottom = s->GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 0);
     auto& groupTop = s->GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 4);
 
-    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupBottom, {NuTo::eDirection::Y}));
-    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}));
+    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                         NuTo::Constraint::Component(groupBottom, {NuTo::eDirection::Y}));
+    s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                         NuTo::Constraint::Component(groupRight, {NuTo::eDirection::X}));
 
-    s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft,  s->GroupGetId(&groupLeft), NuTo::Test::PlateWithHoleAnalytical::PressureLeft);
-    s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, s->GroupGetId(&groupTop), NuTo::Test::PlateWithHoleAnalytical::PressureTop);
+    s->LoadSurfacePressureFunctionCreate2D(groupElementsLeft, s->GroupGetId(&groupLeft),
+                                           NuTo::Test::PlateWithHoleAnalytical::PressureLeft);
+    s->LoadSurfacePressureFunctionCreate2D(groupElementsUpper, s->GroupGetId(&groupTop),
+                                           NuTo::Test::PlateWithHoleAnalytical::PressureTop);
 
     BOOST_CHECK_NO_THROW(SolveAndVisualize(s, "Hole5"));
 }

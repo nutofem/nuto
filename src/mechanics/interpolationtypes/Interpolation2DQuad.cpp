@@ -11,8 +11,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation2DQuad.h"
 
-NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                               int rDimension)
+    : Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }
@@ -56,7 +57,8 @@ Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateShapeFunctions(const Eigen::
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -96,7 +98,9 @@ Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates(int r
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                              int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -114,7 +118,8 @@ Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(co
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -151,19 +156,3 @@ int NuTo::Interpolation2DQuad::CalculateNumNodes() const
         throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-template<class Archive>
-void NuTo::Interpolation2DQuad::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation2D\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation2D);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation2D\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation2DQuad)
-#endif

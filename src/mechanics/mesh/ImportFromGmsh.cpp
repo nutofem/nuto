@@ -86,7 +86,7 @@ std::vector<GmshNode> ReadNodesASCII(std::ifstream& rFile)
 
     // read node data
     std::vector<GmshNode> nodes(numNodes);
-    for (GmshNode &node : nodes)
+    for (GmshNode& node : nodes)
     {
         rFile >> node.id;
         rFile >> node.Coordinates[0];
@@ -105,7 +105,8 @@ std::vector<GmshNode> ReadNodesASCII(std::ifstream& rFile)
 
 int GetNumNodesPerElementType(int rElementType)
 {
-    const std::vector<int> numNodesPerElement({ 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 });
+    const std::vector<int> numNodesPerElement(
+            {0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15});
     return numNodesPerElement[rElementType];
 }
 
@@ -120,7 +121,6 @@ std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
     getline(rFile, line);
     int numElements = std::stoi(line);
     std::vector<GmshElement> elements(numElements);
-
 
 
     // read element data
@@ -161,7 +161,7 @@ std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
 
     // check size of integer
     int one;
-    rFile.read((char *) &one, sizeof(int));
+    rFile.read((char*)&one, sizeof(int));
     if (one != 1)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Invalid binary format.");
     rFile.seekg(1, std::ios::cur);
@@ -180,17 +180,17 @@ std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
     // read number of nodes
     int numNodes;
     rFile >> numNodes;
-    getline(rFile, line); //endl
+    getline(rFile, line); // endl
 
     // read node data
     std::vector<GmshNode> nodes(numNodes);
 
-    for (auto &node : nodes)
+    for (auto& node : nodes)
     {
-        rFile.read((char *) &node.id, sizeof(int));
-        rFile.read((char *) node.Coordinates, 3 * sizeof(double));
+        rFile.read((char*)&node.id, sizeof(int));
+        rFile.read((char*)node.Coordinates, 3 * sizeof(double));
     }
-    //endl
+    // endl
     getline(rFile, line);
 
     getline(rFile, line);
@@ -210,10 +210,10 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
     std::string line;
 
 
-        // read number of elements
+    // read number of elements
     int numElements;
     rFile >> numElements;
-    getline(rFile, line); //endl
+    getline(rFile, line); // endl
 
     std::vector<GmshElement> elements(numElements);
 
@@ -226,16 +226,16 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
     {
 
         // Read element type
-        rFile.read((char *) &element_type, sizeof(int));
+        rFile.read((char*)&element_type, sizeof(int));
 
         // Read num of Elem with the same header
-        rFile.read((char *) &num_elm_follow, sizeof(int));
+        rFile.read((char*)&num_elm_follow, sizeof(int));
 
         // set num_elemt_node
         int cur_num_elm_nodes = GetNumNodesPerElementType(element_type);
 
         // Read numOfTags
-        rFile.read((char *) &num_tags, sizeof(int));
+        rFile.read((char*)&num_tags, sizeof(int));
 
         for (int indexH = 0; indexH < num_elm_follow; indexH++)
         {
@@ -244,24 +244,23 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
             elements[elemCount].type = element_type;
 
             // read element number
-            rFile.read((char *) &elements[elemCount].id, sizeof(int));
+            rFile.read((char*)&elements[elemCount].id, sizeof(int));
 
             elements[elemCount].tags.resize(num_tags);
             elements[elemCount].nodes.resize(cur_num_elm_nodes);
 
-            //read tags
+            // read tags
             for (int tagCount = 0; tagCount < num_tags; tagCount++)
-                rFile.read((char *) &elements[elemCount].tags[tagCount], sizeof(int));
+                rFile.read((char*)&elements[elemCount].tags[tagCount], sizeof(int));
 
-            //read nodes
+            // read nodes
             for (int nodeCount = 0; nodeCount < cur_num_elm_nodes; nodeCount++)
-                rFile.read((char *) &elements[elemCount].nodes[nodeCount], sizeof(int));
+                rFile.read((char*)&elements[elemCount].nodes[nodeCount], sizeof(int));
 
             elemCount += indexH;
         }
-
     }
-    getline(rFile, line); //endl
+    getline(rFile, line); // endl
 
     // end element section
     getline(rFile, line);
@@ -273,7 +272,7 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
 
 std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>& rGmshNodes)
 {
-    //create the nodes
+    // create the nodes
     Eigen::VectorXd coordinates;
     switch (rS.GetDimension())
     {
@@ -298,7 +297,7 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
     return newNodeNumbers;
 }
 
-std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string &rFileName)
+std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string& rFileName)
 {
     std::ifstream file(rFileName.c_str(), std::ios::in);
     if (not file.is_open())
@@ -371,14 +370,14 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
-//    	case 6: // 6-node prism.
+        //    	case 6: // 6-node prism.
 
-//    	case 7: // 5-node pyramid.
+        //    	case 7: // 5-node pyramid.
 
         case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
             shapeType = Interpolation::eShapeType::TRUSSXD;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
-            //ordering is different than in gmsh
+            // ordering is different than in gmsh
             std::swap(nodeNumbers[1], nodeNumbers[2]);
             break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
@@ -386,11 +385,12 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
-        case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with the face).
+        case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with
+                 // the face).
         {
             shapeType = Interpolation::eShapeType::QUAD2D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
-            //ordering is different than in gmsh, fix this first
+            // ordering is different than in gmsh, fix this first
             std::vector<int> nodeNumbersGmsh(nodeNumbers);
             nodeNumbers[0] = nodeNumbersGmsh[0];
             nodeNumbers[1] = nodeNumbersGmsh[4];
@@ -408,22 +408,23 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
-        case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the faces and 1 with the volume).
+        case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the
+                 // faces and 1 with the volume).
         {
             shapeType = Interpolation::eShapeType::BRICK3D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
-            //ordering is different than in gmsh, fix this first
+            // ordering is different than in gmsh, fix this first
             std::vector<int> nodeNumbersGmsh = nodeNumbers;
-            nodeNumbers[0]  = nodeNumbersGmsh[4];
-            nodeNumbers[1]  = nodeNumbersGmsh[16];
-            nodeNumbers[2]  = nodeNumbersGmsh[5];
-            nodeNumbers[3]  = nodeNumbersGmsh[10];
-            nodeNumbers[4]  = nodeNumbersGmsh[21];
-            nodeNumbers[5]  = nodeNumbersGmsh[12];
-            nodeNumbers[6]  = nodeNumbersGmsh[0];
-            nodeNumbers[7]  = nodeNumbersGmsh[8];
-            nodeNumbers[8]  = nodeNumbersGmsh[1];
-            nodeNumbers[9]  = nodeNumbersGmsh[17];
+            nodeNumbers[0] = nodeNumbersGmsh[4];
+            nodeNumbers[1] = nodeNumbersGmsh[16];
+            nodeNumbers[2] = nodeNumbersGmsh[5];
+            nodeNumbers[3] = nodeNumbersGmsh[10];
+            nodeNumbers[4] = nodeNumbersGmsh[21];
+            nodeNumbers[5] = nodeNumbersGmsh[12];
+            nodeNumbers[6] = nodeNumbersGmsh[0];
+            nodeNumbers[7] = nodeNumbersGmsh[8];
+            nodeNumbers[8] = nodeNumbersGmsh[1];
+            nodeNumbers[9] = nodeNumbersGmsh[17];
             nodeNumbers[10] = nodeNumbersGmsh[25];
             nodeNumbers[11] = nodeNumbersGmsh[18];
             nodeNumbers[12] = nodeNumbersGmsh[22];
@@ -443,11 +444,13 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             nodeNumbers[26] = nodeNumbersGmsh[2];
             break;
         }
-//    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3 with the quadrangular faces).
+        //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3
+        //    with the quadrangular faces).
 
-//    	case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1 with the quadrangular face).
+        //    	case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1
+        //    with the quadrangular face).
 
-//    	case 15: // 1-node point.
+        //    	case 15: // 1-node point.
 
         case 16: // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
             shapeType = Interpolation::eShapeType::QUAD2D;
@@ -458,21 +461,21 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         {
             shapeType = Interpolation::eShapeType::BRICK3D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
-            //ordering is different than in gmsh, fix this first
+            // ordering is different than in gmsh, fix this first
             std::vector<int> nodeNumbersGmsh = nodeNumbers;
             // vertices
-            nodeNumbers[0]  = nodeNumbersGmsh[0];
-            nodeNumbers[1]  = nodeNumbersGmsh[1];
-            nodeNumbers[2]  = nodeNumbersGmsh[2];
-            nodeNumbers[3]  = nodeNumbersGmsh[3];
-            nodeNumbers[4]  = nodeNumbersGmsh[4];
-            nodeNumbers[5]  = nodeNumbersGmsh[5];
-            nodeNumbers[6]  = nodeNumbersGmsh[6];
-            nodeNumbers[7]  = nodeNumbersGmsh[7];
+            nodeNumbers[0] = nodeNumbersGmsh[0];
+            nodeNumbers[1] = nodeNumbersGmsh[1];
+            nodeNumbers[2] = nodeNumbersGmsh[2];
+            nodeNumbers[3] = nodeNumbersGmsh[3];
+            nodeNumbers[4] = nodeNumbersGmsh[4];
+            nodeNumbers[5] = nodeNumbersGmsh[5];
+            nodeNumbers[6] = nodeNumbersGmsh[6];
+            nodeNumbers[7] = nodeNumbersGmsh[7];
 
             // "rear" plane
-            nodeNumbers[8]  = nodeNumbersGmsh[8];
-            nodeNumbers[9]  = nodeNumbersGmsh[11];
+            nodeNumbers[8] = nodeNumbersGmsh[8];
+            nodeNumbers[9] = nodeNumbersGmsh[11];
             nodeNumbers[10] = nodeNumbersGmsh[13];
             nodeNumbers[11] = nodeNumbersGmsh[9];
 
@@ -490,43 +493,54 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             break;
         }
 
-//    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+        //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
 
-//    	case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+        //    	case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
 
-//    	case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the edges)
+        //    	case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the
+        //    edges)
 
-        case 21: // 10-node third order triangle (3 nodes associated with the vertices, 6 with the edges, 1 with the face)
+        case 21: // 10-node third order triangle (3 nodes associated with the vertices, 6 with the edges, 1 with the
+                 // face)
             shapeType = Interpolation::eShapeType::TRIANGLE2D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT3;
             break;
 
-//    	case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the edges)
+        //    	case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the
+        //    edges)
 
-        case 23: // 15-node fourth order triangle (3 nodes associated with the vertices, 9 with the edges, 3 with the face)
+        case 23: // 15-node fourth order triangle (3 nodes associated with the vertices, 9 with the edges, 3 with the
+                 // face)
             shapeType = Interpolation::eShapeType::TRIANGLE2D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT4;
             break;
 
-//    	case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the edges)
+        //    	case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the
+        //    edges)
 
-//    	case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the edges, 6 with the face)
+        //    	case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the
+        //    edges, 6 with the face)
 
-//    	case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
+        //    	case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
 
-//    	case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
+        //    	case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
 
-//    	case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
+        //    	case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
 
-//    	case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4 with the faces)
+        //    	case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4
+        //    with the faces)
 
-//    	case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges, 12 with the faces, 1 in the volume)
+        //    	case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges,
+        //    12 with the faces, 1 in the volume)
 
-//    	case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24 with the faces, 4 in the volume)
+        //    	case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24
+        //    with the faces, 4 in the volume)
 
-//    	case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24 with the faces, 8 in the volume)
+        //    	case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24
+        //    with the faces, 8 in the volume)
 
-//    	case 93: //	125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges, 54 with the faces, 27 in the volume)
+        //    	case 93: //	125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges,
+        //    54 with the faces, 27 in the volume)
 
         default:
             std::cout << "element type in gmsh " << element.type << std::endl;
@@ -534,7 +548,8 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         }
 
         // get gmsh group id and create a corresponding nuto group if needed
-        int groupId = element.tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist before the gmsh import.
+        int groupId = element.tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist
+                                       // before the gmsh import.
 
         // there is one interpolation type for each group. Else: throw
         TmpGroup& tmpGroup = groups[groupId];
@@ -547,7 +562,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         else
         {
             // check if current element matches the interpolation type
-            const InterpolationType &interpolationType = *rS.InterpolationTypeGet(tmpGroup.interpolationTypeId);
+            const InterpolationType& interpolationType = *rS.InterpolationTypeGet(tmpGroup.interpolationTypeId);
             Interpolation::eShapeType groupShapeType = interpolationType.GetShapeType();
             Interpolation::eTypeOrder groupTypeOrder = interpolationType.Get(Node::eDof::COORDINATES).GetTypeOrder();
             if (groupShapeType != shapeType or groupTypeOrder != typeOrder)
@@ -564,7 +579,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     for (auto& group : groups)
     {
         int groupId = group.first;
-        TmpGroup& tmpGroup  = group.second;
+        TmpGroup& tmpGroup = group.second;
         rS.GroupCreate(groupId, NuTo::eGroupId::Elements);
         for (int elementId : tmpGroup.elementIds)
             rS.GroupAddElement(groupId, elementId);

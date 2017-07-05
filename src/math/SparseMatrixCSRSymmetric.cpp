@@ -10,15 +10,17 @@ namespace NuTo
 {
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
-template<>
-void SparseMatrixCSRSymmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA, const NuTo::SparseMatrixCSRSymmetric<int>& rMatrixB)
+template <>
+void SparseMatrixCSRSymmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA,
+                                                             const NuTo::SparseMatrixCSRSymmetric<int>& rMatrixB)
 {
     throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
 }
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
-template<>
-void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<double>& rMatrixA, const NuTo::SparseMatrixCSRSymmetric<double>& rMatrixB)
+template <>
+void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<double>& rMatrixA,
+                                                                const NuTo::SparseMatrixCSRSymmetric<double>& rMatrixB)
 {
     assert(rMatrixB.GetNumRows() == rMatrixB.GetNumColumns());
     if (rMatrixB.GetNumRows() != rMatrixA.GetNumRows())
@@ -63,7 +65,6 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
                     {
                         this->AddValue(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
                     }
-
                 }
             }
 
@@ -97,7 +98,6 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
                         {
                             this->AddValue(thisRow, thisColumn, transAValue_Mult_BValue * AValue);
                         }
-
                     }
                 }
             }
@@ -106,15 +106,17 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
 }
 
 // subtract (trans(A) * B + trans(B) * A) from the matrix (A and B are general matrices)
-template<>
-void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<int>& rMatrixB)
+template <>
+void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
+        const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<int>& rMatrixB)
 {
     throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
 }
 
 // subtract (trans(A) * trans(B) + B * A) from the matrix (A and B are general matrices)
-template<>
-void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<double>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<double>& rMatrixB)
+template <>
+void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
+        const NuTo::SparseMatrixCSRGeneral<double>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<double>& rMatrixB)
 {
     if (rMatrixA.GetNumRows() != rMatrixB.GetNumColumns())
     {
@@ -142,18 +144,18 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
 
     for (int bRow = 0; bRow < rMatrixB.GetNumRows(); bRow++)
     {
-        for(int bPos = matrixBRowIndex[bRow]; bPos < matrixBRowIndex[bRow + 1]; bPos++)
+        for (int bPos = matrixBRowIndex[bRow]; bPos < matrixBRowIndex[bRow + 1]; bPos++)
         {
             int bColumn = matrixBColumns[bPos];
             double bValue = matrixBValues[bPos];
 
             int aRow = bColumn;
-            for(int aPos = matrixARowIndex[aRow]; aPos < matrixARowIndex[aRow + 1]; aPos++)
+            for (int aPos = matrixARowIndex[aRow]; aPos < matrixARowIndex[aRow + 1]; aPos++)
             {
                 int aColumn = matrixAColumns[aPos];
                 double aValue = matrixAValues[aPos];
                 double value = -1.0 * aValue * bValue;
-                if(aColumn >= bRow)
+                if (aColumn >= bRow)
                 {
                     // sub value from upper triangle
                     this->AddValue(bRow, aColumn, value);
@@ -169,21 +171,21 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
 }
 
 // multiply sparse matrix with full matrix
-template<>
-Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator* (const Eigen::MatrixXi& rMatrix) const
+template <>
+Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi& rMatrix) const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with full matrix
-template<>
-Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator* (const Eigen::MatrixXd& rMatrix) const
+template <>
+Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator*(const Eigen::MatrixXd& rMatrix) const
 {
     if (this->GetNumColumns() != rMatrix.rows())
     {
         throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
     }
-    Eigen::MatrixXd result(this->GetNumRows(),rMatrix.cols());
+    Eigen::MatrixXd result(this->GetNumRows(), rMatrix.cols());
 
     for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
     {
@@ -191,9 +193,10 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator* (const Eigen::Matrix
         double* resultValues = result.data() + matrixCol * rMatrix.rows();
         for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
         {
-            for (int thisPos = this->mRowIndex[thisRow]-mOneBasedIndexing; thisPos < this->mRowIndex[thisRow + 1]-mOneBasedIndexing; thisPos++)
+            for (int thisPos = this->mRowIndex[thisRow] - mOneBasedIndexing;
+                 thisPos < this->mRowIndex[thisRow + 1] - mOneBasedIndexing; thisPos++)
             {
-            	int thisColumn = this->mColumns[thisPos]-mOneBasedIndexing;
+                int thisColumn = this->mColumns[thisPos] - mOneBasedIndexing;
                 double thisValue = this->mValues[thisPos];
                 resultValues[thisRow] += thisValue * matrixValues[thisColumn];
                 if (thisRow != thisColumn)
@@ -207,27 +210,27 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator* (const Eigen::Matrix
 }
 
 // multiply sparse matrix with scalar
-template<>
-SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator* (const int& rScal) const
+template <>
+SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int& rScal) const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with scalar
-template<>
-SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator* (const double& rScal) const
+template <>
+SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator*(const double& rScal) const
 {
-	SparseMatrixCSRSymmetric<double> result(*this);
-	BOOST_FOREACH( double &val, result.mValues )
-		val *= rScal;
-	return result;
+    SparseMatrixCSRSymmetric<double> result(*this);
+    BOOST_FOREACH (double& val, result.mValues)
+        val *= rScal;
+    return result;
 }
 
 //! @brief ... add sparse matrix
 //! @param rMatrix ... sparse matrix
 //! @return ... this
-template<>
-SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatrixCSRSymmetric<int>& rMatrix)
+template <>
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRSymmetric<int>& rMatrix)
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }
@@ -235,8 +238,8 @@ SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatri
 //! @brief ... add sparse matrix
 //! @param rMatrix ... sparse matrix
 //! @return ... this
-template<>
-SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const SparseMatrixCSRSymmetric<double>& rOther)
+template <>
+SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator+=(const SparseMatrixCSRSymmetric<double>& rOther)
 {
     if (this->GetNumColumns() != rOther.GetNumColumns())
     {
@@ -250,21 +253,21 @@ SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const Spars
 
     for (int otherRow = 0; otherRow < rOther.GetNumRows(); otherRow++)
     {
-        for (int otherPos = rOther.mRowIndex[otherRow]-mOneBasedIndexing; otherPos < rOther.mRowIndex[otherRow + 1]-mOneBasedIndexing; otherPos++)
+        for (int otherPos = rOther.mRowIndex[otherRow] - mOneBasedIndexing;
+             otherPos < rOther.mRowIndex[otherRow + 1] - mOneBasedIndexing; otherPos++)
         {
-        	this->AddValue(otherRow,rOther.mColumns[otherPos]-rOther.mOneBasedIndexing, rOther.mValues[otherPos]);
+            this->AddValue(otherRow, rOther.mColumns[otherPos] - rOther.mOneBasedIndexing, rOther.mValues[otherPos]);
         }
     }
 
     return *this;
-
 }
 
 //! @brief ... add sparse matrix
 //! @param rMatrix ... sparse matrix
 //! @return ... this
-template<>
-SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatrixCSRVector2Symmetric<int>& rMatrix)
+template <>
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRVector2Symmetric<int>& rMatrix)
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }
@@ -273,8 +276,9 @@ SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator += (const SparseMatri
 //! @brief ... add sparse matrix
 //! @param rMatrix ... sparse matrix
 //! @return ... this
-template<>
-SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const SparseMatrixCSRVector2Symmetric<double>& rOther)
+template <>
+SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::
+operator+=(const SparseMatrixCSRVector2Symmetric<double>& rOther)
 {
     if (this->GetNumColumns() != rOther.GetNumColumns())
     {
@@ -287,9 +291,10 @@ SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator += (const Spars
 
     for (int otherRow = 0; otherRow < rOther.GetNumRows(); otherRow++)
     {
-        for (unsigned int otherPos = 0; otherPos<rOther.mValues[otherRow].size(); otherPos++)
+        for (unsigned int otherPos = 0; otherPos < rOther.mValues[otherRow].size(); otherPos++)
         {
-        	this->AddValue(otherRow,rOther.mColumns[otherRow][otherPos]-rOther.mOneBasedIndexing, rOther.mValues[otherRow][otherPos]);
+            this->AddValue(otherRow, rOther.mColumns[otherRow][otherPos] - rOther.mOneBasedIndexing,
+                           rOther.mValues[otherRow][otherPos]);
         }
     }
 

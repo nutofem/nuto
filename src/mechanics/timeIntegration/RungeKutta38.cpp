@@ -1,19 +1,8 @@
 // $Id: RungeKutta38.cpp 575 2011-09-20 18:05:35Z unger3 $
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
@@ -24,29 +13,31 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKutta38::RungeKutta38 (StructureBase* rStructure)  : RungeKuttaBase (rStructure)
+NuTo::RungeKutta38::RungeKutta38(StructureBase* rStructure)
+    : RungeKuttaBase(rStructure)
 {
 }
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::RungeKutta38::Info()const
+void NuTo::RungeKutta38::Info() const
 {
-	TimeIntegrationBase::Info();
+    TimeIntegrationBase::Info();
 }
 
 //! @brief calculate the critical time step for explicit routines
 //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
 //! this is the critical time step from velocity verlet, the real one is certainly larger
-double NuTo::RungeKutta38::CalculateCriticalTimeStep()const
+double NuTo::RungeKutta38::CalculateCriticalTimeStep() const
 {
-	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
-	return 2.8/std::sqrt(maxGlobalEigenValue);
+    double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
+    return 2.8 / std::sqrt(maxGlobalEigenValue);
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-double NuTo::RungeKutta38::GetStageTimeFactor(int rStage)const
+double NuTo::RungeKutta38::GetStageTimeFactor(int rStage) const
 {
 	assert(rStage<4);
 	double s(0);
@@ -70,9 +61,10 @@ double NuTo::RungeKutta38::GetStageTimeFactor(int rStage)const
 	return s;
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-bool NuTo::RungeKutta38::HasTimeChanged(int rStage)const
+bool NuTo::RungeKutta38::HasTimeChanged(int rStage) const
 {
 	assert(rStage<4);
 	bool s(0);
@@ -98,7 +90,7 @@ bool NuTo::RungeKutta38::HasTimeChanged(int rStage)const
 
 
 //! @brief ... return scaling for the intermediate stage for y (a in Butcher tableau)
-void NuTo::RungeKutta38::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage)const
+void NuTo::RungeKutta38::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage) const
 {
 	assert(rStage<4);
 	assert(rWeight.size()==3);
@@ -222,10 +214,8 @@ void NuTo::RungeKutta38::Restore (const std::string &filename, std::string rType
     }
 }
 
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::RungeKutta38::Save (const std::string &filename, std::string rType )const
+//! @brief ... return weights for the intermediate stage for y (b in Butcher tableau)
+double NuTo::RungeKutta38::GetStageWeights(int rStage) const
 {
     try
     {
@@ -274,9 +264,5 @@ void NuTo::RungeKutta38::Save (const std::string &filename, std::string rType )c
     {
         throw Exception ( "[RungeKutta38::Save] Unhandled exception." );
     }
+    return s;
 }
-
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::RungeKutta38)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

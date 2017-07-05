@@ -4,8 +4,8 @@
 
 using namespace NuTo;
 
-void CallbackHandlerPython::SetCallbackFunctions(
-        PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian)
+void CallbackHandlerPython::SetCallbackFunctions(PyObject* args_parameters, PyObject* args_objective,
+                                                 PyObject* args_gradient, PyObject* args_hessian)
 {
     // check if mObjective routine is callable
     if (!PyCallable_Check(args_parameters))

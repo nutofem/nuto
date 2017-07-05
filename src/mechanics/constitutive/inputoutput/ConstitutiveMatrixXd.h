@@ -9,31 +9,30 @@ namespace NuTo
 class ConstitutiveMatrixXd : public ConstitutiveIOBase, public Eigen::MatrixXd
 {
 public:
+    ConstitutiveMatrixXd() = default;
+    ConstitutiveMatrixXd(const ConstitutiveMatrixXd&) = default;
+    ConstitutiveMatrixXd(ConstitutiveMatrixXd&&) = default;
 
-    ConstitutiveMatrixXd()                                        = default;
-    ConstitutiveMatrixXd(const ConstitutiveMatrixXd& )              = default;
-    ConstitutiveMatrixXd(      ConstitutiveMatrixXd&&)              = default;
-
-    virtual ~ConstitutiveMatrixXd()                               = default;
+    virtual ~ConstitutiveMatrixXd() = default;
 
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override
     {
         return std::make_unique<ConstitutiveMatrixXd>(*this);
     }
 
-    ConstitutiveMatrixXd& operator=(const ConstitutiveMatrixXd& )   = default;
-    ConstitutiveMatrixXd& operator=(      ConstitutiveMatrixXd&&)   = default;
+    ConstitutiveMatrixXd& operator=(const ConstitutiveMatrixXd&) = default;
+    ConstitutiveMatrixXd& operator=(ConstitutiveMatrixXd&&) = default;
 
 
-    double& operator ()(int rRow, int rCol) override
+    double& operator()(int rRow, int rCol) override
     {
-        return this->Eigen::MatrixXd::operator () (rRow, rCol);
+        return this->Eigen::MatrixXd::operator()(rRow, rCol);
     }
 
 
-    double operator ()(int rRow, int rCol) const override
+    double operator()(int rRow, int rCol) const override
     {
-        return this->Eigen::MatrixXd::operator () (rRow, rCol);
+        return this->Eigen::MatrixXd::operator()(rRow, rCol);
     }
 
     void SetZero() override
@@ -55,7 +54,6 @@ public:
     {
         return *this;
     }
-
 };
 
 } /* namespace NuTo */

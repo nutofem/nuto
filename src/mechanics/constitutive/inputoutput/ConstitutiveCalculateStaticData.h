@@ -22,15 +22,15 @@ enum class eCalculateStaticData
 };
 
 
-
-class ConstitutiveCalculateStaticData: public ConstitutiveIOBase
+class ConstitutiveCalculateStaticData : public ConstitutiveIOBase
 {
 public:
-    ConstitutiveCalculateStaticData(eCalculateStaticData rCalculateStaticData, int rIndexOfPreviousStaticData = 0) :
-        ConstitutiveIOBase() ,
-        mCalculateStaticData(rCalculateStaticData),
-        mIndexOfPreviousStaticData(rIndexOfPreviousStaticData)
-    {}
+    ConstitutiveCalculateStaticData(eCalculateStaticData rCalculateStaticData, int rIndexOfPreviousStaticData = 0)
+        : ConstitutiveIOBase()
+        , mCalculateStaticData(rCalculateStaticData)
+        , mIndexOfPreviousStaticData(rIndexOfPreviousStaticData)
+    {
+    }
 
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override
     {
@@ -41,7 +41,7 @@ public:
     template <typename T>
     static T EulerForward(const T& rXn, const T& rXn_m1, const ConstitutiveIOBase& rTimeStep)
     {
-        assert (rTimeStep.GetNumRows() >= 2 && "At least two time steps required. Current and previous one.");
+        assert(rTimeStep.GetNumRows() >= 2 && "At least two time steps required. Current and previous one.");
 
         // this is a bit wierd since this method should be used for ConstiutiveScalar/Vector/Matrix,
         // all inheriting from Eigen::Matrix<double>
@@ -81,4 +81,3 @@ private:
 };
 
 } /* namespace NuTo */
-

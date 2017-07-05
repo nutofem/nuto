@@ -17,17 +17,17 @@ BOOST_AUTO_TEST_CASE(DataArrayFormatString)
 
 BOOST_AUTO_TEST_CASE(DataArrayOffset)
 {
-    NuTo::Visualize::DataArray<double> aDouble("", 3, {0,0,0,0,0,0});
-    NuTo::Visualize::DataArray<uint8_t> aShort("", 2, {0,0,0,0});
-    
+    NuTo::Visualize::DataArray<double> aDouble("", 3, {0, 0, 0, 0, 0, 0});
+    NuTo::Visualize::DataArray<uint8_t> aShort("", 2, {0, 0, 0, 0});
+
     // header + #data * sizeof(double)
-    BOOST_CHECK_EQUAL(aDouble.Offset(), 8 + 6 * 8); 
+    BOOST_CHECK_EQUAL(aDouble.Offset(), 8 + 6 * 8);
     BOOST_CHECK_EQUAL(aShort.Offset(), 8 + 4 * 1);
 }
 
 BOOST_AUTO_TEST_CASE(DataArrayCommonHeader)
 {
-    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1,2,3,4,5,6});
+    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1, 2, 3, 4, 5, 6});
     std::stringstream ss;
     dataArray.WriteCommonHeader(ss);
     std::string header = ss.str();
@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(DataArrayCommonHeader)
     BOOST_CHECK(header.find(R"( type="UInt32" )") != std::string::npos);
     BOOST_CHECK(header.find(R"( Name="Name" )") != std::string::npos);
     BOOST_CHECK(header.find(R"( NumberOfComponents="3" )") != std::string::npos);
-    
-    NuTo::Visualize::DataArray<unsigned> dataArray2("Name", 0, {1,2,3,4,5,6});
+
+    NuTo::Visualize::DataArray<unsigned> dataArray2("Name", 0, {1, 2, 3, 4, 5, 6});
     ss.clear();
     dataArray2.WriteCommonHeader(ss);
     // zero components: should not be in the header
@@ -45,10 +45,9 @@ BOOST_AUTO_TEST_CASE(DataArrayCommonHeader)
 }
 
 
-
 BOOST_AUTO_TEST_CASE(DataArrayAscii)
 {
-    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1,2,3,4,5,6});
+    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1, 2, 3, 4, 5, 6});
     std::stringstream ss;
     dataArray.WriteAscii(ss);
     std::string asciiData = ss.str();
@@ -60,7 +59,7 @@ BOOST_AUTO_TEST_CASE(DataArrayAscii)
 
 BOOST_AUTO_TEST_CASE(DataArrayBinaryHeader)
 {
-    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1,2,3,4,5,6});
+    NuTo::Visualize::DataArray<unsigned> dataArray("Name", 3, {1, 2, 3, 4, 5, 6});
     std::stringstream ss;
     int offset = 12;
     dataArray.WriteBinaryHeader(ss, &offset);
@@ -75,7 +74,7 @@ BOOST_AUTO_TEST_CASE(DataArrayBinaryHeader)
 
 BOOST_AUTO_TEST_CASE(DataArrayBinary)
 {
-    NuTo::Visualize::DataArray<double> dataArray("Name", 3, {1,2,3,4,5,6});
+    NuTo::Visualize::DataArray<double> dataArray("Name", 3, {1, 2, 3, 4, 5, 6});
     std::ofstream file("DataArrayBinary.dat");
     dataArray.WriteBinaryData(file);
     file.close();
@@ -87,5 +86,5 @@ BOOST_AUTO_TEST_CASE(DataArrayBinary)
 
     std::vector<double> data(6);
     binaryFile.read(reinterpret_cast<char*>(data.data()), size);
-    BoostUnitTest::CheckVector(data, std::vector<double>({1,2,3,4,5,6}), 6);
+    BoostUnitTest::CheckVector(data, std::vector<double>({1, 2, 3, 4, 5, 6}), 6);
 }

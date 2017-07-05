@@ -49,7 +49,7 @@ void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
 
     if (itGroup==mGroupMap.end())
         throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
@@ -83,7 +83,8 @@ int NuTo::Structure::GroupGetNodesTotal()
     return groupId;
 }
 
-void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax)
+void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup,
+                                                                  int rDirection, double rMin, double rMax)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -113,4 +114,3 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
             itGroup->second->AddMember(iNodeId, nodePtr);
     }
 }
-

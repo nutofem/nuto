@@ -53,6 +53,7 @@ public:
     {
         return mMap.size();
     }
+
 private:
     std::map<T, vector_t> mMap;
 };

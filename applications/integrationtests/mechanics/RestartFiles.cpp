@@ -27,7 +27,8 @@ void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
         auto& e = *rS.ElementGetElementPtr(elementIds[i]);
         for (int ip = 0; ip < e.GetNumIntegrationPoints(); ++ip)
         {
-            e.GetIPData().GetIPConstitutiveLaw(ip).GetData<NuTo::GradientDamageEngineeringStress>().SetData(0.1*i + ip*rFactor);
+            e.GetIPData().GetIPConstitutiveLaw(ip).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    0.1 * i + ip * rFactor);
         }
     }
     rS.GroupDelete(gElementsTotal);
@@ -41,9 +42,11 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     rS.SetShowTime(false);
     rS.SetNumTimeDerivatives(1);
 
-    auto meshInfo = NuTo::MeshGenerator::Grid(rS, {42., 6174.}, {2,2});
-    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    auto meshInfo = NuTo::MeshGenerator::Grid(rS, {42., 6174.}, {2, 2});
+    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::DISPLACEMENTS,
+                            NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    rS.InterpolationTypeAdd(meshInfo.second, NuTo::Node::eDof::NONLOCALEQSTRAIN,
+                            NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     rS.ElementTotalSetSection(NuTo::SectionPlane::Create(.42, true));
     int lawId = rS.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
@@ -52,7 +55,8 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     rS.ElementTotalConvertToInterpolationType();
 
     // add a constraint --> dependent dof vector K
-    rS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(*rS.NodeGetNodePtr(0), {NuTo::eDirection::X}));
+    rS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                         NuTo::Constraint::Component(*rS.NodeGetNodePtr(0), {NuTo::eDirection::X}));
     rS.NodeBuildGlobalDofs();
 
     int gElementsTotal = rS.GroupGetElementsTotal();
@@ -65,17 +69,17 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
     auto nodeIds = rS.GroupGetMemberIds(rS.GroupGetNodesTotal());
     for (unsigned int i = 0; i < nodeIds.size(); ++i)
     {
-        rS.NodeSetDisplacements(nodeIds[i], 0, Eigen::Vector2d({i+0.42e-7, i+0.6174}));
-        rS.NodeSetDisplacements(nodeIds[i], 1, Eigen::Vector2d({i+0.42e-7, i+0.6174}));
+        rS.NodeSetDisplacements(nodeIds[i], 0, Eigen::Vector2d({i + 0.42e-7, i + 0.6174}));
+        rS.NodeSetDisplacements(nodeIds[i], 1, Eigen::Vector2d({i + 0.42e-7, i + 0.6174}));
     }
     // set some static data values
-    SetDummyStaticData(rS, 1./17);
+    SetDummyStaticData(rS, 1. / 17);
     rS.ElementTotalShiftStaticDataToPast();
 
-    SetDummyStaticData(rS, 1./19);
+    SetDummyStaticData(rS, 1. / 19);
     rS.ElementTotalShiftStaticDataToPast();
 
-    SetDummyStaticData(rS, 1./21);
+    SetDummyStaticData(rS, 1. / 21);
 }
 
 void CheckStaticData(NuTo::Structure& rSA, NuTo::Structure& rSB)
@@ -133,7 +137,7 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDofsText)
 {
     NuTo::Structure a(2);
     NuTo::Structure b(2);
-    NuToSerializeStructure("NuToSerializeStructureDofsText.dat" , false, a, b);
+    NuToSerializeStructure("NuToSerializeStructureDofsText.dat", false, a, b);
     CheckDofs(a, b);
 }
 
@@ -141,7 +145,7 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDofsBinary)
 {
     NuTo::Structure a(2);
     NuTo::Structure b(2);
-    NuToSerializeStructure("NuToSerializeStructureDofsBinary.dat" , true, a, b);
+    NuToSerializeStructure("NuToSerializeStructureDofsBinary.dat", true, a, b);
     CheckDofs(a, b);
 }
 
@@ -149,7 +153,7 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDataText)
 {
     NuTo::Structure a(2);
     NuTo::Structure b(2);
-    NuToSerializeStructure("NuToSerializeStructureDataText.dat" , false, a, b);
+    NuToSerializeStructure("NuToSerializeStructureDataText.dat", false, a, b);
     CheckStaticData(a, b);
 }
 
@@ -157,7 +161,7 @@ BOOST_AUTO_TEST_CASE(RestartFiles_NuToSerializeStructureDatasBinary)
 {
     NuTo::Structure a(2);
     NuTo::Structure b(2);
-    NuToSerializeStructure("NuToSerializeStructureDataBinary.dat" , true, a, b);
+    NuToSerializeStructure("NuToSerializeStructureDataBinary.dat", true, a, b);
     CheckStaticData(a, b);
 }
 

@@ -18,54 +18,38 @@
 #include "geometryConcrete/Specimen.h"
 
 
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
 #endif
 
-NuTo::ParticleHandler::ParticleHandler(
-		int rNumParticles,
-		Eigen::MatrixXd rParticleBoundingBox,
-		double rVelocityRange,
-		double rGrowthRate,
-        int rSeed)
+NuTo::ParticleHandler::ParticleHandler(int rNumParticles, Eigen::MatrixXd rParticleBoundingBox, double rVelocityRange,
+                                       double rGrowthRate, int rSeed)
     : mRNG(rSeed)
 {
-	mParticles.reserve(rNumParticles);
+    mParticles.reserve(rNumParticles);
 
     double particleIndex = 100000;
 
-	for (int i = 0; i < rNumParticles; ++i)
-	{
-		mParticles.push_back(new NuTo::CollidableParticleSphere(
-				GetRandomVector(rParticleBoundingBox),
-				GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.),
-				0.00,
-				rGrowthRate,
-                particleIndex++));
-	}
+    for (int i = 0; i < rNumParticles; ++i)
+    {
+        mParticles.push_back(new NuTo::CollidableParticleSphere(
+                GetRandomVector(rParticleBoundingBox), GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.), 0.00,
+                rGrowthRate, particleIndex++));
+    }
 
-	mVisualizationFileName = "spheres";
+    mVisualizationFileName = "spheres";
 }
 
-NuTo::ParticleHandler::ParticleHandler(
-		Eigen::MatrixXd rSpheres,
-		double rVelocityRange,
-		double rRelativeGrowthRate,
-        double rAbsoluteGrowthRate,
-        int rSeed)
+NuTo::ParticleHandler::ParticleHandler(Eigen::MatrixXd rSpheres, double rVelocityRange, double rRelativeGrowthRate,
+                                       double rAbsoluteGrowthRate, int rSeed)
     : mRNG(rSeed)
 {
     CreateParticlesFromMatrix(rSpheres, rVelocityRange, rRelativeGrowthRate, rAbsoluteGrowthRate);
     mVisualizationFileName = "spheres";
 }
 
-NuTo::ParticleHandler::ParticleHandler(
-    const std::string &rFileName,
-    double rVelocityRange,
-    double rRelativeGrowthRate,
-    double rAbsoluteGrowthRate,
-    int rSeed)
+NuTo::ParticleHandler::ParticleHandler(const std::string& rFileName, double rVelocityRange, double rRelativeGrowthRate,
+                                       double rAbsoluteGrowthRate, int rSeed)
     : mRNG(rSeed)
 {
     Eigen::MatrixXd particles;
@@ -76,75 +60,76 @@ NuTo::ParticleHandler::ParticleHandler(
 
 NuTo::ParticleHandler::~ParticleHandler()
 {
-	for (auto particle : mParticles)
-		if (particle)
-			delete particle;
+    for (auto particle : mParticles)
+        if (particle)
+            delete particle;
 }
 
 Eigen::MatrixXd NuTo::ParticleHandler::GetParticles(bool rInitialRadius) const
 {
-	Eigen::MatrixXd particles(mParticles.size(), 4);
-	int i = 0;
-	for (auto particle : mParticles)
-		particles.row(i++) = particle->ExportRow(rInitialRadius);
+    Eigen::MatrixXd particles(mParticles.size(), 4);
+    int i = 0;
+    for (auto particle : mParticles)
+        particles.row(i++) = particle->ExportRow(rInitialRadius);
 
     return particles;
 }
 
-void NuTo::ParticleHandler::ExportParticlesToFile(const std::string &rExportFileName, bool rInitialRadius) const
+void NuTo::ParticleHandler::ExportParticlesToFile(const std::string& rExportFileName, bool rInitialRadius) const
 {
     NuTo::SerializeStreamOut sOut(rExportFileName, false);
     sOut.SaveMatrix(GetParticles(rInitialRadius));
 }
 
-void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime, bool rFinal) const
+void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime,
+                                                   bool rFinal) const
 {
 #ifdef ENABLE_VISUALIZE
-	// modify rGlobalTime slightly to resolve every event
-	rGlobalTime += rTimeStep * 1.e-10;
+    // modify rGlobalTime slightly to resolve every event
+    rGlobalTime += rTimeStep * 1.e-10;
 
-	NuTo::Visualize::UnstructuredGrid visuSpheres;
-	visuSpheres.DefinePointData("Radius");
-	visuSpheres.DefinePointData("Velocity");
-	for (auto particle : mParticles)
-		particle->VisualizationDynamic(visuSpheres, rFinal);
+    NuTo::Visualize::UnstructuredGrid visuSpheres;
+    visuSpheres.DefinePointData("Radius");
+    visuSpheres.DefinePointData("Velocity");
+    for (auto particle : mParticles)
+        particle->VisualizationDynamic(visuSpheres, rFinal);
 
-	std::stringstream fileName;
+    std::stringstream fileName;
     fileName << rOutputDirectory << "/" << mVisualizationFileName << "_" << rTimeStep << ".vtu";
-	visuSpheres.ExportVtuDataFile(fileName.str());
+    visuSpheres.ExportVtuDataFile(fileName.str());
 
-	//write an additional pvd file
+    // write an additional pvd file
     std::string resultFile = rOutputDirectory + std::string("/") + mVisualizationFileName + std::string(".pvd");
-	std::fstream file;
-	if (rTimeStep == 0)
-		file.open(resultFile.c_str(), std::fstream::out);
-	else
-		file.open(resultFile.c_str(), std::fstream::out | std::fstream::in | std::ios_base::ate);
+    std::fstream file;
+    if (rTimeStep == 0)
+        file.open(resultFile.c_str(), std::fstream::out);
+    else
+        file.open(resultFile.c_str(), std::fstream::out | std::fstream::in | std::ios_base::ate);
 
-	if (!file.is_open())
-		throw NuTo::Exception(std::string("[NuTo::CollisionHandler::VisualizeSpheres] Error opening file ") + resultFile);
+    if (!file.is_open())
+        throw NuTo::Exception(std::string("[NuTo::CollisionHandler::VisualizeSpheres] Error opening file ") +
+                              resultFile);
 
-	std::stringstream endOfXML;
-	endOfXML << "</Collection>" << std::endl;
-	endOfXML << "</VTKFile>" << std::endl;
-	if (rTimeStep == 0)
-	{
-		// header /////////////////////////////////////////////////////////////////
-		file << "<?xml version=\"1.0\"?>" << std::endl;
-		file << "<VTKFile type=\"Collection\">" << std::endl;
-		file << "<Collection>" << std::endl;
-	}
-	else
-	{
-		//delete the last part of the xml file
-		file.seekp(-endOfXML.str().length(), std::ios_base::end);
-	}
-	file << "<DataSet timestep=\"" << std::setprecision(10) << std::setw(10)
-            << rGlobalTime << "\" file=\"" << mVisualizationFileName << "_" << rTimeStep << ".vtu\"/>"
-			<< std::endl;
+    std::stringstream endOfXML;
+    endOfXML << "</Collection>" << std::endl;
+    endOfXML << "</VTKFile>" << std::endl;
+    if (rTimeStep == 0)
+    {
+        // header /////////////////////////////////////////////////////////////////
+        file << "<?xml version=\"1.0\"?>" << std::endl;
+        file << "<VTKFile type=\"Collection\">" << std::endl;
+        file << "<Collection>" << std::endl;
+    }
+    else
+    {
+        // delete the last part of the xml file
+        file.seekp(-endOfXML.str().length(), std::ios_base::end);
+    }
+    file << "<DataSet timestep=\"" << std::setprecision(10) << std::setw(10) << rGlobalTime << "\" file=\""
+         << mVisualizationFileName << "_" << rTimeStep << ".vtu\"/>" << std::endl;
 
-	file << endOfXML.str();
-	file.close();
+    file << endOfXML.str();
+    file.close();
 #endif
 }
 
@@ -155,17 +140,17 @@ void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, doub
     NuTo::Visualize::UnstructuredGrid visuSpheres;
     visuSpheres.DefinePointData("Radius");
 
-    auto circles = GetParticles2D(rZCoord,0);
+    auto circles = GetParticles2D(rZCoord, 0);
 
-    for (int i = 0; i < circles.rows(); i ++)
+    for (int i = 0; i < circles.rows(); i++)
     {
         Eigen::Vector3d coords;
-        coords[0] = circles(i,0);
-        coords[1] = circles(i,1);
+        coords[0] = circles(i, 0);
+        coords[1] = circles(i, 1);
         coords[2] = 0;
 
         unsigned int index = visuSpheres.AddPoint(coords);
-        double radius = circles(i,2);
+        double radius = circles(i, 2);
         visuSpheres.SetPointData(index, "Radius", radius);
     }
     visuSpheres.ExportVtuDataFile(rOutputFile);
@@ -175,156 +160,145 @@ void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, doub
 
 void NuTo::ParticleHandler::Sync(const double rTime)
 {
-	for (auto particle : mParticles)
-		particle->MoveAndGrow(rTime);
-
+    for (auto particle : mParticles)
+        particle->MoveAndGrow(rTime);
 }
 
 const double NuTo::ParticleHandler::GetKineticEnergy() const
 {
-	double eKin = 0.;
-	for (auto particle : mParticles)
-		eKin += particle->GetKineticEnergy();
-	return eKin;
-
+    double eKin = 0.;
+    for (auto particle : mParticles)
+        eKin += particle->GetKineticEnergy();
+    return eKin;
 }
 
 const double NuTo::ParticleHandler::GetVolume() const
 {
-	double volume = 0.;
-	for (auto particle : mParticles)
-		volume += particle->GetVolume();
-	return volume;
+    double volume = 0.;
+    for (auto particle : mParticles)
+        volume += particle->GetVolume();
+    return volume;
 }
 
 NuTo::CollidableParticleSphere* NuTo::ParticleHandler::GetParticle(const int rIndex) const
 {
-	return mParticles[rIndex];
+    return mParticles[rIndex];
 }
 
 int NuTo::ParticleHandler::GetNumParticles() const
 {
-	return mParticles.size();
+    return mParticles.size();
 }
 
 double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(Specimen& rSpecimen)
 {
 
-	struct StatBox
-	{
-		StatBox(Eigen::Matrix<double, 3, 2> rBox)
-				: mBox(rBox)
-		{
-		}
-		;
-		std::vector<int> mSphereIndices;
+    struct StatBox
+    {
+        StatBox(Eigen::Matrix<double, 3, 2> rBox)
+            : mBox(rBox){};
+        std::vector<int> mSphereIndices;
         Eigen::Matrix<double, 3, 2> mBox;
-	};
+    };
 
-	Eigen::Vector3i divs = GetSubBoxDivisions(rSpecimen, 10);
+    Eigen::Vector3i divs = GetSubBoxDivisions(rSpecimen, 10);
 
-	Eigen::Vector3d subBoxLength;
-	for (int i = 0; i < 3; ++i)
-		subBoxLength[i] = rSpecimen.GetLength(i) / divs[i];
+    Eigen::Vector3d subBoxLength;
+    for (int i = 0; i < 3; ++i)
+        subBoxLength[i] = rSpecimen.GetLength(i) / divs[i];
 
-	// create sub boxes
-	std::vector<StatBox> boxes;
-	for (int iX = 0; iX < divs[0]; ++iX)
-		for (int iY = 0; iY < divs[1]; ++iY)
-			for (int iZ = 0; iZ < divs[2]; ++iZ)
-			{
+    // create sub boxes
+    std::vector<StatBox> boxes;
+    for (int iX = 0; iX < divs[0]; ++iX)
+        for (int iY = 0; iY < divs[1]; ++iY)
+            for (int iZ = 0; iZ < divs[2]; ++iZ)
+            {
                 Eigen::Matrix<double, 3, 2> bounds;
-				bounds <<
-						rSpecimen.GetBoundingBox()(0, 0) + iX * subBoxLength[0],
-						rSpecimen.GetBoundingBox()(0, 0) + (iX + 1) * subBoxLength[0],
-						rSpecimen.GetBoundingBox()(1, 0) + iY * subBoxLength[1],
-						rSpecimen.GetBoundingBox()(1, 0) + (iY + 1) * subBoxLength[1],
-						rSpecimen.GetBoundingBox()(2, 0) + iZ * subBoxLength[2],
-						rSpecimen.GetBoundingBox()(2, 0) + (iZ + 1) * subBoxLength[2];
-				boxes.push_back(StatBox(bounds));
-			}
-	// add spheres
+                bounds << rSpecimen.GetBoundingBox()(0, 0) + iX * subBoxLength[0],
+                        rSpecimen.GetBoundingBox()(0, 0) + (iX + 1) * subBoxLength[0],
+                        rSpecimen.GetBoundingBox()(1, 0) + iY * subBoxLength[1],
+                        rSpecimen.GetBoundingBox()(1, 0) + (iY + 1) * subBoxLength[1],
+                        rSpecimen.GetBoundingBox()(2, 0) + iZ * subBoxLength[2],
+                        rSpecimen.GetBoundingBox()(2, 0) + (iZ + 1) * subBoxLength[2];
+                boxes.push_back(StatBox(bounds));
+            }
+    // add spheres
 
-	for (unsigned int s = 0; s < mParticles.size(); ++s)
-	{
-		// get eight points to test, initialize with sphere centre
-		std::vector<Eigen::Vector3d> corners(8, GetParticle(s)->GetPosition());
-		// add radius to get different points
-		int cornerIndex = 0;
-		for (int iX = -1; iX <= 1; iX += 2)
-			for (int iY = -1; iY <= 1; iY += 2)
-				for (int iZ = -1; iZ <= 1; iZ += 2)
-				{
-					double radius = GetParticle(s)->GetRadius0();
-					corners[cornerIndex](0) += iX * radius;
-					corners[cornerIndex](1) += iY * radius;
-					corners[cornerIndex](2) += iZ * radius;
-					cornerIndex++;
-				}
+    for (unsigned int s = 0; s < mParticles.size(); ++s)
+    {
+        // get eight points to test, initialize with sphere centre
+        std::vector<Eigen::Vector3d> corners(8, GetParticle(s)->GetPosition());
+        // add radius to get different points
+        int cornerIndex = 0;
+        for (int iX = -1; iX <= 1; iX += 2)
+            for (int iY = -1; iY <= 1; iY += 2)
+                for (int iZ = -1; iZ <= 1; iZ += 2)
+                {
+                    double radius = GetParticle(s)->GetRadius0();
+                    corners[cornerIndex](0) += iX * radius;
+                    corners[cornerIndex](1) += iY * radius;
+                    corners[cornerIndex](2) += iZ * radius;
+                    cornerIndex++;
+                }
 
-		for (int c = 0; c < 8; ++c)
-		{
-			// get xyz cell index of corner points
-			int indX = floor(static_cast<double>(corners[c](0) / subBoxLength[0]));
-			int indY = floor(static_cast<double>(corners[c](1) / subBoxLength[1]));
-			int indZ = floor(static_cast<double>(corners[c](2) / subBoxLength[2]));
+        for (int c = 0; c < 8; ++c)
+        {
+            // get xyz cell index of corner points
+            int indX = floor(static_cast<double>(corners[c](0) / subBoxLength[0]));
+            int indY = floor(static_cast<double>(corners[c](1) / subBoxLength[1]));
+            int indZ = floor(static_cast<double>(corners[c](2) / subBoxLength[2]));
 
-			indX = std::min(indX, static_cast<int>(divs[0] - 1));
-			indY = std::min(indY, static_cast<int>(divs[1] - 1));
-			indZ = std::min(indZ, static_cast<int>(divs[2] - 1));
+            indX = std::min(indX, static_cast<int>(divs[0] - 1));
+            indY = std::min(indY, static_cast<int>(divs[1] - 1));
+            indZ = std::min(indZ, static_cast<int>(divs[2] - 1));
 
-			indX = std::max(indX, 0);
-			indY = std::max(indY, 0);
-			indZ = std::max(indZ, 0);
+            indX = std::max(indX, 0);
+            indY = std::max(indY, 0);
+            indZ = std::max(indZ, 0);
 
-			// add sphere to corresponding box
-			int boxIndex = indX * divs[1] * divs[2] + indY * divs[2] + indZ;
+            // add sphere to corresponding box
+            int boxIndex = indX * divs[1] * divs[2] + indY * divs[2] + indZ;
 
-			// only add new spheres
-			if (boxes[boxIndex].mSphereIndices.size() != 0)
-			{
-				unsigned int lastSphereIndex = boxes[boxIndex].mSphereIndices.back();
-				if (lastSphereIndex == s)
-					continue;
-			}
-			// sphere list is empty or lastIndex != boxIndex
-			boxes[boxIndex].mSphereIndices.push_back(s);
+            // only add new spheres
+            if (boxes[boxIndex].mSphereIndices.size() != 0)
+            {
+                unsigned int lastSphereIndex = boxes[boxIndex].mSphereIndices.back();
+                if (lastSphereIndex == s)
+                    continue;
+            }
+            // sphere list is empty or lastIndex != boxIndex
+            boxes[boxIndex].mSphereIndices.push_back(s);
+        }
+    }
 
-		}
+    // only check boxes
+    double minDistance = INFINITY;
 
-	}
+    int nBoxes = divs[0] * divs[1] * divs[2];
 
-// only check boxes
-	double minDistance = INFINITY;
-
-	int nBoxes = divs[0] * divs[1] * divs[2];
-
-	for (int b = 0; b < nBoxes; ++b)
-	{
-		StatBox& box = boxes[b];
-		for (unsigned int i = 0; i < box.mSphereIndices.size(); ++i)
-		{
-			int indexI = box.mSphereIndices[i];
-			for (unsigned int j = i + 1; j < box.mSphereIndices.size(); ++j)
-			{
-				int indexJ = box.mSphereIndices[j];
+    for (int b = 0; b < nBoxes; ++b)
+    {
+        StatBox& box = boxes[b];
+        for (unsigned int i = 0; i < box.mSphereIndices.size(); ++i)
+        {
+            int indexI = box.mSphereIndices[i];
+            for (unsigned int j = i + 1; j < box.mSphereIndices.size(); ++j)
+            {
+                int indexJ = box.mSphereIndices[j];
 
                 Eigen::Vector3d dP = GetParticle(indexI)->GetPosition() - GetParticle(indexJ)->GetPosition();
-				double dR = GetParticle(indexI)->GetRadius0() + GetParticle(indexJ)->GetRadius0();
+                double dR = GetParticle(indexI)->GetRadius0() + GetParticle(indexJ)->GetRadius0();
 
-				double ijDistance = sqrt(dP.dot(dP)) - dR;
-				minDistance = std::min(minDistance, ijDistance);
-			}
-		}
-	}
-	return minDistance;
-
+                double ijDistance = sqrt(dP.dot(dP)) - dR;
+                minDistance = std::min(minDistance, ijDistance);
+            }
+        }
+    }
+    return minDistance;
 }
 
-void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd& rSpheres,
-                                                      double rVelocityRange,
-                                                      double rRelativeGrowthRate,
-                                                      double rAbsoluteGrowthRate)
+void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd& rSpheres, double rVelocityRange,
+                                                      double rRelativeGrowthRate, double rAbsoluteGrowthRate)
 {
     int numRows = rSpheres.rows();
     mParticles.reserve(numRows);
@@ -333,16 +307,12 @@ void NuTo::ParticleHandler::CreateParticlesFromMatrix(const Eigen::MatrixXd& rSp
 
     for (int i = 0; i < numRows; ++i)
     {
-        Eigen::Vector3d position( { rSpheres(i, 0), rSpheres(i, 1), rSpheres(i, 2) });
+        Eigen::Vector3d position({rSpheres(i, 0), rSpheres(i, 1), rSpheres(i, 2)});
         Eigen::Vector3d velocity = GetRandomVector(-rVelocityRange / 2., rVelocityRange / 2.);
 
         double radius = rSpheres(i, 3);
         mParticles.push_back(new NuTo::CollidableParticleSphere(
-                position,
-                velocity,
-                radius,
-                radius * rRelativeGrowthRate + rAbsoluteGrowthRate,
-                particleIndex++));
+                position, velocity, radius, radius * rRelativeGrowthRate + rAbsoluteGrowthRate, particleIndex++));
     }
 }
 
@@ -352,28 +322,27 @@ Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(double rStart, double rEn
     std::uniform_real_distribution<double> distr(rStart, rEnd);
 
     for (int i = 0; i < 3; ++i)
-	    randomVector[i] = distr(mRNG);
+        randomVector[i] = distr(mRNG);
 
     return randomVector;
 }
 
 void NuTo::ParticleHandler::ResetVelocities()
 {
-	for (auto particle : mParticles)
-		particle->ResetVelocity();
+    for (auto particle : mParticles)
+        particle->ResetVelocity();
 }
 
-Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(
-		const Eigen::MatrixXd& rBounds)
+Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(const Eigen::MatrixXd& rBounds)
 {
-	int vectorSize = rBounds.rows();
-	Eigen::VectorXd randomVector(vectorSize);
-	for (int i = 0; i < vectorSize; ++i)
-	{
+    int vectorSize = rBounds.rows();
+    Eigen::VectorXd randomVector(vectorSize);
+    for (int i = 0; i < vectorSize; ++i)
+    {
         std::uniform_real_distribution<double> distr(rBounds(i, 0), rBounds(i, 1));
         randomVector[i] = distr(mRNG);
-	}
-	return randomVector;
+    }
+    return randomVector;
 }
 
 void NuTo::ParticleHandler::SetVisualizationFileName(const std::string& rVisualizationFileName)
@@ -394,27 +363,26 @@ Eigen::VectorXi NuTo::ParticleHandler::GetSubBoxDivisions(Specimen& rSpecimen, c
         divs[i] = std::max(static_cast<int>(std::ceil(rSpecimen.GetLength(i) / lengthSubBox)), 1);
     }
 
-	return divs;
+    return divs;
 }
 
-Eigen::MatrixXd NuTo::ParticleHandler::GetParticles2D(
-        double rZCoord, double rMinRadius) const
-        {
+Eigen::MatrixXd NuTo::ParticleHandler::GetParticles2D(double rZCoord, double rMinRadius) const
+{
     Eigen::MatrixXd circles(1000, 3);
     int numCircles = 0;
 
     auto spheres = GetParticles(false);
 
-    for (int countSphere = 0; countSphere < spheres.rows();
-            countSphere++)
+    for (int countSphere = 0; countSphere < spheres.rows(); countSphere++)
     {
         double delta = spheres(countSphere, 2) - rZCoord;
         if (std::abs(delta) < spheres(countSphere, 3))
         {
-            double radius = sqrt(static_cast<double>(spheres(countSphere, 3) * spheres(countSphere, 3) - delta * delta));
+            double radius =
+                    sqrt(static_cast<double>(spheres(countSphere, 3) * spheres(countSphere, 3) - delta * delta));
             if (radius > rMinRadius)
             {
-                //add circle
+                // add circle
                 if (numCircles == circles.rows())
                 {
                     circles.conservativeResize(numCircles + 1000, 3);
@@ -426,7 +394,7 @@ Eigen::MatrixXd NuTo::ParticleHandler::GetParticles2D(
             }
         }
     }
-    circles.conservativeResize(numCircles,3);
+    circles.conservativeResize(numCircles, 3);
 
     return circles;
 }
@@ -532,8 +500,8 @@ void writeCylinder(std::ofstream& file, Eigen::MatrixXd bounds, double meshSize)
 }
 
 
-void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
-        Specimen& rSpecimen, double rMeshSize) const
+void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile, Specimen& rSpecimen,
+                                                    double rMeshSize) const
 {
     std::ofstream mFile;
 
@@ -542,18 +510,19 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
 
     mFile.open(rOutputFile);
     mFile << "Mesh.Algorithm = 6;\n";
-    //mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
-    mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
-    //mFile << "Mesh.HighOrderNumLayers = 6;\n";
-    //mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
-    //mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
+    // mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
+    mFile << "Mesh.HighOrderOptimize = 1;\n"; // number of smoothing steps
+    // mFile << "Mesh.HighOrderNumLayers = 6;\n";
+    // mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
+    // mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
     mFile << "Mesh.Optimize = 2;\n";
-    //mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
-    //mFile << "Mesh.OptimizeNetgen = 1;\n";
-    //mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
-    //mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
-    //mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear interpolation?
-    mFile << "Mesh.Smoothing = 2;\n"; //number of smoothing steps for the final mesh
+    // mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
+    // mFile << "Mesh.OptimizeNetgen = 1;\n";
+    // mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
+    // mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
+    // mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear
+    // interpolation?
+    mFile << "Mesh.Smoothing = 2;\n"; // number of smoothing steps for the final mesh
 
 
     // define the sphere function
@@ -601,14 +570,14 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
 
     switch (rSpecimen.GetTypeOfSpecimen())
     {
-        case Specimen::eSpecimenType::Cylinder:
-            writeCylinder(mFile, bounds, rMeshSize);
-            break;
-        case Specimen::eSpecimenType::Box:
-            writeBox(mFile, bounds, rMeshSize);
-            break;
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Don't know how to export this specimen type");
+    case Specimen::eSpecimenType::Cylinder:
+        writeCylinder(mFile, bounds, rMeshSize);
+        break;
+    case Specimen::eSpecimenType::Box:
+        writeBox(mFile, bounds, rMeshSize);
+        break;
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Don't know how to export this specimen type");
     }
 
     auto spheres = GetParticles();
@@ -619,8 +588,7 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     {
         mFile << "t = " << objectCounter << ";\n";
         objectCounter++;
-        mFile << "xC = " << spheres(i, 0) << "; yC = " << spheres(i, 1)
-                << "; zC = " << spheres(i, 2) << ";\n";
+        mFile << "xC = " << spheres(i, 0) << "; yC = " << spheres(i, 1) << "; zC = " << spheres(i, 2) << ";\n";
         mFile << "R = " << spheres(i, 3) << "; \n";
         mFile << "Call MySphere; \n";
         mFile << " \n";
@@ -635,9 +603,8 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     mFile.close();
 }
 
-void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
-        Specimen& rSpecimen, double rMeshSize, double rZCoord,
-        double rMinRadius) const
+void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile, Specimen& rSpecimen, double rMeshSize,
+                                                    double rZCoord, double rMinRadius) const
 {
     std::ofstream file;
 
@@ -645,19 +612,20 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     // some default options, adjust this afterwards in the .geo file
 
     file.open(rOutputFile);
-    file << "Mesh.Algorithm = 1;\n"; //Frontal hex
-    //mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
-    //mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
-    //mFile << "Mesh.HighOrderNumLayers = 6;\n";
-    //mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
-    //mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
+    file << "Mesh.Algorithm = 1;\n"; // Frontal hex
+    // mFile << "Mesh.HighOrderPoissonRatio = 0.2;\n";
+    // mFile << "Mesh.HighOrderOptimize = 1;\n"; //number of smoothing steps
+    // mFile << "Mesh.HighOrderNumLayers = 6;\n";
+    // mFile << "Mesh.HighOrderSmoothingThreshold = 0.2;\n"; //default 0.5
+    // mFile << "Mesh.MultiplePassesMeshes = 1;\n";//default 0 do a simple mesh and use for background meshing
     file << "Mesh.Optimize = 1;\n";
-    //mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
-    //mFile << "Mesh.OptimizeNetgen = 1;\n";
-    //mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
-    //mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
-    //mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear interpolation?
-    file << "Mesh.Smoothing = 2;\n"; //number of smoothing steps for the final mesh
+    // mFile << "Mesh.CharacteristicLengthFromCurvatur = 0;\n";
+    // mFile << "Mesh.OptimizeNetgen = 1;\n";
+    // mFile << "Mesh.SecondOrderExperimental = 1;\n"; //experimental code for second order
+    // mFile << "Mesh.SecondOrderLinear = 1;\n"; //should second order elements just be created by linear interpolation?
+    // mFile << "Mesh.ThirdOrderLinear = " << true << ";\n"; //should second order elements just be created by linear
+    // interpolation?
+    file << "Mesh.Smoothing = 2;\n"; // number of smoothing steps for the final mesh
 
 
     // define the circle function
@@ -713,7 +681,8 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     auto circles = GetParticles2D(rZCoord, rMinRadius);
 
     if (circles.rows() == 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Found no aggregates for visualization. Change the z-Slice or increase rMin.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Found no aggregates for visualization. Change the z-Slice or increase rMin.");
 
     int objectCounter = 0;
 
@@ -728,7 +697,6 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
         file << "Call MySphere; \n";
         file << " \n";
         file << " \n";
-
     }
 
     // finish

@@ -69,8 +69,8 @@ SparseMatrixCSRVector2General<double> Constraint::Constraints::BuildConstraintMa
             {
                 // TODO
                 // Currently, equations have no knowledge about dofs and cannot call GetNum(dof). This
-                // can only be done here in the constraint. 
-                // After adding the separation of dofs, each node has only one dof type and the GetNum() 
+                // can only be done here in the constraint.
+                // After adding the separation of dofs, each node has only one dof type and the GetNum()
                 // function can be called (e.g.) in the ctor of term.
                 std::ostringstream message;
                 message << "Cannot access component " << term.GetComponent() << " from node " << term.GetNode() << ".";

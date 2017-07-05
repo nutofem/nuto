@@ -1,15 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <boost/ptr_container/ptr_list.hpp>
 
 #ifdef _OPENMP
@@ -36,14 +24,7 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
@@ -91,10 +72,10 @@
 
 using namespace NuTo;
 
-NuTo::StructureBase::StructureBase(int rDimension) :
-    mAssembler(std::make_unique<Assembler>()),
-    mShowTime(true),
-    mVerboseLevel(0)
+NuTo::StructureBase::StructureBase(int rDimension)
+    : mAssembler(std::make_unique<Assembler>())
+    , mShowTime(true)
+    , mVerboseLevel(0)
 {
     if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {
@@ -122,58 +103,6 @@ int NuTo::StructureBase::GetDimension() const
 {
     return mDimension;
 }
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::StructureBase::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::StructureBase::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    mLogger << "start serialization of structure base"
-            << "\n";
-#endif
-
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
-    ar& BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
-    ar& BOOST_SERIALIZATION_NVP(mDimension);
-    ar& BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMap);
-    ar& BOOST_SERIALIZATION_NVP(mNumLoadCases);
-    ar& BOOST_SERIALIZATION_NVP(mLoadMap);
-    ar& BOOST_SERIALIZATION_NVP(mGroupMap);
-    ar& BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
-    ar& BOOST_SERIALIZATION_NVP(mSectionMap);
-    ar& BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
-    ar& BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
-#ifdef ENABLE_VISUALIZE
-    //    ar & BOOST_SERIALIZATION_NVP(mGroupeVisualizeWhatsMap);
-    std::cout << "WARNING: Visualization components are not serialized!\n";
-#endif
-    ar& BOOST_SERIALIZATION_NVP(mDofStatus);
-    ar& BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMatrix);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintMappingRHS);
-    ar& BOOST_SERIALIZATION_NVP(mConstraintRHS);
-    ar& BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
-    ar& BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
-    ar& BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
-#ifdef _OPENMP
-    // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them afterwards
-    // see Structure::loadImplement and Structure::saveImplement
-    ar& BOOST_SERIALIZATION_NVP(mNumProcessors);
-#endif // _OPENMP
-    ar& boost::serialization::make_nvp("mLogger", mLogger);
-#ifdef DEBUG_SERIALIZATION
-    mLogger << "finish serialization of structure base"
-            << "\n";
-#endif
-}
-#endif // ENABLE_SERIALIZATION
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::StructureBase::Info() const
@@ -336,8 +265,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::vector<NuTo::eVisualizeWhat>>&
-NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
+std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
     return mGroupVisualizeComponentsMap;
 }
@@ -347,9 +275,8 @@ void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeI
     throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
-void NuTo::StructureBase::DefineVisualizeElementData(
-        Visualize::UnstructuredGrid& visualizer,
-        const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
+void NuTo::StructureBase::DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer,
+                                                     const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
@@ -404,9 +331,8 @@ void NuTo::StructureBase::DefineVisualizeElementData(
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::DefineVisualizeNodeData(
-        Visualize::UnstructuredGrid& visualizer,
-        const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
+void NuTo::StructureBase::DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer,
+                                                  const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
 #ifdef ENABLE_VISUALIZE
 
@@ -417,14 +343,14 @@ void NuTo::StructureBase::DefineVisualizeNodeData(
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ROTATION:
         case NuTo::eVisualizeWhat::VELOCITY:
-        //case NuTo::eVisualizeWhat::ACCELERATION:
-        //case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
-        //case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
-        //case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
-        //case NuTo::eVisualizeWhat::TEMPERATURE:
-        //case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-        //case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
-        //case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
+            // case NuTo::eVisualizeWhat::ACCELERATION:
+            // case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
+            // case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
+            // case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
+            // case NuTo::eVisualizeWhat::TEMPERATURE:
+            // case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+            // case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+            // case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
             visualizer.DefinePointData(GetComponentName(component));
 
         default:
@@ -592,7 +518,8 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
 
     NodeBuildGlobalDofs(__FUNCTION__);
     bool hasInteractingConstraints = GetDofStatus().HasInteractingConstraints();
-    DofStatusSetHasInteractingConstraints(true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
+    DofStatusSetHasInteractingConstraints(
+            true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
 
     auto hessian0 = BuildGlobalHessian0();
     auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
@@ -694,7 +621,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     const int dim = GetDimension();
 
     Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
-    queryNodeCoords = queryNodeCoords +  rNodeCoordOffset.head(dim);
+    queryNodeCoords = queryNodeCoords + rNodeCoordOffset.head(dim);
 
 
     std::vector<int> elementGroupIds = GroupGetMemberIds(rElementGroup);
@@ -702,49 +629,56 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     ElementBase* elementPtr = nullptr;
     Eigen::VectorXd elementNaturalNodeCoords;
     bool nodeInElement = false;
-    for (auto const& eleId : elementGroupIds) {
+    for (auto const& eleId : elementGroupIds)
+    {
         elementPtr = ElementGetElementPtr(eleId);
 
         // Coordinate interpolation must be linear so the shape function derivatives are constant!
         assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() ==
                Interpolation::eTypeOrder::EQUIDISTANT1);
-        const Eigen::MatrixXd &derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(
-                Node::eDof::COORDINATES).DerivativeShapeFunctionsNatural(Eigen::VectorXd::Zero(dim)); // just as _some_ point, as said, constant
+        const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural =
+                elementPtr->GetInterpolationType()
+                        .Get(Node::eDof::COORDINATES)
+                        .DerivativeShapeFunctionsNatural(
+                                Eigen::VectorXd::Zero(dim)); // just as _some_ point, as said, constant
 
         // real coordinates of every node in rElement
         Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
 
-        switch (mDimension) {
-            case 2: {
-                Eigen::Matrix2d invJacobian = dynamic_cast<ContinuumElement<2>*>(elementPtr)->CalculateJacobian(
-                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
+        switch (mDimension)
+        {
+        case 2:
+        {
+            Eigen::Matrix2d invJacobian =
+                    dynamic_cast<ContinuumElement<2>*>(elementPtr)
+                            ->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords)
+                            .inverse();
 
-                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
-            }
-                break;
-            case 3: {
-                Eigen::Matrix3d invJacobian = dynamic_cast<ContinuumElement<3>*>(elementPtr)->CalculateJacobian(
-                        derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
-
-                elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
-
-
-            }
-                break;
+            elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
+        }
+        break;
+        case 3:
+        {
+            Eigen::Matrix3d invJacobian =
+                    dynamic_cast<ContinuumElement<3>*>(elementPtr)
+                            ->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords)
+                            .inverse();
 
             default:
                 throw NuTo::Exception(
                         std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
 
+        default:
+            throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
         }
 
 
-        if ( (elementNaturalNodeCoords.array() > -rTolerance).all() and elementNaturalNodeCoords.sum() <= 1. + rTolerance)
+        if ((elementNaturalNodeCoords.array() > -rTolerance).all() and
+            elementNaturalNodeCoords.sum() <= 1. + rTolerance)
         {
             nodeInElement = true;
             break;
         }
-
     }
 
     if (not nodeInElement)
@@ -753,7 +687,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         throw Exception(__PRETTY_FUNCTION__, "Node is not inside any element.");
     }
 
-    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).ShapeFunctions(elementNaturalNodeCoords);
+    auto shapeFunctions =
+            elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).ShapeFunctions(elementNaturalNodeCoords);
 
     std::vector<Constraint::Equation> equations(dim); // default construction of Equation with rhs = Constant = 0
     for (int iDim = 0; iDim < dim; ++iDim)
@@ -766,7 +701,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     {
         int localNodeId = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
         auto globalNode = elementPtr->GetNode(localNodeId, Node::eDof::DISPLACEMENTS);
-//        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
+        //        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
         double coefficient = -shapeFunctions(iNode, 0);
 
         for (int iDim = 0; iDim < dim; ++iDim)
@@ -775,7 +710,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
 }
 
-void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
+void NuTo::StructureBase::Contact(const std::vector<int>& rElementGroups)
 {
 }
 
@@ -801,7 +736,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 
     matrixForSolver->SetOneBasedIndexing();
 
-    // allocate solver
+// allocate solver
 #if defined(HAVE_PARDISO) && defined(_OPENMP)
     NuTo::SparseDirectSolverPardiso mySolver(GetNumProcessors(), GetVerboseLevel()); // note: not the MKL version
 #else
@@ -917,7 +852,7 @@ void NuTo::StructureBase::UpdateDofStatus()
 {
     std::set<Node::eDof> dofTypes;
     std::set<Node::eDof> activeDofTypes;
-    for(auto interpolationTypePair : mInterpolationTypeMap)
+    for (auto interpolationTypePair : mInterpolationTypeMap)
     {
         const std::set<Node::eDof>& dofs = interpolationTypePair.second->GetDofs();
         dofTypes.insert(dofs.begin(), dofs.end());
@@ -931,7 +866,8 @@ void NuTo::StructureBase::UpdateDofStatus()
     GetAssembler().mDofStatus.SetDofTypes(dofTypes);
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0);
+    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() !=
+                                                           0);
 }
 
 
@@ -1126,7 +1062,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 }
 #else
 //@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without
-//openmp
+// openmp
 void NuTo::StructureBase::CalculateMaximumIndependentSets()
 {
 }
@@ -1189,9 +1125,3 @@ void StructureBase::SetVerboseLevel(unsigned short verboseLevel)
 {
     mVerboseLevel = verboseLevel;
 }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

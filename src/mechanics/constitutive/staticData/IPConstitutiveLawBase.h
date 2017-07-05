@@ -15,10 +15,12 @@ enum class eError;
 namespace Constitutive
 {
 class IPAdditiveOutput;
-template <typename TLaw> class IPConstitutiveLaw;
+template <typename TLaw>
+class IPConstitutiveLaw;
 namespace StaticData
 {
-template <typename TLaw> class DataContainer;
+template <typename TLaw>
+class DataContainer;
 }
 
 //! @brief base class for a combined ConstitutiveLaw - ConstitutiveStaticData structure
@@ -28,30 +30,30 @@ class IPConstitutiveLawBase
 
 
 public:
-
     //! @brief virtual destructor
     //! @remark since we don't want to give up move semantics --> rule of 5
     virtual ~IPConstitutiveLawBase() = default;
 
     IPConstitutiveLawBase() = default;
-    IPConstitutiveLawBase(const IPConstitutiveLawBase& ) = default;
-    IPConstitutiveLawBase(      IPConstitutiveLawBase&&) = default;
-    IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&)  = default;
-    IPConstitutiveLawBase& operator=(      IPConstitutiveLawBase&&) = default;
+    IPConstitutiveLawBase(const IPConstitutiveLawBase&) = default;
+    IPConstitutiveLawBase(IPConstitutiveLawBase&&) = default;
+    IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&) = default;
+    IPConstitutiveLawBase& operator=(IPConstitutiveLawBase&&) = default;
 
     virtual std::unique_ptr<IPConstitutiveLawBase> Clone() const = 0;
 
     virtual ConstitutiveBase& GetConstitutiveLaw() const = 0;
 
     template <int TDim>
-    void Evaluate(
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
     {
         static_assert(TDim == 1 or TDim == 2 or TDim == 3, "TDim == 1 or TDim == 2 or TDim == 3 !");
-        if (TDim == 1) Evaluate1D(rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 2) Evaluate2D(rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 3) Evaluate3D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 1)
+            Evaluate1D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 2)
+            Evaluate2D(rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 3)
+            Evaluate3D(rConstitutiveInput, rConstitutiveOutput);
     }
 
     //! @brief allocates rNum additional static data
@@ -81,19 +83,19 @@ public:
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
-    virtual void NuToSerializeSave(SerializeStreamOut&) {/* no members to serialize */};
+    virtual void NuToSerializeSave(SerializeStreamOut&){/* no members to serialize */};
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize input stream
-    virtual void NuToSerializeLoad(SerializeStreamIn&) {/* no members to serialize */};
+    virtual void NuToSerializeLoad(SerializeStreamIn&){/* no members to serialize */};
 
 protected:
     virtual void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+                            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
     virtual void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+                            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
     virtual void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+                            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
     //! @brief Searches for a specific IP constitutive law and returns it (Additive laws only)
     //! @param rCLPtr The constitutive law of the IP constitutive law that is requested
@@ -102,15 +104,12 @@ protected:
     {
         throw Exception(__PRETTY_FUNCTION__,"This function is only used by additive laws!");
     }
-
-
-
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself
 //! @param rLaw reference to the IPConstitutiveLawBase
 //! @return cloned owning raw pointer of rLaw
-inline NuTo::Constitutive::IPConstitutiveLawBase* new_clone( const NuTo::Constitutive::IPConstitutiveLawBase& rLaw)
+inline NuTo::Constitutive::IPConstitutiveLawBase* new_clone(const NuTo::Constitutive::IPConstitutiveLawBase& rLaw)
 {
     return rLaw.Clone().release();
 }
@@ -118,4 +117,3 @@ inline NuTo::Constitutive::IPConstitutiveLawBase* new_clone( const NuTo::Constit
 
 } // namespace Constitutive
 } // namespace NuTo
-

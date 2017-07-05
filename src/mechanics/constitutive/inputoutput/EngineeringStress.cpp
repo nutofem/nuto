@@ -1,7 +1,6 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 
-
 namespace NuTo
 {
 
@@ -19,9 +18,9 @@ EngineeringStress<3> EngineeringStress<2>::As3D(ePlaneState rPlaneState) const
     EngineeringStress<3> stress;
     stress[0] = (*this)[0];
     stress[1] = (*this)[1];
-//  stress[2] = 0.;
-//  stress[3] = 0.;
-//  stress[4] = 0.;
+    //  stress[2] = 0.;
+    //  stress[3] = 0.;
+    //  stress[4] = 0.;
     stress[5] = (*this)[2];
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
     {
@@ -37,13 +36,13 @@ EngineeringStress<3> EngineeringStress<3>::As3D(ePlaneState rPlaneState) const
     return *this;
 }
 
-template<>
+template <>
 double EngineeringStress<1>::GetVonMisesStress(ePlaneState rPlaneState) const
 {
     return (*this)[0];
 }
 
-template<>
+template <>
 double EngineeringStress<2>::GetVonMisesStress(ePlaneState rPlaneState) const
 {
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
@@ -52,7 +51,7 @@ double EngineeringStress<2>::GetVonMisesStress(ePlaneState rPlaneState) const
                                  "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     const auto& s = data();
-    double misesSquared = s[0]*s[0] - s[0] * s[1] + s[1]*s[1] + 3 * s[2]*s[2];
+    double misesSquared = s[0] * s[0] - s[0] * s[1] + s[1] * s[1] + 3 * s[2] * s[2];
     return std::sqrt(misesSquared);
 }
 
@@ -61,11 +60,8 @@ template <>
 double EngineeringStress<3>::GetVonMisesStress(ePlaneState rPlaneState) const
 {
     const auto& s = data();
-    double misesSquared = 0.5 *(
-              (s[0] - s[1]) * (s[0] - s[1])
-            + (s[1] - s[2]) * (s[1] - s[2])
-            + (s[2] - s[0]) * (s[2] - s[0])
-            + 6 * (s[3]*s[3] + s[4]*s[4] + s[5]*s[5]) );
+    double misesSquared = 0.5 * ((s[0] - s[1]) * (s[0] - s[1]) + (s[1] - s[2]) * (s[1] - s[2]) +
+                                 (s[2] - s[0]) * (s[2] - s[0]) + 6 * (s[3] * s[3] + s[4] * s[4] + s[5] * s[5]));
     return std::sqrt(misesSquared);
 }
 

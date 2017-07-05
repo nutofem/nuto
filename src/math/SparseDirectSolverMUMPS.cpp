@@ -5,17 +5,19 @@
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMUMPS.h"
 
-NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
+NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS()
+    : SparseDirectSolver()
 {
 #ifdef HAVE_MUMPS
-    // set default solver parameters
-    // this->orderingType = 2;          // set ordering to METIS
+// set default solver parameters
+// this->orderingType = 2;          // set ordering to METIS
 #else // HAVE_MUMPS
     throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
-void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
+void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs,
+                                          Eigen::VectorXd& rSolution)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
@@ -196,7 +198,9 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
 #endif // HAVE_MUMPS
 }
 
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
+void NuTo::SparseDirectSolverMUMPS::SchurComplement(
+        const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices,
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
@@ -261,18 +265,19 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     mSolver.job = -1;
     dmumps_c(&mSolver);
 
-    //resize result matrix
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.rows(),rSchurIndices.rows());
+    // resize result matrix
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.rows(),
+                                                                                    rSchurIndices.rows());
 
     // define the problem
-    mSolver.n   = matrixDimension;                       // dimension
-    mSolver.nz  = rMatrix.GetNumEntries();               // number of nonzero entries
-    mSolver.irn = &matrixRows[0];                        // rows
-    mSolver.jcn = const_cast<int*>(&matrixColumns[0]);   // columns
-    mSolver.a   = const_cast<double*>(&matrixValues[0]); // values
+    mSolver.n = matrixDimension; // dimension
+    mSolver.nz = rMatrix.GetNumEntries(); // number of nonzero entries
+    mSolver.irn = &matrixRows[0]; // rows
+    mSolver.jcn = const_cast<int*>(&matrixColumns[0]); // columns
+    mSolver.a = const_cast<double*>(&matrixValues[0]); // values
     mSolver.rhs = nullptr;
     mSolver.size_schur = rSchurIndices.rows();
-    mSolver.listvar_schur = const_cast<int*>(rSchurIndices.data()); //variables of the schur matrix (the 1..size_schur)
+    mSolver.listvar_schur = const_cast<int*>(rSchurIndices.data()); // variables of the schur matrix (the 1..size_schur)
     mSolver.schur = rSchurComplementTranspose.data();
 
     // define mSolver specific parameters
@@ -283,7 +288,8 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     mSolver.icntl[5] = 0; // control an option for permuting and/or scaling the rMatrix (0 - no scaling due to Schur)
     mSolver.icntl[6] = 7; // determines the pivot order to be used for the factorization (7 -  automatic choice)
     mSolver.icntl[7] = 77; // set scaling strategy to automatic
-    //mSolver.icntl[13] = 1000; // additional fill in (1000%, standard is 20%) this might indicate that you have not removed the almost zero entries of your matrix
+    // mSolver.icntl[13] = 1000; // additional fill in (1000%, standard is 20%) this might indicate that you have not
+    // removed the almost zero entries of your matrix
     mSolver.icntl[18] = 1; // centralized Schur complement
 
     // analysis phase

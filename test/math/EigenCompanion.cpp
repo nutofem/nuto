@@ -6,7 +6,7 @@
 BOOST_AUTO_TEST_CASE(AppendRows)
 {
     Eigen::MatrixXd top = Eigen::Matrix<double, 2, 2>::Ones();
-    Eigen::MatrixXd bottom = 2*Eigen::Matrix<double, 1, 2>::Ones();
+    Eigen::MatrixXd bottom = 2 * Eigen::Matrix<double, 1, 2>::Ones();
     NuTo::EigenCompanion::AppendRows(top, bottom);
 
     Eigen::Matrix<double, 3, 2> expected;
@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE(AppendRows)
 
 BOOST_AUTO_TEST_CASE(ReadWriteFile)
 {
-    Eigen::MatrixXd toFile(2,2);
-    toFile << 1,2,3,4;
+    Eigen::MatrixXd toFile(2, 2);
+    toFile << 1, 2, 3, 4;
     NuTo::EigenCompanion::WriteToFile(toFile, "EigenCompanionFile.dat");
 
     Eigen::MatrixXd fromFile = NuTo::EigenCompanion::ReadFromFile("EigenCompanionFile.dat");

@@ -1,19 +1,8 @@
 // $Id: RungeKuttaCashKarp.cpp 575 2011-09-20 18:05:35Z unger3 $
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
@@ -26,29 +15,31 @@
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::RungeKuttaCashKarp::RungeKuttaCashKarp (StructureBase* rStructure)  : RungeKuttaBase (rStructure)
+NuTo::RungeKuttaCashKarp::RungeKuttaCashKarp(StructureBase* rStructure)
+    : RungeKuttaBase(rStructure)
 {
 }
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::RungeKuttaCashKarp::Info()const
+void NuTo::RungeKuttaCashKarp::Info() const
 {
-	TimeIntegrationBase::Info();
+    TimeIntegrationBase::Info();
 }
 
 //! @brief calculate the critical time step for explicit routines (this is wrong do)
 //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
 //! this is the critical time step from velocity verlet, the real one is certainly larger
-double NuTo::RungeKuttaCashKarp::CalculateCriticalTimeStep()const
+double NuTo::RungeKuttaCashKarp::CalculateCriticalTimeStep() const
 {
-	double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
-	return 2.8/std::sqrt(maxGlobalEigenValue);
+    double maxGlobalEigenValue = mStructure->ElementTotalCalculateLargestElementEigenvalue();
+    return 2.8 / std::sqrt(maxGlobalEigenValue);
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-double NuTo::RungeKuttaCashKarp::GetStageTimeFactor(int rStage)const
+double NuTo::RungeKuttaCashKarp::GetStageTimeFactor(int rStage) const
 {
 	assert(rStage<6);
 	double s(0);
@@ -78,9 +69,10 @@ double NuTo::RungeKuttaCashKarp::GetStageTimeFactor(int rStage)const
 	return s;
 }
 
-//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
+//! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
+//! step)
 // so essentially it's c_n-c_(n-1)
-bool NuTo::RungeKuttaCashKarp::HasTimeChanged(int rStage)const
+bool NuTo::RungeKuttaCashKarp::HasTimeChanged(int rStage) const
 {
 	assert(rStage<6);
 	bool s(0);
@@ -112,7 +104,7 @@ bool NuTo::RungeKuttaCashKarp::HasTimeChanged(int rStage)const
 
 
 //! @brief ... return scaling for the intermediate stage for y (a in Butcher tableau)
-void NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage)const
+void NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage) const
 {
 	assert(rStage<6);
 	assert(rWeight.size()==5);
@@ -298,22 +290,9 @@ template void NuTo::RungeKuttaCashKarp::serialize(boost::archive::text_iarchive 
 template<class Archive>
 void NuTo::RungeKuttaCashKarp::serialize(Archive & ar, const unsigned int version)
 {
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of RungeKuttaCashKarp" << "\n";
-    #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RungeKuttaBase);
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of RungeKuttaCashKarp" << "\n";
-    #endif
-}
-
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-//! @brief ... save the object to a file
-void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string rType )
-{
-    try
+    assert(rStage < 6);
+    double s;
+    if (orderCashKarp == 1)
     {
         //transform to uppercase
         std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
@@ -360,24 +339,30 @@ void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string
     {
         throw Exception ( "[RungeKuttaCashKarp::Restore]Unhandled exception." );
     }
-}
-
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::RungeKuttaCashKarp::Save (const std::string &filename, std::string rType )const
-{
-    try
+    if (orderCashKarp == 2)
     {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-        std::string tmpStr ( GetTypeId() );
-        if (rType=="BINARY")
+        switch (rStage)
         {
-            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+        case 0:
+            s = -1.5;
+            break;
+        case 1:
+            s = 2.5;
+            break;
+        case 2:
+            s = 0.;
+            break;
+        case 3:
+            s = 0.;
+            break;
+        case 4:
+            s = 0.;
+            break;
+        case 5:
+            s = 0.;
+            break;
+        default:
+            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
         else if (rType=="XML")
         {
@@ -404,19 +389,37 @@ void NuTo::RungeKuttaCashKarp::Save (const std::string &filename, std::string rT
     }
     catch ( Exception &e )
     {
-        throw;
+        switch (rStage)
+        {
+        case 0:
+            s = 19. / 54.;
+            break;
+        case 1:
+            s = 0.;
+            break;
+        case 2:
+            s = -10. / 27.;
+            break;
+        case 3:
+            s = 55. / 54.;
+            break;
+        case 4:
+            s = 0.;
+            break;
+        case 5:
+            s = 0.;
+            break;
+        default:
+            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+        }
     }
-    catch ( std::exception &e )
+    if (orderCashKarp == 4)
     {
         throw Exception ( e.what() );
     }
-    catch ( ... )
+    if (orderCashKarp == 5)
     {
         throw Exception ( "[RungeKuttaCashKarp::Save] Unhandled exception." );
     }
+    return s;
 }
-
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::RungeKuttaCashKarp)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

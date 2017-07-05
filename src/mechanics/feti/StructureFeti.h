@@ -192,7 +192,7 @@ public:
     /// \brief Constraints all degrees of freedom of nodes in node group
     /// \param nodeGroupId
     ///
-    void ApplyConstraintsTotalFeti(const Group<NodeBase>&  nodeGroup);
+    void ApplyConstraintsTotalFeti(const Group<NodeBase>& nodeGroup);
 
     ///
     /// \brief Constraints all degrees of freedom
@@ -283,7 +283,7 @@ public:
 
         lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
                                         mPrescribedDisplacementDofIds.end());
-        
+
         return lagrangeMultiplierDofIds;
     }
     /// \brief Assembles vector for multiplicity scaling

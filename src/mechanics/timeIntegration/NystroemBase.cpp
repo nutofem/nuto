@@ -1,14 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "math/SparseDirectSolverMUMPS.h"
 
 #include "math/SparseMatrixCSRVector2.h"
@@ -60,8 +49,6 @@ void NuTo::NystroemBase::serialize(Archive& ar, const unsigned int version)
               << "\n";
 #endif
 }
-
-#endif // ENABLE_SERIALIZATION
 
 
 //! @brief perform the time integration
@@ -237,10 +224,3 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
         this->PostProcess(extLoad - intForce);
     }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NystroemBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

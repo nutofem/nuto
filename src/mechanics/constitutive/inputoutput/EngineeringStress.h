@@ -29,15 +29,12 @@ namespace NuTo
  *  \f]
  */
 template <int TDim>
-class EngineeringStress: public ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>
+class EngineeringStress : public ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>
 {
 public:
-
     EngineeringStress<3> As3D(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 
     double GetVonMisesStress(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
-
 };
 
 } /* namespace NuTo */
-

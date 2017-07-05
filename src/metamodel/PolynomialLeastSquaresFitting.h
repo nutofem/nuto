@@ -15,7 +15,7 @@ public:
 
     //! @brief ... Adds a pair of x and y coordinates that should be matched by the polynom
     //! @param rBoundaryCondition ... a pair of x and y coordinates that should be matched by the polynom
-    void AddBoundaryCondition(std::pair<double,double> rBoundaryCondition);
+    void AddBoundaryCondition(std::pair<double, double> rBoundaryCondition);
 
     //! @brief ... Adds a pair of x and y coordinates that should be matched by the polynom
     //! @param rX ... the x value of the boundary condition
@@ -43,10 +43,9 @@ public:
     void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const override;
 
 protected:
-    Eigen::VectorXd       mPolynomialCoeffs;
-    std::vector<std::pair<double,double>>   mBoundaryConditions;
-    int                                     mDegree             = -1;
+    Eigen::VectorXd mPolynomialCoeffs;
+    std::vector<std::pair<double, double>> mBoundaryConditions;
+    int mDegree = -1;
 };
 
-}   // namespace NuTo
-
+} // namespace NuTo

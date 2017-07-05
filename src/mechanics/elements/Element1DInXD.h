@@ -13,7 +13,7 @@
 namespace NuTo
 {
 
-template<int TRows, int TCols>
+template <int TRows, int TCols>
 class ConstitutiveMatrix;
 
 template <int TDim>
@@ -28,43 +28,30 @@ class TemperatureGradient1D;
 class LocalEqStrain;
 class NonlocalEqStrain;
 class HeatFlux1D;
-template<int TNumRows, int TNumColumns>
+template <int TNumRows, int TNumColumns>
 class ConstitutiveTangentNonlocal;
 
-class Element1DInXD: public ContinuumElement<1>
+class Element1DInXD : public ContinuumElement<1>
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-
 public:
-    Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes,
-                  const InterpolationType& rInterpolationType, 
-                  const IntegrationTypeBase& integrationType,
-                  const DofStatus& dofStatus, int globalDimension);
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
+    Element1DInXD(const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType,
+                  const IntegrationTypeBase& integrationType, const DofStatus& dofStatus, int globalDimension);
 
     Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof) const override;
     const Eigen::VectorXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const;
 
-    Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
-    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
+    Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates,
+                                         Node::eDof rDofType) const override;
+    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates,
+                                         Node::eDof rDofType) const override;
 
 protected:
-
-    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element
+    //! length/area/volum is negative)
     void CheckElement() override;
 
 private:
-
     //! @brief constructor for serialization
     Element1DInXD() = default;
 
@@ -74,12 +61,14 @@ private:
 
 
     void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const override;
-    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData,
-            int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const override;
+                                                EvaluateDataContinuum<1>& rData, int rTheIP,
+                                                const ConstitutiveInputMap& constitutiveInputMap,
+                                                const ConstitutiveOutputMap& constitutiveOutputMap) const override;
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData, int rTheIP,
+                                        const ConstitutiveOutputMap& constitutiveOutputMap) const override;
 
-    //! @brief Calculates the transformation matrix. The size of the matrix depends on the number of nodes and the global dimension of the element.
+    //! @brief Calculates the transformation matrix. The size of the matrix depends on the number of nodes and the
+    //! global dimension of the element.
     //! @param rGlobalDimension: global dimension of the element, i.e. 2 or 3
     //! @param rNumberOfNodes: number of nodes of the element
     //! @return  transformationMatrix
@@ -95,7 +84,3 @@ private:
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Element1DInXD)
-#endif

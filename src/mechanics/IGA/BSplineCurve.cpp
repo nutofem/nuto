@@ -2,10 +2,8 @@
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "base/Exception.h"
 
-NuTo::BSplineCurve::BSplineCurve(const Eigen::MatrixXd &rKnots,
-                                 const Eigen::MatrixXd &rControlPoints,
-                                 const Eigen::VectorXd &rWeights,
-                                 int rDegree)
+NuTo::BSplineCurve::BSplineCurve(const Eigen::MatrixXd& rKnots, const Eigen::MatrixXd& rControlPoints,
+                                 const Eigen::VectorXd& rWeights, int rDegree)
 {
     int numKnots = rKnots.rows();
     int numControlPoints = rControlPoints.rows();
@@ -23,9 +21,7 @@ NuTo::BSplineCurve::BSplineCurve(const Eigen::MatrixXd &rKnots,
     mWeights = rWeights;
 }
 
-NuTo::BSplineCurve::BSplineCurve(int rDegree,
-                                 const Eigen::MatrixXd& rPoints,
-                                 Eigen::MatrixXd& AInv)
+NuTo::BSplineCurve::BSplineCurve(int rDegree, const Eigen::MatrixXd& rPoints, Eigen::MatrixXd& AInv)
 {
     assert(rDegree > 0);
     mDegree = rDegree;
@@ -48,23 +44,25 @@ NuTo::BSplineCurve::BSplineCurve(int rDegree,
     for (int i = 0; i < numPoints; i++)
     {
         int spanIdx = ShapeFunctionsIGA::FindSpan(rParameters[i], mDegree, mKnots);
-        Eigen::VectorXd basisFunctions = ShapeFunctionsIGA::BasisFunctionsRat(rParameters[i], spanIdx, mDegree, mKnots, mWeights);
-        A.block(i, spanIdx-mDegree, 1, basisFunctions.rows()) = basisFunctions.transpose();
+        Eigen::VectorXd basisFunctions =
+                ShapeFunctionsIGA::BasisFunctionsRat(rParameters[i], spanIdx, mDegree, mKnots, mWeights);
+        A.block(i, spanIdx - mDegree, 1, basisFunctions.rows()) = basisFunctions.transpose();
     }
 
 
     AInv = A.inverse();
 
-    mControlPoints = AInv*rPoints;
+    mControlPoints = AInv * rPoints;
 }
 
 int NuTo::BSplineCurve::GetNumIGAElements() const
 {
     int numElements = 0;
 
-    for(int i = 1; i < mKnots.rows(); i++)
+    for (int i = 1; i < mKnots.rows(); i++)
     {
-        if(mKnots(i-1) < mKnots(i)) numElements++;
+        if (mKnots(i - 1) < mKnots(i))
+            numElements++;
     }
 
     return numElements;
@@ -74,12 +72,13 @@ int NuTo::BSplineCurve::GetElementFirstKnotID(int rElementID) const
 {
     int elementID = 0;
     int knotID = -1;
-    for(int i = 1; i < mKnots.rows(); i++)
+    for (int i = 1; i < mKnots.rows(); i++)
     {
-        if(mKnots(i-1) < mKnots(i)) elementID++;
-        if(rElementID == elementID-1)
+        if (mKnots(i - 1) < mKnots(i))
+            elementID++;
+        if (rElementID == elementID - 1)
         {
-            knotID = i-1;
+            knotID = i - 1;
             break;
         }
     }
@@ -92,9 +91,9 @@ int NuTo::BSplineCurve::GetElementFirstKnotID(int rElementID) const
 Eigen::MatrixXd NuTo::BSplineCurve::GetElementKnots(int rElementID) const
 {
     int knotID = GetElementFirstKnotID(rElementID);
-    Eigen::MatrixXd knots(1,2);
+    Eigen::MatrixXd knots(1, 2);
 
-    knots << mKnots(knotID) , mKnots(knotID+1);
+    knots << mKnots(knotID), mKnots(knotID + 1);
 
     return knots;
 }
@@ -104,7 +103,7 @@ Eigen::VectorXi NuTo::BSplineCurve::GetElementKnotIDs(int rElementID) const
     int knotID = GetElementFirstKnotID(rElementID);
     Eigen::VectorXi knots(1);
 
-    knots << knotID ;
+    knots << knotID;
 
     return knots;
 }
@@ -117,7 +116,7 @@ Eigen::MatrixXd NuTo::BSplineCurve::GetElementControlPoints(int rElementID) cons
 
     int rows = mControlPoints.rows();
 
-    return mControlPoints.block(0, knotID - mDegree, rows, mDegree+1);
+    return mControlPoints.block(0, knotID - mDegree, rows, mDegree + 1);
 }
 
 Eigen::VectorXi NuTo::BSplineCurve::GetElementControlPointIDs(int rElementID) const
@@ -126,9 +125,10 @@ Eigen::VectorXi NuTo::BSplineCurve::GetElementControlPointIDs(int rElementID) co
 
     int knotID = GetElementFirstKnotID(rElementID);
 
-    Eigen::VectorXi ids(mDegree+1);
+    Eigen::VectorXi ids(mDegree + 1);
 
-    for(int i = 0; i < mDegree + 1; i++) ids(i) = knotID - mDegree + i;
+    for (int i = 0; i < mDegree + 1; i++)
+        ids(i) = knotID - mDegree + i;
 
     return ids;
 }
@@ -138,16 +138,18 @@ int NuTo::BSplineCurve::GetMultiplicityOfKnot(double rKnot)
     int spanIdx = ShapeFunctionsIGA::FindSpan(rKnot, mDegree, mKnots);
 
     int count = 0;
-    for(int i = spanIdx; i > 0; i--)
-        if(mKnots(i) == rKnot) count++;
-        else                             break;
+    for (int i = spanIdx; i > 0; i--)
+        if (mKnots(i) == rKnot)
+            count++;
+        else
+            break;
 
     return count;
 }
 
 const Eigen::MatrixXd& NuTo::BSplineCurve::GetBezierExtraction(int rElementID) const
 {
-    assert(((size_t)rElementID > (mBezierOperators.size()-1)) || (rElementID < 0));
+    assert(((size_t)rElementID > (mBezierOperators.size() - 1)) || (rElementID < 0));
     if (mBezierOperators.size() == 0)
         throw Exception("[BSplineCurve] The Bézier extraction has to be calculated first. Use the function 'BezierElementExtractionOperators'.");
 
@@ -186,16 +188,16 @@ Eigen::VectorXd NuTo::BSplineCurve::ParametrizationCentripetalMethod(const Eigen
     rParameters[numPoints - 1] = 1.;
 
     double totalLengthPolygon = 0.;
-    for (int i = 1; i <= (numPoints-1); i++)
+    for (int i = 1; i <= (numPoints - 1); i++)
     {
-        Eigen::Matrix<double, 1, Eigen::Dynamic> diff(rPoints.row(i) - rPoints.row(i-1));
+        Eigen::Matrix<double, 1, Eigen::Dynamic> diff(rPoints.row(i) - rPoints.row(i - 1));
         totalLengthPolygon += std::sqrt(diff.norm());
     }
 
-    for (int i = 1; i < (numPoints-1); i++ )
+    for (int i = 1; i < (numPoints - 1); i++)
     {
-        Eigen::Matrix<double, 1, Eigen::Dynamic> diff(rPoints.row(i) - rPoints.row(i-1));
-        rParameters[i] = rParameters[i-1] + std::sqrt(diff.norm())/totalLengthPolygon;
+        Eigen::Matrix<double, 1, Eigen::Dynamic> diff(rPoints.row(i) - rPoints.row(i - 1));
+        rParameters[i] = rParameters[i - 1] + std::sqrt(diff.norm()) / totalLengthPolygon;
     }
 
     return rParameters;
@@ -213,16 +215,16 @@ Eigen::VectorXd NuTo::BSplineCurve::ParametrizationChordLengthMethod(const Eigen
     rParameters[numPoints - 1] = 1.;
 
     double totalLengthPolygon = 0.;
-    for (int i = 1; i <= (numPoints-1); i++)
+    for (int i = 1; i <= (numPoints - 1); i++)
     {
-        Eigen::MatrixXd diff(rPoints.row(i) - rPoints.row(i-1));
+        Eigen::MatrixXd diff(rPoints.row(i) - rPoints.row(i - 1));
         totalLengthPolygon += diff.norm();
     }
 
-    for (int i = 1; i < (numPoints-1); i++ )
+    for (int i = 1; i < (numPoints - 1); i++)
     {
-        Eigen::MatrixXd diff(rPoints.row(i) - rPoints.row(i-1));
-        rParameters[i] = rParameters[i-1] + diff.norm()/totalLengthPolygon;
+        Eigen::MatrixXd diff(rPoints.row(i) - rPoints.row(i - 1));
+        rParameters[i] = rParameters[i - 1] + diff.norm() / totalLengthPolygon;
     }
 
     return rParameters;
@@ -235,15 +237,18 @@ const Eigen::VectorXd& NuTo::BSplineCurve::ParametrizationKnotVector(const Eigen
     int numKnots = numPoints + mDegree + 1;
     mKnots.resize(numKnots);
 
-    for (int i = 0; i <= mDegree; i++) mKnots(i) = 0.;
-    for (int i = numKnots - 1 - mDegree; i < numKnots; i++) mKnots(i) = 1.;
+    for (int i = 0; i <= mDegree; i++)
+        mKnots(i) = 0.;
+    for (int i = numKnots - 1 - mDegree; i < numKnots; i++)
+        mKnots(i) = 1.;
 
-    double scale = 1./mDegree;
+    double scale = 1. / mDegree;
     for (int j = 1; j <= (numPoints - 1 - mDegree); j++)
     {
         mKnots(j + mDegree) = 0.;
-        for (int i = j; i <= (j + mDegree - 1); i++) mKnots(j + mDegree) += rParameters[i];
-        mKnots(j + mDegree)*=scale;
+        for (int i = j; i <= (j + mDegree - 1); i++)
+            mKnots(j + mDegree) += rParameters[i];
+        mKnots(j + mDegree) *= scale;
     }
 
     return mKnots;
@@ -262,48 +267,56 @@ void NuTo::BSplineCurve::BezierElementExtractionOperators()
         bezierOperator.setIdentity();
     }
 
-    for(int currentKnotIndex = formerKnotIndex + 1; currentKnotIndex < numKnots; )
+    for (int currentKnotIndex = formerKnotIndex + 1; currentKnotIndex < numKnots;)
     {
         double knotToInsert = mKnots(currentKnotIndex);
 
         int i = currentKnotIndex;
-        for(; (currentKnotIndex < numKnots-1) && (mKnots(currentKnotIndex+1) == mKnots(currentKnotIndex)); currentKnotIndex++);
-        int mult = currentKnotIndex-i+1;
+        for (; (currentKnotIndex < numKnots - 1) && (mKnots(currentKnotIndex + 1) == mKnots(currentKnotIndex));
+             currentKnotIndex++)
+            ;
+        int mult = currentKnotIndex - i + 1;
 
-        if(mult < mDegree)
+        if (mult < mDegree)
         {
             Eigen::VectorXd alphas(numKnots);
-            for(int A = 0; A < currentKnotIndex - mDegree; A++) alphas(A) = 1.;
-            for(int A = currentKnotIndex - mDegree ; A < currentKnotIndex; A++) alphas(A) = (knotToInsert - mKnots(A))/(mKnots(A+mDegree) - mKnots(A));
-            for(int A = currentKnotIndex; A < numKnots; A++) alphas(A) = 0.;
+            for (int A = 0; A < currentKnotIndex - mDegree; A++)
+                alphas(A) = 1.;
+            for (int A = currentKnotIndex - mDegree; A < currentKnotIndex; A++)
+                alphas(A) = (knotToInsert - mKnots(A)) / (mKnots(A + mDegree) - mKnots(A));
+            for (int A = currentKnotIndex; A < numKnots; A++)
+                alphas(A) = 0.;
 
             double diff = mKnots(currentKnotIndex) - mKnots(formerKnotIndex);
-            for(int j = mDegree ; j <= mult+1; j++)
+            for (int j = mDegree; j <= mult + 1; j++)
             {
-                double temp =  diff/(mKnots(formerKnotIndex+j) - mKnots(formerKnotIndex));
-                alphas(j-mult-1) = temp;
+                double temp = diff / (mKnots(formerKnotIndex + j) - mKnots(formerKnotIndex));
+                alphas(j - mult - 1) = temp;
             }
 
             int r = mDegree - mult;
 
-            for(int j = 1; j <= r; j++)
+            for (int j = 1; j <= r; j++)
             {
-                int save = r-j+1;
-                int s = mult+j;
+                int save = r - j + 1;
+                int s = mult + j;
 
-                for(int k = mDegree + 1; k <= s+1; k++)
+                for (int k = mDegree + 1; k <= s + 1; k++)
                 {
-                    double alpha = alphas(k-s-1);
-                    mBezierOperators[numElements-1].col(k-1) = alpha*mBezierOperators[numElements-1].col(k-1) + (1. - alpha)*mBezierOperators[numElements-1].col(k-2);
+                    double alpha = alphas(k - s - 1);
+                    mBezierOperators[numElements - 1].col(k - 1) =
+                            alpha * mBezierOperators[numElements - 1].col(k - 1) +
+                            (1. - alpha) * mBezierOperators[numElements - 1].col(k - 2);
                 }
-                if(currentKnotIndex < numKnots)
+                if (currentKnotIndex < numKnots)
                 {
-                    mBezierOperators[numElements].block(save-1, save-1, j+1, 1) = mBezierOperators[numElements-1].block(mDegree-j, mDegree, j+1, 1);
+                    mBezierOperators[numElements].block(save - 1, save - 1, j + 1, 1) =
+                            mBezierOperators[numElements - 1].block(mDegree - j, mDegree, j + 1, 1);
                 }
             }
             numElements++;
         }
-        formerKnotIndex=currentKnotIndex;
+        formerKnotIndex = currentKnotIndex;
         currentKnotIndex++;
     }
 }
@@ -316,34 +329,36 @@ void NuTo::BSplineCurve::BezierElementControlPoints()
 
     std::vector<Eigen::MatrixXd>::iterator itCP = mBezierControlPoints.begin();
     int i = 0;
-    for(std::vector<Eigen::MatrixXd>::iterator it = mBezierOperators.begin(); it != mBezierOperators.end(); ++it, ++itCP, ++i)
+    for (std::vector<Eigen::MatrixXd>::iterator it = mBezierOperators.begin(); it != mBezierOperators.end();
+         ++it, ++itCP, ++i)
     {
-        Eigen::MatrixXd controlPoints = (mControlPoints.block(0, i, mDegree+1, dim)).transpose();
-        (*itCP) = (*it)*controlPoints;
+        Eigen::MatrixXd controlPoints = (mControlPoints.block(0, i, mDegree + 1, dim)).transpose();
+        (*itCP) = (*it) * controlPoints;
     }
 }
 
 Eigen::VectorXd NuTo::BSplineCurve::CurvePoint(double rParameter) const
 {
     int spanIdx = ShapeFunctionsIGA::FindSpan(rParameter, mDegree, mKnots);
-    Eigen::VectorXd basisFunctions = ShapeFunctionsIGA::BasisFunctionsRat(rParameter, spanIdx, mDegree, mKnots, mWeights);
+    Eigen::VectorXd basisFunctions =
+            ShapeFunctionsIGA::BasisFunctionsRat(rParameter, spanIdx, mDegree, mKnots, mWeights);
 
     Eigen::VectorXd coordinates(GetDimension());
     coordinates.setZero(GetDimension());
 
-    for(int i = 0; i < GetDimension(); i++)
-        for(int j = 0; j <= mDegree; j++)
-            coordinates(i) += basisFunctions(j)*mControlPoints(spanIdx-mDegree+j, i);
+    for (int i = 0; i < GetDimension(); i++)
+        for (int j = 0; j <= mDegree; j++)
+            coordinates(i) += basisFunctions(j) * mControlPoints(spanIdx - mDegree + j, i);
 
     return coordinates;
 }
 
 
-Eigen::MatrixXd NuTo::BSplineCurve::CurvePoints(const Eigen::VectorXd &rParameter) const
+Eigen::MatrixXd NuTo::BSplineCurve::CurvePoints(const Eigen::VectorXd& rParameter) const
 {
     int numParameters = rParameter.rows();
     Eigen::MatrixXd result(numParameters, GetDimension());
-    for(int i = 0; i < numParameters; i++)
+    for (int i = 0; i < numParameters; i++)
     {
         result.row(i) = CurvePoint(rParameter[i]).transpose();
     }
@@ -359,69 +374,80 @@ void NuTo::BSplineCurve::InsertKnot(double rKnotToInsert, int rMultiplicity)
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots() + rMultiplicity);
 
-    for(int i = 0 ; i <= k; i++)               newKnots(i) = mKnots(i);
-    for(int i = 1 ; i <= rMultiplicity; i++)   newKnots(k + i) = rKnotToInsert;
-    for(int i = k + 1; i < GetNumKnots(); i++) newKnots(rMultiplicity + i) = mKnots(i);
+    for (int i = 0; i <= k; i++)
+        newKnots(i) = mKnots(i);
+    for (int i = 1; i <= rMultiplicity; i++)
+        newKnots(k + i) = rKnotToInsert;
+    for (int i = k + 1; i < GetNumKnots(); i++)
+        newKnots(rMultiplicity + i) = mKnots(i);
 
     // control points
     Eigen::MatrixXd newControlPoints(GetNumControlPoints() + rMultiplicity, GetDimension());
-    Eigen::MatrixXd Rw(mDegree+1, GetDimension());
+    Eigen::MatrixXd Rw(mDegree + 1, GetDimension());
 
-    for(int i = 0; i <= k - mDegree; i++) newControlPoints.row(i) = mControlPoints.row(i);
-    for(int i = k - initialMultiplicity; i < GetNumControlPoints(); i++) newControlPoints.row(i + rMultiplicity) = mControlPoints.row(i);
-    for(int i = 0; i <= mDegree - initialMultiplicity; i++) Rw.row(i) = mControlPoints.row(k - mDegree + i);
+    for (int i = 0; i <= k - mDegree; i++)
+        newControlPoints.row(i) = mControlPoints.row(i);
+    for (int i = k - initialMultiplicity; i < GetNumControlPoints(); i++)
+        newControlPoints.row(i + rMultiplicity) = mControlPoints.row(i);
+    for (int i = 0; i <= mDegree - initialMultiplicity; i++)
+        Rw.row(i) = mControlPoints.row(k - mDegree + i);
 
     int L = 0;
-    for(int j = 1; j <= rMultiplicity; j++)
+    for (int j = 1; j <= rMultiplicity; j++)
     {
         L = k - mDegree + j;
-        for(int i = 0; i <= mDegree - j -initialMultiplicity; i++)
+        for (int i = 0; i <= mDegree - j - initialMultiplicity; i++)
         {
-            double alpha = (rKnotToInsert - mKnots(L+i))/(mKnots(i+k+1) - mKnots(L+i));
-            Rw.row(i) = alpha*Rw.row(i+1) + (1. - alpha)*Rw.row(i);
+            double alpha = (rKnotToInsert - mKnots(L + i)) / (mKnots(i + k + 1) - mKnots(L + i));
+            Rw.row(i) = alpha * Rw.row(i + 1) + (1. - alpha) * Rw.row(i);
         }
         newControlPoints.row(L) = Rw.row(0);
         newControlPoints.row(k + rMultiplicity - j - initialMultiplicity) = Rw.row(mDegree - j - initialMultiplicity);
     }
 
-    for(int i = L + 1; i < k - initialMultiplicity; i++) newControlPoints.row(i) = Rw.row(i-L);
+    for (int i = L + 1; i < k - initialMultiplicity; i++)
+        newControlPoints.row(i) = Rw.row(i - L);
 
     mKnots = newKnots;
     mControlPoints = newControlPoints;
 }
 
 
-void NuTo::BSplineCurve::RefineKnots(const Eigen::VectorXd &rKnotsToInsert)
+void NuTo::BSplineCurve::RefineKnots(const Eigen::VectorXd& rKnotsToInsert)
 {
     int numInsert = rKnotsToInsert.rows();
-    int begin     = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(0),           mDegree, mKnots);
-    int end       = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(numInsert-1), mDegree, mKnots);
+    int begin = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(0), mDegree, mKnots);
+    int end = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(numInsert - 1), mDegree, mKnots);
     end++;
 
     // since we're dealing with NURBS curves, a projection is needed ...
-    Eigen::MatrixXd controlPointsProjected(mControlPoints.rows(), GetDimension()+1);
+    Eigen::MatrixXd controlPointsProjected(mControlPoints.rows(), GetDimension() + 1);
     controlPointsProjected.block(0, 0, mControlPoints.rows(), mControlPoints.cols()) = mControlPoints;
 
     int col = mControlPoints.cols();
-    for(int i = 0; i <  mControlPoints.rows(); i++)
+    for (int i = 0; i < mControlPoints.rows(); i++)
         controlPointsProjected(i, col) = mWeights(i);
 
     // new control points
-    Eigen::MatrixXd newControlPoints(GetNumControlPoints() + numInsert, GetDimension()+1);
-    for(int i = 0; i <= begin - mDegree; i++)  newControlPoints.row(i) = controlPointsProjected.row(i);
-    for(int i = end - 1; i < GetNumControlPoints(); i++) newControlPoints.row(i + numInsert) = controlPointsProjected.row(i);
+    Eigen::MatrixXd newControlPoints(GetNumControlPoints() + numInsert, GetDimension() + 1);
+    for (int i = 0; i <= begin - mDegree; i++)
+        newControlPoints.row(i) = controlPointsProjected.row(i);
+    for (int i = end - 1; i < GetNumControlPoints(); i++)
+        newControlPoints.row(i + numInsert) = controlPointsProjected.row(i);
 
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots() + numInsert);
-    for(int i = 0 ; i <= begin; i++) newKnots(i) = mKnots(i);
-    for(int i = end + mDegree; i < GetNumKnots(); i++) newKnots(numInsert + i) = mKnots(i);
+    for (int i = 0; i <= begin; i++)
+        newKnots(i) = mKnots(i);
+    for (int i = end + mDegree; i < GetNumKnots(); i++)
+        newKnots(numInsert + i) = mKnots(i);
 
     int i = end + mDegree - 1;
     int k = end + mDegree + numInsert - 1;
 
-    for(int j = numInsert - 1; j >= 0; j--)
+    for (int j = numInsert - 1; j >= 0; j--)
     {
-        while(rKnotsToInsert(j) <= mKnots(i) && i > begin)
+        while (rKnotsToInsert(j) <= mKnots(i) && i > begin)
         {
             newControlPoints.row(k - mDegree - 1) = controlPointsProjected.row(i - mDegree - 1);
             newKnots(k) = mKnots(i);
@@ -429,18 +455,19 @@ void NuTo::BSplineCurve::RefineKnots(const Eigen::VectorXd &rKnotsToInsert)
             i--;
         }
         newControlPoints.row(k - mDegree - 1) = newControlPoints.row(k - mDegree);
-        for(int l = 1; l <= mDegree; l++)
+        for (int l = 1; l <= mDegree; l++)
         {
             int ind = k - mDegree + l;
             double alpha = newKnots(k + l) - rKnotsToInsert(j);
-            if(std::fabs(alpha) == 0.0)
+            if (std::fabs(alpha) == 0.0)
             {
-                newControlPoints.row(ind -1) = newControlPoints.row(ind);
+                newControlPoints.row(ind - 1) = newControlPoints.row(ind);
             }
             else
             {
-                alpha = alpha/(newKnots(k+l) - mKnots(i - mDegree + l));
-                newControlPoints.row(ind - 1) = alpha*newControlPoints.row(ind - 1) + (1.0 - alpha)*newControlPoints.row(ind);
+                alpha = alpha / (newKnots(k + l) - mKnots(i - mDegree + l));
+                newControlPoints.row(ind - 1) =
+                        alpha * newControlPoints.row(ind - 1) + (1.0 - alpha) * newControlPoints.row(ind);
             }
         }
         newKnots(k) = rKnotsToInsert(j);
@@ -450,7 +477,8 @@ void NuTo::BSplineCurve::RefineKnots(const Eigen::VectorXd &rKnotsToInsert)
     mKnots = newKnots;
     mWeights = newControlPoints.col(newControlPoints.cols() - 1);
     mControlPoints.resize(newControlPoints.rows(), GetDimension());
-    for(int i = 0; i < newControlPoints.rows(); i++) mControlPoints.row(i) = newControlPoints.block(i,0, 1, GetDimension())/mWeights(i);
+    for (int i = 0; i < newControlPoints.rows(); i++)
+        mControlPoints.row(i) = newControlPoints.block(i, 0, 1, GetDimension()) / mWeights(i);
 }
 
 void NuTo::BSplineCurve::DuplicateKnots()
@@ -459,7 +487,7 @@ void NuTo::BSplineCurve::DuplicateKnots()
     for (int i = 0; i < knotsToInsert.rows(); i++)
     {
         int beginID = GetElementFirstKnotID(i);
-        knotsToInsert(i) = (mKnots(beginID + 1) + mKnots(beginID))/2.;
+        knotsToInsert(i) = (mKnots(beginID + 1) + mKnots(beginID)) / 2.;
     }
     RefineKnots(knotsToInsert);
 }

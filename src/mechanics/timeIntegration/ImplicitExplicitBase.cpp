@@ -264,7 +264,7 @@ void NuTo::ImplicitExplicitBase::FactorizeConstantHessians(
 
 
         mStructure->DofTypeSetIsActive(dof, true);
-        auto hessian0     = mStructure->BuildGlobalHessian0();
+        auto hessian0 = mStructure->BuildGlobalHessian0();
         auto hessian0_CSR = hessian0.JJ.ExportToCSRGeneral();
         hessian0_CSR.SetOneBasedIndexing();
 

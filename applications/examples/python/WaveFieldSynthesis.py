@@ -36,8 +36,8 @@ def setup_geometry(s):
     s.ElementTotalConvertToInterpolationType()
 
     law_id = s.ConstitutiveLawCreate("LINEAR_DIELECTRIC")
-    dielectric_tensor = np.array([1., 0., 0., 0., 1., 0., 0., 0., 1.])
-    s.ConstitutiveLawSetParameterFullVectorDouble(law_id, "DIELECTRIC_TENSOR", -dielectric_tensor)
+    dielectric_tensor = np.eye(3)
+    s.ConstitutiveLawSetParameterMatrixDouble(law_id, "DIELECTRIC_TENSOR", -dielectric_tensor)
     s.ElementTotalSetConstitutiveLaw(law_id)
 
     s.ElementTotalSetSection(nuto.SectionPlane_Create(LENGTH_Z, False))

@@ -8,7 +8,8 @@ class SparseDirectSolver
 {
 public:
     //! @brief ... default constructor
-    SparseDirectSolver() : mShowTime(true)
+    SparseDirectSolver()
+        : mShowTime(true)
     {
     }
 

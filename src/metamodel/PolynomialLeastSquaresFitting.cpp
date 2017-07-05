@@ -6,12 +6,11 @@
 NuTo::PolynomialLeastSquaresFitting::PolynomialLeastSquaresFitting()
     : Metamodel()
 {
-
 }
 
 //! @brief ... Adds a pair of x and y coordinates that should be matched by the polynom
 //! @param rBoundaryCondition ... a pair of x and y coordinates that should be matched by the polynom
-void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(std::pair<double,double> rBoundaryCondition)
+void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(std::pair<double, double> rBoundaryCondition)
 {
     if (int(mBoundaryConditions.size()) < mDegree)
     {
@@ -28,7 +27,7 @@ void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(std::pair<double,
 //! @param rY ... the y value of the boundary Condition
 void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(double rX, double rY)
 {
-    AddBoundaryCondition(std::pair<double, double>(rX,rY));
+    AddBoundaryCondition(std::pair<double, double>(rX, rY));
 }
 
 //! @brief determine regression parameters
@@ -36,11 +35,11 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
 {
     // check dimension of output
     int dimOutput = this->mSupportPoints.GetDimOutput();
-    if(dimOutput != 1)
+    if (dimOutput != 1)
     {
         throw Exception("[NuTo::PolynomialLeastSquaresFitting::BuildDerived] dimension of output must be 1.");
     }
-    if(mDegree < 0)
+    if (mDegree < 0)
     {
         throw Exception("[NuTo::PolynomialLeastSquaresFitting::BuildDerived] Degree of polynom not set.");
     }
@@ -101,7 +100,7 @@ Eigen::VectorXd NuTo::PolynomialLeastSquaresFitting::GetPolynomialCoefficients()
 //! @param rDegree degree of the polynom
 void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)
 {
-    if(rDegree < 0)
+    if (rDegree < 0)
     {
         throw Exception("[NuTo::PolynomialLeastSquaresFitting::SetDegree] Degree must be non negative.");
     }
@@ -111,14 +110,15 @@ void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)
 //! @brief ... calculate approximation (in transformed space)
 //! @param rInputCoordinates ... matrix of input data points (transformed)
 //! @param rOutputCoordinates ... vector of output data (transformed)
-void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const
+void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const Eigen::MatrixXd& rInputCoordinates,
+                                                           Eigen::MatrixXd& rOutputCoordinates) const
 {
-    if(rInputCoordinates.rows() != 1)
+    if (rInputCoordinates.rows() != 1)
     {
         throw Exception("[NuTo::PolynomialLeastSquaresFitting::SolveTransformed] Dimension of input (number of rows) has to be 1.");
     }
     int numCoefficients = this->mPolynomialCoeffs.rows();
-    if(numCoefficients != mDegree + 1)
+    if (numCoefficients != mDegree + 1)
     {
         throw Exception("[NuTo::PolynomialLeastSquaresFitting::SolveTransformed] invalid number of polynomial coefficients. Build model first.");
     }

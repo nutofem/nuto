@@ -2,5 +2,5 @@
 
 namespace NuTo
 {
-    extern const std::string Version;
+extern const std::string Version;
 }

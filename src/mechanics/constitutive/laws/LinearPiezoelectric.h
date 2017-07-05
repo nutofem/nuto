@@ -17,14 +17,10 @@ class InterpolationType;
   */
 //!
 //!
-class LinearPiezoelectric: public ConstitutiveBase
+class LinearPiezoelectric : public ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
-
     LinearPiezoelectric();
 
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
@@ -34,23 +30,22 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                               const InterpolationType& rInterpolationType) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -72,15 +67,15 @@ public:
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::MatrixXd GetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
+    virtual void SetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier,
+                                          Eigen::MatrixXd rValue) override;
 
     ///////////////////////////////////////////////////////////////////////////
-
 
 
     //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
@@ -100,27 +95,20 @@ public:
     //! @param rLogger stream for the output
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override
     {
-    	return false;
+        return false;
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 
 protected:
     //! @brief ... Piezoelectric tensor components in Voigt notation
-    Eigen::Matrix<double,3,6> mPiezo;
-    Eigen::Matrix<double,6,6> mStiffness;
-    Eigen::Matrix<double,3,3> mPermittivity;
+    Eigen::Matrix<double, 3, 6> mPiezo;
+    Eigen::Matrix<double, 6, 6> mStiffness;
+    Eigen::Matrix<double, 3, 3> mPermittivity;
 
     double mRho;
 
@@ -130,10 +118,8 @@ protected:
         Eigen::Matrix<double, TDim, 1> mElectricField;
     };
 };
-
 }
 
 //#ifdef ENABLE_SERIALIZATION
-//BOOST_CLASS_EXPORT_KEY(NuTo::LinearPiezoelectric)
+// BOOST_CLASS_EXPORT_KEY(NuTo::LinearPiezoelectric)
 //#endif //ENABLE_SERIALIZATION
-

@@ -10,31 +10,31 @@ namespace NuTo
 //! @author Volker Hirthammer
 //! @date January 11, 2016
 //! @brief ...
-class ElementOutputBlockMatrixDouble: public ElementOutputBase, public BlockFullMatrix<double>
+class ElementOutputBlockMatrixDouble : public ElementOutputBase, public BlockFullMatrix<double>
 {
-
 
 
     // Constructor / Destructor
     // ------------------------
 
 public:
-
     //! @brief constructor
     //! @param rDofStatus: Reference to DofStatus needed for block matrices
-    ElementOutputBlockMatrixDouble(const DofStatus& rDofStatus) : BlockFullMatrix<double>(rDofStatus) {}
+    ElementOutputBlockMatrixDouble(const DofStatus& rDofStatus)
+        : BlockFullMatrix<double>(rDofStatus)
+    {
+    }
 
     //! @brief copy constructor
     //! @remark ElementOutputBlockMatrixDouble holds heavy data, no copies allowed
-    ElementOutputBlockMatrixDouble(const ElementOutputBlockMatrixDouble&  rOther) = delete;
+    ElementOutputBlockMatrixDouble(const ElementOutputBlockMatrixDouble& rOther) = delete;
 
     //! @brief move constructor
     //! @param rOther ... other ElementOutputBlockMatrixDouble
-    ElementOutputBlockMatrixDouble(      ElementOutputBlockMatrixDouble&& rOther) = default;
+    ElementOutputBlockMatrixDouble(ElementOutputBlockMatrixDouble&& rOther) = default;
 
     //! @brief destructor
     ~ElementOutputBlockMatrixDouble() = default;
-
 
 
     // Operator overloads
@@ -43,12 +43,12 @@ public:
 
     //! @brief copy assignment operator
     //! @remark ElementOutputBlockMatrixDouble holds heavy data, no copies allowed
-    ElementOutputBlockMatrixDouble& operator=(const ElementOutputBlockMatrixDouble&  rOther) = delete;
+    ElementOutputBlockMatrixDouble& operator=(const ElementOutputBlockMatrixDouble& rOther) = delete;
 
 
     //! @brief move assignment operator
     //! @param rOther ... other ElementOutputBlockMatrixDouble
-    ElementOutputBlockMatrixDouble& operator=(      ElementOutputBlockMatrixDouble&& rOther) = default;
+    ElementOutputBlockMatrixDouble& operator=(ElementOutputBlockMatrixDouble&& rOther) = default;
 
 
     // Member functions
@@ -69,12 +69,10 @@ public:
     }
 
 
-
     // Member variables
     // ----------------
 
 public:
-
 };
 
 

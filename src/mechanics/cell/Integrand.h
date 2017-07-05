@@ -12,9 +12,9 @@ template <int TDim>
 class Integrand
 {
 public:
-    virtual Integrand<TDim>* Clone() const=0;
-    virtual ~Integrand()                             = default;
-    virtual DofVector<double> Gradient(const CellData&, const CellIPData<TDim>&)    = 0;
+    virtual Integrand<TDim>* Clone() const = 0;
+    virtual ~Integrand() = default;
+    virtual DofVector<double> Gradient(const CellData&, const CellIPData<TDim>&) = 0;
     virtual std::vector<IPValue> IPValues(const CellData&, const CellIPData<TDim>&) = 0;
 };
 

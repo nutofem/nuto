@@ -119,7 +119,6 @@ public:
         vec.tail(k.rows()) = k;
 
         return vec;
-
     }
 
 

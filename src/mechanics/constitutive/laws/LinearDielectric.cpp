@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
@@ -23,31 +14,17 @@
 
 using namespace NuTo;
 
-LinearDielectric::LinearDielectric() : ConstitutiveBase()
+LinearDielectric::LinearDielectric()
+    : ConstitutiveBase()
 {
-//    mPermittivity << 1, 0, 0,
-//                     0, 1, 0,
-//                     0, 0, 1;
+    //    mPermittivity << 1, 0, 0,
+    //                     0, 1, 0,
+    //                     0, 0, 1;
     SetParametersValid();
 }
 
-#ifdef ENABLE_SERIALIZATION
-template <class Archive> void LinearDielectric::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize LinearDielectric" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mK) &
-            BOOST_SERIALIZATION_NVP(mCt) & BOOST_SERIALIZATION_NVP(mRho);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize LinearDielectric" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(LinearDielectric)
-#endif // ENABLE_SERIALIZATION
-
-ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(
-        const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType&) const
+ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                             const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -77,20 +54,26 @@ ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(
 
 bool LinearDielectric::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
 {
-    return (dofRow == Node::eDof::ELECTRICPOTENTIAL && dofCol == Node::eDof::ELECTRICPOTENTIAL && ( timeDerivative == 0 || timeDerivative == 2));
+    return (dofRow == Node::eDof::ELECTRICPOTENTIAL && dofCol == Node::eDof::ELECTRICPOTENTIAL &&
+            (timeDerivative == 0 || timeDerivative == 2));
 }
 
 template <int TDim>
-void LinearDielectric::Evaluate(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+void LinearDielectric::Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                                const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    Eigen::Matrix<double,3,TDim> cropMatrix;
-    for(int ii=0; ii<3; ii++) {
-        for (int jj=0; jj <TDim; jj++) {
-            if (ii == jj) {
-                cropMatrix(ii,jj) = 1;
-            } else {
-                cropMatrix(ii,jj) = 0;
+    Eigen::Matrix<double, 3, TDim> cropMatrix;
+    for (int ii = 0; ii < 3; ii++)
+    {
+        for (int jj = 0; jj < TDim; jj++)
+        {
+            if (ii == jj)
+            {
+                cropMatrix(ii, jj) = 1;
+            }
+            else
+            {
+                cropMatrix(ii, jj) = 0;
             }
         }
     }
@@ -115,14 +98,16 @@ void LinearDielectric::Evaluate(
         {
         case Constitutive::eOutput::ELECTRIC_FIELD:
         {
-            Eigen::Matrix<double, TDim, 1>& electricField = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
+            Eigen::Matrix<double, TDim, 1>& electricField =
+                    *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
             electricField = inputData.mElectricField;
             break;
         }
 
         case Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
         {
-            Eigen::Matrix<double, TDim, 1>& electricDisplacement = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
+            Eigen::Matrix<double, TDim, 1>& electricDisplacement =
+                    *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
             electricDisplacement = perm * inputData.mElectricField;
             break;
         }
@@ -143,7 +128,6 @@ void LinearDielectric::Evaluate(
 
 void NuTo::LinearDielectric::CheckParameters() const
 {
-
 }
 
 bool LinearDielectric::CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const
@@ -161,41 +145,42 @@ bool LinearDielectric::CheckHaveParameter(Constitutive::eConstitutiveParameter r
     }
 }
 
-Eigen::VectorXd NuTo::LinearDielectric::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd
+NuTo::LinearDielectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        Eigen::VectorXd permittivityFlattened(9);
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                permittivityFlattened(count) = this->mPermittivity(ii,jj);
-                count++;
-            }
-        }
-        return permittivityFlattened;
+        return mPermittivity;
     }
     default:
         throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-void NuTo::LinearDielectric::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
+void NuTo::LinearDielectric::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                      Eigen::MatrixXd rValue)
 {
-    //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                this->mPermittivity(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mPermittivity = rValue;
+        break;
+    }
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+    }
+}
+
+void NuTo::LinearDielectric::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+{
+    switch (rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
+    {
+        mPermittivity << rValue, 0, 0, 0, rValue, 0, 0, 0, rValue;
         break;
     }
     default:
@@ -229,9 +214,9 @@ void LinearDielectric::Info(unsigned short rVerboseLevel, Logger& rLogger) const
     rLogger << "    Relative electric permittivity          : " << this->mPermittivity << "\n";
 }
 
-template void LinearDielectric::Evaluate<1>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void LinearDielectric::Evaluate<2>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void LinearDielectric::Evaluate<3>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
+template void LinearDielectric::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput);
+template void LinearDielectric::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput);
+template void LinearDielectric::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput);

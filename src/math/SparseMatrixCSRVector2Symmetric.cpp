@@ -132,17 +132,3 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 		throw Exception ( e.what() );
 	}
 }
-
-template void SparseMatrixCSRVector2Symmetric<int>::Save (const std::string&, std::string) const;
-template void SparseMatrixCSRVector2Symmetric<int>::Restore (const std::string&, std::string);
-template void SparseMatrixCSRVector2Symmetric<double>::Save (const std::string&, std::string) const;
-template void SparseMatrixCSRVector2Symmetric<double>::Restore (const std::string&, std::string);
-
-#endif // ENABLE_SERIALIZATION
-  
-}
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2Symmetric<double>)
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2Symmetric<int>)
-#endif  // ENABLE_SERIALIZATION

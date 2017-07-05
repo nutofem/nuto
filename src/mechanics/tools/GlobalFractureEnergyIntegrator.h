@@ -14,13 +14,12 @@ namespace Tools
 class GlobalFractureEnergyIntegrator
 {
 public:
-
     //! @brief constructs from data vectors
     //! @param rForces vector containing forces
     //! @param rDisplacements vector container displacements
     //! @return obj
     GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces, const Eigen::VectorXd& rDisplacements);
-    
+
     //! @brief constructs from data files
     //! @param rForces <path>/<file>.dat to container with force data
     //! @param rDisplacements <path>/<file>.dat to container with force data
@@ -40,7 +39,6 @@ public:
     double IntegrateSofteningCurve(double rArea, double rForceThreshold) const;
 
 private:
-
     //! @brief integrates F[rIndexEnd]
     //! @param rIndexEnd
     //! @param rForceThreshold
@@ -63,5 +61,5 @@ private:
     Eigen::VectorXd mDispl;
 };
 
-}   // namespace Tools
-}   // namespace NuTo
+} // namespace Tools
+} // namespace NuTo

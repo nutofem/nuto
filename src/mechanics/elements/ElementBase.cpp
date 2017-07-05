@@ -1,14 +1,5 @@
 #include "mechanics/elements/ElementBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <iostream>
 
 #include <boost/foreach.hpp>
@@ -57,41 +48,11 @@ std::ostream& operator<<(std::ostream& out, const ElementBase& element)
 }
 } /* NuTo */
 
-NuTo::ElementBase::ElementBase(const InterpolationType& interpolationType, const IntegrationTypeBase& integrationType) :
-        mInterpolationType(&interpolationType),
-        mIPData(integrationType)
-{}
-
-
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::ElementBase::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::ElementBase::serialize(Archive& ar, const unsigned int version)
+NuTo::ElementBase::ElementBase(const InterpolationType& interpolationType, const IntegrationTypeBase& integrationType)
+    : mInterpolationType(&interpolationType)
+    , mIPData(integrationType)
 {
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ElementBase " << std::endl;
-#endif
-    ar& boost::serialization::make_nvp("mInterpolationType", const_cast<InterpolationType*&>(mInterpolationType));
-    ar& boost::serialization::make_nvp("mElementData", mElementData);
-
-// the element data has to be saved on the main structure due to problems with a recursion on the stack (nonlocal data
-// contains ptr to elements)
-// the idea is to first serialize all the elements in the table, and afterwards update the pointers of the element data
-// in the element data routine
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ElementBase" << std::endl;
-#endif
 }
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
-#endif // ENABLE_SERIALIZATION
 
 
 void NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
@@ -182,7 +143,6 @@ Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const E
                                                     Node::eDof rDofType) const
 {
     return EigenCompanion::To3D(InterpolateDofGlobal(rTimeDerivative, rNaturalCoordinates, rDofType));
-
 }
 
 
@@ -294,7 +254,7 @@ void NuTo::ElementBase::GetVisualizationCells(unsigned int& NumVisualizationPoin
 
 NuTo::IpData::eIpStaticDataType ToIpDataEnum(NuTo::eVisualizeWhat what)
 {
-    switch(what)
+    switch (what)
     {
         case NuTo::eVisualizeWhat::BOND_STRESS:
             return IpData::eIpStaticDataType::BOND_STRESS;
@@ -329,7 +289,7 @@ NuTo::IpData::eIpStaticDataType ToIpDataEnum(NuTo::eVisualizeWhat what)
 
 NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 {
-    switch(what)
+    switch (what)
     {
         case NuTo::eVisualizeWhat::TEMPERATURE:
             return NuTo::Node::eDof::TEMPERATURE;
@@ -350,12 +310,14 @@ NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 }
 }
 
-void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
+                                  const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     IntegrationTypeBase::IpCellInfo ipCellInfo = GetIntegrationType().GetVisualizationCells();
     auto& cells = ipCellInfo.cells;
     auto& points = ipCellInfo.vertices;
-    if (ipCellInfo.cells.size() == 0) return; // nothing to visualize
+    if (ipCellInfo.cells.size() == 0)
+        return; // nothing to visualize
 
     // add visualization points and store their id together with their local coordinates
     for (auto& pointInfo : points)
@@ -390,7 +352,7 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
             if (evaluateStress == false)
                 evaluateStress = true;
-            // no break here...
+        // no break here...
         case NuTo::eVisualizeWhat::BOND_STRESS:
         case NuTo::eVisualizeWhat::DAMAGE:
         case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
@@ -479,7 +441,8 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
         {
             auto nodeDof = ToNodeEnum(component);
             for (auto point : points)
-                visualizer.SetPointData(point.visualizePointId, componentName, InterpolateDofGlobal(point.localCoords, nodeDof));
+                visualizer.SetPointData(point.visualizePointId, componentName,
+                                        InterpolateDofGlobal(point.localCoords, nodeDof));
         }
         break;
 
@@ -520,14 +483,16 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer, const
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
+                                                    const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     throw NuTo::Exception(
             std::string(__PRETTY_FUNCTION__) +
             ": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
 
-void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
+                                                      const std::vector<eVisualizeWhat>& visualizeComponents)
 {
     //
     //  This function is still in beta and only works for engineering strain. Implementation is still in progress...
@@ -554,12 +519,14 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         info.cellId = visualizer.AddCell({info.pointId}, eCellTypes::VERTEX);
     }
 
-        //determine the ipdata and determine the map
-        std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-        elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
-        auto& elementIpDataMap = elementOutput[Element::eOutput::IP_DATA]->GetIpData().GetIpDataMap();
+    // determine the ipdata and determine the map
+    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
+    auto& elementIpDataMap = elementOutput[Element::eOutput::IP_DATA]->GetIpData().GetIpDataMap();
 
-        for (auto component : visualizeComponents)
+    for (auto component : visualizeComponents)
+    {
+        switch (component)
         {
             switch (component)
             {
@@ -573,6 +540,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
                     break;
             }
         }
+    }
 
 
     // calculate the element solution
@@ -584,22 +552,22 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         auto componentName = GetComponentName(component);
         switch (component)
         {
-            case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-            case NuTo::eVisualizeWhat::DAMAGE:
-            case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-            {
-                const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(component));
-                assert(data.size() != 0);
-                for (int i = 0; i < numIp; ++i)
-                    visualizer.SetCellData(ipInfo[i].cellId, componentName, data.col(i));
-            }
-                break;
-            case NuTo::eVisualizeWhat::DISPLACEMENTS:
-            case NuTo::eVisualizeWhat::TEMPERATURE:
-            case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-            {
-                for (int i = 0; i < numIp; ++i)
-                    visualizer.SetPointData(ipInfo[i].pointId, componentName,
+        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+        case NuTo::eVisualizeWhat::DAMAGE:
+        case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
+        {
+            const Eigen::MatrixXd& data = elementIpDataMap.at(ToIpDataEnum(component));
+            assert(data.size() != 0);
+            for (int i = 0; i < numIp; ++i)
+                visualizer.SetCellData(ipInfo[i].cellId, componentName, data.col(i));
+        }
+        break;
+        case NuTo::eVisualizeWhat::DISPLACEMENTS:
+        case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        {
+            for (int i = 0; i < numIp; ++i)
+                visualizer.SetPointData(ipInfo[i].pointId, componentName,
                                         InterpolateDof3D(ipInfo[i].localCoords, Node::eDof::DISPLACEMENTS));
             }
                 break;

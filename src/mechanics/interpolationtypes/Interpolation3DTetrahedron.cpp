@@ -11,8 +11,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 
-NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        Interpolation3D::Interpolation3D(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(NuTo::Node::eDof rDofType,
+                                                             NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension)
+    : Interpolation3D::Interpolation3D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }
@@ -43,7 +44,8 @@ Eigen::VectorXd NuTo::Interpolation3DTetrahedron::CalculateShapeFunctions(const 
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation3DTetrahedron::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation3DTetrahedron::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -82,7 +84,9 @@ int NuTo::Interpolation3DTetrahedron::CalculateNumNodes() const
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation3DTetrahedron::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation3DTetrahedron::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                                     int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     double alpha = rNaturalSurfaceCoordinates(0);
@@ -103,7 +107,8 @@ Eigen::VectorXd NuTo::Interpolation3DTetrahedron::CalculateNaturalSurfaceCoordin
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation3DTetrahedron::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation3DTetrahedron::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     Eigen::MatrixXd dXidAlpha = Eigen::Matrix<double, 3, 2>::Zero();
@@ -149,8 +154,3 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation3DTetrahedron::GetSurfaceEdgesCo
     }
     return surfaceEdgeCoordinates;
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation3DTetrahedron)
-#endif
-

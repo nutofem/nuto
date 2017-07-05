@@ -11,17 +11,9 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation1DTruss.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
-NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        NuTo::Interpolation1D::Interpolation1D(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                                 int rDimension)
+    : NuTo::Interpolation1D::Interpolation1D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }
@@ -37,7 +29,7 @@ NuTo::eIntegrationType NuTo::Interpolation1DTruss::GetStandardIntegrationType() 
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
         return NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
-            return NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO2:
         return NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
@@ -93,7 +85,8 @@ Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateShapeFunctions(const Eigen:
     }
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -115,7 +108,9 @@ Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNat
     }
 }
 
-Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd
+NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                               int rSurface) const
 {
     Eigen::VectorXd naturalCoordinates(1);
     switch (rSurface)
@@ -132,7 +127,8 @@ Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(c
     return naturalCoordinates;
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(
+        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     Eigen::VectorXd naturalSurfaceCoordinates(1);
     // calculating a transformation from 1D --> 0D returns 0
@@ -160,26 +156,4 @@ int NuTo::Interpolation1DTruss::CalculateNumNodes() const
     default:
         throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
-
 }
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DTruss::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Interpolation1DTruss::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation1D" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation1D);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation1D" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DTruss)
-#endif  // ENABLE_SERIALIZATION

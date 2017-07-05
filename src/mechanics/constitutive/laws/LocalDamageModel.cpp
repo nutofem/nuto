@@ -5,15 +5,6 @@
 #include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -632,33 +623,6 @@ NuTo::LocalDamageModel::CalculateStaticDataExtrapolationError(Data& rStaticData,
 
     return (k_n - k_nn) / k_n;
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NuTo::LocalDamageModel::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::LocalDamageModel::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize LocalDamageModel" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mMaxBondStress) &
-            BOOST_SERIALIZATION_NVP(mResidualBondStress) & BOOST_SERIALIZATION_NVP(mSlipAtMaxBondStress) &
-            BOOST_SERIALIZATION_NVP(mSlipAtResidualBondStress) & BOOST_SERIALIZATION_NVP(mNormalStiffness) &
-            BOOST_SERIALIZATION_NVP(m1DivAlpha);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize LocalDamageModel" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LocalDamageModel)
-#endif // ENABLE_SERIALIZATION
 
 
 bool NuTo::LocalDamageModel::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,

@@ -8,18 +8,9 @@
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
-template<int TDim>
-std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO(
-        NuTo::Constitutive::eOutput outputType)
+template <int TDim>
+std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputType)
 {
     using namespace Constitutive;
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
@@ -107,16 +98,16 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
     }
 }
 
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(
-        NuTo::Constitutive::eOutput outputType);
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(
-        NuTo::Constitutive::eOutput outputType);
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(
-        NuTo::Constitutive::eOutput outputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(NuTo::Constitutive::eOutput outputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eOutput outputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(NuTo::Constitutive::eOutput outputType);
 
-template<int TDim>
-std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO(
-        NuTo::Constitutive::eInput inputType)
+template <int TDim>
+std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputType)
 {
     using namespace Constitutive;
     switch (inputType)
@@ -154,12 +145,12 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
     }
 }
 
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(
-        NuTo::Constitutive::eInput inputType);
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(
-        NuTo::Constitutive::eInput inputType);
-template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(
-        NuTo::Constitutive::eInput inputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(NuTo::Constitutive::eInput inputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eInput inputType);
+template std::unique_ptr<NuTo::ConstitutiveIOBase>
+NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(NuTo::Constitutive::eInput inputType);
 
 
 NuTo::ConstitutiveIOBase& NuTo::ConstitutiveIOBase::operator=(const ConstitutiveIOBase& rOther)
@@ -169,7 +160,7 @@ NuTo::ConstitutiveIOBase& NuTo::ConstitutiveIOBase::operator=(const Constitutive
 
     for (int iCol = 0; iCol < GetNumColumns(); ++iCol)
         for (int iRow = 0; iRow < GetNumRows(); ++iRow)
-            (*this)(iRow, iCol) = rOther(iRow,iCol);
+            (*this)(iRow, iCol) = rOther(iRow, iCol);
 
     this->mIsCalculated = rOther.GetIsCalculated();
     return *this;
@@ -182,29 +173,29 @@ Eigen::MatrixXd NuTo::ConstitutiveIOBase::CopyToEigenMatrix() const
     Eigen::MatrixXd m(rows, cols);
     for (int i = 0; i < rows; ++i)
         for (int j = 0; j < cols; ++j)
-            m(i,j) = this->operator()(i,j);
+            m(i, j) = this->operator()(i, j);
     return m;
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator ()(int rRow, int rCol)
+double& NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol)
 {
     throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] not supported.");
 }
 
 
-double NuTo::ConstitutiveIOBase::operator ()(int rRow, int rCol) const
+double NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol) const
 {
     throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] not supported.");
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator [](int rRow)
+double& NuTo::ConstitutiveIOBase::operator[](int rRow)
 {
     throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] not supported.");
 }
 
-double NuTo::ConstitutiveIOBase::operator [](int rRow) const
+double NuTo::ConstitutiveIOBase::operator[](int rRow) const
 {
     throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] not supported.");
 }
@@ -247,6 +238,11 @@ namespace NuTo
         return AsEngineeringStrain3D();
     }
 
+template <>
+EngineeringStrain<1>& ConstitutiveIOBase::AsEngineeringStrain<1>()
+{
+    return AsEngineeringStrain1D();
+}
 
     template<int TDim>
     const EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain() const
@@ -254,45 +250,34 @@ namespace NuTo
         throw Exception(__PRETTY_FUNCTION__, "invalid diemnsion");
     }
 
-    template<>
-    const EngineeringStrain<1>& ConstitutiveIOBase::AsEngineeringStrain<1>() const
-    {
-        return AsEngineeringStrain1D();
-    }
-
-    template<>
-    const EngineeringStrain<2>& ConstitutiveIOBase::AsEngineeringStrain<2>() const
-    {
-        return AsEngineeringStrain2D();
-    }
-
-    template<>
-    const EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>() const
-    {
-        return AsEngineeringStrain3D();
-    }
-}
-
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveIOBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template <class Archive>
-void NuTo::ConstitutiveIOBase::serialize(Archive & ar, const unsigned int version)
+template <>
+EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>()
 {
-#ifdef DEBUG_SERIALIZATION
-std::cout << "start serialize ConstitutiveIOBase" << std::endl;
-#endif
-
-#ifdef DEBUG_SERIALIZATION
-std::cout << "finish serialize ConstitutiveIOBase" << std::endl;
-#endif
+    return AsEngineeringStrain3D();
 }
-#endif // ENABLE_SERIALIZATION
+
+
+template <int TDim>
+const EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain() const
+{
+    throw MechanicsException(__PRETTY_FUNCTION__, "invalid diemnsion");
+}
+
+template <>
+const EngineeringStrain<1>& ConstitutiveIOBase::AsEngineeringStrain<1>() const
+{
+    return AsEngineeringStrain1D();
+}
+
+template <>
+const EngineeringStrain<2>& ConstitutiveIOBase::AsEngineeringStrain<2>() const
+{
+    return AsEngineeringStrain2D();
+}
+
+template <>
+const EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>() const
+{
+    return AsEngineeringStrain3D();
+}
+}

@@ -12,11 +12,11 @@ namespace NuTo
 class AdditiveInputExplicit : public AdditiveBase
 {
 public:
-
     //! @brief constructor
     AdditiveInputExplicit(const int& rNumTimeDerivatives)
         : AdditiveBase(rNumTimeDerivatives)
-    {}
+    {
+    }
 
     // has no ip static data itself
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
@@ -29,8 +29,8 @@ public:
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw ... additional constitutive law
     //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw, 
-            Constitutive::eInput rModiesInput = Constitutive::eInput::NONE) override;
+    virtual void AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
+                                    Constitutive::eInput rModiesInput = Constitutive::eInput::NONE) override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
@@ -47,7 +47,7 @@ public:
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
     virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-            const InterpolationType& rInterpolationType) const override;
+                                                       const InterpolationType& rInterpolationType) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
@@ -66,10 +66,11 @@ public:
     //! @param rMainDerivative: The requested global derivative
     //! @return Sublaw derivative enum
     Constitutive::eOutput GetDerivativeEnumSublaw(Constitutive::eOutput rParameter,
-                                                          Constitutive::eOutput rMainDerivative) const;
+                                                  Constitutive::eOutput rMainDerivative) const;
 
     template <int TDim>
     ConstitutiveOutputMap GetSublawOutputMap(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
-            const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, int rSublawIndex) const;
+                                             const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                             int rSublawIndex) const;
 };
 }

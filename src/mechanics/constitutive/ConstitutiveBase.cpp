@@ -1,18 +1,7 @@
-// $Id$
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 
 #include <iostream>
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
 
 #include "base/Logger.h"
 #include "base/Exception.h"
@@ -73,7 +62,28 @@ void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::Da
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-Eigen::VectorXd NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd
+NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has "
+                                   "no variables of type Eigen::VectorXd.");
+}
+
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                          Eigen::VectorXd rValue)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has "
+                                   "no variables of type Eigen::VectorXd.");
+}
+
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @return ... value of the requested variable
+Eigen::MatrixXd
+NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
@@ -81,7 +91,8 @@ Eigen::VectorXd NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Const
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
+void NuTo::ConstitutiveBase::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                      Eigen::MatrixXd rValue)
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
@@ -114,7 +125,7 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
     break;
 
     case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-    break;
+        break;
 
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "material parameter check not implemented.");
@@ -125,11 +136,11 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity
 //! @return ... equilibrium water volume fraction
-double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, Eigen::VectorXd rCoeffs) const
+double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity,
+                                                                 Eigen::VectorXd rCoeffs) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive relationship does not have this parameter.");
 }
-
 
 
 //! @brief ... checks if a constitutive law has an specific output
@@ -164,25 +175,3 @@ void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger)
 {
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::ConstitutiveBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstitutiveBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::ConstitutiveBase::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize constitutive Base" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_NVP(mParametersValid);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Constitutive Base" << std::endl;
-#endif
-}
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveBase)
-#endif // ENABLE_SERIALIZATION

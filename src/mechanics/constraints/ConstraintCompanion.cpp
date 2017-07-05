@@ -84,7 +84,7 @@ std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd di
 
 Equation Value(const NodeBase& node, double value)
 {
-    return Value(node, [=](double){ return value; });
+    return Value(node, [=](double) { return value; });
 }
 
 Equation Value(const NodeBase& node, RhsFunction rhs)

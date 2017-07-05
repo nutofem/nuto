@@ -10,31 +10,31 @@ namespace NuTo
 //! @author Volker Hirthammer
 //! @date January 25, 2016
 //! @brief ...
-class ElementOutputBlockVectorInt: public ElementOutputBase, public BlockFullVector<int>
+class ElementOutputBlockVectorInt : public ElementOutputBase, public BlockFullVector<int>
 {
-
 
 
     // Constructor / Destructor
     // ------------------------
 
 public:
-
     //! @brief constructor
     //! @param rDofStatus: Reference to DofStatus needed for block matrices
-    ElementOutputBlockVectorInt(const DofStatus& rDofStatus) : BlockFullVector<int>(rDofStatus) {}
+    ElementOutputBlockVectorInt(const DofStatus& rDofStatus)
+        : BlockFullVector<int>(rDofStatus)
+    {
+    }
 
     //! @brief copy constructor
     //! @remark ElementOutputBlockVectorInt holds heavy data, no copies allowed
-    ElementOutputBlockVectorInt(const ElementOutputBlockVectorInt&  rOther) = delete;
+    ElementOutputBlockVectorInt(const ElementOutputBlockVectorInt& rOther) = delete;
 
     //! @brief move constructor
     //! @param rOther ... other ElementOutputBlockVectorInt
-    ElementOutputBlockVectorInt(      ElementOutputBlockVectorInt&& rOther) = default;
+    ElementOutputBlockVectorInt(ElementOutputBlockVectorInt&& rOther) = default;
 
     //! @brief destructor
     ~ElementOutputBlockVectorInt() = default;
-
 
 
     // Operator overloads
@@ -43,12 +43,12 @@ public:
 
     //! @brief copy assignment operator
     //! @remark ElementOutputBlockVectorInt holds heavy data, no copies allowed
-    ElementOutputBlockVectorInt& operator=(const ElementOutputBlockVectorInt&  rOther) = delete;
+    ElementOutputBlockVectorInt& operator=(const ElementOutputBlockVectorInt& rOther) = delete;
 
 
     //! @brief move assignment operator
     //! @param rOther ... other ElementOutputBlockVectorInt
-    ElementOutputBlockVectorInt& operator=(      ElementOutputBlockVectorInt&& rOther) = default;
+    ElementOutputBlockVectorInt& operator=(ElementOutputBlockVectorInt&& rOther) = default;
 
 
     // Member functions
@@ -69,13 +69,10 @@ public:
     }
 
 
-
     // Member variables
     // ----------------
 
 public:
-
-
 };
 
 

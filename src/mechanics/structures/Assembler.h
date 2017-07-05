@@ -12,7 +12,6 @@ namespace NuTo
 class Assembler
 {
 public:
-
     //! @brief ctor
     Assembler();
 
@@ -32,8 +31,9 @@ public:
     {
         return mConstraintMatrix;
     }
-    
-    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
+
+    //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before
+    //! the gauss elimination
     //! the result is stored internally in mConstraintRHS
     //! @param time global time
     void ConstraintUpdateRhs(double time);
@@ -71,18 +71,17 @@ public:
     DofStatus mDofStatus;
 
 private:
-    
     //! @brief builds the constraint rhs vector before the gauss elimination evaluated at time
     //! @param time global time
     //! @return constraint rhs before gauss elimination
     BlockFullVector<double> BuildRhsBeforeGaussElimination(double time) const;
 
     //! @brief stores the constraints
-    Constraint::Constraints mConstraints; 
-    
-    //!brief ... renumbering of nodal DOFs required or not
+    Constraint::Constraints mConstraints;
+
+    //! brief ... renumbering of nodal DOFs required or not
     bool mNodeVectorChanged = false;
-    
+
     //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
     BlockSparseMatrix mConstraintMatrix;
 

@@ -27,7 +27,7 @@ void CheckEigenMatrix(const T1& r1, const T2& r2, double rTolerance = 1.e-10)
     BOOST_CHECK_EQUAL(r1.rows(), r2.rows());
     BOOST_CHECK_EQUAL(r1.cols(), r2.cols());
 
-    double error  = (r1 - r2).cwiseAbs().maxCoeff();
+    double error = (r1 - r2).cwiseAbs().maxCoeff();
     bool isApprox = error < rTolerance;
     if (not isApprox)
     {

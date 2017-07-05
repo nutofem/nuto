@@ -53,17 +53,12 @@ public:
 };
 
 
-
 // Input:   3 node vectors (quadratic truss element),
 //          1 direction vector that points in the direction of the truss (for the load)
 //          2 orthogonal direction vectors (for the BC)
-void Run3d(Eigen::VectorXd rNodeCoords0,
-           Eigen::VectorXd rNodeCoords1,
-           Eigen::VectorXd rNodeCoords2,
-           Eigen::VectorXd rDirectionAligned,
-           Eigen::VectorXd rDirectionOrthogonal0,
-           Eigen::VectorXd rDirectionOrthogonal1,
-           double expectedNorm)
+void Run3d(Eigen::VectorXd rNodeCoords0, Eigen::VectorXd rNodeCoords1, Eigen::VectorXd rNodeCoords2,
+           Eigen::VectorXd rDirectionAligned, Eigen::VectorXd rDirectionOrthogonal0,
+           Eigen::VectorXd rDirectionOrthogonal1, double expectedNorm)
 {
     //**********************************************
     //          Structure
@@ -93,18 +88,26 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
     //          Material
     //**********************************************
 
-    int fibreMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, ParametersMaterial::mYoungsModulus);
-    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, ParametersMaterial::mPoissonsRatio);
+    int fibreMaterial =
+            myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial,
+                                                  NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                                  ParametersMaterial::mYoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial,
+                                                  NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
+                                                  ParametersMaterial::mPoissonsRatio);
 
     //**********************************************
     //          Interpolation
     //**********************************************
 
     int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
-    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
+    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES,
+                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS,
+                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType,
+                                                    NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
 
     //**********************************************
     //          Geometry
@@ -128,20 +131,21 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
     const auto& node0Ref = *myStructure.NodeGetNodePtr(node0);
     const auto& node1Ref = *myStructure.NodeGetNodePtr(node1);
     const auto& node2Ref = *myStructure.NodeGetNodePtr(node2);
-    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+    myStructure.Constraints().Add(
+            NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Constraint::Component(node0Ref, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
-    
+
     myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal0)); 
+                                  NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal0));
     myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal0)); 
-    
+                                  NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal0));
+
     myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal1)); 
+                                  NuTo::Constraint::Direction(node1Ref, rDirectionOrthogonal1));
     myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal1)); 
-   
+                                  NuTo::Constraint::Direction(node2Ref, rDirectionOrthogonal1));
+
     std::cout << myStructure.Constraints() << std::endl;
 
     //**********************************************
@@ -171,7 +175,7 @@ void Run3d(Eigen::VectorXd rNodeCoords0,
     boost::filesystem::remove_all(resultPath);
 
     myStructure.NodeGetDisplacements(node2, displacements);
-    
+
     BOOST_CHECK_CLOSE(displacements.norm(), expectedNorm, 1e-8);
 }
 
@@ -185,9 +189,8 @@ BOOST_AUTO_TEST_CASE(TrussAlignedX)
     Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitY();
     Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitZ();
 
-    Run3d(Eigen::Vector3d(1, 5, 3), 
-          Eigen::Vector3d(2, 5, 3), 
-          Eigen::Vector3d(3, 5, 3), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
+    Run3d(Eigen::Vector3d(1, 5, 3), Eigen::Vector3d(2, 5, 3), Eigen::Vector3d(3, 5, 3), directionAligned,
+          directionOrthogonal0, directionOrthogonal1, 2);
 
     std::cout << "*******************************************************************" << std::endl;
 }
@@ -198,15 +201,13 @@ BOOST_AUTO_TEST_CASE(TrussAlignedY)
     std::cout << "*******************************************************************" << std::endl;
     std::cout << "*********** Start Example 2: Truss aligned with y-axis ************" << std::endl;
     std::cout << "*******************************************************************" << std::endl;
- 
+
     Eigen::Vector3d directionAligned = Eigen::Vector3d::UnitY();
     Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitX();
     Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitZ();
- 
-    Run3d(Eigen::Vector3d(0,0,0), 
-          Eigen::Vector3d(0,1,0), 
-          Eigen::Vector3d(0,2,0), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
 
+    Run3d(Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0), Eigen::Vector3d(0, 2, 0), directionAligned,
+          directionOrthogonal0, directionOrthogonal1, 2);
 }
 
 BOOST_AUTO_TEST_CASE(TrussAlignedZ)
@@ -214,15 +215,14 @@ BOOST_AUTO_TEST_CASE(TrussAlignedZ)
     std::cout << "*******************************************************************" << std::endl;
     std::cout << "*********** Start Example 3: Truss aligned with z-axis ************" << std::endl;
     std::cout << "*******************************************************************" << std::endl;
- 
+
     Eigen::Vector3d directionAligned = Eigen::Vector3d::UnitZ();
     Eigen::Vector3d directionOrthogonal0 = Eigen::Vector3d::UnitX();
     Eigen::Vector3d directionOrthogonal1 = Eigen::Vector3d::UnitY();
- 
-    Run3d(Eigen::Vector3d(6,7,3), 
-          Eigen::Vector3d(6,7,4),
-          Eigen::Vector3d(6,7,5), directionAligned, directionOrthogonal0, directionOrthogonal1, 2);
-} 
+
+    Run3d(Eigen::Vector3d(6, 7, 3), Eigen::Vector3d(6, 7, 4), Eigen::Vector3d(6, 7, 5), directionAligned,
+          directionOrthogonal0, directionOrthogonal1, 2);
+}
 
 BOOST_AUTO_TEST_CASE(TrussAlignedAngleBisector)
 {
@@ -230,13 +230,13 @@ BOOST_AUTO_TEST_CASE(TrussAlignedAngleBisector)
     std::cout << "*********** Start Example 4: Truss aligned with angle bisector ****" << std::endl;
     std::cout << "*******************************************************************" << std::endl;
 
-    auto nodeCoord = Eigen::Vector3d(2,0,3);
-    auto nodeOffset = Eigen::Vector3d(1,1,1);
+    auto nodeCoord = Eigen::Vector3d(2, 0, 3);
+    auto nodeOffset = Eigen::Vector3d(1, 1, 1);
 
-    auto directionAligned = Eigen::Vector3d(1,1,1);
+    auto directionAligned = Eigen::Vector3d(1, 1, 1);
     auto directionOrthogonal0 = Eigen::Vector3d(-1, -1, 2);
     auto directionOrthogonal1 = Eigen::Vector3d(2, -1, -1);
- 
-    Run3d(nodeCoord, nodeCoord + 0.5 * nodeOffset, nodeCoord + nodeOffset, directionAligned, directionOrthogonal0, directionOrthogonal1, std::sqrt(3));
-}
 
+    Run3d(nodeCoord, nodeCoord + 0.5 * nodeOffset, nodeCoord + nodeOffset, directionAligned, directionOrthogonal0,
+          directionOrthogonal1, std::sqrt(3));
+}

@@ -13,17 +13,22 @@ namespace NuTo
 {
 
 class ElementOutputIpData;
-template <int TDim> class ContinuumElement;
-template <typename T> class BlockFullVector;
-template <typename T> class BlockFullMatrix;
-template <int TDim> struct EvaluateDataContinuumBoundary;
+template <int TDim>
+class ContinuumElement;
+template <typename T>
+class BlockFullVector;
+template <typename T>
+class BlockFullMatrix;
+template <int TDim>
+struct EvaluateDataContinuumBoundary;
 
 
-template<int TDim>
-class ContinuumBoundaryElement: public ElementBase
+template <int TDim>
+class ContinuumBoundaryElement : public ElementBase
 {
 public:
-    ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, const IntegrationTypeBase& integrationType, int rSurfaceId);
+    ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, const IntegrationTypeBase& integrationType,
+                             int rSurfaceId);
 
     virtual ~ContinuumBoundaryElement() = default;
 
@@ -32,7 +37,7 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness)
     //! and internal force (which includes inertia terms)
     void Evaluate(const ConstitutiveInputMap& rInput,
-            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+                  std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -127,68 +132,61 @@ public:
     }
 
 
-
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const override;
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
-            const std::vector<eVisualizeWhat>& virualizeComponents) override;
+                           const std::vector<eVisualizeWhat>& virualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 
 protected:
+    void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim>& rData);
 
-#ifdef ENABLE_SERIALIZATION
-    ContinuumBoundaryElement() {}
-#endif // ENABLE_SERIALIZATION
+    ConstitutiveOutputMap
+    GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
 
-    void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
-
-    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,
-            std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
-
-    void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, 
-            BlockFullVector<double>& rInternalGradient) const;
+    void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   BlockFullVector<double>& rInternalGradient) const;
     void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput,
-            BlockFullMatrix<double>& rHessian0) const;
+                                           BlockFullMatrix<double>& rHessian0) const;
     void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput,
-            BlockFullMatrix<double>& rHessian0) const;
+                                           BlockFullMatrix<double>& rHessian0) const;
     void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
-            ElementOutputIpData& rIpData) const;
+                                         ElementOutputIpData& rIpData) const;
 
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
-            EvaluateDataContinuumBoundary<TDim> &rData);
+                                     EvaluateDataContinuumBoundary<TDim>& rData);
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
-            const ConstitutiveInputMap& constitutiveInput, 
-            const ConstitutiveOutputMap& constitutiveOutput) const;
+                                 EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP,
+                                 const ConstitutiveInputMap& constitutiveInput,
+                                 const ConstitutiveOutputMap& constitutiveOutput) const;
 
     void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateDataContinuumBoundary<TDim> &rData,
-            const ConstitutiveInputMap& constitutiveInput,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
-    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-            EvaluateDataContinuumBoundary<TDim>& rData,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
-    void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+                                                EvaluateDataContinuumBoundary<TDim>& rData,
+                                                const ConstitutiveInputMap& constitutiveInput,
+                                                const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
+                                        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+    void CalculateElementOutputIpData(ElementOutputIpData& rIpData, const ConstitutiveOutputMap& constitutiveOutput,
+                                      int rTheIP) const;
 
     void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
-    Eigen::Matrix<double,TDim-1,1>  CalculateIPCoordinatesSurface(int rTheIP) const;
+    Eigen::Matrix<double, TDim - 1, 1> CalculateIPCoordinatesSurface(int rTheIP) const;
 
     double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
     //! @brief calculates the alpha parameter as alpha = sqrt(nonlocal radius)
     double CalculateAlpha() const;
 
-    void UpdateAlphaGradientDamage(NuTo::EvaluateDataContinuumBoundary<TDim> &rData,
-                                   const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                   const NuTo::ConstitutiveOutputMap &rConstitutiveOutput) const;
+    void UpdateAlphaGradientDamage(NuTo::EvaluateDataContinuumBoundary<TDim>& rData,
+                                   const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                   const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override
@@ -203,7 +201,7 @@ protected:
         throw Exception(__PRETTY_FUNCTION__,"Probably not needed.");
     }
 
-    //The real boundary element that is attached to the virtual boundary element
+    // The real boundary element that is attached to the virtual boundary element
     const ContinuumElement<TDim>& mBaseElement;
 
     // surface id
@@ -211,8 +209,6 @@ protected:
 
     // alpha parameter for the gradient damage boundary condition
     double mAlphaUserDefined;
-}
-;
+};
 
 } /* namespace NuTo */
-
