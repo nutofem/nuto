@@ -1,6 +1,11 @@
 #pragma once
 
-#include "mechanics/MechanicsException.h"
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "base/Exception.h"
 
 #include <eigen3/Eigen/Core>
 #include <map>
@@ -42,7 +47,7 @@ public:
     //! @param dofNumber ... dof number
     virtual void SetDofNumber(Node::eDof rDof, int rComponent, int dofNumber)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the number of time derivatives stored at the node
@@ -50,13 +55,13 @@ public:
     //! @return number of derivatives
     virtual int GetNumTimeDerivatives(Node::eDof rDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns if the dof type rDof is an actual degree of freedom (in contrast to COORDINATES)
     virtual bool IsDof(Node::eDof rDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //*************************************************
@@ -66,14 +71,14 @@ public:
     //! @brief returns the total number of dofs
     virtual int GetNumDofs() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the number of dofs for a specific dof type
     //! @param rDof ... specific dof type
     virtual int GetNum(Node::eDof rDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the global dof number for a specific dof type
@@ -81,7 +86,7 @@ public:
     //! @param rComponent ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
     virtual int GetDof(Node::eDof rDof, int rComponent) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the global dof number for a specific dof type with only one dof (scalar dof)
@@ -93,7 +98,7 @@ public:
     //! @param rTimeDerivative ... time derivative
     virtual const Eigen::VectorXd& Get(Node::eDof rDof, int rTimeDerivative) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the dof values for a specific dof
@@ -109,7 +114,7 @@ public:
     //! @param rValue ... dof value
     virtual void Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief sets the dof values for a specific dof
@@ -142,7 +147,7 @@ public:
     //! @brief returns a set containing all dof types
     virtual std::set<Node::eDof> GetDofTypes() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr

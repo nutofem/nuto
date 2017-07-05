@@ -1,7 +1,7 @@
 #include <iostream>
 #include "BoostUnitTest.h"
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/VisualizeException.h"
+#include "base/Exception.h"
 
 BOOST_AUTO_TEST_CASE(DefinitionOrder)
 {
@@ -12,12 +12,12 @@ BOOST_AUTO_TEST_CASE(DefinitionOrder)
     int cellId = visu.AddCell({pointId}, NuTo::eCellTypes::VERTEX);
 
     // add data to undefined data field
-    BOOST_CHECK_THROW(visu.SetPointData(pointId, "OtherStuff", 42.), NuTo::VisualizeException);
-    BOOST_CHECK_THROW(visu.SetCellData(cellId, "OtherStuff", 42.), NuTo::VisualizeException);
+    BOOST_CHECK_THROW(visu.SetPointData(pointId, "OtherStuff", 42.), NuTo::Exception);
+    BOOST_CHECK_THROW(visu.SetCellData(cellId, "OtherStuff", 42.), NuTo::Exception);
 
     // definine data after adding points/cells
-    BOOST_CHECK_THROW(visu.DefinePointData("OtherStuff"), NuTo::VisualizeException);
-    BOOST_CHECK_THROW(visu.DefineCellData("OtherStuff"), NuTo::VisualizeException);
+    BOOST_CHECK_THROW(visu.DefinePointData("OtherStuff"), NuTo::Exception);
+    BOOST_CHECK_THROW(visu.DefineCellData("OtherStuff"), NuTo::Exception);
 }
 
 BOOST_AUTO_TEST_CASE(Export)

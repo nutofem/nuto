@@ -1,7 +1,12 @@
 #pragma once
 
 
-#include "mechanics/MechanicsException.h"
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#endif // ENABLE_SERIALIZATION
+
+#include "base/Exception.h"
 #include <memory>
 #include <eigen3/Eigen/Core>
 
@@ -63,15 +68,15 @@ public:
 
     virtual void SetZero()
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
     }
     virtual int GetNumRows() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
     }
     virtual int GetNumColumns() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
     }
 
     //! @brief copies itsself to an Eigen::MatrixXd
@@ -94,9 +99,9 @@ public:
         AssertDimension<TRows, 1>(rOutputEnum, rMethodName);
         bool isNotVector = dynamic_cast<const ConstitutiveVector<TRows>*>(this) == nullptr;
         if (isNotVector)
-            throw MechanicsException(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
-                                                          " is not a ConstitutiveVector<>.");
-#endif
+            throw Exception(rMethodName, "Constitutive output " +
+                    Constitutive::OutputToString(rOutputEnum) + " is not a ConstitutiveVector<>.");
+    #endif
     }
 
     template <int TRows, int TCols>
@@ -106,9 +111,9 @@ public:
         AssertDimension<TRows, TCols>(rOutputEnum, rMethodName);
         bool isNotMatrix = dynamic_cast<const ConstitutiveMatrix<TRows, TCols>*>(this) == nullptr;
         if (isNotMatrix)
-            throw MechanicsException(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
-                                                          " is not a ConstitutiveMatrix<>.");
-#endif
+            throw Exception(rMethodName, "Constitutive output " +
+                    Constitutive::OutputToString(rOutputEnum) + " is not a ConstitutiveMatrix<>.");
+    #endif
     }
 
     template <int TDim>
@@ -119,28 +124,28 @@ public:
 
     virtual const EngineeringStrain<1>& AsEngineeringStrain1D() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
     virtual const EngineeringStrain<2>& AsEngineeringStrain2D() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
     virtual const EngineeringStrain<3>& AsEngineeringStrain3D() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
 
     virtual EngineeringStrain<1>& AsEngineeringStrain1D()
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
     virtual EngineeringStrain<2>& AsEngineeringStrain2D()
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
     virtual EngineeringStrain<3>& AsEngineeringStrain3D()
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
 
     void SetIsCalculated(bool rIsCalculated)
@@ -164,9 +169,9 @@ private:
             exception += "[" + rMethodName + "] \n";
             exception += "Dimension mismatch of constitutive output. \n";
             exception += "Dim(" + Constitutive::OutputToString(rOutputEnum) + ") = (";
-            exception += std::to_string(GetNumRows()) + "x" + std::to_string(GetNumColumns()) + ") ";
-            exception += "Expected: (" + std::to_string(TRows) + "x" + std::to_string(TCols) + ") \n";
-            throw MechanicsException(exception);
+            exception += std::to_string(GetNumRows()) + "x" + std::to_string(GetNumColumns()) +") ";
+            exception += "Expected: (" +  std::to_string(TRows) + "x" + std::to_string(TCols) + ") \n";
+            throw Exception(exception);
         }
     }
 #endif

@@ -58,7 +58,7 @@ public:
     //! @return cloned output object
     virtual ElementOutputBase* Clone() const override
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented");
+        throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] not implemented");
     }
 
     //! @brief Gets the output as BlockFullVector<int>

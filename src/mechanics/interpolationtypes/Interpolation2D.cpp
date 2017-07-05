@@ -5,7 +5,16 @@
  *      Author: ttitsche
  */
 
-#include "mechanics/MechanicsException.h"
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "base/Exception.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
 
 NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,

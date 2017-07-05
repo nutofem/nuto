@@ -40,8 +40,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     if (mStructure->GetDofStatus().HasInteractingConstraints())
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "not implemented for time dependent constraints including multiple dofs.");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for time dependent constraints including multiple dofs.");
 
     if (mTimeStep == 0.)
     {
@@ -51,8 +50,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         }
         else
         {
-            throw MechanicsException(
-                    "[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
+            throw Exception("[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
         }
     }
 

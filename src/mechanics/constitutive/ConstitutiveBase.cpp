@@ -4,15 +4,14 @@
 #include <iostream>
 
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 //! @brief ... checks if the constitutive law has a specific parameter
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... true/false
 bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    throw NuTo::MechanicsException(
-            "[NuTo::ConstitutiveBase::CheckHaveParameter] Not implemented for this constitutive law.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::CheckHaveParameter] Not implemented for this constitutive law.");
 }
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
@@ -20,8 +19,7 @@ bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiv
 //! @return ... value of the requested variable
 bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    throw NuTo::MechanicsException(
-            "[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
 }
 
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
@@ -29,8 +27,7 @@ bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveP
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
-    throw NuTo::MechanicsException(
-            "[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
 }
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
@@ -38,8 +35,7 @@ void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveP
 //! @return ... value of the requested variable
 double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    throw NuTo::MechanicsException(
-            "[NuTo::ConstitutiveBase::GetParameterDouble] This constitutive law has no variables of type double.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterDouble] This constitutive law has no variables of type double.");
 }
 
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
@@ -47,8 +43,7 @@ double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutivePar
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    throw NuTo::MechanicsException(
-            "[NuTo::ConstitutiveBase::SetParameterDouble] This constitutive law has no variables of type double.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParameterDouble] This constitutive law has no variables of type double.");
 }
 
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
@@ -56,12 +51,12 @@ void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiv
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<double, 2>(double)>)
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
 }
 
 void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::DamageLaw> damageLaw)
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no damage law.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "This constitutive law has no damage law.");
 }
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
@@ -90,8 +85,7 @@ void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eC
 Eigen::MatrixXd
 NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterMatrixDouble] This constitutive law has no "
-                                   "variables of type Eigen::MatrixXd.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
 
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
@@ -100,8 +94,7 @@ NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstituti
 void NuTo::ConstitutiveBase::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
                                                       Eigen::MatrixXd rValue)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterMatrixDouble] This constitutive law has no "
-                                   "variables of type Eigen::MatrixXd.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
 
 //! @brief checks parameters, throws if the check failed
@@ -119,21 +112,15 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
     case Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY:
     {
         if (rValue < 0.)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                           Constitutive::ConstitutiveParameterToString(rIdentifier) +
-                                                   " must be > 0. (value: " + std::to_string(rValue) + ").");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, Constitutive::ConstitutiveParameterToString(rIdentifier) + " must be > 0. (value: " + std::to_string(rValue) + ").");
     }
     break;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
     {
         if (rValue <= -1.0)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                           "Poisson's ratio must be greater or equal to -1.0 (value: " +
-                                                   std::to_string(rValue) + ").");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Poisson's ratio must be greater or equal to -1.0 (value: " + std::to_string(rValue) + ").");
         if (rValue >= 0.5)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                           "Poisson's ratio must be smaller or equal to 0.5 (value: " +
-                                                   std::to_string(rValue) + ").");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Poisson's ratio must be smaller or equal to 0.5 (value: " + std::to_string(rValue) + ").");
     }
     break;
 
@@ -141,7 +128,7 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
         break;
 
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "material parameter check not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "material parameter check not implemented.");
     }
 }
 
@@ -152,8 +139,7 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
 double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity,
                                                                  Eigen::VectorXd rCoeffs) const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive "
-                                   "relationship does not have this parameter.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive relationship does not have this parameter.");
 }
 
 
@@ -161,8 +147,7 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 //! @return ... true/false
 bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented "
-                                   "for this constitutive law.");
+    throw NuTo::Exception("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented for this constitutive law.");
 }
 
 // modify parameter validity flag
@@ -172,14 +157,14 @@ void NuTo::ConstitutiveBase::SetParametersValid()
     {
         this->CheckParameters();
     }
-    catch (NuTo::MechanicsException& e)
+    catch (NuTo::Exception& e)
     {
         this->mParametersValid = false;
         return;
     }
     catch (...)
     {
-        throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParametersValid] Unhandled exception");
+        throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParametersValid] Unhandled exception");
     }
     this->mParametersValid = true;
 }

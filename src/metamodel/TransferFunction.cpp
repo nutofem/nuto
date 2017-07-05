@@ -3,23 +3,22 @@
  Author: Joerg F. Unger,  September 2009
 *******************************************************************************/
 #include "metamodel/TransferFunction.h"
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include <cmath>
 
 double NuTo::EmptyTransferFunction::evaluate(double x)
 {
-    throw MetamodelException("EmptyTransferFunction::evaluate : trying to evaluate empty activation function.");
+    throw Exception("EmptyTransferFunction::evaluate : trying to evaluate empty activation function.");
 }
 
 double NuTo::EmptyTransferFunction::derivative(double x)
 {
-    throw MetamodelException("EmptyTransferFunction::derivative : trying to evaluate empty activation function.");
+    throw Exception("EmptyTransferFunction::derivative : trying to evaluate empty activation function.");
 }
 
 double NuTo::EmptyTransferFunction::second_derivative(double x)
 {
-    throw MetamodelException(
-            "EmptyTransferFunction::second_derivative : trying to evaluate empty activation function.");
+    throw Exception("EmptyTransferFunction::second_derivative : trying to evaluate empty activation function.");
 }
 
 NuTo::TransferFunction* NuTo::EmptyTransferFunction::clone() const

@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -27,9 +27,7 @@ NuTo::eIntegrationType NuTo::Interpolation3DTetrahedron::GetStandardIntegrationT
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -42,9 +40,7 @@ Eigen::VectorXd NuTo::Interpolation3DTetrahedron::CalculateShapeFunctions(const 
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::ShapeFunctionsTetrahedronOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -58,9 +54,7 @@ NuTo::Interpolation3DTetrahedron::CalculateDerivativeShapeFunctionsNatural(const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -73,9 +67,7 @@ Eigen::VectorXd NuTo::Interpolation3DTetrahedron::CalculateNaturalNodeCoordinate
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::NodeCoordinatesTetrahedronOrder2(rNodeIndexDof);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -88,9 +80,7 @@ int NuTo::Interpolation3DTetrahedron::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return 10;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -113,9 +103,7 @@ NuTo::Interpolation3DTetrahedron::CalculateNaturalSurfaceCoordinates(const Eigen
     case 3:
         return Eigen::Vector3d(1 - alpha - beta, alpha, beta);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "TETRAHEDRON3D has exactly four surfaces, 0 to 3. You tried to access " +
-                                         std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "TETRAHEDRON3D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -145,9 +133,7 @@ Eigen::MatrixXd NuTo::Interpolation3DTetrahedron::CalculateDerivativeNaturalSurf
         dXidAlpha(2, 1) = 1.;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "TETRAHEDRON3D has exactly four surfaces, 0 to 3. You tried to access " +
-                                         std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "TETRAHEDRON3D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
     return dXidAlpha;
 }

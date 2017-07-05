@@ -61,10 +61,10 @@ double NuTo::HEDOPRI5Original::GetStageTimeFactor(int rStage) const
     case 7:
         s = 19. / 20.;
         break;
-    default:
-        throw MechanicsException("[NuTo::HEDOPRI5Original::GetStageTimeFactor] rStage>7 not implemented.");
-    }
-    return s;
+	default:
+        throw Exception ( "[NuTo::HEDOPRI5Original::GetStageTimeFactor] rStage>7 not implemented." );
+	}
+	return s;
 }
 
 //! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous
@@ -100,10 +100,10 @@ bool NuTo::HEDOPRI5Original::HasTimeChanged(int rStage) const
     case 7:
         s = true;
         break;
-    default:
-        throw MechanicsException("[NuTo::HEDOPRI5Original::HasTimeChanged] rStage>7 not implemented.");
-    }
-    return s;
+	default:
+        throw Exception ( "[NuTo::HEDOPRI5Original::HasTimeChanged] rStage>7 not implemented." );
+	}
+	return s;
 }
 
 
@@ -150,17 +150,17 @@ void NuTo::HEDOPRI5Original::GetStageDerivativeFactor(std::vector<double>& rWeig
         rWeight[5] = 11. / 84.;
         break;
     case 7:
-        rWeight[0] = -18611506045861. / 19738176307200.;
-        rWeight[1] = 59332529. / 14479296.;
-        rWeight[2] = -2509441598627. / 893904224850.;
-        rWeight[3] = 2763523204159. / 3289696051200.;
-        rWeight[4] = -41262869588913. / 116235927142400.;
-        rWeight[5] = 46310205821. / 287848404480.;
-        rWeight[6] = -3280. / 75413.;
+        rWeight[0] = -18611506045861./19738176307200.;
+        rWeight[1] =  59332529./14479296.;
+        rWeight[2] = -2509441598627./893904224850.;
+        rWeight[3] =  2763523204159./3289696051200.;
+        rWeight[4] = -41262869588913./116235927142400.;
+        rWeight[5] =  46310205821./287848404480.;
+        rWeight[6] = -3280./75413.;
         break;
-    default:
-        throw MechanicsException("[NuTo::HEDOPRI5Original::GetStageDerivativeFactor] rStage>6 not implemented.");
-    }
+	default:
+        throw Exception ( "[NuTo::HEDOPRI5Original::GetStageDerivativeFactor] rStage>6 not implemented." );
+	}
 }
 
 //! @brief ... return weights for the intermediate stage for y (b in Butcher tableau)
@@ -194,10 +194,29 @@ double NuTo::HEDOPRI5Original::GetStageWeights(int rStage) const
     case 7:
         s = 0.;
         break;
-    default:
-        throw MechanicsException("[NuTo::HEDOPRI5Original::GetStageWeights] rStage>7 not implemented.");
-    }
-    return s;
+	default:
+        throw Exception ( "[NuTo::HEDOPRI5Original::GetStageWeights] rStage>7 not implemented." );
+	}
+	return s;
+}
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::HEDOPRI5Original::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::HEDOPRI5Original::serialize(Archive & ar, const unsigned int version)
+{
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialization of HEDOPRI5Original" << "\n";
+    #endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RungeKuttaBase);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialization of HEDOPRI5Original" << "\n";
+    #endif
 }
 
 
@@ -228,8 +247,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
             }
             else
             {
-                throw MechanicsException(
-                        "[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
+                throw Exception("[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
             }
         }
 
@@ -254,8 +272,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
         Eigen::VectorXd bRHS, bRHSdot, bRHSddot;
         if (CmatT.GetNumEntries() > 0)
         {
-            throw MechanicsException(
-                    "[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
+            throw Exception("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
         }
 
         // calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use
@@ -349,11 +366,10 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
                     // necessary for a modified global time
                     if (mTimeDependentConstraint != -1)
                     {
-                        throw MechanicsException(
-                                "[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-                        // double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-                        // mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-                        // mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
+                        throw Exception("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
+                        //double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+                        //mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+                        //mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
                     }
                     // calculate external force
                     this->CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
@@ -466,8 +482,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
             //**********************************************
             if (CmatT.GetNumEntries() > 0)
             {
-                throw MechanicsException("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems "
-                                         "including multiple dofs.");
+                throw Exception("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
             }
             else
             {
@@ -478,8 +493,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
                 // make sure to recalculate the internal force and external force (if time factor is not 1)
                 if (mTimeDependentConstraint != -1)
                 {
-                    throw MechanicsException(
-                            "[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
+                    throw Exception("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
                 }
 
                 // acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
@@ -490,10 +504,126 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
             this->PostProcess(outOfBalance_j, outOfBalance_k);
         }
     }
-    catch (MechanicsException& e)
+    catch (Exception& e)
     {
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
         throw;
     }
     return NuTo::Error::SUCCESSFUL;
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+//! @brief ... restore the object from a file
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+//! @brief ... save the object to a file
+void NuTo::HEDOPRI5Original::Restore (const std::string &filename, std::string rType )
+{
+    try
+    {
+        //transform to uppercase
+        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+        std::string tmpString;
+        if (rType=="BINARY")
+        {
+            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[HEDOPRI5Original::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+            oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
+        }
+        else if (rType=="XML")
+        {
+            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[HEDOPRI5Original::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
+        }
+        else if (rType=="TEXT")
+        {
+            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[HEDOPRI5Original::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
+        }
+        else
+        {
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
+        }
+    }
+    catch ( Exception &e )
+    {
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw Exception ( "[RungeKutta4::Restore]Unhandled exception." );
+    }
+}
+
+//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+void NuTo::RungeKutta4::Save (const std::string &filename, std::string rType )const
+{
+    try
+    {
+        //transform to uppercase
+        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+        std::string tmpStr ( GetTypeId() );
+        if (rType=="BINARY")
+        {
+            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+        }
+        else if (rType=="XML")
+        {
+            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+        }
+        else if (rType=="TEXT")
+        {
+            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+        }
+        else
+        {
+            throw Exception ( "[RungeKutta4::Save]File type not implemented." );
+        }
+    }
+    catch ( boost::archive::archive_exception& e )
+    {
+        std::string s ( std::string ( "[RungeKutta4::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+        std::cout << s << "\n";
+        throw Exception ( s );
+    }
+    catch ( Exception &e )
+    {
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw Exception ( "[RungeKutta4::Save] Unhandled exception." );
+    }
+}
+
+#ifndef SWIG
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::RungeKutta4)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION

@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -37,9 +37,7 @@ NuTo::eIntegrationType NuTo::Interpolation1DTruss::GetStandardIntegrationType() 
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -61,9 +59,7 @@ Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalNodeCoordinates(int 
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder4(rNodeIndexDof);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -85,9 +81,7 @@ Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateShapeFunctions(const Eigen:
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -110,9 +104,7 @@ NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -130,8 +122,7 @@ NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::Vect
         naturalCoordinates(0, 0) = 1;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "TRUSS1D has exactly two surfaces, 0 or 1. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "TRUSS1D has exactly two surfaces, 0 or 1. You tried to access " + std::to_string(rSurface) + ".");
     }
     return naturalCoordinates;
 }
@@ -163,8 +154,6 @@ int NuTo::Interpolation1DTruss::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return 5;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }

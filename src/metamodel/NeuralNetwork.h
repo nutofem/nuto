@@ -3,7 +3,7 @@
 #include "metamodel/Metamodel.h"
 #include "optimize/CallbackHandler.h"
 
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include <eigen3/Eigen/Core>
 #include <string>
 
@@ -79,9 +79,9 @@ public:
 
     void SetInitAlpha(const double rInitAlpha)
     {
-        if (rInitAlpha < 0)
-            throw MetamodelException("NuTo::NeuralNetwork::SetInitAlpha - Init alpha must be non negative.");
-        mInitAlpha = rInitAlpha;
+        if (rInitAlpha<0)
+            throw Exception("NuTo::NeuralNetwork::SetInitAlpha - Init alpha must be non negative."); 
+        mInitAlpha=rInitAlpha; 
     }
 
     void SetAccuracyGradient(const double rAccuracyGradient)

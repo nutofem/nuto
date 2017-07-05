@@ -1,7 +1,7 @@
 #include "NodeEnum.h"
 #include <map>
 #include <boost/algorithm/string.hpp>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -39,7 +39,7 @@ std::string DofToString(eDof rDof)
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
 
@@ -52,8 +52,7 @@ eDof DofToEnum(std::string dof)
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                   "DofType " + dof + " has no enum equivalent or is not implemented.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "DofType " + dof + " has no enum equivalent or is not implemented.");
 }
 
 
@@ -72,7 +71,7 @@ bool IsScalar(eDof dofType)
     case eDof::ELECTRICPOTENTIAL:
         return true;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "DOF type not found.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "DOF type not found.");
     }
 }
 

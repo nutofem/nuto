@@ -40,10 +40,79 @@ int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
 
     bool converged(false);
 
-    int localMaxGradientCalls = (int)mNumParameters;
-    //	int localMaxGradientCalls=2*mNumParameters;
-    if (localMaxGradientCalls < mMaxGradientCalls)
-        SetMaxGradientCalls(localMaxGradientCalls);
+#ifdef ENABLE_SERIALIZATION
+//! @brief ... save the object to a file
+//! @param filename ... filename
+//! @param rType ... type of file, either BINARY, XML or TEXT
+void NuTo::Jacobi::Save ( const std::string &filename, std::string rType)const
+{
+	try
+	{
+		//transform to uppercase
+		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+		std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+		std::string tmpStr ( GetTypeId() );
+		std::string baseClassStr = tmpStr.substr ( 4,100 );
+		if (rType=="BINARY")
+		{
+			boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+			oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="XML")
+		{
+			boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+			oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="TEXT")
+		{
+			boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+			ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else
+		{
+			throw Exception ( "[Jacobi::Save]File type not implemented." );
+		}
+	}
+	catch ( boost::archive::archive_exception &e )
+	{
+		std::string s ( std::string ( "[Jacobi::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+		std::cout << s << "\n";
+		throw Exception ( s );
+	}
+	catch ( Exception &e )
+	{
+        throw;
+	}
+	catch ( std::exception &e )
+	{
+		throw Exception ( e.what() );
+	}
+	catch ( ... )
+	{
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
+	}
+}
 
     mpCallbackHandlerGrid->Hessian(rhs);
     // weighting factor (normally at Hessian())
@@ -55,18 +124,37 @@ int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
         numGradientCalls++;
         if (numGradientCalls > mMaxGradientCalls)
         {
-            converged = true;
-            returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
-            break;
-            // return MAXGRADIENTCALLS;
+            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
         }
         curIteration++;
         if (curIteration > mMaxIterations)
         {
-            converged = true;
-            returnValue = eOptimizationReturnAttributes::MAXITERATIONS;
-            break;
-            // return MAXGRADIENTCALLS;
+            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
         }
         // reset gNext to zero in gradient
         mpCallbackHandlerGrid->Gradient(v, vNext);
@@ -75,52 +163,38 @@ int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
         rErrorNorm = 0.;
         for (size_t i = 0; i < mNumParameters; ++i)
         {
-            // do not forget sign!!!
-            vNext[i] *= -mOmega;
-            vNext[i] += rhs[i];
-            rErrorNorm += (vNext[i]) * (vNext[i]);
-            v[i] += vNext[i];
-        }
+            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
-        if (rErrorNorm < mAccuracyGradient * mAccuracyGradient)
-        {
-            converged = true;
-            returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
-            break;
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::Jacobi::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
+        }
+		else
+		{
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-
-    mIsBuild = true;
-
-    if (mVerboseLevel > 0)
+    catch ( Exception &e )
     {
-        std::cout << "[Jacobi::Optimize] Number of Iterations............. " << curIteration << std::endl;
-        std::cout << "[Jacobi::Optimize] Active convergence criterion..... ";
-        switch (returnValue)
-        {
-        case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
-            std::cout << "Maximum number of gradient calls reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::MAXITERATIONS:
-            std::cout << "Maximum number of iterations reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
-            std::cout << "Norm of error smaller than prescribed value." << std::endl;
-            mObjective = sqrt(rErrorNorm);
-            break;
-        default:
-            std::cout << "Unknown convergence criterion." << std::endl;
-            break;
-        }
-        std::cout << std::endl;
-
-        std::cout.precision(precision);
-        std::cout << std::setw(width) << "[Jacobi::Optimize] parameters ";
-        for (size_t count = 0; count < mNumParameters; count++)
-        {
-            std::cout << std::setw(width) << v[count] << "   ";
-        }
-        std::cout << std::endl;
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw Exception ( "[Matrix::Restore]Unhandled exception." );
     }
     return static_cast<int>(returnValue);
 }

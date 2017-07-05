@@ -7,7 +7,7 @@
 
 #include "optimize/CallbackHandler.h"
 #include "optimize/CallbackHandlerGrid.h"
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -107,7 +107,7 @@ public:
             if (mpCallbackHandler != nullptr)
                 return mpCallbackHandler->Objective();
             else
-                throw OptimizeException(__PRETTY_FUNCTION__, "No callback functions defined.");
+                throw Exception(__PRETTY_FUNCTION__, "No callback functions defined.");
         }
     }
 

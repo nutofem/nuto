@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 #include <eigen3/Eigen/Dense>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/IPData.h"
 #include <memory>
 
@@ -278,19 +278,22 @@ public:
     //! @return reference on the matrix containing the knots
     virtual const Eigen::MatrixXd& GetKnots() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
     }
 
     //! @brief returns the knotIDs of the element
     //! @return reference on the vector containing the knotIDs
     virtual const Eigen::VectorXi& GetKnotIDs() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
     }
 
     virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int, const Eigen::VectorXd&, int, int) const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
     }
 
 

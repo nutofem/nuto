@@ -1,6 +1,6 @@
 #include "visualize/UnstructuredGrid.h"
 #include <algorithm>
-#include "visualize/VisualizeException.h"
+#include "base/Exception.h"
 #include "visualize/XMLWriter.h"
 
 
@@ -29,16 +29,16 @@ void UnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
 {
     for (auto pointId : pointIds)
         if (pointId >= static_cast<int>(mPoints.size()))
-            throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "Point id not defined.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Point id not defined.");
 }
 
 void UnstructuredGrid::DefinePointData(std::string name)
 {
     if (std::find(mPointDataNames.begin(), mPointDataNames.end(), name) != mPointDataNames.end())
-        throw VisualizeException(__PRETTY_FUNCTION__, "data name already exist for point data.");
+        throw Exception(__PRETTY_FUNCTION__, "data name already exist for point data.");
 
     if (not mPoints.empty())
-        throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding points");
+        throw Exception(__PRETTY_FUNCTION__, "define all data fields _before_ adding points");
 
     mPointDataNames.push_back(name);
 }
@@ -46,10 +46,10 @@ void UnstructuredGrid::DefinePointData(std::string name)
 void UnstructuredGrid::DefineCellData(std::string name)
 {
     if (std::find(mCellDataNames.begin(), mCellDataNames.end(), name) != mCellDataNames.end())
-        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data name already exist for point data.");
-
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "data name already exist for point data.");
+    
     if (not mCells.empty())
-        throw VisualizeException(__PRETTY_FUNCTION__, "define all data fields _before_ adding cells");
+        throw Exception(__PRETTY_FUNCTION__, "define all data fields _before_ adding cells");
 
     mCellDataNames.push_back(name);
 }
@@ -78,7 +78,7 @@ int UnstructuredGrid::GetPointDataIndex(const std::string& name) const
 {
     auto it = std::find(mPointDataNames.begin(), mPointDataNames.end(), name);
     if (it == mPointDataNames.end())
-        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "data " + name + " not defined");
     return std::distance(mPointDataNames.begin(), it);
 }
 
@@ -86,6 +86,6 @@ int UnstructuredGrid::GetCellDataIndex(const std::string& name) const
 {
     auto it = std::find(mCellDataNames.begin(), mCellDataNames.end(), name);
     if (it == mCellDataNames.end())
-        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "data " + name + " not defined");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "data " + name + " not defined");
     return std::distance(mCellDataNames.begin(), it);
 }

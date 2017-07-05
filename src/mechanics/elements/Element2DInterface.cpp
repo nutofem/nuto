@@ -82,7 +82,7 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(
             CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
 
@@ -106,7 +106,7 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput,
 {
 
     if (mSection == nullptr)
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t no section allocated for element.");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + ":\t no section allocated for element.");
 
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
 
@@ -161,15 +161,7 @@ void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput,
 
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-        try
-        {
-            EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, iIp);
-        }
-        catch (NuTo::MechanicsException& e)
-        {
-            e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-            throw;
-        }
+        EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, iIp);
         CalculateElementOutputs(rElementOutput, data, iIp, constitutiveOutput);
     }
 }
@@ -233,48 +225,47 @@ void NuTo::Element2DInterface::ResizeNodes(int rNewNumNodes)
     }
     else
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
-                                 "] Resize that reduces the number of nodes is not implemented yet.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Resize that reduces the number of nodes is not implemented yet.");
     }
 }
 
 void NuTo::Element2DInterface::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
 }
 
 const Eigen::VectorXd NuTo::Element2DInterface::GetIntegrationPointVolume() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
 }
 
 void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const
 {
     for (auto dof : mInterpolationType->GetActiveDofs())
-    {
-        const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-        const int numNodes = interpolationType.GetNumNodes();
-        Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
+     {
+         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
+         const int numNodes = interpolationType.GetNumNodes();
+         Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
 
-        dofWiseGlobalRowDofs.resize(interpolationType.GetNumDofs());
-        dofWiseGlobalRowDofs.setZero();
-        switch (dof)
-        {
-        case Node::eDof::DISPLACEMENTS:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                for (int iDof = 0; iDof < mGlobalDimension; ++iDof)
-                    dofWiseGlobalRowDofs[mGlobalDimension * iNodeDof + iDof] =
-                            nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof);
-            }
-        }
-        break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(dof) + ".");
-        }
-    }
+         dofWiseGlobalRowDofs.resize(interpolationType.GetNumDofs());
+         dofWiseGlobalRowDofs.setZero();
+         switch (dof)
+         {
+         case Node::eDof::DISPLACEMENTS:
+         {
+             for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
+             {
+                 const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
+                 for (int iDof = 0; iDof < mGlobalDimension; ++iDof)
+                     dofWiseGlobalRowDofs[mGlobalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof);
+             }
+
+         }
+             break;
+         default:
+             throw Exception(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(dof) + ".");
+         }
+     }
 }
 
 void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
@@ -298,11 +289,9 @@ void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInp
 
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input for " +
-                                                                  Constitutive::InputToString(it.first) +
-                                                                  " not implemented.");
-        }
-    }
+             throw Exception(__PRETTY_FUNCTION__, "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");
+         }
+     }
 }
 
 Eigen::MatrixXd NuTo::Element2DInterface::CalculateRotationMatrix()
@@ -383,22 +372,23 @@ void NuTo::Element2DInterface::CalculateElementOutputs(
                                                    constitutiveOutputMap);
             break;
 
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
-            break;
-        case Element::eOutput::IP_DATA:
-            // CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
-            break;
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::UPDATE_STATIC_DATA:
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-        case Element::eOutput::GLOBAL_ROW_DOF:
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
+            case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+                CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
+                break;
+            case Element::eOutput::IP_DATA:
+                //CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
+                break;
+            case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+            case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+            case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+            case Element::eOutput::UPDATE_STATIC_DATA:
+            case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+            case Element::eOutput::GLOBAL_ROW_DOF:
+            case Element::eOutput::GLOBAL_COLUMN_DOF:
+                break;
+            default:
+                throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");
+            }
         }
     }
 }
@@ -420,8 +410,7 @@ void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(
             break;
         }
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -447,10 +436,8 @@ void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<do
                 break;
             }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
+                        "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -489,7 +476,7 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
             nodeValues.segment(iNode * mGlobalDimension, mGlobalDimension) = node->Get(Node::eDof::DISPLACEMENTS);
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
+            throw Exception(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
         }
     }
 
@@ -515,8 +502,8 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(
                     ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eOutput::BOND_STRESS);
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
+
         }
     }
 }
@@ -543,10 +530,8 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
                                 NuTo::Constitutive::eOutput::INTERFACE_CONSTITUTIVE_MATRIX);
                 break;
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
+                        "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -708,7 +693,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         VisualizationCellsIP.push_back(1);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Integration type not valid for this element.");
+        throw Exception(__PRETTY_FUNCTION__, "Integration type not valid for this element.");
     }
 }
 
@@ -740,7 +725,7 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
     for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
     {
         if (dimension != 1 and dimension != 2 and dimension != 3)
-            throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
+            throw NuTo::Exception("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
 
         Eigen::Vector3d GlobalPointCoor = Eigen::Vector3d::Zero();
 
@@ -773,7 +758,7 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
         }
         break;
         default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "unsupported visualization cell type");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "unsupported visualization cell type");
         }
     }
 
@@ -845,7 +830,7 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
         }
         break;
         default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "unsupported datatype for visualization.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "unsupported datatype for visualization.");
         }
     }
 }
@@ -865,7 +850,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
                     ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eOutput::BOND_STRESS);
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
+            throw Exception(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
         }
     }
 }
@@ -883,5 +868,5 @@ std::shared_ptr<const Section> Element2DInterface::GetSection() const
         return mSection;
 
     Info();
-    throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
+    throw Exception(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
 }

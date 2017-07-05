@@ -42,18 +42,107 @@ int NuTo::MisesWielandt::Optimize()
     for (size_t i = 0; i < mNumParameters; ++i)
         u[i] *= 1. / norm;
 
-    SetMaxGradientCalls((int)mNumParameters);
+#ifdef ENABLE_SERIALIZATION
+//! @brief ... save the object to a file
+//! @param filename ... filename
+//! @param rType ... type of file, either BINARY, XML or TEXT
+void NuTo::MisesWielandt::Save ( const std::string &filename, std::string rType)const
+{
+	try
+	{
+		//transform to uppercase
+		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+		std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+		std::string tmpStr ( GetTypeId() );
+		std::string baseClassStr = tmpStr.substr ( 4,100 );
+		if (rType=="BINARY")
+		{
+			boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+			oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="XML")
+		{
+			boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+			oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="TEXT")
+		{
+			boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+			ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else
+		{
+			throw Exception ( "[MisesWielandt::Save]File type not implemented." );
+		}
+	}
+	catch ( boost::archive::archive_exception &e )
+	{
+		std::string s ( std::string ( "[MisesWielandt::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+		std::cout << s << "\n";
+		throw Exception ( s );
+	}
+	catch ( Exception &e )
+	{
+        throw;
+	}
+	catch ( std::exception &e )
+	{
+		throw Exception ( e.what() );
+	}
+	catch ( ... )
+	{
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
+	}
+}
 
     while (true)
     {
         numGradientCalls++;
         if (numGradientCalls > mMaxGradientCalls)
         {
-            returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
-            break;
-            // return MAXGRADIENTCALLS;
-        }
+            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::MisesWielandt::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
+             oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
+        }
+		else if (rType=="XML")
+        {
+            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::MisesWielandt::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
 
         // r set to zero in MatVec product
         //		std::cout<<"[MisesWielandt] ATTENTION: has to be D^-1.K not K matrix. \n";
@@ -82,68 +171,38 @@ int NuTo::MisesWielandt::Optimize()
         lambda = 0.;
         for (size_t i = 0; i < mNumParameters; ++i)
         {
-            lambda += r[i] * u[i];
-            norm += (r[i] * r[i]); // norm
+            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::MisesWielandt::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
         }
-        norm = std::sqrt(norm);
-        for (size_t i = 0; i < mNumParameters; ++i)
-            u[i] = r[i] / norm;
-
-        //		std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
-
-        if (numGradientCalls != 1)
-        {
-            if ((lambda - prevLambda) >= 0 && (lambda - prevLambda) < tol)
-            {
-                returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
-                break;
-            }
-            else if ((lambda - prevLambda) < 0 && (lambda - prevLambda) > -tol)
-            {
-                returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
-                break;
-            }
+		else
+		{
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
         }
     }
-    // so far condition number equal max eigenvalue
-    mObjective = lambda;
-
-
-    mIsBuild = true;
-
-    if (mVerboseLevel > 0)
+    catch ( Exception &e )
     {
-        std::cout << " " << std::endl;
-        std::cout << "[MisesWielandt] Number of gradient calls......... " << numGradientCalls << std::endl;
-        std::cout << "[MisesWielandt] Max eigenvalue .................. " << lambda << "\n";
-        std::cout << "[MisesWielandt] Active convergence criterion..... ";
-        switch (returnValue)
-        {
-        case eOptimizationReturnAttributes::MAXFUNCTIONCALLS:
-            std::cout << "Maximum number of function calls reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
-            std::cout << "Maximum number of gradient calls reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::MAXHESSIANCALLS:
-            std::cout << "Maximum number of hessian calls reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::MAXITERATIONS:
-            std::cout << "Maximum number of iterations reached." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::NORMGRADIENT:
-            std::cout << "lambda_min of preconditioned gradient smaller than prescribed value." << std::endl;
-            break;
-        case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
-            std::cout << "Decrease in mObjective function between two consecutive cycles is smaller than prescribed "
-                         "value."
-                      << std::endl;
-            break;
-        default:
-            std::cout << "Unknown convergence criterion." << std::endl;
-            break;
-        }
-        std::cout << std::endl;
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw Exception ( "[Matrix::Restore]Unhandled exception." );
     }
     return static_cast<int>(returnValue);
 }

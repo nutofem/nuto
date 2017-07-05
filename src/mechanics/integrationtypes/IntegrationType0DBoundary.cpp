@@ -5,8 +5,7 @@ using namespace NuTo;
 
 Eigen::VectorXd NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    throw MechanicsException(
-            "[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
@@ -27,8 +26,7 @@ double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum) co
     case 0:
         return 1;
     default:
-        throw MechanicsException(
-                "[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 

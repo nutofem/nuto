@@ -1,5 +1,5 @@
 #include "visualize/ComponentName.h"
-#include "visualize/VisualizeException.h"
+#include "base/Exception.h"
 
 std::map<NuTo::eVisualizeWhat, std::string> GetMap()
 {
@@ -45,7 +45,7 @@ std::string NuTo::GetComponentName(NuTo::eVisualizeWhat component)
     }
     catch (const std::out_of_range& e)
     {
-        throw VisualizeException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
+        throw Exception(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
 
@@ -56,5 +56,5 @@ NuTo::eVisualizeWhat NuTo::GetComponentEnum(std::string component)
         if (entry.second == component)
             return entry.first;
 
-    throw VisualizeException(__PRETTY_FUNCTION__, component + " has no enum equivalent or is not implemented.");
+    throw Exception(__PRETTY_FUNCTION__, component + " has no enum equivalent or is not implemented.");
 }

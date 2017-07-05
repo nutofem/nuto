@@ -41,10 +41,9 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     bool converged(false);
     double mAccuracyGradientScaled = mAccuracyGradient * sqrt(GetNumParameters());
 
-    // check, if callback handler is set
-    if (mpCallbackHandler == nullptr)
-        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine "
-                                "mObjective function and derivatives.");
+    //check, if callback handler is set
+    if (mpCallbackHandler==nullptr)
+        throw Exception("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine mObjective function and derivatives.");
 
     // calculate mObjective
     mObjective = mpCallbackHandler->Objective();
@@ -548,6 +547,163 @@ void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, 
         }
     }
 }
+
+#ifdef ENABLE_SERIALIZATION
+//! @brief ... save the object to a file
+//! @param filename ... filename
+//! @param rType ... type of file, either BINARY, XML or TEXT
+void NuTo::ConjugateGradientNonLinear::Save ( const std::string &filename, std::string rType)const
+{
+	try
+	{
+		//transform to uppercase
+		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+		std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+		std::string tmpStr ( GetTypeId() );
+		std::string baseClassStr = tmpStr.substr ( 4,100 );
+		if (rType=="BINARY")
+		{
+			boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+			oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="XML")
+		{
+			boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+			oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else if (rType=="TEXT")
+		{
+			boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+			ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                & BOOST_SERIALIZATION_NVP(mShowSteps);
+		}
+		else
+		{
+			throw Exception (__PRETTY_FUNCTION__, "File type not implemented." );
+		}
+	}
+	catch ( boost::archive::archive_exception &e )
+	{
+		std::string s( __PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
+		std::cout << s << "\n";
+		throw Exception ( s );
+	}
+	catch ( Exception &e )
+	{
+        throw;
+	}
+	catch ( std::exception &e )
+	{
+		throw Exception ( e.what() );
+	}
+	catch ( ... )
+	{
+		throw Exception ( "[Matrix::Save]Unhandled exception." );
+	}
+}
+
+
+//! @brief ... restore the object from a file
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  std::string rType)
+{
+    try
+    {
+		//transform to uppercase
+		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+        std::string tmpString;
+		if (rType=="BINARY")
+        {
+            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             oba & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
+        }
+		else if (rType=="XML")
+        {
+            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
+        }
+		else if (rType=="TEXT")
+        {
+            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+            if ( tmpString!=GetTypeId() )
+                throw Exception ( "[NuTo::ConjugateGradientNonLinear::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+             ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Optimizer)
+                 & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
+                 & BOOST_SERIALIZATION_NVP(mMinDeltaObjBetweenRestarts)
+                 & BOOST_SERIALIZATION_NVP(mMaxGradientCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxHessianCalls)
+                 & BOOST_SERIALIZATION_NVP(mMaxIterations)
+                 & BOOST_SERIALIZATION_NVP(mShowSteps);
+        }
+		else
+		{
+            throw Exception ( "[Matrix::Restore]File type not implemented" );
+        }
+    }
+    catch ( Exception &e )
+    {
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw Exception ( "[Matrix::Restore]Unhandled exception." );
+    }
+}
+#endif // ENABLE_SERIALIZATION
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)

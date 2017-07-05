@@ -1,5 +1,5 @@
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 
@@ -49,8 +49,7 @@ void DataMoistureTransport::SetCurrentSorptionCoeff(Eigen::VectorXd rCurrentSorp
     }
     default:
     {
-        throw NuTo::MechanicsException(
-                __PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
     }
@@ -84,8 +83,7 @@ void DataMoistureTransport::SetLastSorptionCoeff(Eigen::VectorXd rLastSorptionCo
     }
     default:
     {
-        throw NuTo::MechanicsException(
-                __PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
     }

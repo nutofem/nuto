@@ -9,7 +9,6 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/MechanicsException.h"
 #include "mechanics/DirectionEnum.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/Group.h"
@@ -86,13 +85,11 @@ using namespace NuTo::Constraint;
     {
         $action
     }
-    catch (NuTo::MechanicsException& e)
+    catch (NuTo::Exception& e)
     {
         SWIG_exception(SWIG_RuntimeError, e.what());
     }
 }
-
-%include "mechanics/MechanicsException.h"
 
 namespace std {
     // these are necessary for vectors of types with no default constructor

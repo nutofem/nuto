@@ -1,5 +1,5 @@
 #include "optimize/NewtonRaphson.h"
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 
 #include <eigen3/Eigen/LU>
 
@@ -38,10 +38,9 @@ NuTo::NewtonRaphson::NewtonRaphson()
 
 void NuTo::NewtonRaphson::Solve(Eigen::VectorXd& rUnknown)
 {
-    if (not mAssignResidual && mResidualFunction == nullptr)
-    {
-        throw OptimizeException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
-    }
+	if (not mAssignResidual && mResidualFunction == nullptr) {
+		throw Exception("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
+	}
 
     this->NewtonRaphsonIterator(rUnknown, this->mCheckNewtonRaphson);
 }
@@ -137,8 +136,8 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
             // too small change of the solution, spurious solution
             return;
         }
-    }
-    throw NuTo::OptimizeException(__PRETTY_FUNCTION__, "The maximal number of iterations exceeded");
+	}
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "The maximal number of iterations exceeded");
 }
 
 //! @brief ... the routine performs line search correction of the Newton step

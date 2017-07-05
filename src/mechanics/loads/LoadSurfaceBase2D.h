@@ -1,6 +1,16 @@
 #pragma once
 
-#include "mechanics/MechanicsException.h"
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/utility.hpp>
+#endif  // ENABLE_SERIALIZATION
+
+#include "base/Exception.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>
@@ -35,6 +45,18 @@ public:
 protected:
     LoadSurfaceBase2D()
     {
+        for(auto it : mElements2D)
+        {
+            std::uintptr_t temp = reinterpret_cast<std::uintptr_t>(it.first);
+            std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mElementMapCast.find(temp);
+            if(itCast!=mElementMapCast.end())
+            {
+                ContinuumElement<2>** tempPtr = const_cast<ContinuumElement<2>**>(&(it.first));
+                *tempPtr = reinterpret_cast<ContinuumElement<2>*>(itCast->second);
+            }
+            else
+                throw Exception("[NuTo::LoadSurfaceBase2D] The Element2D-Pointer could not be updated.");
+        }
     }
 
     std::vector<std::pair<const ContinuumElement<2>*, int>> mElements2D;

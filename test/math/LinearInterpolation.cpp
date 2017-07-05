@@ -2,7 +2,7 @@
 
 #include <array>
 #include "math/LinearInterpolation.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 
 #define CHECK_CLOSE_COLLECTION(aa, bb, tolerance)                                                                      \
@@ -31,11 +31,11 @@ BOOST_AUTO_TEST_CASE(linear_interpolation)
     double derivative = interpolation.derivative(50.0);
     BOOST_CHECK_CLOSE(derivative, 1e-2, 1e-10);
 
-    BOOST_CHECK_THROW(interpolation(-1.0), NuTo::out_of_range);
-    BOOST_CHECK_THROW(interpolation(101.0), NuTo::out_of_range);
+    BOOST_CHECK_THROW(interpolation(-1.0), NuTo::Exception);
+    BOOST_CHECK_THROW(interpolation(101.0), NuTo::Exception);
 
     values = {{{0.0, 0.0}}};
-    BOOST_CHECK_THROW(auto interpolation = NuTo::Math::LinearInterpolation(values), NuTo::invalid_argument);
+    BOOST_CHECK_THROW(auto interpolation = NuTo::Math::LinearInterpolation(values), NuTo::Exception);
 
     // values need not be in the correct order
     values = {{{100.0, 1.0}, {0.0, 0.0}}};

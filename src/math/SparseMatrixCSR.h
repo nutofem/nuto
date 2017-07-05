@@ -10,7 +10,7 @@
 
 
 #include "math/SparseMatrix.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -80,7 +80,7 @@ public:
     //! @param rNumColumns_ ... number of columns
     virtual void Resize(int rRow, int rCol) override
     {
-        throw NuTo::MathException("[NuTo::SparseSparseMatrixCSR::Resize] Not implemented for two input values!");
+        throw NuTo::Exception("[NuTo::SparseSparseMatrixCSR::Resize] Not implemented for two input values!");
     }
 
     //! @brief ... reserve memory for non-zero matrix entries
@@ -213,9 +213,8 @@ public:
     //! @param rResultOutput ... maximum matrix entry
     virtual void MaxEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
-        if (mValues.size() == 0)
-            throw MathException(
-                    "[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
+        if (mValues.size()==0)
+            throw Exception("[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 
@@ -241,9 +240,8 @@ public:
     //! @param rResultOutput ... minimum matrix entry
     virtual void MinEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
-        if (mValues.size() == 0)
-            throw MathException(
-                    "[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
+        if (mValues.size()==0)
+            throw Exception("[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 

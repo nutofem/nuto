@@ -1,7 +1,7 @@
 #include "StructureBaseEnum.h"
 
 #include <algorithm>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 const std::map<NuTo::eStructureOutput, std::string> NuTo::GetOutputMap()
 {
@@ -23,7 +23,7 @@ std::string NuTo::StructureOutputToString(NuTo::eStructureOutput rOutput)
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
     }
 }
 
@@ -36,5 +36,5 @@ NuTo::eStructureOutput NuTo::StructureOutputToEnum(std::string rOutput)
         if (entry.second == rOutput)
             return entry.first;
 
-    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+    throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
 }

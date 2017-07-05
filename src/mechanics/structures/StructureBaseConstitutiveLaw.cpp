@@ -1,5 +1,5 @@
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
@@ -124,10 +124,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::LinearPiezoelectric();
             break;
 
-        default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Constitutive law " +
-                                                                        Constitutive::ConstitutiveTypeToString(rType) +
-                                                                        " currently not supported.");
+         default:
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
+                    "Constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
         }
 
         // add section to map (insert does not allow const keys!!!!)
@@ -137,7 +136,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
     }
     else
     {
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Constitutive law already exists.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Constitutive law already exists.");
     }
 }
 
@@ -159,9 +158,8 @@ void NuTo::StructureBase::ConstitutiveLawDelete(int rIdent)
     boost::ptr_map<int, ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
-    }
-    else
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
+    } else
     {
         this->mConstitutiveLawMap.erase(it);
     }
@@ -172,7 +170,7 @@ NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiveLawPt
     boost::ptr_map<int, ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
     }
     return it->second;
 }
@@ -182,7 +180,7 @@ const NuTo::ConstitutiveBase* NuTo::StructureBase::ConstitutiveLawGetConstitutiv
     boost::ptr_map<int, ConstitutiveBase>::const_iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
     }
     return it->second;
 }
@@ -197,7 +195,7 @@ int NuTo::StructureBase::ConstitutiveLawGetId(const NuTo::ConstitutiveBase* rCon
             return it->first;
         }
     }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
+    throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not exist.");
 }
 
 void NuTo::StructureBase::ConstitutiveLawInfo(unsigned short rVerboseLevel) const
@@ -265,32 +263,16 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterMatrixDouble(int rIdent, co
 bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent,
                                                           NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetParameterBool(rIdentifier);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw;
-    }
+    const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    return constitutiveLawPtr->GetParameterBool(rIdentifier);
 }
 
 void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent,
                                                           NuTo::Constitutive::eConstitutiveParameter rIdentifier,
                                                           bool rValue)
 {
-    try
-    {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        constitutiveLawPtr->SetParameterBool(rIdentifier, rValue);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw;
-    }
+    ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    constitutiveLawPtr->SetParameterBool(rIdentifier, rValue);
 }
 
 
@@ -298,121 +280,43 @@ double
 NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent,
                                                        NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetParameterDouble(rIdentifier);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw;
-    }
+    const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    return constitutiveLawPtr->GetParameterDouble(rIdentifier);
 }
 
 void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent,
                                                             NuTo::Constitutive::eConstitutiveParameter rIdentifier,
                                                             double rValue)
 {
-    try
-    {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        constitutiveLawPtr->SetParameterDouble(rIdentifier, rValue);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw;
-    }
+    ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    constitutiveLawPtr->SetParameterDouble(rIdentifier, rValue);
 }
 
 Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(
         int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetParameterFullVectorDouble(rIdentifier);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw;
-    }
-}
-void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(
-        int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetParameterFullVectorDouble(rIdentifier, rValue);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw;
-    }
+    const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    return constitutiveLawPtr->GetParameterFullVectorDouble(rIdentifier);
 }
 
-Eigen::MatrixXd NuTo::StructureBase::ConstitutiveLawGetParameterMatrixDouble(
-        int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetParameterMatrixDouble(rIdentifier);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw;
-    }
-}
-void NuTo::StructureBase::ConstitutiveLawSetParameterMatrixDouble(
-        int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetParameterMatrixDouble(rIdentifier, rValue);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw;
-    }
+    ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    ConstitutiveLawPtr->SetParameterFullVectorDouble(rIdentifier, rValue);
 }
 
 
 void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int lawId, std::shared_ptr<Constitutive::DamageLaw> damageLaw)
 {
-    try
-    {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(lawId);
-        constitutiveLawPtr->SetDamageLaw(damageLaw);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting damage law.");
-        throw;
-    }
+    ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(lawId);
+    constitutiveLawPtr->SetDamageLaw(damageLaw);
 }
 
 double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity,
                                                                              Eigen::VectorXd rCoeffs) const
 {
     double EquilibriumWaterVolumeFraction = 0.0;
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        EquilibriumWaterVolumeFraction =
-                constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting the equilibrium water volume fraction.");
-        throw;
-    }
+    const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+    EquilibriumWaterVolumeFraction = constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
     return EquilibriumWaterVolumeFraction;
 }

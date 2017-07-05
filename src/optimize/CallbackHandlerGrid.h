@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/dynamic_bitset.hpp>
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 #include <vector>
 
 namespace NuTo
@@ -25,32 +25,59 @@ public:
 
     virtual std::vector<double>& GetParameters()
     {
-        throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in "
-                                "CallbackHandlerGrid object.");
+		throw Exception("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual std::vector<double>& GetRightHandSide()
     {
-        throw OptimizeException("[CallbackHandlerGrid::GetRightHandSide] GetRightHandSide function not implemented in "
-                                "CallbackHandlerGrid object.");
+		throw Exception("[CallbackHandlerGrid::GetRightHandSide] GetRightHandSide function not implemented in CallbackHandlerGrid object.");
     }
     virtual void SetParameters(std::vector<double>& rParameters)
     {
-        throw OptimizeException("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in "
-                                "CallbackHandlerGrid object.");
+		throw Exception("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in CallbackHandlerGrid object.");
     }
 
     virtual void SetRightHandSide(std::vector<double>& rRightHandSide)
     {
-        throw OptimizeException("[CallbackHandlerGrid::SetRightHandSide] SetRightHandSide function not implemented in "
-                                "CallbackHandlerGrid object.");
+		throw Exception("[CallbackHandlerGrid::SetRightHandSide] SetRightHandSide function not implemented in CallbackHandlerGrid object.");
     }
 
-    virtual void Gradient(std::vector<double>& rValue, std::vector<double>& rGradient)
-    {
-        throw OptimizeException(
-                "[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
-    }
+    virtual void Gradient (std::vector<double>& rValue,std::vector<double>& rGradient)
+	{
+		throw Exception("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
+	}
+
+ 	virtual void Hessian (std::vector<double>& rHessian)
+	{
+		throw Exception("[CallbackHandlerGrid::Gradient] Gradient function not implemented in CallbackHandlerGrid object.");
+	}
+
+	//! @brief get DisplacementConstaints
+	//! @return dynamic_bitset of constraints
+	virtual const boost::dynamic_bitset<> GetDisplacementConstaints()
+	{
+		throw Exception("[CallbackHandlerGrid::GetDisplacementConstaints] GetDisplacementConstaints function not implemented in CallbackHandlerGrid object.");
+	}
+
+	//! @brief correct solution for hanging nodes
+	//! @param displacement solution
+	virtual void HangingNodesCorrection(std::vector<double>& u)
+	{
+		throw Exception("[CallbackHandlerGrid::HangingNodesCorrection] HangingNodesCorrection function not implemented in CallbackHandlerGrid object.");
+	}
+
+
+	virtual void SetMisesWielandt (bool rMisesWielandt)
+	{
+		throw Exception("[CallbackHandlerGrid::SetMisesWielandt] SetMisesWielandt function not implemented in CallbackHandlerGrid object.");
+	}
+	virtual double GetWeightingFactor()
+	{
+		throw Exception("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
+	}
+	virtual void SetWeightingFactor(double rWeight)
+	{
+		throw Exception("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented in CallbackHandlerGrid object.");
 
     virtual void Hessian(std::vector<double>& rHessian)
     {

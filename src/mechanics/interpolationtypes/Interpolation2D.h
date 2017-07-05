@@ -22,8 +22,7 @@ public:
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
     }
 
     virtual int GetLocalDimension() const override

@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -58,10 +58,8 @@ NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOu
             break;
         default:
             continue;
-            //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
-            //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
-            //            law.");
+//            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
+//            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
         }
     }
 
@@ -142,14 +140,14 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
     double C11, C12, C33;
     switch (planeState.GetPlaneState())
     {
-    case ePlaneState::PLANE_STRAIN:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
-        break;
-    case ePlaneState::PLANE_STRESS:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        case ePlaneState::PLANE_STRAIN:
+            std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
+            break;
+        case ePlaneState::PLANE_STRESS:
+            std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
+            break;
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -178,7 +176,36 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
             const auto& engineeringStrain =
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
 
-            switch (planeState.GetPlaneState())
+                switch (planeState.GetPlaneState())
+                {
+                    case ePlaneState::PLANE_STRAIN:
+                    {
+                        engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
+                        engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
+                        engineeringStress3D[2] = C12 * (engineeringStrain[0] + engineeringStrain[1]);
+                        engineeringStress3D[3] = 0.;
+                        engineeringStress3D[4] = 0.;
+                        engineeringStress3D[5] = C33 * engineeringStrain[2];
+                        break;
+                    }
+                    case ePlaneState::PLANE_STRESS:
+                    {
+                        engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
+                        engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
+                        engineeringStress3D[2] = 0.;
+                        engineeringStress3D[3] = 0.;
+                        engineeringStress3D[4] = 0.;
+                        engineeringStress3D[5] = C33 * engineeringStrain[2];
+                        break;
+                    }
+                    default:
+                        throw Exception(
+                            std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
+                }
+
+                break;
+            }
+            case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
             {
             case ePlaneState::PLANE_STRAIN:
             {
@@ -391,7 +418,7 @@ NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constitutive::eCo
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return this->mE;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -412,7 +439,7 @@ void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive
         this->mE = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 

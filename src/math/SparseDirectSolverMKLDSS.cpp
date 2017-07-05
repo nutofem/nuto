@@ -1,7 +1,7 @@
 
 #include <ctime>
 
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMKLDSS.h"
@@ -16,7 +16,7 @@ NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS()
 #ifdef HAVE_MKL_DSS
     this->mRefinement = true;
 #else // HAVE_MKL_DSS
-    throw NuTo::MathException("MKL DSS-solver was not found on your system (check cmake)");
+    throw NuTo::Exception("MKL DSS-solver was not found on your system (check cmake)");
 #endif // HAVE_MKL_DSS
 }
 
@@ -30,13 +30,12 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException(
-                "[SparseDirectSolverMKLDSS::solve] one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve] one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve] matrix must be symmetric.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve] matrix must be symmetric.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     const std::vector<int>& matrixColumns = rMatrix.GetColumns();
@@ -46,7 +45,7 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     // check right hand side
     if (matrixDimension != rRhs.GetNumRows())
     {
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve] invalid dimension of right hand side vector.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve] invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = rRhs.GetNumColumns();
     const double* rhsValues = rRhs.GetEigenMatrix().data();
@@ -64,11 +63,11 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_create: invalid options.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_create: invalid options.");
     case MKL_DSS_OUT_OF_MEMORY:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_create: out of memory.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_create: out of memory.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_create: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_create: unknown error code.");
     }
 
     // communicate rMatrix structure to solver
@@ -88,20 +87,19 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_STATE_ERR:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: state error.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: state error.");
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: invalid options.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: invalid options.");
     case MKL_DSS_COL_ERR:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: column error.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: column error.");
     case MKL_DSS_NOT_SQUARE:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix is not square.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix is not square.");
     case MKL_DSS_TOO_FEW_VALUES:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too few entries.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too few entries.");
     case MKL_DSS_TOO_MANY_VALUES:
-        throw NuTo::MathException(
-                "[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too many entries.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: matrix has too many entries.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_define_structure: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_define_structure: unknown error code.");
     }
 
     // reordering
@@ -112,13 +110,13 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_STATE_ERR:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_reorder: state error.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_reorder: state error.");
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_reorder: invalid options.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_reorder: invalid options.");
     case MKL_DSS_OUT_OF_MEMORY:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_reorder: out of memory.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_reorder: out of memory.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_reorder: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_reorder: unknown error code.");
     }
     if (this->mVerboseLevel > 0)
     {
@@ -144,17 +142,17 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_STATE_ERR:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: state error.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: state error.");
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: invalid options.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: invalid options.");
     case MKL_DSS_OPTION_CONFLICT:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: option conflict.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: option conflict.");
     case MKL_DSS_OUT_OF_MEMORY:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: out of memory.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: out of memory.");
     case MKL_DSS_ZERO_PIVOT:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: zero pivot.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: zero pivot.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_factor_real: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_factor_real: unknown error code.");
     }
     if (this->mVerboseLevel > 0)
     {
@@ -180,13 +178,13 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_STATE_ERR:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_solve_real: state error.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_solve_real: state error.");
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_solve_real: invalid options.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_solve_real: invalid options.");
     case MKL_DSS_OUT_OF_MEMORY:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_solve_real: out of memory.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_solve_real: out of memory.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_solve_real: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_solve_real: unknown error code.");
     }
     if (this->mVerboseLevel > 0)
     {
@@ -206,13 +204,13 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
         case MKL_DSS_SUCCESS:
             break;
         case MKL_DSS_STATISTICS_INVALID_MATRIX:
-            throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid matrix.");
+            throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid matrix.");
         case MKL_DSS_STATISTICS_INVALID_STATE:
-            throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid state.");
+            throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid state.");
         case MKL_DSS_STATISTICS_INVALID_STRING:
-            throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid string.");
+            throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid string.");
         default:
-            throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
+            throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
         }
         std::cout << "[SparseDirectSolverMKLDSS::solve] Peak memory symbolic factorization: " << statOut[1] << " KBytes"
                   << std::endl;
@@ -233,13 +231,13 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
                 case MKL_DSS_SUCCESS:
                     break;
                 case MKL_DSS_STATISTICS_INVALID_MATRIX:
-                    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid matrix.");
+                    throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid matrix.");
                 case MKL_DSS_STATISTICS_INVALID_STATE:
-                    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid state.");
+                    throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid state.");
                 case MKL_DSS_STATISTICS_INVALID_STRING:
-                    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid string.");
+                    throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: invalid string.");
                 default:
-                    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
+                    throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_statistics: unknown error code.");
                 }
                 std::cout << "[SparseDirectSolverMKLDSS::solve] Inertia: number of positive eigenvalues: " << statOut[0]
                           << std::endl;
@@ -257,17 +255,17 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     case MKL_DSS_SUCCESS:
         break;
     case MKL_DSS_INVALID_OPTION:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_delete: invalid options .");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_delete: invalid options .");
     case MKL_DSS_OUT_OF_MEMORY:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_delete: out of memory.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_delete: out of memory.");
     default:
-        throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]dss_delete: unknown error code.");
+        throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]dss_delete: unknown error code.");
     }
 }
 #else // HAVE_MKL_DSS
 void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs,
                                            Eigen::VectorXd& rSolution)
 {
-    throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
+	throw NuTo::Exception("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
 }
 #endif // HAVE_MKL_DSS

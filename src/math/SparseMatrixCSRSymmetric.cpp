@@ -4,7 +4,7 @@
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -14,7 +14,7 @@ template <>
 void SparseMatrixCSRSymmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA,
                                                              const NuTo::SparseMatrixCSRSymmetric<int>& rMatrixB)
 {
-    throw MathException("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
 }
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
@@ -25,14 +25,12 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
     assert(rMatrixB.GetNumRows() == rMatrixB.GetNumColumns());
     if (rMatrixB.GetNumRows() != rMatrixA.GetNumRows())
     {
-        throw MathException(
-                "[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid dimension of matrices A and B.");
+        throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid dimension of matrices A and B.");
     }
     assert(this->GetNumRows() == this->GetNumColumns());
     if (rMatrixA.GetNumColumns() != this->GetNumRows())
     {
-        throw MathException(
-                "[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid number of columns in matrix A.");
+        throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid number of columns in matrix A.");
     }
     // loop over the columns of trans(A) == rows of A
     const std::vector<int>& matrixARowIndex = rMatrixA.GetRowIndex();
@@ -112,8 +110,7 @@ template <>
 void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
         const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<int>& rMatrixB)
 {
-    throw MathException(
-            "[SparseMatrixCSRSymmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
 }
 
 // subtract (trans(A) * trans(B) + B * A) from the matrix (A and B are general matrices)
@@ -123,18 +120,15 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
 {
     if (rMatrixA.GetNumRows() != rMatrixB.GetNumColumns())
     {
-        throw MathException("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of rows "
-                            "of matrix A and B.");
+        throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of rows of matrix A and B.");
     }
     if (rMatrixB.GetNumRows() != this->GetNumRows())
     {
-        throw MathException("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of "
-                            "columns of matrix B.");
+        throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of columns of matrix B.");
     }
     if (rMatrixA.GetNumColumns() != this->GetNumColumns())
     {
-        throw MathException("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of "
-                            "columns of matrix A.");
+        throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of columns of matrix A.");
     }
 
     // calculate B * A
@@ -180,7 +174,7 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
 template <>
 Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi& rMatrix) const
 {
-    throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
+    throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with full matrix
@@ -189,7 +183,7 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator*(const Eigen::MatrixX
 {
     if (this->GetNumColumns() != rMatrix.rows())
     {
-        throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
+        throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
     }
     Eigen::MatrixXd result(this->GetNumRows(), rMatrix.cols());
 
@@ -219,7 +213,7 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator*(const Eigen::MatrixX
 template <>
 SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int& rScal) const
 {
-    throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
+    throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with scalar
@@ -238,7 +232,7 @@ SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator*(con
 template <>
 SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRSymmetric<int>& rMatrix)
 {
-    throw MathException("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
+    throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }
 
 //! @brief ... add sparse matrix
@@ -249,11 +243,11 @@ SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator+=(const SparseM
 {
     if (this->GetNumColumns() != rOther.GetNumColumns())
     {
-        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
+        throw Exception("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
     }
     if (this->GetNumRows() != rOther.GetNumRows())
     {
-        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
+        throw Exception("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
     }
 
 
@@ -275,7 +269,7 @@ SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator+=(const SparseM
 template <>
 SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRVector2Symmetric<int>& rMatrix)
 {
-    throw MathException("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
+    throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }
 
 
@@ -288,11 +282,11 @@ operator+=(const SparseMatrixCSRVector2Symmetric<double>& rOther)
 {
     if (this->GetNumColumns() != rOther.GetNumColumns())
     {
-        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
+        throw Exception("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of columns in input matrix.");
     }
     if (this->GetNumRows() != rOther.GetNumRows())
     {
-        throw MathException("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
+        throw Exception("[SparseMatrixCSRSymmetric<double>::operator*] invalid number of rows in input matrix.");
     }
 
     for (int otherRow = 0; otherRow < rOther.GetNumRows(); otherRow++)
@@ -307,5 +301,139 @@ operator+=(const SparseMatrixCSRVector2Symmetric<double>& rOther)
     return *this;
 }
 
+
+#ifdef ENABLE_SERIALIZATION
+template<typename T>
+void SparseMatrixCSRSymmetric<T>::Save ( const std::string &filename, std::string rType)const
+{
+    try
+    {
+	//transform to uppercase
+	std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
+
+	// open file
+	std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+	if (! ofs.is_open())
+	{
+	    throw Exception("[NuTo::SparseMatrixCSRSymmetric::Save] Error opening file.");
+	}
+
+	// write data to file
+	std::string typeIdString(this->GetTypeId());
+	if (rType=="BINARY")
+	{
+	    boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+	    oba & boost::serialization::make_nvp ("Object_type", typeIdString );
+	    oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else if (rType=="XML")
+	{
+	    boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+	    oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
+	    oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else if (rType=="TEXT")
+	{
+	    boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+	    ota & boost::serialization::make_nvp("Object_type", typeIdString );
+	    ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else
+	{
+	    throw Exception ( "[NuTo::SparseMatrixCSRSymmetric::Save] File type not implemented." );
+	}
+
+	// close file
+	ofs.close();
+    }
+    catch ( boost::archive::archive_exception& e )
+    {
+        std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - " e.what());
+        throw Exception ( s );
+    }
+    catch ( Exception &e )
+    {
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+}
+
+template<typename T>
+void SparseMatrixCSRSymmetric<T>::Restore ( const std::string &filename,  std::string rType)
+{
+    try
+    {
+	//transform to uppercase
+	std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
+
+	// open file
+	std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+	if (! ifs.is_open())
+	{
+	    throw Exception("[NuTo::SparseMatrixCSRSymmetric::Restore] Error opening file.");
+	}
+
+	std::string typeIdString;
+	if (rType=="BINARY")
+	{
+	    boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+	    oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
+	    if ( typeIdString != this->GetTypeId() )
+	    {
+		throw Exception ( "[NuTo::SparseMatrixCSRSymmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+	    }
+	    oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else if (rType=="XML")
+	{
+	    boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+	    oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
+	    if ( typeIdString != this->GetTypeId() )
+	    {
+		throw Exception ( "[NuTo::SparseMatrixCSRSymmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+	    }
+	    oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else if (rType=="TEXT")
+	{
+	    boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+	    ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
+	    if ( typeIdString != this->GetTypeId() )
+	    {
+		throw Exception ( "[NuTo::SparseMatrixCSRSymmetric::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
+	    }
+	    ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+	}
+	else
+	{
+	    throw Exception ( "[NuTo::SparseMatrixCSRSymmetric::Restore]File type not implemented" );
+	}
+	// close file
+	ifs.close();
+    }
+    catch ( boost::archive::archive_exception& e )
+    {
+        std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - "  + e.what());
+        throw Exception ( s );
+    }
+    catch ( Exception &e )
+    {
+        throw;
+    }
+    catch ( std::exception &e )
+    {
+        throw Exception ( e.what() );
+    }
+}
+
+template void SparseMatrixCSRSymmetric<int>::Save (const std::string&, std::string) const;
+template void SparseMatrixCSRSymmetric<int>::Restore (const std::string&, std::string);
+template void SparseMatrixCSRSymmetric<double>::Save (const std::string&, std::string) const;
+template void SparseMatrixCSRSymmetric<double>::Restore (const std::string&, std::string);
+
+#endif // ENABLE_SERIALIZATION
 
 } // namespace NuTo
