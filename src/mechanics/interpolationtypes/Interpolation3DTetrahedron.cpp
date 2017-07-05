@@ -54,7 +54,7 @@ NuTo::Interpolation3DTetrahedron::CalculateDerivativeShapeFunctionsNatural(const
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1(rCoordinates);
+        return ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2(rCoordinates);
     default:

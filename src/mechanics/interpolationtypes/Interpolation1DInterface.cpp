@@ -69,7 +69,7 @@ NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural(const E
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder1(rCoordinates);
+        return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder1();
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder2(rCoordinates);
     default:

@@ -97,7 +97,7 @@ NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(rCoordinates);
+        return ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1();
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
     case NuTo::Interpolation::eTypeOrder::LOBATTO2:
         return ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(rCoordinates);
