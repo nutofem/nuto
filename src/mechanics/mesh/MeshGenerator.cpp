@@ -41,7 +41,7 @@ std::vector<std::vector<int>> GetElementNodeIds3D(const std::vector<int>& rCorne
         return {nodes0, nodes1};
     }
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
                                        ShapeTypeToString(rElementShape) + " not supported as 3D element");
     }
 }
@@ -61,7 +61,7 @@ std::vector<std::vector<int>> GetElementNodeIds2D(const std::vector<int>& rCorne
         return {e1, e2};
     }
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
                                        ShapeTypeToString(rElementShape) + " not supported as 3D element");
     }
 }

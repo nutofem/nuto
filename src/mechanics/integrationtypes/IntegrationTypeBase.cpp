@@ -17,7 +17,7 @@ void NuTo::IntegrationTypeBase::Info(int rVerboseLevel) const
 
 Eigen::MatrixXd NuTo::IntegrationTypeBase::GetNaturalIntegrationPointCoordinates() const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented in base class.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented in base class.");
 }
 
 NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationTypeBase::GetVisualizationCells() const

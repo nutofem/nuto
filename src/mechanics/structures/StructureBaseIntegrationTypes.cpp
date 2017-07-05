@@ -155,7 +155,8 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
             ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<5>();
             break;
         default:
-            throw Exception("[NuTo::StructureBase::GetPtrIntegrationType] Enum of integration type does not exist.");
+            throw MechanicsException(
+                    "[NuTo::StructureBase::GetPtrIntegrationType] Enum of integration type does not exist.");
         }
         it = mIntegrationTypeMap.insert(enumString, ptrIntegrationType).first;
         return it->second;

@@ -9,7 +9,7 @@
 //============================================================================
 #include "BoostUnitTest.h"
 
-#include "base/Exception.h"
+#include "math/MathException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/elements/ElementBase.h"

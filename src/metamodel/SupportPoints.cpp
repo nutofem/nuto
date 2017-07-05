@@ -1,6 +1,6 @@
 #include <boost/math/distributions/normal.hpp>
 
-#include "base/Exception.h"
+#include "metamodel/MetamodelException.h"
 #include "metamodel/SupportPoints.h"
 #include "metamodel/Transformation.h"
 
@@ -31,7 +31,7 @@ void NuTo::SupportPoints::Clear()
 //! @brief info about support points
 void NuTo::SupportPoints::Info() const
 {
-    throw Exception("[SupportPoints::Info()] not yet implemented.");
+    throw MetamodelException("[SupportPoints::Info()] not yet implemented.");
 }
 
 void NuTo::SupportPoints::BuildTransformation()
@@ -67,7 +67,8 @@ void NuTo::SupportPoints::SetSupportPoints(const Eigen::MatrixXd& rSPOrigInput, 
 {
     if (rSPOrigInput.cols() != rSPOrigOutput.cols())
     {
-        throw Exception("[NuTo::SupportPoints::SetSupportPoints] Number of columns for input and output must be identical (=number of samples).");   
+        throw MetamodelException("[NuTo::SupportPoints::SetSupportPoints] Number of columns for input and output must "
+                                 "be identical (=number of samples).");
     }
 
     mSPOrigInput = rSPOrigInput;
@@ -129,11 +130,12 @@ void NuTo::SupportPoints::GetMeanValueOriginalInput(Eigen::MatrixXd& rMean) cons
 // calculate mean values of transformed inputs
 void NuTo::SupportPoints::GetMeanValueTransformedInput(Eigen::MatrixXd& rMean) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetMeanValueOTransformedInput] transformation needs to be built first.");
-	}
-	this->CalculateMeanValues(this->mSPTransInput, rMean);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException(
+                "[NuTo::SupportPoints::GetMeanValueOTransformedInput] transformation needs to be built first.");
+    }
+    this->CalculateMeanValues(this->mSPTransInput, rMean);
 }
 
 // calculate mean values of original outputs
@@ -145,11 +147,12 @@ void NuTo::SupportPoints::GetMeanValueOriginalOutput(Eigen::MatrixXd& rMean) con
 // calculate mean values of transformed outputs
 void NuTo::SupportPoints::GetMeanValueTransformedOutput(Eigen::MatrixXd& rMean) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetMeanValueOTransformedOutput] transformation needs to be built first.");
-	}
-	this->CalculateMeanValues(this->mSPTransOutput, rMean);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException(
+                "[NuTo::SupportPoints::GetMeanValueOTransformedOutput] transformation needs to be built first.");
+    }
+    this->CalculateMeanValues(this->mSPTransOutput, rMean);
 }
 
 // calculate variance of original inputs
@@ -161,11 +164,12 @@ void NuTo::SupportPoints::GetVarianceOriginalInput(Eigen::MatrixXd& rVariance) c
 // calculate variance of transformed inputs
 void NuTo::SupportPoints::GetVarianceTransformedInput(Eigen::MatrixXd& rVariance) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetVarianceTransformedInput] transformation needs to be built first.");
-	}
-	this->CalculateVariance(this->mSPTransInput, rVariance);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException(
+                "[NuTo::SupportPoints::GetVarianceTransformedInput] transformation needs to be built first.");
+    }
+    this->CalculateVariance(this->mSPTransInput, rVariance);
 }
 
 // calculate variance of original outputs
@@ -177,11 +181,12 @@ void NuTo::SupportPoints::GetVarianceOriginalOutput(Eigen::MatrixXd& rVariance) 
 // calculate variance of transformed outputs
 void NuTo::SupportPoints::GetVarianceTransformedOutput(Eigen::MatrixXd& rVariance) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetVarianceTransformedOutput] transformation needs to be built first.");
-	}
-	this->CalculateVariance(this->mSPTransOutput, rVariance);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException(
+                "[NuTo::SupportPoints::GetVarianceTransformedOutput] transformation needs to be built first.");
+    }
+    this->CalculateVariance(this->mSPTransOutput, rVariance);
 }
 
 // calculate covariance matrix
@@ -193,11 +198,12 @@ void NuTo::SupportPoints::GetCovarianceMatrixOriginal(Eigen::MatrixXd& rCovarian
 // calculate covariance matrix
 void NuTo::SupportPoints::GetCovarianceMatrixTransformed(Eigen::MatrixXd& rCovarianceMatrix) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetCovarianceMatrixTransformed] transformation needs to be built first.");
-	}
-	this->CalculateCovarianceMatrix(this->mSPTransInput, this->mSPTransOutput, rCovarianceMatrix);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException(
+                "[NuTo::SupportPoints::GetCovarianceMatrixTransformed] transformation needs to be built first.");
+    }
+    this->CalculateCovarianceMatrix(this->mSPTransInput, this->mSPTransOutput, rCovarianceMatrix);
 }
 
 // calculate Pearson's correlation matrix using original support point coordinates
@@ -209,11 +215,12 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixOriginal(Eigen::MatrixXd& r
 // calculate Pearson's correlation matrix using transformed support point coordinates
 void NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed(Eigen::MatrixXd& rCorrelationMatrix) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed] transformation needs to be built first.");
-	}
-	this->CalculatePearsonCorrelationMatrix(this->mSPTransInput, this->mSPTransOutput, rCorrelationMatrix);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException("[NuTo::SupportPoints::GetPearsonCorrelationMatrixTransformed] transformation "
+                                       "needs to be built first.");
+    }
+    this->CalculatePearsonCorrelationMatrix(this->mSPTransInput, this->mSPTransOutput, rCorrelationMatrix);
 }
 
 // calculate the confidence interval on Pearson's correlation coefficient using original support point coordinates
@@ -222,7 +229,19 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsOriginal
                                                                                  Eigen::MatrixXd& rMaxCorrelationMatrix,
                                                                                  double rAlpha) const
 {
-    this->CalculatePearsonCorrelationMatrixConfidenceIntervals(this->mSPOrigInput, this->mSPOrigOutput, rCorrelationMatrix, rMinCorrelationMatrix, rMaxCorrelationMatrix, rAlpha);
+    try
+    {
+        this->CalculatePearsonCorrelationMatrixConfidenceIntervals(this->mSPOrigInput, this->mSPOrigOutput,
+                                                                   rCorrelationMatrix, rMinCorrelationMatrix,
+                                                                   rMaxCorrelationMatrix, rAlpha);
+    }
+    catch (NuTo::Exception& e)
+    {
+        NuTo::MetamodelException myException(e.ErrorMessage());
+        myException.AddMessage("[NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsOriginal] error "
+                               "calculating confidence intervals on Person's correlation coefficient.");
+        throw myException;
+    }
 }
 
 // calculate the confidence interval on Pearson's correlation coefficient using transformed support point coordinates
@@ -230,11 +249,25 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransfor
         Eigen::MatrixXd& rCorrelationMatrix, Eigen::MatrixXd& rMinCorrelationMatrix,
         Eigen::MatrixXd& rMaxCorrelationMatrix, double rAlpha) const
 {
-	if(!this->mTransformationBuild)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransformed] transformation needs to be built first.");
-	}
-    this->CalculatePearsonCorrelationMatrixConfidenceIntervals(this->mSPTransInput, this->mSPTransOutput, rCorrelationMatrix, rMinCorrelationMatrix, rMaxCorrelationMatrix, rAlpha);
+    if (!this->mTransformationBuild)
+    {
+        throw NuTo::MetamodelException("[NuTo::SupportPoints::"
+                                       "GetPearsonCorrelationMatrixConfidenceIntervalsTransformed] transformation "
+                                       "needs to be built first.");
+    }
+    try
+    {
+        this->CalculatePearsonCorrelationMatrixConfidenceIntervals(this->mSPTransInput, this->mSPTransOutput,
+                                                                   rCorrelationMatrix, rMinCorrelationMatrix,
+                                                                   rMaxCorrelationMatrix, rAlpha);
+    }
+    catch (NuTo::Exception& e)
+    {
+        NuTo::MetamodelException myException(e.ErrorMessage());
+        myException.AddMessage("[NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransformed] error "
+                               "calculating confidence intervals on Person's correlation coefficient.");
+        throw myException;
+    }
 }
 
 // calculate mean values
@@ -248,27 +281,28 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransfor
  */
 void NuTo::SupportPoints::CalculateMeanValues(const Eigen::MatrixXd& rData, Eigen::MatrixXd& rMean) const
 {
-	int numRows = rData.rows();
-	int numSamples = rData.cols();
-	if(numSamples < 1)
-	{
-		throw Exception("[NuTo::SupportPoints::CalculateMeanValues] number of samples must be larger than zero.");
-	}
-	double factor = 1.0/static_cast<double>(numSamples);
-	rMean.resize(numRows,1);
+    int numRows = rData.rows();
+    int numSamples = rData.cols();
+    if (numSamples < 1)
+    {
+        throw MetamodelException(
+                "[NuTo::SupportPoints::CalculateMeanValues] number of samples must be larger than zero.");
+    }
+    double factor = 1.0 / static_cast<double>(numSamples);
+    rMean.resize(numRows, 1);
 
-	// calculate mean value
-	for(int rowCount = 0; rowCount < numRows; rowCount++)
-	{
-		double mean=0.0;
-	    const double *dataPtr = &rData.data()[rowCount];
-	    for (int sample=0; sample<numSamples; sample++)
-		{
-	        mean += factor * (*dataPtr);
-	        dataPtr+=numRows;
-		}
-	    rMean(rowCount, 0) = mean;
-	}
+    // calculate mean value
+    for (int rowCount = 0; rowCount < numRows; rowCount++)
+    {
+        double mean = 0.0;
+        const double* dataPtr = &rData.data()[rowCount];
+        for (int sample = 0; sample < numSamples; sample++)
+        {
+            mean += factor * (*dataPtr);
+            dataPtr += numRows;
+        }
+        rMean(rowCount, 0) = mean;
+    }
 }
 
 // calculate variances
@@ -284,14 +318,14 @@ void NuTo::SupportPoints::CalculateMeanValues(const Eigen::MatrixXd& rData, Eige
  */
 void NuTo::SupportPoints::CalculateVariance(const Eigen::MatrixXd& rData, Eigen::MatrixXd& rVariance) const
 {
-	int numRows = rData.rows();
-	int numSamples = rData.cols();
-	if(numSamples < 2)
-	{
-		throw Exception("[NuTo::SupportPoints::CalculateVariance] number of samples must be larger than one.");
-	}
-	rVariance.resize(numRows,1);
-	double factor = 1.0/static_cast<double>(numSamples-1);
+    int numRows = rData.rows();
+    int numSamples = rData.cols();
+    if (numSamples < 2)
+    {
+        throw MetamodelException("[NuTo::SupportPoints::CalculateVariance] number of samples must be larger than one.");
+    }
+    rVariance.resize(numRows, 1);
+    double factor = 1.0 / static_cast<double>(numSamples - 1);
 
     // calculate mean values
     Eigen::MatrixXd meanVector;
@@ -343,22 +377,26 @@ void NuTo::SupportPoints::CalculateVariance(const Eigen::MatrixXd& rData, Eigen:
  * and \f$p_o\f$ is the number of output coordinates. Since \f$cov(z_i,z_j) = cov(z_j,z_i)\f$ the covariance matrix is
  * symmetric.
  */
-void NuTo::SupportPoints::CalculateCovarianceMatrix(const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData, Eigen::MatrixXd& rCovarianceMatrix) const
+void NuTo::SupportPoints::CalculateCovarianceMatrix(const Eigen::MatrixXd& rInputData,
+                                                    const Eigen::MatrixXd& rOutputData,
+                                                    Eigen::MatrixXd& rCovarianceMatrix) const
 {
-	// get data
-	int numInputData = rInputData.rows();
-	int numOutputData = rOutputData.rows();
-	int numSamples = rInputData.cols();
-	if(numSamples != rOutputData.cols())
-	{
-		throw Exception("[NuTo::SupportPoints::CalculateCovarianceMatrix] number of samples in input data and number of samples in output data must be equal.");
-	}
-	if(numSamples < 2)
-	{
-		throw Exception("[NuTo::SupportPoints::CalculateCovarianceMatrix] number of samples must be larger than one.");
-	}
+    // get data
+    int numInputData = rInputData.rows();
+    int numOutputData = rOutputData.rows();
+    int numSamples = rInputData.cols();
+    if (numSamples != rOutputData.cols())
+    {
+        throw MetamodelException("[NuTo::SupportPoints::CalculateCovarianceMatrix] number of samples in input data and "
+                                 "number of samples in output data must be equal.");
+    }
+    if (numSamples < 2)
+    {
+        throw MetamodelException(
+                "[NuTo::SupportPoints::CalculateCovarianceMatrix] number of samples must be larger than one.");
+    }
 
-	// calculate mean values
+    // calculate mean values
     Eigen::MatrixXd inputDataMeanVector;
     this->CalculateMeanValues(rInputData, inputDataMeanVector);
     Eigen::MatrixXd outputDataMeanVector;
@@ -503,64 +541,49 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const Eigen::MatrixX
  * where \f$Z_{0.5\alpha}\f$ is the \f$(1-0.5\alpha)\f$-quantil of the standard normal distribution, and \f$n\f$ is the
  * number of support points.
  */
-void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData, Eigen::MatrixXd& rCorrelationMatrix, Eigen::MatrixXd& rMinCorrelationMatrix, Eigen::MatrixXd& rMaxCorrelationMatrix, double rAlpha ) const
+void NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals(
+        const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData, Eigen::MatrixXd& rCorrelationMatrix,
+        Eigen::MatrixXd& rMinCorrelationMatrix, Eigen::MatrixXd& rMaxCorrelationMatrix, double rAlpha) const
 {
-	// check number of samples
-	if(this->GetNumSupportPoints() < 4)
-	{
-		throw NuTo::Exception("[NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals] at least 4 support points are required for the calculation of the confidence interval on correlation coefficients.");
-	}
-
-    // calculate Pearson's correlation matrix
-    this->CalculatePearsonCorrelationMatrix(rInputData, rOutputData, rCorrelationMatrix);
-
-    // calculate the (1-0.5 * rAlpha)-quantile of the standard normal distribution
-    boost::math::normal stdNormalDistribution;
-    double quantile = boost::math::quantile(boost::math::complement(stdNormalDistribution,0.5 * rAlpha));
-    double delta = quantile/sqrt(static_cast<double>(this->GetNumSupportPoints() - 3));
-
-    // copy correlation matrix
-    rMinCorrelationMatrix = rCorrelationMatrix;
-    rMaxCorrelationMatrix = rCorrelationMatrix;
-
-    // calculate confidence interval
-    for(int row = 0; row < this->GetDimInput() + this->GetDimOutput(); row++)
+    // check number of samples
+    if (this->GetNumSupportPoints() < 4)
     {
-        for(int col = row + 1; col < this->GetDimInput() + this->GetDimOutput(); col++)
+        throw NuTo::MetamodelException("[NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals] at "
+                                       "least 4 support points are required for the calculation of the confidence "
+                                       "interval on correlation coefficients.");
+    }
+
+    try
+    {
+        // calculate Pearson's correlation matrix
+        this->CalculatePearsonCorrelationMatrix(rInputData, rOutputData, rCorrelationMatrix);
+
+        // calculate the (1-0.5 * rAlpha)-quantile of the standard normal distribution
+        boost::math::normal stdNormalDistribution;
+        double quantile = boost::math::quantile(boost::math::complement(stdNormalDistribution, 0.5 * rAlpha));
+        double delta = quantile / sqrt(static_cast<double>(this->GetNumSupportPoints() - 3));
+
+        // copy correlation matrix
+        rMinCorrelationMatrix = rCorrelationMatrix;
+        rMaxCorrelationMatrix = rCorrelationMatrix;
+
+        // calculate confidence interval
+        for (int row = 0; row < this->GetDimInput() + this->GetDimOutput(); row++)
         {
-            rMinCorrelationMatrix(row,col) = tanh(atanh(rCorrelationMatrix(row,col)) - delta);
-            rMinCorrelationMatrix(col,row) = rMinCorrelationMatrix(row,col);
-            rMaxCorrelationMatrix(row,col) = tanh(atanh(rCorrelationMatrix(row,col)) + delta);
-            rMaxCorrelationMatrix(col,row) = rMaxCorrelationMatrix(row,col);
+            for (int col = row + 1; col < this->GetDimInput() + this->GetDimOutput(); col++)
+            {
+                rMinCorrelationMatrix(row, col) = tanh(atanh(rCorrelationMatrix(row, col)) - delta);
+                rMinCorrelationMatrix(col, row) = rMinCorrelationMatrix(row, col);
+                rMaxCorrelationMatrix(row, col) = tanh(atanh(rCorrelationMatrix(row, col)) + delta);
+                rMaxCorrelationMatrix(col, row) = rMaxCorrelationMatrix(row, col);
+            }
         }
     }
+    catch (NuTo::Exception& e)
+    {
+        NuTo::MetamodelException myException(e.ErrorMessage());
+        myException.AddMessage("[NuTo::SupportPoints::CalculatePearsonCorrelationMatrixConfidenceIntervals] error "
+                               "calculating confidence intervals on correlation coefficients.");
+        throw myException;
+    }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::SupportPoints::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::SupportPoints::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::SupportPoints::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize SupportPoints" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_NVP(mSPOrigInput)
-       & BOOST_SERIALIZATION_NVP(mSPOrigOutput)
-       & BOOST_SERIALIZATION_NVP(mSPTransInput)
-       & BOOST_SERIALIZATION_NVP(mSPTransOutput)
-       & BOOST_SERIALIZATION_NVP(mWeight)
-       & BOOST_SERIALIZATION_NVP(mlTransformationInput)
-       & BOOST_SERIALIZATION_NVP(mlTransformationOutput)
-       & BOOST_SERIALIZATION_NVP(mTransformationBuild);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize SupportPoints" << std::endl;
-#endif
-}
-#endif // ENABLE_SERIALIZATION

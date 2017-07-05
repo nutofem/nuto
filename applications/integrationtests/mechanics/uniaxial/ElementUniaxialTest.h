@@ -207,7 +207,7 @@ private:
     {
 #ifdef ENABLE_VISUALIZE
         if (rVisualizationDirectory == "")
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
 
         boost::filesystem::path directory(rVisualizationDirectory);
         boost::filesystem::create_directory(directory);

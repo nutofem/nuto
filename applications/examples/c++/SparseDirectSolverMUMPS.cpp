@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "base/Exception.h"
+#include "math/MathException.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -83,7 +83,7 @@ int main()
         // correct solution is [0.6 3 ]
         //                    [0   16]
     }
-    catch (NuTo::Exception& e)
+    catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
     }

@@ -92,7 +92,8 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
 Eigen::VectorXd NuTo::IntegrationType2D3NGauss12IpDetail::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum >= 12)
-        throw Exception("[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 
     return mIntegrationPointCoordinates[rIpNum];
 }
@@ -110,7 +111,8 @@ int NuTo::IntegrationType2D3NGauss12IpDetail::GetNumIntegrationPoints() const
 double NuTo::IntegrationType2D3NGauss12IpDetail::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum >= 12)
-        throw Exception("[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
 
     return mIntegrationPointWeights[rIpNum];
 }

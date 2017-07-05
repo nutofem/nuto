@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 namespace NuTo
 {
@@ -15,12 +15,12 @@ public:
 
     virtual void Save(const std::string& filename, std::string rType) const
     {
-        throw Exception("NuTo::SparseDirectSolver::Save] To be implemented.");
+        throw MathException("NuTo::SparseDirectSolver::Save] To be implemented.");
     }
 
     virtual void Restore(const std::string& filename, std::string rType)
     {
-        throw Exception("NuTo::SparseDirectSolver::Restore] To be implemented.");
+        throw MathException("NuTo::SparseDirectSolver::Restore] To be implemented.");
     }
 
     bool GetShowTime() const

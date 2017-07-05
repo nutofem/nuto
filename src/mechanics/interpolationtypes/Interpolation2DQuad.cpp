@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -34,7 +34,9 @@ NuTo::eIntegrationType NuTo::Interpolation2DQuad::GetStandardIntegrationType() c
         return NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip;
 
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
+                                                              Interpolation::TypeOrderToString(mTypeOrder) +
+                                                              " not implemented");
     }
 }
 
@@ -53,7 +55,9 @@ Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateShapeFunctions(const Eigen::
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions2D::ShapeFunctionsQuadSpectralOrder4(rCoordinates);
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
+                                                              Interpolation::TypeOrderToString(mTypeOrder) +
+                                                              " not implemented");
     }
 }
 
@@ -74,7 +78,9 @@ NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural(const Eigen:
         return ShapeFunctions2D::DerivativeShapeFunctionsQuadSpectralOrder4(rCoordinates);
 
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
+                                                              Interpolation::TypeOrderToString(mTypeOrder) +
+                                                              " not implemented");
     }
 }
 
@@ -94,7 +100,9 @@ Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates(int r
         return ShapeFunctions2D::NodeCoordinatesQuadSpectralOrder4(rNodeIndexDof);
 
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " +
+                                                              Interpolation::TypeOrderToString(mTypeOrder) +
+                                                              " not implemented");
     }
 }
 
@@ -114,7 +122,8 @@ NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(const Eigen::Vecto
     case 3:
         return Eigen::Vector2d(-1., -rNaturalSurfaceCoordinates(0));
     default:
-        throw Exception(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " +
+                                                              std::to_string(rSurface) + ".");
     }
 }
 
@@ -133,7 +142,8 @@ Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoor
     case 3:
         return Eigen::Vector2d(0, -1);
     default:
-        throw Exception(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " +
+                                                              std::to_string(rSurface) + ".");
     }
 }
 
@@ -153,6 +163,8 @@ int NuTo::Interpolation2DQuad::CalculateNumNodes() const
         return 25;
 
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " +
+                                                              Interpolation::TypeOrderToString(mTypeOrder) +
+                                                              " not implemented");
     }
 }

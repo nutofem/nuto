@@ -1,6 +1,6 @@
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
@@ -99,7 +99,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
                 int column = columns[iRow][iPos];
                 if (column > numActiveDofs)
                     if (column - numActiveDofs != (int)iRow)
-                        throw Exception(__PRETTY_FUNCTION__, "invalid matrix structure.");
+                        throw MechanicsException(__PRETTY_FUNCTION__, "invalid matrix structure.");
             }
 
 
@@ -162,5 +162,5 @@ void NuTo::Assembler::ConstraintUpdateRhs(double time)
 void NuTo::Assembler::ThrowIfRenumberingRequred() const
 {
     if (RenumberingRequired())
-        throw Exception(__PRETTY_FUNCTION__, "build global numbering first");
+        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
 }

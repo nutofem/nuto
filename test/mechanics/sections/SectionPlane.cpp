@@ -2,7 +2,7 @@
 #include <boost/test/output_test_stream.hpp>
 #include <fstream>
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
 
 BOOST_AUTO_TEST_CASE(CreateAndPrintPlaneStrain)
@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(CreateAndPrintPlaneStrain)
     BOOST_CHECK(output.is_equal(expected));
 
     // plane section has no area; therefore it should throw
-    BOOST_CHECK_THROW(section->GetArea(), NuTo::Exception);
+    BOOST_CHECK_THROW(section->GetArea(), NuTo::MechanicsException);
 }
 
 BOOST_AUTO_TEST_CASE(CreateAndPrintPlaneStress)

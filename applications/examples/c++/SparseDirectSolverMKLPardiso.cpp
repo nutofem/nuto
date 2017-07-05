@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "base/Exception.h"
+#include "math/MathException.h"
 #include "math/FullMatrix.h"
 #include "math/FullVector.h"
 #include "math/SparseMatrixCSRSymmetric.h"
@@ -79,7 +79,7 @@ int main()
         std::cout << std::endl << "solution of the nonsymmetric problem" << std::endl;
         sol_nosy.Info();
     }
-    catch (NuTo::Exception& e)
+    catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
     }

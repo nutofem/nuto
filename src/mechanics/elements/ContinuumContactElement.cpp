@@ -44,38 +44,57 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
 
     for (auto& itElement : *elementGroup)
     {
-        ElementBase* base = itElement.second;
-        //check if plane element
-        ContinuumElement<TDim>* elementPtr = dynamic_cast<ContinuumElement<TDim>*>(base);
-        const InterpolationType& interpolationType = elementPtr->GetInterpolationType();
-
-        //loop over all surfaces
-        for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
+        try
         {
-            bool addSurface = true;
-            surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
-            int numSurfaceNodes = surfaceNodeIndices.rows();
-            surfaceNodes.resize(numSurfaceNodes);
+            ElementBase* base = itElement.second;
+            // check if plane element
+            ContinuumElement<TDim>* elementPtr = dynamic_cast<ContinuumElement<TDim>*>(base);
+            const InterpolationType& interpolationType = elementPtr->GetInterpolationType();
 
-            for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
+            // loop over all surfaces
+            for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
             {
-                surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
-            }
+                bool addSurface = true;
+                surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
+                int numSurfaceNodes = surfaceNodeIndices.rows();
+                surfaceNodes.resize(numSurfaceNodes);
 
-            //check, if all surface nodes are in the node group
-            for (auto& surfaceNode : surfaceNodes)
-            {
-                if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
+                for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    // this surface has at least one node that is not in the list, continue
-                    addSurface = false;
+                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
+                }
+
+                // check, if all surface nodes are in the node group
+                for (auto& surfaceNode : surfaceNodes)
+                {
+                    if (nodePtrSet.find(surfaceNode) == nodePtrSet.end())
+                    {
+                        // this surface has at least one node that is not in the list, continue
+                        addSurface = false;
+                    }
+                }
+
+                if (addSurface)
+                {
+                    mElementsMaster.push_back(std::make_pair(elementPtr, iSurface));
                 }
             }
-
-            if (addSurface)
-            {
-                mElementsMaster.push_back(std::make_pair(elementPtr, iSurface));
-            }
+        }
+        catch (NuTo::MechanicsException& e)
+        {
+            std::stringstream ss;
+            ss << itElement.first;
+            e.AddMessage("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " +
+                         ss.str() + "(Maybe not a solid element?).");
+            throw;
+        }
+        catch (...)
+        {
+            std::stringstream ss;
+            ss << itElement.first;
+            throw NuTo::MechanicsException(
+                    "[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " +
+                    ss.str() + "(Maybe not a solid element?).");
         }
     }
 }
@@ -112,7 +131,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(
         case Element::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
-            throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
 }

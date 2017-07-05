@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/Constraints.h"
 #include "math/SparseMatrixCSRVector2General.h"

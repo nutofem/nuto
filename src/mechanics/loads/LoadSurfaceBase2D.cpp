@@ -141,13 +141,13 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                 integrationType = mIntegrationType4NPtr;
                 break;
             default:
-                throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
+                throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
                                                                       std::to_string(degree) + " IGA not implemented");
             }
             break;
         }
         default:
-            throw Exception(__PRETTY_FUNCTION__,
+            throw MechanicsException(__PRETTY_FUNCTION__,
                                      "Integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
 

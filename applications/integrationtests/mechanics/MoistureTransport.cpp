@@ -1,5 +1,5 @@
 #include "base/Timer.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"

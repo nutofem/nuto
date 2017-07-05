@@ -5,7 +5,7 @@
 #include <boost/foreach.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -34,7 +34,7 @@
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#include "base/Exception.h"
+#include "visualize/VisualizeException.h"
 #endif
 
 using namespace NuTo;
@@ -91,12 +91,12 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
 
 void NuTo::ElementBase::SetSection(std::shared_ptr<const Section> section)
 {
-    throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 std::shared_ptr<const Section> NuTo::ElementBase::GetSection() const
 {
-    throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 
@@ -112,7 +112,7 @@ int NuTo::ElementBase::GetNumNodes(Node::eDof rDofType) const
 
 Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
-    throw NuTo::Exception("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
+    throw NuTo::MechanicsException("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
 
 
@@ -155,7 +155,7 @@ void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase& rInt
     }
     else
     {
-        throw Exception(__PRETTY_FUNCTION__, "Integration Type does not match element type of element.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Integration Type does not match element type of element.");
     }
 }
 
@@ -200,7 +200,7 @@ void NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap
 
     for (auto& itOutput : rConstitutiveOutput)
         if (itOutput.second != nullptr && !itOutput.second->GetIsCalculated()) // check nullptr because of static data
-            throw Exception(__PRETTY_FUNCTION__, "Output " + Constitutive::OutputToString(itOutput.first) +
+            throw MechanicsException(__PRETTY_FUNCTION__, "Output " + Constitutive::OutputToString(itOutput.first) +
                                                                   " not calculated by constitutive law");
 }
 
@@ -228,13 +228,13 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
 
 bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const
 {
-    throw NuTo::Exception(
+    throw NuTo::MechanicsException(
             "[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
 }
 
 NuTo::NodeBase* NuTo::ElementBase::GetBoundaryControlNode() const
 {
-    throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented for this element type.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this element type.");
 }
 
 
@@ -256,58 +256,58 @@ NuTo::IpData::eIpStaticDataType ToIpDataEnum(NuTo::eVisualizeWhat what)
 {
     switch (what)
     {
-        case NuTo::eVisualizeWhat::BOND_STRESS:
-            return IpData::eIpStaticDataType::BOND_STRESS;
-        case NuTo::eVisualizeWhat::DAMAGE:
-            return IpData::eIpStaticDataType::DAMAGE;
-        case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
-            return IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN;
-        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-            return IpData::eIpStaticDataType::ENGINEERING_STRAIN;
-        case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-            return IpData::eIpStaticDataType::SHRINKAGE_STRAIN;
-        case NuTo::eVisualizeWhat::THERMAL_STRAIN:
-            return IpData::eIpStaticDataType::THERMAL_STRAIN;
-        case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
-            return IpData::eIpStaticDataType::ENGINEERING_STRESS;
-        case NuTo::eVisualizeWhat::HEAT_FLUX:
-            return IpData::eIpStaticDataType::HEAT_FLUX;
-        case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
-            return IpData::eIpStaticDataType::ELECTRIC_FIELD;
-        case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
-            return IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT;
-        case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
-            return IpData::eIpStaticDataType::LOCAL_EQ_STRAIN;
-        case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
-            return IpData::eIpStaticDataType::ENGINEERING_STRESS;
-        case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
-            return IpData::eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN;
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eIpStaticDataType");
-}
+    case NuTo::eVisualizeWhat::BOND_STRESS:
+        return IpData::eIpStaticDataType::BOND_STRESS;
+    case NuTo::eVisualizeWhat::DAMAGE:
+        return IpData::eIpStaticDataType::DAMAGE;
+    case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
+        return IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN;
+    case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+        return IpData::eIpStaticDataType::ENGINEERING_STRAIN;
+    case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
+        return IpData::eIpStaticDataType::SHRINKAGE_STRAIN;
+    case NuTo::eVisualizeWhat::THERMAL_STRAIN:
+        return IpData::eIpStaticDataType::THERMAL_STRAIN;
+    case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
+        return IpData::eIpStaticDataType::ENGINEERING_STRESS;
+    case NuTo::eVisualizeWhat::HEAT_FLUX:
+        return IpData::eIpStaticDataType::HEAT_FLUX;
+    case NuTo::eVisualizeWhat::ELECTRIC_FIELD:
+        return IpData::eIpStaticDataType::ELECTRIC_FIELD;
+    case NuTo::eVisualizeWhat::ELECTRIC_DISPLACEMENT:
+        return IpData::eIpStaticDataType::ELECTRIC_DISPLACEMENT;
+    case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
+        return IpData::eIpStaticDataType::LOCAL_EQ_STRAIN;
+    case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
+        return IpData::eIpStaticDataType::ENGINEERING_STRESS;
+    case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
+        return IpData::eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN;
+    default:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eIpStaticDataType");
+    }
 }
 
 NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
 {
     switch (what)
     {
-        case NuTo::eVisualizeWhat::TEMPERATURE:
-            return NuTo::Node::eDof::TEMPERATURE;
-        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-            return NuTo::Node::eDof::NONLOCALEQSTRAIN;
-        case NuTo::eVisualizeWhat::DISPLACEMENTS:
-            return NuTo::Node::eDof::DISPLACEMENTS;
-        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
-            return NuTo::Node::eDof::CRACKPHASEFIELD;
-        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
-            return NuTo::Node::eDof::RELATIVEHUMIDITY;
-        case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
-            return NuTo::Node::eDof::ELECTRICPOTENTIAL;
-        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
-            return NuTo::Node::eDof::WATERVOLUMEFRACTION;
-        default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eDof");
-}
+    case NuTo::eVisualizeWhat::TEMPERATURE:
+        return NuTo::Node::eDof::TEMPERATURE;
+    case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        return NuTo::Node::eDof::NONLOCALEQSTRAIN;
+    case NuTo::eVisualizeWhat::DISPLACEMENTS:
+        return NuTo::Node::eDof::DISPLACEMENTS;
+    case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
+        return NuTo::Node::eDof::CRACKPHASEFIELD;
+    case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+        return NuTo::Node::eDof::RELATIVEHUMIDITY;
+    case NuTo::eVisualizeWhat::ELECTRIC_POTENTIAL:
+        return NuTo::Node::eDof::ELECTRICPOTENTIAL;
+    case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
+        return NuTo::Node::eDof::WATERVOLUMEFRACTION;
+    default:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eDof");
+    }
 }
 
 void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
@@ -477,7 +477,7 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
             // do nothing
             break;
         default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__,
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
                                            "visualization of " + componentName + " not implemented.");
         }
     }
@@ -486,7 +486,7 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
 void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
                                                     const std::vector<eVisualizeWhat>& visualizeComponents)
 {
-    throw NuTo::Exception(
+    throw NuTo::MechanicsException(
             std::string(__PRETTY_FUNCTION__) +
             ": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
@@ -528,17 +528,16 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
     {
         switch (component)
         {
-            switch (component)
-            {
-                case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
-                case NuTo::eVisualizeWhat::DAMAGE:
-                case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
-                    elementIpDataMap[ToIpDataEnum(component)];
-                    break;
-                default:
-                    throw NuTo::Exception(__PRETTY_FUNCTION__, "Visualization component " + GetComponentName(component) + " is not implemented or not known at the integration points.");
-                    break;
-            }
+        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+        case NuTo::eVisualizeWhat::DAMAGE:
+        case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
+            elementIpDataMap[ToIpDataEnum(component)];
+            break;
+        default:
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                           "Visualization component " + GetComponentName(component) +
+                                                   " is not implemented or not known at the integration points.");
+            break;
         }
     }
 
@@ -569,10 +568,12 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
             for (int i = 0; i < numIp; ++i)
                 visualizer.SetPointData(ipInfo[i].pointId, componentName,
                                         InterpolateDof3D(ipInfo[i].localCoords, Node::eDof::DISPLACEMENTS));
-            }
-                break;
-            default:
-                throw NuTo::Exception(__PRETTY_FUNCTION__, "Visualization component " + componentName + " is not implemented or not known at the integration points.");
+        }
+        break;
+        default:
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                           "Visualization component " + componentName +
+                                                   " is not implemented or not known at the integration points.");
         }
     }
 }

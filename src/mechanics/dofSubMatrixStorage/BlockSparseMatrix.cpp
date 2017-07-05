@@ -79,7 +79,8 @@ void NuTo::BlockSparseMatrix::FixOffDiagonalDimensions()
             if (dofRow == dofCol)
                 continue;
             if ((*this)(dofRow, dofCol).GetNumEntries() != 0)
-                throw Exception(__PRETTY_FUNCTION__, "You're about to resize a matrix with values inside. This should be wrong.");
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "You're about to resize a matrix with values inside. This should be wrong.");
 
             int numRows = (*this)(dofRow, dofRow).GetNumRows();
             int numCols = (*this)(dofCol, dofCol).GetNumColumns();
@@ -180,9 +181,11 @@ void NuTo::BlockSparseMatrix::CheckDimensions() const
             {
                 std::stringstream s;
                 s << "[" << __PRETTY_FUNCTION__ << "] Submatrix row dimension mismatch. \n";
-                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numRows << " rows \n";
-                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has " << numRowsReference << " rows \n";
-                throw Exception(s.str());
+                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numRows
+                  << " rows \n";
+                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has "
+                  << numRowsReference << " rows \n";
+                throw MechanicsException(s.str());
             }
         }
     }
@@ -200,9 +203,11 @@ void NuTo::BlockSparseMatrix::CheckDimensions() const
             {
                 std::stringstream s;
                 s << "[" << __PRETTY_FUNCTION__ << "] Submatrix column dimension mismatch. \n";
-                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numCols << " columns \n";
-                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has " << numColsReference << " columns \n";
-                throw Exception(s.str());
+                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofCol) << ") has " << numCols
+                  << " columns \n";
+                s << "(" << Node::DofToString(dofRow) << "," << Node::DofToString(dofRow) << ") has "
+                  << numColsReference << " columns \n";
+                throw MechanicsException(s.str());
             }
         }
     }
@@ -448,7 +453,7 @@ std::unique_ptr<NuTo::SparseMatrixCSR<double>> NuTo::BlockSparseMatrix::ExportTo
 {
     const auto& activeDofs = mDofStatus.GetActiveDofTypes();
     if (activeDofs.size() == 0)
-        throw Exception(__PRETTY_FUNCTION__, "No active dofs defined. Nothing to export.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "No active dofs defined. Nothing to export.");
 
     auto dof = *activeDofs.begin();
     if (activeDofs.size() == 1 && mDofStatus.IsSymmetric(dof))

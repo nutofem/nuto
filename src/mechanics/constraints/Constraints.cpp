@@ -74,7 +74,7 @@ SparseMatrixCSRVector2General<double> Constraint::Constraints::BuildConstraintMa
                 // function can be called (e.g.) in the ctor of term.
                 std::ostringstream message;
                 message << "Cannot access component " << term.GetComponent() << " from node " << term.GetNode() << ".";
-                throw Exception(__PRETTY_FUNCTION__, message.str());
+                throw MechanicsException(__PRETTY_FUNCTION__, message.str());
             }
 
             double coefficient = term.GetCoefficient();

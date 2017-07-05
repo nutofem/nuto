@@ -1,5 +1,5 @@
 #include "visualize/Cell.h"
-#include "base/Exception.h"
+#include "visualize/VisualizeException.h"
 
 using namespace NuTo::Visualize;
 
@@ -33,13 +33,13 @@ NuTo::eCellTypes Cell::GetCellType() const
 const Eigen::VectorXd& Cell::GetData(int dataIndex) const
 {
     if (dataIndex >= static_cast<int>(this->mData.size()))
-        throw Exception(__PRETTY_FUNCTION__, "invalid data index.");
+        throw VisualizeException(__PRETTY_FUNCTION__, "invalid data index.");
     return mData[dataIndex];
 }
 
 void Cell::SetData(int dataIndex, Eigen::VectorXd data)
 {
     if (dataIndex >= static_cast<int>(this->mData.size()))
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid data index.");
+        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "invalid data index.");
     mData[dataIndex] = data;
 }

@@ -4,7 +4,7 @@
 
 
 #include <eigen3/Eigen/Core>
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -42,23 +42,23 @@ public:
 
     virtual ResultNodeDof* AsResultNodeDof()
     {
-    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultTime* AsResultTime()
     {
-    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
 
     virtual ResultElementIpData* AsResultElementIpData()
     {
-        throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)

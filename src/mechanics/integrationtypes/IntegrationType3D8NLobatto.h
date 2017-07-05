@@ -9,64 +9,67 @@
 
 namespace NuTo
 {
-    //! @brief constructor
-    template <int T>
-	IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto()
-	{
-	    mCoordinates.resize(T*T*T);
-	    mWeights.resize(T*T*T);
+//! @brief constructor
+template <int T>
+IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto()
+{
+    mCoordinates.resize(T * T * T);
+    mWeights.resize(T * T * T);
 
-	    NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
-	    NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
-	    NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
+    NuTo::IntegrationType1D2NLobatto Lobatto1D2N3Ip(3);
+    NuTo::IntegrationType1D2NLobatto Lobatto1D2N4Ip(4);
+    NuTo::IntegrationType1D2NLobatto Lobatto1D2N5Ip(5);
 
-	    NuTo::IntegrationType1D* integrationType1D(nullptr);
-		switch(T)
-		{
-	    case 3:
-	    {
-	    	integrationType1D = &Lobatto1D2N3Ip;
-	    	break;
-	    }
-	    case 4:
-	    {
-	    	integrationType1D = &Lobatto1D2N4Ip;
-	    	break;
-	    }
-	    case 5:
-	    {
-	    	integrationType1D = &Lobatto1D2N5Ip;
-	    	break;
-	    }
-	    default:
-	    	throw Exception("[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
-		}
+    NuTo::IntegrationType1D* integrationType1D(nullptr);
+    switch (T)
+    {
+    case 3:
+    {
+        integrationType1D = &Lobatto1D2N3Ip;
+        break;
+    }
+    case 4:
+    {
+        integrationType1D = &Lobatto1D2N4Ip;
+        break;
+    }
+    case 5:
+    {
+        integrationType1D = &Lobatto1D2N5Ip;
+        break;
+    }
+    default:
+        throw MechanicsException(
+                "[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
+    }
 
-		assert (integrationType1D->GetNumIntegrationPoints()==T);
+    assert(integrationType1D->GetNumIntegrationPoints() == T);
 
-	    std::array<double,T> coordinates1D;
-	    std::array<double,T> weights1D;
+    std::array<double, T> coordinates1D;
+    std::array<double, T> weights1D;
 
-	    // get the 1D integration point coordinates and weights
-	    for (int i = 0; i < T; i++)
-	    {
-			coordinates1D[i] = integrationType1D->GetLocalIntegrationPointCoordinates(i)[0];
-	        weights1D[i] = integrationType1D->GetIntegrationPointWeight(i);
-	    }
+    // get the 1D integration point coordinates and weights
+    for (int i = 0; i < T; i++)
+    {
+        coordinates1D[i] = integrationType1D->GetLocalIntegrationPointCoordinates(i)[0];
+        weights1D[i] = integrationType1D->GetIntegrationPointWeight(i);
+    }
 
-	    // calculate the 2D integratration point coordinates and weights
-	    int ipNum = 0;
-	    for (int iz = 0; iz < T; iz++)
-	        for (int iy= 0; iy < T; iy++)
-		        for (int ix= 0; ix < T; ix++, ipNum++)
-	        {
-	            mWeights[ipNum] = weights1D[ix]*weights1D[iy]*weights1D[iz];
-	            mCoordinates[ipNum][0] = coordinates1D[ix];
-	            mCoordinates[ipNum][1] = coordinates1D[iy];
-	            mCoordinates[ipNum][2] = coordinates1D[iz];
-//	            std::cout << "ip " << ipNum << " with coord " <<  mCoordinates[ipNum][0] << " " << mCoordinates[ipNum][1] << " " << mCoordinates[ipNum][2] << " and weight " << mWeights[ipNum] << std::endl;
-	        }
-	}
+    // calculate the 2D integratration point coordinates and weights
+    int ipNum = 0;
+    for (int iz = 0; iz < T; iz++)
+        for (int iy = 0; iy < T; iy++)
+            for (int ix = 0; ix < T; ix++, ipNum++)
+            {
+                mWeights[ipNum] = weights1D[ix] * weights1D[iy] * weights1D[iz];
+                mCoordinates[ipNum][0] = coordinates1D[ix];
+                mCoordinates[ipNum][1] = coordinates1D[iy];
+                mCoordinates[ipNum][2] = coordinates1D[iz];
+                //	            std::cout << "ip " << ipNum << " with coord " <<  mCoordinates[ipNum][0] << " " <<
+                //mCoordinates[ipNum][1] << " " << mCoordinates[ipNum][2] << " and weight " << mWeights[ipNum] <<
+                //std::endl;
+            }
+}
 
 #ifndef SWIG
 #endif // SWIG

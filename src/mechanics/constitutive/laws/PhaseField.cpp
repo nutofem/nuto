@@ -11,7 +11,7 @@
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 
 #include "base/Logger.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/elements/ElementBase.h"
@@ -355,7 +355,9 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const double oldEnergyDensity,
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
@@ -470,14 +472,14 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
-            throw Exception(__PRETTY_FUNCTION__,
-                    "Visualization of stress not implemented for the anisotropic phase-field model!");
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "Visualization of stress not implemented for the anisotropic phase-field model!");
         }
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
-            throw Exception(__PRETTY_FUNCTION__,
-                    "Visualization of strain not implemented for the anisotropic phase-field model!");
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "Visualization of strain not implemented for the anisotropic phase-field model!");
         }
 
         case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:
@@ -526,7 +528,9 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw MechanicsException(
+                    __PRETTY_FUNCTION__,
+                    "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
@@ -561,7 +565,7 @@ template <>
 void NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 template <>
@@ -571,11 +575,11 @@ void NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInpu
     const auto& planeState =
             *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
     if (planeState.GetPlaneState() != ePlaneState::PLANE_STRAIN)
-        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
 
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw Exception(__PRETTY_FUNCTION__,
+        throw MechanicsException(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
@@ -597,11 +601,10 @@ void NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInpu
     {
         energyDensity =
                 Evaluate2DAnisotropicSpectralDecomposition(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
-            break;
-        }
-        default:
-            throw Exception(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
-
+        break;
+    }
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
     }
 
     // update history variables
@@ -612,7 +615,7 @@ template <>
 void NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 } // namespace NuTo
@@ -620,7 +623,7 @@ void NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInpu
 double NuTo::PhaseField::CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp,
                                                                const ConstitutiveInputMap& rConstitutiveInput) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 bool NuTo::PhaseField::CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const
@@ -671,18 +674,18 @@ double NuTo::PhaseField::GetParameterDouble(Constitutive::eConstitutiveParameter
         return mYoungsModulus;
 
     default:
-        throw Exception(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
 void NuTo::PhaseField::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    throw Exception(__PRETTY_FUNCTION__,"Function must not be used");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Function must not be used");
 }
 
 NuTo::Constitutive::eConstitutiveType NuTo::PhaseField::GetType() const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 void NuTo::PhaseField::CheckParameters() const

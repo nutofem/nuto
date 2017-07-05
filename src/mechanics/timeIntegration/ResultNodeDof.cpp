@@ -23,11 +23,11 @@ void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure,
 {
     assert(rTimeStepPlot >= 0);
     Eigen::VectorXd dofValues = this->CalculateValues(rStructure);
-	if (rTimeStepPlot>=mData.rows())
-	{
-		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
-	}
-	if (dofValues.rows()!=mData.cols())
-		throw Exception(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
-	mData.row(rTimeStepPlot) = dofValues.transpose();
+    if (rTimeStepPlot >= mData.rows())
+    {
+        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
+    }
+    if (dofValues.rows() != mData.cols())
+        throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
+    mData.row(rTimeStepPlot) = dofValues.transpose();
 }

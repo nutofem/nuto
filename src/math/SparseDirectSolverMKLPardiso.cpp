@@ -7,7 +7,7 @@
 #endif // HAVE_MKL_PARDISO
 
 #include "base/Timer.h"
-#include "base/Exception.h"
+#include "math/MathException.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
@@ -25,7 +25,7 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso()
     this->mWeightedMatching =
             -1; // enable maximum weighted matching algorithm only for unsymmetric matrices (MKL default)
 #else // HAVE_MKL_PARDISO
-    throw NuTo::Exception("MKL Pardiso-solver was not found on your system (check cmake)");
+    throw NuTo::MathException("MKL Pardiso-solver was not found on your system (check cmake)");
 #endif // HAVE_MKL_PARDISO
 }
 
@@ -41,12 +41,13 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse rMatrix is required for this solver.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__,
+                                  "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "matrix must be symmetric.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix must be symmetric.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     const std::vector<int>& matrixColumns = rMatrix.GetColumns();
@@ -71,7 +72,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     // check right hand side
     if (matrixDimension != rRhs.rows())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = rRhs.cols();
     const double* rhsValues = rRhs.data();
@@ -174,7 +175,8 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
             parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException(__PRETTY_FUNCTION__,
+                                  "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
 
     timer.Restart(__PRETTY_FUNCTION__ + " Numerical factorization");
@@ -185,7 +187,8 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
             parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::Exception("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " +
+                                  this->GetErrorString(error) + ".");
     }
 
     timer.Reset(__PRETTY_FUNCTION__ + "Back substitution and iterative refinement.");
@@ -196,7 +199,9 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
             parameters, &msglvl, const_cast<double*>(rhsValues), const_cast<double*>(solutionValues), &error);
     if (error != 0)
     {
-        throw NuTo::Exception("[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException(
+                "[SparseDirectSolverMKLPardiso::solve] Back substitution and iterative refinement phase: " +
+                this->GetErrorString(error) + ".");
     }
 
     if (this->mVerboseLevel > 1)
@@ -239,7 +244,8 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
             const_cast<int*>(&matrixColumns[0]), &idum, &rhsNumColumns, parameters, &msglvl, &ddum, &ddum, &error);
     if (error != 0)
     {
-        throw NuTo::Exception("[SparseDirectSolverMKLPardiso::solve] Termination phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] Termination phase: " +
+                                  this->GetErrorString(error) + ".");
     }
 }
 

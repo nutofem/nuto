@@ -241,7 +241,7 @@ void NuTo::StructureOutputBlockMatrix::CheckDimensions() const
     if (!(JJ.GetNumRows() == JK.GetNumRows() && KJ.GetNumRows() == KK.GetNumRows() &&
           JJ.GetNumColumns() == KJ.GetNumColumns() && JK.GetNumColumns() == KK.GetNumColumns()))
     {
-        throw NuTo::Exception(
+        throw NuTo::MechanicsException(
                 std::string("[") + __PRETTY_FUNCTION__ + "] Mismatch in Block dimensions! \n\n" + "| JJ | JK | \n" +
                 "|----+----| \n" + "| KJ | KK | \n \n" + "Submatrix | Rows / Cols \n" + "----------------------- \n" +
                 "JJ        | " + std::to_string(JJ.GetNumRows()) + " / " + std::to_string(JJ.GetNumColumns()) +

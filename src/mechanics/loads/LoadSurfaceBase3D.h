@@ -1,15 +1,6 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>

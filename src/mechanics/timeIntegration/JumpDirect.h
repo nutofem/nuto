@@ -59,15 +59,18 @@ public:
     //! then cycle jump
     void SetHarmonicExtrapolation(bool rHarmonicExtrapolation, double* rHarmonicExtrapolationTolerance = 0)
     {
-    	if (mHarmonicExcitation == true) {
-    		mHarmonicExtrapolation = rHarmonicExtrapolation;
-    		if (mHarmonicExtrapolation && rHarmonicExtrapolationTolerance != 0) {
-    			mHarmonicExtrapolationTolerance = *rHarmonicExtrapolationTolerance;
-			}
-		} else {
-			throw Exception("[NuTo::JumpDirect::SetHarmonicConstraint] Set HarmonicConstraint at first!");
-		}
-
+        if (mHarmonicExcitation == true)
+        {
+            mHarmonicExtrapolation = rHarmonicExtrapolation;
+            if (mHarmonicExtrapolation && rHarmonicExtrapolationTolerance != 0)
+            {
+                mHarmonicExtrapolationTolerance = *rHarmonicExtrapolationTolerance;
+            }
+        }
+        else
+        {
+            throw MechanicsException("[NuTo::JumpDirect::SetHarmonicConstraint] Set HarmonicConstraint at first!");
+        }
     }
 
     //! @brief if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and
@@ -91,28 +94,35 @@ public:
     // Currently is only a monoharmonic constraint applied, that is rHarmonicFactor.rows()=1
     void SetHarmonicExcitation(const NuTo::FullMatrix<double, Eigen::Dynamic, 3>& rHarmonicFactor)
     {
-    	if (mTimeDependentConstraint == -1 && mTimeDependentLoadCase == -1) {
-    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation can be only applied to the time dependent constraint or load case.");
-		}
+        if (mTimeDependentConstraint == -1 && mTimeDependentLoadCase == -1)
+        {
+            throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation can be only "
+                                     "applied to the time dependent constraint or load case.");
+        }
 
-    	if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1) {
-    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
-		}
+        if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1)
+        {
+            throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation is currently "
+                                     "implemented for either time dependent constraint or load case.");
+        }
 
-    	if (rHarmonicFactor.rows()>1)
-    		throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] currently a monoharmonic constraint is implemented, number of rows must be 1.");
+        if (rHarmonicFactor.rows() > 1)
+            throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] currently a monoharmonic constraint is "
+                                     "implemented, number of rows must be 1.");
 
-    	//check, whether frequencies and number of cycles are positive
-    	for (int count=0; count<rHarmonicFactor.rows(); count++)
-    	{
-    		if (rHarmonicFactor(count,1)<=0.)
-    			throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] the frequency should always be positive.");
-    		if (rHarmonicFactor(count,2)<=1.)
-    			throw Exception("[NuTo::JumpDirect::SetHarmonicExcitation] number of cycles should be at least 1.");
-    	}
+        // check, whether frequencies and number of cycles are positive
+        for (int count = 0; count < rHarmonicFactor.rows(); count++)
+        {
+            if (rHarmonicFactor(count, 1) <= 0.)
+                throw MechanicsException(
+                        "[NuTo::JumpDirect::SetHarmonicExcitation] the frequency should always be positive.");
+            if (rHarmonicFactor(count, 2) <= 1.)
+                throw MechanicsException(
+                        "[NuTo::JumpDirect::SetHarmonicExcitation] number of cycles should be at least 1.");
+        }
 
-    	mHarmonicExcitation = true;
-    	mHarmonicFactor = rHarmonicFactor;
+        mHarmonicExcitation = true;
+        mHarmonicFactor = rHarmonicFactor;
     }
 
     //! @brief returns true, if there is a harmonic excitation applied
@@ -125,33 +135,41 @@ public:
     //! @brief the time dependent constraint is followed by a sine excitation
     double CalculateTimeDependentConstraintFactor(double curTime)
     {
-    	if (mTimeDependentConstraintFactor.rows()==0)
-    		throw Exception("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
+        if (mTimeDependentConstraintFactor.rows() == 0)
+            throw MechanicsException("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic "
+                                     "excitation can be only applied to the time dependent constraint.");
 
-    	// calculate the end time of the time dependent constraint. After this time the constraint is harmonic
-    	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0));
-		double timeDependentConstraintFactor;
+        // calculate the end time of the time dependent constraint. After this time the constraint is harmonic
+        double timeDependentConstraintTime(
+                mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows() - 1, 0));
+        double timeDependentConstraintFactor;
 
-    	if (curTime <= timeDependentConstraintTime) {
-        	// calculate timeDependentConstraintFactor during the linear time dependent constraint
-    		return NewmarkDirect::CalculateTimeDependentConstraintFactor(curTime);
-		} else {
-			// time dependent constraint is continued by the harmonic excitation
+        if (curTime <= timeDependentConstraintTime)
+        {
+            // calculate timeDependentConstraintFactor during the linear time dependent constraint
+            return NewmarkDirect::CalculateTimeDependentConstraintFactor(curTime);
+        }
+        else
+        {
+            // time dependent constraint is continued by the harmonic excitation
 
-			// calculate constraint at the end time of the time dependent constraint
-			timeDependentConstraintFactor = NewmarkDirect::CalculateTimeDependentConstraintFactor(timeDependentConstraintTime);
+            // calculate constraint at the end time of the time dependent constraint
+            timeDependentConstraintFactor =
+                    NewmarkDirect::CalculateTimeDependentConstraintFactor(timeDependentConstraintTime);
 
-			if (mHarmonicFactor.rows()==0) {
-				return timeDependentConstraintFactor;
-			}
+            if (mHarmonicFactor.rows() == 0)
+            {
+                return timeDependentConstraintFactor;
+            }
 
-			// add harmonic excitation
-			double frequency(mHarmonicFactor(0,1));
-			double amplitude(mHarmonicFactor(0,0));
-			const double pi = boost::math::constants::pi<double>();
-			timeDependentConstraintFactor += amplitude*sin(2*pi*frequency*(curTime - timeDependentConstraintTime));
-			return timeDependentConstraintFactor;
-		}
+            // add harmonic excitation
+            double frequency(mHarmonicFactor(0, 1));
+            double amplitude(mHarmonicFactor(0, 0));
+            const double pi = boost::math::constants::pi<double>();
+            timeDependentConstraintFactor +=
+                    amplitude * sin(2 * pi * frequency * (curTime - timeDependentConstraintTime));
+            return timeDependentConstraintFactor;
+        }
     }
 
     //! @brief calculates the applied load cases in a single load vector as a function of the current time delta
@@ -159,50 +177,64 @@ public:
     void CalculateExternalLoad(StructureBase& rStructure, double curTime, Eigen::VectorXd& rLoad_j,
                                Eigen::VectorXd& rLoad_k)
     {
-    	rLoad_j.Resize(rStructure.GetNumActiveDofs());
-    	rLoad_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+        rLoad_j.Resize(rStructure.GetNumActiveDofs());
+        rLoad_k.Resize(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs());
 
-    	if (mTimeDependentLoadCase == -1) {
-			// there is any time dependent load case
-    		NewmarkDirect::CalculateExternalLoad(rStructure,curTime,rLoad_j,rLoad_k);
-    	} else {
-			// there is a time dependent load case defined
+        if (mTimeDependentLoadCase == -1)
+        {
+            // there is any time dependent load case
+            NewmarkDirect::CalculateExternalLoad(rStructure, curTime, rLoad_j, rLoad_k);
+        }
+        else
+        {
+            // there is a time dependent load case defined
 
-			// check that the TimeDependentLoadFactor is set
-			if (mTimeDependentLoadFactor.rows()==0)
-			{
-				throw Exception("[NuTo::JumpDirect::CalculateExternalLoad] TimeDependentLoadFactor not set.");
-			}
-			// extract excitation parameters
-			double frequency(mHarmonicFactor(0,1));
-			double amplitude(mHarmonicFactor(0,0));
-			const double pi = boost::math::constants::pi<double>();
+            // check that the TimeDependentLoadFactor is set
+            if (mTimeDependentLoadFactor.rows() == 0)
+            {
+                throw MechanicsException("[NuTo::JumpDirect::CalculateExternalLoad] TimeDependentLoadFactor not set.");
+            }
+            // extract excitation parameters
+            double frequency(mHarmonicFactor(0, 1));
+            double amplitude(mHarmonicFactor(0, 0));
+            const double pi = boost::math::constants::pi<double>();
 
-			// calculate load amplitude
-			Eigen::VectorXd LoadAmplitude_j,LoadAmplitude_k;
-			LoadAmplitude_j.Resize(rStructure.GetNumActiveDofs());
-			LoadAmplitude_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+            // calculate load amplitude
+            Eigen::VectorXd LoadAmplitude_j, LoadAmplitude_k;
+            LoadAmplitude_j.Resize(rStructure.GetNumActiveDofs());
+            LoadAmplitude_k.Resize(rStructure.GetNumDofs() - rStructure.GetNumActiveDofs());
 
-			LoadAmplitude_j.setOnes(); LoadAmplitude_k.setOnes();   // check this function in inverseMatrixExample
-			LoadAmplitude_j *= amplitude;
-			LoadAmplitude_k *= amplitude;
+            LoadAmplitude_j.setOnes();
+            LoadAmplitude_k.setOnes(); // check this function in inverseMatrixExample
+            LoadAmplitude_j *= amplitude;
+            LoadAmplitude_k *= amplitude;
 
-	    	// calculate the end time of the time dependent load case. After this time the load is harmonic
-	    	double timeDependentLoadCaseTime(mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0));
+            // calculate the end time of the time dependent load case. After this time the load is harmonic
+            double timeDependentLoadCaseTime(mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows() - 1, 0));
 
-	    	if (curTime <= timeDependentLoadCaseTime) {
-	        	// calculate timeDependentLoadFactor during the linear time dependent load
-	    		NewmarkDirect::CalculateExternalLoad(rStructure,curTime,rLoad_j,rLoad_k);
-	    	} else {
-				// time dependent load case is continued by the harmonic excitation
-				double s(mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,1));	// maximal linear load factor
+            if (curTime <= timeDependentLoadCaseTime)
+            {
+                // calculate timeDependentLoadFactor during the linear time dependent load
+                NewmarkDirect::CalculateExternalLoad(rStructure, curTime, rLoad_j, rLoad_k);
+            }
+            else
+            {
+                // time dependent load case is continued by the harmonic excitation
+                double s(
+                        mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows() - 1, 1)); // maximal linear load factor
 
-//				rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s + LoadAmplitude_j*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
-//				rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s + LoadAmplitude_k*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
-				rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s + mLoadVectorTimeDependent_j*amplitude*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
-				rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s + mLoadVectorTimeDependent_k*amplitude*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
-	    	}
-		}
+                //				rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s +
+                //LoadAmplitude_j*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
+                //				rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s +
+                //LoadAmplitude_k*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
+                rLoad_j = mLoadVectorStatic_j + mLoadVectorTimeDependent_j * s +
+                          mLoadVectorTimeDependent_j * amplitude *
+                                  sin(2 * pi * frequency * (curTime - timeDependentLoadCaseTime));
+                rLoad_k = mLoadVectorStatic_k + mLoadVectorTimeDependent_k * s +
+                          mLoadVectorTimeDependent_k * amplitude *
+                                  sin(2 * pi * frequency * (curTime - timeDependentLoadCaseTime));
+            }
+        }
     }
 
     void SetTimeAndTimeStep(double& curTime, double& timeStep, double rTimeDelta)

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 #include "math/SparseMatrixCSRSymmetric_Def.h"
 
@@ -77,71 +77,73 @@ int NuTo::SparseMatrixCSRSymmetric<T>::GetNumColumns() const
 template <class T>
 void NuTo::SparseMatrixCSRSymmetric<T>::AddValue(int rRow, int rColumn, const T& rValue)
 {
-	// check for overflow
-	assert(rRow < INT_MAX);
-	assert(rColumn < INT_MAX);
+    // check for overflow
+    assert(rRow < INT_MAX);
+    assert(rColumn < INT_MAX);
 
-	// check bounds
-	if (rRow >= (int)this->mRowIndex.size() - 1)
-	{
-		throw Exception("[SparseMatrixCSRSymmetric::addEntry] row index is out of bounds.");
-	}
-	if (rColumn >= (int)this->mRowIndex.size() - 1)
-	{
-		throw Exception("[SparseMatrixCSRSymmetric::addEntry] column index is out of bounds.");
-	}
-	if (rColumn < rRow)
-	{
-		throw Exception("[SparseMatrixCSRSymmetric::addEntry] upper triangle is stored for symmetric matrices.");
-	}
-	if (this->mOneBasedIndexing)
-	{
-		rColumn++;
+    // check bounds
+    if (rRow >= (int)this->mRowIndex.size() - 1)
+    {
+        throw MathException("[SparseMatrixCSRSymmetric::addEntry] row index is out of bounds.");
+    }
+    if (rColumn >= (int)this->mRowIndex.size() - 1)
+    {
+        throw MathException("[SparseMatrixCSRSymmetric::addEntry] column index is out of bounds.");
+    }
+    if (rColumn < rRow)
+    {
+        throw MathException("[SparseMatrixCSRSymmetric::addEntry] upper triangle is stored for symmetric matrices.");
+    }
+    if (this->mOneBasedIndexing)
+    {
+        rColumn++;
 
-		// find position in matrix
-		int pos = this->mRowIndex[rRow] - 1;
-		for (; (pos < this->mRowIndex[rRow + 1] - 1) && this->mColumns[pos] < static_cast<int>(rColumn); pos++);
+        // find position in matrix
+        int pos = this->mRowIndex[rRow] - 1;
+        for (; (pos < this->mRowIndex[rRow + 1] - 1) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
 
-		// add value
-		if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos]))
-		{
-			// insert new value
-			this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
-			this->mValues.insert(this->mValues.begin() + pos, rValue);
-			for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
-			{
-				this->mRowIndex[row_count] += 1;
-			}
-		}
-		else
-		{
-			// add to existing value
-			this->mValues[pos] += rValue;
-		}
-	}
-	else // zero based indexing
-	{
-		// find position in matrix
-		int pos = this->mRowIndex[rRow];
-		for (; (pos < this->mRowIndex[rRow + 1]) && this->mColumns[pos] < static_cast<int>(rColumn); pos++);
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1] - 1) || (static_cast<int>(rColumn) != this->mColumns[pos]))
+        {
+            // insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
+    else // zero based indexing
+    {
+        // find position in matrix
+        int pos = this->mRowIndex[rRow];
+        for (; (pos < this->mRowIndex[rRow + 1]) && this->mColumns[pos] < static_cast<int>(rColumn); pos++)
+            ;
 
-		// add value
-		if ((pos == this->mRowIndex[rRow + 1]) || (static_cast<int>(rColumn) != this->mColumns[pos]))
-		{
-			// insert new value
-			this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
-			this->mValues.insert(this->mValues.begin() + pos, rValue);
-			for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
-			{
-				this->mRowIndex[row_count] += 1;
-			}
-		}
-		else
-		{
-			// add to existing value
-			this->mValues[pos] += rValue;
-		}
-	}
+        // add value
+        if ((pos == this->mRowIndex[rRow + 1]) || (static_cast<int>(rColumn) != this->mColumns[pos]))
+        {
+            // insert new value
+            this->mColumns.insert(this->mColumns.begin() + pos, rColumn);
+            this->mValues.insert(this->mValues.begin() + pos, rValue);
+            for (unsigned int row_count = rRow + 1; row_count < this->mRowIndex.size(); row_count++)
+            {
+                this->mRowIndex[row_count] += 1;
+            }
+        }
+        else
+        {
+            // add to existing value
+            this->mValues[pos] += rValue;
+        }
+    }
 }
 
 //! @brief ... return the matrix type
@@ -225,14 +227,15 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows)
 template <class T>
 void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows_, int rNumColumns_)
 {
-	// check for overflow
-	assert(rNumColumns_ < INT_MAX);
-	assert(rNumColumns_ >= 0);
-	if (rNumRows_!=rNumColumns_)
-		throw Exception("[SparseMatrixCSRSymmetric::Resize] number of rows and column has to be identical for symmetric matrices.");
+    // check for overflow
+    assert(rNumColumns_ < INT_MAX);
+    assert(rNumColumns_ >= 0);
+    if (rNumRows_ != rNumColumns_)
+        throw MathException("[SparseMatrixCSRSymmetric::Resize] number of rows and column has to be identical for "
+                            "symmetric matrices.");
 
-	// resize
-	SparseMatrixCSR<T>::Resize(rNumRows_);
+    // resize
+    SparseMatrixCSR<T>::Resize(rNumRows_);
 }
 
 template <class T>

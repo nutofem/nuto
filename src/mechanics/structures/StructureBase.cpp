@@ -53,7 +53,7 @@
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
@@ -79,7 +79,7 @@ NuTo::StructureBase::StructureBase(int rDimension)
 {
     if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {
-        throw Exception("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
+        throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
     }
     mDimension = rDimension;
 
@@ -122,7 +122,7 @@ void NuTo::StructureBase::Info() const
 void NuTo::StructureBase::SetNumTimeDerivatives(int rNumTimeDerivatives)
 {
     if (rNumTimeDerivatives < 0 || rNumTimeDerivatives > 2)
-        throw NuTo::Exception(
+        throw NuTo::MechanicsException(
                 "[NuTo::StructureBase::SetNumTimeDerivatives] number of time derivatives is either 0, 1 or 2.");
 
     mNumTimeDerivatives = rNumTimeDerivatives;
@@ -163,7 +163,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
 
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw Exception(__PRETTY_FUNCTION__, "Element group does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
     // create a new visualization list for an element group or add components to an already existing list
     if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
@@ -195,11 +195,11 @@ void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eV
 {
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw Exception(__PRETTY_FUNCTION__, "Element group does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
     // check if the element group exists
     if (mGroupVisualizationType.find(rElementGroup) == mGroupVisualizationType.end())
-        throw Exception(__PRETTY_FUNCTION__,
+        throw MechanicsException(__PRETTY_FUNCTION__,
                                  "Please add a visualization component first before setting the visualization type.");
 
     mGroupVisualizationType.at(rElementGroup) = rVisualizationType;
@@ -272,7 +272,7 @@ std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupV
 
 void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme)
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 void NuTo::StructureBase::DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer,
@@ -325,7 +325,8 @@ void NuTo::StructureBase::DefineVisualizeElementData(Visualize::UnstructuredGrid
             break;
 
         default:
-            throw Exception(__PRETTY_FUNCTION__, "undefined visualize component " + GetComponentName(component));
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "undefined visualize component " + GetComponentName(component));
         }
     }
 #endif // ENABLE_VISUALIZE
@@ -371,8 +372,8 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStruct
     std::set<eStructureOutput> supportedTypes({eStructureOutput::HESSIAN0, eStructureOutput::HESSIAN1,
                                                eStructureOutput::HESSIAN2, eStructureOutput::HESSIAN2_LUMPED});
     if (supportedTypes.find(rOutput) == supportedTypes.end())
-        throw Exception(__PRETTY_FUNCTION__, StructureOutputToString(rOutput) +
-                                 " is not a matrix type or is not supported right now.");
+        throw MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(rOutput) +
+                                                              " is not a matrix type or is not supported right now.");
 
     StructureOutputBlockMatrix hessian(GetDofStatus(), true);
 
@@ -591,7 +592,8 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     if (GetNumTimeDerivatives() > 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Only use this method for a system with 0 time derivatives.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                       "Only use this method for a system with 0 time derivatives.");
 
     NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
@@ -664,9 +666,9 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
                             ->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords)
                             .inverse();
 
-            default:
-                throw NuTo::Exception(
-                        std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
+            elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
+        }
+        break;
 
         default:
             throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2D and 3D");
@@ -684,7 +686,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     if (not nodeInElement)
     {
         GetLogger() << "Natural node coordinates: \n" << elementNaturalNodeCoords << "\n";
-        throw Exception(__PRETTY_FUNCTION__, "Node is not inside any element.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node is not inside any element.");
     }
 
     auto shapeFunctions =
@@ -913,7 +915,7 @@ int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
 {
     auto it = GetDofStatus().GetNumActiveDofsMap().find(rDofType);
     if (it == GetDofStatus().GetNumActiveDofsMap().end())
-        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
                                        Node::DofToString(rDofType) + " dofs.");
     return it->second;
 }
@@ -922,7 +924,7 @@ int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
 {
     auto it = GetDofStatus().GetNumDependentDofsMap().find(rDofType);
     if (it == GetDofStatus().GetNumDependentDofsMap().end())
-        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
                                        Node::DofToString(rDofType) + " dofs.");
     return it->second;
 }
@@ -978,87 +980,103 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 #define SELECTED 2
 #define DELETED 3
     NuTo::Timer timer(__PRETTY_FUNCTION__, GetShowTime(), GetLogger());
-
-    mMIS.clear();
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-
-    /*    //for test purpose
-            mMIS.resize(elementVector.size());
-            for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
-            {
-                    mMIS[elementCount].resize(1);
-                    mMIS[elementCount][0] = elementVector[elementCount];
-            }
-            return;
-            */
-
-    // Build the connectivity graph
-    // First get for all nodes all the elements
-    std::map<const NodeBase*, std::vector<unsigned int>> elementsPerNode;
-    for (unsigned int elementCount = 0; elementCount < elementVector.size(); elementCount++)
+    try
     {
-        for (int nodeCount = 0; nodeCount < elementVector[elementCount]->GetNumInfluenceNodes(); nodeCount++)
-        {
-            elementsPerNode[elementVector[elementCount]->GetInfluenceNode(nodeCount)].push_back(elementCount);
-        }
-    }
+        mMIS.clear();
+        std::vector<ElementBase*> elementVector;
+        GetElementsTotal(elementVector);
 
-    // Get the neighboring elements (always referring to the location in the vector elementVector)
-    std::vector<std::vector<int>> NeighborElements(elementVector.size());
-    for (auto& node : elementsPerNode)
-    {
-        for (unsigned int elementCount1 = 0; elementCount1 < node.second.size(); elementCount1++)
+        /*    //for test purpose
+                mMIS.resize(elementVector.size());
+                for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
+                {
+                        mMIS[elementCount].resize(1);
+                        mMIS[elementCount][0] = elementVector[elementCount];
+                }
+                return;
+                */
+
+        // Build the connectivity graph
+        // First get for all nodes all the elements
+        std::map<const NodeBase*, std::vector<unsigned int>> elementsPerNode;
+        for (unsigned int elementCount = 0; elementCount < elementVector.size(); elementCount++)
         {
-            for (unsigned int elementCount2 = elementCount1 + 1; elementCount2 < node.second.size();
-                 elementCount2++)
+            for (int nodeCount = 0; nodeCount < elementVector[elementCount]->GetNumInfluenceNodes(); nodeCount++)
             {
-                NeighborElements[node.second[elementCount1]].push_back(node.second[elementCount2]);
-                NeighborElements[node.second[elementCount2]].push_back(node.second[elementCount1]);
+                elementsPerNode[elementVector[elementCount]->GetInfluenceNode(nodeCount)].push_back(elementCount);
             }
         }
-    }
 
-    // build the maximum independent sets
-    std::vector<int> elementState(elementVector.size());
-    for (int& entry : elementState)
-        entry = UNDONE;
-
-    unsigned int numDeleted = 0;
-    unsigned int curMIS = 0;
-    mMIS.resize(10);
-    while (numDeleted < elementVector.size())
-    {
-        if (mMIS.size() <= curMIS)
-            mMIS.resize(curMIS + 1);
-        for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
+        // Get the neighboring elements (always referring to the location in the vector elementVector)
+        std::vector<std::vector<int>> NeighborElements(elementVector.size());
+        for (auto& node : elementsPerNode)
         {
-            if (elementState[countElement] != UNDONE)
-                continue;
-
-            // add element to the set
-            // std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS <<
-            // std::endl;
-            (mMIS[curMIS]).push_back(elementVector[countElement]);
-            elementState[countElement] = DELETED;
-            numDeleted++;
-
-            // mark all the neighboring elements as selected, which prevents them to being added to this set
-            for (int theNeighborCount : NeighborElements[countElement])
+            for (unsigned int elementCount1 = 0; elementCount1 < node.second.size(); elementCount1++)
             {
-                if (elementState[theNeighborCount] == UNDONE)
-                    elementState[theNeighborCount] = SELECTED;
+                for (unsigned int elementCount2 = elementCount1 + 1; elementCount2 < node.second.size();
+                     elementCount2++)
+                {
+                    NeighborElements[node.second[elementCount1]].push_back(node.second[elementCount2]);
+                    NeighborElements[node.second[elementCount2]].push_back(node.second[elementCount1]);
+                }
             }
         }
-        // reset the selected elements to be undone
-        for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
+
+        // build the maximum independent sets
+        std::vector<int> elementState(elementVector.size());
+        for (int& entry : elementState)
+            entry = UNDONE;
+
+        unsigned int numDeleted = 0;
+        unsigned int curMIS = 0;
+        mMIS.resize(10);
+        while (numDeleted < elementVector.size())
         {
-            if (elementState[countElement] == SELECTED)
-                elementState[countElement] = UNDONE;
+            if (mMIS.size() <= curMIS)
+                mMIS.resize(curMIS + 1);
+            for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
+            {
+                if (elementState[countElement] != UNDONE)
+                    continue;
+
+                // add element to the set
+                // std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS <<
+                // std::endl;
+                (mMIS[curMIS]).push_back(elementVector[countElement]);
+                elementState[countElement] = DELETED;
+                numDeleted++;
+
+                // mark all the neighboring elements as selected, which prevents them to being added to this set
+                for (int theNeighborCount : NeighborElements[countElement])
+                {
+                    if (elementState[theNeighborCount] == UNDONE)
+                        elementState[theNeighborCount] = SELECTED;
+                }
+            }
+            // reset the selected elements to be undone
+            for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
+            {
+                if (elementState[countElement] == SELECTED)
+                    elementState[countElement] = UNDONE;
+            }
+            curMIS++;
         }
-        curMIS++;
+        mMIS.resize(curMIS);
+        //            std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
+        //            for (unsigned int count=0; count<mMIS.size(); count++)
+        //            {
+        //            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
+        //            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
+        //            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
+        //            	std::cout << std::endl;
+        //            }
     }
-    mMIS.resize(curMIS);
+    catch (MechanicsException& e)
+    {
+        e.AddMessage(
+                "[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
+        throw;
+    }
 }
 #else
 //@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without

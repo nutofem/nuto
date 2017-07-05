@@ -13,7 +13,7 @@
 #include "base/Logger.h"
 
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "StructureOutputBlockVector.h"
 
 
@@ -1438,12 +1438,14 @@ public:
     // this only happens for more than one load step (either prescibed or with automatic load control)
     virtual void SaveStructure(std::stringstream& rSaveStringStream) const
     {
-    	throw Exception("[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
+        throw MechanicsException(
+                "[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
     }
 
     virtual void RestoreStructure(std::stringstream& rSaveStringStream)
     {
-    	throw Exception("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
+        throw MechanicsException(
+                "[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
     void SetUpdateTmpStaticDataRequired()

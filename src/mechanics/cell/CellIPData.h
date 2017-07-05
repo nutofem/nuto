@@ -97,7 +97,7 @@ public:
             return B;
         }
         default:
-            throw Exception(__PRETTY_FUNCTION__, "c'mon.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "c'mon.");
         }
     }
 

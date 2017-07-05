@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {

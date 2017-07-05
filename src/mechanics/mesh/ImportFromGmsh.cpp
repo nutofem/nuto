@@ -11,7 +11,7 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 #include <iterator>
 #include <sstream>
@@ -63,7 +63,7 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
     std::getline(rFile, line); // endl
 
     if (static_cast<int>(std::floor(header.version)) != 2)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Incompatible version. Version 2.x required.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Incompatible version. Version 2.x required.");
 
     return header;
 }
@@ -73,12 +73,12 @@ std::vector<GmshNode> ReadNodesASCII(std::ifstream& rFile)
     std::string line;
     getline(rFile, line);
     if (line != "$EndMeshFormat")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
 
     // begin node section
     getline(rFile, line);
     if (line != "$Nodes")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$Nodes not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$Nodes not found.");
 
     // read number of nodes
     getline(rFile, line);
@@ -98,7 +98,7 @@ std::vector<GmshNode> ReadNodesASCII(std::ifstream& rFile)
     // end node section
     getline(rFile, line);
     if (line != "$EndNodes")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndNodes not found.");
 
     return nodes;
 }
@@ -115,7 +115,7 @@ std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
     std::string line;
     getline(rFile, line);
     if (line != "$Elements")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$Elements not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$Elements not found.");
 
     // read number of elements
     getline(rFile, line);
@@ -146,7 +146,7 @@ std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
     // end element section
     getline(rFile, line);
     if (line != "$EndElements")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndElements not found.");
 
     return elements;
 }
@@ -163,18 +163,18 @@ std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
     int one;
     rFile.read((char*)&one, sizeof(int));
     if (one != 1)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Invalid binary format.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Invalid binary format.");
     rFile.seekg(1, std::ios::cur);
 
     getline(rFile, line);
     if (line != "$EndMeshFormat")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
 
     // begin node section
     getline(rFile, line);
     if (line != "$Nodes")
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$Nodes not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$Nodes not found.");
     }
 
     // read number of nodes
@@ -195,12 +195,12 @@ std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
 
     getline(rFile, line);
     if (line != "$EndNodes")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndNodes not found.");
 
     // begin element section
     getline(rFile, line);
     if (line != "$Elements")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$Elements not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$Elements not found.");
 
     return nodes;
 }
@@ -265,7 +265,7 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
     // end element section
     getline(rFile, line);
     if (line != "$EndElements")
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "$EndElements not found.");
     return elements;
 }
 
@@ -283,7 +283,7 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
         coordinates.resize(3);
         break;
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
     }
     std::map<int, int> newNodeNumbers;
     for (const auto& gmshNode : rGmshNodes)
@@ -303,7 +303,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     if (not file.is_open())
     {
         std::cout << rFileName << std::endl;
-        throw Exception(__PRETTY_FUNCTION__, "Error opening input file for read access.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Error opening input file for read access.");
     }
 
 
@@ -317,13 +317,13 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     if (header.isBinary)
     {
         if (header.double_size != sizeof(double))
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Invalid size of double.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Invalid size of double.");
 
         // close rFile and open as binary
         file.close();
         file.open(rFileName.c_str(), std::ios::in | std::ios::binary);
         if (file.is_open() == false)
-            throw Exception(__PRETTY_FUNCTION__, "Error opening input rFile for read access.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "Error opening input rFile for read access.");
         nodes = ReadNodesBinary(file);
         elements = ReadElementsBinary(file);
     }
@@ -544,7 +544,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
 
         default:
             std::cout << "element type in gmsh " << element.type << std::endl;
-            throw Exception(__PRETTY_FUNCTION__, "Element type not implemented in the import routine.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "Element type not implemented in the import routine.");
         }
 
         // get gmsh group id and create a corresponding nuto group if needed
@@ -567,8 +567,9 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             Interpolation::eTypeOrder groupTypeOrder = interpolationType.Get(Node::eDof::COORDINATES).GetTypeOrder();
             if (groupShapeType != shapeType or groupTypeOrder != typeOrder)
             {
-                throw Exception(__PRETTY_FUNCTION__,
-                                         "ElementType and InterpolationOrder must be equal for all elements in one physical group.");
+                throw MechanicsException(
+                        __PRETTY_FUNCTION__,
+                        "ElementType and InterpolationOrder must be equal for all elements in one physical group.");
             }
         }
         tmpGroup.elementIds.push_back(rS.ElementCreate(tmpGroup.interpolationTypeId, nodeNumbers));

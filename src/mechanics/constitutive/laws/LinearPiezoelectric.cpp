@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -94,8 +94,10 @@ NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rC
             break;
         default:
             continue;
-//            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-//            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+            //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
+            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+            //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
+            //            law.");
         }
     }
 
@@ -640,7 +642,7 @@ double NuTo::LinearPiezoelectric::GetParameterDouble(NuTo::Constitutive::eConsti
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -655,7 +657,7 @@ void NuTo::LinearPiezoelectric::SetParameterDouble(NuTo::Constitutive::eConstitu
         this->mRho = rValue;
         break;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -677,7 +679,7 @@ NuTo::LinearPiezoelectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstit
         return mPiezo;
     }
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -703,7 +705,7 @@ void NuTo::LinearPiezoelectric::SetParameterMatrixDouble(NuTo::Constitutive::eCo
         break;
     }
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -754,14 +756,17 @@ void NuTo::LinearPiezoelectric::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, mRho);
     // Check stiffness tensor components
     // Symmetry test
-    for (int ii=0; ii<6; ii++) {
-        for (int jj=0; jj<ii; jj++) {
-            if (mStiffness(ii,jj) != mStiffness(jj,ii)) {
-                throw NuTo::Exception(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
-                                               + std::to_string(ii) + "," + std::to_string(jj) + "] = "
-                                               + std::to_string(mStiffness(ii,jj)) + "\n"
-                                               + "(entry [" + std::to_string(jj) + "," + std::to_string(ii) + "] = "
-                                               + std::to_string(mStiffness(jj,ii)) + ".");
+    for (int ii = 0; ii < 6; ii++)
+    {
+        for (int jj = 0; jj < ii; jj++)
+        {
+            if (mStiffness(ii, jj) != mStiffness(jj, ii))
+            {
+                throw NuTo::MechanicsException(
+                        BOOST_CURRENT_FUNCTION,
+                        "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," + std::to_string(jj) +
+                                "] = " + std::to_string(mStiffness(ii, jj)) + "\n" + "(entry [" + std::to_string(jj) +
+                                "," + std::to_string(ii) + "] = " + std::to_string(mStiffness(jj, ii)) + ".");
             }
         }
     }

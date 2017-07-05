@@ -147,7 +147,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             break;
         }
         if (integrationType == nullptr)
-            throw Exception(__PRETTY_FUNCTION__,
+            throw MechanicsException(__PRETTY_FUNCTION__,
                                      "Integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
 
         Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);

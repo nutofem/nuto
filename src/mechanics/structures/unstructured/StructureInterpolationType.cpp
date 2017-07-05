@@ -73,7 +73,7 @@ void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::In
 {
     // check if constitutive law identifier exists
     if (mInterpolationTypeMap.find(rInterpolationTypeId) != mInterpolationTypeMap.end())
-        throw NuTo::Exception("[NuTo::Structure::InterpolationTypeCreate] Interpolation type already exists.");
+        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeCreate] Interpolation type already exists.");
 
     mInterpolationTypeMap.insert(rInterpolationTypeId, new InterpolationType(rShape, GetDimension()));
 }
@@ -153,7 +153,7 @@ NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterpolatio
     auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
     return itIterator->second;
 }
 
@@ -162,6 +162,6 @@ const NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterp
     auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
     return itIterator->second;
 }

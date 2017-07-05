@@ -11,20 +11,20 @@ double NuTo::GradientDamageFatigueEngineeringStress::GetParameterDouble(
 {
     switch (rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
-        case Constitutive::eConstitutiveParameter::DENSITY:
-        case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
-        case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
-        case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
-        case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
-        case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
-            return mEnduranceStress;
-        case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
-            return mFatigueParameter;
-        default:
-            throw Exception(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
+        return mEnduranceStress;
+    case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
+        return mFatigueParameter;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -33,22 +33,22 @@ void NuTo::GradientDamageFatigueEngineeringStress::SetParameterDouble(
 {
     switch (rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
-        case Constitutive::eConstitutiveParameter::DENSITY:
-        case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
-        case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
-        case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
-        case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
-        case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
-            mEnduranceStress = rValue;
-            break;
-        case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
-            mFatigueParameter = rValue;
-            break;
-        default:
-            throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    case Constitutive::eConstitutiveParameter::ENDURANCE_STRESS:
+        mEnduranceStress = rValue;
+        break;
+    case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
+        mFatigueParameter = rValue;
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
     SetParametersValid();
 }

@@ -76,7 +76,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
 
     if (numIntegrationPoints < 1)
     {
-        Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid integration type.");
+        MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid integration type.");
     }
 
     int theIP = 0;
@@ -102,7 +102,8 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
         detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
         if (detJacobian <= 0)
         {
-            throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Determinant of the Jacobian <= zero, no inversion possible.");
+            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                     "] Determinant of the Jacobian <= zero, no inversion possible.");
         }
         size += this->GetIntegrationPointWeight(iIP) * detJacobian;
     }
@@ -112,7 +113,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
     // check element length
     if (size < 1e-14)
     {
-        Exception(std::string("[") + __PRETTY_FUNCTION__ + "] element with zero size (check nodes).");
+        MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] element with zero size (check nodes).");
     }
 }
 
@@ -137,7 +138,8 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
         rData.mDetJacobian *= 0.5 * (mKnots(i, 1) - mKnots(i, 0));
 
     if (rData.mDetJacobian == 0)
-        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Determinant of the Jacobian is zero, no inversion possible.");
+        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                 "] Determinant of the Jacobian is zero, no inversion possible.");
 
     Eigen::Matrix<double, TDim, TDim> invJacobian = jacobian.inverse();
 

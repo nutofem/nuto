@@ -47,7 +47,9 @@ BOOST_AUTO_TEST_CASE(check_constraint_node_to_element)
 
     // this node is NOT inside the reference tetrahedron
     nodeCoordinates = Eigen::VectorXd::Constant(dim, 1.);
-    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS), NuTo::Exception);
+    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId,
+                                                                      eDof::DISPLACEMENTS),
+                        NuTo::MechanicsException);
 
     // this node is NOT inside the reference tetrahedron but the offset lets us constrain the node anyway :-)
     Eigen::Vector3d nodeCoordinateOffset = Eigen::Vector3d::Constant(-1.);
@@ -60,7 +62,9 @@ BOOST_AUTO_TEST_CASE(check_constraint_node_to_element)
 
     // this node is NOT inside the reference tetrahedron and the tolerance is too small
     nodeCoordinates = Eigen::VectorXd::Constant(dim, -1.e-8);
-    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-9), NuTo::Exception);
+    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId,
+                                                                      eDof::DISPLACEMENTS, 1.e-9),
+                        NuTo::MechanicsException);
 }
 
 int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure& structure)

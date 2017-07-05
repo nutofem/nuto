@@ -55,9 +55,17 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
     }
     catch (NuTo::Exception& e)
     {
-        if (not mContinueOnException)
-            throw e;
+        e.AddMessage("The simulation stopped with an exception. \n");
+        if (mContinueOnException)
+        {
+            std::cout << e.ErrorMessage() << "\n but I'll continue.";
+        }
+        else
+        {
+            throw;
+        }
     }
+
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen) << std::endl;
 
     // the spheres are stored with the diameters _before_ the EDMD simulation
@@ -95,14 +103,22 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
     }
     catch (NuTo::Exception& e)
     {
-        if (not mContinueOnException)
-            throw e;
+        e.AddMessage("The simulation failed. \n");
+        if (mContinueOnException)
+        {
+            std::cout << e.ErrorMessage() << "\n but I'll continue.";
+        }
+        else
+        {
+            throw;
+        }
     }
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen) << std::endl;
 
     // the spheres are stored with the diameters _after_ the EDMD simulation
 }
+
 
 void NuTo::GeometryConcrete::ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice, double rMinRadius)
 {

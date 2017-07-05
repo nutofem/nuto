@@ -71,15 +71,21 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
             return NuTo::NewmarkDirect::Solve(rTimeDelta);
         }
 
-    	//extrapolation of the harmonic response
-    	double BeginHarmonicExcitation;
-    	if (mTimeDependentConstraint != -1) {
-    		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
-    	} else if (mTimeDependentLoadCase != -1) {
-    		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
-    	} else {
-    		throw Exception("[NuTo::JumpDirect::Solve] the harmonic excitation can be only applied to the time dependent constraint or load case.");
-    	}
+        // extrapolation of the harmonic response
+        double BeginHarmonicExcitation;
+        if (mTimeDependentConstraint != -1)
+        {
+            BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows() - 1, 0);
+        }
+        else if (mTimeDependentLoadCase != -1)
+        {
+            BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows() - 1, 0);
+        }
+        else
+        {
+            throw MechanicsException("[NuTo::JumpDirect::Solve] the harmonic excitation can be only applied to the "
+                                     "time dependent constraint or load case.");
+        }
 
         // integrate till the end of the third cycle
         Error = NuTo::NewmarkDirect::Solve(BeginHarmonicExcitation + 3. / mHarmonicFactor(0, 1));
@@ -1009,7 +1015,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
             //std::endl;
         } while (SaveTime < rTimeDelta);
     }
-    catch (Exception& e)
+    catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::JumpDirect::Solve] performing Newton-Raphson iteration.");
         throw;
@@ -1038,10 +1044,11 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
         break;
     case 1:
 
-			break;
-		default:
-			throw Exception("[NuTo::JumpDirect::CalculateModifiedStiffness] Implemented for monoharmonic excitation: 0 - mean displacement, 1 - displacement amplitude.");
-	}
+        break;
+    default:
+        throw MechanicsException("[NuTo::JumpDirect::CalculateModifiedStiffness] Implemented for monoharmonic "
+                                 "excitation: 0 - mean displacement, 1 - displacement amplitude.");
+    }
 
     // calculate matrices
     // calculate constraint matrix
@@ -1132,35 +1139,11 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(Eigen::VectorXd* rDisp_Mean_
     SparseMatrixCSRVector2General<double> CmatT(Cmat.Transpose());
 
     // allocate space for stiffness matrix
-    SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
+    SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(),
+                                                         mStructure->GetNumActiveDofs());
 
 
-	if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1) {
-		throw Exception("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
-	}
-
-	double BeginHarmonicExcitation;
-	if (mTimeDependentConstraint != -1) {
-		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
-	} else if (mTimeDependentLoadCase != -1) {
-		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
-	} else {
-		throw Exception("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation can be only applied to the time dependent constraint or load case.");
-	}
-
-	//RemCom
-	Eigen::VectorXd rIntForceX_Max_j, rIntForceX_Max_k, rIntForceX_Mean_j, rIntForceX_Mean_k,
-		rDispX_Mean_j, rDispX_Mean_k, rDispX_Ampl_j, rDispX_Ampl_k;
-	rIntForceX_Max_j = *rIntForce_Max_j; rIntForceX_Max_k = *rIntForce_Max_k;
-	rIntForceX_Mean_j = *rIntForce_Mean_j; rIntForceX_Mean_k = *rIntForce_Mean_k;
-	rDispX_Mean_j = *rDisp_Mean_j; rDispX_Mean_k = *rDisp_Mean_k;
-	rDispX_Ampl_j = *rDisp_Ampl_j; rDispX_Ampl_k = *rDisp_Ampl_k;
-
-	// find the mean value (rFourier = 0)
-
-	// set BC for the mean displacement, which is the displacement at the beginning of the harmonic excitation
-	double timeDependentConstraintFactor(0);
-    if (mTimeDependentConstraint!=-1)
+    if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1)
     {
         throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation is "
                                  "currently implemented for either time dependent constraint or load case.");
@@ -1654,7 +1637,8 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(Eigen::VectorXd* 
 
     if (mStructure->GetNumTimeDerivatives() > 1)
     {
-    	throw Exception("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the mass matrix is not implemented for the Coupled Dofs, only static integration is possible.");
+        throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the mass matrix is not "
+                                 "implemented for the Coupled Dofs, only static integration is possible.");
     }
 
     //    // print the Dofs to be updated
@@ -1685,18 +1669,26 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(Eigen::VectorXd* 
                                                          mStructure->GetNumActiveDofs());
 
 
-	if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1) {
-		throw Exception("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
-	}
+    if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1)
+    {
+        throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the harmonic excitation "
+                                 "is currently implemented for either time dependent constraint or load case.");
+    }
 
-	double BeginHarmonicExcitation;
-	if (mTimeDependentConstraint != -1) {
-		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
-	} else if (mTimeDependentLoadCase != -1) {
-		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
-	} else {
-		throw Exception("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the harmonic excitation can be only applied to the time dependent constraint or load case.");
-	}
+    double BeginHarmonicExcitation;
+    if (mTimeDependentConstraint != -1)
+    {
+        BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows() - 1, 0);
+    }
+    else if (mTimeDependentLoadCase != -1)
+    {
+        BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows() - 1, 0);
+    }
+    else
+    {
+        throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the harmonic excitation "
+                                 "can be only applied to the time dependent constraint or load case.");
+    }
 
     // update the mean value (rFourier = 0)
 
@@ -1992,10 +1984,11 @@ void NuTo::JumpDirect::IntegrateSingleCycle(Eigen::VectorXd* rDisp_Mean_j, Eigen
     //    	std::cout << "=== vel_j = " << lastConverged_vel_j[0] << std::endl;
     //    }
 
-//    if (rIncludePostProcess && residual_mod.Norm()>mToleranceForce){
-//        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
-//        throw Exception("[NuTo::JumpDirect::Solve] Configuration after the extrapolation jump is not in (dynamic) equilibrium.");
-//    }
+    //    if (rIncludePostProcess && residual_mod.Norm()>mToleranceForce){
+    //        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
+    //        throw MechanicsException("[NuTo::JumpDirect::Solve] Configuration after the extrapolation jump is not in
+    //        (dynamic) equilibrium.");
+    //    }
 
     //    std::ofstream DamageFile; std::ofstream TotalInelasticEqStrainFile;
     //    DamageFile.open("DamageJump.txt", std::ios::app);
@@ -2216,121 +2209,6 @@ void NuTo::JumpDirect::IntegrateSingleCycle(Eigen::VectorXd* rDisp_Mean_j, Eigen
 
         // update structure time
         mStructure->SetPrevTime(curTime);
-	}
-//    DamageFile.close(); TotalInelasticEqStrainFile.close();
-    // 2D nonlocal test
-//    DamageFile.close();
-}
-
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-//! @brief ... save the object to a file
-void NuTo::JumpDirect::Restore (const std::string &filename, std::string rType )
-{
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-        std::string tmpString;
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw Exception ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw Exception ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw Exception ( "[JumpDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else
-        {
-            throw Exception ( "[Matrix::Restore]File type not implemented" );
-        }
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-    catch ( ... )
-    {
-        throw Exception ( "[JumpDirect::Restore]Unhandled exception." );
-    }
-}
-
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::JumpDirect::Save (const std::string &filename, std::string rType )const
-{
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-        std::string tmpStr ( GetTypeId() );
-        std::string baseClassStr = tmpStr.substr ( 4,100 );
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else
-        {
-            throw Exception ( "[JumpDirect::Save]File type not implemented." );
-        }
-    }
-    catch ( boost::archive::archive_exception& e )
-    {
-        std::string s ( std::string ( "[JumpDirect::Save]File save exception in boost - " ) +std::string ( e.what() ) );
-        std::cout << s << "\n";
-        throw Exception ( s );
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-    catch ( ... )
-    {
-        throw Exception ( "[JumpDirect::Save]Unhandled exception." );
     }
     //    DamageFile.close(); TotalInelasticEqStrainFile.close();
     // 2D nonlocal test

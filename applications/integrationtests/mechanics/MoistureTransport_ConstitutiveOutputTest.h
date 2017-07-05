@@ -2,7 +2,7 @@
 
 
 #include "base/Timer.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"

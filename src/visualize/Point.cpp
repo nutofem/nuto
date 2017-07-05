@@ -1,5 +1,5 @@
 #include "visualize/Point.h"
-#include "base/Exception.h"
+#include "visualize/VisualizeException.h"
 
 using namespace NuTo::Visualize;
 
@@ -12,7 +12,7 @@ Point::Point(Eigen::Vector3d coordinates, int numData)
 void Point::SetData(int dataIndex, Eigen::VectorXd data)
 {
     if (dataIndex >= static_cast<int>(this->mData.size()))
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid data index.");
+        throw NuTo::VisualizeException(__PRETTY_FUNCTION__, "invalid data index.");
     mData[dataIndex] = data;
 }
 

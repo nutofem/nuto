@@ -1,5 +1,5 @@
 #include "math/CubicSplineInterpolation.h"
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 NuTo::Math::CubicSplineInterpolation::CubicSplineInterpolation(std::vector<std::array<double, 2>> data)
     : Interpolation::Interpolation(data, 2)
@@ -30,7 +30,7 @@ NuTo::Math::CubicSplineInterpolation::CubicSplineInterpolation(std::vector<std::
 double NuTo::Math::CubicSplineInterpolation::operator()(double x)
 {
     if (x < mData[0][0] or x > mData.back()[0])
-        throw NuTo::Exception("Input x is not within data range of supplied array");
+        throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
     double h = mData[index + 1][0] - mData[index][0];
@@ -44,7 +44,7 @@ double NuTo::Math::CubicSplineInterpolation::operator()(double x)
 double NuTo::Math::CubicSplineInterpolation::derivative(double x)
 {
     if (x < mData[0][0] or x > mData.back()[0])
-        throw NuTo::Exception("Input x is not within data range of supplied array");
+        throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
     double m = (mData[index + 1][1] - mData[index][1]) / (mData[index + 1][0] - mData[index][0]);

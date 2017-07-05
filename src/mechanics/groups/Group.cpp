@@ -51,28 +51,28 @@ const Group<ElementBase>* Group<ElementBase>::AsGroupElement() const
 template <>
 Group<NodeBase>* Group<ElementBase>::AsGroupNode()
 {
-    throw Exception("[Group<ElementBase>::AsGroupNode] group is not a node group");
+    throw MechanicsException("[Group<ElementBase>::AsGroupNode] group is not a node group");
 }
 
 //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
 template <>
 const Group<NodeBase>* Group<ElementBase>::AsGroupNode() const
 {
-    throw Exception("[Group<ElementBase>::AsGroupNode] group is not a node group");
+    throw MechanicsException("[Group<ElementBase>::AsGroupNode] group is not a node group");
 }
 
 //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
 template <>
 Group<ElementBase>* Group<NodeBase>::AsGroupElement()
 {
-    throw Exception("[Group<NodeBase>::AsGroupElement] group is not an element group");
+    throw MechanicsException("[Group<NodeBase>::AsGroupElement] group is not an element group");
 }
 
 //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
 template <>
 const Group<ElementBase>* Group<NodeBase>::AsGroupElement() const
 {
-    throw Exception("[Group<NodeBase>::AsGroupElement] group is not an element group");
+    throw MechanicsException("[Group<NodeBase>::AsGroupElement] group is not an element group");
 }
 
 //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <eigen3/Eigen/Core>
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

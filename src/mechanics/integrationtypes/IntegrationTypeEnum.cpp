@@ -1,7 +1,7 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include <map>
 #include <algorithm>
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {
@@ -55,7 +55,7 @@ std::string IntegrationTypeToString(const eIntegrationType& rIntegrationType)
     }
     catch (const std::out_of_range& e)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
 
@@ -67,7 +67,7 @@ eIntegrationType IntegrationTypeToEnum(std::string rIntegrationType)
         if (entry.second == rIntegrationType)
             return entry.first;
 
-    throw Exception(__PRETTY_FUNCTION__,
+    throw MechanicsException(__PRETTY_FUNCTION__,
                              "IntegrationType " + rIntegrationType + " has no enum equivalent or is not implemented.");
 }
 

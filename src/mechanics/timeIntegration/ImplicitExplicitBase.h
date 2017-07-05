@@ -8,7 +8,7 @@
 #pragma once
 
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 
 
 namespace NuTo
@@ -48,13 +48,13 @@ protected:
     //! @return ... bool : true - accept solution, false - reject solution
     virtual bool CheckExtrapolationAndAdjustTimeStep()
     {
-        throw Exception(__PRETTY_FUNCTION__, "not implemented.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
     }
 
     //! @brief ... extrapolates the static data
     virtual void ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
     {
-        throw Exception(__PRETTY_FUNCTION__, "not implemented.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
     }
 
 

@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/interpolationtypes/Interpolation3D.h"
 
 NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,

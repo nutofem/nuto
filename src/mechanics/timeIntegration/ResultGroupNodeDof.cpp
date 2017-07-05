@@ -31,8 +31,8 @@ void NuTo::ResultGroupNodeDof::CalculateAndAddValues(const NuTo::StructureBase& 
     }
     Eigen::VectorXd values = CalculateValues(rStructure, rResidual_j, rResidual_k);
 
-	if (values.rows()!=mData.cols())
-		throw Exception(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
+    if (values.rows() != mData.cols())
+        throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 
     mData.row(rTimeStepPlot) = values.transpose();
 }

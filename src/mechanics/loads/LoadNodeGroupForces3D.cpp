@@ -1,4 +1,4 @@
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
@@ -11,7 +11,7 @@ LoadNodeGroupForces3D::LoadNodeGroupForces3D(const Group<NodeBase>* rGroup, cons
     : LoadNodeGroup(rGroup)
 {
     if (rDirection.rows() != 3)
-        throw Exception(__PRETTY_FUNCTION__,
+        throw MechanicsException(__PRETTY_FUNCTION__,
                                  "Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection, rDirection.data(), 3 * sizeof(double));
@@ -19,7 +19,7 @@ LoadNodeGroupForces3D::LoadNodeGroupForces3D(const Group<NodeBase>* rGroup, cons
     double norm = sqrt(mDirection[0] * mDirection[0] + mDirection[1] * mDirection[1] + mDirection[2] * mDirection[2]);
     if (norm < 1e-14)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Direction vector has zero length");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length");
     }
     double invNorm = 1. / norm;
     mDirection[0] *= invNorm;

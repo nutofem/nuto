@@ -371,10 +371,10 @@ void NuTo::NeuralNetwork::Jacobian(Eigen::MatrixXd& rJacobian, std::vector<doubl
     for (int currentLayer = 0; currentLayer < mNumLayers + 1; currentLayer++)
         numNeurons += mvNumNeurons[currentLayer];
 
-    if ((int)pO.size()!=numNeurons)
-        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
-    if ((int)pA.size()!=numNeurons)
-        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+    if ((int)pO.size() != numNeurons)
+        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+    if ((int)pA.size() != numNeurons)
+        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
 
     // set input of input layer
     // memcpy(&(pO[0]),&(mSupportPoints.GetTransformedSupportPointsInput().data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -472,12 +472,13 @@ void NuTo::NeuralNetwork::BuildDerived()
         {
             weight = 2 * b * RandomDouble() - b;
         }
-        mNumWeights+=mvNumNeurons[currentLayer]*mvNumNeurons[currentLayer+1];
-        mvBias[currentLayer].resize(mvNumNeurons[currentLayer+1],0);
-        mNumBiases += mvNumNeurons[currentLayer+1];
-        //check if all transfer functions are set
-        if (mvTransferFunction[currentLayer]==nullptr)
-            throw Exception("NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
+        mNumWeights += mvNumNeurons[currentLayer] * mvNumNeurons[currentLayer + 1];
+        mvBias[currentLayer].resize(mvNumNeurons[currentLayer + 1], 0);
+        mNumBiases += mvNumNeurons[currentLayer + 1];
+        // check if all transfer functions are set
+        if (mvTransferFunction[currentLayer] == nullptr)
+            throw MetamodelException(
+                    "NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
     }
 
     int numParameters(mNumWeights + mNumBiases);
@@ -639,9 +640,10 @@ void NuTo::NeuralNetwork::BuildDerived()
                 }
                 else
                 {
-                    vAlphaNew[theAlpha]=1e-12;
-                    printf("gammas[%d] = %g (%g/%g)\n",theAlpha,gammas[theAlpha]/sumW2[theAlpha],gammas[theAlpha],sumW2[theAlpha]);
-                    throw NuTo::Exception("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
+                    vAlphaNew[theAlpha] = 1e-12;
+                    printf("gammas[%d] = %g (%g/%g)\n", theAlpha, gammas[theAlpha] / sumW2[theAlpha], gammas[theAlpha],
+                           sumW2[theAlpha]);
+                    throw NuTo::MetamodelException("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
                 }
             }
 
@@ -826,8 +828,8 @@ void NuTo::NeuralNetwork::ForwardPropagateInput(std::vector<double>& pA, std::ve
 
 void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction)
 {
-    if (rLayer>=mNumLayers)
-        throw Exception("Metamodel::SetTransferFunction - Layer out of size.");
+    if (rLayer >= mNumLayers)
+        throw MetamodelException("Metamodel::SetTransferFunction - Layer out of size.");
 
     switch (rTransferFunction)
     {
@@ -877,7 +879,7 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
         mvTransferFunction[rLayer] = new PosLinTransferFunction();
         break;
     default:
-        throw Exception("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
+        throw MetamodelException("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
         break;
     }
 }
@@ -886,12 +888,12 @@ void NuTo::NeuralNetwork::SetParameters(const Eigen::MatrixXd& Parameters)
 {
     if (Parameters.rows() != mNumWeights + mNumBiases)
     {
-        throw Exception("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
+        throw MetamodelException("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
     }
 
     if (Parameters.cols() != 1)
     {
-        throw Exception("Metamodel::SetParameters - Number of Columns is not equal to one.");
+        throw MetamodelException("Metamodel::SetParameters - Number of Columns is not equal to one.");
     }
 
     const double* pCurParameter = Parameters.data();
@@ -946,7 +948,8 @@ void NuTo::NeuralNetwork::SolveTransformed(const Eigen::MatrixXd& rInputCoordina
 
     if (rInputCoordinates.rows() != dimInput)
     {
-        throw Exception("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
+        throw MetamodelException(
+                "Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     rOutputCoordinates.resize(dimOutput, rInputCoordinates.cols());
@@ -970,7 +973,8 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 {
     if (!mBayesian)
     {
-        throw Exception("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence interval is only possible with Bayesian neural networks.");
+        throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence "
+                                 "interval is only possible with Bayesian neural networks.");
     }
     int dimInput = mSupportPoints.GetDimInput(), dimOutput = mSupportPoints.GetDimOutput();
 
@@ -996,7 +1000,8 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 
     if (rInputCoordinates.rows() != dimInput)
     {
-        throw Exception("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
+        throw MetamodelException(
+                "Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     mvCovariance = mvCovarianceInv.inverse();
@@ -1057,7 +1062,8 @@ void NuTo::NeuralNetwork::GetAlphas(Eigen::VectorXd& rAlpha) const
 
     if (mNumLayers == 1)
     {
-        throw Exception("Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
+        throw MetamodelException(
+                "Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
     }
     // for the first layer, each input has its own alpha
     for (int cntCurrentNeuron = 0; cntCurrentNeuron < mvNumNeurons[1]; cntCurrentNeuron++, curBias++)
@@ -1097,7 +1103,8 @@ void NuTo::NeuralNetwork::GetPosInAlphaVector(std::vector<int>& rPosInAlphaVecto
 
     if (mNumLayers == 1)
     {
-        throw Exception("Metamodel::GetPosInAlphaVector - without hidden layer the definition of alpha is not implemented.");
+        throw MetamodelException(
+                "Metamodel::GetPosInAlphaVector - without hidden layer the definition of alpha is not implemented.");
     }
     // for the first layer, each input has its own alpha
     for (int cntCurrentNeuron = 0; cntCurrentNeuron < mvNumNeurons[1]; cntCurrentNeuron++, curBias++)
@@ -1195,210 +1202,6 @@ void NuTo::NeuralNetwork::dLnDetA_dBeta(Eigen::MatrixXd& rHessianInv, Eigen::Mat
         }
     }
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-//! @brief ... save the object to a file
-void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rType )
-{
-	try
-	{
-		//transform to uppercase
-		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-		std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-		std::string tmpString;
-		if (rType=="BINARY")
-		{
-			boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-			oba & boost::serialization::make_nvp ( "Object_type", tmpString );
-			if ( tmpString!=GetTypeId() )
-				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
-		}
-		else if (rType=="XML")
-		{
-			boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-			oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
-			if ( tmpString!=GetTypeId() )
-				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
-		}
-		else if (rType=="TEXT")
-		{
-			boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-			ota & boost::serialization::make_nvp ( "Object_type", tmpString );
-			if ( tmpString!=GetTypeId() )
-				throw Exception ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
-		}
-		else
-		{
-			throw Exception ( "[Matrix::Restore]File type not implemented" );
-		}
-	}
-	catch ( Exception &e )
-	{
-        throw;
-	}
-	catch ( std::exception &e )
-	{
-		throw Exception ( e.what() );
-	}
-	catch ( ... )
-	{
-		throw Exception ( "[Matrix::Restore]Unhandled exception." );
-	}
-}
-
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )const
-{
-	try
-	{
-		//transform to uppercase
-		std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-		std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-		std::string tmpStr ( GetTypeId() );
-		std::string baseClassStr = tmpStr.substr ( 4,100 );
-		if (rType=="BINARY")
-		{
-			boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-			oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-		}
-		else if (rType=="XML")
-		{
-			boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-			oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-		}
-		else if (rType=="TEXT")
-		{
-			boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-			ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
-			ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-		}
-		else
-		{
-			throw Exception(__PRETTY_FUNCTION__, "File type not implemented." );
-		}
-	}
-	catch ( boost::archive::archive_exception& e )
-	{
-		std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
-		std::cout << s << "\n";
-		throw Exception ( s );
-	}
-	catch ( Exception &e )
-	{
-        throw;
-	}
-	catch ( std::exception &e )
-	{
-		throw Exception ( e.what() );
-	}
-	catch ( ... )
-	{
-		throw Exception ( "[Matrix::Save]Unhandled exception." );
-	}
-}
-
-//! @brief serializes the class, this is the load routine
-//! @param ar         archive
-//! @param version    version
-template void NuTo::NeuralNetwork::load(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::NeuralNetwork::load(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::NeuralNetwork::load(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::NeuralNetwork::load(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize NeuralNetwork (load)" << std::endl;
-#endif
-	std::vector<double> vCovarianceInv;
-    int numRows, numColumns;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel);
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CallbackHandler);
-    ar & BOOST_SERIALIZATION_NVP(mNumLayers)
-       & BOOST_SERIALIZATION_NVP(mBayesian)
-       & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-       & BOOST_SERIALIZATION_NVP(mvTransferFunction)
-       & BOOST_SERIALIZATION_NVP(mvNumNeurons)
-       & BOOST_SERIALIZATION_NVP(mvWeights)
-       & BOOST_SERIALIZATION_NVP(mNumWeights)
-       & BOOST_SERIALIZATION_NVP(mNumBiases)
-       & BOOST_SERIALIZATION_NVP(mvBias)
-       & BOOST_SERIALIZATION_NVP(vCovarianceInv)
-       & BOOST_SERIALIZATION_NVP(numRows)
-       & BOOST_SERIALIZATION_NVP(numColumns)
-       & BOOST_SERIALIZATION_NVP(mvAlpha)
-       & BOOST_SERIALIZATION_NVP(mInitAlpha)
-       & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
-       & BOOST_SERIALIZATION_NVP(mMinObjective)
-       & BOOST_SERIALIZATION_NVP(mMinDeltaObjectiveBetweenRestarts)
-       & BOOST_SERIALIZATION_NVP(mMinDeltaObjectiveBayesianIteration)
-       & BOOST_SERIALIZATION_NVP(mMaxFunctionCalls)
-       & BOOST_SERIALIZATION_NVP(mShowSteps)
-       & BOOST_SERIALIZATION_NVP(mMaxBayesianIterations);
-
-    mvCovarianceInv.resize(numRows,numColumns);
-	memcpy ( mvCovarianceInv.data(),&(vCovarianceInv[0]),numRows * numColumns *sizeof ( double ) );
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize NeuralNetwork (load)" << std::endl;
-#endif
-}
-
-//! @brief serializes the class, this is the save routine
-//! @param ar         archive
-//! @param version    version
-template void NuTo::NeuralNetwork::save(boost::archive::binary_oarchive & ar, const unsigned int version) const;
-template void NuTo::NeuralNetwork::save(boost::archive::xml_oarchive & ar, const unsigned int version) const;
-template void NuTo::NeuralNetwork::save(boost::archive::text_oarchive & ar, const unsigned int version) const;
-template<class Archive>
-void NuTo::NeuralNetwork::save(Archive & ar, const unsigned int version) const
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize NeuralNetwork (save)" << std::endl;
-#endif
-    // copy covariance matrix
-	int numRows = mvCovarianceInv.rows();
-	int	numColumns = mvCovarianceInv.cols();
-	std::vector<double> vCovarianceInv(numRows*numColumns);
-	memcpy ( & ( vCovarianceInv[0] ),mvCovarianceInv.data(),numRows * numColumns *sizeof ( double ) );
-	// start serialization
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Metamodel);
-	ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP ( CallbackHandler );
-    ar & BOOST_SERIALIZATION_NVP(mNumLayers)
-       & BOOST_SERIALIZATION_NVP(mBayesian)
-       & BOOST_SERIALIZATION_NVP(mUseDiagHessian)
-       & BOOST_SERIALIZATION_NVP(mvTransferFunction)
-       & BOOST_SERIALIZATION_NVP(mvNumNeurons)
-       & BOOST_SERIALIZATION_NVP(mvWeights)
-       & BOOST_SERIALIZATION_NVP(mNumWeights)
-       & BOOST_SERIALIZATION_NVP(mNumBiases)
-       & BOOST_SERIALIZATION_NVP(mvBias)
-       & BOOST_SERIALIZATION_NVP(vCovarianceInv)
-       & BOOST_SERIALIZATION_NVP(numRows)
-       & BOOST_SERIALIZATION_NVP(numColumns)
-       & BOOST_SERIALIZATION_NVP(mvAlpha)
-       & BOOST_SERIALIZATION_NVP(mInitAlpha)
-       & BOOST_SERIALIZATION_NVP(mAccuracyGradient)
-       & BOOST_SERIALIZATION_NVP(mMinObjective)
-       & BOOST_SERIALIZATION_NVP(mMinDeltaObjectiveBetweenRestarts)
-       & BOOST_SERIALIZATION_NVP(mMinDeltaObjectiveBayesianIteration)
-       & BOOST_SERIALIZATION_NVP(mMaxFunctionCalls)
-       & BOOST_SERIALIZATION_NVP(mShowSteps)
-       & BOOST_SERIALIZATION_NVP(mMaxBayesianIterations);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize NeuralNetwork (save)" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NeuralNetwork)
-#endif // ENABLE_SERIALIZATION
 
 // get inverse covariance matrix
 void NuTo::NeuralNetwork::GetInverseNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rInverseCovariance) const

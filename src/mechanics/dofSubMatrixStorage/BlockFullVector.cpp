@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -150,7 +150,8 @@ void NuTo::BlockFullVector<T>::Import(const Eigen::Matrix<T, Eigen::Dynamic, 1>&
     if (GetNumActiveRows() != rToImport.rows())
     {
         this->Info();
-        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] BlockFullVector must be sized to the right dimensions");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                       "] BlockFullVector must be sized to the right dimensions");
     }
 
     int blockStartIndex = 0;

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/sections/SectionPlane.h"
 
 using namespace NuTo;

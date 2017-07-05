@@ -15,16 +15,19 @@ NuTo::AdditiveBase::AdditiveBase(const int& rNumTimeDerivatives)
 
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw, Constitutive::eInput)
 {
-    if(rConstitutiveLaw.HaveTmpStaticData())
-        throw Exception(__PRETTY_FUNCTION__,
-            "Constitutive law has tmp static data! The HaveTmpStaticData function is only called on construction of "
-            "the AdditiveInputExplicit law, but at this time, no constitutive law is attached. Therefore it does not "
-            "know if it will have tmpstatic data or not and returns false by default. Find a way to update this "
-            "information at the necessary code sections if a law with tmpstatic data is attached.");
+    if (rConstitutiveLaw.HaveTmpStaticData())
+        throw MechanicsException(
+                __PRETTY_FUNCTION__,
+                "Constitutive law has tmp static data! The HaveTmpStaticData function is only called on construction "
+                "of "
+                "the AdditiveInputExplicit law, but at this time, no constitutive law is attached. Therefore it does "
+                "not "
+                "know if it will have tmpstatic data or not and returns false by default. Find a way to update this "
+                "information at the necessary code sections if a law with tmpstatic data is attached.");
 
-    if(mStaticDataAllocated)
-        throw Exception(__PRETTY_FUNCTION__,
-                "All constitutive laws have to be attached before static data is allocated!");
+    if (mStaticDataAllocated)
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                                 "All constitutive laws have to be attached before static data is allocated!");
 
     mSublaws.push_back(&rConstitutiveLaw);
     AddCalculableDofCombinations(rConstitutiveLaw);
@@ -94,6 +97,6 @@ NuTo::ConstitutiveBase& NuTo::AdditiveBase::GetSublaw(int rIndex)
     }
     catch (...)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Error accessing sublaw");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Error accessing sublaw");
     }
 }

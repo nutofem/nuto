@@ -57,422 +57,9 @@ void NuTo::Structure::Info() const
     ElementInfo(mVerboseLevel);
 }
 
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Structure::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Structure::save(Archive & ar, const unsigned int version) const {}
 
-template<class Archive>
-void NuTo::Structure::saveImplement(Archive & ar) const
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start save of structure" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
-    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
-    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
-
-    /***************************** Pointer update *****************************/
-    // cast the 'mNodeMap' to a map containing pairs (int,uintptr_t)
-    std::map<int, std::uintptr_t> mNodeMapCast;
-    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
-    {
-        mNodeMapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
-    }
-    ar & boost::serialization::make_nvp("mNodeMapCast", mNodeMapCast);
-
-    // cast the 'mElementMap' to a map containing pairs (int,uintptr_t)
-    std::map<int, std::uintptr_t> mElementMapCast;
-    for (boost::ptr_map<int,ElementBase>::const_iterator it = mElementMap.begin(); it!= mElementMap.end(); it++)
-    {
-        mElementMapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
-    }
-    ar & boost::serialization::make_nvp("mElementMapCast", mElementMapCast);
-
-#ifdef _OPENMP
-    int size = mMIS.size();
-    ar & boost::serialization::make_nvp("mMIS_size", size);
-    int i = 0;
-    for (std::vector<std::vector<ElementBase*>>::iterator it =  mMIS.begin(); it!=mMIS.end(); it++, i++)
-    {
-        int size = it->size();
-        const std::uintptr_t* mMISAddress = reinterpret_cast<const std::uintptr_t*>(it->data());
-        std::string name = "size_" + std::to_string(i);
-        ar & boost::serialization::make_nvp(name.c_str(), size);
-        name = "mMIS_" + std::to_string(i);
-        ar & boost::serialization::make_nvp(name.c_str(), boost::serialization::make_array(mMISAddress, size));
-    }
-#endif
-
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish save of structure" << std::endl;
-#endif
-}
-
-
-void NuTo::Structure::Save (const std::string &filename, std::string rType ) const
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-        // open file
-        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-        if(! ofs.is_open())
-        {
-            throw Exception("[NuTo::Structure::Save] Error opening file.");
-        }
-        // write data to file
-        std::string typeIdString(this->GetTypeId());
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-            oba & boost::serialization::make_nvp ("Object_type", typeIdString );
-            oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            saveImplement(oba);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
-            oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            saveImplement(oxa);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-            ota & boost::serialization::make_nvp("Object_type", typeIdString );
-            ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            saveImplement(ota);
-        }
-        else
-        {
-            throw Exception ( "[NuTo::Structure::Save] File type not implemented." );
-        }
-
-        // close file
-        ofs.close();
-    }
-    catch ( boost::archive::archive_exception &e )
-    {
-        std::string s ( std::string ( "[NuTo::Structure::Save]File save exception in boost - " ) + std::string ( e.what() ) );
-        throw Exception ( s );
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-}
-
-void NuTo::Structure::SaveUpdate (const std::string &filename, std::string rType ) const
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-        // open file
-        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-        if(! ofs.is_open())
-        {
-            throw Exception("[NuTo::Structure::SaveUpdate] Error opening file.");
-        }
-        // write data to file
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-            // TODO!
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-            // TODO!
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-            // TODO!
-        }
-        else
-        {
-            throw Exception ( "[NuTo::Structure::Save] File type not implemented." );
-        }
-
-        // close file
-        ofs.close();
-    }
-    catch ( boost::archive::archive_exception &e )
-    {
-        std::string s ( std::string ( "[NuTo::Structure::SaveUpdate]File save exception in boost - " ) + std::string ( e.what() ) );
-        throw Exception ( s );
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-}
-
-// serializes the class
-template void NuTo::Structure::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Structure::load(Archive & ar, const unsigned int version){}
-
-template<class Archive>
-void NuTo::Structure::loadImplement(Archive & ar)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start load of structure" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
-
-    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
-    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
-
-    /***************************** Pointer update *****************************/
-    // node
-    std::map<int, std::uintptr_t> mNodeMapCast;
-    ar & boost::serialization::make_nvp("mNodeMapCast", mNodeMapCast);
-    std::map<std::uintptr_t, std::uintptr_t> mNodeMapOldNewPtr;
-    std::map<int, std::uintptr_t>::iterator itCastNode = mNodeMapCast.begin();
-    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++, itCastNode++)
-    {
-        mNodeMapOldNewPtr.insert(std::pair<std::uintptr_t, std::uintptr_t>(itCastNode->second, reinterpret_cast<std::uintptr_t>(it->second)));
-    }
-
-
-    // element
-    std::map<int, std::uintptr_t> mElementMapCast;
-    ar & boost::serialization::make_nvp("mElementMapCast", mElementMapCast);
-    std::map<std::uintptr_t, std::uintptr_t> mElementMapOldNewPtr;
-    std::map<int, std::uintptr_t>::iterator itCastElement = mElementMapCast.begin();
-    for (boost::ptr_map<int,ElementBase>::iterator it = mElementMap.begin(); it!= mElementMap.end(); it++, itCastElement++)
-    {
-        mElementMapOldNewPtr.insert(std::pair<std::uintptr_t, std::uintptr_t>(itCastElement->second, reinterpret_cast<std::uintptr_t>(it->second)));
-    }
-
-#ifdef _OPENMP
-    int size = 0;
-    ar & boost::serialization::make_nvp("mMIS_size", size);
-    mMIS.resize(size);
-    int i = 0;
-    for (std::vector<std::vector<ElementBase*>>::iterator it =  mMIS.begin(); it!=mMIS.end(); it++, i++)
-    {
-        int size = 0;
-        std::string name = "size_" + std::to_string(i);
-        ar & boost::serialization::make_nvp(name.c_str(), size);
-        std::uintptr_t* mMISAddress = new std::uintptr_t[size];
-
-        name = "mMIS_" + std::to_string(i);
-        ar & boost::serialization::make_nvp(name.c_str(), boost::serialization::make_array(mMISAddress, size));
-
-        for(int i = 0; i < size; i++)
-        {
-            std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mElementMapOldNewPtr.find(mMISAddress[i]);
-            if (itCast!=mElementMapOldNewPtr.end())
-            {
-                mMISAddress[i] = itCast->second;
-            }
-            else
-                throw Exception("[NuTo::Structure::loadImplement] The ElementBase-Pointer could not be updated.");
-        }
-
-        it->assign(reinterpret_cast<ElementBase**>(&mMISAddress[0]), reinterpret_cast<ElementBase**>(&mMISAddress[size]));
-    }
-#endif
-
-    // update the node ptr in elements
-    for(boost::ptr_map<int, ElementBase>::iterator itElements = mElementMap.begin(); itElements!=mElementMap.end(); itElements++)
-    {
-        itElements->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
-    }
-
-    // update the nonlocal elements in elementData
-    for(boost::ptr_map<int, ElementBase>::iterator itElements = mElementMap.begin(); itElements!=mElementMap.end(); itElements++)
-    {
-        itElements->second->GetDataPtr()->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
-    }
-
-    // exchange node pointer in constraints
-    for (boost::ptr_map<int,ConstraintBase>::iterator itConstraints=mConstraintMap.begin(); itConstraints!=mConstraintMap.end(); itConstraints++)
-    {
-        // cast the Address to a NodeBase-Pointer
-        itConstraints->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
-    }
-
-    // exchange node pointer in loads
-    for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
-    {
-        // cast the Address to a NodeBase-Pointer
-        itLoads->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
-    }
-
-    // exchange element pointer in loads
-    for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
-    {
-        // cast the Address to a NodeBase-Pointer
-        itLoads->second->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
-    }
-
-    // exchange node AND element pointer in groups
-    std::map<std::uintptr_t, std::uintptr_t> mNodeAndElementMapOldNewPtr(mNodeMapOldNewPtr);
-    mNodeAndElementMapOldNewPtr.insert(mElementMapOldNewPtr.begin(), mElementMapOldNewPtr.end());
-    for (boost::ptr_map<int,GroupBase>::iterator itGroups=mGroupMap.begin(); itGroups!=mGroupMap.end(); itGroups++)
-    {
-        // cast the Address to a NodeBase-Pointer
-        itGroups->second->SetNodePtrAfterSerialization(mNodeAndElementMapOldNewPtr);
-    }
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish load of structure" << std::endl;
-#endif
-}
-
-void NuTo::Structure::Restore (const std::string &filename, std::string rType )
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-        // open file
-        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-        if(! ifs.is_open())
-        {
-            throw Exception("[NuTo::Structure::Restore] Error opening file.");
-        }
-        std::string typeIdString;
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", typeIdString );
-            if ( typeIdString != this->GetTypeId() )
-            {
-                throw Exception ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-            }
-            oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            loadImplement(oba);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ( "Object_type", typeIdString );
-            if ( typeIdString != this->GetTypeId() )
-            {
-                throw Exception ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-            }
-            oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            loadImplement(oxa);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-            ota & boost::serialization::make_nvp ( "Object_type", typeIdString );
-            if ( typeIdString != this->GetTypeId() )
-            {
-                throw Exception ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
-            }
-            ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-
-            loadImplement(ota);
-        }
-        else
-        {
-            throw Exception ( "[NuTo::Structure::Restore]File type not implemented" );
-        }
-        // close file
-        ifs.close();
-    }
-    catch ( boost::archive::archive_exception &e )
-    {
-        std::string s ( std::string ( "[NuTo::Structure::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
-        throw Exception ( s );
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-}
-
-void NuTo::Structure::RestoreUpdate (const std::string &filename, std::string rType )
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
-
-        // open file
-        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-        if(! ifs.is_open())
-        {
-            throw Exception("[NuTo::Structure::RestoreUpdate] Error opening file.");
-        }
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-            // TODO!
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-            // TODO!
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-            // TODO!
-        }
-        else
-        {
-            throw Exception ( "[NuTo::Structure::RestoreUpdate]File type not implemented" );
-        }
-        // close file
-        ifs.close();
-    }
-    catch ( boost::archive::archive_exception &e )
-    {
-        std::string s ( std::string ( "[NuTo::Structure::RestoreUpdate] File save exception in boost - " ) + std::string ( e.what() ) );
-        throw Exception ( s );
-    }
-    catch ( Exception &e )
-    {
-        throw;
-    }
-    catch ( std::exception &e )
-    {
-        throw Exception ( e.what() );
-    }
-}
-#endif // ENABLE_SERIALIZATION
-
-
-void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput)
+void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
+                               std::map<eStructureOutput, StructureOutputBase*>& rStructureOutput)
 {
     std::string outputs = " ";
     for (auto it : rStructureOutput)
@@ -487,7 +74,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     for (auto iteratorOutput : rStructureOutput)
     {
@@ -521,58 +108,8 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
 
-    // allocate element outputs and resize the structure outputs
-    for (auto iteratorOutput : rStructureOutput)
-    {
-        switch (iteratorOutput.first)
-        {
-        case NuTo::eStructureOutput::HESSIAN0:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN1:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN2:
-        {
-            elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::HESSIAN2_LUMPED:
-        {
-            elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::INTERNAL_GRADIENT:
-        {
-            elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-            break;
-        }
-        case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
-        {
-            elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
-            break;
-        }
-        default:
-        {
-            throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + std::string("] Output request not implemented."));
-        }
-        }
-    }
-    // calculate element contribution
-    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
-    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
-#ifdef _OPENMP
-    for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
-    {
-#pragma omp single nowait
-        {
-            ElementBase* elementPtr = *elementIter;
-            // in OpenMP, exceptions may not leave the parallel region
-            try
+            // allocate element outputs and resize the structure outputs
+            for (auto iteratorOutput : rStructureOutput)
             {
                 switch (iteratorOutput.first)
                 {
@@ -647,62 +184,86 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
         elementPtr->Evaluate(rInput, elementOutputMap);
 #endif
 
-        const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
-        const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+                    const auto& elementVectorGlobalDofsRow =
+                            elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+                    const auto& elementVectorGlobalDofsColumn =
+                            elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 
-        for (auto& iteratorOutput : rStructureOutput)
-        {
-            StructureOutputBase* structureOutput = iteratorOutput.second;
+                    for (auto& iteratorOutput : rStructureOutput)
+                    {
+                        StructureOutputBase* structureOutput = iteratorOutput.second;
 
-            switch (iteratorOutput.first)
-            {
-            case NuTo::eStructureOutput::HESSIAN0:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                break;
-            }
-            case NuTo::eStructureOutput::HESSIAN1:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                break;
-            }
+                        switch (iteratorOutput.first)
+                        {
+                        case NuTo::eStructureOutput::HESSIAN0:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    GetDofStatus().HasInteractingConstraints());
+                            break;
+                        }
+                        case NuTo::eStructureOutput::HESSIAN1:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    GetDofStatus().HasInteractingConstraints());
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::HESSIAN2:
-            {
-                const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, true); // always calculate the KJ and KK
-                                                                                                                                                                                                          // since its most likely only needed once,
-                                                                                                                                                                                                          // and causes troubles in the test files.
-                break;
-            }
+                        case NuTo::eStructureOutput::HESSIAN2:
+                        {
+                            const auto& elementMatrix =
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)
+                                            ->GetBlockFullMatrixDouble();
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                    elementPtr, elementMatrix, elementVectorGlobalDofsRow,
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
+                                    true); // always calculate the KJ and KK
+                            // since its most likely only needed once,
+                            // and causes troubles in the test files.
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::HESSIAN2_LUMPED:
-            {
-                const auto& elementVector = elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
+                        case NuTo::eStructureOutput::HESSIAN2_LUMPED:
+                        {
+                            const auto& elementVector =
+                                    elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
+                                            ->GetBlockFullVectorDouble();
 
-                structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
-                break;
-            }
+                            structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(
+                                    elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::INTERNAL_GRADIENT:
-            {
-                const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+                        case NuTo::eStructureOutput::INTERNAL_GRADIENT:
+                        {
+                            const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
+                                                                ->GetBlockFullVectorDouble();
 
-                structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
-                break;
-            }
+                            structureOutput->AsStructureOutputBlockVector().AddElementVector(
+                                    elementVector, elementVectorGlobalDofsRow);
+                            break;
+                        }
 
-            case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
-                break;
+                        case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
+                            break;
 
-            default:
-            {
-                throw NuTo::Exception(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) + " requested but not implemented.");
-            }
-            }
-        }
+                        default:
+                        {
+                            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                                           StructureOutputToString(iteratorOutput.first) +
+                                                                   " requested but not implemented.");
+                        }
+                        }
+                    }
 
 #ifdef _OPENMP
                 }
@@ -711,7 +272,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     } // end loop over independent sets
 
     if (exceptionMessage != "")
-        throw Exception(exceptionMessage);
+        throw MechanicsException(exceptionMessage);
 #else
     } // end loop over elements
 #endif
@@ -767,8 +328,8 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     while (residual.J.CalculateInfNorm() > rTimeIntegrationScheme.GetToleranceResidual())
     {
         ++iteration;
-        if(iteration > maxIterations)
-            throw Exception(__PRETTY_FUNCTION__,"No convergence while solving for initial value rates!");
+        if (iteration > maxIterations)
+            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence while solving for initial value rates!");
         trialResidual = intForce - extForce;
 
 
@@ -797,18 +358,30 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    std::map<NodeBase*, NodeBase*> old2NewNodePointer;
-    std::map<ElementBase*, ElementBase*> old2NewElementPointer;
-    CopyAndTranslate(rOffset, old2NewNodePointer, old2NewElementPointer);
+    try
+    {
+        std::map<NodeBase*, NodeBase*> old2NewNodePointer;
+        std::map<ElementBase*, ElementBase*> old2NewElementPointer;
+        CopyAndTranslate(rOffset, old2NewNodePointer, old2NewElementPointer);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__, "Error translating and copying structure.");
+        throw;
+    }
+    catch (...)
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error translating and copying structure.");
+    }
 }
 
 void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer,
                                        std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
     if (rOffset.rows() != mDimension)
-        throw Exception(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
     if (rOffset.cols() != 1)
-        throw Exception(__PRETTY_FUNCTION__, "offset has to have a single column.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have a single column.");
 
     std::vector<NodeBase*> nodeVector;
     GetNodesTotal(nodeVector);

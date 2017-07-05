@@ -1,7 +1,7 @@
 #include <string>
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 namespace NuTo
 {

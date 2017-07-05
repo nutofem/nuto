@@ -1,4 +1,4 @@
-#include "base/Exception.h"
+#include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
@@ -12,7 +12,7 @@ LoadNodeGroupForces1D::LoadNodeGroupForces1D(const Group<NodeBase>* rGroup, doub
     // set direction
     if (std::abs(rDirection) < 1e-14)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Direction vector has zero length.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length.");
     }
     mDirection = rDirection / std::abs(rDirection);
 

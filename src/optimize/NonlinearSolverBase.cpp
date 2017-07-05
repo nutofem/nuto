@@ -1,5 +1,5 @@
 #include "optimize/NonlinearSolverBase.h"
-#include "base/Exception.h"
+#include "optimize/OptimizeException.h"
 
 using namespace std;
 
@@ -21,7 +21,7 @@ Eigen::MatrixXd NuTo::NonlinearSolverBase::DResidualNum(Eigen::VectorXd rUnknown
 
     if (mResidualFunction == nullptr && mAssignResidual == false)
     {
-        throw Exception(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
+        throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
     }
 
     for (int j = 0; j < n; j++)
@@ -44,7 +44,7 @@ double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd
 {
     if (mResidualFunction == nullptr && mAssignResidual == false)
     {
-        throw Exception(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
+        throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
     }
 
     rFvec = (mResidualFunctionBoost)(this->mParameter, rUnknown);

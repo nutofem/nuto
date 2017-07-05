@@ -22,7 +22,21 @@ int StructureBase::LoadCreateScalarSource(int rNodeIdent, double rValue)
 {
     // find node
     NodeBase* nodePtr;
-    nodePtr = NodeGetNodePtr(rNodeIdent);
+    try
+    {
+        nodePtr = NodeGetNodePtr(rNodeIdent);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+        throw;
+    }
+    catch (...)
+    {
+        throw MechanicsException(
+                "[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+    }
+
     return this->LoadCreateScalarSource(nodePtr, rValue);
 }
 
@@ -65,7 +79,7 @@ int StructureBase::LoadCreateNodeForce(const NodeBase* rNode, const Eigen::Matri
         loadPtr = new LoadNodeForces3D(rNode, rDirection, rValue);
         break;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Incorrect dimension of the structure.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Incorrect dimension of the structure.");
     }
     // insert load in load map
     mLoadMap.insert(id, loadPtr);
@@ -79,14 +93,14 @@ int StructureBase::LoadCreateNodeGroupForce(int rGroupIdent, const Eigen::Matrix
     auto itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
     {
-        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     }
 
     // cast to node group (type check)
     Group<NodeBase>* nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     if (nodeGroup == nullptr)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
     }
 
     return LoadCreateNodeGroupForce(nodeGroup, rDirection, rValue);
@@ -112,7 +126,7 @@ int StructureBase::LoadCreateNodeGroupForce(const Group<NodeBase>* rNodeGroup, c
         loadPtr = new LoadNodeGroupForces3D(rNodeGroup, rDirection, rValue);
         break;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Incorrect dimension of the structure.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Incorrect dimension of the structure.");
     }
     // insert load in load map
     mLoadMap.insert(id, loadPtr);

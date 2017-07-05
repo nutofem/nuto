@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_CASE(DataContainerShits)
     DataContainer<int> data(6174);
 
     // shifts not possible with only one set of static data
-    BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::Exception);
-    BOOST_CHECK_THROW(data.ShiftToFuture(), NuTo::Exception);
+    BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::MechanicsException);
+    BOOST_CHECK_THROW(data.ShiftToFuture(), NuTo::MechanicsException);
 
     data.AllocateAdditionalData(4);
     BOOST_CHECK_EQUAL(data.GetData(4), 6174);

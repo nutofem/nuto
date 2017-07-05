@@ -5,7 +5,7 @@
 // parent
 #include "optimize/Optimizer.h"
 
-#include "base/Exception.h"
+#include "optimize/OptimizeException.h"
 
 
 namespace NuTo
@@ -50,25 +50,27 @@ public:
 
     void SetObjectiveType(std::string rObjectiveType)
     {
-		std::string upperCaseObjectiveType;
-		 std::transform(rObjectiveType.begin(), rObjectiveType.end(), std::back_inserter(upperCaseObjectiveType), (int(*)(int)) toupper);
+        std::string upperCaseObjectiveType;
+        std::transform(rObjectiveType.begin(), rObjectiveType.end(), std::back_inserter(upperCaseObjectiveType),
+                       (int (*)(int))toupper);
 
-		 if (upperCaseObjectiveType=="MAX_EIGENVALUE_OF_PRECOND_MATRIX")
-			mObjectiveType=MAX_EIGENVALUE_OF_PRECOND_MATRIX;
-		 else if(upperCaseObjectiveType=="MAX_EIGENVALUE_OF_MATRIX")
-			mObjectiveType=MAX_EIGENVALUE_OF_MATRIX;
-		 else if(upperCaseObjectiveType=="SPECTRAL_RADIUS_OF_MATRIX")
-			 mObjectiveType=SPECTRAL_RADIUS_OF_MATRIX;
-		 else if(upperCaseObjectiveType=="SPECTRAL_RADIUS_OF_PRECOND_MATRIX")
-			 mObjectiveType=SPECTRAL_RADIUS_OF_PRECOND_MATRIX;
-		 else if(upperCaseObjectiveType=="CONDITION_NUMBER_OF_MATRIX")
-			 mObjectiveType=CONDITION_NUMBER_OF_MATRIX;
-		 else if(upperCaseObjectiveType=="CONDITION_NUMBER_OF_PRECOND_MATRIX")
-			 mObjectiveType=CONDITION_NUMBER_OF_PRECOND_MATRIX;
-		else
-		{
-			throw Exception("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType "+upperCaseObjectiveType +" does not exist.");
-		}
+        if (upperCaseObjectiveType == "MAX_EIGENVALUE_OF_PRECOND_MATRIX")
+            mObjectiveType = MAX_EIGENVALUE_OF_PRECOND_MATRIX;
+        else if (upperCaseObjectiveType == "MAX_EIGENVALUE_OF_MATRIX")
+            mObjectiveType = MAX_EIGENVALUE_OF_MATRIX;
+        else if (upperCaseObjectiveType == "SPECTRAL_RADIUS_OF_MATRIX")
+            mObjectiveType = SPECTRAL_RADIUS_OF_MATRIX;
+        else if (upperCaseObjectiveType == "SPECTRAL_RADIUS_OF_PRECOND_MATRIX")
+            mObjectiveType = SPECTRAL_RADIUS_OF_PRECOND_MATRIX;
+        else if (upperCaseObjectiveType == "CONDITION_NUMBER_OF_MATRIX")
+            mObjectiveType = CONDITION_NUMBER_OF_MATRIX;
+        else if (upperCaseObjectiveType == "CONDITION_NUMBER_OF_PRECOND_MATRIX")
+            mObjectiveType = CONDITION_NUMBER_OF_PRECOND_MATRIX;
+        else
+        {
+            throw OptimizeException("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType " + upperCaseObjectiveType +
+                                    " does not exist.");
+        }
     }
 
     inline void SetObjectiveType(eObjectiveType rObjectiveType)

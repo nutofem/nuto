@@ -2,7 +2,7 @@
 
 #include <array>
 #include "math/CubicSplineInterpolation.h"
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 #define CHECK_CLOSE_COLLECTION(aa, bb, tolerance)                                                                      \
     {                                                                                                                  \

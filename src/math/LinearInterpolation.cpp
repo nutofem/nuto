@@ -1,10 +1,10 @@
 #include "math/LinearInterpolation.h"
-#include "base/Exception.h"
+#include "math/MathException.h"
 
 double NuTo::Math::LinearInterpolation::operator()(double x)
 {
     if (x < mData[0][0] or x > mData.back()[0])
-        throw NuTo::Exception("Input x is not within data range of supplied array");
+        throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
     double m = (mData[index + 1][1] - mData[index][1]) / (mData[index + 1][0] - mData[index][0]);
@@ -16,7 +16,7 @@ double NuTo::Math::LinearInterpolation::operator()(double x)
 double NuTo::Math::LinearInterpolation::derivative(double x)
 {
     if (x < mData[0][0] or x > mData.back()[0])
-        throw NuTo::Exception("Input x is not within data range of supplied array");
+        throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
     double m = (mData[index + 1][1] - mData[index][1]) / (mData[index + 1][0] - mData[index][0]);
