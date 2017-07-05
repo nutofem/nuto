@@ -348,8 +348,7 @@ public:
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    virtual void Gauss(NuTo::SparseMatrixCSRVector2<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering,
-                       std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14)
+    virtual void Gauss(NuTo::SparseMatrixCSRVector2<T>&, std::vector<int>&, std::vector<int>&, double)
     {
         throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }

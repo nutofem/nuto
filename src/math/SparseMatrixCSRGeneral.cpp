@@ -11,8 +11,8 @@ namespace NuTo
 {
 
 template <>
-SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi& rFullMatrix, double rAbsoluteTolerance,
-                                                    double rRelativeTolerance)
+SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi&, double,
+                                                    double)
     : SparseMatrixCSR<int>(0, 0)
 {
     throw MathException(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
@@ -57,15 +57,15 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const Eigen::MatrixXd& rF
 }
 
 template <>
-void SparseMatrixCSRGeneral<int>::Gauss(Eigen::MatrixXi& rRhs, std::vector<int>& rMappingToInitialOrdering,
-                                        std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<int>::Gauss(Eigen::MatrixXi&, std::vector<int>&,
+                                        std::vector<int>&, double)
 {
     throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
 
 template <>
-void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>& rRhs, std::vector<int>& rMappingToInitialOrdering,
-                                        std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>&, std::vector<int>& ,
+                                        std::vector<int>&, double)
 {
     throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
@@ -511,15 +511,13 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 }
 
 template <>
-void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi& rStart, int& maximumEigenvalue,
-                                                                     double tol)
+void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi&, int&, double)
 {
     throw MathException(__PRETTY_FUNCTION__, "not implemented for this data-type.");
 }
 
 template <>
-void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXd& rStart,
-                                                                        double& maximumEigenvalue, double tol)
+void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXd& rStart, double& maximumEigenvalue, double tol)
 {
     int numRows = this->GetNumRows();
 
