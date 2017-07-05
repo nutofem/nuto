@@ -8,7 +8,6 @@
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseDirectSolver.h"
-#include "math/SparseDirectSolverMKLDSS.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
 #include "math/SparseDirectSolverMUMPS.h"
 %}
@@ -18,6 +17,5 @@
 
 /* solver */
 %include "math/SparseDirectSolver.h"
-%include "math/SparseDirectSolverMKLDSS.h"
 %include "math/SparseDirectSolverMKLPardiso.h"
 %include "math/SparseDirectSolverMUMPS.h"
