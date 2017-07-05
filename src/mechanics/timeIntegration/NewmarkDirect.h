@@ -1,9 +1,8 @@
-
 #pragma once
 
-
 #include "mechanics/timeIntegration/NewmarkBase.h"
-
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/structures/StructureBaseEnum.h"
 
 namespace NuTo
 {
@@ -19,9 +18,7 @@ namespace Constitutive
 template <typename IOEnum> class ConstitutiveIOMap;
 typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
 
-//! @author Jörg F. Unger, NU
-//! @date February 2012
-//! @brief ... standard class for implicit timeintegration (static Newton Raphson or NewmarkDirect for dynamics)
+//! @brief Newmark time integration scheme
 class NewmarkDirect : public NewmarkBase
 {
 
@@ -77,6 +74,8 @@ public:
     void Info() const override;
 
 protected:
+    using StructureOutputMap = std::map<eStructureOutput, StructureOutputBase*>;
+
     StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
                                              const StructureOutputBlockVector& rDof_dt1,
                                              const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
@@ -155,6 +154,16 @@ protected:
 
     void FillInputMap(NuTo::ConstitutiveInputMap &rInputMap);
 
+    std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual, const ConstitutiveInputMap& inputMap,
+                                StructureOutputMap evalHessian0And1, StructureOutputMap evalGradient,
+                                StructureOutputBlockMatrix& hessian0, StructureOutputBlockMatrix& hessian1,
+                                StructureOutputBlockMatrix& hessian2, 
+                                StructureOutputBlockVector& intForce,
+                                StructureOutputBlockVector& extForce,
+                                StructureOutputBlockVector& delta_dof_dt0,
+                                StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
+                                StructureOutputBlockVector& dof_dt2, const BlockSparseMatrix& constraintMatrix,
+                                double timeStep);
 
 protected:
     double mMinLineSearchStep = 0.01;
