@@ -7,7 +7,7 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -24,7 +24,7 @@ using NuTo::Interpolation::eShapeType;
 
 constexpr int dim = 2;
 
-int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure &structure);
+int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure& structure);
 void BuildStructure(NuTo::Structure& s);
 
 /// \brief Checks if a node can be constrained to an element
@@ -47,11 +47,12 @@ BOOST_AUTO_TEST_CASE(check_constraint_node_to_element)
 
     // this node is NOT inside the reference tetrahedron
     nodeCoordinates = Eigen::VectorXd::Constant(dim, 1.);
-    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS), NuTo::MechanicsException);
+    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS), NuTo::Exception);
 
     // this node is NOT inside the reference tetrahedron but the offset lets us constrain the node anyway :-)
     Eigen::Vector3d nodeCoordinateOffset = Eigen::Vector3d::Constant(-1.);
-    s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-6, nodeCoordinateOffset);
+    s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS,
+                                                  1.e-6, nodeCoordinateOffset);
 
     // this node is NOT inside the reference tetrahedron but the default tolerance (1.e-6) accepts it
     nodeCoordinates = Eigen::VectorXd::Constant(dim, -1.e-8);
@@ -59,10 +60,10 @@ BOOST_AUTO_TEST_CASE(check_constraint_node_to_element)
 
     // this node is NOT inside the reference tetrahedron and the tolerance is too small
     nodeCoordinates = Eigen::VectorXd::Constant(dim, -1.e-8);
-    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-9), NuTo::MechanicsException);
+    BOOST_REQUIRE_THROW(s.ConstraintLinearEquationNodeToElementCreate(CreateNode(nodeCoordinates, s), groupElementId, eDof::DISPLACEMENTS, 1.e-9), NuTo::Exception);
 }
 
-int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure &structure)
+int CreateNode(const Eigen::VectorXd& nodeCoordinates, NuTo::Structure& structure)
 {
     std::set<eDof> dofSet;
     dofSet.emplace(eDof::COORDINATES);
@@ -79,13 +80,10 @@ void BuildStructure(NuTo::Structure& s)
     s.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);
     s.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
 
-    Eigen::MatrixXd nodesCoordinates(dim,3);
-    nodesCoordinates << 0, 1, 0,
-                        0, 0, 1;
+    Eigen::MatrixXd nodesCoordinates(dim, 3);
+    nodesCoordinates << 0, 1, 0, 0, 0, 1;
 
     auto nodeIds = s.NodesCreate(nodesCoordinates);
-    s.ElementCreate(interpolationTypeId,nodeIds);
+    s.ElementCreate(interpolationTypeId, nodeIds);
     s.ElementTotalConvertToInterpolationType();
-
-
 }

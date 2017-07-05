@@ -15,14 +15,14 @@ NuTo::IntegrationType3D8NGauss1Ip::IntegrationType3D8NGauss1Ip()
 //! @param rCoordinates (result)
 Eigen::VectorXd NuTo::IntegrationType3D8NGauss1Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-    assert(rIpNum==0);
+    assert(rIpNum == 0);
     return Eigen::Vector3d::Zero();
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType3D8NGauss1Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType3D8NGauss1Ip::GetNumIntegrationPoints() const
 {
     return 1;
 }
@@ -30,19 +30,18 @@ int NuTo::IntegrationType3D8NGauss1Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType3D8NGauss1Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType3D8NGauss1Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     return 8;
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType3D8NGauss1Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType3D8NGauss1Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                              std::vector<double>& VisualizationPointLocalCoordinates,
+                                                              unsigned int& NumVisualizationCells,
+                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                              std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 8;
 

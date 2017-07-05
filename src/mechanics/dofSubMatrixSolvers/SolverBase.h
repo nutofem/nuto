@@ -9,11 +9,11 @@
 
 namespace NuTo
 {
-    class SolverBase
-    {
-    public:
-        virtual ~SolverBase() = default;
+class SolverBase
+{
+public:
+    virtual ~SolverBase() = default;
 
-        virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) = 0;
-    };
+    virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) = 0;
+};
 } // namespace NuTo

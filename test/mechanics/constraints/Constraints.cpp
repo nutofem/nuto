@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/Constraints.h"
 #include "math/SparseMatrixCSRVector2General.h"
@@ -22,26 +22,26 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
 {
     using namespace NuTo::Constraint;
     constexpr int numDofsTotal = 5;
-    fakeit::Mock<NuTo::NodeBase> node = GetMockNode({3,1});
+    fakeit::Mock<NuTo::NodeBase> node = GetMockNode({3, 1});
 
     Constraints c;
 
     // 0th component of node --> dof = 3
-    c.Add(eDofDisp, Equation({Term(node.get(),0, 1)}));
+    c.Add(eDofDisp, Equation({Term(node.get(), 0, 1)}));
     BOOST_CHECK(c.HaveChanged());
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 1);
-    
+
     auto m = c.BuildConstraintMatrix(eDofDisp, numDofsTotal).ConvertToFullMatrix();
-    Eigen::MatrixXd expected(1,numDofsTotal);
+    Eigen::MatrixXd expected(1, numDofsTotal);
     expected(0, 3) = 1;
     BoostUnitTest::CheckEigenMatrix(m, expected);
 
     // 1st component of node --> dof = 1
-    c.Add(eDofDisp, Equation({Term(node.get(),1, 1)}));
+    c.Add(eDofDisp, Equation({Term(node.get(), 1, 1)}));
     BOOST_CHECK_EQUAL(c.GetNumEquations(eDofDisp), 2);
     expected.setZero(2, numDofsTotal);
-    expected(0,3) = 1;
-    expected(1,1) = 1;
+    expected(0, 3) = 1;
+    expected(1, 1) = 1;
     m = c.BuildConstraintMatrix(eDofDisp, numDofsTotal).ConvertToFullMatrix();
     BoostUnitTest::CheckEigenMatrix(m, expected);
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(ConstraintRhs)
     using namespace NuTo::Constraint;
     Constraints c;
     c.Add(eDofDisp, Equation(1));
-    c.Add(eDofDisp, Equation([](double time){return time * 42;}));
+    c.Add(eDofDisp, Equation([](double time) { return time * 42; }));
 
     BoostUnitTest::CheckVector(c.GetRhs(eDofDisp, 0), std::vector<double>({1., 0.}), 2);
     BoostUnitTest::CheckVector(c.GetRhs(eDofDisp, 0.5), std::vector<double>({1., 21}), 2);
@@ -69,9 +69,9 @@ BOOST_AUTO_TEST_CASE(ConstraintExchange)
     Constraints c;
 
     // 0th component of node --> dof = 3
-    c.Add(eDofDisp, Equation({Term(nodeA.get(),0, 1)}));
+    c.Add(eDofDisp, Equation({Term(nodeA.get(), 0, 1)}));
     auto m = c.BuildConstraintMatrix(eDofDisp, 5).ConvertToFullMatrix();
-    Eigen::MatrixXd expected(1,5);
+    Eigen::MatrixXd expected(1, 5);
     expected(0, 3) = 1;
     BoostUnitTest::CheckEigenMatrix(m, expected);
 

@@ -6,16 +6,6 @@
  *      Author: ttitsche
  */
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "math/CustomBoostSerializationExtensions.h"
-#endif // ENABLE_SERIALIZATION
-
 #include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolationtypes/InterpolationBaseFEM.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -23,10 +13,11 @@
 using namespace NuTo;
 
 InterpolationBaseFEM::InterpolationBaseFEM(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDimension)
-    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension),
-    mShapeFunctions([=] (const Eigen::VectorXd& v) { return CalculateShapeFunctions(v);}),
-    mMatrixN([=] (const Eigen::VectorXd& v) { return CalculateMatrixN(v);}),
-    mDerivativeShapeFunctionsNatural([=] (const Eigen::VectorXd& v) { return CalculateDerivativeShapeFunctionsNatural(v);})
+    : InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
+    , mShapeFunctions([=](const Eigen::VectorXd& v) { return CalculateShapeFunctions(v); })
+    , mMatrixN([=](const Eigen::VectorXd& v) { return CalculateMatrixN(v); })
+    , mDerivativeShapeFunctionsNatural(
+              [=](const Eigen::VectorXd& v) { return CalculateDerivativeShapeFunctionsNatural(v); })
 {
 }
 
@@ -61,7 +52,7 @@ Eigen::MatrixXd InterpolationBaseFEM::CalculateMatrixN(const Eigen::VectorXd& rC
 
 int InterpolationBaseFEM::GetSplineDegree(int dir) const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
+    throw Exception(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
 }
 
 const Eigen::VectorXd& InterpolationBaseFEM::GetNaturalNodeCoordinates(int rNodeIndex) const
@@ -81,7 +72,8 @@ const Eigen::MatrixXd& InterpolationBaseFEM::MatrixN(const Eigen::VectorXd& natu
     return mMatrixN.Get(naturalCoordinates);
 }
 
-const Eigen::MatrixXd& InterpolationBaseFEM::DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const
+const Eigen::MatrixXd&
+InterpolationBaseFEM::DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const
 {
     return mDerivativeShapeFunctionsNatural.Get(naturalCoordinates);
 }
@@ -140,33 +132,3 @@ void InterpolationBaseFEM::Initialize()
     for (int i = 0; i < mNumNodes; ++i)
         mNodeCoordinates[i] = CalculateNaturalNodeCoordinates(i);
 }
-
-#ifdef ENABLE_SERIALIZATION
-InterpolationBaseFEM::InterpolationBaseFEM()
-{
-}
-
-template void InterpolationBaseFEM::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void InterpolationBaseFEM::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void InterpolationBaseFEM::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize InterpolationBaseFEM" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
-    ar& boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
-    ar& boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
-    ar& boost::serialization::make_nvp("mMatrixN", mMatrixN);
-    ar& boost::serialization::make_nvp("mDerivativeShapeFunctionsNatural", mDerivativeShapeFunctionsNatural);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize InterpolationBaseFEM" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(InterpolationBaseFEM)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(InterpolationBaseFEM)
-#endif // ENABLE_SERIALIZATION

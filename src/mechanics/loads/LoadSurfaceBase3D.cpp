@@ -147,7 +147,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             break;
         }
         if (integrationType == nullptr)
-            throw MechanicsException(__PRETTY_FUNCTION__,
+            throw Exception(__PRETTY_FUNCTION__,
                                      "Integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
 
         Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);
@@ -177,8 +177,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // ##     normal vector
             // ## = [dX / dAlpha] x [dX / dBeta]
             // #######################################
-            derivativeShapeFunctionsNatural =
-                    interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
+            derivativeShapeFunctionsNatural = interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
             const Eigen::Matrix3d jacobian =
                     elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates); // = [dX / dXi]
 
@@ -220,15 +219,11 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                     }
                     else
                     {
-                        externalLoad.K[Node::eDof::DISPLACEMENTS](theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
+                        externalLoad.K[Node::eDof::DISPLACEMENTS](
+                                theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
                     }
                 }
             }
         }
     }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadSurfaceBase3D)
-#endif

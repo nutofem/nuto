@@ -2,14 +2,9 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 #include <eigen3/Eigen/Core>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -25,9 +20,6 @@ enum class eTimeIntegrationResultType;
 //! @brief ... standard abstract class for all results
 class ResultBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
     ResultBase(const std::string& rIdent);
@@ -37,60 +29,45 @@ public:
 
     void SetIdent(const std::string& rIdent);
 
-    std::string GetIdent()const;
+    std::string GetIdent() const;
 
     void Resize(const StructureBase& rStructure, int rNumResultSteps, bool rInitialize);
 
-    void WriteToFile(const std::string& rResultDir, int rNumTimeSteps)const;
+    void WriteToFile(const std::string& rResultDir, int rNumTimeSteps) const;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
-    virtual int GetNumData(const StructureBase& rStructure)const=0;
+    virtual int GetNumData(const StructureBase& rStructure) const = 0;
 
-    virtual NuTo::eTimeIntegrationResultType GetResultType()const = 0;
+    virtual NuTo::eTimeIntegrationResultType GetResultType() const = 0;
 
     virtual ResultNodeDof* AsResultNodeDof()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultTime* AsResultTime()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+    	throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
 
     virtual ResultElementIpData* AsResultElementIpData()
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
+        throw Exception(__PRETTY_FUNCTION__, "object is not of this type.");
     }
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const
     {
-
     }
 
 protected:
     std::string mIdent;
     Eigen::MatrixXd mData;
 };
-} //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultBase)
-#endif // SWIG
-#endif  // ENABLE_SERIALIZATION
+} // namespace NuTo

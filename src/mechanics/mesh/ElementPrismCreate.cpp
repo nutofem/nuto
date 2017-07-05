@@ -23,7 +23,7 @@ struct ElementSurface
 
 struct NodeCoordinate
 {
-    Eigen::VectorXd operator () (const NuTo::NodeBase* rNode) const
+    Eigen::VectorXd operator()(const NuTo::NodeBase* rNode) const
     {
         return rNode->Get(NuTo::Node::eDof::COORDINATES);
     }
@@ -32,7 +32,7 @@ struct NodeCoordinate
 using NodeTree = NuTo::SpatialContainer<NuTo::NodeBase*, NodeCoordinate>;
 
 
-std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure &rS, int rGroupMaster, int rGroupSlave)
+std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
 {
     int nMaster = rS.GroupCreateNodeGroupFromElements(rGroupMaster);
     int nSlave = rS.GroupCreateNodeGroupFromElements(rGroupSlave);
@@ -51,9 +51,10 @@ std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure &rS, int rGrou
 
 std::vector<NuTo::NodeBase*> GetSurfaceNodes(ElementSurface rElementSurface)
 {
-    Eigen::VectorXi surfaceNodeIndices = rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
+    Eigen::VectorXi surfaceNodeIndices =
+            rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
     auto numSurfaceNodes = surfaceNodeIndices.rows();
-    std::vector<NuTo::NodeBase *> surfaceNodes(numSurfaceNodes);
+    std::vector<NuTo::NodeBase*> surfaceNodes(numSurfaceNodes);
 
     for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
         surfaceNodes[iSurfaceNode] = rElementSurface.mElement->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
@@ -62,14 +63,14 @@ std::vector<NuTo::NodeBase*> GetSurfaceNodes(ElementSurface rElementSurface)
 }
 
 
-
 bool IsSurface(ElementSurface rElementSurface, const NodeTree& rNodeTree)
 {
-    Eigen::VectorXi surfaceNodeIndices = rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
+    Eigen::VectorXi surfaceNodeIndices =
+            rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
 
-    std::vector<NuTo::NodeBase *> surfaceNodes = GetSurfaceNodes(rElementSurface);
+    std::vector<NuTo::NodeBase*> surfaceNodes = GetSurfaceNodes(rElementSurface);
 
-    //check, if all surface nodes are in the node tree
+    // check, if all surface nodes are in the node tree
     for (auto& surfaceNode : surfaceNodes)
     {
         Eigen::VectorXd coordinate = surfaceNode->Get(NuTo::Node::eDof::COORDINATES);
@@ -121,8 +122,8 @@ bool AreEqual(const std::vector<NuTo::NodeBase*>& r1, const std::vector<NuTo::No
 }
 
 
-std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(
-    NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
+std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(NuTo::Structure& rS, int rGroupMaster,
+                                                                            int rGroupSlave)
 {
     std::vector<NuTo::NodeBase*> gNodesPrism = GetIntersectingNodes(rS, rGroupMaster, rGroupSlave);
 
@@ -147,7 +148,7 @@ std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(
             }
         }
         if (not surfaceFound)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No matching Slaveate surface found.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "No matching Slaveate surface found.");
     }
     return pairs;
 }
@@ -163,8 +164,9 @@ bool HasOnlyCoordinateInterpolation(NuTo::Structure& rS, int gElement)
     return true;
 }
 
-std::vector<std::pair<ElementSurface, ElementSurface>> FindElementPairsContainingTheNode(
-    const NuTo::NodeBase* rNode, const std::vector<std::pair<ElementSurface, ElementSurface>>& rPairs)
+std::vector<std::pair<ElementSurface, ElementSurface>>
+FindElementPairsContainingTheNode(const NuTo::NodeBase* rNode,
+                                  const std::vector<std::pair<ElementSurface, ElementSurface>>& rPairs)
 {
     std::vector<std::pair<ElementSurface, ElementSurface>> matchingPairs;
     for (const auto& pair : rPairs)
@@ -198,12 +200,15 @@ Eigen::VectorXd GetLocalSurfaceCoordinates(int rNodeIndex, const ElementSurface&
 
     // find surface parameters
     auto localNodeCoordinates = it.GetNaturalNodeCoordinates(rNodeIndex);
-    Eigen::VectorXd R = it.CalculateNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface) - localNodeCoordinates;
-    Eigen::MatrixXd dRdS = it.CalculateDerivativeNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface);
+    Eigen::VectorXd R = it.CalculateNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface) -
+                        localNodeCoordinates;
+    Eigen::MatrixXd dRdS =
+            it.CalculateDerivativeNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface);
 
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(dRdS, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::VectorXd surfaceParameters = -svd.solve(R);
-    assert((localNodeCoordinates - it.CalculateNaturalSurfaceCoordinates(surfaceParameters, rElementSurface.mSurface)).norm() < 1.e-10);
+    assert((localNodeCoordinates - it.CalculateNaturalSurfaceCoordinates(surfaceParameters, rElementSurface.mSurface))
+                   .norm() < 1.e-10);
     return surfaceParameters;
 }
 
@@ -211,8 +216,6 @@ Eigen::VectorXd GetLocalSurfaceCoordinates(const NuTo::NodeBase* rNode, const El
 {
     return GetLocalSurfaceCoordinates(GetNodeCoordinatesIndex(rNode, rElementSurface.mElement), rElementSurface);
 }
-
-
 
 
 Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const ElementSurface& rElementSurface)
@@ -223,11 +226,13 @@ Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const Element
     Eigen::VectorXd ipCoordsNatural = it.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface);
 
     Eigen::MatrixXd derivativeShapeFunctionsNatural = it.DerivativeShapeFunctionsNatural(ipCoordsNatural);
-    const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(rElementSurface.mElement)->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
+    const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(rElementSurface.mElement)
+                                             ->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
 
-    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = it.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface); // = [dXi / dAlpha]
+    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = it.CalculateDerivativeNaturalSurfaceCoordinates(
+            ipCoordsSurface, rElementSurface.mSurface); // = [dXi / dAlpha]
     Eigen::Vector3d dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);
-    Eigen::Vector3d dXdBeta  = jacobian * derivativeNaturalSurfaceCoordinates.col(1);
+    Eigen::Vector3d dXdBeta = jacobian * derivativeNaturalSurfaceCoordinates.col(1);
 
     Eigen::Vector3d surfaceNormalVector = dXdAlpha.cross(dXdBeta); // = || [dX / dXi] * [dXi / dAlpha] ||
     surfaceNormalVector.normalize();
@@ -243,13 +248,14 @@ NuTo::NodeBase* CloneNode(NuTo::Structure& rS, const NuTo::NodeBase* rNode)
 NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
 {
     auto* firstElement = rS.ElementGetElementPtr(rS.GroupGetMemberIds(rGroupMaster)[0]);
-    NuTo::Interpolation::eTypeOrder coordinateInterpolation = firstElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
+    NuTo::Interpolation::eTypeOrder coordinateInterpolation =
+            firstElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
     for (int elementId : rS.GroupGetMemberIds(rGroupMaster))
     {
         auto* e = rS.ElementGetElementPtr(elementId);
         auto type = e->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
         if (type != coordinateInterpolation)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "All elements in the groups must have the same coordinate interpolation.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "All elements in the groups must have the same coordinate interpolation.");
     }
     return coordinateInterpolation;
 }
@@ -261,7 +267,8 @@ NuTo::NodeBase* InterpolateNode(NuTo::Structure& rS, NuTo::NodeBase* rMaster, Nu
     if (it != rMasterNodeToInterpolatedNode.end())
         return it->second;
 
-    Eigen::Vector3d coords = (rMaster->Get(NuTo::Node::eDof::COORDINATES) + rSlave->Get(NuTo::Node::eDof::COORDINATES)) / 2.;
+    Eigen::Vector3d coords =
+            (rMaster->Get(NuTo::Node::eDof::COORDINATES) + rSlave->Get(NuTo::Node::eDof::COORDINATES)) / 2.;
     int nodeId = rS.NodeCreate(coords);
 
     NuTo::NodeBase* newNode = rS.NodeGetNodePtr(nodeId);
@@ -269,9 +276,7 @@ NuTo::NodeBase* InterpolateNode(NuTo::Structure& rS, NuTo::NodeBase* rMaster, Nu
     return newNode;
 }
 
-int CreateLinearPrism(NuTo::Structure& rS,
-                      ElementSurface rElementSurfaceMaster,
-                      int rInterpolationTypeId,
+int CreateLinearPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMaster, int rInterpolationTypeId,
                       const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rClonedNodesMapping)
 {
     auto surfaceNodes = GetSurfaceNodes(rElementSurfaceMaster);
@@ -286,9 +291,7 @@ int CreateLinearPrism(NuTo::Structure& rS,
     return rS.ElementCreate(rInterpolationTypeId, surfaceNodes);
 }
 
-int CreateQuadraticPrism(NuTo::Structure& rS,
-                         ElementSurface rElementSurfaceMaster,
-                         int rInterpolationTypeId,
+int CreateQuadraticPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMaster, int rInterpolationTypeId,
                          const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rClonedNodesMapping,
                          std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rMasterNodeToInterpolatedNode)
 {
@@ -374,12 +377,13 @@ int CreateQuadraticPrism(NuTo::Structure& rS,
 }
 
 
-std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave, double rThickness)
+std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave,
+                                                             double rThickness)
 {
     Timer timer(__FUNCTION__, rS.GetShowTime(), rS.GetLogger());
 
     if (not HasOnlyCoordinateInterpolation(rS, rGroupMaster) or not HasOnlyCoordinateInterpolation(rS, rGroupSlave))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Elements must only have COORDINATES interpolation.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Elements must only have COORDINATES interpolation.");
 
     auto pairs = FindMatchingElements(rS, rGroupMaster, rGroupSlave);
 
@@ -426,11 +430,12 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS
         }
         else if (coordinateInterpolation == NuTo::Interpolation::eTypeOrder::EQUIDISTANT2)
         {
-            rS.GroupAddElement(gPrism, CreateQuadraticPrism(rS, pair.first, it, clonedNodesMapping, masterNodeToInterpolatedNode));
+            rS.GroupAddElement(
+                    gPrism, CreateQuadraticPrism(rS, pair.first, it, clonedNodesMapping, masterNodeToInterpolatedNode));
         }
         else
         {
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented for EQUIDISTANT1 and EQUIDISTANT2 coordinate interpolation");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for EQUIDISTANT1 and EQUIDISTANT2 coordinate interpolation");
         }
     }
     return std::make_pair(gPrism, it);

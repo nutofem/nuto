@@ -1,11 +1,6 @@
 #pragma once
 
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/timeIntegration/ResultBase.h"
 
 
@@ -16,17 +11,14 @@ class StructureBase;
 
 namespace IpData
 {
-    enum class eIpStaticDataType;
-}// namespace IpData
+enum class eIpStaticDataType;
+} // namespace IpData
 
 //! @author Philip Huschke
 //! @date October 2015
 //! @brief Outputs integration point values
 class ResultElementIpData : public ResultBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
     //! @param rFileName:   file name
@@ -48,7 +40,7 @@ public:
     //! @brief returns the class name
     std::string GetTypeId() const
     {
-    	return std::string("ResultElementIpValue");
+        return std::string("ResultElementIpValue");
     }
 
     //! @brief this is used to cast an object of ResultBase to an object of ResultElementIpData
@@ -58,17 +50,10 @@ public:
     }
 
     //! @brief ... Info routine that prints general information about the object
-    void Info()const override;
+    void Info() const override;
 
 private:
     int mElementId;
     NuTo::IpData::eIpStaticDataType mIpDataType;
 };
-}// namespace NuTo
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-#include <boost/serialization/assume_abstract.hpp>
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultElementIpValue)
-#endif      // SWIG
-#endif      // ENABLE_SERIALIZATION
+} // namespace NuTo

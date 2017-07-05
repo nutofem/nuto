@@ -109,7 +109,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(const ElementBase* rElem
                                 {
                                     if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
                                         continue; // entry would be in lower triangle --> not valid for symmetric
-                                                  // matrices
+                                    // matrices
                                     dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
                                 }
                             }
@@ -241,7 +241,7 @@ void NuTo::StructureOutputBlockMatrix::CheckDimensions() const
     if (!(JJ.GetNumRows() == JK.GetNumRows() && KJ.GetNumRows() == KK.GetNumRows() &&
           JJ.GetNumColumns() == KJ.GetNumColumns() && JK.GetNumColumns() == KK.GetNumColumns()))
     {
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 std::string("[") + __PRETTY_FUNCTION__ + "] Mismatch in Block dimensions! \n\n" + "| JJ | JK | \n" +
                 "|----+----| \n" + "| KJ | KK | \n \n" + "Submatrix | Rows / Cols \n" + "----------------------- \n" +
                 "JJ        | " + std::to_string(JJ.GetNumRows()) + " / " + std::to_string(JJ.GetNumColumns()) +

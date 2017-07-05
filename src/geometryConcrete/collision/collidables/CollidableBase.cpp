@@ -16,7 +16,7 @@
 
 
 NuTo::CollidableBase::CollidableBase(int rIndex)
-		: mIndex(rIndex)
+    : mIndex(rIndex)
 {
 }
 
@@ -26,44 +26,44 @@ NuTo::CollidableBase::~CollidableBase()
 
 int NuTo::CollidableBase::GetIndex() const
 {
-	return mIndex;
+    return mIndex;
 }
 
 void NuTo::CollidableBase::PrintLocalEvents() const
 {
-	for (auto localEvent : mLocalEvents) {
-		std::cout << *localEvent << std::endl;
-	}
+    for (auto localEvent : mLocalEvents)
+    {
+        std::cout << *localEvent << std::endl;
+    }
 }
 
 const std::vector<NuTo::SubBox*>& NuTo::CollidableBase::GetSubBoxes() const
 {
-	return mBoxes;
+    return mBoxes;
 }
-
 
 
 void NuTo::CollidableBase::AddBox(SubBox& rBox)
 {
-	mBoxes.push_back(&rBox);
+    mBoxes.push_back(&rBox);
 }
 
 void NuTo::CollidableBase::RemoveBox(SubBox& rBox)
 {
-	auto newEnd = std::remove(mBoxes.begin(), mBoxes.end(), &rBox);
-	mBoxes.erase(newEnd, mBoxes.end());
-	if (mBoxes.size() == 0)
-		throw NuTo::Exception("[NuTo::CollidableBase::AddBox] Collidable is not handled by any box.");
+    auto newEnd = std::remove(mBoxes.begin(), mBoxes.end(), &rBox);
+    mBoxes.erase(newEnd, mBoxes.end());
+    if (mBoxes.size() == 0)
+        throw NuTo::Exception("[NuTo::CollidableBase::AddBox] Collidable is not handled by any box.");
 }
 
 
-namespace NuTo{
-
-
-std::ostream& operator <<(std::ostream& rOutStream,
-		const CollidableBase* rCollidable)
+namespace NuTo
 {
-	rCollidable->Print(rOutStream);
-	return rOutStream;
+
+
+std::ostream& operator<<(std::ostream& rOutStream, const CollidableBase* rCollidable)
+{
+    rCollidable->Print(rOutStream);
+    return rOutStream;
 }
 }

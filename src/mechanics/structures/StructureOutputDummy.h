@@ -12,10 +12,12 @@
 namespace NuTo
 {
 
-class StructureOutputDummy: public StructureOutputBase
+class StructureOutputDummy : public StructureOutputBase
 {
 public:
-    void SetZero() override {}
+    void SetZero() override
+    {
+    }
 };
 
 } /* namespace NuTo */

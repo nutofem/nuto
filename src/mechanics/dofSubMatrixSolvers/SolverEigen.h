@@ -8,19 +8,21 @@
 
 namespace NuTo
 {
-    template<class Solver>
-    class SolverEigen : public SolverBase
+template <class Solver>
+class SolverEigen : public SolverBase
+{
+public:
+    SolverEigen()
+        : SolverBase()
     {
-    public:
-        SolverEigen() : SolverBase()
-        {}
-        virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) override
-        {
-            Eigen::VectorXd result;
-            Solver solver;
-            solver.compute(rMatrix.ExportToEigenSparseMatrix());
-            return BlockFullVector<double>(solver.solve(rVector.Export()), rMatrix.GetDofStatus());
-
-        }
-    };
+    }
+    virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix,
+                                          const BlockFullVector<double>& rVector) override
+    {
+        Eigen::VectorXd result;
+        Solver solver;
+        solver.compute(rMatrix.ExportToEigenSparseMatrix());
+        return BlockFullVector<double>(solver.solve(rVector.Export()), rMatrix.GetDofStatus());
+    }
+};
 } // namespace NuTo

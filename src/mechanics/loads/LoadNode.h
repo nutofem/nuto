@@ -1,16 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "mechanics/loads/LoadBase.h"
 
 namespace NuTo
@@ -20,9 +9,6 @@ class NodeBase;
 //! @brief Abstract class for all constraints applied to a single node
 class LoadNode : public LoadBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief Constructor
@@ -78,7 +64,7 @@ public:
             *temp = reinterpret_cast<NodeBase*>(it->second);
         }
         else
-            throw MechanicsException("[NuTo::LoadBase::LoadNode] The NodeBase-Pointer could not be updated.");
+            throw Exception("[NuTo::LoadBase::LoadNode] The NodeBase-Pointer could not be updated.");
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -86,10 +72,4 @@ protected:
     LoadNode() = default;
     const NodeBase* mNode;
 };
-}//namespace NuTo
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::LoadNode)
-#endif
-
-
+} // namespace NuTo

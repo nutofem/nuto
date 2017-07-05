@@ -12,18 +12,17 @@
 #include "math/SparseMatrixCSRGeneral.h"
 
 
-
-
 NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputImplicit::GetType() const
 {
     return NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT;
 }
 
-NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap
+NuTo::AdditiveInputImplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   const NuTo::InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap =
-        AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
+            AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
 
     for (const auto& itOutput : rConstitutiveOutput)
     {
@@ -40,11 +39,11 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
 }
 
 
-template void NuTo::AdditiveInputImplicit::Evaluate<1>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+template void NuTo::AdditiveInputImplicit::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                       const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
 
-template void NuTo::AdditiveInputImplicit::Evaluate<2>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+template void NuTo::AdditiveInputImplicit::Evaluate<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                       const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);
 
-template void NuTo::AdditiveInputImplicit::Evaluate<3>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+template void NuTo::AdditiveInputImplicit::Evaluate<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                       const NuTo::ConstitutiveOutputMap& rConstitutiveOutput);

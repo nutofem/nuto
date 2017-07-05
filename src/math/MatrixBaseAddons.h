@@ -7,12 +7,14 @@
 
 #pragma once
 
-inline Scalar at(uint i, uint j) const { return this->operator()(i,j); }
+inline Scalar at(uint i, uint j) const
+{
+    return this->operator()(i, j);
+}
 //! @brief elementwise absolute value of the matrix
 
-template<typename OtherDerived>
+template <typename OtherDerived>
 inline const Eigen::MatrixBase<OtherDerived> abs() const
 {
     return this->array().abs();
 }
-

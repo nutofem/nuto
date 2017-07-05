@@ -8,7 +8,7 @@ LoadNodeForces2D::LoadNodeForces2D(const NodeBase* rNode, const Eigen::MatrixXd&
     : LoadNode(rNode)
 {
     if (rDirection.cols() != 1 || rDirection.rows() != 2)
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection, rDirection.data(), 2 * sizeof(double));
@@ -16,7 +16,7 @@ LoadNodeForces2D::LoadNodeForces2D(const NodeBase* rNode, const Eigen::MatrixXd&
     double norm = sqrt(mDirection[0] * mDirection[0] + mDirection[1] * mDirection[1]);
     if (norm < 1e-14)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length");
+        throw Exception(__PRETTY_FUNCTION__, "Direction vector has zero length");
     }
     double invNorm = 1. / norm;
     mDirection[0] *= invNorm;
@@ -45,8 +45,3 @@ void LoadNodeForces2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ext
         }
     }
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadNodeForces2D)
-BOOST_CLASS_TRACKING(LoadNodeForces2D, track_always)
-#endif

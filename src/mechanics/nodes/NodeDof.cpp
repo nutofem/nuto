@@ -3,12 +3,6 @@
 
 using namespace NuTo;
 
-#ifdef ENABLE_SERIALIZATION
-#include "math/CustomBoostSerializationExtensions.h"
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-#endif // ENABLE_SERIALIZATION
-
 NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
     : NodeBase::NodeBase()
 {
@@ -74,10 +68,10 @@ int NodeDof::GetDof(Node::eDof rDof, int rComponent) const
 {
     const auto& it = mDofNumbers.find(rDof);
     if (it == mDofNumbers.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rComponent >= it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
                                                               ". Component " + std::to_string(it->second.size()) +
                                                               " was requested.");
 
@@ -88,10 +82,10 @@ const Eigen::VectorXd& NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
 {
     const auto& it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Cannot access time derivative " + std::to_string(rTimeDerivative) +
                                          ". This node only has " + std::to_string(it->second.size()) + ".");
 
@@ -102,10 +96,10 @@ void NodeDof::Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& r
 {
     auto it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Cannot access time derivative " + std::to_string(rTimeDerivative) +
                                          ". This node only has " + std::to_string(it->second.size()) + ".");
 
@@ -132,29 +126,3 @@ NodeBase* NodeDof::Clone() const
 {
     return new NodeDof(*this);
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NodeDof::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NodeDof::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NodeDof::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize NodeDof"
-              << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase) & BOOST_SERIALIZATION_NVP(mDofValues) &
-            BOOST_SERIALIZATION_NVP(mDofNumbers);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize NodeDof \n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NodeDof)
-#endif // ENABLE_SERIALIZATION

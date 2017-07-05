@@ -13,10 +13,10 @@ namespace NuTo
 class InterpolationSimple
 {
 public:
-    InterpolationSimple()                           = default;
-    virtual ~InterpolationSimple()                  = default; // virtual destructor needed, rule of 5 below...
+    InterpolationSimple() = default;
+    virtual ~InterpolationSimple() = default; // virtual destructor needed, rule of 5 below...
     InterpolationSimple(const InterpolationSimple&) = default;
-    InterpolationSimple(InterpolationSimple&&)      = default;
+    InterpolationSimple(InterpolationSimple&&) = default;
     InterpolationSimple& operator=(const InterpolationSimple&) = default;
     InterpolationSimple& operator=(InterpolationSimple&&) = default;
 
@@ -61,7 +61,7 @@ public:
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself
 //! @param rLaw reference to the IPConstitutiveLawBase
 //! @return cloned owning raw pointer of rLaw
-inline NuTo::InterpolationSimple* new_clone( const NuTo::InterpolationSimple& rInterpolation)
+inline NuTo::InterpolationSimple* new_clone(const NuTo::InterpolationSimple& rInterpolation)
 {
     return rInterpolation.Clone().release();
 }

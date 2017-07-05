@@ -15,23 +15,11 @@ namespace NuTo
 {
 class ConstitutivePlaneState;
 
-class LocalDamageModel: public ConstitutiveBase
+class LocalDamageModel : public ConstitutiveBase
 {
-
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     LocalDamageModel();
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
     typedef double StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<double>;
@@ -46,15 +34,14 @@ public:
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-            const InterpolationType& rInterpolationType) const override;
+                                               const InterpolationType& rInterpolationType) const override;
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData static data.
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                  const ConstitutiveOutputMap& rConstitutiveOutput,
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
                   Data& rStaticData);
 
 
@@ -69,9 +56,8 @@ public:
     //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Error of the extrapolation.
-    double CalculateStaticDataExtrapolationError(
-        Data& rStaticData,
-        const ConstitutiveInputMap& rConstitutiveInput) const;
+    double CalculateStaticDataExtrapolationError(Data& rStaticData,
+                                                 const ConstitutiveInputMap& rConstitutiveInput) const;
 
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
@@ -96,16 +82,16 @@ public:
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     //! @param rLogger stream for the output
     void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
     bool HaveTmpStaticData() const override
     {
@@ -133,12 +119,7 @@ private:
     //! @brief Compressive strength \f$ \sigma_c \f$
     double mCompressiveStrength;
 
-    //! @brief Damage law 
+    //! @brief Damage law
     std::shared_ptr<NuTo::Constitutive::DamageLaw> mDamageLaw;
 };
-
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::LocalDamageModel)
-#endif // ENABLE_SERIALIZATION

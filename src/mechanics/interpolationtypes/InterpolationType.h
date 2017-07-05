@@ -7,10 +7,6 @@
 
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 
 #include <eigen3/Eigen/Core>
 #include <boost/ptr_container/ptr_map.hpp>
@@ -25,22 +21,17 @@ enum class eIntegrationType;
 
 namespace Interpolation
 {
-    enum class eShapeType;
-    enum class eTypeOrder;
-}// namespace Interpolation
+enum class eShapeType;
+enum class eTypeOrder;
+} // namespace Interpolation
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 class InterpolationType
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief standard constructor for serialization (const member is set to SPRING)
-    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING), mDimension(0) {}
-#endif  // ENABLE_SERIALIZATION
 public:
     InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension);
 
@@ -50,7 +41,8 @@ public:
 
     //! @brief adds a dof type and the corresponding interpolation of IGA type
     //! @param rDofType ... dof type
-    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights);
+    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi& rDegree,
+                             const std::vector<Eigen::VectorXd>& rKnots, const Eigen::MatrixXd& rWeights);
 
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type
@@ -137,16 +129,7 @@ public:
     void PrintNodeCoordinates() const;
     const Eigen::MatrixX2i& GetNodeRenumberingIndices() const;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
-
 private:
-
     //! @brief returns a nonconst reference to the object, stress that with the name
     //! @param rDofType ... dof type
     InterpolationBase& GetNonConst(Node::eDof rDofType);
@@ -156,8 +139,10 @@ private:
     bool CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const;
 
     //! @brief Calculates index pairs that - if swapped - change the orientation of the element.
-    //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to swapping xi and eta coordinates
-    //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling it here is sufficient.
+    //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to
+    //! swapping xi and eta coordinates
+    //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling
+    //! it here is sufficient.
     void UpdateNodeRenumberingIndices();
 
     Node::eDof GetDofWithHighestStandardIntegrationOrder() const;
@@ -194,13 +179,6 @@ private:
 
     //! @brief dimension = Structure.GetDimension()
     const int mDimension;
-
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationType)
-#endif
-
-

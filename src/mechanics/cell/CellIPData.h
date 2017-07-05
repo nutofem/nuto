@@ -35,8 +35,8 @@ public:
     BMatrixStrain GetBMatrixStrain(const DofType& rDofType) const
     {
         DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(rDofType);
-        const int dim                               = dShapeGlobal.cols();
-        const int numNodes                          = dShapeGlobal.rows();
+        const int dim = dShapeGlobal.cols();
+        const int numNodes = dShapeGlobal.rows();
         switch (dim)
         {
         case 1:
@@ -49,9 +49,9 @@ public:
                 double dNdX = dShapeGlobal(iNode, 0);
                 double dNdY = dShapeGlobal(iNode, 1);
 
-                B(0, iColumn)     = dNdX;
+                B(0, iColumn) = dNdX;
                 B(1, iColumn + 1) = dNdY;
-                B(2, iColumn)     = dNdY;
+                B(2, iColumn) = dNdY;
                 B(2, iColumn + 1) = dNdX;
             }
             return B;
@@ -81,23 +81,23 @@ public:
                  */
 
 
-                B(0, iColumn)     = dNdX;
+                B(0, iColumn) = dNdX;
                 B(1, iColumn + 1) = dNdY;
                 B(2, iColumn + 2) = dNdZ;
 
                 B(3, iColumn + 1) = dNdZ;
                 B(3, iColumn + 2) = dNdY;
 
-                B(4, iColumn)     = dNdZ;
+                B(4, iColumn) = dNdZ;
                 B(4, iColumn + 2) = dNdX;
 
-                B(5, iColumn)     = dNdY;
+                B(5, iColumn) = dNdY;
                 B(5, iColumn + 1) = dNdX;
             }
             return B;
         }
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "c'mon.");
+            throw Exception(__PRETTY_FUNCTION__, "c'mon.");
         }
     }
 

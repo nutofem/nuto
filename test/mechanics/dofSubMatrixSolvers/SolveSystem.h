@@ -22,7 +22,7 @@ struct TestProblem
         dofStatus.SetNumActiveDofs(eDof::CRACKPHASEFIELD, submatrixSize);
 
         rhs.AllocateSubvectors();
-        rhs[eDof::DISPLACEMENTS]   = Eigen::Vector2d::Constant(1.);
+        rhs[eDof::DISPLACEMENTS] = Eigen::Vector2d::Constant(1.);
         rhs[eDof::CRACKPHASEFIELD] = Eigen::Vector2d::Constant(1.);
 
         matrix.AllocateSubmatrices();
@@ -38,7 +38,7 @@ struct TestProblem
         matrix(eDof::CRACKPHASEFIELD, eDof::CRACKPHASEFIELD).AddValue(1, 1, 2.);
 
         expectedSolution.AllocateSubvectors();
-        expectedSolution[eDof::DISPLACEMENTS]   = Eigen::Vector2d::Constant(0.5);
+        expectedSolution[eDof::DISPLACEMENTS] = Eigen::Vector2d::Constant(0.5);
         expectedSolution[eDof::CRACKPHASEFIELD] = Eigen::Vector2d::Constant(0.5);
     }
 
@@ -54,4 +54,3 @@ void SolveAndCheckSystem(NuTo::SolverBase& solver)
     TestProblem p;
     BOOST_CHECK((solver.Solve(p.matrix, p.rhs).Export() - p.expectedSolution.Export()).isMuchSmallerThan(1.e-6, 1.e-1));
 }
-

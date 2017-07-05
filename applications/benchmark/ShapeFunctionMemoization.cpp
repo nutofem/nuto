@@ -92,7 +92,7 @@ struct Lobatto
     {
         std::vector<double> ip1D = {-1., -0.654653670707977087, 0., +0.654653670707977087, +1.};
         int num = ip1D.size();
-        ips.reserve(num*num*num);
+        ips.reserve(num * num * num);
         for (int i = 0; i < num; i++)
             for (int j = 0; j < num; j++)
                 for (int k = 0; k < num; k++)
@@ -119,7 +119,7 @@ struct VectorHash
     size_t operator()(const TVector& v) const
     {
         // taken from http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf
-        static std::array<size_t, 3> magicNumbers {73856093, 19349663, 83492791};
+        static std::array<size_t, 3> magicNumbers{73856093, 19349663, 83492791};
 
         union Binary {
             double d;
@@ -185,8 +185,6 @@ private:
     mutable std::unordered_map<TNaturalCoords, TResult, THash, TEqual> mCache;
     std::function<TResult(TNaturalCoords)> mFunction;
 };
-
-
 
 
 BENCHMARK(Hash, Vector, runner)

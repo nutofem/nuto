@@ -22,7 +22,7 @@ double GetMergeDistance(NuTo::Structure& rS, int rGroupNumberElements)
     double smallestElementSize = 1e42;
     for (int elementId : rS.GroupGetMemberIds(rGroupNumberElements))
     {
-        NuTo::ElementBase *element = rS.ElementGetElementPtr(elementId);
+        NuTo::ElementBase* element = rS.ElementGetElementPtr(elementId);
         Eigen::VectorXd sizeForEachIntegrationPoint = element->GetIntegrationPointVolume();
         smallestElementSize = std::min(smallestElementSize, sizeForEachIntegrationPoint.sum());
     }
@@ -66,14 +66,15 @@ struct TmpNode
 //! @brief struct to extract the coodinates from TmpNode (for NuTo::SpatialContainer)
 struct TmpNodeCoordinate
 {
-    Eigen::VectorXd operator() (const TmpNode& rTmpNode) const
+    Eigen::VectorXd operator()(const TmpNode& rTmpNode) const
     {
         return rTmpNode.coordinate;
     }
 };
 
 //! @brief extract TmpNodes from existing nodes
-std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements, std::map<const NuTo::NodeBase*, int> rNodeToId)
+std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements,
+                                         std::map<const NuTo::NodeBase*, int> rNodeToId)
 {
     std::vector<TmpNode> existingNodes;
     for (NuTo::ElementBase* element : rElements)
@@ -106,7 +107,8 @@ std::vector<TmpNode> GetNewTmpNodes(NuTo::Structure& rS, std::vector<NuTo::Eleme
         for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
         {
             Eigen::VectorXd naturalNodeCoordinates = interpolationType.GetNaturalNodeCoordinates(iNode);
-            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, NuTo::Node::eDof::COORDINATES);
+            Eigen::VectorXd globalNodeCoordinates =
+                    element->InterpolateDofGlobal(naturalNodeCoordinates, NuTo::Node::eDof::COORDINATES);
 
             TmpNode pair;
             pair.coordinate = globalNodeCoordinates;
@@ -125,8 +127,7 @@ std::set<NuTo::Node::eDof> GetDofTypeUnion(const std::vector<TmpNode>& rSameCoor
     std::set<NuTo::Node::eDof> allDofs;
     for (const auto& entry : rSameCoordinateNodes)
     {
-        std::set_union(allDofs.begin(), allDofs.end(),
-                       entry.dofs.begin(), entry.dofs.end(),
+        std::set_union(allDofs.begin(), allDofs.end(), entry.dofs.begin(), entry.dofs.end(),
                        std::inserter(allDofs, allDofs.end()));
     }
     return allDofs;
@@ -142,7 +143,8 @@ int FindPreviousNodeId(const std::vector<TmpNode>& rSameCoordinateNodes)
     return NOT_SET;
 }
 
-void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int rGroupNumberElements, double rNodeDistanceMerge)
+void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int rGroupNumberElements,
+                                                            double rNodeDistanceMerge)
 {
     Timer timer(__FUNCTION__, rS.GetShowTime(), rS.GetLogger());
 
@@ -181,4 +183,3 @@ void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& rS, int r
         }
     }
 }
-

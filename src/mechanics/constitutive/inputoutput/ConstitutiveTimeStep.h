@@ -17,7 +17,7 @@ namespace NuTo
 //! dT[1] = previous time step
 //! dT[2] = pre-previous time step
 //! ...
-class ConstitutiveTimeStep: public ConstitutiveVector<Eigen::Dynamic>
+class ConstitutiveTimeStep : public ConstitutiveVector<Eigen::Dynamic>
 {
 public:
     ConstitutiveTimeStep(int rNumTimeSteps)
@@ -31,8 +31,8 @@ public:
     //! @param rCurrentTimeStep ... new current time step
     void SetCurrentTimeStep(double rCurrentTimeStep)
     {
-        for (int i = this->rows()-1; i > 0; --i)
-            (*this)[i] = (*this)[i-1];
+        for (int i = this->rows() - 1; i > 0; --i)
+            (*this)[i] = (*this)[i - 1];
         (*this)[0] = rCurrentTimeStep;
     }
 
@@ -40,7 +40,6 @@ public:
     {
         return this->rows();
     }
-
 };
 
 } /* namespace NuTo */

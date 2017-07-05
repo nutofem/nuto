@@ -4,10 +4,10 @@
 
 BOOST_AUTO_TEST_CASE(Constructor)
 {
-    std::map<int,int> map;
-    map.emplace(1,11);
-    map.emplace(2,22);
-    map.emplace(3,22);
+    std::map<int, int> map;
+    map.emplace(1, 11);
+    map.emplace(2, 22);
+    map.emplace(3, 22);
 
     NuTo::ReverseMap<int> reverseMap(map);
 
@@ -34,17 +34,16 @@ BOOST_AUTO_TEST_CASE(Constructor)
     BOOST_REQUIRE(reverseMap.size() == 2);
     BOOST_REQUIRE(reverseMap[11].size() == 1);
     BOOST_REQUIRE(reverseMap[22].size() == 2);
-
 }
 
 
 BOOST_AUTO_TEST_CASE(Add_map)
 {
 
-    std::map<int,int> map;
-    map.emplace(1,11);
-    map.emplace(2,22);
-    map.emplace(3,22);
+    std::map<int, int> map;
+    map.emplace(1, 11);
+    map.emplace(2, 22);
+    map.emplace(3, 22);
 
     NuTo::ReverseMap<int> reverseMap(map);
     reverseMap.addMap(map);
@@ -63,6 +62,4 @@ BOOST_AUTO_TEST_CASE(Add_map)
     BOOST_REQUIRE(reverseMap.size() == 2);
     BOOST_REQUIRE(reverseMap[11].size() == 2);
     BOOST_REQUIRE(reverseMap[22].size() == 4);
-
-
 }

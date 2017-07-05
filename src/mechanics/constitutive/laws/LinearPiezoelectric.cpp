@@ -1,19 +1,10 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 #include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -27,27 +18,16 @@
 
 #include <boost/current_function.hpp>
 
-NuTo::LinearPiezoelectric::LinearPiezoelectric() :
-        ConstitutiveBase()
+NuTo::LinearPiezoelectric::LinearPiezoelectric()
+    : ConstitutiveBase()
 {
-    mStiffness << 0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0;
+    mStiffness << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0;
     mRho = 0.;
 
-    mPermittivity << 0, 0, 0,
-                     0, 0, 0,
-                     0, 0, 0;
+    mPermittivity << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    mPiezo <<  0, 0, 0,
-               0, 0, 0,
-               0, 0, 0,
-               0, 0, 0,
-               0, 0, 0,
-               0, 0, 0;
+    mPiezo << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
     SetParametersValid();
 }
@@ -56,8 +36,8 @@ NuTo::LinearPiezoelectric::LinearPiezoelectric() :
 ////! @brief serializes the class
 ////! @param ar         archive
 ////! @param version    version
-//template<class Archive>
-//void NuTo::LinearPiezoelectric::serialize(Archive & ar, const unsigned int version)
+// template<class Archive>
+// void NuTo::LinearPiezoelectric::serialize(Archive & ar, const unsigned int version)
 //{
 //#ifdef DEBUG_SERIALIZATION
 //    std::cout << "start serialize LinearPiezoelectric" << std::endl;
@@ -71,7 +51,7 @@ NuTo::LinearPiezoelectric::LinearPiezoelectric() :
 //    std::cout << "finish serialize LinearPiezoelectric" << std::endl;
 //#endif
 //}
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearPiezoelectric)
+// BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearPiezoelectric)
 //#endif // ENABLE_SERIALIZATION
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelectric::CreateIPLaw()
@@ -80,7 +60,9 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelec
 }
 
 
-NuTo::ConstitutiveInputMap NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap
+NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                 const InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -99,6 +81,9 @@ NuTo::ConstitutiveInputMap NuTo::LinearPiezoelectric::GetConstitutiveInputs(cons
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
             constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
             break;
+        case NuTo::Constitutive::eOutput::ELECTRIC_FIELD:
+            constitutiveInputMap[Constitutive::eInput::ELECTRIC_FIELD];
+            break;
         // no inputs needed for:
         case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
@@ -110,7 +95,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearPiezoelectric::GetConstitutiveInputs(cons
         default:
             continue;
 //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-//            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+//            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
         }
     }
 
@@ -119,80 +104,372 @@ NuTo::ConstitutiveInputMap NuTo::LinearPiezoelectric::GetConstitutiveInputs(cons
 
 namespace NuTo // template specialization in same namespace as definition
 {
-template<>
-void NuTo::LinearPiezoelectric::Evaluate<1>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
+template <>
+void NuTo::LinearPiezoelectric::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    std::cout << "Not implemented" << std::endl;
-}
-
-
-template<>
-void NuTo::LinearPiezoelectric::Evaluate<2>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
-{
-    std::cout << "Not implemented" << std::endl;
-}
-
-
-template<>
-void NuTo::LinearPiezoelectric::Evaluate<3>(
-    const ConstitutiveInputMap& rConstitutiveInput,
-    const ConstitutiveOutputMap& rConstitutiveOutput)
-{
-    InputData<3> inputData;
-    for (auto& itInput : rConstitutiveInput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
-        switch (itInput.first)
+        switch (itOutput.first)
         {
-        case Constitutive::eInput::ELECTRIC_FIELD:
-            inputData.mElectricField = static_cast<ConstitutiveVector<3>*>(itInput.second.get())->AsVector();
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
+
+            ConstitutiveIOBase& electricField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            electricField.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            engineeringStress[0] =
+                    this->mStiffness(0, 0) * engineeringStrain[0] - this->mPiezo(0, 0) * electricField[0];
             break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
+
+            ConstitutiveIOBase& electricField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            electricField.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            engineeringStress[0] =
+                    this->mStiffness(0, 0) * engineeringStrain[0] - this->mPiezo(0, 0) * electricField[0];
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ELECTRIC_FIELD:
+        {
+            *itOutput.second = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
+        {
+            ConstitutiveIOBase& electricDisplacement = *itOutput.second;
+            electricDisplacement.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
+
+            ConstitutiveIOBase& electricField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            electricField.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            electricDisplacement[0] =
+                    this->mPiezo(0, 0) * engineeringStrain[0] + this->mPermittivity(0, 0) * electricField[0];
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<1, 1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = this->mStiffness(0, 0);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<1, 1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = -this->mPiezo(0, 0);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<1, 1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = this->mPiezo(0, 0);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<1, 1>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = this->mPermittivity(0, 0);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        {
+            itOutput.second->AsEngineeringStrain3D() =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D().As3D(0);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+            break;
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        {
+            // nothing to be done for update routine
+            continue;
+        }
         default:
             continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
+}
 
+
+template <>
+void NuTo::LinearPiezoelectric::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput)
+{
+    const auto& planeState =
+            *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
 
     for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
-            {
-                ConstitutiveIOBase& engineeringStress = *itOutput.second;
-                engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
-                const auto& engineeringStrain =
-                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
 
-                Eigen::Matrix<double, 3, 1>& electricField = *static_cast<ConstitutiveVector<3>*>(itOutput.second.get());
-                electricField = inputData.mElectricField;
+            ConstitutiveIOBase& eField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            eField.AssertIsVector<2>(itOutput.first, __PRETTY_FUNCTION__);
 
-                // transform vectors to eigen vectors
-                // let eigen do the matrix multiply
-                // and transform back: This can certainly be done better.
-                Eigen::VectorXd engStress(6);
-                Eigen::VectorXd engStrain(6);
-                for (int ii=0; ii<6; ii++) {
-                    engStrain(ii) = engineeringStrain[ii];
-                }
+            Eigen::Matrix<double, 3, 1> electricField;
+            electricField[0] = eField[0];
+            electricField[1] = eField[1];
+            electricField[2] = 0.;
 
-                engStress = this->mStiffness * engStrain - (this->mPiezo).transpose() * electricField;
+            // transform vectors to eigen vectors
+            // let eigen do the matrix multiply
+            // and transform back: This can certainly be done better.
+            Eigen::VectorXd engStress(6);
+            Eigen::VectorXd engStrain(6);
+            engStrain.setZero();
+            engStress.setZero();
+            engStrain(0) = engineeringStrain[0];
+            engStrain(1) = engineeringStrain[1];
+            engStrain(5) = engineeringStrain[2];
 
-                for (int ii=0; ii<6; ii++) {
-                    engineeringStress[ii] = engStress(ii);
-                }
+            engStress = this->mStiffness * engStrain - (this->mPiezo).transpose() * electricField;
 
-                break;
-            }
+            engineeringStress[0] = engStress(0);
+            engineeringStress[1] = engStress(1);
+            engineeringStress[2] = engStress(5);
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE: // for visualization
+        {
+            itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)
+                                                               ->AsEngineeringStrain2D()
+                                                               .As3D(0, planeState.GetPlaneState());
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+
+            ConstitutiveIOBase& eField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            eField.AssertIsVector<2>(itOutput.first, __PRETTY_FUNCTION__);
+
+            Eigen::Matrix<double, 3, 1> electricField;
+            electricField[0] = eField[0];
+            electricField[1] = eField[1];
+            electricField[2] = 0.;
+
+
+            // transform vectors to eigen vectors
+            // let eigen do the matrix multiply
+            // and transform back: This can certainly be done better.
+            Eigen::VectorXd engStress(6);
+            Eigen::VectorXd engStrain(6);
+            engStrain.setZero();
+            engStress.setZero();
+            engStrain(0) = engineeringStrain[0];
+            engStrain(1) = engineeringStrain[1];
+            engStrain(5) = engineeringStrain[2];
+
+            engStress = this->mStiffness * engStrain - (this->mPiezo).transpose() * electricField;
+
+            engineeringStress[0] = engStress(0);
+            engineeringStress[1] = engStress(1);
+            engineeringStress[2] = engStress(2);
+            engineeringStress[3] = engStress(3);
+            engineeringStress[4] = engStress(4);
+            engineeringStress[5] = engStress(5);
+
+
+            break;
+        }
         case NuTo::Constitutive::eOutput::ELECTRIC_FIELD:
         {
-            Eigen::Matrix<double, 3, 1>& electricField = *static_cast<ConstitutiveVector<3>*>(itOutput.second.get());
-            electricField = inputData.mElectricField;
+            *itOutput.second = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
+        {
+            ConstitutiveIOBase& electricDisplacement = *itOutput.second;
+            electricDisplacement.AssertIsVector<2>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+
+            ConstitutiveIOBase& eField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            eField.AssertIsVector<2>(itOutput.first, __PRETTY_FUNCTION__);
+
+            Eigen::Matrix<double, 3, 1> electricField;
+            electricField[0] = eField[0];
+            electricField[1] = eField[1];
+            electricField[2] = 0.;
+
+
+            // transform vectors to eigen vectors
+            // let eigen do the matrix multiply
+            // and transform back: This can certainly be done better.
+            Eigen::VectorXd engStrain(6);
+            engStrain.setZero();
+            engStrain(0) = engineeringStrain[0];
+            engStrain(1) = engineeringStrain[1];
+            engStrain(5) = engineeringStrain[2];
+
+            Eigen::VectorXd elDispl(3);
+
+            elDispl = this->mPiezo * engStrain + this->mPermittivity * electricField;
+
+            for (int ii = 0; ii < 2; ii++)
+            {
+                electricDisplacement[ii] = elDispl(ii);
+            }
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<3, 3>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = this->mStiffness(0, 0);
+            tangent(0, 1) = this->mStiffness(0, 1);
+            tangent(0, 2) = this->mStiffness(0, 5);
+            tangent(1, 0) = this->mStiffness(1, 0);
+            tangent(1, 1) = this->mStiffness(1, 1);
+            tangent(1, 2) = this->mStiffness(1, 5);
+            tangent(2, 0) = this->mStiffness(5, 0);
+            tangent(2, 1) = this->mStiffness(5, 1);
+            tangent(2, 2) = this->mStiffness(5, 5);
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<3, 2>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = -((this->mPiezo).transpose())(0, 0);
+            tangent(0, 1) = -((this->mPiezo).transpose())(0, 1);
+            tangent(1, 0) = -((this->mPiezo).transpose())(1, 0);
+            tangent(1, 1) = -((this->mPiezo).transpose())(1, 1);
+            tangent(2, 0) = -((this->mPiezo).transpose())(5, 0);
+            tangent(2, 1) = -((this->mPiezo).transpose())(5, 1);
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<2, 3>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = this->mPiezo(0, 0);
+            tangent(0, 1) = this->mPiezo(0, 1);
+            tangent(0, 2) = this->mPiezo(0, 5);
+            tangent(1, 0) = this->mPiezo(1, 0);
+            tangent(1, 1) = this->mPiezo(1, 1);
+            tangent(1, 2) = this->mPiezo(1, 5);
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<2, 2>(itOutput.first, __PRETTY_FUNCTION__);
+
+            for (int ii = 0; ii < 2; ii++)
+            {
+                for (int jj = 0; jj < 2; jj++)
+                {
+                    tangent(ii, jj) = this->mPermittivity(ii, jj);
+                }
+            }
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+            break;
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        {
+            // nothing to be done for update routine
+            continue;
+        }
+        default:
+            continue;
+        }
+        itOutput.second->SetIsCalculated(true);
+    }
+}
+
+
+template <>
+void NuTo::LinearPiezoelectric::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                            const ConstitutiveOutputMap& rConstitutiveOutput)
+{
+    for (auto& itOutput : rConstitutiveOutput)
+    {
+        switch (itOutput.first)
+        {
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
+
+            ConstitutiveIOBase& eField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            eField.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
+            Eigen::Matrix<double, 3, 1> electricField = eField.CopyToEigenMatrix();
+
+            // transform vectors to eigen vectors
+            // let eigen do the matrix multiply
+            // and transform back: This can certainly be done better.
+            Eigen::VectorXd engStress(6);
+            Eigen::VectorXd engStrain(6);
+            for (int ii = 0; ii < 6; ii++)
+            {
+                engStrain(ii) = engineeringStrain[ii];
+            }
+
+            engStress = this->mStiffness * engStrain - (this->mPiezo).transpose() * electricField;
+
+            for (int ii = 0; ii < 6; ii++)
+            {
+                engineeringStress[ii] = engStress(ii);
+            }
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ELECTRIC_FIELD:
+        {
+            *itOutput.second = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
             break;
         }
         case NuTo::Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
@@ -201,96 +478,107 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
             electricDisplacement.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain =
-                rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
 
-            Eigen::Matrix<double, 3, 1>& electricField = *static_cast<ConstitutiveVector<3>*>(itOutput.second.get());
-            electricField = inputData.mElectricField;
+            ConstitutiveIOBase& eField = *rConstitutiveInput.at(Constitutive::eInput::ELECTRIC_FIELD);
+            eField.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
+            Eigen::Matrix<double, 3, 1> electricField = eField.CopyToEigenMatrix();
 
             // transform vectors to eigen vectors
             // let eigen do the matrix multiply
             // and transform back: This can certainly be done better.
             Eigen::VectorXd engStrain(6);
             Eigen::VectorXd elDispl(3);
-            for (int ii=0; ii<6; ii++) {
+            for (int ii = 0; ii < 6; ii++)
+            {
                 engStrain(ii) = engineeringStrain[ii];
             }
 
             elDispl = this->mPiezo * engStrain + this->mPermittivity * electricField;
 
-            for (int ii=0; ii<3; ii++) {
+            for (int ii = 0; ii < 3; ii++)
+            {
                 electricDisplacement[ii] = elDispl(ii);
             }
 
             break;
         }
-            case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsMatrix<6, 6>(itOutput.first, __PRETTY_FUNCTION__);
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<6, 6>(itOutput.first, __PRETTY_FUNCTION__);
 
-                for (int ii=0; ii<6; ii++) {
-                    for (int jj=0; jj<6; jj++) {
-                        tangent(ii,jj) = this->mStiffness(ii,jj);
-                    }
+            for (int ii = 0; ii < 6; ii++)
+            {
+                for (int jj = 0; jj < 6; jj++)
+                {
+                    tangent(ii, jj) = this->mStiffness(ii, jj);
                 }
-
-                break;
             }
-            case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsMatrix<6, 3>(itOutput.first, __PRETTY_FUNCTION__);
 
-                for (int ii=0; ii<6; ii++) {
-                    for (int jj=0; jj<3; jj++) {
-                        tangent(ii,jj) = ((this->mPiezo).transpose())(ii,jj);
-                    }
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<6, 3>(itOutput.first, __PRETTY_FUNCTION__);
+
+            for (int ii = 0; ii < 6; ii++)
+            {
+                for (int jj = 0; jj < 3; jj++)
+                {
+                    tangent(ii, jj) = -((this->mPiezo).transpose())(ii, jj);
                 }
-
-                break;
             }
-            case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsMatrix<3, 6>(itOutput.first, __PRETTY_FUNCTION__);
 
-                for (int ii=0; ii<3; ii++) {
-                    for (int jj=0; jj<6; jj++) {
-                        tangent(ii,jj) = this->mPiezo(ii,jj);
-                    }
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<3, 6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            for (int ii = 0; ii < 3; ii++)
+            {
+                for (int jj = 0; jj < 6; jj++)
+                {
+                    tangent(ii, jj) = this->mPiezo(ii, jj);
                 }
-
-                break;
             }
-            case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsMatrix<3, 3>(itOutput.first, __PRETTY_FUNCTION__);
 
-                for (int ii=0; ii<3; ii++) {
-                    for (int jj=0; jj<3; jj++) {
-                        tangent(ii,jj) = this->mPermittivity(ii,jj);
-                    }
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<3, 3>(itOutput.first, __PRETTY_FUNCTION__);
+
+            for (int ii = 0; ii < 3; ii++)
+            {
+                for (int jj = 0; jj < 3; jj++)
+                {
+                    tangent(ii, jj) = this->mPermittivity(ii, jj);
                 }
-
-                break;
             }
-            case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
-            {
-                itOutput.second->AsEngineeringStrain3D() =
+
+            break;
+        }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        {
+            itOutput.second->AsEngineeringStrain3D() =
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
-                break;
-            }
-            case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
-                break;
-            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
-            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
-            {
-                //nothing to be done for update routine
-                continue;
-            }
-            default:
-                continue;
+            break;
+        }
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+            break;
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        {
+            // nothing to be done for update routine
+            continue;
+        }
+        default:
+            continue;
         }
         itOutput.second->SetIsCalculated(true);
     }
@@ -299,14 +587,14 @@ void NuTo::LinearPiezoelectric::Evaluate<3>(
 } // namespace NuTo
 
 
-bool NuTo::LinearPiezoelectric::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
-                                                                          NuTo::Node::eDof rDofCol,
-                                                                          int rTimeDerivative) const
+bool NuTo::LinearPiezoelectric::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,
+                                                              int rTimeDerivative) const
 {
     assert(rTimeDerivative == 0 or rTimeDerivative == 1 or rTimeDerivative == 2);
     switch (rTimeDerivative)
     {
     case 0:
+    case 2:
     {
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
@@ -318,9 +606,8 @@ bool NuTo::LinearPiezoelectric::CheckDofCombinationComputable(NuTo::Node::eDof r
         default:
             return false;
         }
-
     }
-        break;
+    break;
     default:
         return false;
     }
@@ -329,133 +616,94 @@ bool NuTo::LinearPiezoelectric::CheckDofCombinationComputable(NuTo::Node::eDof r
 
 bool NuTo::LinearPiezoelectric::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::DENSITY:
-        case Constitutive::eConstitutiveParameter::STIFFNESS:
-        case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
-        case Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR:
-        {
-            return true;
-        }
-        default:
-        {
-            return false;
-        }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    case Constitutive::eConstitutiveParameter::STIFFNESS:
+    case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
+    case Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR:
+    {
+        return true;
+    }
+    default:
+    {
+        return false;
+    }
     }
 }
 
 
 double NuTo::LinearPiezoelectric::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
 
-void NuTo::LinearPiezoelectric::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::LinearPiezoelectric::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                   double rValue)
 {
     ConstitutiveBase::CheckParameterDouble(rIdentifier, rValue);
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DENSITY:
         this->mRho = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-Eigen::VectorXd NuTo::LinearPiezoelectric::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::MatrixXd
+NuTo::LinearPiezoelectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    switch(rIdentifier)
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
-        Eigen::VectorXd stiffnessFlattened(36);
-        int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                stiffnessFlattened(count) = this->mStiffness(ii,jj);
-                count++;
-            }
-        }
-        return stiffnessFlattened;
+        return mStiffness;
     }
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        Eigen::VectorXd dielectricTensorFlattened(9);
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                dielectricTensorFlattened(count) = this->mPermittivity(ii,jj);
-                count++;
-            }
-        }
-        return dielectricTensorFlattened;
+        return mPermittivity;
     }
     case Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR:
     {
-        Eigen::VectorXd piezoelectricTensorFlattened(18);
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                piezoelectricTensorFlattened(count) = this->mPiezo(ii,jj);
-                count++;
-            }
-        }
-        return piezoelectricTensorFlattened;
+        return mPiezo;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
-void NuTo::LinearPiezoelectric::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
+void NuTo::LinearPiezoelectric::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
+                                                         Eigen::MatrixXd rValue)
 {
-    //ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
-    switch(rIdentifier)
+    // ConstitutiveBase::CheckParameterFullVector(rIdentifier, rValue);
+    switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::STIFFNESS:
     {
-        int count = 0;
-        for (int ii=0; ii< 6; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                this->mStiffness(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mStiffness = rValue;
         break;
     }
     case Constitutive::eConstitutiveParameter::DIELECTRIC_TENSOR:
     {
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 3; jj++) {
-                this->mPermittivity(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mPermittivity = rValue;
         break;
     }
     case Constitutive::eConstitutiveParameter::PIEZOELECTRIC_TENSOR:
     {
-        int count = 0;
-        for (int ii=0; ii< 3; ii++) {
-            for (int jj=0; jj< 6; jj++) {
-                this->mPiezo(ii,jj) = rValue(count);
-                count++;
-            }
-        }
+        mPiezo = rValue;
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -472,8 +720,8 @@ bool NuTo::LinearPiezoelectric::CheckOutputTypeCompatibility(NuTo::Constitutive:
     case Constitutive::eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
     case Constitutive::eOutput::ELECTRIC_DISPLACEMENT:
     case Constitutive::eOutput::ELECTRIC_FIELD:
-//    case Constitutive::eOutput::UPDATE_STATIC_DATA:
-//    case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+    case Constitutive::eOutput::UPDATE_STATIC_DATA:
+    case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
     {
         return true;
     }
@@ -509,7 +757,7 @@ void NuTo::LinearPiezoelectric::CheckParameters() const
     for (int ii=0; ii<6; ii++) {
         for (int jj=0; jj<ii; jj++) {
             if (mStiffness(ii,jj) != mStiffness(jj,ii)) {
-                throw NuTo::MechanicsException(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
+                throw NuTo::Exception(BOOST_CURRENT_FUNCTION , "Stiffness must be symmetric (entry ["
                                                + std::to_string(ii) + "," + std::to_string(jj) + "] = "
                                                + std::to_string(mStiffness(ii,jj)) + "\n"
                                                + "(entry [" + std::to_string(jj) + "," + std::to_string(ii) + "] = "

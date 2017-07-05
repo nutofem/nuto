@@ -1,16 +1,16 @@
 #include <Python.h>
 #include "optimize/CallbackHandlerPython.h"
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 
 using namespace NuTo;
 
-void CallbackHandlerPython::SetCallbackFunctions(
-        PyObject* args_parameters, PyObject* args_objective, PyObject* args_gradient, PyObject* args_hessian)
+void CallbackHandlerPython::SetCallbackFunctions(PyObject* args_parameters, PyObject* args_objective,
+                                                 PyObject* args_gradient, PyObject* args_hessian)
 {
     // check if mObjective routine is callable
     if (!PyCallable_Check(args_parameters))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Set parameter routine not callable - check the routine"));
+        throw(Exception(__PRETTY_FUNCTION__, "Set parameter routine not callable - check the routine"));
     }
 
     Py_XINCREF(args_parameters); // Add a reference to new callback
@@ -20,7 +20,7 @@ void CallbackHandlerPython::SetCallbackFunctions(
     // check of mObjective routine is callable
     if (!PyCallable_Check(args_objective))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Objective routine not callable - check the routine"));
+        throw(Exception(__PRETTY_FUNCTION__, "Objective routine not callable - check the routine"));
     }
     Py_XINCREF(args_objective); // Add a reference to new callback
     Py_XDECREF(mCallbackObjective); // Dispose of previous callback
@@ -28,7 +28,7 @@ void CallbackHandlerPython::SetCallbackFunctions(
 
     if (!PyCallable_Check(args_gradient))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Gradient routine not callable - check the routine"));
+        throw(Exception(__PRETTY_FUNCTION__, "Gradient routine not callable - check the routine"));
     }
     Py_XINCREF(args_gradient); // Add a reference to new callback
     Py_XDECREF(mCallbackGradient); // Dispose of previous callback
@@ -36,7 +36,7 @@ void CallbackHandlerPython::SetCallbackFunctions(
 
     if (!PyCallable_Check(args_hessian))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Hessian routine not callable - check the routine"));
+        throw(Exception(__PRETTY_FUNCTION__, "Hessian routine not callable - check the routine"));
     }
     Py_XINCREF(args_hessian); // Add a reference to new callback
     Py_XDECREF(mCallbackHessian); // Dispose of previous callback
@@ -47,7 +47,7 @@ void CallbackHandlerPython::SetCallbackFunctions(
 void CallbackHandlerPython::SetParameters(const Eigen::MatrixXd& rParameters)
 {
     if (rParameters.cols() != 1)
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Number of columns of Parameter matrix not equal to one."));
+        throw(Exception(__PRETTY_FUNCTION__, "Number of columns of Parameter matrix not equal to one."));
 
     // create python tuple as wrapper - this is not the optimal solution, better to wrap the Eigen matrix directly
     PyObject *pyList, *item;
@@ -76,7 +76,7 @@ double CallbackHandlerPython::Objective() const
 
     if (result == nullptr)
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Objective error calling callback mObjective."));
+        throw(Exception(__PRETTY_FUNCTION__, "Objective error calling callback mObjective."));
     }
     objective = PyFloat_AsDouble(result);
 
@@ -94,12 +94,12 @@ void CallbackHandlerPython::Gradient(Eigen::MatrixXd& rGradient) const
 
     if (result == nullptr)
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Gradient."));
+        throw(Exception(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Gradient."));
     }
 
     if (!PyList_Check(result))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Result is not a python list - check your python code."));
+        throw(Exception(__PRETTY_FUNCTION__, "Result is not a python list - check your python code."));
     }
 
     rGradient.resize(PyList_GET_SIZE(result), 1);
@@ -122,17 +122,17 @@ void CallbackHandlerPython::Hessian(Eigen::MatrixXd& rHessian) const
 
     if (result == nullptr)
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Hessian."));
+        throw(Exception(__PRETTY_FUNCTION__, "Error calling CallbackHandler::Hessian."));
     }
 
     if (!PyList_Check(result))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__, "Result is not a python list - check your python code."));
+        throw(Exception(__PRETTY_FUNCTION__, "Result is not a python list - check your python code."));
     }
     int dim = (int)sqrt(PyList_GET_SIZE(result));
     if (dim * dim != PyList_GET_SIZE(result))
     {
-        throw(OptimizeException(__PRETTY_FUNCTION__,
+        throw(Exception(__PRETTY_FUNCTION__,
                 "The python list for the hessian matrix should have NumParameters*NumParameters entries."));
     }
 

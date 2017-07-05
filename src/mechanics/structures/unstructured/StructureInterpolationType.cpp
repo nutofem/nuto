@@ -38,7 +38,8 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
     InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType));
 }
 
-void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType)
+void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId,
+                                                          IntegrationTypeBase* rIntegrationType)
 {
     InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
     interpolationType->ClearCache();
@@ -72,23 +73,20 @@ void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::In
 {
     // check if constitutive law identifier exists
     if (mInterpolationTypeMap.find(rInterpolationTypeId) != mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeCreate] Interpolation type already exists.");
+        throw NuTo::Exception("[NuTo::Structure::InterpolationTypeCreate] Interpolation type already exists.");
 
     mInterpolationTypeMap.insert(rInterpolationTypeId, new InterpolationType(rShape, GetDimension()));
-
 }
 
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder)
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType,
+                                           const std::string& rTypeOrder)
 {
-    InterpolationTypeAdd(rInterpolationTypeId,Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
+    InterpolationTypeAdd(rInterpolationTypeId, Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
 }
 
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
-                                           NuTo::Node::eDof rDofType,
-                                           NuTo::Interpolation::eTypeOrder rTypeOrder,
-                                           const Eigen::VectorXi &rDegree,
-                                           const std::vector<Eigen::VectorXd> &rKnots,
-                                           const Eigen::MatrixXd &rWeights)
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType,
+                                           NuTo::Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi& rDegree,
+                                           const std::vector<Eigen::VectorXd>& rKnots, const Eigen::MatrixXd& rWeights)
 {
     InterpolationType* interpolationType = InterpolationTypeGet(rInterpolationTypeId);
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots, rWeights);
@@ -118,7 +116,9 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     SetShowTime(showTime);
 }
 
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder = Interpolation::eTypeOrder::EQUIDISTANT1)
+void NuTo::Structure::InterpolationTypeAdd(
+        int rInterpolationTypeId, NuTo::Node::eDof rDofType,
+        NuTo::Interpolation::eTypeOrder rTypeOrder = Interpolation::eTypeOrder::EQUIDISTANT1)
 {
     InterpolationType& interpolationType = *InterpolationTypeGet(rInterpolationTypeId);
     interpolationType.AddDofInterpolation(rDofType, rTypeOrder);
@@ -153,7 +153,7 @@ NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterpolatio
     auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
     return itIterator->second;
 }
 
@@ -162,6 +162,6 @@ const NuTo::InterpolationType* NuTo::Structure::InterpolationTypeGet(int rInterp
     auto itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
     return itIterator->second;
 }

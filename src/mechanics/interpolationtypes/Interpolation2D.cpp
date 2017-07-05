@@ -14,13 +14,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
 
-NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
+NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                       int rDimension)
+    : InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
 {
-
 }
 
 std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(int rSurface) const
@@ -36,25 +36,3 @@ std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(i
     }
     return surfaceEdgeCoordinates;
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Interpolation2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Interpolation2D::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation2D\n";
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseFEM);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation2D\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation2D)
-#endif

@@ -9,14 +9,13 @@ BENCHMARK(DenseSpherePacking, Warmup, runner)
 {
     while (runner.KeepRunningTime(1.))
     {
-
     }
 }
 
 
 BENCHMARK(DenseSpherePacking, Run, runner)
 {
-    Eigen::MatrixXd boundingBox(3,2);
+    Eigen::MatrixXd boundingBox(3, 2);
     boundingBox << 0, 1, 0, 1, 0, 1;
 
 
@@ -33,7 +32,7 @@ BENCHMARK(DenseSpherePacking, Run, runner)
     constexpr double timePrintout = 1e3;
     constexpr double initialTimeBarrier = 0.01;
 
-    while(runner.KeepRunningIterations(10))
+    while (runner.KeepRunningIterations(10))
     {
         NuTo::ParticleHandler particleHandler(numParticles, s.GetBoundingBox(), randomVelocityRange, growthRate);
         NuTo::SubBoxHandler subBoxHandler(particleHandler, s, 10);

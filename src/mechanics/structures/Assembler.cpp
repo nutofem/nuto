@@ -1,6 +1,6 @@
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
@@ -99,7 +99,7 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
                 int column = columns[iRow][iPos];
                 if (column > numActiveDofs)
                     if (column - numActiveDofs != (int)iRow)
-                        throw MechanicsException(__PRETTY_FUNCTION__, "invalid matrix structure.");
+                        throw Exception(__PRETTY_FUNCTION__, "invalid matrix structure.");
             }
 
 
@@ -129,12 +129,12 @@ void NuTo::Assembler::BuildGlobalDofs(const std::vector<NodeBase*>& rNodes)
     mNodeVectorChanged = false;
     GetConstraints().SetHaveChanged(false);
 
-    // Build the Rhs once at the global time 0. 
-    // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS. 
-    // This is required for static solutions that do not use a time integration 
+    // Build the Rhs once at the global time 0.
+    // A call to GetRhsAfterGaussElimination would otherwise return an empty RHS.
+    // This is required for static solutions that do not use a time integration
     // scheme. In those cases the RHS is not continuously updated and needs to
     // be calculated at some point. This point is here.
-    ConstraintUpdateRhs(0); 
+    ConstraintUpdateRhs(0);
 }
 
 NuTo::BlockFullVector<double> NuTo::Assembler::BuildRhsBeforeGaussElimination(double time) const
@@ -162,5 +162,5 @@ void NuTo::Assembler::ConstraintUpdateRhs(double time)
 void NuTo::Assembler::ThrowIfRenumberingRequred() const
 {
     if (RenumberingRequired())
-        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
+        throw Exception(__PRETTY_FUNCTION__, "build global numbering first");
 }

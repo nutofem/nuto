@@ -12,8 +12,8 @@ add_unit_test(IPData
     mechanics/constitutive/inputoutput/EquivalentStrain.cpp
     mechanics/constitutive/inputoutput/ConstitutiveIOBase.cpp
     mechanics/constitutive/laws/GradientDamageEngineeringStress.cpp
-    mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.cpp
-    mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.cpp
+    mechanics/integrationtypes/IntegrationType1D2NGauss.cpp
+    math/Legendre.cpp
     mechanics/integrationtypes/IntegrationTypeBase.cpp
     mechanics/integrationtypes/IntegrationTypeEnum.cpp
     mechanics/constitutive/ConstitutiveEnum.cpp

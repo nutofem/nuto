@@ -192,7 +192,7 @@ public:
     /// \brief Constraints all degrees of freedom of nodes in node group
     /// \param nodeGroupId
     ///
-    void ApplyConstraintsTotalFeti(const Group<NodeBase>&  nodeGroup);
+    void ApplyConstraintsTotalFeti(const Group<NodeBase>& nodeGroup);
 
     ///
     /// \brief Constraints all degrees of freedom
@@ -283,17 +283,17 @@ public:
 
         lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
                                         mPrescribedDisplacementDofIds.end());
-        
+
         return lagrangeMultiplierDofIds;
     }
     /// \brief Assembles vector for multiplicity scaling
     SparseMatrix MultiplicityScaling()
     {
         if (not(GetDimension() == 2))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
 
         if (GetDofStatus().GetDofTypes().size() > 1)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
 
         // \todo special care needs to be taken for multiple dofs
         const double dim = GetDimension();

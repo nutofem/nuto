@@ -54,4 +54,3 @@ eTypeOrder TypeOrderToEnum(const std::string& rTypeOrder);
 
 } // namespace Interpolation
 } // namespace NuTo
-

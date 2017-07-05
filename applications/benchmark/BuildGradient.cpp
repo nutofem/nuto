@@ -137,7 +137,8 @@ public:
     SemiFixVector<NuTo::maxDim * NuTo::maxNumNodes> BuildInternalGradient() const
     {
         const NuTo::IntegrationType2D4NGauss4Ip it;
-        SemiFixVector<NuTo::maxDim* NuTo::maxNumNodes> result = SemiFixVector<NuTo::maxDim * NuTo::maxNumNodes>::Zero(16, 1);
+        SemiFixVector<NuTo::maxDim* NuTo::maxNumNodes> result =
+                SemiFixVector<NuTo::maxDim * NuTo::maxNumNodes>::Zero(16, 1);
         const auto disp = GetDisp();
         const auto coords = GetCoordinatesModified();
 
@@ -187,11 +188,14 @@ public:
         return rCoords * rDerivativeShapeFunctions;
     }
 
-    SemiFixMatrix<6, NuTo::maxDim * NuTo::maxNumNodes> GetB(const SemiFixMatrix<NuTo::maxNumNodes, NuTo::maxDim>& rDerivativeShapeFunctions,
-                                                const Eigen::Matrix2d& J) const
+    SemiFixMatrix<6, NuTo::maxDim * NuTo::maxNumNodes>
+    GetB(const SemiFixMatrix<NuTo::maxNumNodes, NuTo::maxDim>& rDerivativeShapeFunctions,
+         const Eigen::Matrix2d& J) const
     {
-        const SemiFixMatrix<6, NuTo::maxDim* NuTo::maxNumNodes> derivativeShapeFunctionsJ = rDerivativeShapeFunctions * J.inverse();
-        SemiFixMatrix<6, NuTo::maxDim* NuTo::maxNumNodes> B = SemiFixMatrix<6, NuTo::maxDim * NuTo::maxNumNodes>::Zero(3, 16);
+        const SemiFixMatrix<6, NuTo::maxDim* NuTo::maxNumNodes> derivativeShapeFunctionsJ =
+                rDerivativeShapeFunctions * J.inverse();
+        SemiFixMatrix<6, NuTo::maxDim* NuTo::maxNumNodes> B =
+                SemiFixMatrix<6, NuTo::maxDim * NuTo::maxNumNodes>::Zero(3, 16);
 
         for (int iNode = 0, iColumn = 0; iNode < 8; ++iNode, iColumn += 2)
         {

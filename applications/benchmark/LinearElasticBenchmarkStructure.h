@@ -15,7 +15,8 @@ namespace Benchmark
 class LinearElasticBenchmarkStructure
 {
 public:
-    LinearElasticBenchmarkStructure(std::vector<int> rNumElements, int rNumProc = 1) : mS(3)
+    LinearElasticBenchmarkStructure(std::vector<int> rNumElements, int rNumProc = 1)
+        : mS(3)
     {
         mS.SetNumProcessors(rNumProc);
         mS.SetShowTime(false);
@@ -55,7 +56,8 @@ public:
     {
         auto& bottomNodes = mS.GroupGetNodesAtCoordinate(NuTo::eDirection::Z, 0);
         mS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-                NuTo::Constraint::Component(bottomNodes, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
+                             NuTo::Constraint::Component(
+                                     bottomNodes, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
         auto& topNodes = mS.GroupGetNodesAtCoordinate(NuTo::eDirection::Z, lz);
         int topNodesId = mS.GroupGetId(&topNodes);
@@ -65,7 +67,6 @@ public:
     }
 
 private:
-
     void SetupMesh(std::vector<int> rNumElements)
     {
         auto meshInfo = MeshGenerator::Grid(mS, {lx, ly, lz}, rNumElements);
@@ -85,7 +86,6 @@ private:
     static constexpr double lz = 45;
 
     Structure mS;
-
 };
 
 

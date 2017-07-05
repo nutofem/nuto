@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_CASE(create_input)
     inputType = NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<2>(inputType);
     auto& innergrad = static_cast<ConstitutiveVector<2>*>(inputMap.at(inputType).get())->AsVector();
-    innergrad[0] = 5.0; innergrad[1] = 7.0;
+    innergrad[0] = 5.0;
+    innergrad[1] = 7.0;
     double first = (*inputMap.at(inputType))[0];
     double second = (*inputMap.at(inputType))[1];
     BOOST_CHECK_EQUAL(first, 5.0);
@@ -43,7 +44,9 @@ BOOST_AUTO_TEST_CASE(create_input)
     inputType = NuTo::Constitutive::eInput::ENGINEERING_STRAIN;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<3>(inputType);
     auto& innerstrain = static_cast<EngineeringStrain<3>*>(inputMap.at(inputType).get())->AsEngineeringStrain3D();
-    innerstrain[0] = 1.0; innerstrain[3] = 6.0; innerstrain[5] = 3.0;
+    innerstrain[0] = 1.0;
+    innerstrain[3] = 6.0;
+    innerstrain[5] = 3.0;
     first = (*inputMap.at(inputType))[0];
     second = (*inputMap.at(inputType))[3];
     double third = (*inputMap.at(inputType))[5];

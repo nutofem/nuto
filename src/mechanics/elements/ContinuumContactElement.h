@@ -5,37 +5,30 @@
 
 namespace NuTo
 {
-template<int TDim>
-class ContinuumContactElement: public ContinuumBoundaryElement<TDim>
+template <int TDim>
+class ContinuumContactElement : public ContinuumBoundaryElement<TDim>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    ContinuumContactElement() = default;
-#endif // ENABLE_SERIALIZATION
 public:
-    ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement, int rSurfaceId, const Group<ElementBase>* elementGroup, const Group<NodeBase>* nodeGroup, const IntegrationTypeBase& integrationType);
+    ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement, int rSurfaceId,
+                            const Group<ElementBase>* elementGroup, const Group<NodeBase>* nodeGroup,
+                            const IntegrationTypeBase& integrationType);
 
     virtual ~ContinuumContactElement() = default;
 
     void ProjectIntegrationPointOnMaster();
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                 EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
+                                 EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP,
                                  const ConstitutiveInputMap& constitutiveInput,
                                  const ConstitutiveOutputMap& constitutiveOutput) const;
 
     void CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double>& rGapMatrix,
-                                               EvaluateDataContinuumBoundary<TDim> &rData,
-                                               const ConstitutiveOutputMap& constitutiveOutput,
-                                               int rTheIP) const;
+                                               EvaluateDataContinuumBoundary<TDim>& rData,
+                                               const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
 
 protected:
+    std::vector<std::pair<const ContinuumElement<TDim>*, int>> mElementsMaster;
 
-    std::vector<std::pair<const ContinuumElement<TDim>*, int> > mElementsMaster;
-
-    const IntegrationTypeBase *mIntegrationType;
-
+    const IntegrationTypeBase* mIntegrationType;
 };
 } /* namespace NuTo */
-

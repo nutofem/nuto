@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(DataContainerConstruction)
         BOOST_CHECK_EQUAL(data.GetData(), 6174);
     }
     {
-        std::vector<int> dataVector({0,1,2});
+        std::vector<int> dataVector({0, 1, 2});
         DataContainer<int> data(dataVector);
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(DataContainerConstruction)
         BOOST_CHECK_EQUAL(data.GetData(2), 2);
     }
     {
-        DataContainer<int> data({0,1,2});
+        DataContainer<int> data({0, 1, 2});
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
         BOOST_CHECK_EQUAL(data.GetData(1), 1);
@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_CASE(DataContainerShits)
     DataContainer<int> data(6174);
 
     // shifts not possible with only one set of static data
-    BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::MechanicsException);
-    BOOST_CHECK_THROW(data.ShiftToFuture(), NuTo::MechanicsException);
+    BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::Exception);
+    BOOST_CHECK_THROW(data.ShiftToFuture(), NuTo::Exception);
 
     data.AllocateAdditionalData(4);
     BOOST_CHECK_EQUAL(data.GetData(4), 6174);
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(DataContainerSerialze)
     DataContainer<int> dataFromFile(0);
     dataFromFile.AllocateAdditionalData(2);
 
-    {   // write
+    { // write
         NuTo::SerializeStreamOut s("DataContainerSerializeText.dat", false);
         s << data;
     }
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(DataContainerSerialze)
     s >> dataFromFile;
 
     for (unsigned int i = 0; i < data.GetNumData(); ++i)
-        BOOST_CHECK_EQUAL(dataFromFile.GetData(i),data.GetData(i));
+        BOOST_CHECK_EQUAL(dataFromFile.GetData(i), data.GetData(i));
 }
 
 } // namespace DataContainerTest

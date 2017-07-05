@@ -7,4 +7,3 @@ BOOST_AUTO_TEST_CASE(SolverPardiso)
     NuTo::SolverPardiso s(1);
     SolveAndCheckSystem(s);
 }
-

@@ -41,7 +41,7 @@ BlockFullMatrix<double> StructureBase::ElementBuildHessian(Element::eOutput rHes
                                                Element::eOutput::HESSIAN_1_TIME_DERIVATIVE,
                                                Element::eOutput::HESSIAN_2_TIME_DERIVATIVE});
     if (supportedTypes.find(rHessianType) == supportedTypes.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "requested matrix type is not supported or not implemented yet.");
+        throw Exception(__PRETTY_FUNCTION__, "requested matrix type is not supported or not implemented yet.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
     elementOutputMap[rHessianType] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
@@ -252,7 +252,7 @@ void StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstitutiveL
 
     boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive == mConstitutiveLawMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
 
     ElementSetConstitutiveLaw(elementPtr, itConstitutive->second);
 }
@@ -264,14 +264,14 @@ void StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rConstit
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive == mConstitutiveLawMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
 
     for (auto& element : elementGroup)
     {
@@ -286,7 +286,7 @@ void StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIdent)
 
     boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
     if (itConstitutive == mConstitutiveLawMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -309,9 +309,9 @@ void StructureBase::ElementGroupSetSection(int rGroupIdent, std::shared_ptr<Sect
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     for (auto& element : elementGroup)
@@ -346,16 +346,16 @@ void StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rInterpol
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::ElementGroupSetInterpolationType] Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException("[StructureBase::ElementGroupSetInterpolationType] Group is not an element group.");
+        throw Exception("[StructureBase::ElementGroupSetInterpolationType] Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     boost::ptr_map<int, InterpolationType>::iterator itInterpolationType =
             mInterpolationTypeMap.find(rInterpolationTypeId);
     if (itInterpolationType == mInterpolationTypeMap.end())
-        throw MechanicsException("[StructureBase::ElementGroupSetConstitutiveLaw] Interpolation type with the given "
+        throw Exception("[StructureBase::ElementGroupSetConstitutiveLaw] Interpolation type with the given "
                                  "identifier does not exist.");
 
     for (auto& element : elementGroup)
@@ -406,7 +406,7 @@ Eigen::MatrixXd StructureBase::ElementGetStaticIPData(int rElementId, IpData::eI
     Timer timer(std::string(__FUNCTION__) + ":" + IpData::IpStaticDataTypeToString(rType), GetShowTime(), GetLogger());
 
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
@@ -424,7 +424,7 @@ Eigen::MatrixXd StructureBase::ElementGetIntegrationPointCoordinates(int rElemen
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
     }
 
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
@@ -441,7 +441,7 @@ Eigen::MatrixXd StructureBase::ElementGetIntegrationPointCoordinates(int rElemen
 double StructureBase::ElementTotalGetMaxDamage()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
     elementOutputMap[Element::eOutput::IP_DATA] =
@@ -467,7 +467,7 @@ double StructureBase::ElementTotalGetMaxDamage()
 double StructureBase::ElementTotalGetStaticDataExtrapolationError()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
     elementOutputMap[Element::eOutput::IP_DATA] =
@@ -493,7 +493,7 @@ double StructureBase::ElementTotalGetStaticDataExtrapolationError()
 void StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData)
 {
     if (GroupGetGroupPtr(rElementGroupId)->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Element group required.");
+        throw Exception(__PRETTY_FUNCTION__, "Element group required.");
 
     for (int elementId : GroupGetMemberIds(rElementGroupId))
     {
@@ -558,7 +558,7 @@ void StructureBase::ElementTotalUpdateStaticData()
     }
     if (exception > 0)
     {
-        throw MechanicsException(exceptionStringTotal);
+        throw Exception(exceptionStringTotal);
     }
 }
 
@@ -612,7 +612,7 @@ void StructureBase::ElementTotalUpdateTmpStaticData()
         }
         if (exception > 0)
         {
-            throw MechanicsException(exceptionStringTotal);
+            throw Exception(exceptionStringTotal);
         }
     }
     mUpdateTmpStaticDataRequired = false;
@@ -636,24 +636,10 @@ void StructureBase::ElementTotalShiftStaticDataToPast()
 #endif //_OPENMP
     for (unsigned int iElement = 0; iElement < elementVector.size(); iElement++)
     {
-        try
-        {
-            ElementBase* element = elementVector[iElement];
-            IPData& ipdata = element->GetIPData();
-            for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-                ipdata.GetIPConstitutiveLaw(i).ShiftToPast();
-        }
-        catch (Exception& e)
-        {
-            exception = e;
-            exception.AddMessage(__PRETTY_FUNCTION__, "Error saving static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
-        catch (...)
-        {
-            exception.AddMessage(__PRETTY_FUNCTION__, "Non-NuTo Error saving static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
+        ElementBase* element = elementVector[iElement];
+        IPData& ipdata = element->GetIPData();
+        for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
+            ipdata.GetIPConstitutiveLaw(i).ShiftToPast();
     }
     if (not exception.ErrorMessage().empty())
         throw exception;
@@ -677,24 +663,10 @@ void StructureBase::ElementTotalShiftStaticDataToFuture()
 #endif //_OPENMP
     for (unsigned int iElement = 0; iElement < elementVector.size(); iElement++)
     {
-        try
-        {
-            ElementBase* element = elementVector[iElement];
-            IPData& ipdata = element->GetIPData();
-            for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-                ipdata.GetIPConstitutiveLaw(i).ShiftToFuture();
-        }
-        catch (Exception& e)
-        {
-            exception = e;
-            exception.AddMessage(__PRETTY_FUNCTION__, "Error restoring static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
-        catch (...)
-        {
-            exception.AddMessage(__PRETTY_FUNCTION__, "Non-NuTo Error restoring static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
+        ElementBase* element = elementVector[iElement];
+        IPData& ipdata = element->GetIPData();
+        for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
+            ipdata.GetIPConstitutiveLaw(i).ShiftToFuture();
     }
     if (not exception.ErrorMessage().empty())
         throw exception;
@@ -725,22 +697,8 @@ void StructureBase::ElementTotalExtrapolateStaticData()
 #endif //_OPENMP
     for (unsigned int iElement = 0; iElement < elementVector.size(); iElement++)
     {
-        try
-        {
-            ElementBase* element = elementVector[iElement];
-            element->Evaluate(input, elementOutput);
-        }
-        catch (Exception& e)
-        {
-            exception = e;
-            exception.AddMessage(__PRETTY_FUNCTION__, "Error restoring static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
-        catch (...)
-        {
-            exception.AddMessage(__PRETTY_FUNCTION__, "Non-NuTo Error restoring static data for element " +
-                                                              std::to_string(ElementGetId(elementVector[iElement])));
-        }
+        ElementBase* element = elementVector[iElement];
+        element->Evaluate(input, elementOutput);
     }
     if (not exception.ErrorMessage().empty())
         throw exception;
@@ -771,9 +729,9 @@ void StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, E
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     Eigen::MatrixXd elementEngineeringStress;
@@ -812,9 +770,9 @@ void StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, E
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     Eigen::MatrixXd elementEngineeringStrain;
@@ -835,9 +793,9 @@ void StructureBase::ElementGroupGetMembers(int groupId, std::vector<int>& member
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(groupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     auto& elementGroup = dynamic_cast<Group<ElementBase>&>(*itGroup->second);
 
     members.clear();
@@ -946,7 +904,7 @@ double StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector
     } // end of parallel region
     if (exception > 0)
     {
-        throw MechanicsException(exceptionStringTotal);
+        throw Exception(exceptionStringTotal);
     }
     return maxGlobalEigenValue;
 }
@@ -957,9 +915,9 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 
     boost::ptr_map<int, GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
     const auto& elementGroup = dynamic_cast<const Group<ElementBase>&>(*itGroup->second);
 
     double totalVolume(0);
@@ -1007,7 +965,7 @@ void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& vis
                                                 const eVisualizationType rVisualizationType)
 {
     if (mHaveTmpStaticData and mUpdateTmpStaticDataRequired)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Update of tmpStaticData required first.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Update of tmpStaticData required first.");
 
     switch (rVisualizationType)
     {
@@ -1024,7 +982,7 @@ void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& vis
             iElePtr->VisualizeIntegrationPointData(visualizer, visualizeComponents);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Visualization type not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Visualization type not implemented.");
     }
 }
 #endif // VISUALIZE

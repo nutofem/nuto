@@ -13,24 +13,26 @@
 
 namespace NuTo
 {
-template <typename T> class BlockFullVector;
-template <class T> class SparseMatrixCSRGeneral;
-template <class T> class SparseMatrixCSRSymmetric;
-template <class T> class SparseMatrixCSRVector2;
-template <class T> class SparseMatrixCSRVector2General;
-template <class T> class SparseMatrixCSR;
-template <class T> class SparseMatrixCSRVector2Symmetric;
+template <typename T>
+class BlockFullVector;
+template <class T>
+class SparseMatrixCSRGeneral;
+template <class T>
+class SparseMatrixCSRSymmetric;
+template <class T>
+class SparseMatrixCSRVector2;
+template <class T>
+class SparseMatrixCSRVector2General;
+template <class T>
+class SparseMatrixCSR;
+template <class T>
+class SparseMatrixCSRVector2Symmetric;
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
 //! @brief ... class for all block sparse matrices without any operations, except *BlockFullVector
-class BlockSparseMatrix: public BlockStorageBase
+class BlockSparseMatrix : public BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    BlockSparseMatrix() {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ctor
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
@@ -38,12 +40,12 @@ public:
     BlockSparseMatrix(const DofStatus& rDofStatus, bool rCanBeSymmetric = true);
 
     //! @brief copy ctor
-    BlockSparseMatrix(const BlockSparseMatrix&  rOther);
+    BlockSparseMatrix(const BlockSparseMatrix& rOther);
 
 #ifndef SWIG
     //! @brief move ctor
     //! @param rOther ... other BlockSparseMatrix
-    BlockSparseMatrix(      BlockSparseMatrix&& rOther);
+    BlockSparseMatrix(BlockSparseMatrix&& rOther);
 #endif
 
 
@@ -54,23 +56,24 @@ public:
     void AllocateSubmatrices();
 
     //! @brief set the right dimensions of the off-diagonal entries (and zero values)
-    //! @remark In some cases, only the diagonal terms are set (constraint matrix). The off diagonals have to be resized for the operators to work properly.
+    //! @remark In some cases, only the diagonal terms are set (constraint matrix). The off diagonals have to be resized
+    //! for the operators to work properly.
     void FixOffDiagonalDimensions();
 
 #ifndef SWIG
     //! @brief copy assignment
     //! @remark copies only active dof types
-    BlockSparseMatrix& operator=(const BlockSparseMatrix&  rOther);
+    BlockSparseMatrix& operator=(const BlockSparseMatrix& rOther);
 
     //! @brief move assignment
-    BlockSparseMatrix& operator=(      BlockSparseMatrix&& rOther);
+    BlockSparseMatrix& operator=(BlockSparseMatrix&& rOther);
 
-    friend std::ostream& operator<< (std::ostream &rOut, const NuTo::BlockSparseMatrix& rBlockSparseMatrix);
+    friend std::ostream& operator<<(std::ostream& rOut, const NuTo::BlockSparseMatrix& rBlockSparseMatrix);
 
     //! @brief non-const access to the pair(rDofRow, rDofCol)
     //! @param rDofRow ... desired row
     //! @param rDofCol ... desired column
-          SparseMatrixCSRVector2<double>& operator()(Node::eDof rDofRow, Node::eDof rDofCol);
+    SparseMatrixCSRVector2<double>& operator()(Node::eDof rDofRow, Node::eDof rDofCol);
 
     //! @brief const access to the pair(rDofRow, rDofCol)
     //! @param rDofRow ... desired row
@@ -131,32 +134,25 @@ public:
     //! @brief adds the GetNumEntries() for all active dof types
     int GetNumActiveEntires() const;
 
-    Eigen::MatrixXd                                           ExportToFullMatrix() const;
-    NuTo::SparseMatrixCSRVector2General<double>               ExportToCSRVector2General() const;
-    NuTo::SparseMatrixCSRGeneral<double>                      ExportToCSRGeneral() const;
-    Eigen::SparseMatrix<double>                               ExportToEigenSparseMatrix() const;
+    Eigen::MatrixXd ExportToFullMatrix() const;
+    NuTo::SparseMatrixCSRVector2General<double> ExportToCSRVector2General() const;
+    NuTo::SparseMatrixCSRGeneral<double> ExportToCSRGeneral() const;
+    Eigen::SparseMatrix<double> ExportToEigenSparseMatrix() const;
 #ifndef SWIG
-    std::unique_ptr<NuTo::SparseMatrixCSR<double>>            ExportToCSR() const;
+    std::unique_ptr<NuTo::SparseMatrixCSR<double>> ExportToCSR() const;
 #endif
 
 
     NuTo::SparseMatrixCSRVector2General<double> Get(std::string rDofRow, std::string rDofCol) const;
 
 private:
-
     //! @brief storage using a unique_ptr
     //! @todo use std::make_unique as soon as the compiler version allows it
-    std::unordered_map<std::pair<Node::eDof, Node::eDof>,
-                       std::unique_ptr<SparseMatrixCSRVector2<double>>,
-                       Node::eDofPairHash> mData;
+    std::unordered_map<std::pair<Node::eDof, Node::eDof>, std::unique_ptr<SparseMatrixCSRVector2<double>>,
+                       Node::eDofPairHash>
+            mData;
 
     bool mCanBeSymmetric;
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockSparseMatrix)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

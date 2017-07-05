@@ -59,8 +59,8 @@ Eigen::MatrixXd NuTo::ParticleCreator::PerformTakePhase(const Eigen::MatrixXd& r
 
     for (int gc = 0; gc < numGradingClasses; ++gc)
     {
-        double dMin       = rGradingCurve(gc, 0);
-        double dMax       = rGradingCurve(gc, 1);
+        double dMin = rGradingCurve(gc, 0);
+        double dMax = rGradingCurve(gc, 1);
         double volumeFrac = rGradingCurve(gc, 2);
 
         numParticlesPerClass[gc] = 0;
@@ -121,7 +121,7 @@ Eigen::MatrixXd NuTo::ParticleCreator::PerformTakePhase(const Eigen::MatrixXd& r
     std::sort(((double*)&particles.data()[3 * particles.rows()]),
               ((double*)&particles.data()[3 * particles.rows() + numParticles]), std::greater<double>());
 
-    double volume          = 0.;
+    double volume = 0.;
     double volumeShrinkage = 0.;
 
     for (int i = 0; i < particles.rows(); ++i)
@@ -149,7 +149,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
     std::vector<double> numParticlesPerSize = GetNumParticlesPerSizeClass(rParticles, sizeClasses);
 
 
-    int numParticlesAdded      = 0;
+    int numParticlesAdded = 0;
     double lastPrintedFraction = 0.;
     for (unsigned int sizeClass = 0; sizeClass < sizeClasses.size(); ++sizeClass)
     {
@@ -164,8 +164,8 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
         {
             // rescale to original sizes
             double subBoxLength = sizeClasses[sizeClass] / (1. - mShrinkage);
-            nSubBox[count]      = std::floor(mSpecimen.GetLength()[count] / subBoxLength);
-            lSubBox[count]      = mSpecimen.GetLength()[count] / nSubBox[count];
+            nSubBox[count] = std::floor(mSpecimen.GetLength()[count] / subBoxLength);
+            lSubBox[count] = mSpecimen.GetLength()[count] / nSubBox[count];
         }
 
         int numberOfSubBoxes = nSubBox[0] * nSubBox[1] * nSubBox[2];
@@ -184,14 +184,14 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
              countParticle++)
         {
             bool inserted = false;
-            int numTries  = 0;
+            int numTries = 0;
             while (!inserted)
             {
                 // create random coordinate
                 Eigen::Vector3i cSubBox;
                 for (int count = 0; count < 3; count++)
                 {
-                    double radius       = rParticles(countParticle, 3);
+                    double radius = rParticles(countParticle, 3);
                     double randomNumber = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 
                     rParticles(countParticle, count) = radius + mSpecimen.GetBoundingBox()(count, 0) +
@@ -216,7 +216,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
                     double deltaX = rParticles(countParticle, 0) - rParticles(other, 0);
                     double deltaY = rParticles(countParticle, 1) - rParticles(other, 1);
                     double deltaZ = rParticles(countParticle, 2) - rParticles(other, 2);
-                    double sumR   = rParticles(countParticle, 3) * (1. + rRelativeDistance) + rAbsoluteDistance +
+                    double sumR = rParticles(countParticle, 3) * (1. + rRelativeDistance) + rAbsoluteDistance +
                                   rParticles(other, 3);
                     if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < sumR * sumR)
                     {
@@ -294,10 +294,10 @@ bool NuTo::ParticleCreator::CollidesWithBoundary(const Eigen::Vector4d& rParticl
         break;
     case Specimen::Dogbone:
     {
-        double D      = bBox(0, 1) - bBox(0, 0);
+        double D = bBox(0, 1) - bBox(0, 0);
         double deltaX = rParticle(0) - (bBox(0, 1) + 0.525 * D);
         double deltaY = rParticle(1) - (bBox(1, 0) + 0.75 * D);
-        double sumR   = rParticle(3) + 0.725 * D;
+        double sumR = rParticle(3) + 0.725 * D;
         if (deltaX * deltaX + deltaY * deltaY < sumR * sumR)
             collidesWithBoundary = true;
 
@@ -309,10 +309,10 @@ bool NuTo::ParticleCreator::CollidesWithBoundary(const Eigen::Vector4d& rParticl
     break;
     case Specimen::Cylinder:
     {
-        double D      = bBox(0, 1) - bBox(0, 0);
+        double D = bBox(0, 1) - bBox(0, 0);
         double deltaX = rParticle(0) - (bBox(0, 0) + 0.5 * D);
         double deltaY = rParticle(1) - (bBox(1, 0) + 0.5 * D);
-        double sumR   = 0.5 * D - rParticle(3) * (1. + rRelativeDistance) - rAbsoluteDistance;
+        double sumR = 0.5 * D - rParticle(3) * (1. + rRelativeDistance) - rAbsoluteDistance;
         if (sumR < 0)
             throw Exception(__PRETTY_FUNCTION__, "that should not have happend.");
 
@@ -330,9 +330,9 @@ const std::vector<double> NuTo::ParticleCreator::GetSizeClasses(const Eigen::Mat
 {
 
     const double sizeScaleFactor = 2;
-    double startDiameter         = 2. * rParticles(rParticles.rows() - 1, 3);
-    double endDiameter           = 2. * rParticles(0, 3);
-    double diameter              = startDiameter;
+    double startDiameter = 2. * rParticles(rParticles.rows() - 1, 3);
+    double endDiameter = 2. * rParticles(0, 3);
+    double diameter = startDiameter;
 
     std::vector<double> sizesReverse;
     do
@@ -343,7 +343,7 @@ const std::vector<double> NuTo::ParticleCreator::GetSizeClasses(const Eigen::Mat
 
     // reverse vector
     std::vector<double> sizes(sizesReverse.size());
-    for (unsigned int i             = 0; i < sizesReverse.size(); ++i)
+    for (unsigned int i = 0; i < sizesReverse.size(); ++i)
         sizes[sizes.size() - i - 1] = sizesReverse[i];
 
     std::cout << sizes.size() << std::endl;
@@ -404,7 +404,7 @@ void NuTo::ParticleCreator::InsertParticleIntoBox(const Eigen::MatrixXd& rPartic
 
     for (int coordinate = 0; coordinate < coordMax; coordinate++)
     {
-        double radius      = rParticles(rTheParticle, 3);
+        double radius = rParticles(rTheParticle, 3);
         double posParticle = rParticles(rTheParticle, coordinate);
         double posBoundary = mSpecimen.GetBoundingBox()(coordinate, 0);
 

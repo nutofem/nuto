@@ -46,7 +46,7 @@ public:
             structure.NodeSetTemperature(nodeId, temperature);
 
         structure.Constraints().Add(NuTo::Node::eDof::TEMPERATURE,
-                NuTo::Constraint::Value(*structure.NodeGetNodePtr(0), temperature));
+                                    NuTo::Constraint::Value(*structure.NodeGetNodePtr(0), temperature));
     }
 
 

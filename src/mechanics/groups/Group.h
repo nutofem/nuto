@@ -1,23 +1,10 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/utility/identity_type.hpp>
-#else
 #include <map>
-#endif // ENABLE_SERIALIZATION
 
 #include <algorithm>
 #include "mechanics/groups/GroupBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -29,9 +16,6 @@ class NodeBase;
 template <class T>
 class Group : public GroupBase, public std::map<int, T*>
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
@@ -122,7 +106,7 @@ public:
                 it->second = reinterpret_cast<T*>(itCast->second);
             }
             else
-                throw MechanicsException("[NuTo::Group] The NodeBase/ElementBase-Pointer could not be updated.");
+                throw Exception("[NuTo::Group] The NodeBase/ElementBase-Pointer could not be updated.");
         }
     }
 #endif // ENABLE_SERIALIZATION
@@ -150,7 +134,7 @@ public:
     void AddMember(int rId, T* rMember) override
     {
         if ((this->insert(std::pair<int, T*>(rId, rMember))).second == false)
-            throw MechanicsException("[Group::AddMember] Group member already exists in the group.");
+            throw Exception("[Group::AddMember] Group member already exists in the group.");
     }
 
     //! @brief removes a group member
@@ -158,7 +142,7 @@ public:
     void RemoveMember(int rId) override
     {
         if (!this->erase(rId))
-            throw MechanicsException("[Group::AddMember] Group member to be deleted is not within the group.");
+            throw Exception("[Group::AddMember] Group member to be deleted is not within the group.");
     }
 
     //! @brief check if a group contains the entry
@@ -177,7 +161,7 @@ public:
     {
         typename std::map<int, T*>::iterator it(this->find(rId));
         if (it == this->end())
-            throw MechanicsException(
+            throw Exception(
                     "[Group::ExchangePtr] New group member can not be inserted, since the id does not exist in group.");
         else
         {
@@ -193,7 +177,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw MechanicsException("[NuTo::Group::Unite] Groups do not have the same type.");
+            throw Exception("[NuTo::Group::Unite] Groups do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_union(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
         return returnGroup;
@@ -216,7 +200,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw MechanicsException("[NuTo::Group::Difference] Groups do not have the same type.");
+            throw Exception("[NuTo::Group::Difference] Groups do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_difference(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
         return returnGroup;
@@ -229,7 +213,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw MechanicsException("[NuTo::Group::Intersection] Groups do not have the same type.");
+            throw Exception("[NuTo::Group::Intersection] Groups do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_intersection(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(), returnGroupInsertIterator);
         return returnGroup;
@@ -243,7 +227,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw MechanicsException(
+            throw Exception(
                     "[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_symmetric_difference(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(),
@@ -278,11 +262,3 @@ public:
     void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
 };
 } // namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::NodeBase>)
-BOOST_CLASS_EXPORT_KEY(NuTo::Group<NuTo::ElementBase>)
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::NodeBase*>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int, NuTo::ElementBase*>)))
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

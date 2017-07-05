@@ -1,4 +1,3 @@
-# $Id$
 
 # find the scotch package for metis (try to find the scotch header and the scotch libraries)
 #

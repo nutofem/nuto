@@ -13,4 +13,3 @@ BOOST_AUTO_TEST_CASE(CreateAndPrint)
     std::string expected = "    Variable truss section.\n";
     BOOST_CHECK(output.is_equal(expected));
 }
-

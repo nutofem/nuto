@@ -11,9 +11,7 @@
 #include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
@@ -109,7 +107,7 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
 
 BOOST_AUTO_TEST_CASE(InterpolationTruss)
 {
-    NuTo::IntegrationType1D2NGauss2Ip myIntegrationType;
+    NuTo::IntegrationType1D2NGauss myIntegrationType(2);
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

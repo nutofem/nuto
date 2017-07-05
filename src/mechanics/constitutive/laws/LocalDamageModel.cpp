@@ -2,17 +2,8 @@
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
@@ -66,7 +57,7 @@ double NuTo::LocalDamageModel::GetParameterDouble(eConstitutiveParameter rIdenti
         return mCompressiveStrength;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -95,7 +86,7 @@ void NuTo::LocalDamageModel::SetParameterDouble(eConstitutiveParameter rIdentifi
         break;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -126,7 +117,7 @@ template <>
 void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
                                          const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
 
     double kappa = GetCurrentStaticData<1>(rStaticData, rConstitutiveInput);
 
@@ -156,7 +147,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
                 EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -237,7 +228,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -292,7 +283,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
                 EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -367,7 +358,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -511,7 +502,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -551,7 +542,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
@@ -596,7 +587,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
     {
         auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
         if (itTimeStep == rConstitutiveInput.end())
-            throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
+            throw Exception(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
         const auto& timeStep = *(itTimeStep->second);
 
         assert(rStaticData.GetNumData() >= 2);
@@ -605,7 +596,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
     }
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 }
 
@@ -632,33 +623,6 @@ NuTo::LocalDamageModel::CalculateStaticDataExtrapolationError(Data& rStaticData,
 
     return (k_n - k_nn) / k_n;
 }
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief serializes the class
-//! @param ar         archive
-//! @param version    version
-template void NuTo::LocalDamageModel::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::LocalDamageModel::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::LocalDamageModel::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize LocalDamageModel" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mMaxBondStress) &
-            BOOST_SERIALIZATION_NVP(mResidualBondStress) & BOOST_SERIALIZATION_NVP(mSlipAtMaxBondStress) &
-            BOOST_SERIALIZATION_NVP(mSlipAtResidualBondStress) & BOOST_SERIALIZATION_NVP(mNormalStiffness) &
-            BOOST_SERIALIZATION_NVP(m1DivAlpha);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize LocalDamageModel" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LocalDamageModel)
-#endif // ENABLE_SERIALIZATION
 
 
 bool NuTo::LocalDamageModel::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,

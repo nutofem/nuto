@@ -8,7 +8,7 @@
 #pragma once
 
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 
 namespace NuTo
@@ -21,7 +21,6 @@ class SparseDirectSolverMUMPS;
 class ImplicitExplicitBase : public TimeIntegrationBase
 {
 public:
-
     ImplicitExplicitBase(StructureBase* rStructure);
 
     virtual ~ImplicitExplicitBase();
@@ -31,40 +30,38 @@ public:
     virtual void Solve(double rTimeDelta) override;
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
-    bool HasCriticalTimeStep() const override {
+    bool HasCriticalTimeStep() const override
+    {
         return false;
     }
 
     //! @brief calculate the critical time step for explicit routines
     //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
-    double CalculateCriticalTimeStep()const override;
+    double CalculateCriticalTimeStep() const override;
 
     //! @brief ... Adds a dof type with a constant hessian0 matrix
     //! param rDofWithConstantHessian ... dof type
     void AddDofWithConstantHessian0(Node::eDof rDofWithConstantHessian);
 
 protected:
-
     //! @brief ... assess the solution and return, may modifiy the mTimeStep
     //! @return ... bool : true - accept solution, false - reject solution
     virtual bool CheckExtrapolationAndAdjustTimeStep()
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented.");
     }
 
     //! @brief ... extrapolates the static data
     virtual void ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
+        throw Exception(__PRETTY_FUNCTION__, "not implemented.");
     }
 
 
 private:
-
     std::set<Node::eDof> mDofsWithConstantHessian;
 
     void FactorizeConstantHessians(std::map<Node::eDof, SparseDirectSolverMUMPS>& rPreFactorizedHessians);
 };
 
 } /* namespace NuTo */
-

@@ -17,12 +17,8 @@ struct NodeDofInfo
 //! @author Thomas Titscher, BAM
 //! @date July 2016
 //! @brief ... standard class for all nodes
-class NodeDof: public NodeBase
+class NodeDof : public NodeBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    NodeDof() {}
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ctor
     //! @param contains the information for each dof type
@@ -67,7 +63,7 @@ public:
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
     //! @param rValue ... dof value
-    void Set(Node::eDof rDof, int rTimeDerivative , const Eigen::VectorXd& rValue) override;
+    void Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue) override;
 
     //! @brief returns a set containing all dof types
     std::set<Node::eDof> GetDofTypes() const override;
@@ -75,29 +71,16 @@ public:
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 protected:
     //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const override;
 
 private:
-
     //! @brief stores the dof values (std::vector for time derivatives, VectorXd for values)
     std::map<Node::eDof, std::vector<Eigen::VectorXd>> mDofValues;
 
     //! @brief stores the global dof numbers in a dynamic integer vector
     std::map<Node::eDof, Eigen::VectorXi> mDofNumbers;
-
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::NodeDof)
-#endif // ENABLE_SERIALIZATION

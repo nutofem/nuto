@@ -35,7 +35,6 @@ namespace NuToTest
 class ElementUniaxialTest
 {
 public:
-
     double lX = 365;
     double lY = 13;
     double lZ = 37;
@@ -72,7 +71,6 @@ public:
     }
 
 private:
-
     void CheckVolume(NuTo::Structure& s)
     {
         double volume = s.ElementGroupGetVolume(s.GroupGetElementsTotal());
@@ -89,7 +87,7 @@ private:
         using namespace NuTo::Constitutive;
         s.ConstitutiveLawCreate(0, eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::YOUNGS_MODULUS, E);
-        s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::POISSONS_RATIO,nu);
+        s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::POISSONS_RATIO, nu);
         s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::DENSITY, rho);
         s.ElementTotalSetConstitutiveLaw(0);
     }
@@ -103,12 +101,13 @@ private:
         // fix origin
         const auto& nodeOrigin = s.NodeGetAtCoordinate(Eigen::VectorXd::Zero(dimension));
         for (int iDim = 1; iDim < dimension; ++iDim)
-            s.Constraints().Add(eDofDispl, NuTo::Constraint::Component(nodeOrigin, {static_cast<NuTo::eDirection>(iDim)}));
+            s.Constraints().Add(eDofDispl,
+                                NuTo::Constraint::Component(nodeOrigin, {static_cast<NuTo::eDirection>(iDim)}));
 
         if (dimension == 3)
         {
-        // fix rotation
-            const auto& nodeRotation = s.NodeGetAtCoordinate(Eigen::Vector3d(0,0,lZ));
+            // fix rotation
+            const auto& nodeRotation = s.NodeGetAtCoordinate(Eigen::Vector3d(0, 0, lZ));
             s.Constraints().Add(eDofDispl, NuTo::Constraint::Component(nodeRotation, {NuTo::eDirection::Y}));
         }
 
@@ -153,8 +152,9 @@ private:
             auto stress = s.ElementGetEngineeringStress(elementId);
             for (int iIP = 0; iIP < stress.cols(); ++iIP)
             {
-                double numericStress = stress(0,iIP);
-                std::cout << "numeric stress in element " << elementId << " at IP " << iIP << ": " << numericStress << std::endl;
+                double numericStress = stress(0, iIP);
+                std::cout << "numeric stress in element " << elementId << " at IP " << iIP << ": " << numericStress
+                          << std::endl;
 
                 BOOST_CHECK_CLOSE_FRACTION(numericStress, analyticStressX, 1.e-6);
             }
@@ -176,7 +176,7 @@ private:
 
     void CheckMass(NuTo::Structure& s)
     {
-        double analyticMass = lX*lY*lZ*rho;
+        double analyticMass = lX * lY * lZ * rho;
 
         auto hessian2 = s.BuildGlobalHessian2();
 
@@ -207,14 +207,15 @@ private:
     {
 #ifdef ENABLE_VISUALIZE
         if (rVisualizationDirectory == "")
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
 
         boost::filesystem::path directory(rVisualizationDirectory);
         boost::filesystem::create_directory(directory);
 
         const auto& interpolationType = *s.InterpolationTypeGet(0);
         std::string fileName = NuTo::Interpolation::ShapeTypeToString(interpolationType.GetShapeType());
-        fileName += NuTo::Interpolation::TypeOrderToString(interpolationType.Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
+        fileName += NuTo::Interpolation::TypeOrderToString(
+                interpolationType.Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
         fileName += ".vtu";
         directory /= fileName;
 
@@ -229,5 +230,4 @@ private:
 #endif
     }
 };
-}//namespace NuToTest
-
+} // namespace NuToTest

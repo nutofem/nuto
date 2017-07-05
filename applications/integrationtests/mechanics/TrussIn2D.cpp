@@ -47,11 +47,8 @@ const double ParametersGeometry2D::mCrossSection = 0.1;
 const Eigen::Vector2d ParametersGeometry2D::mDirectionX = Eigen::Vector2d::UnitX();
 const Eigen::Vector2d ParametersGeometry2D::mDirectionY = Eigen::Vector2d::UnitY();
 
-void Run2d(Eigen::VectorXd rNodeCoords0,
-           Eigen::VectorXd rNodeCoords1,
-           Eigen::VectorXd rNodeCoords2,
-           Eigen::VectorXd rDirectionAligned,
-           Eigen::VectorXd rDirectionOrthogonal)
+void Run2d(Eigen::VectorXd rNodeCoords0, Eigen::VectorXd rNodeCoords1, Eigen::VectorXd rNodeCoords2,
+           Eigen::VectorXd rDirectionAligned, Eigen::VectorXd rDirectionOrthogonal)
 {
     //**********************************************
     //          Structure
@@ -82,18 +79,26 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     //          Material
     //**********************************************
 
-    int fibreMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, ParametersMaterial::mYoungsModulus);
-    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, ParametersMaterial::mPoissonsRatio);
+    int fibreMaterial =
+            myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial,
+                                                  NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                                  ParametersMaterial::mYoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial,
+                                                  NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
+                                                  ParametersMaterial::mPoissonsRatio);
 
     //**********************************************
     //          Interpolation
     //**********************************************
 
     int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
-    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
+    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES,
+                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS,
+                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType,
+                                                    NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
 
     //**********************************************
     //          Geometry
@@ -118,10 +123,12 @@ void Run2d(Eigen::VectorXd rNodeCoords0,
     const auto& node1 = *myStructure.NodeGetNodePtr(nodeId1);
     const auto& node2 = *myStructure.NodeGetNodePtr(nodeId2);
     myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-            NuTo::Constraint::Component(node0, {NuTo::eDirection::X, NuTo::eDirection::Y}));
-    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                                  NuTo::Constraint::Component(node0, {NuTo::eDirection::X, NuTo::eDirection::Y}));
+    myStructure.Constraints().Add(
+            NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Constraint::Direction(node1, rDirectionOrthogonal, NuTo::Constraint::RhsConstant(0)));
-    myStructure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+    myStructure.Constraints().Add(
+            NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Constraint::Direction(node2, rDirectionOrthogonal, NuTo::Constraint::RhsConstant(0)));
 
     //**********************************************
@@ -241,8 +248,8 @@ int main(int argc, char* argv[])
         directionOrthogonal[1] = 0.0;
 
         Run2d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal);
-
-    } catch (NuTo::Exception& e)
+    }
+    catch (NuTo::Exception& e)
     {
         std::cout << "## Test failed ##" << std::endl;
         std::cout << e.ErrorMessage();
@@ -250,6 +257,4 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "## Test successful ##" << std::endl;
-
 }
-

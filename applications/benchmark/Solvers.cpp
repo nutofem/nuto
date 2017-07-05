@@ -17,7 +17,7 @@ public:
     {
         r.SetupBCs();
         matrix = r.GetStructure().BuildGlobalHessian0().JJ;
-        rhs    = r.GetStructure().BuildGlobalInternalGradient().J;
+        rhs = r.GetStructure().BuildGlobalInternalGradient().J;
     }
 
     void Solve(NuTo::SolverBase& rSolver)
@@ -108,4 +108,3 @@ BENCHMARK(Solver, EigenLDLT, runner)
         t.Solve(solver);
     }
 }
-
