@@ -326,14 +326,16 @@ void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(
         else
             rData.m1DivAlpha = 1. / this->mAlphaUserDefined;
 
-        const auto& localEqStrain = *static_cast<NuTo::ConstitutiveScalar*>(
-                rConstitutiveOutput.at(NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
-        const auto& nonlocalEqStrain = *static_cast<NuTo::ConstitutiveScalar*>(
-                rConstitutiveInput.at(NuTo::Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
-
-        double gradEeqN = localEqStrain[0] - nonlocalEqStrain[0];
-        if (gradEeqN > 0)
-            rData.m1DivAlpha = 0;
+        // const auto &localEqStrain =
+        //    *static_cast<NuTo::ConstitutiveScalar
+        //    *>(rConstitutiveOutput.at(NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
+        // const auto &nonlocalEqStrain =
+        //    *static_cast<NuTo::ConstitutiveScalar
+        //    *>(rConstitutiveInput.at(NuTo::Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
+        //
+        // double gradEeqN = localEqStrain[0] - nonlocalEqStrain[0];
+        // if (gradEeqN > 0)
+        //    rData.m1DivAlpha = 0;
     }
 }
 
