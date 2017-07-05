@@ -31,7 +31,7 @@ public:
 
 protected:
     //! @brief Outstream function for "virtual friend idiom"
-    virtual void Info(std::ostream& out) const;
+    virtual void Info(std::ostream& out) const = 0;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Section& section)
