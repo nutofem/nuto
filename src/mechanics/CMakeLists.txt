@@ -94,6 +94,7 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     integrationtypes/IntegrationType3D8NGauss1Ip.cpp
     integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+    integrationtypes/IntegrationTypeTensorProductGauss.cpp
     integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
