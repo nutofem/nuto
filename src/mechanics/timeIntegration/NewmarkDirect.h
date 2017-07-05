@@ -10,6 +10,14 @@ namespace NuTo
 
 class StructureOutputBlockMatrix;
 class StructureOutputBlockVector;
+enum class eStructureOutput;
+namespace Constitutive
+{
+    enum class eInput;
+
+}
+template <typename IOEnum> class ConstitutiveIOMap;
+typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
 
 //! @author Jörg F. Unger, NU
 //! @date February 2012
@@ -122,6 +130,31 @@ protected:
 
     //! @brief Prints Info about the current iteration
     void PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const;
+
+
+    // temporary stuff (no doxy-doc)
+
+    void PreIteration(std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient,
+                      std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient_Hessian0Hessian1,
+                      std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_Hessian0_Hessian1,
+                      NuTo::ConstitutiveInputMap &rInputMap,
+                      NuTo::StructureOutputBlockVector &rIntForce,
+                      NuTo::StructureOutputBlockMatrix &rHessian0,
+                      NuTo::StructureOutputBlockMatrix &rHessian1,
+                      NuTo::StructureOutputBlockMatrix &rHessian2, NuTo::StructureOutputBlockVector &lastConverged_dof_dt0, NuTo::StructureOutputBlockVector &lastConverged_dof_dt1, NuTo::StructureOutputBlockVector &lastConverged_dof_dt2, const NuTo::BlockSparseMatrix &cmat, NuTo::StructureOutputBlockVector &residual, BlockFullVector<double> &residual_mod, double curTime,
+                      const NuTo::DofStatus &dofStatus);
+
+    void FillOutputMaps(std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient,
+                        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient_Hessian0Hessian1,
+                        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_Hessian0_Hessian1,
+                        NuTo::StructureOutputBlockVector &rIntForce,
+                        NuTo::StructureOutputBlockMatrix &rHessian0,
+                        NuTo::StructureOutputBlockMatrix &rHessian1,
+                        NuTo::StructureOutputBlockMatrix &rHessian2,
+                        const NuTo::DofStatus &dofStatus);
+
+    void FillInputMap(NuTo::ConstitutiveInputMap &rInputMap);
+
 
 protected:
     double mMinLineSearchStep = 0.01;
