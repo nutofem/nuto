@@ -22,14 +22,21 @@ auto InfoProblem()
     return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance, Info);
 }
 
+void Check(double x)
+{
+    if (std::fabs(x + 2) > 1.e-10)
+    {
+        throw NuTo::NewtonRaphson::NoConvergence();
+    }
+}
+
 BENCHMARK(Newton, NuToFunction, runner)
 {
     auto problem = ValidProblem();
     while (runner.KeepRunningTime(runtime))
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
-        if (std::fabs(x + 2) > 1.e-10)
-            throw;
+        Check(x);
     }
 }
 
@@ -39,8 +46,7 @@ BENCHMARK(Newton, NuToFunctionWithInfoToCout, runner)
     while (runner.KeepRunningTime(runtime))
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
-        if (std::fabs(x + 2) > 1.e-10)
-            throw;
+        Check(x);
     }
 }
 
@@ -52,8 +58,7 @@ BENCHMARK(Newton, NuToFunctionLineSearch, runner)
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100,
                                             NuTo::NewtonRaphson::LineSearch());
-        if (std::fabs(x + 2) > 1.e-10)
-            throw;
+        Check(x);
     }
 }
 
@@ -70,12 +75,11 @@ BENCHMARK(Newton, hardcode, runner)
             x -= r / dr;
             r = x * x * x - x + 6;
             ++i;
-            if (std::fabs(r) < tolerance)
+            if (std::fabs(r) < tolerance || i > 100)
+            {
                 break;
-            if (i > 100)
-                break;
+            }
         }
-        if (std::fabs(x + 2) > 1.e-10)
-            throw;
+        Check(x);
     }
 }

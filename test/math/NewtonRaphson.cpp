@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(NewtonScalarLineSearchInvalid)
 
 struct ComplexSolver
 {
-    std::complex<double> Solve(std::complex<double> DR, std::complex<double> R)
+    std::complex<double> Solve(const std::complex<double>& DR, const std::complex<double>& R) const
     {
         return R / DR;
     }

@@ -12,7 +12,7 @@ namespace NewtonRaphson
 class NoConvergence : public NuTo::MathException
 {
 public:
-    NoConvergence(const std::string& caller, const std::string& message)
+    NoConvergence(const std::string& caller = "", const std::string& message = "")
         : MathException(caller, message)
     {
     }
