@@ -66,9 +66,9 @@ namespace NuTo
 {
 
 template <>
-void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                         const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                         Data& rStaticData)
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap&,
+                                                         const ConstitutiveOutputMap&,
+                                                         Data&)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "not implemented for 1D.");
 }

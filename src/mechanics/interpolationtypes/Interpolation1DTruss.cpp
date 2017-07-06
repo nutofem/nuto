@@ -116,9 +116,8 @@ NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen
     }
 }
 
-Eigen::VectorXd
-NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
-                                                               int rSurface) const
+Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd&,
+                                                                               int rSurface) const
 {
     Eigen::VectorXd naturalCoordinates(1);
     switch (rSurface)
@@ -136,8 +135,8 @@ NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::Vect
     return naturalCoordinates;
 }
 
-Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(
-        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd&,
+                                                                                         int) const
 {
     Eigen::VectorXd naturalSurfaceCoordinates(1);
     // calculating a transformation from 1D --> 0D returns 0

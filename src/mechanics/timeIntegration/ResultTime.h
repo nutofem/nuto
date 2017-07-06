@@ -25,7 +25,7 @@ public:
     NuTo::eTimeIntegrationResultType GetResultType() const override;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
-    int GetNumData(const StructureBase& rStructure) const override
+    int GetNumData(const StructureBase&) const override
     {
         return 1;
     }

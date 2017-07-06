@@ -61,12 +61,10 @@ private:
 
         static void AssertVectorValueIsNot(const Eigen::Matrix<double, TDim, 1>& rVector, double rValue)
         {
-#ifdef DEBUG
             for (unsigned int i = 0; i < TDim; ++i)
             {
                 assert(rVector[i] != rValue);
             }
-#endif
         }
     };
 

@@ -177,24 +177,24 @@ Eigen::MatrixXd NuTo::ConstitutiveIOBase::CopyToEigenMatrix() const
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol)
+double& NuTo::ConstitutiveIOBase::operator()(int, int)
 {
     throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
-double NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol) const
+double NuTo::ConstitutiveIOBase::operator()(int, int) const
 {
     throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator[](int rRow)
+double& NuTo::ConstitutiveIOBase::operator[](int)
 {
     throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
-double NuTo::ConstitutiveIOBase::operator[](int rRow) const
+double NuTo::ConstitutiveIOBase::operator[](int) const
 {
     throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
@@ -202,12 +202,10 @@ double NuTo::ConstitutiveIOBase::operator[](int rRow) const
 
 void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
 {
-#ifdef DEBUG
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;
     if (isNotScalar)
         throw MechanicsException(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
                                                       " is not a ConstitutiveScalar.");
-#endif
 }
 
 

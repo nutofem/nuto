@@ -10,7 +10,7 @@ LoadSurfaceConstDirection3D::LoadSurfaceConstDirection3D(StructureBase* rStructu
 }
 
 
-void LoadSurfaceConstDirection3D::CalculateSurfaceLoad(Eigen::Vector3d& rCoordinates, Eigen::Vector3d& rNormal,
+void LoadSurfaceConstDirection3D::CalculateSurfaceLoad(Eigen::Vector3d&, Eigen::Vector3d&,
                                                        Eigen::Vector3d& rLoadVector) const
 {
     rLoadVector = mLoadVector;

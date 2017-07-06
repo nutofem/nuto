@@ -35,7 +35,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the static data.
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+    void Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
     {
         throw MechanicsException(
                 __PRETTY_FUNCTION__,

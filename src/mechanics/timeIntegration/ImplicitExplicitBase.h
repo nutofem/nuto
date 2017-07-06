@@ -52,7 +52,7 @@ protected:
     }
 
     //! @brief ... extrapolates the static data
-    virtual void ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
+    virtual void ExtrapolateStaticData(const ConstitutiveTimeStep&)
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
     }

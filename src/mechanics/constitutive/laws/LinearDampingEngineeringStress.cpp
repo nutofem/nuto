@@ -23,7 +23,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearDampingEn
 
 NuTo::ConstitutiveInputMap
 NuTo::LinearDampingEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                            const InterpolationType& rInterpolationType) const
+                                                            const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

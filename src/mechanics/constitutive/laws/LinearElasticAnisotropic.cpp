@@ -57,7 +57,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAn
 
 NuTo::ConstitutiveInputMap
 NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                      const InterpolationType& rInterpolationType) const
+                                                      const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -94,16 +94,16 @@ NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMa
 namespace NuTo // template specialization in same namespace as definition
 {
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap&,
+                                                 const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }
 
 
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap&,
+                                                 const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }

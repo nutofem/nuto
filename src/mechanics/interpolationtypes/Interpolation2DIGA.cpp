@@ -39,7 +39,7 @@ NuTo::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() co
     }
 }
 
-std::vector<Eigen::VectorXd> NuTo::Interpolation2DIGA::GetSurfaceEdgesCoordinates(int rSurface) const
+std::vector<Eigen::VectorXd> NuTo::Interpolation2DIGA::GetSurfaceEdgesCoordinates(int) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented yet");
 }

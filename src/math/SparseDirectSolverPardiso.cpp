@@ -1,9 +1,6 @@
 #include "math/SparseDirectSolverPardiso.h"
-
 #include "base/Timer.h"
-#include "math/MathException.h"
 #include "math/SparseMatrixCSR.h"
-#include "math/SparseDirectSolver.h"
 
 
 /* PARDISO prototype */

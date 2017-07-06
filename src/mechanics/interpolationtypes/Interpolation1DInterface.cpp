@@ -80,15 +80,15 @@ NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural(const E
 }
 
 Eigen::VectorXd
-NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
-                                                                   int rSurface) const
+NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd&,
+                                                                   int) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates] not implemented");
 }
 
 
 Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates(
-        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+        const Eigen::VectorXd&, int) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates] not implemented");
 }

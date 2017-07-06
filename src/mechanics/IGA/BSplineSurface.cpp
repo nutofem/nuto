@@ -17,17 +17,10 @@ NuTo::BSplineSurface::BSplineSurface(
 }
 
 NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i& rDegree,
-                                     const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
-                                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& AInv)
+                                     const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>&,
+                                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>&)
 
     : mDegree(rDegree)
-{
-    // TODO
-}
-
-void NuTo::BSplineSurface::ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints,
-                                                            Eigen::VectorXd& rParametersX,
-                                                            Eigen::VectorXd& rParametersY)
 {
     // TODO
 }

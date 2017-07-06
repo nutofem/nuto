@@ -270,7 +270,7 @@ std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupV
     return mGroupVisualizeComponentsMap;
 }
 
-void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme)
+void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase&)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -616,7 +616,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
 }
 
 void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
-                                                                      NuTo::Node::eDof rDofType,
+                                                                      NuTo::Node::eDof,
                                                                       const double rTolerance,
                                                                       Eigen::Vector3d rNodeCoordOffset)
 {
@@ -712,7 +712,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
 }
 
-void NuTo::StructureBase::Contact(const std::vector<int>& rElementGroups)
+void NuTo::StructureBase::Contact(const std::vector<int>&)
 {
 }
 

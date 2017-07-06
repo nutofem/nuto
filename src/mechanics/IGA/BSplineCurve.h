@@ -39,12 +39,10 @@ public:
     {
         return mDegree;
     }
-    const
 
-            //! @brief ... get the dimension of the curve
-            //! @return ... dimension of the curve
-            int
-            GetDimension() const
+    //! @brief ... get the dimension of the curve
+    //! @return ... dimension of the curve
+    int GetDimension() const
     {
         return mControlPoints.cols();
     }

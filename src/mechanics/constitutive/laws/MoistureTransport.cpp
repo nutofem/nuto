@@ -761,7 +761,7 @@ void NuTo::MoistureTransport::CheckParameters() const
 //! @return constitutive inputs needed for the evaluation
 NuTo::ConstitutiveInputMap
 NuTo::MoistureTransport::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const NuTo::InterpolationType& rInterpolationType) const
+                                               const NuTo::InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
