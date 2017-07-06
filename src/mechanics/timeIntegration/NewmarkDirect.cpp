@@ -40,53 +40,25 @@ void NewmarkDirect::Solve(double rTimeDelta)
     // renumber dofs and build constraint matrix
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    CalculateStaticAndTimeDependentExternalLoad();
 
 
-    mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
-
-    if (mMaxTimeStep == 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
-
-    double curTime = mTime;
-    double timeStep = mTimeStep;
-
-    const DofStatus& dofStatus = mStructure->GetDofStatus();
-
-    /*---------------------------------*\
-    | Check number of calculation steps |
-    \*---------------------------------*/
-
-    if (mStepActiveDofs.empty())
-    {
-        mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
-    }
-    else
-    {
-        for (unsigned int i = 0; i < mStepActiveDofs.size(); ++i)
-        {
-            if (mStepActiveDofs[i].empty())
-            {
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "Calculation step " + std::to_string(i) + " has no active DOFs.");
-            }
-        }
-    }
 
 
     /*---------------------------------*\
     |        Allocate Variables         |
     \*---------------------------------*/
 
+    double curTime = mTime;
+    double timeStep = mTimeStep;
+
+    const DofStatus& dofStatus = mStructure->GetDofStatus();
+
+    StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
+
     // [0] = hessian0. , [1] = hessian1 , [2] = hessian2
     std::vector<StructureOutputBlockMatrix> hessian_dt = {StructureOutputBlockMatrix(dofStatus,true),
                                                           StructureOutputBlockMatrix(dofStatus),
                                                           StructureOutputBlockMatrix(dofStatus)};
-
-    // Vectors
-    // -------
-
-    StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
 
     // [0] = disp. , [1] = vel. , [2] = acc.
     std::vector<StructureOutputBlockVector> dof_dt = {StructureOutputBlockVector(dofStatus, true),
@@ -97,9 +69,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
     std::vector<StructureOutputBlockVector> lastConverged_dof_dt = {StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true)};
-//    StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
-//    StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
-//    StructureOutputBlockVector lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
+
 
 
     StructureOutputBlockVector extForce(dofStatus, true);
@@ -184,7 +154,7 @@ NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, co
         if (mCheckCoefficientMatrix)
             mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
 
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt[0], hessian_dt[1], hessian_dt[2], residual, timeStep);
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt, residual, timeStep);
         delta_dof_dt0.K = constraintMatrix * delta_dof_dt0.J * (-1.);
         ++mIterationCount;
 
@@ -419,9 +389,7 @@ void NewmarkDirect::CalculateResidualKForPostprocessing(StructureOutputBlockVect
 
 void NewmarkDirect::CalculateResidualTrial(StructureOutputBlockVector& rResidual,
                                            const BlockFullVector<double>& rDeltaBRHS,
-                                           const StructureOutputBlockMatrix& rHessian_dt0,
-                                           const StructureOutputBlockMatrix& rHessian_dt1,
-                                           const StructureOutputBlockMatrix& rHessian_dt2,
+                                           const std::vector<StructureOutputBlockMatrix> &rHessian_dt,
                                            const StructureOutputBlockVector& rDof_dt1,
                                            const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const
 {
@@ -432,18 +400,18 @@ void NewmarkDirect::CalculateResidualTrial(StructureOutputBlockVector& rResidual
     deltaDof_dt0.K = rDeltaBRHS;
 
 
-    rResidual -= rHessian_dt0 * deltaDof_dt0;
+    rResidual -= rHessian_dt[0] * deltaDof_dt0;
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
     {
         StructureOutputBlockVector delta_dof1 = CalculateDof1(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt1;
-        rResidual -= rHessian_dt1 * delta_dof1;
+        rResidual -= rHessian_dt[1] * delta_dof1;
     }
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
     {
         StructureOutputBlockVector delta_dof2 = CalculateDof2(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt2;
-        rResidual -= rHessian_dt2 * delta_dof2;
+        rResidual -= rHessian_dt[2] * delta_dof2;
     }
 }
 
@@ -518,6 +486,37 @@ void NuTo::NewmarkDirect::PreIteration(
         const BlockSparseMatrix& cmat, StructureOutputBlockVector& residual, BlockFullVector<double>& residual_mod,
         double curTime, const NuTo::DofStatus& dofStatus)
 {
+
+
+
+    CalculateStaticAndTimeDependentExternalLoad();
+
+
+    mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
+
+    if (mMaxTimeStep == 0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
+
+    /*---------------------------------*\
+    | Check number of calculation steps |
+    \*---------------------------------*/
+
+    if (mStepActiveDofs.empty())
+    {
+        mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
+    }
+    else
+    {
+        for (unsigned int i = 0; i < mStepActiveDofs.size(); ++i)
+        {
+            if (mStepActiveDofs[i].empty())
+            {
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                                         "Calculation step " + std::to_string(i) + " has no active DOFs.");
+            }
+        }
+    }
+
     FillOutputMaps(rEvaluate_InternalGradient, rEvaluate_InternalGradient_Hessian0Hessian1, rEvaluate_Hessian0_Hessian1,
                    rIntForce, hessian_dt, dofStatus);
 
@@ -644,7 +643,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
         |         Calculate Residual for trail state       |
         \*------------------------------------------------*/
         residual = extForce - prevExtForce;
-        CalculateResidualTrial(residual, deltaBRHS, hessian_dt[0],hessian_dt[1],hessian_dt[2], lastConverged_dof_dt[1],
+        CalculateResidualTrial(residual, deltaBRHS, hessian_dt, lastConverged_dof_dt[1],
                                lastConverged_dof_dt[2], timeStep);
         residual.ApplyCMatrix(residual_mod, constraintMatrix);
 
@@ -653,7 +652,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
                                 << "\n";
 
         // ******************************************************
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt[0],hessian_dt[1],hessian_dt[2], residual_mod, timeStep);
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt, residual_mod, timeStep);
         delta_dof_dt0.K = deltaBRHS - constraintMatrix * delta_dof_dt0.J;
         ++mIterationCount;
         // ******************************************************
@@ -758,9 +757,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
 }
 
 
-BlockFullVector<double> NewmarkDirect::BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& rHessian_dt0,
-                                                                     const StructureOutputBlockMatrix& rHessian_dt1,
-                                                                     const StructureOutputBlockMatrix& rHessian_dt2,
+BlockFullVector<double> NewmarkDirect::BuildHessianModAndSolveSystem(std::vector<NuTo::StructureOutputBlockMatrix>& rHessian_dt,
                                                                      const BlockFullVector<double>& rResidualMod,
                                                                      double rTimeStep) const
 {
@@ -784,14 +781,14 @@ BlockFullVector<double> NewmarkDirect::BuildHessianModAndSolveSystem(StructureOu
     {
         // since rHessian0 will change in the next iteration, the rHessian0 will be the hessian for the solver
         if (mStructure->GetNumTimeDerivatives() >= 1)
-            rHessian_dt0.AddScal(rHessian_dt1, mGamma / (mBeta * rTimeStep));
+            rHessian_dt[0].AddScal(rHessian_dt[1], mGamma / (mBeta * rTimeStep));
 
         if (mStructure->GetNumTimeDerivatives() >= 2)
-            rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
+            rHessian_dt[0].AddScal(rHessian_dt[2], 1. / (mBeta * rTimeStep * rTimeStep));
 
-        rHessian_dt0.ApplyCMatrix(mStructure->GetAssembler().GetConstraintMatrix());
+        rHessian_dt[0].ApplyCMatrix(mStructure->GetAssembler().GetConstraintMatrix());
 
-        auto result = mSolver->Solve(rHessian_dt0.JJ, rResidualMod);
+        auto result = mSolver->Solve(rHessian_dt[0].JJ, rResidualMod);
         return result;
     }
 }

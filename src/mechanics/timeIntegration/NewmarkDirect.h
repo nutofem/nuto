@@ -93,9 +93,7 @@ protected:
     //! @return ... deltaDof_dt0.J
     //! @remark ... If hessian_dt0 is constant, its values are preserved (hessianMod = temporary matrix). Otherwise,
     //! hessian0 will be used (hessianMod = hessian0)
-    BlockFullVector<double> BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& rHessian_dt0,
-                                                          const StructureOutputBlockMatrix& rHessian_dt1,
-                                                          const StructureOutputBlockMatrix& rHessian_dt2,
+    BlockFullVector<double> BuildHessianModAndSolveSystem(std::vector<NuTo::StructureOutputBlockMatrix> &rHessian_dt,
                                                           const BlockFullVector<double>& rResidualMod,
                                                           double rTimeStep) const;
 
@@ -117,9 +115,7 @@ protected:
                                   const StructureOutputBlockMatrix& rHessian_dt2) const;
 
     void CalculateResidualTrial(StructureOutputBlockVector& rResidual, const BlockFullVector<double>& rDeltaBRHS,
-                                const StructureOutputBlockMatrix& rHessian_dt0,
-                                const StructureOutputBlockMatrix& rHessian_dt1,
-                                const StructureOutputBlockMatrix& rHessian_dt2,
+                                const std::vector<NuTo::StructureOutputBlockMatrix>& rHessian_dt,
                                 const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2,
                                 double rTimeStep) const;
 
