@@ -78,10 +78,8 @@ void NewmarkDirect::Solve(double rTimeDelta)
     |        Allocate Variables         |
     \*---------------------------------*/
 
-//    StructureOutputBlockMatrix hessian0(dofStatus, true);
-//    StructureOutputBlockMatrix hessian1(dofStatus);
-//    StructureOutputBlockMatrix hessian2(dofStatus);
-    std::vector<StructureOutputBlockMatrix> hessianVec = {StructureOutputBlockMatrix(dofStatus,true),
+
+    std::vector<StructureOutputBlockMatrix> hessian_dt = {StructureOutputBlockMatrix(dofStatus,true),
                                                           StructureOutputBlockMatrix(dofStatus),
                                                           StructureOutputBlockMatrix(dofStatus)};
 
@@ -90,9 +88,12 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
     StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
 
-    StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
-    StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
-    StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
+//    StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
+//    StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
+//    StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
+    std::vector<StructureOutputBlockVector> dof_dt = {StructureOutputBlockVector(dofStatus, true),
+                                                      StructureOutputBlockVector(dofStatus, true),
+                                                      StructureOutputBlockVector(dofStatus, true)};
 
     StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
     StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
@@ -135,7 +136,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
 
     PreIteration(evaluate_InternalGradient, evaluate_InternalGradient_Hessian0Hessian1, evaluate_Hessian0_Hessian1,
-                 inputMap, intForce, hessianVec, lastConverged_dof_dt0, lastConverged_dof_dt1,
+                 inputMap, intForce, hessian_dt, lastConverged_dof_dt0, lastConverged_dof_dt1,
                  lastConverged_dof_dt2, constraintMatrix, residual, residual_mod, curTime, dofStatus);
 
     MainTimeLoop(inputMap,
@@ -145,7 +146,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
                  residual,
                  prevExtForce,
                  deltaBRHS,
-                 hessianVec,
+                 hessian_dt,
                  lastConverged_dof_dt0,
                  lastConverged_dof_dt1,
                  lastConverged_dof_dt2,
@@ -153,9 +154,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
                  residual_mod,
                  constraintMatrix,
                  delta_dof_dt0,
-                 dof_dt0,
-                 dof_dt1,
-                 dof_dt2,
+                 dof_dt,
                  evaluate_InternalGradient,
                  intForce,
                  prevResidual,
@@ -167,10 +166,9 @@ void NewmarkDirect::Solve(double rTimeDelta)
 std::pair<int, BlockScalar>
 NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, const ConstitutiveInputMap& inputMap,
                                StructureOutputMap evalHessian0And1, StructureOutputMap evalGradient,
-                               std::vector<StructureOutputBlockMatrix>& hessianVec, StructureOutputBlockVector& intForce,
+                               std::vector<StructureOutputBlockMatrix>& hessian_dt, StructureOutputBlockVector& intForce,
                                StructureOutputBlockVector& extForce, StructureOutputBlockVector& delta_dof_dt0,
-                               StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
-                               StructureOutputBlockVector& dof_dt2, const BlockSparseMatrix& constraintMatrix,
+                               std::vector<StructureOutputBlockVector>& dof_dt, const BlockSparseMatrix& constraintMatrix,
                                double timeStep)
 {
     const auto& dofStatus = mStructure->GetDofStatus();
@@ -186,7 +184,7 @@ NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, co
         if (mCheckCoefficientMatrix)
             mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
 
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessianVec[0], hessianVec[1], hessianVec[2], residual, timeStep);
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt[0], hessian_dt[1], hessian_dt[2], residual, timeStep);
         delta_dof_dt0.K = constraintMatrix * delta_dof_dt0.J * (-1.);
         ++mIterationCount;
 
@@ -199,17 +197,17 @@ NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, co
         // perform a line search
         do
         {
-            trial_dof_dt0 = dof_dt0 + delta_dof_dt0 * alpha;
+            trial_dof_dt0 = dof_dt[0] + delta_dof_dt0 * alpha;
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                trial_dof_dt1 = dof_dt1 + delta_dof_dt0 * (alpha * mGamma / (timeStep * mBeta));
+                trial_dof_dt1 = dof_dt[1] + delta_dof_dt0 * (alpha * mGamma / (timeStep * mBeta));
             if (mStructure->GetNumTimeDerivatives() >= 2)
-                trial_dof_dt2 = dof_dt2 + delta_dof_dt0 * (alpha / (timeStep * timeStep * mBeta));
+                trial_dof_dt2 = dof_dt[2] + delta_dof_dt0 * (alpha / (timeStep * timeStep * mBeta));
 
             MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
 
             mStructure->Evaluate(inputMap, evalGradient);
 
-            structureResidual = CalculateResidual(intForce, extForce, hessianVec[2], trial_dof_dt1, trial_dof_dt2);
+            structureResidual = CalculateResidual(intForce, extForce, hessian_dt[2], trial_dof_dt1, trial_dof_dt2);
             structureResidual.ApplyCMatrix(residual, constraintMatrix);
 
             trialNormResidual = residual.CalculateInfNorm();
@@ -224,11 +222,11 @@ NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, co
         if (alpha > mMinLineSearchStep || !mPerformLineSearch)
         {
             // improvement is achieved, go to next Newton step
-            dof_dt0 = trial_dof_dt0;
+            dof_dt[0] = trial_dof_dt0;
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                dof_dt1 = trial_dof_dt1;
+                dof_dt[1] = trial_dof_dt1;
             if (mStructure->GetNumTimeDerivatives() >= 2)
-                dof_dt2 = trial_dof_dt2;
+                dof_dt[2] = trial_dof_dt2;
             normResidual = trialNormResidual;
 
             PrintInfoIteration(normResidual, iteration);
@@ -247,7 +245,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
                                  StructureOutputBlockVector& residual,
                                  StructureOutputBlockVector& prevExtForce,
                                  BlockFullVector<double>& deltaBRHS,
-                                 std::vector<StructureOutputBlockMatrix> &hessianVec,
+                                 std::vector<StructureOutputBlockMatrix> &hessian_dt,
                                  StructureOutputBlockVector& lastConverged_dof_dt0,
                                  StructureOutputBlockVector& lastConverged_dof_dt1,
                                  StructureOutputBlockVector& lastConverged_dof_dt2,
@@ -255,9 +253,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
                                  BlockFullVector<double>& residual_mod,
                                  const BlockSparseMatrix& constraintMatrix,
                                  StructureOutputBlockVector& delta_dof_dt0,
-                                 StructureOutputBlockVector& dof_dt0,
-                                 StructureOutputBlockVector& dof_dt1,
-                                 StructureOutputBlockVector& dof_dt2,
+                                 std::vector<StructureOutputBlockVector>& dof_dt,
                                  StructureOutputMap& evaluate_InternalGradient,
                                  StructureOutputBlockVector& intForce,
                                  StructureOutputBlockVector& prevResidual,
@@ -318,7 +314,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
                                   residual,
                                   prevExtForce,
                                   deltaBRHS,
-                                  hessianVec,
+                                  hessian_dt,
                                   lastConverged_dof_dt0,
                                   lastConverged_dof_dt1,
                                   lastConverged_dof_dt2,
@@ -326,9 +322,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
                                   residual_mod,
                                   constraintMatrix,
                                   delta_dof_dt0,
-                                  dof_dt0,
-                                  dof_dt1,
-                                  dof_dt2,
+                                  dof_dt,
                                   evaluate_InternalGradient,
                                   intForce,
                                   prevResidual,
@@ -524,13 +518,13 @@ void NuTo::NewmarkDirect::PreIteration(
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_InternalGradient_Hessian0Hessian1,
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_Hessian0_Hessian1,
         NuTo::ConstitutiveInputMap& rInputMap, NuTo::StructureOutputBlockVector& rIntForce,
-        std::vector<StructureOutputBlockMatrix>& hessianVec, StructureOutputBlockVector& lastConverged_dof_dt0,
+        std::vector<StructureOutputBlockMatrix>& hessian_dt, StructureOutputBlockVector& lastConverged_dof_dt0,
         StructureOutputBlockVector& lastConverged_dof_dt1, StructureOutputBlockVector& lastConverged_dof_dt2,
         const BlockSparseMatrix& cmat, StructureOutputBlockVector& residual, BlockFullVector<double>& residual_mod,
         double curTime, const NuTo::DofStatus& dofStatus)
 {
     FillOutputMaps(rEvaluate_InternalGradient, rEvaluate_InternalGradient_Hessian0Hessian1, rEvaluate_Hessian0_Hessian1,
-                   rIntForce, hessianVec, dofStatus);
+                   rIntForce, hessian_dt, dofStatus);
 
     FillInputMap(rInputMap);
 
@@ -562,7 +556,7 @@ void NuTo::NewmarkDirect::PreIteration(
 
     // const auto& cmat = mStructure->GetAssembler().GetConstraintMatrix();
 
-    residual = CalculateResidual(rIntForce, initialExtForce, hessianVec[2], lastConverged_dof_dt1, lastConverged_dof_dt2);
+    residual = CalculateResidual(rIntForce, initialExtForce, hessian_dt[2], lastConverged_dof_dt1, lastConverged_dof_dt2);
     residual.ApplyCMatrix(residual_mod, cmat);
 
     if (mToleranceResidual < residual_mod.CalculateInfNorm())
@@ -570,7 +564,7 @@ void NuTo::NewmarkDirect::PreIteration(
         mStructure->GetLogger() << residual_mod.CalculateInfNorm();
         throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
-    CalculateResidualKForPostprocessing(residual, hessianVec[2], lastConverged_dof_dt1, lastConverged_dof_dt2);
+    CalculateResidualKForPostprocessing(residual, hessian_dt[2], lastConverged_dof_dt1, lastConverged_dof_dt2);
     PostProcess(residual);
 }
 
@@ -578,34 +572,34 @@ void NuTo::NewmarkDirect::FillOutputMaps(
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_InternalGradient,
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_InternalGradient_Hessian0Hessian1,
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_Hessian0_Hessian1,
-        StructureOutputBlockVector& rIntForce, std::vector<StructureOutputBlockMatrix>& hessianVec,
+        StructureOutputBlockVector& rIntForce, std::vector<StructureOutputBlockMatrix>& hessian_dt,
         const DofStatus& dofStatus)
 {
     rEvaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &rIntForce;
     rEvaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::INTERNAL_GRADIENT] = &rIntForce;
 
-    rEvaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN0] = &hessianVec[0];
-    rEvaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0] = &hessianVec[0];
+    rEvaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN0] = &hessian_dt[0];
+    rEvaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0] = &hessian_dt[0];
 
     if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
     {
-        hessianVec[1].Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
-        rEvaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN1] = &hessianVec[1];
-        rEvaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1] = &hessianVec[1];
+        hessian_dt[1].Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+        rEvaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN1] = &hessian_dt[1];
+        rEvaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1] = &hessian_dt[1];
     }
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
     {
-        hessianVec[2].Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+        hessian_dt[2].Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
         if (mUseLumpedMass)
         {
-            hessianVec[2] = mStructure->BuildGlobalHessian2Lumped();
+            hessian_dt[2] = mStructure->BuildGlobalHessian2Lumped();
         }
         else
         {
-            hessianVec[2] = mStructure->BuildGlobalHessian2();
+            hessian_dt[2] = mStructure->BuildGlobalHessian2();
         }
-        CalculateMuDampingMatrix(hessianVec[1], hessianVec[2]);
+        CalculateMuDampingMatrix(hessian_dt[1], hessian_dt[2]);
     }
 }
 
@@ -623,7 +617,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
                                               StructureOutputBlockVector& residual,
                                               StructureOutputBlockVector& prevExtForce,
                                               BlockFullVector<double>& deltaBRHS,
-                                              std::vector<StructureOutputBlockMatrix> &hessianVec,
+                                              std::vector<StructureOutputBlockMatrix> &hessian_dt,
                                               StructureOutputBlockVector& lastConverged_dof_dt0,
                                               StructureOutputBlockVector& lastConverged_dof_dt1,
                                               StructureOutputBlockVector& lastConverged_dof_dt2,
@@ -631,9 +625,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
                                               BlockFullVector<double>& residual_mod,
                                               const BlockSparseMatrix& constraintMatrix,
                                               StructureOutputBlockVector& delta_dof_dt0,
-                                              StructureOutputBlockVector& dof_dt0,
-                                              StructureOutputBlockVector& dof_dt1,
-                                              StructureOutputBlockVector& dof_dt2,
+                                              std::vector<StructureOutputBlockVector>& dof_dt,
                                               StructureOutputMap& evaluate_InternalGradient,
                                               StructureOutputBlockVector& intForce,
                                               StructureOutputBlockVector& prevResidual,
@@ -659,7 +651,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
         |         Calculate Residual for trail state       |
         \*------------------------------------------------*/
         residual = extForce - prevExtForce;
-        CalculateResidualTrial(residual, deltaBRHS, hessianVec[0],hessianVec[1],hessianVec[2], lastConverged_dof_dt1,
+        CalculateResidualTrial(residual, deltaBRHS, hessian_dt[0],hessian_dt[1],hessian_dt[2], lastConverged_dof_dt1,
                                lastConverged_dof_dt2, timeStep);
         residual.ApplyCMatrix(residual_mod, constraintMatrix);
 
@@ -668,31 +660,31 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
                                 << "\n";
 
         // ******************************************************
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessianVec[0],hessianVec[1],hessianVec[2], residual_mod, timeStep);
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt[0],hessian_dt[1],hessian_dt[2], residual_mod, timeStep);
         delta_dof_dt0.K = deltaBRHS - constraintMatrix * delta_dof_dt0.J;
         ++mIterationCount;
         // ******************************************************
 
         // calculate trial state
-        dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+        dof_dt[0] = lastConverged_dof_dt0 + delta_dof_dt0;
         if (mStructure->GetNumTimeDerivatives() >= 1)
-            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+            dof_dt[1] = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
         if (mStructure->GetNumTimeDerivatives() >= 2)
-            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+            dof_dt[2] = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
 
 
-        MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
+        MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], false);
 
 
         // ******************************************************
         mStructure->Evaluate(inputMap, evaluate_InternalGradient);
         // ******************************************************
 
-        residual = CalculateResidual(intForce, extForce, hessianVec[2], dof_dt1, dof_dt2);
+        residual = CalculateResidual(intForce, extForce, hessian_dt[2], dof_dt[1], dof_dt[2]);
 
         std::pair<int, BlockScalar> result = FindEquilibrium(
-                    residual, inputMap, evaluate_Hessian0_Hessian1, evaluate_InternalGradient, hessianVec,
-                    intForce, extForce, delta_dof_dt0, dof_dt0, dof_dt1, dof_dt2, constraintMatrix, timeStep);
+                    residual, inputMap, evaluate_Hessian0_Hessian1, evaluate_InternalGradient, hessian_dt,
+                    intForce, extForce, delta_dof_dt0, dof_dt, constraintMatrix, timeStep);
 
         auto iterations = result.first;
         auto residualNorm = result.second;
@@ -707,16 +699,16 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
             mStructure->ElementTotalUpdateStaticData();
 
             // store converged step
-            lastConverged_dof_dt0 = dof_dt0;
+            lastConverged_dof_dt0 = dof_dt[0];
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                lastConverged_dof_dt1 = dof_dt1;
+                lastConverged_dof_dt1 = dof_dt[1];
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                lastConverged_dof_dt2 = dof_dt2;
+                lastConverged_dof_dt2 = dof_dt[2];
 
             prevResidual = residual;
 
 
-            MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
+            MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
 
 
             mTime += timeStep;
@@ -728,7 +720,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
             // perform Postprocessing
             if (staggeredStepNumber >= mStepActiveDofs.size())
             {
-                CalculateResidualKForPostprocessing(prevResidual, hessianVec[2], dof_dt1, dof_dt2);
+                CalculateResidualKForPostprocessing(prevResidual, hessian_dt[2], dof_dt[1], dof_dt[2]);
                 PostProcess(prevResidual);
             }
 
