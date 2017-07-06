@@ -2,18 +2,20 @@
 
 #include <vector>
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 namespace NuTo
 {
 //! @author Philipp Müller, Peter Otto, BAM
 //! @date Jul 2017
 //! @brief ... integration types in 1,2,3D with Gauss integration, tensor product of 1D
+
 template <int TDim>
 class IntegrationTypeTensorProductGauss : public IntegrationTypeBase
 {
 public:
     //! @brief constructor
-    IntegrationTypeTensorProductGauss(int numIps);
+    IntegrationTypeTensorProductGauss(size_t numIps);
 
 
     //! @brief returns the dimension
@@ -42,11 +44,16 @@ public:
                                std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 private:
-    //! @brief ... integration points coordinates
+    //! @brief ... 1D integration points coordinates
+    std::vector<double> mIPts1D;
+    //! @brief ... tensor product integration points coordinates
     std::vector<Eigen::Matrix<double, TDim, 1>> mIPts;
     //! @brief ... weights for the integration
     std::vector<double> mWeights;
-    //! @brief ... number of IPs in 1D
-    int mNumIPs1D;
+
+#ifdef ENABLE_VISUALIZE
+    //! @brief ... visualization points in 1D
+    void GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const;
+#endif // ENABLE_VISUALIZE
 };
 } // namespace
