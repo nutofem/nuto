@@ -5,26 +5,28 @@
 #include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "math/Legendre.h"
+#include <iostream>
 
 // constructor
 template<int TDim>
-NuTo::IntegrationTypeTensorProductGauss<TDim>::IntegrationTypeTensorProductGauss(int nIps)
+NuTo::IntegrationTypeTensorProductGauss<TDim>::IntegrationTypeTensorProductGauss(size_t nIps)
 {
-    mNumIPs1D = nIps;
-    std::vector<double> IPts = NuTo::Math::Polynomial::LegendreRoots(nIps);
+    mIPts1D = NuTo::Math::Polynomial::LegendreRoots(nIps);
     std::vector<double> weights(nIps);
 
     if (nIps > 0)
     {
-        for (int i = 0; i < nIps; i++)
+        for (size_t i = 0; i < nIps; i++)
         {
-            double dl = NuTo::Math::Polynomial::Legendre(nIps, IPts[i], 1);
-            weights.push_back(2. / (1. - IPts[i] * IPts[i]) / (dl * dl));
+            double dl = NuTo::Math::Polynomial::Legendre(nIps, mIPts1D[i], 1);
+            weights.push_back(2. / (1. - mIPts1D[i] * mIPts1D[i]) / (dl * dl));
         }
     }
     else throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
 
-    int numIpsDim = std::pow(nIps, TDim);
+    int numIpsDim = 1;
+    for(int dim = 0; dim < TDim; dim++) numIpsDim *= nIps;
+
     // calculate the tensor product integratration point coordinates and weights
     mWeights.resize(numIpsDim);
     mIPts.resize(numIpsDim);
@@ -35,10 +37,10 @@ NuTo::IntegrationTypeTensorProductGauss<TDim>::IntegrationTypeTensorProductGauss
         int power = 1;
         for(int dim = 0; dim < TDim; dim++)
         {
-            int index = i/power;
+            int index = (i/power) % nIps;
             mWeights[i] *= weights[index];
-            mIPts[i][dim] = IPts[index];
-            power *= TDim;
+            mIPts[i][dim] = mIPts1D[index];
+            power *= nIps;
         }
     }
 }
@@ -68,9 +70,40 @@ double NuTo::IntegrationTypeTensorProductGauss<TDim>::GetIntegrationPointWeight(
 }
 
 #ifdef ENABLE_VISUALIZE
+template<int TDim>
+void NuTo::IntegrationTypeTensorProductGauss<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
+{
+    std::vector<double> VisualizationPoints1D;
+    size_t NumVisualizationPoints1D = mIPts1D.size()+1;
+
+    VisualizationPoints1D.push_back(-1.);
+    for (size_t i = 1; i < NumVisualizationPoints1D - 1 ; i++)
+    {
+        VisualizationPoints1D.push_back(0.5 * (mIPts1D[i - 1] + mIPts1D[i]));
+    }
+    VisualizationPoints1D.push_back(1.);
+
+
+    NumVisualizationPoints = 1;
+    for(int dim = 0; dim < TDim; dim++) NumVisualizationPoints *= NumVisualizationPoints1D;
+
+    VisualizationPointLocalCoordinates.resize(NumVisualizationPoints);
+
+    for(unsigned int i = 0; i < NumVisualizationPoints; i++)
+    {
+        int power = 1;
+        for(int dim = 0; dim < TDim; dim++)
+        {
+            size_t index = (i/power) % NumVisualizationPoints1D;
+            VisualizationPointLocalCoordinates.push_back(VisualizationPoints1D[index]);
+            power *= NumVisualizationPoints1D;
+        }
+        std::cout << std::endl;
+    }
+}
+
 namespace NuTo
 {
-
 template <>
 void NuTo::IntegrationTypeTensorProductGauss<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
@@ -79,27 +112,21 @@ void NuTo::IntegrationTypeTensorProductGauss<1>::GetVisualizationCells(unsigned 
                                                                        std::vector<unsigned int>& VisualizationCellsIncidence,
                                                                        std::vector<unsigned int>& VisualizationCellsIP) const
 {
-    NumVisualizationPoints = mIPts.size() + 1;
-    VisualizationPointLocalCoordinates.push_back(-1.);
-    for (unsigned int i = 1; i < NumVisualizationPoints - 1; i++)
-    {
-        VisualizationPointLocalCoordinates.push_back(0.5 * (mIPts[i - 1](0,0) + mIPts[i](0,0)));
-    }
-    VisualizationPointLocalCoordinates.push_back(1.);
+    GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
     NumVisualizationCells = mIPts.size();
-    for (unsigned int i = 0; i < NumVisualizationCells; i++)
+    for (size_t i = 0; i < NumVisualizationCells; i++)
     {
         VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
     }
 
-    for (unsigned int i = 0; i < NumVisualizationCells; i++)
+    for (size_t i = 0; i < NumVisualizationCells; i++)
     {
         VisualizationCellsIncidence.push_back(i);
         VisualizationCellsIncidence.push_back(i + 1);
     }
 
-    for (unsigned int i = 0; i < NumVisualizationCells; i++)
+    for (size_t i = 0; i < NumVisualizationCells; i++)
     {
         VisualizationCellsIP.push_back(i);
     }
@@ -113,38 +140,28 @@ void NuTo::IntegrationTypeTensorProductGauss<2>::GetVisualizationCells(unsigned 
                                                                        std::vector<unsigned int>& VisualizationCellsIncidence,
                                                                        std::vector<unsigned int>& VisualizationCellsIP) const
 {
-//    std::vector<double> VisualizationPoints1D;
-//    VisualizationPoints1D.resize(mNumIPs1D+1);
+    GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
-//    VisualizationPoints1D.push_back(-1.);
-//    for (unsigned int i = 1; i < NumVisualizationPoints - 1; i++)
-//    {
-//        VisualizationPoints1D.push_back(0.5 * (mIPts[i - 1](0,0) + mIPts[i](0,0)));
-//    }
-//    VisualizationPoints1D.push_back(1.);
+    NumVisualizationCells = 0;
 
-//    int numCoordinates = std::pow(mNumIPs1D+1, TDim);
+    size_t numIPs1D = mIPts1D.size();
+    for(size_t row = 0; row < numIPs1D; row++)
+    {
+        for(size_t col = 0; col < numIPs1D; col++)
+        {
+            size_t start = row*(numIPs1D+1) + col;
 
-//    VisualizationPointLocalCoordinates.resize(numCoordinates);
+            VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
 
-//    for(int i = 0; i < numCoordinates; i++)
-//    {
-//        int power = 1;
-//        for(int dim = 0; dim < TDim; dim++)
-//        {
-//            int index = i/power;
-//            VisualizationPointLocalCoordinates.push_back(VisualizationPoints1D[index]);
-//            power *= TDim;
-//        }
-//    }
+            VisualizationCellsIncidence.push_back(start);
+            VisualizationCellsIncidence.push_back(start + 1);
+            VisualizationCellsIncidence.push_back(start + numIPs1D + 2); // the number of 1D cell points is numIPs1D+1
+            VisualizationCellsIncidence.push_back(start + numIPs1D + 1 );
 
-//    NumVisualizationCells =
-
-//    for()
-//    {
-//        VisualizationCellType.push_back(NuTo::eCellTypes::QUAD); NuTo::eCellTypes::HEXAHEDRON
-
-//    }
+            VisualizationCellsIP.push_back(NumVisualizationCells);
+            NumVisualizationCells++;
+        }
+    }
 }
 
 template <>
@@ -155,7 +172,39 @@ void NuTo::IntegrationTypeTensorProductGauss<3>::GetVisualizationCells(unsigned 
                                                                        std::vector<unsigned int>& VisualizationCellsIncidence,
                                                                        std::vector<unsigned int>& VisualizationCellsIP) const
 {
+    GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
+    NumVisualizationCells = 0;
+
+    size_t numIPs1D = mIPts1D.size();
+    for(size_t height = 0; height < numIPs1D; height++)
+    {
+        for(size_t row = 0; row < numIPs1D; row++)
+        {
+            for(size_t col = 0; col < numIPs1D; col++)
+            {
+                size_t start = row*(numIPs1D + 1) + col + height*((numIPs1D + 1)*(numIPs1D + 1));
+
+                VisualizationCellsIncidence.push_back(start);
+                VisualizationCellsIncidence.push_back(start + 1);
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 2); // the number of 1D cell points is numIPs1D+1
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
+
+                start = row*(numIPs1D + 1) + col + (height+1)*((numIPs1D + 1)*(numIPs1D + 1));
+
+                VisualizationCellsIncidence.push_back(start);
+                VisualizationCellsIncidence.push_back(start + 1);
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 2);
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
+
+                VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+                VisualizationCellsIP.push_back(NumVisualizationCells);
+                NumVisualizationCells++;
+
+                std::cout << std::endl;
+            }
+        }
+    }
 }
 
 } // namespace NuTo
