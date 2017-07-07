@@ -1,22 +1,35 @@
 #pragma once
 
 #include <vector>
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 namespace NuTo
 {
 //! @author Philipp Müller, Peter Otto, BAM
 //! @date Jul 2017
-//! @brief ... integration types in 1,2,3D with Lobatto integration, tensor product of 1D
+//! @brief ... integration types in 1,2,3D; tensor product of 1D Lobatto or Gauss
 
 template <int TDim>
-class IntegrationTypeTensorProductLobatto : public IntegrationTypeBase
+class IntegrationTypeTensorProduct : public IntegrationTypeBase
 {
 public:
     //! @brief constructor
-    IntegrationTypeTensorProductLobatto(size_t numIps);
+    IntegrationTypeTensorProduct(size_t numIps, NuTo::eIntegrationMethod method);
 
+    //! @brief computes points and weights for Lobatto quadrature in 1D
+    //! @param numIPs number of integration points
+    //! @param weights Quadrature weights
+    //! @param points Quadrature points range [-1,1] including boundary points
+    void ComputeWeightsAndPoints1DLobatto(size_t nIps,
+                std::vector<double>& weights, std::vector<double>& points);
+
+    //! @brief computes points and weights for Gauss quadrature in 1D
+    //! @param numIPs number of integration points
+    //! @param weights Quadrature weights
+    //! @param points Quadrature points in range (-1,1)
+    void ComputeWeightsAndPoints1DGauss(size_t nIps,
+                std::vector<double>& weights, std::vector<double>& points);
 
     //! @brief returns the dimension
     int GetDimension() const override {return TDim;}

@@ -4,7 +4,6 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
@@ -13,8 +12,7 @@
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.h"
@@ -51,32 +49,32 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
         case NuTo::eIntegrationType::IntegrationType0DBoundary:
             ptrIntegrationType = new NuTo::IntegrationType0DBoundary();
             break;
-        case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(1);
-            break;
-        case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(2);
-            break;
         case NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NBoundaryGauss3Ip();
             break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(1,NuTo::eIntegrationMethod::GAUSS);
+            break;
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(2,NuTo::eIntegrationMethod::GAUSS);
+            break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(3);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(3,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(4);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(4,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NGauss(5);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(5,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(3);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(3,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(4);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(4,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip:
-            ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto(5);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<1>(5,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss13Ip();
@@ -103,22 +101,22 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss12IpDetail();
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductGauss<2>(1);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(1,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductGauss<2>(2);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(2,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductGauss<2>(3);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(3,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<2>(3);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(3,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<2>(4);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(4,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<2>(5);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<2>(5,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();
@@ -133,19 +131,19 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eInt
             ptrIntegrationType = new NuTo::IntegrationType3D6NGauss1Ip();
             break;
         case NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductGauss<3>(1);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<3>(1,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductGauss<3>(2);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<3>(2,NuTo::eIntegrationMethod::GAUSS);
             break;
         case NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<3>(3);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<3>(3,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<3>(4);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<3>(4,NuTo::eIntegrationMethod::LOBATTO);
             break;
         case NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-            ptrIntegrationType = new NuTo::IntegrationTypeTensorProductLobatto<3>(5);
+            ptrIntegrationType = new NuTo::IntegrationTypeTensorProduct<3>(5,NuTo::eIntegrationMethod::LOBATTO);
             break;
         default:
             throw MechanicsException(

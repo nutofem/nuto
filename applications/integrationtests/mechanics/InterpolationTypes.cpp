@@ -11,10 +11,10 @@
 #include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
@@ -106,7 +106,7 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
 
 BOOST_AUTO_TEST_CASE(InterpolationTruss)
 {
-    NuTo::IntegrationType1D2NGauss myIntegrationType(2);
+    NuTo::IntegrationTypeTensorProduct<1> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangle)
 BOOST_AUTO_TEST_CASE(InterpolationQuad)
 {
 
-    NuTo::IntegrationTypeTensorProductGauss<2> myIntegrationType(2);
+    NuTo::IntegrationTypeTensorProduct<2> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
 
     NuTo::InterpolationType myIT4(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT4.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
 
 BOOST_AUTO_TEST_CASE(InterpolationBrick)
 {
-    NuTo::IntegrationTypeTensorProductGauss<3> myIntegrationType(2);
+    NuTo::IntegrationTypeTensorProduct<3> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
 
     NuTo::InterpolationType myIT8(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT8.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);

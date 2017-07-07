@@ -2,33 +2,32 @@
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
 
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "math/Legendre.h"
 #include <iostream>
 
 // constructor
 template<int TDim>
-NuTo::IntegrationTypeTensorProductLobatto<TDim>::IntegrationTypeTensorProductLobatto(size_t nIps)
+NuTo::IntegrationTypeTensorProduct<TDim>::IntegrationTypeTensorProduct(size_t nIps,
+                             NuTo::eIntegrationMethod method)
 {
-
-    mIPts1D = NuTo::Math::Polynomial::LegendreDerivRoots(nIps - 1);
-    mIPts1D.insert(mIPts1D.begin(), -1.);
-    mIPts1D.push_back(1.);
-
     std::vector<double> weights;
 
-    if (nIps > 1)
+    switch (method) {
+    case NuTo::eIntegrationMethod::GAUSS:
     {
-        weights.push_back(2. / (nIps * (nIps - 1)));
-        for (size_t i = 1; i < nIps - 1; i++)
-        {
-            double lp = NuTo::Math::Polynomial::Legendre(nIps - 1, mIPts1D[i]);
-            weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
-        }
-        weights.push_back(2. / (nIps * (nIps - 1)));
+        ComputeWeightsAndPoints1DGauss(nIps, weights, mIPts1D);
+        break;
     }
-    else throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+    case NuTo::eIntegrationMethod::LOBATTO:
+    {
+        ComputeWeightsAndPoints1DLobatto(nIps, weights, mIPts1D);
+        break;
+    }
+    default:
+        break;
+    }
 
     int numIpsDim = 1;
     for(int dim = 0; dim < TDim; dim++) numIpsDim *= nIps;
@@ -52,32 +51,70 @@ NuTo::IntegrationTypeTensorProductLobatto<TDim>::IntegrationTypeTensorProductLob
 }
 
 template<int TDim>
-Eigen::VectorXd NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DLobatto(size_t nIps,
+            std::vector<double>& weights, std::vector<double>& points)
+{
+    points = NuTo::Math::Polynomial::LegendreDerivRoots(nIps - 1);
+    points.insert(points.begin(), -1.);
+    points.push_back(1.);
+
+    if (nIps > 1)
+    {
+        weights.push_back(2. / (nIps * (nIps - 1)));
+        for (size_t i = 1; i < nIps - 1; i++)
+        {
+            double lp = NuTo::Math::Polynomial::Legendre(nIps - 1, points[i]);
+            weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
+        }
+        weights.push_back(2. / (nIps * (nIps - 1)));
+    }
+    else throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+}
+
+template<int TDim>
+void NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DGauss(size_t nIps,
+            std::vector<double>& weights, std::vector<double>& points)
+{
+    points = NuTo::Math::Polynomial::LegendreRoots(nIps);
+
+    if (nIps > 0)
+    {
+        for (size_t i = 0; i < nIps; i++)
+        {
+            double dl = NuTo::Math::Polynomial::Legendre(nIps, points[i], 1);
+            weights.push_back(2. / (1. - points[i] * points[i]) / (dl * dl));
+        }
+    }
+    else throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+}
+
+template<int TDim>
+Eigen::VectorXd NuTo::IntegrationTypeTensorProduct<TDim>::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mIPts[rIpNum];
     else
         throw MechanicsException(
-                "[NuTo::IntegrationTypeTensorProductLobatto::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+                "[NuTo::IntegrationTypeTensorProduct::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 template<int TDim>
-int NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetNumIntegrationPoints() const
+int NuTo::IntegrationTypeTensorProduct<TDim>::GetNumIntegrationPoints() const
 {
     return mIPts.size();
 }
 
 template<int TDim>
-double NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetIntegrationPointWeight(int rIpNum) const
+double NuTo::IntegrationTypeTensorProduct<TDim>::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mWeights[rIpNum];
-    throw MechanicsException("[NuTo::IntegrationTypeTensorProductLobatto::GetIntegrationPointWeight] Ip number out of range.");
+    throw MechanicsException("[NuTo::IntegrationTypeTensorProduct::GetIntegrationPointWeight] Ip number out of range.");
 }
 
 #ifdef ENABLE_VISUALIZE
 template<int TDim>
-void NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
+void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
 {
     std::vector<double> VisualizationPoints1D;
     size_t NumVisualizationPoints1D = mIPts1D.size()+1;
@@ -111,7 +148,7 @@ void NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetVisualizationPoints(uns
 namespace NuTo
 {
 template <>
-void NuTo::IntegrationTypeTensorProductLobatto<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProduct<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -139,7 +176,7 @@ void NuTo::IntegrationTypeTensorProductLobatto<1>::GetVisualizationCells(unsigne
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProductLobatto<2>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProduct<2>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -171,7 +208,7 @@ void NuTo::IntegrationTypeTensorProductLobatto<2>::GetVisualizationCells(unsigne
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProductLobatto<3>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -217,6 +254,6 @@ void NuTo::IntegrationTypeTensorProductLobatto<3>::GetVisualizationCells(unsigne
 
 #endif // ENABLE_VISUALIZE
 
-template class NuTo::IntegrationTypeTensorProductLobatto<1>;
-template class NuTo::IntegrationTypeTensorProductLobatto<2>;
-template class NuTo::IntegrationTypeTensorProductLobatto<3>;
+template class NuTo::IntegrationTypeTensorProduct<1>;
+template class NuTo::IntegrationTypeTensorProduct<2>;
+template class NuTo::IntegrationTypeTensorProduct<3>;

@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
@@ -70,13 +69,13 @@ double integrate3D(int order, NuTo::IntegrationTypeBase &intType) {
 
 BOOST_AUTO_TEST_CASE(PolynomialIntegrationQuad) {
     // 2D
-    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad1(1);
-    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad2(2);
-    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad3(3);
+    NuTo::IntegrationTypeTensorProduct<2> intGaussQuad1(1,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<2> intGaussQuad2(2,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<2> intGaussQuad3(3,NuTo::eIntegrationMethod::GAUSS);
 
-    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad3new(3);
-    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad4new(4);
-    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad5new(5);
+    NuTo::IntegrationTypeTensorProduct<2> intLobQuad3new(3,NuTo::eIntegrationMethod::LOBATTO);
+    NuTo::IntegrationTypeTensorProduct<2> intLobQuad4new(4,NuTo::eIntegrationMethod::LOBATTO);
+    NuTo::IntegrationTypeTensorProduct<2> intLobQuad5new(5,NuTo::eIntegrationMethod::LOBATTO);
 
     std::vector<NuTo::IntegrationTypeBase *> intTypesQuad2D = {
         &intGaussQuad1, &intGaussQuad2, &intGaussQuad3,
@@ -182,12 +181,12 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTet) {
 
 BOOST_AUTO_TEST_CASE(PolynomialIntegrationBrick) {
     // 3D
-    NuTo::IntegrationTypeTensorProductGauss<3> intGaussBrick1(1);
-    NuTo::IntegrationTypeTensorProductGauss<3> intGaussBrick2(2);
+    NuTo::IntegrationTypeTensorProduct<3> intGaussBrick1(1,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<3> intGaussBrick2(2,NuTo::eIntegrationMethod::GAUSS);
 
-    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick3new(3);
-    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick4new(4);
-    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick5new(5);
+    NuTo::IntegrationTypeTensorProduct<3> intLobBrick3new(3,NuTo::eIntegrationMethod::LOBATTO);
+    NuTo::IntegrationTypeTensorProduct<3> intLobBrick4new(4,NuTo::eIntegrationMethod::LOBATTO);
+    NuTo::IntegrationTypeTensorProduct<3> intLobBrick5new(5,NuTo::eIntegrationMethod::LOBATTO);
 
     std::vector<NuTo::IntegrationTypeBase *> intTypesBrick3D = {
         &intGaussBrick1, &intGaussBrick2,

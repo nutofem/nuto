@@ -2,7 +2,7 @@
 #include <fakeit.hpp>
 #include "mechanics/cell/Cell.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/cell/IntegrandLinearElastic.h"
 
 

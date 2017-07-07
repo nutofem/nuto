@@ -73,8 +73,6 @@ set(NuToMechanicsGroupsSources
 set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NGauss.cpp
-    integrationtypes/IntegrationType1D2NLobatto.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -87,8 +85,7 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
-    integrationtypes/IntegrationTypeTensorProductLobatto.cpp
-    integrationtypes/IntegrationTypeTensorProductGauss.cpp
+    integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
