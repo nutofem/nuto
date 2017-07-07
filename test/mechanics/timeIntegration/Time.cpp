@@ -26,8 +26,7 @@ bool CheckExceptionMessageCorrect(MechanicsException const& ex,std::string expec
 
 // %%% Tests %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#ifndef NDEBUG
-BOOST_AUTO_TEST_CASE(Debug_Only_Fuctionality)
+BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
 {
     Time time;
 
@@ -46,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Debug_Only_Fuctionality)
 
 
 }
-#endif
+
 
 
 

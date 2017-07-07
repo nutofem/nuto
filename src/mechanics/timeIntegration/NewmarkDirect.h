@@ -74,6 +74,8 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
+
+
 protected:
     using StructureOutputMap = std::map<eStructureOutput, StructureOutputBase*>;
 
@@ -129,13 +131,36 @@ protected:
 
 
     // temporary stuff (no doxy-doc)
+public:
 
+    // workaround until dynamic timestepping is also enabled by time class
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+        mTimeObject.SetEquidistantTimestepping(rTimeStep);
+    }
+
+    //! @brief sets the maximum time step for the time integration procedure
+    virtual void SetMaxTimeStep(double rMaxTimeStep) override
+    {
+        mMaxTimeStep = rMaxTimeStep;
+        mTimeObject.SetMaxTimestep(rMaxTimeStep);
+    }
+
+    //! @brief sets the minimum time step for the time integration procedure
+    virtual void SetMinTimeStep(double rMinTimeStep) override
+    {
+        mMinTimeStep = rMinTimeStep;
+        mTimeObject.SetMinTimestep(rMinTimeStep);
+    }
+
+protected:
     void PreIteration(std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient,
                       std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient_Hessian0Hessian1,
                       std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_Hessian0_Hessian1,
                       NuTo::ConstitutiveInputMap &rInputMap,
                       NuTo::StructureOutputBlockVector &rIntForce,
-                      std::vector<NuTo::StructureOutputBlockMatrix> &hessian_dt, std::vector<NuTo::StructureOutputBlockVector> &lastConverged_dof_dt, const NuTo::BlockSparseMatrix &cmat, NuTo::StructureOutputBlockVector &residual, BlockFullVector<double> &residual_mod, double curTime,
+                      std::vector<NuTo::StructureOutputBlockMatrix> &hessian_dt, std::vector<NuTo::StructureOutputBlockVector> &lastConverged_dof_dt, const NuTo::BlockSparseMatrix &cmat, NuTo::StructureOutputBlockVector &residual, BlockFullVector<double> &residual_mod,
                       const NuTo::DofStatus &dofStatus);
 
     void FillOutputMaps(std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase *> &rEvaluate_InternalGradient,
@@ -151,13 +176,11 @@ protected:
                                    std::map<NuTo::eStructureOutput,
                                    NuTo::StructureOutputBase *> &evaluate_Hessian0_Hessian1,
                                    NuTo::StructureOutputBlockVector &extForce,
-                                   double &curTime,
                                    NuTo::StructureOutputBlockVector &residual,
                                    NuTo::StructureOutputBlockVector &prevExtForce,
                                    BlockFullVector<double> &deltaBRHS,
                                    std::vector<StructureOutputBlockMatrix>& hessian_dt,
                                    std::vector<NuTo::StructureOutputBlockVector> &lastConverged_dof_dt,
-                                   double &timeStep,
                                    BlockFullVector<double> &residual_mod,
                                    const NuTo::BlockSparseMatrix &constraintMatrix,
                                    NuTo::StructureOutputBlockVector &delta_dof_dt0,
@@ -181,13 +204,11 @@ protected:
                       std::map<NuTo::eStructureOutput,
                       NuTo::StructureOutputBase *> &evaluate_Hessian0_Hessian1,
                       NuTo::StructureOutputBlockVector &extForce,
-                      double &curTime,
                       NuTo::StructureOutputBlockVector &residual,
                       NuTo::StructureOutputBlockVector &prevExtForce,
                       BlockFullVector<double> &deltaBRHS,
                       std::vector<NuTo::StructureOutputBlockMatrix>& hessian_dt,
                       std::vector<NuTo::StructureOutputBlockVector> &lastConverged_dof_dt,
-                      double &timeStep,
                       BlockFullVector<double> &residual_mod,
                       const NuTo::BlockSparseMatrix &constraintMatrix,
                       NuTo::StructureOutputBlockVector &delta_dof_dt0,

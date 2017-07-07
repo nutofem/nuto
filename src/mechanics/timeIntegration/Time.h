@@ -3,6 +3,7 @@
 #include "mechanics/MechanicsException.h"
 
 #include <functional>
+#include <limits>
 
 namespace NuTo
 {
@@ -31,6 +32,9 @@ public:
     ~Time() = default;
 
 
+    //! @brief Scales the timestep by the provided factor
+    //! @param scaleFactor: scaling factor (<1 decrease and >1 increase)
+    void ScaleTimestep(double scaleFactor);
 
     //! @brief Proceeds with the next time step
     //! @return current time value
@@ -44,6 +48,11 @@ public:
     //! @param timestepFunction: function that should be executed when the proceed function is called
     void SetTimestepFunction(std::function<double(double)> timestepFunction);
 
+    //! @brief Resets the current time to the previous time
+    void RestorePreviosTime()
+    {
+        mCurrentTime = mPreviousTime;
+    }
 
     // Getter
     // ------
@@ -51,10 +60,31 @@ public:
     //! @return current time
     double GetCurrentTime() const {return mCurrentTime;}
 
+    //! @brief Gets the timestep
+    //! @return timestep
+    double GetTimestep() const;
 
+    // Setter
+    // ------
+
+    //! @brief sets the maximum time step for the time integration procedure
+    void SetMaxTimestep(double rMaxTimeStep)
+    {
+        mMaxTimeStep = rMaxTimeStep;
+    }
+
+    //! @brief sets the minimum time step for the time integration procedure
+    void SetMinTimestep(double rMinTimeStep)
+    {
+        mMinTimeStep = rMinTimeStep;
+    }
 protected:
 
-    double mCurrentTime     = 0;
+    double mCurrentTime         = 0.0;
+    double mPreviousTime        = 0.0;
+    double mTimestepScaleFactor = 1.0;
+    double mMinTimeStep          = 0.0;
+    double mMaxTimeStep          = std::numeric_limits<double>::max();
 
     std::function<double(double)> mTimestepFunction = [](double curTime)->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
 };

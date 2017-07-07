@@ -93,7 +93,7 @@ public:
     std::string GetRestartFileName() const;
 
     //! @brief sets the  time step for the time integration procedure (initial value)
-    void SetTimeStep(double rTimeStep)
+    virtual void SetTimeStep(double rTimeStep)
     {
         mTimeStep = rTimeStep;
     }
@@ -104,7 +104,7 @@ public:
         return mTimeStep;
     }
     //! @brief sets the maximum time step for the time integration procedure
-    void SetMaxTimeStep(double rMaxTimeStep)
+    virtual void SetMaxTimeStep(double rMaxTimeStep)
     {
         mMaxTimeStep = rMaxTimeStep;
     }
@@ -127,7 +127,7 @@ public:
     }
 
     //! @brief sets the minimum time step for the time integration procedure
-    void SetMinTimeStep(double rMinTimeStep)
+    virtual void SetMinTimeStep(double rMinTimeStep)
     {
         mMinTimeStep = rMinTimeStep;
     }

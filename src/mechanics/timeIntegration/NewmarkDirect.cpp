@@ -48,8 +48,8 @@ void NewmarkDirect::Solve(double rTimeDelta)
     |        Allocate Variables         |
     \*---------------------------------*/
 
-    double curTime = mTime;
-    double timeStep = mTimeStep;
+//    double curTime = mTime;
+//    double timeStep = mTimeStep;
 
     const DofStatus& dofStatus = mStructure->GetDofStatus();
 
@@ -109,18 +109,16 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
     PreIteration(evaluate_InternalGradient, evaluate_InternalGradient_Hessian0Hessian1, evaluate_Hessian0_Hessian1,
                  inputMap, intForce, hessian_dt, lastConverged_dof_dt,
-                 constraintMatrix, residual, residual_mod, curTime, dofStatus);
+                 constraintMatrix, residual, residual_mod, dofStatus);
 
     MainTimeLoop(inputMap,
                  evaluate_InternalGradient_Hessian0Hessian1,
                  extForce,
-                 curTime,
                  residual,
                  prevExtForce,
                  deltaBRHS,
                  hessian_dt,
                  lastConverged_dof_dt,
-                 timeStep,
                  residual_mod,
                  constraintMatrix,
                  delta_dof_dt0,
@@ -211,13 +209,11 @@ NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual, co
 void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
                                  std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& evaluate_Hessian0_Hessian1,
                                  StructureOutputBlockVector& extForce,
-                                 double& curTime,
                                  StructureOutputBlockVector& residual,
                                  StructureOutputBlockVector& prevExtForce,
                                  BlockFullVector<double>& deltaBRHS,
                                  std::vector<StructureOutputBlockMatrix> &hessian_dt,
                                  std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                 double& timeStep,
                                  BlockFullVector<double>& residual_mod,
                                  const BlockSparseMatrix& constraintMatrix,
                                  StructureOutputBlockVector& delta_dof_dt0,
@@ -231,7 +227,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
 {
     const DofStatus& dofStatus = mStructure->GetDofStatus();
     double& inputTime = (*inputMap.find(Constitutive::eInput::TIME)->second)[0];
-    inputTime = mTime;
+    inputTime = mTimeObject.GetCurrentTime();
 
 
     // the minimal time step defined, which is equivalent to six cut-backs
@@ -239,7 +235,7 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
     {
         SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
-    while (curTime < rTimeDelta)
+    while (mTimeObject.GetCurrentTime() < rTimeDelta)
     {
 
 
@@ -258,33 +254,36 @@ void NewmarkDirect::MainTimeLoop(NuTo::ConstitutiveInputMap& inputMap,
         }
 
 
-        if (timeStep < mMinTimeStep)
+        if (mTimeObject.GetTimestep() < mMinTimeStep)
             throw MechanicsException(__PRETTY_FUNCTION__,
                                      "time step is smaller than minimum - no convergence is obtained.");
 
         // calculate Delta_BRhs and Delta_ExtForce
-        bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt[0]);
-        prevExtForce = CalculateCurrentExternalLoad(curTime);
+        bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeObject.GetCurrentTime(), lastConverged_dof_dt[0]);
+        prevExtForce = CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime());
 
-        curTime += timeStep;
-        inputTime = mTime + timeStep;
-        SetTimeAndTimeStep(
-                curTime, timeStep,
-                rTimeDelta); // check whether harmonic excitation, check whether curTime is too close to the time data
+        //curTime += timeStep; // REMOVE
+        mTimeObject.Proceed();
+//        if(curTime !=mTimeObject.GetCurrentTime())
+//            throw MechanicsException(__PRETTY_FUNCTION__,"Timestep of previous implementation differs from new one");
 
-        deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
+        inputTime = mTimeObject.GetCurrentTime();
+
+//        SetTimeAndTimeStep( curTime,
+//                            timeStep,
+//                            rTimeDelta); // check whether harmonic excitation, check whether curTime is too close to the time data
+
+        deltaBRHS = UpdateAndGetConstraintRHS(mTimeObject.GetCurrentTime()) - bRHS;
 
 
         IterateForActiveDofValues(inputMap,
                                   evaluate_InternalGradient_Hessian0Hessian1,
                                   extForce,
-                                  curTime,
                                   residual,
                                   prevExtForce,
                                   deltaBRHS,
                                   hessian_dt,
                                   lastConverged_dof_dt,
-                                  timeStep,
                                   residual_mod,
                                   constraintMatrix,
                                   delta_dof_dt0,
@@ -484,7 +483,7 @@ void NuTo::NewmarkDirect::PreIteration(
         NuTo::ConstitutiveInputMap& rInputMap, NuTo::StructureOutputBlockVector& rIntForce,
         std::vector<StructureOutputBlockMatrix>& hessian_dt, std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
         const BlockSparseMatrix& cmat, StructureOutputBlockVector& residual, BlockFullVector<double>& residual_mod,
-        double curTime, const NuTo::DofStatus& dofStatus)
+        const NuTo::DofStatus& dofStatus)
 {
 
 
@@ -532,7 +531,7 @@ void NuTo::NewmarkDirect::PreIteration(
 
 
     StructureOutputBlockVector initialExtForce =
-            CalculateCurrentExternalLoad(curTime); // put this in element evaluate soon!
+            CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime()); // put this in element evaluate soon!
 
     // set first time derivative for temperature problem automatically
     // for (const auto& activeDofs : mStepActiveDofs)
@@ -607,13 +606,11 @@ void NuTo::NewmarkDirect::FillInputMap(ConstitutiveInputMap& rInputMap)
 void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputMap,
                                               std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& evaluate_Hessian0_Hessian1,
                                               StructureOutputBlockVector& extForce,
-                                              double& curTime,
                                               StructureOutputBlockVector& residual,
                                               StructureOutputBlockVector& prevExtForce,
                                               BlockFullVector<double>& deltaBRHS,
                                               std::vector<StructureOutputBlockMatrix> &hessian_dt,
                                               std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                              double& timeStep,
                                               BlockFullVector<double>& residual_mod,
                                               const BlockSparseMatrix& constraintMatrix,
                                               StructureOutputBlockVector& delta_dof_dt0,
@@ -637,14 +634,14 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
         mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
         // ******************************************************
 
-        extForce = CalculateCurrentExternalLoad(curTime);
+        extForce = CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime());
 
         /*------------------------------------------------*\
         |         Calculate Residual for trail state       |
         \*------------------------------------------------*/
         residual = extForce - prevExtForce;
         CalculateResidualTrial(residual, deltaBRHS, hessian_dt, lastConverged_dof_dt[1],
-                               lastConverged_dof_dt[2], timeStep);
+                               lastConverged_dof_dt[2], mTimeObject.GetTimestep());
         residual.ApplyCMatrix(residual_mod, constraintMatrix);
 
         mStructure->GetLogger() << "\n"
@@ -652,7 +649,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
                                 << "\n";
 
         // ******************************************************
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt, residual_mod, timeStep);
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian_dt, residual_mod, mTimeObject.GetTimestep());
         delta_dof_dt0.K = deltaBRHS - constraintMatrix * delta_dof_dt0.J;
         ++mIterationCount;
         // ******************************************************
@@ -660,9 +657,9 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
         // calculate trial state
         dof_dt[0] = lastConverged_dof_dt[0] + delta_dof_dt0;
         if (mStructure->GetNumTimeDerivatives() >= 1)
-            dof_dt[1] = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt[1], lastConverged_dof_dt[2], timeStep);
+            dof_dt[1] = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt[1], lastConverged_dof_dt[2], mTimeObject.GetTimestep());
         if (mStructure->GetNumTimeDerivatives() >= 2)
-            dof_dt[2] = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt[1], lastConverged_dof_dt[2], timeStep);
+            dof_dt[2] = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt[1], lastConverged_dof_dt[2], mTimeObject.GetTimestep());
 
 
         MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], false);
@@ -676,7 +673,7 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
 
         std::pair<int, BlockScalar> result = FindEquilibrium(
                     residual, inputMap, evaluate_Hessian0_Hessian1, evaluate_InternalGradient, hessian_dt,
-                    intForce, extForce, delta_dof_dt0, dof_dt, constraintMatrix, timeStep);
+                    intForce, extForce, delta_dof_dt0, dof_dt, constraintMatrix, mTimeObject.GetTimestep());
 
         auto iterations = result.first;
         auto residualNorm = result.second;
@@ -703,11 +700,11 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
             MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
 
 
-            mTime += timeStep;
+            mTime += mTimeObject.GetTimestep();
             inputTime = mTime;
 
             mStructure->GetLogger() << "Convergence after " << iterations << " iterations at time " << mTime
-                                    << " (timestep " << timeStep << ").\n";
+                                    << " (timestep " << mTimeObject.GetTimestep() << ").\n";
             mStructure->GetLogger() << "Residual: \t" << residualNorm << "\n";
             // perform Postprocessing
             if (staggeredStepNumber >= mStepActiveDofs.size())
@@ -720,9 +717,10 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
             // eventually increase next time step
             if (mAutomaticTimeStepping && iterations < 0.25 * mMaxNumIterations)
             {
-                timeStep *= 1.5;
-                if (timeStep > mMaxTimeStep)
-                    timeStep = mMaxTimeStep;
+                mTimeObject.ScaleTimestep(1.5);
+//                timeStep *= 1.5;
+//                if (timeStep > mMaxTimeStep)
+//                    timeStep = mMaxTimeStep;
             }
 
             if (mCallback && mCallback->Exit(*mStructure))
@@ -730,20 +728,23 @@ void NewmarkDirect::IterateForActiveDofValues(NuTo::ConstitutiveInputMap& inputM
         }
         else
         {
-            mStructure->GetLogger() << "No convergence with timestep " << timeStep << " at time " << mTime << "\n";
+            mStructure->GetLogger() << "No convergence with timestep " << mTimeObject.GetTimestep() << " at time " << mTime << "\n";
             // no convergence
             if (mAutomaticTimeStepping)
             {
                 // no convergence, reduce the time step and start from scratch
-                curTime -= timeStep;
-                timeStep *= 0.5;
-                if (timeStep < mMinTimeStep)
-                {
-                    mStructure->GetLogger() << "The minimal time step achieved, the actual time step is "
-                                            << timeStep << "\n";
-                    throw MechanicsException(__PRETTY_FUNCTION__,
-                                             "No convergence, the current time step is too short.");
-                }
+                mTimeObject.RestorePreviosTime();
+                mTimeObject.ScaleTimestep(0.5);
+
+                //curTime -= timeStep;
+//                timeStep *= 0.5;
+//                if (timeStep < mMinTimeStep)
+//                {
+//                    mStructure->GetLogger() << "The minimal time step achieved, the actual time step is "
+//                                            << timeStep << "\n";
+//                    throw MechanicsException(__PRETTY_FUNCTION__,
+//                                             "No convergence, the current time step is too short.");
+//                }
             }
             else
             {
