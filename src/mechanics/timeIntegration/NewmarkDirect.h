@@ -3,6 +3,7 @@
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/structures/StructureBaseEnum.h"
+#include "mechanics/timeIntegration/Time.h"
 
 namespace NuTo
 {
@@ -203,5 +204,7 @@ protected:
     bool mPerformLineSearch = true;
 
     int mVerboseLevel = 1; //!< controls the output verbosity (0 = silent)
+
+    Time mTimeObject;
 };
 } // namespace NuTo

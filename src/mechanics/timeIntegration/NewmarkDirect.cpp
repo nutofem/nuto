@@ -524,7 +524,7 @@ void NuTo::NewmarkDirect::PreIteration(
 
     ExtractDofValues(lastConverged_dof_dt[0], lastConverged_dof_dt[1], lastConverged_dof_dt[2]);
 
-    UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt[0]);
+    UpdateAndGetAndMergeConstraintRHS(mTimeObject.GetCurrentTime(), lastConverged_dof_dt[0]);
 
     // ******************************************************
     mStructure->Evaluate(rInputMap, rEvaluate_InternalGradient_Hessian0Hessian1);
