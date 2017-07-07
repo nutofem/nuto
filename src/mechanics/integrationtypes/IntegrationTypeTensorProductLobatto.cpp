@@ -2,25 +2,31 @@
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
 
-#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProductLobatto.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "math/Legendre.h"
 #include <iostream>
 
 // constructor
 template<int TDim>
-NuTo::IntegrationTypeTensorProductGauss<TDim>::IntegrationTypeTensorProductGauss(size_t nIps)
+NuTo::IntegrationTypeTensorProductLobatto<TDim>::IntegrationTypeTensorProductLobatto(size_t nIps)
 {
-    mIPts1D = NuTo::Math::Polynomial::LegendreRoots(nIps);
-    std::vector<double> weights(nIps);
 
-    if (nIps > 0)
+    mIPts1D = NuTo::Math::Polynomial::LegendreDerivRoots(nIps - 1);
+    mIPts1D.insert(mIPts1D.begin(), -1.);
+    mIPts1D.push_back(1.);
+
+    std::vector<double> weights;
+
+    if (nIps > 1)
     {
-        for (size_t i = 0; i < nIps; i++)
+        weights.push_back(2. / (nIps * (nIps - 1)));
+        for (size_t i = 1; i < nIps - 1; i++)
         {
-            double dl = NuTo::Math::Polynomial::Legendre(nIps, mIPts1D[i], 1);
-            weights[i] = (2. / (1. - mIPts1D[i] * mIPts1D[i]) / (dl * dl));
+            double lp = NuTo::Math::Polynomial::Legendre(nIps - 1, mIPts1D[i]);
+            weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
         }
+        weights.push_back(2. / (nIps * (nIps - 1)));
     }
     else throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
 
@@ -46,32 +52,32 @@ NuTo::IntegrationTypeTensorProductGauss<TDim>::IntegrationTypeTensorProductGauss
 }
 
 template<int TDim>
-Eigen::VectorXd NuTo::IntegrationTypeTensorProductGauss<TDim>::GetLocalIntegrationPointCoordinates(int rIpNum) const
+Eigen::VectorXd NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mIPts[rIpNum];
     else
         throw MechanicsException(
-                "[NuTo::IntegrationTypeTensorProductGauss::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+                "[NuTo::IntegrationTypeTensorProductLobatto::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 template<int TDim>
-int NuTo::IntegrationTypeTensorProductGauss<TDim>::GetNumIntegrationPoints() const
+int NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetNumIntegrationPoints() const
 {
     return mIPts.size();
 }
 
 template<int TDim>
-double NuTo::IntegrationTypeTensorProductGauss<TDim>::GetIntegrationPointWeight(int rIpNum) const
+double NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mWeights[rIpNum];
-    throw MechanicsException("[NuTo::IntegrationTypeTensorProductGauss::GetIntegrationPointWeight] Ip number out of range.");
+    throw MechanicsException("[NuTo::IntegrationTypeTensorProductLobatto::GetIntegrationPointWeight] Ip number out of range.");
 }
 
 #ifdef ENABLE_VISUALIZE
 template<int TDim>
-void NuTo::IntegrationTypeTensorProductGauss<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
+void NuTo::IntegrationTypeTensorProductLobatto<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
 {
     std::vector<double> VisualizationPoints1D;
     size_t NumVisualizationPoints1D = mIPts1D.size()+1;
@@ -105,7 +111,7 @@ void NuTo::IntegrationTypeTensorProductGauss<TDim>::GetVisualizationPoints(unsig
 namespace NuTo
 {
 template <>
-void NuTo::IntegrationTypeTensorProductGauss<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProductLobatto<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -133,7 +139,7 @@ void NuTo::IntegrationTypeTensorProductGauss<1>::GetVisualizationCells(unsigned 
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProductGauss<2>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProductLobatto<2>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -165,7 +171,7 @@ void NuTo::IntegrationTypeTensorProductGauss<2>::GetVisualizationCells(unsigned 
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProductGauss<3>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+void NuTo::IntegrationTypeTensorProductLobatto<3>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                        std::vector<double>& VisualizationPointLocalCoordinates,
                                                                        unsigned int& NumVisualizationCells,
                                                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -211,6 +217,6 @@ void NuTo::IntegrationTypeTensorProductGauss<3>::GetVisualizationCells(unsigned 
 
 #endif // ENABLE_VISUALIZE
 
-template class NuTo::IntegrationTypeTensorProductGauss<1>;
-template class NuTo::IntegrationTypeTensorProductGauss<2>;
-template class NuTo::IntegrationTypeTensorProductGauss<3>;
+template class NuTo::IntegrationTypeTensorProductLobatto<1>;
+template class NuTo::IntegrationTypeTensorProductLobatto<2>;
+template class NuTo::IntegrationTypeTensorProductLobatto<3>;

@@ -26,20 +26,20 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, std::vector<int> rDiv)
 BOOST_AUTO_TEST_CASE(Brick)
 {
     Run(eShapeType::BRICK3D, eTypeOrder::EQUIDISTANT1, {2, 2, 2});
-    Run(eShapeType::BRICK3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
-    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO2, {1, 1, 1});
-    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO3, {1, 1, 1});
-    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO4, {1, 1, 1});
+//    Run(eShapeType::BRICK3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
+//    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO2, {1, 1, 1});
+//    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO3, {1, 1, 1});
+//    Run(eShapeType::BRICK3D, eTypeOrder::LOBATTO4, {1, 1, 1});
 }
 
-BOOST_AUTO_TEST_CASE(Tetrahedron)
-{
-    Run(eShapeType::TETRAHEDRON3D, eTypeOrder::EQUIDISTANT1, {2, 2, 2});
-    Run(eShapeType::TETRAHEDRON3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
-}
+//BOOST_AUTO_TEST_CASE(Tetrahedron)
+//{
+//    Run(eShapeType::TETRAHEDRON3D, eTypeOrder::EQUIDISTANT1, {2, 2, 2});
+//    Run(eShapeType::TETRAHEDRON3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
+//}
 
-BOOST_AUTO_TEST_CASE(Prism)
-{
-    Run(eShapeType::PRISM3D, eTypeOrder::EQUIDISTANT1, {2, 2, 2});
-    Run(eShapeType::PRISM3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
-}
+//BOOST_AUTO_TEST_CASE(Prism)
+//{
+//    Run(eShapeType::PRISM3D, eTypeOrder::EQUIDISTANT1, {2, 2, 2});
+//    Run(eShapeType::PRISM3D, eTypeOrder::EQUIDISTANT2, {1, 2, 3});
+//}

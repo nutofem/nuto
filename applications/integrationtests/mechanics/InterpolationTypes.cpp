@@ -14,9 +14,8 @@
 #include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
@@ -178,7 +177,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangle)
 BOOST_AUTO_TEST_CASE(InterpolationQuad)
 {
 
-    NuTo::IntegrationType2D4NGauss4Ip myIntegrationType;
+    NuTo::IntegrationTypeTensorProductGauss<2> myIntegrationType(2);
 
     NuTo::InterpolationType myIT4(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT4.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -223,7 +222,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
 
 BOOST_AUTO_TEST_CASE(InterpolationBrick)
 {
-    NuTo::IntegrationType3D8NGauss2x2x2Ip myIntegrationType;
+    NuTo::IntegrationTypeTensorProductGauss<3> myIntegrationType(2);
 
     NuTo::InterpolationType myIT8(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT8.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);

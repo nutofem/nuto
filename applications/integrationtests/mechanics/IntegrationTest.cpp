@@ -1,12 +1,7 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrationtypes/IntegrationType2D.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProductGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProductLobatto.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
@@ -19,11 +14,6 @@
 
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NLobatto_Def.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -64,14 +54,14 @@ double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationType
     return (result);
 }
 
-double integrate2D(int order, NuTo::IntegrationType2D &intType) {
+double integrate2D(int order, NuTo::IntegrationTypeBase &intType) {
     std::function<double(Eigen::VectorXd)> f = [order](Eigen::VectorXd x) {
         return(testPoly2D(x,order));
     };
     return(integrate(f,intType));
 }
 
-double integrate3D(int order, NuTo::IntegrationType3D &intType) {
+double integrate3D(int order, NuTo::IntegrationTypeBase &intType) {
     std::function<double(Eigen::VectorXd)> f = [order](Eigen::VectorXd x) {
         return(testPoly3D(x,order));
     };
@@ -80,17 +70,18 @@ double integrate3D(int order, NuTo::IntegrationType3D &intType) {
 
 BOOST_AUTO_TEST_CASE(PolynomialIntegrationQuad) {
     // 2D
-    NuTo::IntegrationType2D4NGauss1Ip intGaussQuad1;
-    NuTo::IntegrationType2D4NGauss4Ip intGaussQuad2;
-    NuTo::IntegrationType2D4NGauss9Ip intGaussQuad3;
+    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad1(1);
+    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad2(2);
+    NuTo::IntegrationTypeTensorProductGauss<2> intGaussQuad3(3);
 
-    NuTo::IntegrationType2D4NLobatto9Ip intLobQuad3;
-    NuTo::IntegrationType2D4NLobatto16Ip intLobQuad4;
-    NuTo::IntegrationType2D4NLobatto25Ip intLobQuad5;
+    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad3new(3);
+    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad4new(4);
+    NuTo::IntegrationTypeTensorProductLobatto<2> intLobQuad5new(5);
 
-    std::vector<NuTo::IntegrationType2D *> intTypesQuad2D = {
+    std::vector<NuTo::IntegrationTypeBase *> intTypesQuad2D = {
         &intGaussQuad1, &intGaussQuad2, &intGaussQuad3,
-        &intLobQuad3,   &intLobQuad4,   &intLobQuad5};
+        &intLobQuad3new,   &intLobQuad4new,   &intLobQuad5new,
+    };
 
     // Analytical results (result[i] = integral of polynomial of order i with all
     // coefficients set to 1)
@@ -111,7 +102,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationQuad) {
     std::cout << "Expected Result Quad: " << analyticalResultsQuad[polyOrder]
                  << std::endl;
 
-    for (NuTo::IntegrationType2D *intType : intTypesQuad2D) {
+    for (NuTo::IntegrationTypeBase *intType : intTypesQuad2D) {
         std::cout << "Int Points " << intType->GetNumIntegrationPoints()
                   << "Result: " << integrate2D(polyOrder, *(intType)) << std::endl;
     }
@@ -127,7 +118,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTriangle) {
     NuTo::IntegrationType2D3NGauss13Ip intGaussTri13;
     NuTo::IntegrationType2D3NGauss16Ip intGaussTri16;
 
-    std::vector<NuTo::IntegrationType2D *> intTypesTri2D = {
+    std::vector<NuTo::IntegrationTypeBase *> intTypesTri2D = {
         &intGaussTri1, &intGaussTri3, &intGaussTri4, &intGaussTri6,
         &intGaussTri12, &intGaussTri12d, &intGaussTri13, &intGaussTri16
     };
@@ -150,7 +141,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTriangle) {
     std::cout << "Expected Result Triangle: " << analyticalResultsTriangle[polyOrder]
                  << std::endl;
 
-    for (NuTo::IntegrationType2D *intType : intTypesTri2D) {
+    for (NuTo::IntegrationTypeBase *intType : intTypesTri2D) {
         std::cout << "Int Points " << intType->GetNumIntegrationPoints()
                   << "Result: " << integrate2D(polyOrder, *(intType)) << std::endl;
     }
@@ -161,7 +152,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTet) {
     NuTo::IntegrationType3D4NGauss1Ip intGaussTet1;
     NuTo::IntegrationType3D4NGauss4Ip intGaussTet4;
 
-    std::vector<NuTo::IntegrationType3D *> intTypesTet = {
+    std::vector<NuTo::IntegrationTypeBase *> intTypesTet = {
         &intGaussTet1, &intGaussTet4
     };
 
@@ -183,7 +174,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTet) {
     std::cout << "Expected Result Tet: " << analyticalResultsTet[polyOrder]
                  << std::endl;
 
-    for (NuTo::IntegrationType3D *intType : intTypesTet) {
+    for (NuTo::IntegrationTypeBase *intType : intTypesTet) {
         std::cout << "Int Points " << intType->GetNumIntegrationPoints()
                   << "Result: " << integrate3D(polyOrder, *(intType)) << std::endl;
     }
@@ -191,15 +182,17 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationTet) {
 
 BOOST_AUTO_TEST_CASE(PolynomialIntegrationBrick) {
     // 3D
-    NuTo::IntegrationType3D8NGauss1Ip intGaussBrick1;
-    NuTo::IntegrationType3D8NGauss2x2x2Ip intGaussBrick2;
+    NuTo::IntegrationTypeTensorProductGauss<3> intGaussBrick1(1);
+    NuTo::IntegrationTypeTensorProductGauss<3> intGaussBrick2(2);
 
-    NuTo::IntegrationType3D8NLobatto<3> intLobBrick3;
-    NuTo::IntegrationType3D8NLobatto<4> intLobBrick4;
-    NuTo::IntegrationType3D8NLobatto<5> intLobBrick5;
+    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick3new(3);
+    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick4new(4);
+    NuTo::IntegrationTypeTensorProductLobatto<3> intLobBrick5new(5);
 
-    std::vector<NuTo::IntegrationType3D *> intTypesBrick3D = {
-        &intGaussBrick1, &intGaussBrick2, &intLobBrick3, &intLobBrick4, &intLobBrick5};
+    std::vector<NuTo::IntegrationTypeBase *> intTypesBrick3D = {
+        &intGaussBrick1, &intGaussBrick2,
+        &intLobBrick3new, &intLobBrick4new, &intLobBrick5new
+    };
 
     // Analytical results (result[i] = integral of polynomial of order i with all
     // coefficients set to 1)
@@ -220,7 +213,7 @@ BOOST_AUTO_TEST_CASE(PolynomialIntegrationBrick) {
     std::cout << "Expected Result Brick: " << analyticalResultsBrick[polyOrder]
                  << std::endl;
 
-    for (NuTo::IntegrationType3D *intType : intTypesBrick3D) {
+    for (NuTo::IntegrationTypeBase *intType : intTypesBrick3D) {
         std::cout << "Int Points " << intType->GetNumIntegrationPoints()
                   << "Result: " << integrate3D(polyOrder, *(intType)) << std::endl;
     }

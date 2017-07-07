@@ -1,18 +1,25 @@
 #pragma once
 
-#include "mechanics/integrationtypes/IntegrationType2D.h"
+#include <vector>
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 namespace NuTo
 {
-//! @author Philip Huschke
-//! @date June 2015
-//! @brief ... Integration in 2D with 9 integration points
-class IntegrationType2D4NGauss9Ip : public IntegrationType2D
-{
+//! @author Philipp Müller, Peter Otto, BAM
+//! @date Jul 2017
+//! @brief ... integration types in 1,2,3D with Lobatto integration, tensor product of 1D
 
+template <int TDim>
+class IntegrationTypeTensorProductLobatto : public IntegrationTypeBase
+{
 public:
     //! @brief constructor
-    IntegrationType2D4NGauss9Ip();
+    IntegrationTypeTensorProductLobatto(size_t numIps);
+
+
+    //! @brief returns the dimension
+    int GetDimension() const override {return TDim;}
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -36,7 +43,17 @@ public:
                                std::vector<unsigned int>& VisualizationCellsIncidence,
                                std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
+private:
+    //! @brief ... 1D integration points coordinates
+    std::vector<double> mIPts1D;
+    //! @brief ... tensor product integration points coordinates
+    std::vector<Eigen::Matrix<double, TDim, 1>> mIPts;
+    //! @brief ... weights for the integration
+    std::vector<double> mWeights;
 
-protected:
+#ifdef ENABLE_VISUALIZE
+    //! @brief ... visualization points in 1D
+    void GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const;
+#endif // ENABLE_VISUALIZE
 };
-}
+} // namespace
