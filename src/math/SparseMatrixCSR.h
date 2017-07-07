@@ -31,11 +31,14 @@ public:
     //! @param rNumReserveEntries_ ... number of entries for which memory is reserved (optional)
     SparseMatrixCSR(int rNumRows_, unsigned int rNumReserveEntries_ = 0)
         : SparseMatrix<T>()
+        , mValues()
+        , mColumns()
+        , mRowIndex(rNumRows_ + 1)
     {
         // check for overflow
         assert(rNumRows_ < INT_MAX);
         assert(rNumRows_ >= 0);
-        this->mRowIndex.resize(rNumRows_ + 1);
+
         this->mValues.reserve(rNumReserveEntries_);
         this->mColumns.reserve(rNumReserveEntries_);
     }

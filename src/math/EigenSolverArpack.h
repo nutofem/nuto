@@ -2,6 +2,7 @@
 
 #include "math/MathException.h"
 #include <eigen3/Eigen/Core>
+#include "math/EigenSolverArpackEnum.h"
 
 #ifdef HAVE_ARPACK
 namespace NuTo
@@ -117,11 +118,12 @@ public:
 
 protected:
     //! @brief ... determines wether a refinement is enabled or disabled within the solution strategy
-    NuTo::EIGEN_SOLVER_ARPACK::eDriver mDriver;
-    NuTo::EIGEN_SOLVER_ARPACK::eWhich mWhich;
-    double mTolerance; // tolerance, initially set to machine precision (relative eps)
-    double mSigmaR; // real shift for Spectral transformation
-    double mSigmaI; // imag shift for Spectral transformation
-    bool mShowTime;
+    NuTo::EIGEN_SOLVER_ARPACK::eDriver mDriver = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
+    NuTo::EIGEN_SOLVER_ARPACK::eWhich mWhich = NuTo::EIGEN_SOLVER_ARPACK::eWhich::LM;
+    double mTolerance = std::numeric_limits<double>::epsilon(); // machine precision
+    double mSigmaR = 0; // real shift for Spectral transformation
+    double mSigmaI = 0; // imag shift for Spectral transformation
+    bool mShowTime = true;
+
 };
 }

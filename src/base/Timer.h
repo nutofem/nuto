@@ -5,6 +5,7 @@
 
 #include <iosfwd>
 #include <chrono>
+#include <memory>
 
 namespace NuTo
 {
@@ -23,12 +24,16 @@ public:
     //! @param rShowTime ... false: no output
     Timer(std::string rMsg, bool rShowTime, Logger& rLogger);
 
+    Timer(const Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+
     //! @brief dtor, prints the msg and the lifetime
     ~Timer();
 
     void Reset();
 
     void Reset(std::string rMsg);
+
 
     //! @brief returns the time from ctor to now in seconds
     double GetTimeDifference() const;

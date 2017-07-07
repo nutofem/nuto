@@ -155,6 +155,6 @@ public:
 
 protected:
     //! @brief ... number of columns
-    int mNumColumns;
+    int mNumColumns = 0;
 };
 }

@@ -28,9 +28,6 @@ public:
     //! @brief ... constructor
     SparseMatrix()
     {
-        this->mOneBasedIndexing = false;
-        this->mPositiveDefinite = false;
-        mVerboseLevel = 0;
     }
 
     SparseMatrix(const SparseMatrix<T>& rOther)
@@ -270,11 +267,11 @@ public:
 
 protected:
     //! @brief ... internal indexing of the matrix (true if one based indexing / false if zero based indexing)
-    bool mOneBasedIndexing;
+    bool mOneBasedIndexing = false;
     //! @brief ... definiteness of the matrix (true if positive definite / false if indefinite)
-    bool mPositiveDefinite;
+    bool mPositiveDefinite = false;
 
-    unsigned short mVerboseLevel;
+    int mVerboseLevel = 0;
 
     //! @brief ... resizes and fills the matrix rMatrix with rNumValues random values
     //! @param rMatrix ... Matrix<T>

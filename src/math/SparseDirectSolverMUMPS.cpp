@@ -7,6 +7,7 @@
 
 NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS()
     : SparseDirectSolver()
+    , mSolver(DMUMPS_STRUC_C())
 {
 #ifdef HAVE_MUMPS
 // set default solver parameters
