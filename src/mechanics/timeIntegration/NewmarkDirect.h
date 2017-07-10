@@ -87,15 +87,7 @@ protected:
                                              const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
 
     //! @brief ... builds the modified hessian matrix (including cmat) and solves the system
-    //! @param rHessian_dt0 ... hessian_dt0 matrix
-    //! @param rHessian_dt1 ... hessian_dt1 matrix
-    //! @param rHessian_dt2 ... hessian_dt2 matrix
-    //! @param rResidualMod ... modified residual (including the cmatrix)
-    //! @param rTimeStep ... current time step
-    //! @return ... deltaDof_dt0.J
-    //! @remark ... If hessian_dt0 is constant, its values are preserved (hessianMod = temporary matrix). Otherwise,
-    //! hessian0 will be used (hessianMod = hessian0)
-    BlockFullVector<double> BuildHessianModAndSolveSystem(std::vector<NuTo::StructureOutputBlockMatrix>& rHessian_dt,
+    BlockFullVector<double> BuildHessianModAndSolveSystem(std::array<NuTo::StructureOutputBlockMatrix, 3>& rHessians,
                                                           const BlockFullVector<double>& rResidualMod,
                                                           double rTimeStep) const;
 
@@ -113,11 +105,10 @@ protected:
                                              const StructureOutputBlockVector& rDof_dt1,
                                              const StructureOutputBlockVector& rDof_dt2) const;
 
-    void CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1,
-                                  const StructureOutputBlockMatrix& rHessian_dt2) const;
+    StructureOutputBlockMatrix CalculateMuDampingMatrix(const StructureOutputBlockMatrix& hessian2) const;
 
     void CalculateResidualTrial(StructureOutputBlockVector& rResidual, const BlockFullVector<double>& rDeltaBRHS,
-                                const std::vector<NuTo::StructureOutputBlockMatrix>& rHessian_dt,
+                                const std::array<NuTo::StructureOutputBlockMatrix, 3>& hessians,
                                 const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2,
                                 double rTimeStep) const;
 
@@ -155,44 +146,35 @@ public:
 protected:
     void PreIteration(
             std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_InternalGradient_Hessian0Hessian1,
-            std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_Hessian0_Hessian1,
-            StructureOutputBlockVector& rIntForce,
-            std::vector<NuTo::StructureOutputBlockMatrix>& hessian_dt,
+            StructureOutputBlockVector& rIntForce, std::array<NuTo::StructureOutputBlockMatrix, 3>& hessians,
             std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt, const NuTo::BlockSparseMatrix& cmat,
             NuTo::StructureOutputBlockVector& residual, BlockFullVector<double>& residual_mod,
             const NuTo::DofStatus& dofStatus);
 
     void FillOutputMaps(
             std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_InternalGradient_Hessian0Hessian1,
-            std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& rEvaluate_Hessian0_Hessian1,
-            NuTo::StructureOutputBlockVector& rIntForce, std::vector<NuTo::StructureOutputBlockMatrix>& hessian_dt,
+            NuTo::StructureOutputBlockVector& rIntForce, std::array<NuTo::StructureOutputBlockMatrix, 3>& hessians,
             const NuTo::DofStatus& dofStatus);
 
     void FillInputMap(NuTo::ConstitutiveInputMap& rInputMap);
 
     void IterateForActiveDofValues(
-            std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& evaluate_Hessian0_Hessian1,
             NuTo::StructureOutputBlockVector& extForce, NuTo::StructureOutputBlockVector& residual,
             NuTo::StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
-            std::vector<StructureOutputBlockMatrix>& hessian_dt,
             std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt, BlockFullVector<double>& residual_mod,
             const NuTo::BlockSparseMatrix& constraintMatrix, NuTo::StructureOutputBlockVector& delta_dof_dt0,
-            std::vector<NuTo::StructureOutputBlockVector>& dof_dt,
-            NuTo::StructureOutputBlockVector& prevResidual);
+            std::vector<NuTo::StructureOutputBlockVector>& dof_dt, NuTo::StructureOutputBlockVector& prevResidual);
 
 
-    std::pair<int, BlockScalar>
-    FindEquilibrium(StructureOutputBlockVector& structureResidual,
-                    StructureOutputMap evalHessian0And1,
-                    std::vector<NuTo::StructureOutputBlockMatrix>& hessian_dt, StructureOutputBlockVector& intForce,
-                    StructureOutputBlockVector& extForce, StructureOutputBlockVector& delta_dof_dt0,
-                    std::vector<NuTo::StructureOutputBlockVector>& dof_dt, const BlockSparseMatrix& constraintMatrix,
-                    double timeStep);
+    std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
+                                                StructureOutputBlockVector& intForce,
+                                                StructureOutputBlockVector& extForce,
+                                                StructureOutputBlockVector& delta_dof_dt0,
+                                                std::vector<NuTo::StructureOutputBlockVector>& dof_dt,
+                                                const BlockSparseMatrix& constraintMatrix, double timeStep);
 
-    void MainTimeLoop(std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*>& evaluate_Hessian0_Hessian1,
-                      NuTo::StructureOutputBlockVector& extForce, NuTo::StructureOutputBlockVector& residual,
+    void MainTimeLoop(NuTo::StructureOutputBlockVector& extForce, NuTo::StructureOutputBlockVector& residual,
                       NuTo::StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
-                      std::vector<NuTo::StructureOutputBlockMatrix>& hessian_dt,
                       std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
                       BlockFullVector<double>& residual_mod, const NuTo::BlockSparseMatrix& constraintMatrix,
                       NuTo::StructureOutputBlockVector& delta_dof_dt0,
@@ -202,6 +184,7 @@ protected:
 
     ConstitutiveInputMap CreateInputMap();
     StructureOutputBlockVector EvaluateInternalGradient();
+    std::array<StructureOutputBlockMatrix, 3> EvaluateHessians();
 
 protected:
     double mMinLineSearchStep = 0.01;
@@ -210,5 +193,6 @@ protected:
     int mVerboseLevel = 1; //!< controls the output verbosity (0 = silent)
 
     Time mTimeObject;
+    StructureOutputBlockMatrix mHessian2;
 };
 } // namespace NuTo

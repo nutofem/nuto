@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
 
 
 namespace NuTo
@@ -20,6 +21,7 @@ public:
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
+        mUseMuDamping = true;
         mMuDampingMass = rMuDampingMass;
     }
 
@@ -43,7 +45,9 @@ public:
 
 
 protected:
+    bool mUseMuDamping = false;
     double mMuDampingMass = 0; //!< damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
+    StructureOutputBlockMatrix mDampingMatrix;
 
     // NewtonRaphson parameters
     double mToleranceForce = 1.e-6;
