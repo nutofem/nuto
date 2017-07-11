@@ -5,7 +5,7 @@
 
 #include "visualize/UnstructuredGrid.h"
 #include "visualize/DataArray.h"
-#include "visualize/VisualizeException.h"
+#include "base/Exception.h"
 
 using namespace NuTo;
 
@@ -30,7 +30,7 @@ int ToVtkCellType(eCellTypes type)
     case eCellTypes::WEDGE:
         return 13;
     }
-    throw VisualizeException(__PRETTY_FUNCTION__, "Unknown cell type");
+    throw Exception(__PRETTY_FUNCTION__, "Unknown cell type");
 }
 
 Eigen::VectorXd TransformData(Eigen::VectorXd data)
@@ -140,7 +140,7 @@ void Visualize::XMLWriter::Export(std::string filename, const UnstructuredGrid& 
 
     std::ofstream file(filename);
     if (!file.is_open())
-        throw VisualizeException(__PRETTY_FUNCTION__, "Error opening file " + filename);
+        throw Exception(__PRETTY_FUNCTION__, "Error opening file " + filename);
     // header #########################################################################################################
     file << R"(<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian")";
     if (binary)

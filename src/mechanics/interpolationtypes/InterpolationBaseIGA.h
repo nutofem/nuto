@@ -2,7 +2,7 @@
 
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include <vector>
 
@@ -29,17 +29,17 @@ public:
 
     const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
+        throw Exception(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
     }
 
     virtual Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
+        throw Exception(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
     }
 
     void CalculateSurfaceNodeIds() override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
+        throw Exception(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
     }
 
     //********************************************
@@ -48,13 +48,13 @@ public:
 
     virtual const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd& naturalCoordinates) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "The shape functions are calculated on the fly, use 'GetShapeFunctions' routine!");
     }
 
     virtual const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "The shape functions are calculated on the fly, use 'GetMatrixN' routine!");
     }
 
@@ -65,7 +65,7 @@ public:
     virtual const Eigen::MatrixXd&
     DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Since the shape functions are calculated on the fly, just use "
+        throw Exception(__PRETTY_FUNCTION__, "Since the shape functions are calculated on the fly, just use "
                                                       "'GetDerivativeShapeFunctionsNatural' routine!");
     }
 
@@ -79,7 +79,7 @@ public:
     virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
                                                                int rSurface) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Use the function "
+        throw Exception(__PRETTY_FUNCTION__, "Use the function "
                                                       "'CalculateNaturalSurfaceCoordinates(rNaturalSurfaceCoordinates, "
                                                       "rSurface, rKnots)' instead!");
     }
@@ -94,7 +94,7 @@ protected:
 
     virtual bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
+        throw Exception(__PRETTY_FUNCTION__, "No natural node coordinates in IGA!");
     }
 
     //! @brief this method sets the mNumDofs, mNumNodes and mNodeIndices members

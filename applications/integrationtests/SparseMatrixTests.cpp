@@ -13,12 +13,12 @@ void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const Eigen::Mat
     {
         std::cout << "############ SPARSE ############ \n" << tmp << std::endl;
         std::cout << "############# FULL ############# \n" << rFull << std::endl;
-        throw NuTo::MathException("Matrices not equal");
+        throw NuTo::Exception("Matrices not equal");
     }
 
     if (rSparse.GetNumEntries() == 0)
     {
-        throw NuTo::MathException("Sparse matrix is zero...");
+        throw NuTo::Exception("Sparse matrix is zero...");
     }
 }
 
@@ -153,7 +153,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         {
             std::cout << diffMaxMin << std::endl;
             std::cout << diff.ConvertToFullMatrix() << std::endl;
-            throw NuTo::MathException("[SparseMatrixVector2Tests - General] ApplyCMatrix incorrect.");
+            throw NuTo::Exception("[SparseMatrixVector2Tests - General] ApplyCMatrix incorrect.");
         }
 
         timer.Reset("SparseMatrixVector2Tests - General:: RJ + Cmat.Trans * RK");
@@ -173,7 +173,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         {
             std::cout << diffVecMaxMin << std::endl;
             std::cout << diffVec << std::endl;
-            throw NuTo::MathException("[SparseMatrixVector2Tests - General] RJ + Cmat.Trans * RK incorrect.");
+            throw NuTo::Exception("[SparseMatrixVector2Tests - General] RJ + Cmat.Trans * RK incorrect.");
         }
 
 
@@ -229,7 +229,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         {
             std::cout << diffMaxMin << std::endl;
             std::cout << diff.ConvertToFullMatrix() << std::endl;
-            throw NuTo::MathException("[SparseMatrixVector2Tests - Symmetric] ApplyCMatrix incorrect.");
+            throw NuTo::Exception("[SparseMatrixVector2Tests - Symmetric] ApplyCMatrix incorrect.");
         }
     }
 }
@@ -268,23 +268,23 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
 
     // check results
     if (mappingInitialToNewOrdering != mappingInitialToNewOrderingVector2)
-        throw NuTo::MathException("[GaussEliminationTests] wrong mappingInitialToNewOrdering");
+        throw NuTo::Exception("[GaussEliminationTests] wrong mappingInitialToNewOrdering");
 
     if (mappingNewToInitialOrdering != mappingNewToInitialOrderingVector2)
-        throw NuTo::MathException("[GaussEliminationTests] wrong mappingInitialToNewOrdering");
+        throw NuTo::Exception("[GaussEliminationTests] wrong mappingInitialToNewOrdering");
 
     auto diffCMat = cMatVector2 - cMat;
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
         std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
-        throw NuTo::MathException("[GaussEliminationTests] wrong cMat");
+        throw NuTo::Exception("[GaussEliminationTests] wrong cMat");
     }
 
     auto diffRHS = RHSVector2 - RHS;
     if (diffRHS.Max() - diffRHS.Min() > 1e-8)
     {
         std::cout << diffRHS.ConvertToFullMatrix() << std::endl;
-        throw NuTo::MathException("[GaussEliminationTests] wrong diffRHS");
+        throw NuTo::Exception("[GaussEliminationTests] wrong diffRHS");
     }
 
     std::vector<int> tmpMapping(rNumDepDofs + rNumActDofs);
@@ -306,7 +306,7 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
         std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
-        throw NuTo::MathException("[GaussEliminationTests] wrong cMat after renumbering.");
+        throw NuTo::Exception("[GaussEliminationTests] wrong cMat after renumbering.");
     }
 
 
@@ -323,7 +323,7 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
         std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
-        throw NuTo::MathException("[GaussEliminationTests] wrong cMat after removal of the last columns.");
+        throw NuTo::Exception("[GaussEliminationTests] wrong cMat after removal of the last columns.");
     }
 }
 
@@ -343,7 +343,7 @@ int main()
         GaussEliminationTests(12, 3, 1);
         SerializationTest();
     }
-    catch (NuTo::MathException& e)
+    catch (NuTo::Exception& e)
     {
         std::cout << "\n\n\n errors occurred \n\n\n";
         std::cout << e.what() << std::endl;

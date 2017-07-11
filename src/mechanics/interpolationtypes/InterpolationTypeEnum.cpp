@@ -1,7 +1,7 @@
 #include "InterpolationTypeEnum.h"
 
 #include <boost/algorithm/string.hpp>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 const std::map<NuTo::Interpolation::eShapeType, std::string> NuTo::Interpolation::GetShapeTypeMap()
 {
@@ -33,7 +33,7 @@ std::string NuTo::Interpolation::ShapeTypeToString(const NuTo::Interpolation::eS
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException("[NuTo::Interpolation::ShapeTypeToString] Enum undefined or not implemented.");
+        throw NuTo::Exception("[NuTo::Interpolation::ShapeTypeToString] Enum undefined or not implemented.");
     }
 }
 
@@ -45,7 +45,7 @@ std::string NuTo::Interpolation::TypeOrderToString(const NuTo::Interpolation::eT
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException("[NuTo::Interpolation::TypeOrderToString] Enum undefined or not implemented.");
+        throw NuTo::Exception("[NuTo::Interpolation::TypeOrderToString] Enum undefined or not implemented.");
     }
 }
 
@@ -57,7 +57,7 @@ NuTo::Interpolation::eShapeType NuTo::Interpolation::ShapeTypeToEnum(const std::
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::MechanicsException("[NuTo::Interpolation::ShapeTypeToEnum] ShapeType " + rShapeType +
+    throw NuTo::Exception("[NuTo::Interpolation::ShapeTypeToEnum] ShapeType " + rShapeType +
                                    " has no enum equivalent or is not implemented.");
 }
 
@@ -69,6 +69,6 @@ NuTo::Interpolation::eTypeOrder NuTo::Interpolation::TypeOrderToEnum(const std::
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::MechanicsException("[NuTo::Interpolation::TypeOrderToEnum] TypeOrder " + rTypeOrder +
+    throw NuTo::Exception("[NuTo::Interpolation::TypeOrderToEnum] TypeOrder " + rTypeOrder +
                                    " has no enum equivalent or is not implemented.");
 }

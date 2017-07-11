@@ -43,7 +43,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
     // check, if callback handler is set
     if (mpCallbackHandler == nullptr)
-        throw OptimizeException("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine "
+        throw Exception("[ConjugateGradientNonLinear::Optimize] Callback handler not set to determine "
                                 "mObjective function and derivatives.");
 
     // calculate mObjective

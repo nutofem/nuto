@@ -1,4 +1,4 @@
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include "metamodel/ZeroMeanUnitVarianceTransformation.h"
 
 // constructor
@@ -26,12 +26,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const Eigen::MatrixXd& rCoo
     // check input
     if (rCoordinates.cols() < 2)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::Build] number of points must be greater "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::Build] number of points must be greater "
                                  "than one - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::Build] coordinate to be transformed is "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::Build] coordinate to be transformed is "
                                  "out of range - check the number of rows of your Matrix.");
     }
 
@@ -58,7 +58,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const Eigen::MatrixXd& rCoo
     this->mStandardDeviation = sqrt(variance);
     if (this->mStandardDeviation < 1e-12)
     {
-        throw MetamodelException(
+        throw Exception(
                 "[NuTo::ZeroMeanUnitVarianceTransformation::Build] the standard deviation is almost zero");
     }
 }
@@ -69,12 +69,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(Eigen::MatrixXd&
     // check input
     if (rCoordinates.cols() == 0)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] number of points must "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] number of points must "
                                  "be greater than zero - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] coordinate to be "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] coordinate to be "
                                  "transformed is out of range - check the number of rows of your Matrix.");
     }
 
@@ -93,12 +93,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(Eigen::MatrixXd
     // check input
     if (rCoordinates.cols() == 0)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] number of points must "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] number of points must "
                                  "be greater than zero - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
-        throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] coordinate to be "
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] coordinate to be "
                                  "transformed is out of range - check the number of rows of your Matrix.");
     }
 

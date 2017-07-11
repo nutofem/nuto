@@ -2,7 +2,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
@@ -167,7 +167,7 @@ double HeatConduction::GetParameterDouble(Constitutive::eConstitutiveParameter r
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -186,7 +186,7 @@ void HeatConduction::SetParameterDouble(Constitutive::eConstitutiveParameter rId
         this->mCt = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 

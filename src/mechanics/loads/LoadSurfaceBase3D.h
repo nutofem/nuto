@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/loads/LoadBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>

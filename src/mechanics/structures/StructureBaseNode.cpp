@@ -28,25 +28,12 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const Eigen::VectorXd&
     this->mUpdateTmpStaticDataRequired = true;
 
     if (rDisplacements.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
+        throw Exception(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
 
+    if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
+        throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
-    try
-    {
-        if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
-
-        nodePtr->Set(Node::eDof::DISPLACEMENTS, rDisplacements);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error setting displacements of node (unspecified exception).");
-    }
+    nodePtr->Set(Node::eDof::DISPLACEMENTS, rDisplacements);
 }
 
 
@@ -62,26 +49,14 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
     this->mUpdateTmpStaticDataRequired = true;
 
     if (rDisplacements.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
+        throw Exception(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
     if (nodePtr->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < rTimeDerivative)
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "number of time derivatives stored at node is less than the required value.");
-    try
-    {
-        if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
+    if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
+        throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
-        nodePtr->Set(Node::eDof::DISPLACEMENTS, rTimeDerivative, rDisplacements);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error setting displacements of node (unspecified exception).");
-    }
+    nodePtr->Set(Node::eDof::DISPLACEMENTS, rTimeDerivative, rDisplacements);
 }
 
 void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const Eigen::VectorXd& rDisplacements)
@@ -89,20 +64,20 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const Eigen
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
     this->mUpdateTmpStaticDataRequired = true;
     if (rDisplacements.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
+        throw Exception(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
     Group<NodeBase>* nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup != 0);
 
     for (auto& node : *nodeGroup)
     {
         if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
+            throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
         node.second->Set(Node::eDof::DISPLACEMENTS, rDisplacements);
     }
@@ -114,23 +89,23 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
     this->mUpdateTmpStaticDataRequired = true;
     if (rDisplacements.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
+        throw Exception(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
     Group<NodeBase>* nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup != 0);
 
     for (auto& node : *nodeGroup)
     {
         if (node.second->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < rTimeDerivative)
-            throw MechanicsException(__PRETTY_FUNCTION__, "does not have a sufficient number of time derivatives.");
+            throw Exception(__PRETTY_FUNCTION__, "does not have a sufficient number of time derivatives.");
 
         if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
+            throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
         node.second->Set(Node::eDof::DISPLACEMENTS, rTimeDerivative, rDisplacements);
     }
@@ -148,7 +123,7 @@ void NuTo::StructureBase::NodeSetTemperature(int rNode, int rTimeDerivative, dou
     NodeBase* nodePtr = NodeGetNodePtr(rNode);
     this->mUpdateTmpStaticDataRequired = true;
     if (nodePtr->GetNumTimeDerivatives(Node::eDof::TEMPERATURE) < rTimeDerivative)
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Number of time derivatives stored at node is less than the required value.");
     nodePtr->Set(Node::eDof::TEMPERATURE, rTimeDerivative, rTemperature);
 }
@@ -159,9 +134,9 @@ void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, std::vector<int>& rM
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an node group.");
     Group<NodeBase>* nodeGroup = itGroup->second->AsGroupNode();
     assert(nodeGroup != 0);
 
@@ -186,22 +161,10 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, E
 
     const NodeBase* nodePtr = NodeGetNodePtr(rNode);
 
-    try
-    {
-        if (nodePtr->GetNum(Node::eDof::DISPLACEMENTS) == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node has no displacements.");
+    if (nodePtr->GetNum(Node::eDof::DISPLACEMENTS) == 0)
+        throw Exception(__PRETTY_FUNCTION__, "Node has no displacements.");
 
-        rDisplacements = nodePtr->Get(Node::eDof::DISPLACEMENTS, rTimeDerivative);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeGetDisplacements] Error getting displacements.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting displacements of node (unspecified exception).");
-    }
+    rDisplacements = nodePtr->Get(Node::eDof::DISPLACEMENTS, rTimeDerivative);
 }
 
 
@@ -210,28 +173,16 @@ std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Nod
 
     const NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
 
-    try
-    {
-        int numDofIds = nodePtr->GetNum(rDof);
+    int numDofIds = nodePtr->GetNum(rDof);
 
-        if (numDofIds == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node does not have the requested dof.");
+    if (numDofIds == 0)
+        throw Exception(__PRETTY_FUNCTION__, "Node does not have the requested dof.");
 
-        std::vector<int> dofIds(numDofIds);
-        for (int i = 0; i < numDofIds; ++i)
-            dofIds[i] = nodePtr->GetDof(rDof, i);
+    std::vector<int> dofIds(numDofIds);
+    for (int i = 0; i < numDofIds; ++i)
+        dofIds[i] = nodePtr->GetDof(rDof, i);
 
-        return dofIds;
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage(__PRETTY_FUNCTION__, "Error getting the requested dof identifiers.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting the requested dof identifiers.");
-    }
+    return dofIds;
 }
 
 
@@ -241,15 +192,15 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, Eigen::Matr
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
     Group<NodeBase>* nodeGroup = itGroup->second->AsGroupNode();
     assert(nodeGroup != 0);
 
     // all nodes have to have the same dimension
     if (nodeGroup->GetNumMembers() < 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group has no members.");
+        throw Exception(__PRETTY_FUNCTION__, "Group has no members.");
 
     int numDisp = nodeGroup->begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
     // resize the matrix
@@ -258,26 +209,14 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, Eigen::Matr
     int theNode(0);
     for (Group<NodeBase>::iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); ++itNode, theNode++)
     {
-        try
-        {
-            if (numDisp != 1 and numDisp != 2 and numDisp != 3)
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "The number of displacement components is either 1, 2 or 3.");
+        if (numDisp != 1 and numDisp != 2 and numDisp != 3)
+            throw Exception(__PRETTY_FUNCTION__,
+                                     "The number of displacement components is either 1, 2 or 3.");
 
-            rDisplacements.row(theNode) = itNode->second->Get(Node::eDof::DISPLACEMENTS).transpose();
-        }
-        catch (NuTo::MechanicsException& b)
-        {
-            b.AddMessage("[NuTo::StructureBase::NodeGroupGetDisplacements] Error getting displacements.");
-            throw;
-        }
-        catch (...)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "Error getting displacements of node (unspecified exception).");
-        }
+        rDisplacements.row(theNode) = itNode->second->Get(Node::eDof::DISPLACEMENTS).transpose();
     }
 }
+
 
 double NuTo::StructureBase::NodeGetTemperature(int rNode) const
 {
@@ -288,7 +227,7 @@ double NuTo::StructureBase::NodeGetTemperature(int rNode, int rTimeDerivative) c
 {
     const NodeBase* nodePtr = NodeGetNodePtr(rNode);
     if (nodePtr->GetNum(Node::eDof::TEMPERATURE) == 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node doesn't have a temperature.");
+        throw Exception(__PRETTY_FUNCTION__, "Node doesn't have a temperature.");
     return nodePtr->Get(Node::eDof::TEMPERATURE, rTimeDerivative)[0];
 }
 
@@ -298,22 +237,10 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, Eigen::VectorXd& rCoordi
 
     const NodeBase* nodePtr = NodeGetNodePtr(rNode);
 
-    try
-    {
-        if (nodePtr->GetNum(Node::eDof::COORDINATES) == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node has no coordinates.");
+    if (nodePtr->GetNum(Node::eDof::COORDINATES) == 0)
+        throw Exception(__PRETTY_FUNCTION__, "Node has no coordinates.");
 
-        rCoordinates = nodePtr->Get(Node::eDof::COORDINATES);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage("[NuTo::StructureBase::NodeGetCoordinates] Error getting coordinates.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting coordinates of node (unspecified exception).");
-    }
+    rCoordinates = nodePtr->Get(Node::eDof::COORDINATES);
 }
 
 void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::MatrixXd& rCoordinates)
@@ -322,15 +249,15 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::Matrix
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
     Group<NodeBase>* nodeGroup = itGroup->second->AsGroupNode();
     assert(nodeGroup != 0);
 
     // all nodes have to have the same dimension
     if (nodeGroup->GetNumMembers() < 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group has no members.");
+        throw Exception(__PRETTY_FUNCTION__, "Group has no members.");
 
     int numCoords = nodeGroup->begin()->second->GetNum(Node::eDof::COORDINATES);
     // resize the matrix
@@ -338,23 +265,11 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::Matrix
     int theNode(0);
     for (Group<NodeBase>::iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); ++itNode, theNode++)
     {
-        try
-        {
-            if (numCoords != 1 and numCoords != 2 and numCoords != 3)
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "The number of coordinates components is either 1, 2 or 3.");
+        if (numCoords != 1 and numCoords != 2 and numCoords != 3)
+            throw Exception(__PRETTY_FUNCTION__,
+                                     "The number of coordinates components is either 1, 2 or 3.");
 
-            rCoordinates.row(theNode) = itNode->second->Get(Node::eDof::COORDINATES).transpose();
-        }
-        catch (NuTo::MechanicsException& b)
-        {
-            b.AddMessage("[NuTo::StructureBase::NodeGroupGetCoordinates] Error getting coordinates.");
-            throw;
-        }
-        catch (...)
-        {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Error getting coordinates of node (unspecified exception).");
-        }
+        rCoordinates.row(theNode) = itNode->second->Get(Node::eDof::COORDINATES).transpose();
     }
 }
 
@@ -363,22 +278,8 @@ void NuTo::StructureBase::NodeInternalForce(int rId, Eigen::VectorXd& rNodeForce
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    try
-    {
-        const NodeBase* nodePtr = NodeGetNodePtr(rId);
-        NodeInternalForce(nodePtr, rNodeForce);
-    }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage(
-                "[NuTo::StructureBase::NodeGradientInternalPotential] Error getting gradient of internal potential.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__,
-                                 "Error getting gradient of internal potential (unspecified exception).");
-    }
+    const NodeBase* nodePtr = NodeGetNodePtr(rId);
+    NodeInternalForce(nodePtr, rNodeForce);
 }
 
 void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorXd& rNodeForce)
@@ -387,16 +288,16 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
 
     boost::ptr_map<int, GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
     const Group<NodeBase>* nodeGroup = dynamic_cast<const Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup != 0);
 
     Eigen::VectorXd nodeForceLocal;
 
     if (nodeGroup->GetNumMembers() == 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node group is empty.");
+        throw Exception(__PRETTY_FUNCTION__, "Node group is empty.");
     rNodeForce.resize(nodeGroup->begin()->second->GetNum(Node::eDof::DISPLACEMENTS));
     rNodeForce.setZero();
 
@@ -404,7 +305,7 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
     {
         NodeInternalForce(node.second, nodeForceLocal);
         if (nodeForceLocal.rows() != rNodeForce.rows())
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "The number of displacement components is not equal for all members of the group.");
         rNodeForce += nodeForceLocal;
@@ -413,68 +314,56 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
 
 void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::VectorXd& rNodeForce)
 {
-    try
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
+            std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
+            std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+
+    std::vector<ElementBase*> elements;
+    this->NodeGetElements(rNodePtr, elements);
+
+    rNodeForce.resize(rNodePtr->GetNum(Node::eDof::DISPLACEMENTS));
+    rNodeForce.setZero();
+
+    for (auto element : elements)
     {
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-        elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
-                std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
-                std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+        element->Evaluate(elementOutputMap);
+        const auto& internalGradient = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
+                                               ->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
+        const auto& globalRowDof = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)
+                                           ->GetBlockFullVectorInt()[Node::eDof::DISPLACEMENTS];
+        assert(internalGradient.rows() == globalRowDof.rows());
 
-        std::vector<ElementBase*> elements;
-        this->NodeGetElements(rNodePtr, elements);
-
-        rNodeForce.resize(rNodePtr->GetNum(Node::eDof::DISPLACEMENTS));
-        rNodeForce.setZero();
-
-        for (auto element : elements)
+        for (int countDof = 0; countDof < rNodePtr->GetNum(Node::eDof::DISPLACEMENTS); countDof++)
         {
-            element->Evaluate(elementOutputMap);
-            const auto& internalGradient = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
-                                                   ->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
-            const auto& globalRowDof = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)
-                                               ->GetBlockFullVectorInt()[Node::eDof::DISPLACEMENTS];
-            assert(internalGradient.rows() == globalRowDof.rows());
-
-            for (int countDof = 0; countDof < rNodePtr->GetNum(Node::eDof::DISPLACEMENTS); countDof++)
+            int theDof = rNodePtr->GetDof(Node::eDof::DISPLACEMENTS, countDof);
+            for (int iDof = 0; iDof < globalRowDof.rows(); iDof++)
             {
-                int theDof = rNodePtr->GetDof(Node::eDof::DISPLACEMENTS, countDof);
-                for (int iDof = 0; iDof < globalRowDof.rows(); iDof++)
+                if (globalRowDof[iDof] == theDof)
                 {
-                    if (globalRowDof[iDof] == theDof)
-                    {
-                        rNodeForce(countDof) += internalGradient(iDof);
-                    }
+                    rNodeForce(countDof) += internalGradient(iDof);
                 }
             }
         }
     }
-    catch (NuTo::MechanicsException& b)
-    {
-        b.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting gradient of internal potential.");
-        throw;
-    }
-    catch (...)
-    {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
-                                 "] Error getting gradient of internal potential (unspecified exception).");
-    }
 }
+
 
 void NuTo::StructureBase::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not available for this structure type.");
+    throw Exception(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }
 
 void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not available for this structure type.");
+    throw Exception(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }
 
 NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(double coordinate, double tolerance)
 {
     if (GetDimension() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Only valid for 1D structure!");
+        throw Exception(__PRETTY_FUNCTION__, "Only valid for 1D structure!");
     return NodeGetAtCoordinate(Eigen::Matrix<double, 1, 1>::Constant(coordinate), tolerance);
 }
 
@@ -496,7 +385,7 @@ NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(Eigen::VectorXd coordin
     }
     std::stringstream coordStream;
     coordStream << '(' << coordinate.transpose() << ')';
-    throw MechanicsException(__PRETTY_FUNCTION__, "There is no node at " + coordStream.str() + " within tolerance " +
+    throw Exception(__PRETTY_FUNCTION__, "There is no node at " + coordStream.str() + " within tolerance " +
                                                           std::to_string(tolerance));
 }
 
@@ -525,7 +414,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
                 nodeId = node.first;
             }
             else
-                throw MechanicsException(__PRETTY_FUNCTION__,
+                throw Exception(__PRETTY_FUNCTION__,
                                          "there is more than one node at that coordinate position.");
         }
     }

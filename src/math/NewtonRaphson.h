@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MathException.h"
+#include "base/Exception.h"
 #include "math/LineSearch.h"
 
 namespace NuTo
@@ -9,11 +9,11 @@ namespace NewtonRaphson
 {
 
 //! @brief custom exception for the newton algorithm
-class NoConvergence : public NuTo::MathException
+class NoConvergence : public NuTo::Exception
 {
 public:
     NoConvergence(const std::string& caller = "", const std::string& message = "")
-        : MathException(caller, message)
+        : Exception(caller, message)
     {
     }
 };

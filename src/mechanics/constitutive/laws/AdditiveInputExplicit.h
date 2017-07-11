@@ -38,7 +38,7 @@ public:
     template <int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
     {
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 __PRETTY_FUNCTION__,
                 "Additive Law cannot be evaluated. Their IPAdditiveInputExplicit should be evaluated instead.");
     }

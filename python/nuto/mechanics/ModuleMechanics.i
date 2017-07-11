@@ -9,7 +9,6 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/MechanicsException.h"
 #include "mechanics/DirectionEnum.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/Group.h"
@@ -79,20 +78,6 @@ using namespace NuTo::Constraint;
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 
 %include "stl.i"
-%include "exception.i"
-
-%exception {
-    try
-    {
-        $action
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        SWIG_exception(SWIG_RuntimeError, e.what());
-    }
-}
-
-%include "mechanics/MechanicsException.h"
 
 namespace std {
     // these are necessary for vectors of types with no default constructor

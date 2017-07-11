@@ -303,7 +303,7 @@ public:
     void AddScalDiag(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rOther, T rScalar)
     {
         if ((this->GetNumColumns() != rOther.rows()) || (this->GetNumRows() != rOther.rows()))
-            throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+            throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 
         for (int row = 0; row < rOther.rows(); row++)
             this->AddValue(row, row, rScalar * rOther[row]);
@@ -331,7 +331,7 @@ public:
     virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
     TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "Not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented.");
     }
 
     //! @brief inverts the matrix coefficient-wise
@@ -351,21 +351,21 @@ public:
     virtual void Gauss(NuTo::SparseMatrixCSRVector2<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering,
                        std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14)
     {
-        throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     virtual void ReorderColumns(const std::vector<int>&)
     {
-        throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }
 
     //! @brief ... remove columns from the end of the matrix
     //! @param rNumColumn ... number of colums to be removed
     virtual void RemoveLastColumns(unsigned int)
     {
-        throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }
 
 protected:
@@ -391,7 +391,7 @@ private:
                 return mValues[row_count][col_count];
             }
         }
-        throw MathException("[GetFirstValue] Matrix has no entries.");
+        throw Exception("[GetFirstValue] Matrix has no entries.");
     }
 };
 }

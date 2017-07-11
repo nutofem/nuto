@@ -177,7 +177,7 @@ set(NuToMechanicsStructuresSources
     structures/StructureOutputBase.cpp
     structures/StructureOutputBlockMatrix.cpp
     structures/StructureOutputBlockVector.cpp
-    structures/unstructured/Structure.cpp    
+    structures/unstructured/Structure.cpp
     structures/unstructured/StructureElement.cpp
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
@@ -189,8 +189,7 @@ set(NuToMechanicsStructuresSources
 
 set(NuToMechanicsTimeIntegrationSources
     timeIntegration/NewmarkBase.cpp
-    timeIntegration/NewmarkDirect.cpp    
-    #timeIntegration/JumpDirect.cpp
+    timeIntegration/NewmarkDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
     timeIntegration/ResultBase.cpp

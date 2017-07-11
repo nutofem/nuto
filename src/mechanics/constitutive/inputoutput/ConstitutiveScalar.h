@@ -24,7 +24,7 @@ public:
 
     virtual Eigen::Matrix<double, 1, 1>& AsVector() override
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                                  "] You are calling a vector method on a scalar.");
     }
 
