@@ -119,8 +119,6 @@ protected:
     //! @brief Prints Info about the current iteration
     void PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const;
 
-
-    // temporary stuff (no doxy-doc)
 public:
     // workaround until dynamic timestepping is also enabled by time class
     virtual void SetTimeStep(double rTimeStep) override
@@ -145,32 +143,20 @@ public:
 
 protected:
     void PreIteration(std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
-                      const BlockSparseMatrix& cmat, StructureOutputBlockVector& residual,
-                      BlockFullVector<double>& residual_mod, const DofStatus& dofStatus);
+                      const BlockSparseMatrix& cmat, BlockFullVector<double>& residual_mod);
 
     void FillInputMap(ConstitutiveInputMap& rInputMap);
 
-    void IterateForActiveDofValues(
-            StructureOutputBlockVector& residual,
-            StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
-            std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt, BlockFullVector<double>& residual_mod,
-            const BlockSparseMatrix& constraintMatrix, StructureOutputBlockVector& delta_dof_dt0,
-            std::vector<NuTo::StructureOutputBlockVector>& dof_dt, StructureOutputBlockVector& prevResidual);
+    void IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
+                                   std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
+                                   BlockFullVector<double>& residual_mod, const BlockSparseMatrix& constraintMatrix);
 
 
     std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
                                                 StructureOutputBlockVector& extForce,
                                                 StructureOutputBlockVector& delta_dof_dt0,
-                                                std::vector<StructureOutputBlockVector>& dof_dt,
+                                                std::array<StructureOutputBlockVector, 3>& dof_dt,
                                                 const BlockSparseMatrix& constraintMatrix, double timeStep);
-
-    void MainTimeLoop(StructureOutputBlockVector& residual,
-                      BlockFullVector<double>& deltaBRHS,
-                      std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
-                      BlockFullVector<double>& residual_mod, const BlockSparseMatrix& constraintMatrix,
-                      StructureOutputBlockVector& delta_dof_dt0,
-                      std::vector<StructureOutputBlockVector>& dof_dt,
-                      StructureOutputBlockVector& prevResidual, double rTimeDelta, BlockFullVector<double>& bRHS);
 
     ConstitutiveInputMap CreateInputMap();
     StructureOutputBlockVector EvaluateInternalGradient();

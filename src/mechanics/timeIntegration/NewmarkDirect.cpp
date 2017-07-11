@@ -1,18 +1,12 @@
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "base/CallbackInterface.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/ResultGroupNodeForce.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "math/SparseMatrix.h"
@@ -42,38 +36,54 @@ void NewmarkDirect::Solve(double rTimeDelta)
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
     const DofStatus& dofStatus = mStructure->GetDofStatus();
 
-    StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
-
-    // [0] = disp. , [1] = vel. , [2] = acc.
-    std::vector<StructureOutputBlockVector> dof_dt = {StructureOutputBlockVector(dofStatus, true),
-                                                      StructureOutputBlockVector(dofStatus, true),
-                                                      StructureOutputBlockVector(dofStatus, true)};
-
     // [0] = disp. , [1] = vel. , [2] = acc.
     std::vector<StructureOutputBlockVector> lastConverged_dof_dt = {StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true)};
-
-    StructureOutputBlockVector residual(dofStatus, true);
-    StructureOutputBlockVector prevResidual(dofStatus, true);
-
     BlockFullVector<double> residual_mod(dofStatus);
-    BlockFullVector<double> bRHS(dofStatus);
-    BlockFullVector<double> deltaBRHS(dofStatus);
 
     const auto& constraintMatrix = mStructure->GetAssembler().GetConstraintMatrix();
 
-    PreIteration(lastConverged_dof_dt, constraintMatrix, residual, residual_mod, dofStatus);
+    PreIteration(lastConverged_dof_dt, constraintMatrix, residual_mod);
 
-    MainTimeLoop(residual, deltaBRHS, lastConverged_dof_dt, residual_mod, constraintMatrix, delta_dof_dt0, dof_dt,
-                 prevResidual, rTimeDelta, bRHS);
+    // the minimal time step defined, which is equivalent to six cut-backs
+    if (mAutomaticTimeStepping)
+    {
+        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
+    }
+    while (mTimeObject.GetCurrentTime() < rTimeDelta)
+    {
+        // LEAVE IT OR FIX IT IF YOU CAN:
+        // If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop
+        // everything seems to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed
+        // during the function call inside the loop which leads to reads in already freed blocks of memory
+        std::set<Node::eDof> currentDofSet = dofStatus.GetDofTypes();
+        for (const auto& dof : currentDofSet)
+        {
+            mStructure->DofTypeSetIsActive(dof, true);
+        }
+
+        if (mTimeObject.GetTimestep() < mMinTimeStep)
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "time step is smaller than minimum - no convergence is obtained.");
+
+        // calculate Delta_BRhs and Delta_ExtForce
+        auto bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeObject.GetCurrentTime(), lastConverged_dof_dt[0]);
+        auto prevExtForce = CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime());
+
+        mTimeObject.Proceed();
+
+        auto deltaBRHS = UpdateAndGetConstraintRHS(mTimeObject.GetCurrentTime()) - bRHS;
+
+        IterateForActiveDofValues(prevExtForce, deltaBRHS, lastConverged_dof_dt, residual_mod, constraintMatrix);
+    }
 }
 
 
 std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual,
                                                            StructureOutputBlockVector& extForce,
                                                            StructureOutputBlockVector& delta_dof_dt0,
-                                                           std::vector<StructureOutputBlockVector>& dof_dt,
+                                                           std::array<StructureOutputBlockVector, 3>& dof_dt,
                                                            const BlockSparseMatrix& constraintMatrix, double timeStep)
 {
     const auto& dofStatus = mStructure->GetDofStatus();
@@ -141,52 +151,6 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
             iteration = mMaxNumIterations;
     }
     return std::make_pair(iteration, normResidual);
-}
-
-
-void NewmarkDirect::MainTimeLoop(StructureOutputBlockVector& residual, BlockFullVector<double>& deltaBRHS,
-                                 std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                 BlockFullVector<double>& residual_mod, const BlockSparseMatrix& constraintMatrix,
-                                 StructureOutputBlockVector& delta_dof_dt0,
-                                 std::vector<StructureOutputBlockVector>& dof_dt,
-                                 StructureOutputBlockVector& prevResidual, double rTimeDelta,
-                                 BlockFullVector<double>& bRHS)
-{
-    const DofStatus& dofStatus = mStructure->GetDofStatus();
-
-    // the minimal time step defined, which is equivalent to six cut-backs
-    if (mAutomaticTimeStepping)
-    {
-        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
-    }
-    while (mTimeObject.GetCurrentTime() < rTimeDelta)
-    {
-        // LEAVE IT OR FIX IT IF YOU CAN:
-        // If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop
-        // everything seems to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed
-        // during the function call inside the loop which leads to reads in already freed blocks of memory
-        std::set<Node::eDof> currentDofSet = dofStatus.GetDofTypes();
-        for (const auto& dof : currentDofSet)
-        {
-            mStructure->DofTypeSetIsActive(dof, true);
-        }
-
-        if (mTimeObject.GetTimestep() < mMinTimeStep)
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "time step is smaller than minimum - no convergence is obtained.");
-
-        // calculate Delta_BRhs and Delta_ExtForce
-        bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeObject.GetCurrentTime(), lastConverged_dof_dt[0]);
-        auto prevExtForce = CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime());
-
-        mTimeObject.Proceed();
-
-        deltaBRHS = UpdateAndGetConstraintRHS(mTimeObject.GetCurrentTime()) - bRHS;
-
-        IterateForActiveDofValues(residual, prevExtForce, deltaBRHS, lastConverged_dof_dt, residual_mod,
-                                  constraintMatrix, delta_dof_dt0, dof_dt, prevResidual);
-
-    } // while time steps
 }
 
 
@@ -351,8 +315,7 @@ void NewmarkDirect::PrintInfoIteration(const BlockScalar& rNormResidual, int rIt
 }
 
 void NuTo::NewmarkDirect::PreIteration(std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                       const BlockSparseMatrix& cmat, StructureOutputBlockVector& residual,
-                                       BlockFullVector<double>& residual_mod, const NuTo::DofStatus& dofStatus)
+                                       const BlockSparseMatrix& cmat, BlockFullVector<double>& residual_mod)
 {
     CalculateStaticAndTimeDependentExternalLoad();
 
@@ -398,10 +361,10 @@ void NuTo::NewmarkDirect::PreIteration(std::vector<StructureOutputBlockVector>& 
     auto intForce = gradientAndHessians.first;
     auto hessians = gradientAndHessians.second;
 
-    StructureOutputBlockVector initialExtForce =
+    auto initialExtForce =
             CalculateCurrentExternalLoad(mTimeObject.GetCurrentTime()); // put this in element evaluate soon!
 
-    residual =
+    auto residual =
             CalculateResidual(intForce, initialExtForce, hessians[2], lastConverged_dof_dt[1], lastConverged_dof_dt[2]);
     residual.ApplyCMatrix(residual_mod, cmat);
 
@@ -492,16 +455,22 @@ NuTo::NewmarkDirect::EvaluateGradientAndHessians()
 }
 
 
-void NewmarkDirect::IterateForActiveDofValues(
-        StructureOutputBlockVector& residual, StructureOutputBlockVector& prevExtForce,
-        BlockFullVector<double>& deltaBRHS, std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-        BlockFullVector<double>& residual_mod, const BlockSparseMatrix& constraintMatrix,
-        StructureOutputBlockVector& delta_dof_dt0, std::vector<StructureOutputBlockVector>& dof_dt,
-        StructureOutputBlockVector& prevResidual)
+void NewmarkDirect::IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce,
+                                              BlockFullVector<double>& deltaBRHS,
+                                              std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
+                                              BlockFullVector<double>& residual_mod,
+                                              const BlockSparseMatrix& constraintMatrix)
 {
     // at the moment needed to do the postprocessing after the last step and not after every step of a staggered
     // solution.
     unsigned int staggeredStepNumber = 0;
+    const auto& dofStatus = mStructure->GetDofStatus();
+    // [0] = disp. , [1] = vel. , [2] = acc.
+    std::array<StructureOutputBlockVector, 3> dof_dt = {StructureOutputBlockVector(dofStatus, true),
+                                                        StructureOutputBlockVector(dofStatus, true),
+                                                        StructureOutputBlockVector(dofStatus, true)};
+    StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
+
     for (const auto& activeDofs : mStepActiveDofs)
     {
         ++staggeredStepNumber;
@@ -516,7 +485,7 @@ void NewmarkDirect::IterateForActiveDofValues(
         /*------------------------------------------------*\
         |         Calculate Residual for trail state       |
         \*------------------------------------------------*/
-        residual = extForce - prevExtForce;
+        auto residual = extForce - prevExtForce;
         CalculateResidualTrial(residual, deltaBRHS, hessians, lastConverged_dof_dt[1], lastConverged_dof_dt[2],
                                mTimeObject.GetTimestep());
         residual.ApplyCMatrix(residual_mod, constraintMatrix);
@@ -566,7 +535,7 @@ void NewmarkDirect::IterateForActiveDofValues(
             if (mStructure->GetNumTimeDerivatives() >= 1)
                 lastConverged_dof_dt[2] = dof_dt[2];
 
-            prevResidual = residual;
+            auto prevResidual = residual;
 
             MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
 
