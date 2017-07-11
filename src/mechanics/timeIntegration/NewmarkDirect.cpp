@@ -40,11 +40,9 @@ void NewmarkDirect::Solve(double rTimeDelta)
     std::vector<StructureOutputBlockVector> lastConverged_dof_dt = {StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true),
                                                                     StructureOutputBlockVector(dofStatus, true)};
-    BlockFullVector<double> residual_mod(dofStatus);
-
     const auto& constraintMatrix = mStructure->GetAssembler().GetConstraintMatrix();
 
-    PreIteration(lastConverged_dof_dt, constraintMatrix, residual_mod);
+    PreIteration(lastConverged_dof_dt, constraintMatrix);
 
     // the minimal time step defined, which is equivalent to six cut-backs
     if (mAutomaticTimeStepping)
@@ -75,7 +73,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
         auto deltaBRHS = UpdateAndGetConstraintRHS(mTimeObject.GetCurrentTime()) - bRHS;
 
-        IterateForActiveDofValues(prevExtForce, deltaBRHS, lastConverged_dof_dt, residual_mod, constraintMatrix);
+        IterateForActiveDofValues(prevExtForce, deltaBRHS, lastConverged_dof_dt, constraintMatrix);
     }
 }
 
@@ -87,8 +85,7 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
                                                            const BlockSparseMatrix& constraintMatrix, double timeStep)
 {
     const auto& dofStatus = mStructure->GetDofStatus();
-    BlockFullVector<double> residual(dofStatus);
-    structureResidual.ApplyCMatrix(residual, constraintMatrix);
+    auto residual = Assembler::ApplyCMatrix(structureResidual, constraintMatrix);
     BlockScalar normResidual = residual.CalculateInfNorm();
 
     int iteration = 0;
@@ -123,7 +120,7 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
             auto intForce = EvaluateInternalGradient();
 
             structureResidual = CalculateResidual(intForce, extForce, hessians[2], trial_dof_dt1, trial_dof_dt2);
-            structureResidual.ApplyCMatrix(residual, constraintMatrix);
+            residual = Assembler::ApplyCMatrix(structureResidual, constraintMatrix);
 
             trialNormResidual = residual.CalculateInfNorm();
 
@@ -315,7 +312,7 @@ void NewmarkDirect::PrintInfoIteration(const BlockScalar& rNormResidual, int rIt
 }
 
 void NuTo::NewmarkDirect::PreIteration(std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                       const BlockSparseMatrix& cmat, BlockFullVector<double>& residual_mod)
+                                       const BlockSparseMatrix& cmat)
 {
     CalculateStaticAndTimeDependentExternalLoad();
 
@@ -366,7 +363,7 @@ void NuTo::NewmarkDirect::PreIteration(std::vector<StructureOutputBlockVector>& 
 
     auto residual =
             CalculateResidual(intForce, initialExtForce, hessians[2], lastConverged_dof_dt[1], lastConverged_dof_dt[2]);
-    residual.ApplyCMatrix(residual_mod, cmat);
+    auto residual_mod = Assembler::ApplyCMatrix(residual, cmat);
 
     if (mToleranceResidual < residual_mod.CalculateInfNorm())
     {
@@ -458,7 +455,6 @@ NuTo::NewmarkDirect::EvaluateGradientAndHessians()
 void NewmarkDirect::IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce,
                                               BlockFullVector<double>& deltaBRHS,
                                               std::vector<StructureOutputBlockVector>& lastConverged_dof_dt,
-                                              BlockFullVector<double>& residual_mod,
                                               const BlockSparseMatrix& constraintMatrix)
 {
     // at the moment needed to do the postprocessing after the last step and not after every step of a staggered
@@ -488,7 +484,7 @@ void NewmarkDirect::IterateForActiveDofValues(StructureOutputBlockVector& prevEx
         auto residual = extForce - prevExtForce;
         CalculateResidualTrial(residual, deltaBRHS, hessians, lastConverged_dof_dt[1], lastConverged_dof_dt[2],
                                mTimeObject.GetTimestep());
-        residual.ApplyCMatrix(residual_mod, constraintMatrix);
+        auto residual_mod = Assembler::ApplyCMatrix(residual, constraintMatrix);
 
         mStructure->GetLogger() << "\n"
                                 << "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";

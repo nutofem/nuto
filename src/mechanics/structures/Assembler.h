@@ -9,6 +9,10 @@
 namespace NuTo
 {
 
+template<typename T>
+class BlockFullVector;
+class StructureOutputBlockVector;
+
 class Assembler
 {
 public:
@@ -70,6 +74,11 @@ public:
     //! @TODO: should not be pulbic
     DofStatus mDofStatus;
 
+    //! @brief adds \f$(\boldsymbol{x}_{J} - \boldsymbol{C}_{mat}^T\,\boldsymbol{x}_{K}),c\f$ to vec
+    //! @remark only calculates active dof types
+    //! @param vec Vector to which to apply the constraint matrix
+    //! @param cMat Constraint matrix
+    static BlockFullVector<double> ApplyCMatrix(const StructureOutputBlockVector& vec, const BlockSparseMatrix& cMat);
 private:
     //! @brief builds the constraint rhs vector before the gauss elimination evaluated at time
     //! @param time global time

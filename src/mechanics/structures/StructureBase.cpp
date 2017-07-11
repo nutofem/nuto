@@ -606,7 +606,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector() + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
-    residual.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+    residual.J = Assembler::ApplyCMatrix(residual, GetAssembler().GetConstraintMatrix());
 
     // reuse deltaDof_dt0
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);

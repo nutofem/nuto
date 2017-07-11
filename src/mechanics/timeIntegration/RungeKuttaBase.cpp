@@ -137,8 +137,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
             d_dof_dt0_tmp[countStage] = dof_dt1_tmp * mTimeStep;
             // std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
             auto forceVector = extLoad - intForce;
-            auto res = forceVector.J * 0.;
-            forceVector.ApplyCMatrix(res, cmat);
+            auto res = Assembler::ApplyCMatrix(forceVector, cmat);
             forceVector.J = res;
             d_dof_dt1_tmp[countStage] = hessian2 * (forceVector)*mTimeStep;
             // std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;

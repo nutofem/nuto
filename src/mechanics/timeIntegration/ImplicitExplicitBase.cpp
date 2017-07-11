@@ -173,7 +173,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                     residual = (extForce - intForce) + prevExtForce + extForce;
                     residual -= hessian0 * delta_dof_dt0;
                     const auto& CMat = mStructure->GetAssembler().GetConstraintMatrix();
-                    residual.ApplyCMatrix(CMat);
+                    residual.J = Assembler::ApplyCMatrix(residual, CMat);
                     hessian0.ApplyCMatrix(CMat);
 
                     delta_dof_dt0.J = mSolver->Solve(hessian0.JJ, residual.J);
