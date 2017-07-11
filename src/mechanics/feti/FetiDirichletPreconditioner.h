@@ -7,16 +7,15 @@
 #include "mechanics/feti/FetiPreconditioner.h"
 
 template <class A, class B>
-Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
-                                             const B& colIds);
+Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds, const B& colIds);
 
 namespace NuTo
 {
 class FetiDirichletPreconditioner : public FetiPreconditioner
 {
 public:
-
-    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) override
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B,
+                         const std::vector<int> lagrangeMultiplierDofIds) override
     {
         const int numTotalDofs = B.cols();
         SparseMatrixType H = hessian.ExportToEigenSparseMatrix();
@@ -55,11 +54,9 @@ public:
 
         for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
             for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-                S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
-                        Sbb.coeff(rowId, colId);
+                S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) = Sbb.coeff(rowId, colId);
 
         mLocalPreconditioner = B * S * B.transpose();
-
     }
 
     //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
@@ -78,8 +75,7 @@ public:
 
 /// \todo this function should not be a member of NewmarkFeti. Move it somewhere appropriate.
 template <class A, class B>
-Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
-                                             const B& colIds)
+Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds, const B& colIds)
 {
     Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
 
@@ -108,4 +104,3 @@ Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& 
 
     return subMatrix;
 }
-

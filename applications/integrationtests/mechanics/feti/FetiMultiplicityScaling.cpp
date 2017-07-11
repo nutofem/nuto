@@ -34,7 +34,6 @@ using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOr
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 
-
 // geometry
 constexpr int dim = 2;
 constexpr double thickness = 1.0;
@@ -53,7 +52,6 @@ constexpr double loadFactor = 10.0;
 // auxiliary
 constexpr double tol = 1.e-6;
 const Vector2d directionX = Vector2d::UnitX();
-const Vector2d directionY = Vector2d::UnitY();
 
 int main(int argc, char* argv[])
 {
@@ -158,7 +156,7 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMaxNumberOfFetiIterations(100);
     newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
     newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+    newmarkFeti.SetFetiScaling(FetiScaling::None);
 
 
     Eigen::Matrix2d dispRHS;

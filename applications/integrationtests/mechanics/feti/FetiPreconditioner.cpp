@@ -26,16 +26,14 @@ int main(int argc, char* argv[])
     std::vector<int> lagrangeMultiplierDofIds;
     identityPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
 
-
-
     if (not vec.isApprox(identityPreconditioner.ApplyOnTheLeft(vec)))
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Identity preconditioner changes input when applied.");
 
     NuTo::FetiLumpedPreconditioner lumpedPreconditioner;
-    identityPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
+    lumpedPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
 
     NuTo::FetiDirichletPreconditioner dirichletPreconditioner;
-    identityPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
+    dirichletPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
 
 
     MPI_Finalize();
