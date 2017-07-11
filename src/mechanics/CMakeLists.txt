@@ -188,8 +188,7 @@ set(NuToMechanicsStructuresSources
 
 
 set(NuToMechanicsTimeIntegrationSources
-    timeIntegration/NewmarkBase.cpp
-    timeIntegration/NewmarkDirect.cpp    
+    timeIntegration/NewmarkDirect.cpp
     #timeIntegration/JumpDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp

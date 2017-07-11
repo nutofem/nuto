@@ -16,8 +16,9 @@
 using namespace NuTo;
 
 NewmarkDirect::NewmarkDirect(StructureBase* rStructure)
-    : NewmarkBase(rStructure)
+    : TimeIntegrationBase(rStructure)
     , mHessian2(rStructure->GetDofStatus())
+    , mDampingMatrix(rStructure->GetDofStatus())
 {
 }
 
@@ -47,11 +48,8 @@ void NewmarkDirect::Solve(double rTimeDelta)
             mStructure->DofTypeSetIsActive(dof, true);
         }
 
-
-
         const auto bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeControl.GetCurrentTime(), dofValues[0]);
         const auto prevExtForce = CalculateCurrentExternalLoad(mTimeControl.GetCurrentTime());
-
 
         mTimeControl.Proceed();
 
@@ -60,6 +58,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
         IterateForActiveDofValues(prevExtForce, deltaBRHS, dofValues);
     }
 }
+
 
 std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual,
                                                            const StructureOutputBlockVector& extForce,
@@ -94,7 +93,9 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
             if (mStructure->GetNumTimeDerivatives() >= 1)
                 trial_dof_dt1 = dof_dt[1] + delta_dof_dt0 * (alpha * mGamma / (mTimeControl.GetTimestep() * mBeta));
             if (mStructure->GetNumTimeDerivatives() >= 2)
-                trial_dof_dt2 = dof_dt[2] + delta_dof_dt0 * (alpha / (mTimeControl.GetTimestep() * mTimeControl.GetTimestep() * mBeta));
+                trial_dof_dt2 =
+                        dof_dt[2] +
+                        delta_dof_dt0 * (alpha / (mTimeControl.GetTimestep() * mTimeControl.GetTimestep() * mBeta));
 
             MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
 
@@ -132,7 +133,6 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
 }
 
 
-
 StructureOutputBlockMatrix NewmarkDirect::CalculateMuDampingMatrix(const StructureOutputBlockMatrix& hessian2) const
 {
     if (mUseMuDamping and mStructure->GetNumTimeDerivatives() < 2)
@@ -150,8 +150,9 @@ StructureOutputBlockVector NewmarkDirect::CalculateDof1(const StructureOutputBlo
                                                         const StructureOutputBlockVector& rDof_dt1,
                                                         const StructureOutputBlockVector& rDof_dt2) const
 {
-    return rDeltaDof_dt0 * (mGamma / (mTimeControl.GetTimestep() * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
-           rDof_dt2 * (mTimeControl.GetTimestep() * (1. - mGamma / (2. * mBeta)));
+    const auto step = mTimeControl.GetTimestep();
+    return rDeltaDof_dt0 * (mGamma / (step * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
+           rDof_dt2 * (step * (1. - mGamma / (2. * mBeta)));
 }
 
 
@@ -159,7 +160,8 @@ StructureOutputBlockVector NewmarkDirect::CalculateDof2(const StructureOutputBlo
                                                         const StructureOutputBlockVector& rDof_dt1,
                                                         const StructureOutputBlockVector& rDof_dt2) const
 {
-    return rDeltaDof_dt0 * (1. / (mTimeControl.GetTimestep() * mTimeControl.GetTimestep() * mBeta)) - rDof_dt1 * (1. / (mTimeControl.GetTimestep() * mBeta)) -
+    const auto step = mTimeControl.GetTimestep();
+    return rDeltaDof_dt0 * (1. / (step * step * mBeta)) - rDof_dt1 * (1. / (step * mBeta)) -
            rDof_dt2 * ((0.5 - mBeta) / mBeta);
 }
 
@@ -287,8 +289,6 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
 
     mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
 
-
-
     if (mStepActiveDofs.empty())
         mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
     else
@@ -311,7 +311,6 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     }
 
     auto dofValues = ExtractDofValues();
-
 
     UpdateAndGetAndMergeConstraintRHS(mTimeControl.GetCurrentTime(), dofValues[0]);
 
@@ -468,7 +467,6 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         auto intForce = EvaluateInternalGradient();
         residual = CalculateResidual(intForce, extForce, hessians[2], dof_dt[1], dof_dt[2]);
 
-
         const auto result = FindEquilibrium(residual, extForce, delta_dof_dt0, dof_dt, constraintMatrix);
         const auto iterations = result.first;
         const auto residualNorm = result.second;
@@ -488,10 +486,9 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
 
             MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
 
-
-
-            mStructure->GetLogger() << "Convergence after " << iterations << " iterations at time " << mTimeControl.GetCurrentTime()
-                                    << " (timestep " << mTimeControl.GetTimestep() << ").\n";
+            mStructure->GetLogger() << "Convergence after " << iterations << " iterations at time "
+                                    << mTimeControl.GetCurrentTime() << " (timestep " << mTimeControl.GetTimestep()
+                                    << ").\n";
             mStructure->GetLogger() << "Residual: \t" << residualNorm << "\n";
             // perform Postprocessing
             if (staggeredStepNumber >= mStepActiveDofs.size())
@@ -553,4 +550,29 @@ BlockFullVector<double>
     rHessians[0].ApplyCMatrix(mStructure->GetAssembler().GetConstraintMatrix());
 
     return mSolver->Solve(rHessians[0].JJ, rResidualMod);
+}
+
+
+void NewmarkDirect::MergeDofValues(const StructureOutputBlockVector& rDof_dt0,
+                                       const StructureOutputBlockVector& rDof_dt1,
+                                       const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
+{
+    mStructure->NodeMergeDofValues(0, rDof_dt0.J, rDof_dt0.K);
+
+    if (mStructure->GetNumTimeDerivatives() >= 1)
+    {
+        if (rMergeAll or mMuDampingMass == 0)
+        {
+            mStructure->NodeMergeDofValues(1, rDof_dt1.J, rDof_dt1.K);
+        }
+    }
+
+    if (mStructure->GetNumTimeDerivatives() >= 2)
+    {
+        if (rMergeAll)
+        {
+            mStructure->NodeMergeDofValues(2, rDof_dt2.J, rDof_dt2.K);
+        }
+    }
+    mStructure->ElementTotalUpdateTmpStaticData();
 }

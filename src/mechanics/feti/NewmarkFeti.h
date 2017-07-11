@@ -1173,11 +1173,9 @@ public:
                         // calculate trial state
                         dof_dt0 = lastConvergedDofValues[0] + delta_dof_dt0;
                         if (mStructure->GetNumTimeDerivatives() >= 1)
-                            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
-                                                    mTimeStep);
+                            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2]);
                         if (mStructure->GetNumTimeDerivatives() >= 2)
-                            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
-                                                    mTimeStep);
+                            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2]);
 
 
                         MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);

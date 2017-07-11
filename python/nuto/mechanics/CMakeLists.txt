@@ -15,7 +15,6 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/nodes/NodeBase.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/TimeIntegrationBase.h
-    ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/NewmarkBase.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/NewmarkDirect.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/Assembler.h
