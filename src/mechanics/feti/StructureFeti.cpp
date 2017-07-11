@@ -1,7 +1,7 @@
 #include <mpi/mpi.h>
 
 #include <boost/mpi.hpp>
-#include <json/json.h>
+#include "json.hpp"
 
 
 #include "mechanics/feti/StructureFeti.h"
@@ -215,15 +215,11 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
 
 void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interpolationTypeId)
 {
-
-    Json::Value root;
-    Json::Reader reader;
+    nlohmann::json root;
 
     std::ifstream file(rFileName.c_str(), std::ios::in);
 
-    if (not reader.parse(file, root, false))
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error parsing mesh file.");
-
+    file >> root;
 
     // only supports nodes.size() == 1
     for (auto const& nodes : root["Nodes"])
@@ -231,10 +227,10 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
         mNodes.resize(nodes["Coordinates"].size());
         for (unsigned i = 0; i < mNodes.size(); ++i)
         {
-            mNodes[i].mCoordinates[0] = nodes["Coordinates"][i][0].asDouble();
-            mNodes[i].mCoordinates[1] = nodes["Coordinates"][i][1].asDouble();
-            mNodes[i].mCoordinates[2] = nodes["Coordinates"][i][2].asDouble();
-            mNodes[i].mId = nodes["Indices"][i].asInt();
+            mNodes[i].mCoordinates[0] = nodes["Coordinates"][i][0];
+            mNodes[i].mCoordinates[1] = nodes["Coordinates"][i][1];
+            mNodes[i].mCoordinates[2] = nodes["Coordinates"][i][2];
+            mNodes[i].mId = nodes["Indices"][i];
         }
     }
 
@@ -243,44 +239,44 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
     for (auto const& elements : root["Elements"])
     {
         mElements.resize(elements["NodalConnectivity"].size());
-        const int elementType = elements["Type"].asInt();
+        const int elementType = elements["Type"];
 
 
         for (unsigned i = 0; i < mElements.size(); ++i)
         {
             if (elementType == 1)
             {
-                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][0].asInt());
-                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][1].asInt());
+                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][0].get<int>());
+                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][1].get<int>());
             }
             else if (elementType == 2) // 3 node tri element
             {
                 mElements[i].mNodeIds.resize(3);
 
-                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
-                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
-                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
-                mElements[i].mId = elements["Indices"][i].asInt();
+                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0];
+                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1];
+                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2];
+                mElements[i].mId = elements["Indices"][i];
             }
             else if (elementType == 3) // 4 node quad element
             {
 
                 mElements[i].mNodeIds.resize(4);
 
-                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
-                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
-                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
-                mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
-                mElements[i].mId = elements["Indices"][i].asInt();
+                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0];
+                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1];
+                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2];
+                mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3];
+                mElements[i].mId = elements["Indices"][i];
             }
             else if (elementType == 5) // 8 node hexahedron
             {
                 const int numNodes = 8;
                 mElements[i].mNodeIds.resize(numNodes);
                 for (int iNode = 0; iNode < numNodes; ++iNode)
-                    mElements[i].mNodeIds[iNode] = elements["NodalConnectivity"][i][iNode].asInt();
+                    mElements[i].mNodeIds[iNode] = elements["NodalConnectivity"][i][iNode];
 
-                mElements[i].mId = elements["Indices"][i].asInt();
+                mElements[i].mId = elements["Indices"][i];
             }
             else
             {
@@ -296,20 +292,20 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
     for (unsigned i = 0; i < mInterfaces.size(); ++i)
     {
 
-        int globalId = root["Interface"][i]["GlobalStartId"][0].asInt();
+        int globalId = root["Interface"][i]["GlobalStartId"][0];
 
-        mInterfaces[i].mValue = root["Interface"][i]["Value"][0].asInt();
+        mInterfaces[i].mValue = root["Interface"][i]["Value"][0];
 
         for (unsigned k = 0; k < root["Interface"][i]["NodeIds"][0].size(); ++k)
         {
-            mInterfaces[i].mNodeIdsMap.emplace(globalId, root["Interface"][i]["NodeIds"][0][k].asInt());
-            mSubdomainBoundaryNodeIds.insert(root["Interface"][i]["NodeIds"][0][k].asInt());
+            mInterfaces[i].mNodeIdsMap.emplace(globalId, root["Interface"][i]["NodeIds"][0][k]);
+            mSubdomainBoundaryNodeIds.insert(root["Interface"][i]["NodeIds"][0][k].get<int>());
             globalId++;
         }
     }
 
 
-    mNumInterfaceNodesTotal = root["NumInterfaceNodes"][0].asInt();
+    mNumInterfaceNodesTotal = root["NumInterfaceNodes"][0];
 
     file.close();
 
