@@ -35,5 +35,6 @@ public:
     void Info() const override;
 
 protected:
+    double mTime = 0.;
 };
 } // namespace NuTo

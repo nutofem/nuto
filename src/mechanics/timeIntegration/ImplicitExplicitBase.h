@@ -57,7 +57,8 @@ protected:
         throw MechanicsException(__PRETTY_FUNCTION__, "not implemented.");
     }
 
-
+protected:
+    double mTime = 0.;
 private:
     std::set<Node::eDof> mDofsWithConstantHessian;
 

@@ -82,6 +82,13 @@ public:
     //! @brief sets the minimum time step for the time integration procedure
     void SetMinTimestep(double rMinTimeStep);
 
+
+    //temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived classes solve routines
+    void SetCurrentTime(double curTime)
+    {
+        mCurrentTime = curTime;
+    }
+
 protected:
 
     void UpdateTimestep();

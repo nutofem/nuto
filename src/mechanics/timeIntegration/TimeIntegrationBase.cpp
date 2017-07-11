@@ -273,7 +273,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
     }
     else
     {
-        mStructure->WriteRestartFile(GetRestartFileName(), mTime);
+        mStructure->WriteRestartFile(GetRestartFileName(), mTimeControl.GetCurrentTime());
 
         // perform Postprocessing
         for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
@@ -283,7 +283,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
             case eTimeIntegrationResultType::TIME:
             {
                 ResultTime* resultPtr(itResult->second->AsResultTime());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, mTime);
+                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, mTimeControl.GetCurrentTime());
                 break;
             }
             case eTimeIntegrationResultType::NODE_ACCELERATION:
@@ -321,7 +321,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
             }
         }
 
-        if ((mTime - mLastTimePlot) >= mMinTimeStepPlot)
+        if ((mTimeControl.GetCurrentTime() - mLastTimePlot) >= mMinTimeStepPlot)
         {
             // write the results to files
             for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
@@ -331,10 +331,10 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
 
 #ifdef ENABLE_VISUALIZE
             // plot the solution vtk file
-            ExportVisualizationFiles(mResultDir, mTime, mTimeStepVTK);
+            ExportVisualizationFiles(mResultDir, mTimeControl.GetCurrentTime(), mTimeStepVTK);
 #endif
             mTimeStepVTK++;
-            mLastTimePlot = mTime;
+            mLastTimePlot = mTimeControl.GetCurrentTime();
         }
         mTimeStepResult++;
     }

@@ -105,16 +105,7 @@ public:
         mTimeControl.SetMaxTimestep(rMaxTimeStep);
     }
 
-    //! @brief returns the accumulated global time
-    double GetTime() const
-    {
-        return mTime;
-    }
-    //! @brief sets the accumulated global time
-    void SetTime(double rTime)
-    {
-        mTime = rTime;
-    }
+
 
     //! @brief returns the maximum time step for the time integration procedure
     double GetMaxTimeStep() const
@@ -261,7 +252,6 @@ protected:
     NuTo::StructureOutputBlockVector mLoadVectorStatic; //!< static external load vector
     NuTo::StructureOutputBlockVector mLoadVectorTimeDependent; //!< dynamic external load vector
 
-    double mTime = 0.; //!< accumulated time (in case several loadings are looked at, one after another)
     bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or
                                          //!decrease, if no convergence can be achieved)
     double mTimeStep = 0; //!< initial time step (or at the end this is the last time step used)

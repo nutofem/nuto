@@ -141,6 +141,7 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
             //**********************************************
 
             // postprocess data for plotting
+            mTimeControl.SetCurrentTime(mTime);
             this->PostProcess(extLoad - intForce);
 
             // calculate new accelerations and velocities of independent dofs

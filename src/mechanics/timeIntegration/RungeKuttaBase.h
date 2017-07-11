@@ -39,6 +39,6 @@ public:
     virtual bool HasTimeChanged(int rStage) const = 0;
 
 protected:
-    // empty private construct required for serialization
+    double mTime = 0.;
 };
 } // namespace NuTo

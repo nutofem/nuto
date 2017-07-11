@@ -176,6 +176,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         // outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
 
         // postprocess data for plotting
+        mTimeControl.SetCurrentTime(mTime);
         this->PostProcess(extLoad - intForce);
     }
 }

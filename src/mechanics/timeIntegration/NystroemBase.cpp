@@ -203,6 +203,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
             // PostProcessing
             //**********************************************
             // postprocess data for plotting
+            mTimeControl.SetCurrentTime(mTime);
             this->PostProcess(extLoad - intForce);
         }
     }

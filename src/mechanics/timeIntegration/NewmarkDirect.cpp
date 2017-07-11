@@ -331,8 +331,7 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     }
     CalculateResidualKForPostprocessing(residual, hessians[2], dofValues[1], dofValues[2]);
 
-    // temporary fix until Time Control is implemented into all time integration schemes
-    mTime = mTimeControl.GetCurrentTime();
+
     PostProcess(residual);
     return dofValues;
 }
@@ -495,9 +494,6 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
             {
                 CalculateResidualKForPostprocessing(prevResidual, hessians[2], dof_dt[1], dof_dt[2]);
 
-                // temporary fix until Time Control is implemented into all time integration schemes
-                mTime = mTimeControl.GetCurrentTime();
-
                 PostProcess(prevResidual);
             }
 
@@ -514,7 +510,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         else
         {
             mStructure->GetLogger() << "No convergence with timestep " << mTimeControl.GetTimestep() << " at time "
-                                    << mTime << "\n";
+                                    << mTimeControl.GetCurrentTime() << "\n";
             if (mAutomaticTimeStepping)
             {
                 // no convergence, reduce the time step and start from scratch
