@@ -35,6 +35,7 @@ foreach(test
     ImplEx
     InterfaceElements
     IntegrationPointVoronoiCells
+    IntegrationTest
     InterpolationTypes
     MisesPlasticity
     MultipleConstitutiveLaws

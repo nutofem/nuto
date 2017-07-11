@@ -18,6 +18,7 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/HeatConduction.cpp
     constitutive/laws/LinearDampingEngineeringStress.cpp
     constitutive/laws/LinearDielectric.cpp
+    constitutive/laws/LinearElasticInhomogeneous.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
     constitutive/laws/LinearElasticAnisotropic.cpp
     constitutive/laws/LinearPiezoelectric.cpp
@@ -72,8 +73,6 @@ set(NuToMechanicsGroupsSources
 set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NGauss.cpp
-    integrationtypes/IntegrationType1D2NLobatto.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -82,18 +81,11 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType2D3NGauss6Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
-    integrationtypes/IntegrationType2D4NGauss1Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss4Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss1Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+    integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
