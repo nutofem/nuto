@@ -72,13 +72,6 @@ public:
     //! @return ... external load vector
     virtual StructureOutputBlockVector CalculateCurrentExternalLoad(double curTime);
 
-    //! @brief extracts all dof values
-    //! @param rDof_dt0 ... 0th time derivative
-    //! @param rDof_dt1 ... 1st time derivative
-    //! @param rDof_dt2 ... 2nd time derivative
-    void ExtractDofValues(StructureOutputBlockVector& rDof_dt0, StructureOutputBlockVector& rDof_dt1,
-                          StructureOutputBlockVector& rDof_dt2) const;
-
     //! @brief calculates the norm of the residual, can include weighting
     //! @param rResidual ... residual
     double CalculateNorm(const BlockFullVector<double>& rResidual) const;
@@ -240,6 +233,10 @@ public:
     void SetShowTime(bool showTime);
 
 protected:
+    //! @brief extracts all dof values
+    //! @return ret[0] are the DOF values, ret[1], ret[2] the 1st and 2nd time derivative, respectively
+    std::array<StructureOutputBlockVector, 3> ExtractDofValues() const;
+
     void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
 
     const BlockFullVector<double>& UpdateAndGetConstraintRHS(double rCurrentTime);

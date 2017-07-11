@@ -225,17 +225,20 @@ int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResul
     return resultNumber;
 }
 
-void NuTo::TimeIntegrationBase::ExtractDofValues(StructureOutputBlockVector& rDof_dt0,
-                                                 StructureOutputBlockVector& rDof_dt1,
-                                                 StructureOutputBlockVector& rDof_dt2) const
+std::array<StructureOutputBlockVector, 3> NuTo::TimeIntegrationBase::ExtractDofValues() const
 {
-    rDof_dt0 = mStructure->NodeExtractDofValues(0);
+    const auto& dofStatus = mStructure->GetDofStatus();
+    std::array<StructureOutputBlockVector, 3> dofValues = {StructureOutputBlockVector(dofStatus, true),
+                                                           StructureOutputBlockVector(dofStatus, true),
+                                                           StructureOutputBlockVector(dofStatus, true)};
+    dofValues[0] = mStructure->NodeExtractDofValues(0);
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
-        rDof_dt1 = mStructure->NodeExtractDofValues(1);
+        dofValues[1] = mStructure->NodeExtractDofValues(1);
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
-        rDof_dt2 = mStructure->NodeExtractDofValues(2);
+        dofValues[2] = mStructure->NodeExtractDofValues(2);
+    return dofValues;
 }
 
 double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& rResidual) const

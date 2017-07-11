@@ -142,14 +142,12 @@ public:
     }
 
 protected:
-    void PreIteration(std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
-                      const BlockSparseMatrix& cmat);
+    std::array<StructureOutputBlockVector, 3> InitialState();
 
     void FillInputMap(ConstitutiveInputMap& rInputMap);
 
     void IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
-                                   std::vector<NuTo::StructureOutputBlockVector>& lastConverged_dof_dt,
-                                   const BlockSparseMatrix& constraintMatrix);
+                                   std::array<NuTo::StructureOutputBlockVector, 3>& lastConverged_dof_dt);
 
 
     std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
