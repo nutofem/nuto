@@ -52,7 +52,7 @@ Eigen::MatrixXd InterpolationBaseFEM::CalculateMatrixN(const Eigen::VectorXd& rC
 
 int InterpolationBaseFEM::GetSplineDegree(int dir) const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
+    throw Exception(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
 }
 
 const Eigen::VectorXd& InterpolationBaseFEM::GetNaturalNodeCoordinates(int rNodeIndex) const

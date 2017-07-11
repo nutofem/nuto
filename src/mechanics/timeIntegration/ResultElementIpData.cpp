@@ -27,7 +27,7 @@ void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStru
         this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
     }
     if (ipValues.cols() != mData.cols())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: The allocated number of columns is wrong.");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + "\t: The allocated number of columns is wrong.");
     mData.row(rTimeStepPlot) = ipValues;
 }
 
@@ -71,7 +71,7 @@ int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const
         numComponents = 3;
         break;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
     } // switch
 
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
@@ -94,7 +94,7 @@ NuTo::eTimeIntegrationResultType NuTo::ResultElementIpData::GetResultType() cons
     case NuTo::IpData::eIpStaticDataType::SLIP:
         return NuTo::eTimeIntegrationResultType::ELEMENT_IP_SLIP;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
     } // switch
 }
 

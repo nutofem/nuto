@@ -33,7 +33,7 @@ Eigen::VectorXd NuTo::IntegrationType3D6NGauss2x3Ip::GetLocalIntegrationPointCoo
     case 5:
         return Eigen::Vector3d({1. / 6., 4. / 6., 0.577350269189626});
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 

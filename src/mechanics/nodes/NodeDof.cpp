@@ -68,10 +68,10 @@ int NodeDof::GetDof(Node::eDof rDof, int rComponent) const
 {
     const auto& it = mDofNumbers.find(rDof);
     if (it == mDofNumbers.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rComponent >= it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
                                                               ". Component " + std::to_string(it->second.size()) +
                                                               " was requested.");
 
@@ -82,10 +82,10 @@ const Eigen::VectorXd& NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
 {
     const auto& it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Cannot access time derivative " + std::to_string(rTimeDerivative) +
                                          ". This node only has " + std::to_string(it->second.size()) + ".");
 
@@ -96,10 +96,10 @@ void NodeDof::Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& r
 {
     auto it = mDofValues.find(rDof);
     if (it == mDofValues.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Cannot access time derivative " + std::to_string(rTimeDerivative) +
                                          ". This node only has " + std::to_string(it->second.size()) + ".");
 

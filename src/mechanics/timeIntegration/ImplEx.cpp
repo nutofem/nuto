@@ -43,7 +43,7 @@ void NuTo::ImplEx::ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
 bool NuTo::ImplEx::CheckExtrapolationAndAdjustTimeStep()
 {
     if (mExtrapolationErrorThreshold == -1.)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Define the extrapolation threshold first.");
+        throw Exception(__PRETTY_FUNCTION__, "Define the extrapolation threshold first.");
 
     double extrapolationError = mStructure->ElementTotalGetStaticDataExtrapolationError();
 

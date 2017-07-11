@@ -3,7 +3,7 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 

@@ -2,7 +2,7 @@
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
@@ -45,7 +45,7 @@ double NuTo::FibreMatrixBondStressSlip::GetParameterDouble(NuTo::Constitutive::e
     case Constitutive::eConstitutiveParameter::SLIP_AT_RESIDUAL_BOND_STRESS:
         return this->mSlipAtResidualBondStress;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+        throw Exception(std::string(__PRETTY_FUNCTION__) +
                                  ":\t Constitutive law does not have the requested variable");
     }
 }
@@ -87,7 +87,7 @@ void NuTo::FibreMatrixBondStressSlip::SetParameterDouble(NuTo::Constitutive::eCo
         break;
     }
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+        throw Exception(std::string(__PRETTY_FUNCTION__) +
                                  ":\t Constitutive law does not have the requested variable");
     }
 }
@@ -127,7 +127,7 @@ template <>
 void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
                                                   const ConstitutiveOutputMap& rConstitutiveOutput, Data& staticData)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
 
 template <>
@@ -205,7 +205,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 }
                 else
                 {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                    throw Exception(std::string(__PRETTY_FUNCTION__) +
                                              ":\t Check if clause. This branch should never be executed!");
                 }
 
@@ -271,7 +271,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
             }
             else
             {
-                throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                throw Exception(std::string(__PRETTY_FUNCTION__) +
                                          ":\t Check if clause. This branch should never be executed!");
             }
 
@@ -308,7 +308,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 }
                 else
                 {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                    throw Exception(std::string(__PRETTY_FUNCTION__) +
                                              ":\t Check if clause. This branch should never be executed!");
                 }
 
@@ -339,7 +339,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 }
                 else
                 {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                    throw Exception(std::string(__PRETTY_FUNCTION__) +
                                              ":\t Check if clause. This branch should never be executed!");
                 }
             }
@@ -357,7 +357,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
         }
         break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Output object " +
+            throw Exception(__PRETTY_FUNCTION__, "Output object " +
                                                                   NuTo::Constitutive::OutputToString(itOutput.first) +
                                                                   " could not be calculated, check the "
                                                                   "allocated material law and the section behavior.");
@@ -375,7 +375,7 @@ template <>
 void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
                                                   const ConstitutiveOutputMap& rConstitutiveOutput, Data& staticData)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
 }
 
@@ -393,7 +393,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
@@ -421,7 +421,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
         auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
 
         if (itTimeStep == rConstitutiveInput.end())
-            throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
+            throw Exception(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
         const auto& timeStep = *itTimeStep->second;
 
         assert(rStaticData.GetNumData() >= 2);
@@ -430,7 +430,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
     }
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 }
 

@@ -4,7 +4,7 @@
 #pragma once
 #include <iostream>
 #include <eigen3/Eigen/Core>
-#include "base/Exception.h" // base/Exception is wrapped for python, MathException not.
+#include "base/Exception.h" // base/Exception is wrapped for python, Exception not.
 
 namespace NuTo
 {

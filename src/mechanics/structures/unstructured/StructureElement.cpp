@@ -49,7 +49,7 @@ NuTo::ElementBase* NuTo::Structure::ElementGetElementPtr(int rIdent)
         return it->second;
     else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Element with identifier " + std::to_string(rIdent) + " does not exist.");
     }
 }
@@ -64,7 +64,7 @@ const NuTo::ElementBase* NuTo::Structure::ElementGetElementPtr(int rIdent) const
         return it->second;
     else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Element with identifier " + std::to_string(rIdent) + " does not exist.");
     }
 }
@@ -79,7 +79,7 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement) const
         if (it->second == rElement)
             return it->first;
     }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Element does not exist.");
+    throw Exception(__PRETTY_FUNCTION__, "Element does not exist.");
 }
 
 //! @brief returns a vector with the node ids of an element
@@ -151,7 +151,7 @@ void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationT
     boost::ptr_map<int, InterpolationType>::iterator itInterpolationType =
             mInterpolationTypeMap.find(rInterpolationTypeId);
     if (itInterpolationType == mInterpolationTypeMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
 
     for (const auto& elementPair : mElementMap)
         ElementSetInterpolationType(elementPair.second, itInterpolationType->second);
@@ -222,16 +222,16 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     boost::ptr_map<int, InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
 
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
 
     InterpolationType& interpolationType = *itIterator->second;
 
     if (not interpolationType.IsDof(Node::eDof::COORDINATES))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
 
     unsigned int numNodesCoordinates = interpolationType.Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != nodeVector.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                                        "COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) +
                                                " nodes. " + std::to_string(nodeVector.size()) + " are provided.");
 
@@ -242,7 +242,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     switch (interpolationType.GetShapeType())
     {
     case NuTo::Interpolation::eShapeType::SPRING:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
         break;
     case NuTo::Interpolation::eShapeType::TRUSS1D:
     case NuTo::Interpolation::eShapeType::TRUSSXD:
@@ -251,7 +251,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
     case NuTo::Interpolation::eShapeType::BRICK3D:
     case NuTo::Interpolation::eShapeType::INTERFACE:
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 __PRETTY_FUNCTION__,
                 "Please use approriate functions for element creation, this is IGA implementation.");
         break;
@@ -266,7 +266,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         ptrElement->CheckElement();
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
+        throw Exception(__PRETTY_FUNCTION__, "invalid dimension.");
     }
 
     mElementMap.insert(rElementNumber, ptrElement);
@@ -287,16 +287,16 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     boost::ptr_map<int, InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
 
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
 
     InterpolationType& interpolationType = *itIterator->second;
 
     if (not interpolationType.IsDof(Node::eDof::COORDINATES))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
 
     unsigned int numNodesCoordinates = interpolationType.Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != rNodes.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation requires " +
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation requires " +
                                                                     std::to_string(numNodesCoordinates) + " nodes. " +
                                                                     std::to_string(rNodes.size()) + " are provided.");
 
@@ -307,7 +307,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     switch (interpolationType.GetShapeType())
     {
     case NuTo::Interpolation::eShapeType::SPRING:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
         break;
     case NuTo::Interpolation::eShapeType::TRUSS1D:
         ptrElement = new ContinuumElement<1>(rNodes, interpolationType, integrationType, GetDofStatus());
@@ -333,12 +333,12 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         ptrElement->CheckElement();
         break;
     case NuTo::Interpolation::eShapeType::IGA1D:
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 __PRETTY_FUNCTION__,
                 "Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
+        throw Exception(__PRETTY_FUNCTION__, "invalid dimension.");
     }
 
     mElementMap.insert(rElementNumber, ptrElement);
@@ -377,15 +377,15 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     // find groups
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroupBoundaryNodes = mGroupMap.find(rNodeGroupId);
     if (itGroupBoundaryNodes == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupBoundaryNodes->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
 
     Group<ElementBase>& elementGroup = *(itGroupElements->second->AsGroupElement());
     Group<NodeBase>& nodeGroup = *(itGroupBoundaryNodes->second->AsGroupNode());
@@ -409,7 +409,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
         // std::cout << typeid(ContinuumElement<1>).name() << std::endl;
         if (typeid(*elementPtr) != typeid(ContinuumElement<1>) && typeid(*elementPtr) != typeid(ContinuumElement<2>) &&
             typeid(*elementPtr) != typeid(ContinuumElement<3>))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element is not a ContinuumElement.");
+            throw Exception(__PRETTY_FUNCTION__, "Element is not a ContinuumElement.");
 
         // loop over all surfaces
         for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); ++iSurface)
@@ -493,7 +493,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     break;
 
                 default:
-                    throw MechanicsException(
+                    throw Exception(
                             __PRETTY_FUNCTION__,
                             "Could not automatically determine integration type of the boundary element.");
                 }
@@ -542,7 +542,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     break;
 
                 default:
-                    throw MechanicsException(
+                    throw Exception(
                             __PRETTY_FUNCTION__,
                             "Could not automatically determine integration type of the boundary element.");
                 }
@@ -557,7 +557,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                 break;
             }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Boundary element for Continuum element with dimension " +
+                throw Exception(__PRETTY_FUNCTION__, "Boundary element for Continuum element with dimension " +
                                                                       std::to_string(elementPtr->GetLocalDimension()) +
                                                                       "not implemented");
             }
@@ -583,9 +583,9 @@ std::pair<int, int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId
     // find element group
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
 
     // gets member ids from an element group. The element group must only contain truss elements
@@ -668,9 +668,9 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumber);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
     // the group has to be copied, since the elements are removed from this group, which invalidates the iterators
     Group<ElementBase> copyOfElementGroup = Group<ElementBase>(*(itGroup->second->AsGroupElement()));
@@ -721,7 +721,7 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
     boost::ptr_map<int, ElementBase>::iterator itElement = mElementMap.find(rElementId);
     if (itElement == this->mElementMap.end())
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Element does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Element does not exist.");
     }
     else
     {

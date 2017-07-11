@@ -7,7 +7,7 @@
 #include "mechanics/feti/StructureFeti.h"
 #include "mechanics/nodes/NodeBase.h"
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 
 #include "math/SparseMatrixCSR.h"
@@ -91,7 +91,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
                         mConnectivityMatrix.insert(globalIndex + i + offsetRows, dofVector[i] + offsetCols) =
                                 interface.mValue;
                     else
-                        throw MechanicsException(__PRETTY_FUNCTION__,
+                        throw Exception(__PRETTY_FUNCTION__,
                                                  "All DOFs in the connectivity matrix should be active.");
                 }
             }
@@ -205,7 +205,7 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Not implemented for dimension: " + std::to_string(GetDimension()));
     }
 }
@@ -280,7 +280,7 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
             }
             else
             {
-                throw MechanicsException(__PRETTY_FUNCTION__,
+                throw Exception(__PRETTY_FUNCTION__,
                                          "Import of element type not implemented. Element type id = " +
                                                  std::to_string(elementType));
             }
@@ -425,7 +425,7 @@ void NuTo::StructureFeti::CalculateRigidBodyModesTotalFETI()
     }
     break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Structural dimension not supported yet.");
+        throw Exception(__PRETTY_FUNCTION__, "Structural dimension not supported yet.");
     }
 
     MPI_Allreduce(&mNumRigidBodyModes, &mNumRigidBodyModesTotal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);

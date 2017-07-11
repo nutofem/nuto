@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -59,7 +59,7 @@ NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOu
         default:
             continue;
             //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+            //            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
             //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
             //            law.");
         }
@@ -149,7 +149,7 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -201,7 +201,7 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
                 break;
             }
             default:
-                throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                                          "[ Invalid type of 2D section behavior found!!!");
             }
 
@@ -391,7 +391,7 @@ NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constitutive::eCo
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return this->mE;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -412,7 +412,7 @@ void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive
         this->mE = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 

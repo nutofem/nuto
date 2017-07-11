@@ -39,7 +39,7 @@ IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto()
         break;
     }
     default:
-        throw MechanicsException(
+        throw Exception(
                 "[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
     }
 
