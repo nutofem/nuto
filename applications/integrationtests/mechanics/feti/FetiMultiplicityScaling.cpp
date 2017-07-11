@@ -3,20 +3,16 @@
 #include <boost/mpi.hpp>
 #include "boost/filesystem.hpp"
 
-#include <ctime>
 #include <chrono>
 #include <mechanics/feti/FetiLumpedPreconditioner.h>
 #include <mechanics/feti/FetiDirichletPreconditioner.h>
 
 #include "mechanics/feti/NewmarkFeti.h"
-#include "mechanics/feti/StructureFeti.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/groups/Group.h"
 
 #include "visualize/VisualizeEnum.h"
 
-using std::cout;
-using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
 using NuTo::Constitutive::eConstitutiveType;
 using NuTo::Constitutive::eConstitutiveParameter;
@@ -46,11 +42,9 @@ constexpr double poissonsRatio = 0.0;
 // integration
 constexpr double timeStep = 1.;
 constexpr double simulationTime = 1.;
-constexpr double toleranceDisp = 1e-6;
 constexpr double loadFactor = 10.0;
 
 // auxiliary
-constexpr double tol = 1.e-6;
 const Vector2d directionX = Vector2d::UnitX();
 
 int main(int argc, char* argv[])
@@ -62,8 +56,6 @@ int main(int argc, char* argv[])
 
     NuTo::StructureFeti structure(dim);
     structure.SetNumTimeDerivatives(0);
-    structure.SetVerboseLevel(10);
-    structure.SetShowTime(true);
     structure.GetLogger().OpenFile("output" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
@@ -102,10 +94,7 @@ int main(int argc, char* argv[])
                           << "**      virtual constraints      ** \n"
                           << "*********************************** \n\n";
 
-    std::vector<int> nodeIdsBoundaries = groupNodesLeftBoundary.GetMemberIds();
-    std::vector<int> nodeIdsLoads = groupNodesLoad.GetMemberIds();
-
-    structure.ApplyVirtualConstraints(nodeIdsBoundaries, nodeIdsLoads);
+    structure.ApplyVirtualConstraints(groupNodesLeftBoundary.GetMemberIds(), groupNodesLoad.GetMemberIds());
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      real constraints         ** \n"
@@ -121,7 +110,7 @@ int main(int argc, char* argv[])
 
     // prescribe displacement of groupNodesLoad in Y direction
     std::map<int, double> dofIdAndPrescribedDisplacementMap;
-    for (auto const& nodeId : nodeIdsLoads)
+    for (auto const& nodeId : groupNodesLoad.GetMemberIds())
     {
         std::vector<int> dofIds = structure.NodeGetDofIds(nodeId, eDof::DISPLACEMENTS);
         dofIdAndPrescribedDisplacementMap.emplace(dofIds[0], 1.);
@@ -172,4 +161,11 @@ int main(int argc, char* argv[])
                           << "*********************************** \n\n";
 
     newmarkFeti.Solve(simulationTime);
+
+    std::ifstream file(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+    int numIterations = 0;
+    file >> numIterations;
+    file.close();
+
+    std::cout << "#iterations: \t" << numIterations << std::endl;
 }

@@ -1,3 +1,5 @@
+add_subdirectory(paraviewScripts)
+
 set(MESH_DIR "${CMAKE_SOURCE_DIR}/applications/examples/c++/feti/2d/phase_field/mesh")
 
 foreach(task RANGE 0 1)

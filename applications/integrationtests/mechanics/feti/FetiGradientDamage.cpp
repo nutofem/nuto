@@ -7,8 +7,6 @@
 #include <chrono>
 #include "mechanics/feti/NewmarkFeti.h"
 #include "visualize/VisualizeEnum.h"
-
-#include "mechanics/nodes/NodeBase.h"
 #include "boost/filesystem.hpp"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/groups/Group.h"

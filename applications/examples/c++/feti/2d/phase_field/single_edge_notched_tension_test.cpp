@@ -58,7 +58,6 @@ constexpr double timeStepPostProcessing = 1.e-5;
 constexpr double simulationTime = 10.0e-3;
 constexpr double loadFactor = simulationTime;
 
-void AssignSection(NuTo::StructureFeti& structure);
 void AssignMaterial(NuTo::StructureFeti& structure);
 
 int main(int argc, char* argv[])
@@ -88,7 +87,9 @@ int main(int argc, char* argv[])
 
 
     AssignMaterial(structure);
-    AssignSection(structure);
+
+    auto section = NuTo::SectionPlane::Create(thickness, true);
+    structure.ElementTotalSetSection(section);
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      create node groups       ** \n"
@@ -171,6 +172,7 @@ int main(int argc, char* argv[])
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
     newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
     newmarkFeti.SetMinTimeStepPlot(timeStepPostProcessing);
+    newmarkFeti.SetMaxNumberOfFetiIterations(10);
 
     Matrix2d dispRHS;
     dispRHS(0, 0) = 0;
@@ -188,13 +190,6 @@ int main(int argc, char* argv[])
     structure.GetLogger() << "Total number of Dofs: \t" << structure.GetNumTotalDofs() << "\n\n";
 }
 
-
-void AssignSection(NuTo::StructureFeti& structure)
-{
-
-    auto section = NuTo::SectionPlane::Create(thickness, true);
-    structure.ElementTotalSetSection(section);
-}
 
 void AssignMaterial(NuTo::StructureFeti& structure)
 {

@@ -584,7 +584,14 @@ public:
         return displacementGap;
     }
 
-    //! @brief Solves the global and local problem
+    void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
+    {
+        std::ofstream filestream(mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
+        filestream << "#iterations: \t" << numIterations << "\t at time step: \t" << timeStep << "\n";
+        filestream.close();
+    }
+
+//! @brief Solves the global and local problem
     //!
     //! Calculates the rigid body modes of the structure.
     //! Calculates the initial guess for the projected CG/BiCGStab method
@@ -666,11 +673,11 @@ public:
 
         if (iterations >= mMaxNumFetiIterations - 1)
         {
-            //            converged = false;
-            //            return StructureOutputBlockVector(structure->GetDofStatus());
-            throw MechanicsException(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
+            converged = false;
+            return StructureOutputBlockVector(mStructure->GetDofStatus());
         }
 
+        WriteFetiSolverInfoToFile(iterations, timeStep);
 
         if (mStructureFeti->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
@@ -1040,7 +1047,7 @@ public:
 
                     bool fetiSolverConverged = true;
                     delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
-                    int iteration = 0;
+                    int numNewtonIterations = 0;
                     if (fetiSolverConverged)
                     {
 
@@ -1069,7 +1076,7 @@ public:
 
                         mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
-                        while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
+                        while (not(normResidual < mToleranceResidual) and numNewtonIterations < mMaxNumIterations)
                         {
 
 
@@ -1099,11 +1106,11 @@ public:
 
                             normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
-                            PrintInfoIteration(normResidual, iteration);
+                            PrintInfoIteration(normResidual, numNewtonIterations);
 
-                            iteration++;
+                            numNewtonIterations++;
 
-                        } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+                        }
                     }
 
 
@@ -1123,15 +1130,16 @@ public:
                         mTime += mTimeStep;
 
 
-                        mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime
+                        mStructure->GetLogger() << "Convergence after "
+                                                << numNewtonIterations << " newton iterations at time " << mTime
                                                 << " (time step " << mTimeStep << ").\n";
 
-                        mTimeStep = KeepOrIncreaseTimeStep(iteration);
+                        mTimeStep = KeepOrIncreaseTimeStep(numNewtonIterations);
 
 
                         // perform Postprocessing
                         std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
-                        file << mTime << "\t" << iteration << "\n";
+                        file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                         file.close();
 
 
