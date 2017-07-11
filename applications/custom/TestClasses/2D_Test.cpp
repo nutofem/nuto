@@ -3,7 +3,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <boost/filesystem.hpp>
-
+#include <Epetra_DataAccess.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
@@ -20,6 +20,15 @@
 #include <EpetraExt_VectorOut.h>
 #include <EpetraExt_MultiVectorOut.h>
 #include <EpetraExt_RowMatrixOut.h>
+#include <BelosLinearProblem.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosPseudoBlockGmresSolMgr.hpp>
+#include <BelosEpetraAdapter.hpp>
+#include <Ifpack.h>
+#include <Ifpack_AdditiveSchwarz.h>
+//#include <Ifpack2_AdditiveSchwarz.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureBase.h"
@@ -34,12 +43,14 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 
+
 #include "ConversionTools.h"
 #include "PrintTools.h"
+#include "TrilinosUtils.h"
 
 
 //#define SHOW_INTERMEDIATE_RESULTS
-#define SHOW_SOLUTION
+//#define SHOW_SOLUTION
 
 
 void checkDirectories(const std::string rLogDirectory, const std::string rResultDirectory)
@@ -52,23 +63,177 @@ void checkDirectories(const std::string rLogDirectory, const std::string rResult
 }
 
 
-Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epetra_MultiVector rRhs, bool iterative = true)
+Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epetra_MultiVector rRhs, bool iterative = true, bool useAztecOO = true)
 {
     Epetra_LinearProblem problem(&rA, &rLhs, &rRhs);
 
     if (iterative)
     {
-        AztecOO Solver(problem);
-        Solver.Iterate(1000,1e-8);
+        if (useAztecOO)
+        {
+            /*METHODS
+             * AZ_cg               0 --> preconditioned conjugate gradient method
+             * AZ_gmres            1 --> preconditioned gmres method
+             * AZ_cgs              2 --> preconditioned cg squared method
+             * AZ_tfqmr            3 --> preconditioned transpose-free qmr method
+             * AZ_bicgstab         4 --> preconditioned stabilized bi-cg method
+             * AZ_fixed_pt         8 --> fixed point iteration
+             * AZ_cg_condnum      11
+             * AZ_gmres_condnum   12
+             */
+            int method = AZ_gmres;
+
+            AztecOO Solver(problem);
+            Solver.SetAztecOption(AZ_solver, method);
+    //        Solver.SetAztecOption(AZ_output, AZ_all);
+            Solver.SetAztecOption(AZ_diagnostics, AZ_all);
+            Solver.SetAztecOption(AZ_precond, AZ_dom_decomp);
+    //        Solver.SetAztecOption(AZ_precond, AZ_Jacobi);
+            Solver.SetAztecOption(AZ_subdomain_solve, AZ_ilut);
+            Solver.SetAztecOption(AZ_overlap, 1);
+            Solver.SetAztecOption(AZ_orthog, AZ_classic);
+            Solver.SetAztecOption(AZ_kspace, 50);
+            Solver.Iterate(1000,1e-8);
+        }
+        else
+        {
+            //++++++++++++Ifpack preconditioner+++++++++++++
+            Teuchos::ParameterList paramList;
+            Ifpack Factory;
+
+            // Create the preconditioner. For the list of PrecType values check the IFPACK documentation.
+            string PrecType = "ILU"; // incomplete LU
+            int OverlapLevel = 1; // must be >= 0. If Comm.NumProc() == 1,
+                                // it is ignored.
+
+            RCP<Epetra_CrsMatrix> A = rcp (new Epetra_CrsMatrix(rA));
+            RCP<Ifpack_Preconditioner> prec = rcp(Factory.Create(PrecType, &*A, OverlapLevel));
+            TEUCHOS_TEST_FOR_EXCEPTION(prec == null, std::runtime_error,
+                     "IFPACK failed to create a preconditioner of type \""
+                     << PrecType << "\" with overlap level "
+                     << OverlapLevel << ".");
+
+            // Specify parameters for ILU.  ILU is local to each MPI process.
+            paramList.set("fact: drop tolerance", 1e-9);
+            paramList.set("fact: level-of-fill", 1);
+
+            // how to combine overlapping results:
+            // "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+            paramList.set("schwarz: combine mode", "Add");
+//            IFPACK_CHK_ERR(prec->SetParameters(paramList));
+            prec->SetParameters(paramList);
+
+            // Initialize the preconditioner. At this point the matrix must have
+            // been FillComplete()'d, but actual values are ignored.
+//            IFPACK_CHK_ERR(prec->Initialize());
+            prec->Initialize();
+
+            // Build the preconditioner, by looking at the values of the matrix.
+//            IFPACK_CHK_ERR(prec->Compute());
+            prec->Compute();
+
+            // Create the Belos preconditioned operator from the Ifpack preconditioner.
+            // NOTE:  This is necessary because Belos expects an operator to apply the
+            //        preconditioner with Apply() NOT ApplyInverse().
+            RCP<Belos::EpetraPrecOp> belosPrec = rcp (new Belos::EpetraPrecOp(prec));
+
+            //++++++++++++end preconditioner definition+++++++++++++
+
+            //++++++++++++perform solve+++++++++++++++++++++
+
+            RCP<Epetra_MultiVector> LHS = rcp (new Epetra_MultiVector (rLhs));
+            RCP<Epetra_MultiVector> RHS = rcp (new Epetra_MultiVector (rRhs));
+
+            // Need a Belos::LinearProblem to define a Belos solver
+            typedef Epetra_MultiVector                MV;
+            typedef Epetra_Operator                   OP;
+            RCP<Belos::LinearProblem<double,MV,OP> > belosProblem
+            = rcp (new Belos::LinearProblem<double,MV,OP>(A, LHS, RHS));
+
+            belosProblem->setRightPrec (belosPrec);
+
+            bool set = belosProblem->setProblem();
+            TEUCHOS_TEST_FOR_EXCEPTION( ! set,
+                      std::runtime_error,
+                      "*** Belos::LinearProblem failed to set up correctly! ***");
+
+            // Create a parameter list to define the Belos solver.
+            RCP<ParameterList> belosList = rcp (new ParameterList ());
+            belosList->set ("Block Size", 1);              // Blocksize to be used by iterative solver
+            belosList->set ("Num Blocks", 30);              //Krylov dimension
+            belosList->set ("Maximum Restarts", 20);
+            belosList->set ("Maximum Iterations", 1000);   // Maximum number of iterations allowed
+            belosList->set ("Convergence Tolerance", 1e-8);// Relative convergence tolerance requested
+            belosList->set ("Verbosity", Belos::Errors+Belos::Warnings+Belos::TimingDetails+Belos::FinalSummary );
+
+            // Create an iterative solver manager.
+            Belos::PseudoBlockGmresSolMgr<double, MV, OP> belosSolver(belosProblem, belosList);
+
+            // Perform solve.
+            Belos::ReturnType ret = belosSolver.solve();
+            return *belosSolver.getProblem().getLHS().get();
+
+            //++++++++++++end of solve++++++++++++++++++++
+
+        }
     }
     else
     {
+        /*METHODS
+         * Klu
+         * Mumps
+         * Lapack
+         * Scalapack
+         * Umfpack
+         * Superlu
+         * Superludist
+         * Dscpack
+         * Taucs
+         */
         Amesos Factory;
-        Amesos_BaseSolver* solver;
-//        std::string solverType = "Mumps";
-        std::string solverType = "Klu";
-        solver = Factory.Create(solverType, problem);
-        solver->Solve();
+        std::string solverType = "Mumps";
+        bool solverAvail = Factory.Query(solverType);
+        if (rA.Comm().MyPID() == 0)
+            std::cout << "Direct Solver '" << solverType << "' available: " << (solverAvail ? "oh yeah" : "oh no") << std::endl;
+        if (solverAvail)
+        {
+            Teuchos::ParameterList params;
+            params.set("PrintStatus", true);
+            params.set("PrintTiming", true);
+            params.set("MaxProcs", -3); //all processes in communicator will be used
+//            Amesos_BaseSolver* solver;
+//            solver = Factory.Create(solverType, problem);
+            Amesos_Mumps* solver;
+            solver = new Amesos_Mumps(problem);
+            Teuchos::ParameterList mumpsList = params.sublist("mumps");
+            int* icntl = new int[40];
+            double* cntl = new double[5];
+            icntl[0] = 0;
+            icntl[1] = 0;
+            icntl[2] = 0;
+            icntl[3] = 0;
+            icntl[5] = 7;
+            icntl[6] = 7;
+            icntl[7] = 0;
+            icntl[28] = 2;
+            icntl[29] = 0;
+            mumpsList.set("ICNTL", icntl);
+            solver->SetParameters(params);
+            solver->Solve();
+//            for (int i = 0; i < 40; ++i)
+//            {
+//                std::cout << solver->GetINFO()[i] << std::endl;
+//            }
+            delete[] icntl;
+            delete[] cntl;
+            delete solver;
+        }
+        else
+        {
+            Epetra_MultiVector zeroVec(*(problem.GetLHS()));
+            zeroVec.PutScalar(0.);
+            problem.SetLHS(&zeroVec);
+        }
     }
 
     Epetra_MultiVector* lhs = problem.GetLHS();
@@ -429,8 +594,8 @@ void run_Test_2D_GivenMesh()
     Epetra_Export exporter(overlappingMap, owningMap);
 
     //CREATE CORRESPONDING GRAPHS (FOR MATRIX STRUCTURE)
-    Epetra_CrsGraph overlappingGraph(Copy, overlappingMap, 0);
-    Epetra_CrsGraph owningGraph(Copy, owningMap, 0);
+    Epetra_CrsGraph overlappingGraph(Epetra_DataAccess::Copy, overlappingMap, 0);
+    Epetra_CrsGraph owningGraph(Epetra_DataAccess::Copy, owningMap, 0);
 
     for (int i = 0; i < localNumActiveDOFs; ++i)
     {
@@ -445,7 +610,7 @@ void run_Test_2D_GivenMesh()
     owningGraph.FillComplete();
 
     //CREATE (GLOBAL) MATRIX AND VECTOR WITH KNOWN GRAPH STRUCTURE
-    Epetra_CrsMatrix globalMatrix(Copy, owningGraph);
+    Epetra_CrsMatrix globalMatrix(Epetra_DataAccess::Copy, owningGraph);
     globalMatrix.FillComplete();
     Epetra_Vector globalRhsVector(owningMap);
     globalRhsVector.PutScalar(0.0);
@@ -597,6 +762,15 @@ std::vector<int> vectorIntersection(std::vector<int> rVec_1, std::vector<int> rV
 }
 
 
+void checkErrorCode(int rErrorCode, std::string rDescription)
+{
+    if (rErrorCode != 0)
+    {
+        std::cout << "ErrorCode " << rErrorCode << ":\t" << rDescription << std::endl;
+    }
+}
+
+
 void generateSubDomainIdentifiers(int rNumSubDomains_X, int rNumSubDomains_Y, std::vector<int>& subDomainIdentifier_X, std::vector<int>& subDomainIdentifier_Y)
 {
 //    int numSubDomains = rNumSubDomains_X*rNumSubDomains_Y;
@@ -621,9 +795,10 @@ void generateSubDomainIdentifiers(int rNumSubDomains_X, int rNumSubDomains_Y, st
 
 
 
-void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomains_X, int rNumSubdomains_Y, int rNumElementsPerSubdomain_X, int rNumElementsPerSubdomain_Y)
+void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLength_Y, double rThickness, int rNumSubdomains_X, int rNumSubdomains_Y, int rNumElementsPerSubdomain_X, int rNumElementsPerSubdomain_Y, double rTotalForce, bool rSaveSolution = false)
 {
-    Epetra_MpiComm Comm(MPI_COMM_WORLD);
+//    Epetra_MpiComm Comm(MPI_COMM_WORLD);
+    Epetra_MpiComm Comm(rComm);
     int rank = Comm.MyPID();
     int numProc = Comm.NumProc();
 
@@ -709,12 +884,12 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
     // ------------------------
     // | MECHANICAL VARIABLES |
     // ------------------------
-    double thickness = 10.;
+    double thickness = rThickness;
     double YoungsModulus = 2.e4;
-    double PoissonRatio = 0;
-    double force = 1.e5;
+    double PoissonRatio = 0.3;
+    double force = rTotalForce;
 
-    double fixedDisplacement = 0.;
+//    double fixedDisplacement = 0.;
     Eigen::VectorXd directionX(dim);
     directionX(0) = 1;
     directionX(1) = 0;
@@ -880,6 +1055,9 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
         currLength_Y += lengthPerSubDomain_Y[iy+1];
     }
 
+    delete[] lengthPerSubDomain_X;
+    delete[] lengthPerSubDomain_Y;
+
     //FIX LEFT BOUNDARY
 //    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionX, fixedDisplacement);
 //    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
@@ -904,6 +1082,9 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
 
     NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector(0) + structure.BuildGlobalInternalGradient();
 //    structure.Info();
+//    std::cout << "NuTo - Solve starts..." << std::endl;
+//    structure.SolveGlobalSystemStaticElastic();
+//    std::cout << "NuTo - Solve finished" << std::endl;
 
     Eigen::SparseMatrix<double> hessian0_eigen = hessian0.JJ.ExportToEigenSparseMatrix();
     Eigen::MatrixXd residual_eigen = residual.J.Export();
@@ -983,6 +1164,9 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
         }
     }
 
+    delete[] nodeGroupsOverlap_X;
+    delete[] nodeGroupsOverlap_Y;
+
     std::vector<int> leftNodeIDs = structure.GroupGetMemberIds(nodesBCLeft);
 //    int leftNodeCount = leftNodeIDs.size();
     int leftNodeCount = 0;
@@ -1050,6 +1234,7 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
         }
     }
     int localNumActiveDOFs = numActiveDofsPerSubDomain[rank];
+    delete[] numActiveDofsPerSubDomain;
 
     int internDofCounter = -1;
     if (rank == 0)
@@ -1248,7 +1433,7 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
                     }
                 }
             }
-            else
+            else if (subDomains_Y[rank] == 1)
             {
                 newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y)*dim;
                 for (int nodeID_Y : overlapNodeIDs_Y)
@@ -1259,6 +1444,22 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
                         local2GlobalMapping[dofID] = newID + internDofCounter;
                         ++internDofCounter;
                     }
+                }
+            }
+            else
+            {
+//                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y)*dim;
+                newID = numActiveDofsTillSubDomain_inclusive[rank-1] - (overlappingNodeCount_Y+(numElementsPerSubDomain_X)*(numElementsPerSubDomain_Y-1))*dim;
+                int offset = 0;
+                for (int nodeID_Y : overlapNodeIDs_Y)
+                {
+                    std::vector<int> overlapDofIDs_Y = structure.NodeGetDofIds(nodeID_Y, NuTo::Node::eDof::DISPLACEMENTS);
+                    for (int dofID : overlapDofIDs_Y)
+                    {
+                        local2GlobalMapping[dofID] = newID + internDofCounter + offset*dim*(numElementsPerSubDomain_Y-1);;
+                        ++internDofCounter;
+                    }
+                    ++offset;
                 }
             }
         }
@@ -1536,43 +1737,78 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
         }
     }
 
+    delete[] numActiveDofsTillSubDomain_inclusive;
+
     //DEFINE MAPS FOR LOCAL OWNED DOFS AND OVERLAPPING DOFS
     Epetra_Map owningMap(-1, ownedNumActiveDOFs, 0, Comm);
     Epetra_Map overlappingMap(-1, localNumActiveDOFs, local2GlobalMapping, 0, Comm);
+//    Epetra_Map owningMap = TrilinosUtils::createLinearMap(Comm, ownedNumActiveDOFs, 0);
+//    Epetra_Map overlappingMap = TrilinosUtils::createSpecificMap(Comm, localNumActiveDOFs, 0, local2GlobalMapping);
     Epetra_Export exporter(overlappingMap, owningMap);
 
     //CREATE CORRESPONDING GRAPHS (FOR MATRIX STRUCTURE)
-    Epetra_CrsGraph overlappingGraph(Copy, overlappingMap, 0);
-    Epetra_CrsGraph owningGraph(Copy, owningMap, 0);
+    int maxNonZeros = 18;   //got by interpolation type (order), e.g. QUAD2 + EQUIDISTANT1 => 18
+//    Epetra_CrsGraph owningGraph(Epetra_DataAccess::Copy, owningMap, 0, false);
+    Epetra_CrsGraph owningGraph(Epetra_DataAccess::Copy, owningMap, maxNonZeros, false);
+//    Epetra_CrsGraph overlappingGraph(Epetra_DataAccess::Copy, overlappingMap, 0, false);
+    Epetra_CrsGraph overlappingGraph(Epetra_DataAccess::Copy, overlappingMap, maxNonZeros, false);
 
-    for (int i = 0; i < localNumActiveDOFs; ++i)
+    int errCode = -1;
+//    for (int i = 0; i < localNumActiveDOFs; ++i)
+//    {
+//        for (int j = 0; j < localNumActiveDOFs; ++j)
+//        {
+
+//            errCode = overlappingGraph.InsertGlobalIndices(local2GlobalMapping[i], 1, &local2GlobalMapping[j]);
+//            checkErrorCode(errCode, "i = " + std::to_string(i) + ", j = " + std::to_string(j));
+
+//        }
+//    }
+
+    for (int k=0; k<hessian0_eigen.outerSize(); ++k)
     {
-        for (int j = 0; j < localNumActiveDOFs; ++j)
-        {
-            overlappingGraph.InsertGlobalIndices(local2GlobalMapping[i], 1, &local2GlobalMapping[j]);
-        }
+      for (Eigen::SparseMatrix<double>::InnerIterator it(hessian0_eigen,k); it; ++it)
+      {
+//        std::cout << it.value() << std::endl;
+//        std::cout << it.row() << std::endl;   // row index
+//        std::cout << it.col() << std::endl;   // col index (here it is equal to k)
+//        std::cout << it.index() << std::endl; // inner index, here it is equal to it.row()
+        errCode = overlappingGraph.InsertGlobalIndices(local2GlobalMapping[it.row()], 1, &local2GlobalMapping[it.col()]);
+        checkErrorCode(errCode, "k = " + std::to_string(k) + ", it = " + std::to_string(it.row()));
+      }
     }
 
-    overlappingGraph.FillComplete();
-    owningGraph.Export(overlappingGraph, exporter, Insert); //inter-process communication of matrix structure
-    owningGraph.FillComplete();
+    delete[] local2GlobalMapping;
+
+    errCode = overlappingGraph.FillComplete();
+    checkErrorCode(errCode, "overlappingGraph.FillComplete()");
+    errCode = owningGraph.Export(overlappingGraph, exporter, Insert); //inter-process communication of matrix structure
+    checkErrorCode(errCode, "owningGraph.Export(...)");
+    errCode = owningGraph.FillComplete();
+    checkErrorCode(errCode, "owningGraph.FillComplete()");
 
     //CREATE (GLOBAL) MATRIX AND VECTOR WITH KNOWN GRAPH STRUCTURE
-    Epetra_CrsMatrix globalMatrix(Copy, owningGraph);
-    globalMatrix.FillComplete();
+    Epetra_CrsMatrix globalMatrix(Epetra_DataAccess::Copy, owningGraph);
+//    globalMatrix.FillComplete();
+//    globalMatrix.FillComplete(false);
     Epetra_Vector globalRhsVector(owningMap);
     globalRhsVector.PutScalar(0.0);
 
     //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
     ConversionTools converter;
-    Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
+    Eigen::SparseMatrix<double, Eigen::RowMajor> hess(hessian0_eigen);
+//    Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
+    Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hess, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
-    localRhsVector.Scale(1/(double(numSubDomains_Y*numElementsPerSubDomain_Y+1)));
+    if (!loadOnNode)
+        localRhsVector.Scale(1/(double(numSubDomains_Y*numElementsPerSubDomain_Y+1)));
 
-    globalMatrix.PutScalar(0.0);
-    globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
+    //globalMatrix.PutScalar(0.0);
+    errCode = globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
+    checkErrorCode(errCode, "globalMatrix.Export(...)");
 //    globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
-    globalRhsVector.Export(localRhsVector, exporter, Insert);
+    errCode = globalRhsVector.Export(localRhsVector, exporter, Insert);
+    checkErrorCode(errCode, "globalRhsVector.Export(...)");
 
 #ifdef SHOW_INTERMEDIATE_RESULTS
     //PRINT SOME INTERMEDIATE RESULTS
@@ -1597,18 +1833,25 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
     // --------------------------------
     // | SOLVE GLOBAL SYSTEM PARALLEL |
     // --------------------------------
-    Epetra_Vector lhs(owningMap);
-    lhs.PutScalar(0.0);
-    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, true);
+//    Epetra_Vector lhs(owningMap);
+//    lhs.PutScalar(0.0);
+    Epetra_Vector lhs(globalRhsVector);
+    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, true, true);
     sol.Scale(-1);
     //save solution
-    EpetraExt::MultiVectorToMatlabFile((resultDirectory + "/solution.mat").c_str(), sol);
-    EpetraExt::RowMatrixToMatlabFile((resultDirectory + "/globalMatrix.mat").c_str(), globalMatrix);
-    EpetraExt::VectorToMatlabFile((resultDirectory + "/globalRHS.mat").c_str(), globalRhsVector);
+    if (rSaveSolution)
+    {
+        EpetraExt::MultiVectorToMatlabFile((resultDirectory + "/solution.mat").c_str(), sol);
+        EpetraExt::RowMatrixToMatlabFile((resultDirectory + "/globalMatrix.mat").c_str(), globalMatrix);
+        EpetraExt::VectorToMatlabFile((resultDirectory + "/globalRHS.mat").c_str(), globalRhsVector);
+    }
 
 #ifdef SHOW_SOLUTION
     std::cout << "Solution:\n------------\n";
     sol.Print(std::cout);
+#else
+    if (rank == 0)
+        std::cout << "Number of DOFs: " << overlappingMap.MaxAllGID() + 1 << std::endl;
 #endif
 
     //solve system serial (for comparison only)
@@ -1628,25 +1871,59 @@ void run_Test_2D(double rTotalLength_X, double rTotalLength_Y, int rNumSubdomain
 
 void run_Test_2D(int argc, char** argv)
 {
+    Epetra_MpiComm Comm(MPI_COMM_WORLD);
     double totalLength_X = 1000.;
     double totalLength_Y = 150.;
+    double thickness = 10.;
+    double totalForce = 1.e5;
     int numSubDomains_X = 0;
     int numSubDomains_Y = 0;
-    int numElementsPerSubDomain_X = 1;
-    int numElementsPerSubDomain_Y = 1;
+    int numElementsPerSubDomain_X = 1;  //200
+    int numElementsPerSubDomain_Y = 1;  //100
+    bool saveSolution = true;
 
-    if (argc >= 3)
+    if (argc >= 2 && (strcmp(argv[1], "help")== 0))
     {
-        numElementsPerSubDomain_X = atoi(argv[1]);
-        numElementsPerSubDomain_Y = atoi(argv[2]);
+        if (Comm.MyPID() == 0)
+        {
+            std::cout << "Abbreviations:\n--------------"
+                      << "\n- numElX -> number of elements per subdomain in direction X\n- numElY -> ... in direction Y"
+                      << "\n- numSubX -> number of subdomains in direction X\n- numSubY -> ... in direction Y"
+                      << "\n- lenX -> length in direction X\n- lenY -> ... Y"
+                      << "\n- thick -> thickness of plane"
+                      << "\n\nRemark: numSubX * numSubY = <number of processes>"
+                      << "\n\nDefault values:\n---------------"
+                      << "\n- numElX = numElY = 1"
+                      << "\n- lenX = 1000"
+                      << "\n- lenY = 150"
+                      << "\n- thick = 10"
+                      << "\n\n\nUSAGE: 2D_Test help --> show this help"
+                      << "\nUSAGE: 2D_Test [numElX] [numElY] [numSubX] [numSubY] [lenX] [lenY] [thick]\n\n";
+        }
     }
-    if (argc >= 5)
+    else
     {
-        numSubDomains_X = atoi(argv[3]);
-        numSubDomains_Y = atoi(argv[4]);
-    }
 
-    run_Test_2D(totalLength_X, totalLength_Y, numSubDomains_X, numSubDomains_Y, numElementsPerSubDomain_X, numElementsPerSubDomain_Y);
+        if (argc >= 3)
+        {
+            numElementsPerSubDomain_X = atoi(argv[1]);
+            numElementsPerSubDomain_Y = atoi(argv[2]);
+        }
+        if (argc >= 5)
+        {
+            numSubDomains_X = atoi(argv[3]);
+            numSubDomains_Y = atoi(argv[4]);
+        }
+        if (argc >= 7)
+        {
+            totalLength_X = atoi(argv[5]);
+            totalLength_Y = atoi(argv[6]);
+        }
+        if (argc >= 8)
+            thickness = atoi(argv[7]);
+
+        run_Test_2D(Comm, totalLength_X, totalLength_Y, thickness, numSubDomains_X, numSubDomains_Y, numElementsPerSubDomain_X, numElementsPerSubDomain_Y, totalForce, saveSolution);
+    }
 }
 
 
@@ -1655,7 +1932,6 @@ int main(int argc, char** argv)
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
 //    run_Test_2D_GivenMesh();
-
 
     run_Test_2D(argc, argv);
 

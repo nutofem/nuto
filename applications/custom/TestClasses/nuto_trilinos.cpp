@@ -460,7 +460,6 @@ int main(int argc, char** argv)
         if (!centreNodeIDFound && !leftNodeIDFound)
         {
             std::vector<int> dofIDs = s.NodeGetDofIds(i, NuTo::Node::eDof::DISPLACEMENTS);
-
             for (int dofID : dofIDs)
             {
                 if (Comm.MyPID() == 0)

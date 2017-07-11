@@ -9,6 +9,7 @@
 #include <Epetra_CrsGraph.h>
 
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Sparse>
 
 int* ConversionTools::map2Array_Int(std::map<int, int> rMap)
 {
@@ -122,18 +123,39 @@ Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatr
     double value = 0.;
 
 
-    for (int i = 0; i < rowCount; ++i)
+//    for (int i = 0; i < rowCount; ++i)
+//    {
+//        numEntries = 0;
+//        for (int j = 0; j < columnCount; ++j)
+//        {
+//            value = rEigenMatrix.coeff(i, j);
+//            if (value != 0)
+//            {
+//                ++numEntries;
+//                entriesVector.push_back(value);
+//                globalIndicesVector.push_back(myGlobalIndices_Col[j]);
+//            }
+//        }
+
+//        entries = &entriesVector[0];
+//        globalIndices = &globalIndicesVector[0];
+
+//        convertedMatrix.SumIntoGlobalValues(myGlobalIndices_Row[i], numEntries, entries, globalIndices);
+
+//        entriesVector.clear();
+//        globalIndicesVector.clear();
+//        numEntries = 0;
+//    }
+
+    for (int i = 0 ; i < rEigenMatrix.outerSize(); ++i)
     {
         numEntries = 0;
-        for (int j = 0; j < columnCount; ++j)
+        for (Eigen::SparseMatrix<double>::InnerIterator it(rEigenMatrix, i); it; ++it)
         {
-            value = rEigenMatrix.coeff(i, j);
-            if (value != 0)
-            {
-                ++numEntries;
-                entriesVector.push_back(value);
-                globalIndicesVector.push_back(myGlobalIndices_Col[j]);
-            }
+            value = it.value();
+            ++numEntries;
+            entriesVector.push_back(value);
+            globalIndicesVector.push_back(myGlobalIndices_Col[it.index()]);
         }
 
         entries = &entriesVector[0];
@@ -145,6 +167,7 @@ Epetra_CrsMatrix ConversionTools::convertEigen2EpetraCrsMatrix(Eigen::SparseMatr
         globalIndicesVector.clear();
         numEntries = 0;
     }
+
 
     return convertedMatrix;
 }

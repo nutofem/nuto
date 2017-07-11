@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-void PrintTools::printArray_int(int *rArray, int rSize, std::__cxx11::string rTitle, int rPID)
+void PrintTools::printArray_int(int *rArray, int rSize, std::string rTitle, int rPID)
 {
     std::cout << rTitle << "\n" << std::endl;
     for (int j = 0; j < rSize; ++j)
@@ -13,7 +13,7 @@ void PrintTools::printArray_int(int *rArray, int rSize, std::__cxx11::string rTi
 }
 
 
-void PrintTools::printVector(std::vector<int> rVector, std::__cxx11::string rTitle, int rPID)
+void PrintTools::printVector(std::vector<int> rVector, std::string rTitle, int rPID)
 {
     std::cout << rTitle << "\n" << std::endl;
     for (int j = 0; j < rVector.size(); ++j)
@@ -23,7 +23,7 @@ void PrintTools::printVector(std::vector<int> rVector, std::__cxx11::string rTit
 }
 
 
-void PrintTools::printMap_int_int(std::map<int, int> rMap, std::__cxx11::string rTitle, int rPID)
+void PrintTools::printMap_int_int(std::map<int, int> rMap, std::string rTitle, int rPID)
 {
     std::cout << rTitle << "\n" << std::endl;
     for (int j = 0; j < rMap.size(); ++j)
