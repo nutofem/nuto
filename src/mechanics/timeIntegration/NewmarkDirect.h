@@ -71,10 +71,6 @@ public:
     //! @param rTimeDelta ... length of the simulation
     virtual void Solve(double rTimeDelta) override;
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info() const override;
-
-
 protected:
     using StructureOutputMap = std::map<eStructureOutput, StructureOutputBase*>;
 
@@ -143,8 +139,6 @@ public:
 
 protected:
     std::array<StructureOutputBlockVector, 3> InitialState();
-
-    void FillInputMap(ConstitutiveInputMap& rInputMap);
 
     void IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
                                    std::array<NuTo::StructureOutputBlockVector, 3>& lastConverged_dof_dt);

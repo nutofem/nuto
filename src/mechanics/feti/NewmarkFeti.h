@@ -1091,10 +1091,6 @@ public:
             StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
             StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
 
-            StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
-            StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
-            StructureOutputBlockVector lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
-
             StructureOutputBlockVector extForce(dofStatus, true);
             StructureOutputBlockVector intForce(dofStatus, true);
 
@@ -1130,9 +1126,9 @@ public:
             inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] =
                     std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
-            ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+            auto lastConvergedDofValues = ExtractDofValues();
 
-            UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+            UpdateAndGetAndMergeConstraintRHS(curTime, lastConvergedDofValues[0]);
 
             PostProcess(mLambda, dofStatus);
 
@@ -1175,12 +1171,12 @@ public:
                     {
 
                         // calculate trial state
-                        dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+                        dof_dt0 = lastConvergedDofValues[0] + delta_dof_dt0;
                         if (mStructure->GetNumTimeDerivatives() >= 1)
-                            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2,
+                            dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
                                                     mTimeStep);
                         if (mStructure->GetNumTimeDerivatives() >= 2)
-                            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2,
+                            dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
                                                     mTimeStep);
 
 
@@ -1243,9 +1239,9 @@ public:
                         mStructure->ElementTotalUpdateStaticData();
 
                         // store converged step
-                        lastConverged_dof_dt0 = dof_dt0;
-                        lastConverged_dof_dt1 = dof_dt1;
-                        lastConverged_dof_dt2 = dof_dt2;
+                        lastConvergedDofValues[0] = dof_dt0;
+                        lastConvergedDofValues[1] = dof_dt1;
+                        lastConvergedDofValues[2] = dof_dt2;
                         mLambdaOld = mLambda;
 
                         MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
@@ -1276,7 +1272,7 @@ public:
                     {
                         mStructure->GetLogger() << "No convergence with timestep " << mTimeStep << "\n\n";
 
-                        MergeDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, true);
+                        MergeDofValues(lastConvergedDofValues[0], lastConvergedDofValues[1], lastConvergedDofValues[2], true);
 
                         mTimeStep = ReduceTimeStep(curTime);
                     }
