@@ -293,9 +293,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 # build nuto
 add_subdirectory(src)
 
-# Documentation
-add_subdirectory(doc)
-
 #test Environment
 include(CTest)
 
@@ -312,9 +309,6 @@ endif()
 if(ENABLE_BENCHMARKS)
     add_subdirectory(applications/benchmark)
 endif()
-
-
-
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing
