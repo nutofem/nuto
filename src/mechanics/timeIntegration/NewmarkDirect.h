@@ -140,12 +140,12 @@ public:
 protected:
     std::array<StructureOutputBlockVector, 3> InitialState();
 
-    void IterateForActiveDofValues(StructureOutputBlockVector& prevExtForce, BlockFullVector<double>& deltaBRHS,
+    void IterateForActiveDofValues(const StructureOutputBlockVector& prevExtForce, const BlockFullVector<double>& deltaBRHS,
                                    std::array<NuTo::StructureOutputBlockVector, 3>& lastConverged_dof_dt);
 
 
     std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
-                                                StructureOutputBlockVector& extForce,
+                                                const StructureOutputBlockVector& extForce,
                                                 StructureOutputBlockVector& delta_dof_dt0,
                                                 std::array<StructureOutputBlockVector, 3>& dof_dt,
                                                 const BlockSparseMatrix& constraintMatrix, double timeStep);
