@@ -12,16 +12,6 @@
 #include "mechanics/MechanicsException.h"
 
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "math/CustomBoostSerializationExtensions.h"
-#endif  // ENABLE_SERIALIZATION
-
 namespace NuTo
 {
 
@@ -30,18 +20,14 @@ namespace NuTo
 //! method. Its data members are set via the friend class property.
 class InterpolationBaseFEM : public InterpolationBase
 {
-friend class InterpolationType;
-
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    InterpolationBaseFEM();
-#endif
+    friend class InterpolationType;
 
 public:
     InterpolationBaseFEM(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
-    virtual ~InterpolationBaseFEM() {}
+    virtual ~InterpolationBaseFEM()
+    {
+    }
 
     virtual int GetSplineDegree(int dir) const override;
 
@@ -66,21 +52,22 @@ public:
     const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd& naturalCoordinates) const override;
 
 
-
-
     // --- IGA interpolation--- //
 
-    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates,
+                                              const Eigen::VectorXi& rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd& rCoordinates,
+                                       const Eigen::VectorXi& rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
+    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs,
+                                                 int rDerivative, int rDirection) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
     }
@@ -88,12 +75,13 @@ public:
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************
 
-    const Eigen::MatrixXd & DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const override;
+    const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd& naturalCoordinates) const override;
 
 
     // --- IGA interpolation--- //
 
-    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
+    virtual Eigen::MatrixXd DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates,
+                                                               const Eigen::VectorXi& rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
@@ -102,14 +90,18 @@ public:
     //       SURFACE PARAMETRIZATION
     //********************************************
 
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                               int rSurface) const override = 0;
 
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                          int rSurface, const Eigen::MatrixXd& rKnots) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
+    virtual Eigen::MatrixXd
+    CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                 int rSurface) const override = 0;
 
     virtual int GetNumSurfaces() const override = 0;
 
@@ -126,33 +118,13 @@ public:
     }
 
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class, this is the load routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-    //! @brief serializes the class, this is the save routine
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-#endif  // ENABLE_SERIALIZATION
-
 protected:
-
     virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const override = 0;
 
     Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const override;
 
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const override = 0;
+    virtual Eigen::MatrixXd
+    CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const override = 0;
 
     virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override = 0;
 
@@ -181,7 +153,3 @@ protected:
     Memoizer<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 };
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationBaseFEM)
-#endif

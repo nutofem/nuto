@@ -8,7 +8,7 @@
 //! @param rFileName file name
 void NuTo::StructureBase::LoggerOpenFile(std::string rFileName)
 {
-	mLogger.OpenFile(rFileName);
+    mLogger.OpenFile(rFileName);
 }
 
 //! @brief set the logger to be quiet (output only to file, if set)

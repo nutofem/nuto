@@ -2,8 +2,7 @@
 #include "TypeTraits.h"
 
 #include "mechanics/elements/IPData.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
@@ -19,8 +18,8 @@ const NuTo::GradientDamageEngineeringStress* AsLaw(const NuTo::Constitutive::IPC
 BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
 {
     NuTo::GradientDamageEngineeringStress law;
-    NuTo::IntegrationType1D2NGauss1Ip integrationType1;
-    NuTo::IntegrationType1D2NGauss2Ip integrationType2;
+    NuTo::IntegrationType1D2NGauss integrationType1(1);
+    NuTo::IntegrationType1D2NGauss integrationType2(2);
 
     NuTo::IPData data(integrationType1);
     BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(0), NuTo::MechanicsException);
@@ -47,7 +46,7 @@ BOOST_AUTO_TEST_CASE(IPData_Copy_Move)
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move_Values)
 {
     NuTo::GradientDamageEngineeringStress law;
-    NuTo::IntegrationType1D2NGauss1Ip integrationType;
+    NuTo::IntegrationType1D2NGauss integrationType(1);
 
     constexpr double kappa = 42.6174;
 
@@ -55,26 +54,25 @@ BOOST_AUTO_TEST_CASE(IPData_Copy_Move_Values)
     data.SetConstitutiveLaw(law);
     data.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
 
-    NuTo::IPData data2(data);   // copy construction
+    NuTo::IPData data2(data); // copy construction
     BOOST_CHECK_EQUAL(&integrationType, &data2.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data2.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data2.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
     NuTo::IPData data3(integrationType);
-    data3 = data;               // copy assignment
+    data3 = data; // copy assignment
     BOOST_CHECK_EQUAL(&integrationType, &data3.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data3.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data3.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
-    NuTo::IPData data4(std::move(data));  // move construction
+    NuTo::IPData data4(std::move(data)); // move construction
     BOOST_CHECK_EQUAL(&integrationType, &data4.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data4.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data4.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
 
     NuTo::IPData data5(integrationType);
-    data5 = std::move(data2);    // move assignment
+    data5 = std::move(data2); // move assignment
     BOOST_CHECK_EQUAL(&integrationType, &data5.GetIntegrationType());
     BOOST_CHECK_EQUAL(&law, AsLaw(data5.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(kappa, data5.GetIPConstitutiveLaw(0).GetData<NuTo::GradientDamageEngineeringStress>().GetData());
-
 }

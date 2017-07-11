@@ -9,10 +9,10 @@ namespace NuTo
 class CellInterface
 {
 public:
-    CellInterface()                     = default;
-    virtual ~CellInterface()            = default;
+    CellInterface() = default;
+    virtual ~CellInterface() = default;
     CellInterface(const CellInterface&) = default;
-    CellInterface(CellInterface&&)      = default;
+    CellInterface(CellInterface&&) = default;
     CellInterface& operator=(const CellInterface&) = default;
     CellInterface& operator=(CellInterface&&) = default;
 

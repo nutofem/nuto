@@ -15,9 +15,12 @@ enum class ePlaneState
 class ConstitutivePlaneState : public ConstitutiveIOBase
 {
 public:
-    ConstitutivePlaneState(ePlaneState initialState) : 
-        ConstitutiveIOBase(), mPlaneState(initialState) {}  
-    
+    ConstitutivePlaneState(ePlaneState initialState)
+        : ConstitutiveIOBase()
+        , mPlaneState(initialState)
+    {
+    }
+
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override
     {
         return std::make_unique<ConstitutivePlaneState>(*this);

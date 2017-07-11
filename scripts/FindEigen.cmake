@@ -1,4 +1,3 @@
-# $Id$
 
 # Eigen header files (try to find the header file Eigen/Core)
 #

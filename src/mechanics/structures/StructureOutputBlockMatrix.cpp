@@ -109,7 +109,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(const ElementBase* rElem
                                 {
                                     if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
                                         continue; // entry would be in lower triangle --> not valid for symmetric
-                                                  // matrices
+                                    // matrices
                                     dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
                                 }
                             }

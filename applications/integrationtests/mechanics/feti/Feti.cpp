@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 
     std::map<int, VectorXd> nodeIdAndDisplacements = GetNodeToDisplacementsMap(structure);
     std::map<int, VectorXd> nodeIdAndDisplacementsReference = ComputeReferenceSolution(rank);
-    
+
     structure.GetLogger() << "*********************************** \n"
                           << "**      compare results          ** \n"
                           << "*********************************** \n\n";

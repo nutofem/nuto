@@ -4,7 +4,7 @@ foreach(mesh
         CSDAMesh
         PGDPlateMeso2D
         )
-    execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
+    create_symlink(${mesh}.msh)
 endforeach()
 
 # math/base tests

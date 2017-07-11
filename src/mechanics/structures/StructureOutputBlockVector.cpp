@@ -6,9 +6,9 @@
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 NuTo::StructureOutputBlockVector::StructureOutputBlockVector(const DofStatus& rDofStatus, bool rAutomaticResize)
-    : StructureOutputBase(),
-      J(rDofStatus),
-      K(rDofStatus)
+    : StructureOutputBase()
+    , J(rDofStatus)
+    , K(rDofStatus)
 {
     if (rAutomaticResize)
         Resize(rDofStatus.GetNumActiveDofsMap(), rDofStatus.GetNumDependentDofsMap());
@@ -16,10 +16,10 @@ NuTo::StructureOutputBlockVector::StructureOutputBlockVector(const DofStatus& rD
 
 NuTo::StructureOutputBlockVector::~StructureOutputBlockVector()
 {
-
 }
 
-NuTo::StructureOutputBlockVector &NuTo::StructureOutputBlockVector::operator=(const NuTo::StructureOutputBlockVector &rOther)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::
+operator=(const NuTo::StructureOutputBlockVector& rOther)
 {
     J = rOther.J;
     K = rOther.K;
@@ -27,9 +27,8 @@ NuTo::StructureOutputBlockVector &NuTo::StructureOutputBlockVector::operator=(co
 }
 
 
-void NuTo::StructureOutputBlockVector::AddElementVector(
-        const NuTo::BlockFullVector<double>& rElementVector,
-        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers)
+void NuTo::StructureOutputBlockVector::AddElementVector(const NuTo::BlockFullVector<double>& rElementVector,
+                                                        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers)
 {
     const auto& activeDofTypes = J.GetDofStatus().GetActiveDofTypes();
     const auto& numActiveDofTypeMap = J.GetDofStatus().GetNumActiveDofsMap();
@@ -58,10 +57,10 @@ void NuTo::StructureOutputBlockVector::AddElementVector(
             }
         }
     }
-
 }
 
-void NuTo::StructureOutputBlockVector::ApplyCMatrix(BlockFullVector<double>& rResidual, const BlockSparseMatrix& rCmat) const
+void NuTo::StructureOutputBlockVector::ApplyCMatrix(BlockFullVector<double>& rResidual,
+                                                    const BlockSparseMatrix& rCmat) const
 {
     rResidual = J;
 
@@ -69,7 +68,7 @@ void NuTo::StructureOutputBlockVector::ApplyCMatrix(BlockFullVector<double>& rRe
         return;
 
     for (auto dof : J.GetDofStatus().GetActiveDofTypes())
-        rResidual[dof] -= rCmat(dof,dof).TransMult(K[dof]);
+        rResidual[dof] -= rCmat(dof, dof).TransMult(K[dof]);
 }
 
 void NuTo::StructureOutputBlockVector::ApplyCMatrix(const BlockSparseMatrix& rCmat)
@@ -78,38 +77,39 @@ void NuTo::StructureOutputBlockVector::ApplyCMatrix(const BlockSparseMatrix& rCm
         return;
 
     for (auto dof : J.GetDofStatus().GetActiveDofTypes())
-        J[dof] += rCmat(dof,dof).TransMult(K[dof]);
+        J[dof] += rCmat(dof, dof).TransMult(K[dof]);
 }
 
-void NuTo::StructureOutputBlockVector::Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap, const std::map<Node::eDof, int>& rNumDependentDofsMap)
+void NuTo::StructureOutputBlockVector::Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap,
+                                              const std::map<Node::eDof, int>& rNumDependentDofsMap)
 {
     assert(rNumActiveDofsMap.size() == rNumDependentDofsMap.size());
 
-    J.Resize(rNumActiveDofsMap   );
+    J.Resize(rNumActiveDofsMap);
     K.Resize(rNumDependentDofsMap);
 }
 
-NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator +=(const StructureOutputBlockVector& rRhs)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator+=(const StructureOutputBlockVector& rRhs)
 {
     J += rRhs.J;
     K += rRhs.K;
     return *this;
 }
 
-NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator -=(const StructureOutputBlockVector& rRhs)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator-=(const StructureOutputBlockVector& rRhs)
 {
     J -= rRhs.J;
     K -= rRhs.K;
     return *this;
 }
-NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator *=(double rRhs)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator*=(double rRhs)
 {
     J *= rRhs;
     K *= rRhs;
     return *this;
 }
 
-NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator /=(double rRhs)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator/=(double rRhs)
 {
     J /= rRhs;
     K /= rRhs;
@@ -119,7 +119,7 @@ NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator /=(
 
 namespace NuTo
 {
-std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)
+std::ostream& operator<<(std::ostream& rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)
 {
     rOut << "Active Dofs" << std::endl;
     rOut << rStructureOutputBlockVector.J << std::endl;
@@ -127,7 +127,7 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVec
     rOut << rStructureOutputBlockVector.K << std::endl;
     return rOut;
 }
-}  // namespace NuTo
+} // namespace NuTo
 
 void NuTo::StructureOutputBlockVector::SetZero()
 {

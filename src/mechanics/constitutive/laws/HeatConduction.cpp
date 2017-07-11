@@ -1,12 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
@@ -23,7 +14,8 @@
 
 using namespace NuTo;
 
-HeatConduction::HeatConduction() : ConstitutiveBase()
+HeatConduction::HeatConduction()
+    : ConstitutiveBase()
 {
     mK = 0.0;
     mCt = 0.0;
@@ -31,23 +23,8 @@ HeatConduction::HeatConduction() : ConstitutiveBase()
     SetParametersValid();
 }
 
-#ifdef ENABLE_SERIALIZATION
-template <class Archive> void HeatConduction::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize HeatConduction" << std::endl;
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase) & BOOST_SERIALIZATION_NVP(mK) &
-            BOOST_SERIALIZATION_NVP(mCt) & BOOST_SERIALIZATION_NVP(mRho);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize HeatConduction" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(HeatConduction)
-#endif // ENABLE_SERIALIZATION
-
-ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(
-        const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType&) const
+ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                           const InterpolationType&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -85,14 +62,17 @@ ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(
 
 bool HeatConduction::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
 {
-    if (timeDerivative == 2) return false;
-    else if (dofRow == Node::eDof::TEMPERATURE and dofCol == Node::eDof::TEMPERATURE) return true;
-    else return false;
+    if (timeDerivative == 2)
+        return false;
+    else if (dofRow == Node::eDof::TEMPERATURE and dofCol == Node::eDof::TEMPERATURE)
+        return true;
+    else
+        return false;
 }
 
 template <int TDim>
-void HeatConduction::Evaluate(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+void HeatConduction::Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                              const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
 
@@ -246,9 +226,9 @@ void HeatConduction::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mRho);
 }
 
-template void HeatConduction::Evaluate<1>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void HeatConduction::Evaluate<2>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
-template void HeatConduction::Evaluate<3>(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);
+template void HeatConduction::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                          const ConstitutiveOutputMap& rConstitutiveOutput);

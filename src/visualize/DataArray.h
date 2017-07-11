@@ -13,7 +13,7 @@ class DataArray
 public:
     //! @param name ... "name" attribute
     //! @param numComponents  ... "NumberOfComponents" attribute
-    //! @param data ... data as a xvalue. You'll have to std::move() the data in here. 
+    //! @param data ... data as a xvalue. You'll have to std::move() the data in here.
     DataArray(std::string name, int numComponents, std::vector<TDataType>&& data);
 
     //! @return matching vtk type string to <typename TDataType>

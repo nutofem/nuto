@@ -1,25 +1,19 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/export.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <random>
 #include <eigen3/Eigen/Core>
 #include "math/MathException.h"
 
 namespace NuTo
 {
-template<class T> class SparseMatrixCSRGeneral;
-template<class T> class SparseMatrixCSRSymmetric;
-template<class T> class SparseMatrixCSRVector2General;
-template<class T> class SparseMatrixCSRVector2Symmetric;
+template <class T>
+class SparseMatrixCSRGeneral;
+template <class T>
+class SparseMatrixCSRSymmetric;
+template <class T>
+class SparseMatrixCSRVector2General;
+template <class T>
+class SparseMatrixCSRVector2Symmetric;
 
 enum class eSparseMatrixType;
 
@@ -29,23 +23,20 @@ enum class eSparseMatrixType;
 template <class T>
 class SparseMatrix
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief ... constructor
     SparseMatrix()
     {
-        this->mOneBasedIndexing=false;
-        this->mPositiveDefinite=false;
+        this->mOneBasedIndexing = false;
+        this->mPositiveDefinite = false;
         mVerboseLevel = 0;
     }
 
     SparseMatrix(const SparseMatrix<T>& rOther)
     {
-        this->mOneBasedIndexing=rOther.mOneBasedIndexing;
-        this->mPositiveDefinite=rOther.mPositiveDefinite;
+        this->mOneBasedIndexing = rOther.mOneBasedIndexing;
+        this->mPositiveDefinite = rOther.mPositiveDefinite;
     }
 
     virtual void Info() const {};
@@ -69,10 +60,11 @@ public:
     //! @param  rCol ... number of columns
     virtual void Resize(int rRow, int rCol) = 0;
 
-    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
+    //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting
+    //! for stiffness matrices to use the same matrix structure
     virtual void SetZeroEntries() = 0;
 
-	//! @brief ... add nonzero entry to matrix
+    //! @brief ... add nonzero entry to matrix
     //! @param row ... row of the nonzero entry (zero based indexing!!!)
     //! @param column ... column of the nonzero entry (zero based indexing!!!)
     //! @param value ... value of the nonzero entry
@@ -95,7 +87,7 @@ public:
     //! @return false if one based indexing / true if zero based indexing
     inline bool HasZeroBasedIndexing() const
     {
-        return ! this->mOneBasedIndexing;
+        return !this->mOneBasedIndexing;
     }
 
     //! @brief ... get definiteness of matrix
@@ -118,114 +110,105 @@ public:
     }
 
     //! @brief ... return the matrix type
-    virtual NuTo::eSparseMatrixType GetSparseMatrixType()const=0;
+    virtual NuTo::eSparseMatrixType GetSparseMatrixType() const = 0;
 
     //! @brief ... symmetry of the matrix
     //! @return ... true if the matrix is symmetric, false otherwise
     virtual bool IsSymmetric() const = 0;
 
-    //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
+    //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a
+    //! prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
-    //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
+    //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry
+    //! (absolute values))
     virtual int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) = 0;
 
     //! @brief ... returns true if the matrix allows parallel assembly using openmp with maximum independent sets
-    //! this is essentially true, if adding a value to a specific row does not change the storage position of values in other rows
+    //! this is essentially true, if adding a value to a specific row does not change the storage position of values in
+    //! other rows
     //! until now, this is only true for SparseMatrixCSRVector2
-    virtual bool AllowParallelAssemblyUsingMaximumIndependentSets()const
+    virtual bool AllowParallelAssemblyUsingMaximumIndependentSets() const
     {
-    	return false;
+        return false;
     }
 
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
+    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
+    operator*(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const = 0;
 
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-	virtual NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix)
-	{
-    	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not implemented for this matrix type.");
-	}
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>& rMatrix)
+    {
+        throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
+                            "implemented for this matrix type.");
+    }
 
-	//! @brief ... add sparse matrix
+    //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-	virtual NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix)
-	{
-    	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] not implemented for this matrix type.");
-	}
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>& rMatrix)
+    {
+        throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
+                            "not implemented for this matrix type.");
+    }
 
-    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const = 0;
+    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertToFullMatrix() const = 0;
 
     virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
     {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
+        throw MathException(
+                "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
     }
 
     virtual SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
+        throw MathException(
+                "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
     }
 
     virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+                            "SparseMatrixCSRVector2General.");
     }
 
     virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+                            "SparseMatrixCSRVector2Symmetric.");
     }
 
 #ifndef SWIG
 
-    virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const
+    virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral() const
     {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
+        throw MathException(
+                "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
     }
 
-    virtual const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const
+    virtual const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric() const
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
+        throw MathException(
+                "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
     }
 
-    virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const
+    virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General() const
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+                            "SparseMatrixCSRVector2General.");
     }
 
-    virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const
+    virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric() const
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+                            "SparseMatrixCSRVector2Symmetric.");
     }
 #endif // SWIG
 
-
-
-
-
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of SparseMatrix" << std::endl;
-#endif
-        ar & boost::serialization::make_nvp("Matrix",boost::serialization::base_object< Matrix<T> >(*this));
-        ar & BOOST_SERIALIZATION_NVP(mOneBasedIndexing)
-           & BOOST_SERIALIZATION_NVP(mPositiveDefinite);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of SparseMatrix" << std::endl;
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
 
     //! @brief Calculate the largest matrix entry
     //! @param rResultOutput ... largest matrix entry
@@ -261,7 +244,7 @@ public:
         int row, col;
 
         MaxEntry(rRow, rCol, max);
-        MinEntry( row,  col, min);
+        MinEntry(row, col, min);
 
         if (std::abs(max) > std::abs(min))
         {
@@ -304,7 +287,7 @@ protected:
         std::uniform_int_distribution<int> row_distribution(0, rMatrix.GetNumRows() - 1);
         std::uniform_int_distribution<int> col_distribution(0, rMatrix.GetNumColumns() - 1);
 
-        int numValues = (int) (rDensity * rMatrix.GetNumRows() * rMatrix.GetNumColumns());
+        int numValues = (int)(rDensity * rMatrix.GetNumRows() * rMatrix.GetNumColumns());
 
         for (int i = 0; i < numValues; ++i)
         {
@@ -314,9 +297,5 @@ protected:
             rMatrix.AddValue(row, col, val);
         }
     }
-
-
 };
-
-
 }

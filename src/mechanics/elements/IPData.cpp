@@ -9,8 +9,9 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 
 NuTo::IPData::IPData(const IntegrationTypeBase& rIntegrationType)
-: mIntegrationType(&rIntegrationType)
-{}
+    : mIntegrationType(&rIntegrationType)
+{
+}
 
 void NuTo::IPData::SetConstitutiveLaw(NuTo::ConstitutiveBase& rLaw)
 {
@@ -33,7 +34,8 @@ NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutiveLaw(in
 {
     if (HasConstitutiveLawAssigned(rIP))
         return mLaws[rIP];
-    throw MechanicsException(__PRETTY_FUNCTION__, "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
+    throw MechanicsException(__PRETTY_FUNCTION__,
+                             "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
 }
 
 
@@ -41,7 +43,8 @@ const NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutive
 {
     if (HasConstitutiveLawAssigned(rIP))
         return mLaws[rIP];
-    throw MechanicsException(__PRETTY_FUNCTION__, "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
+    throw MechanicsException(__PRETTY_FUNCTION__,
+                             "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
 }
 
 
@@ -49,7 +52,7 @@ bool NuTo::IPData::HasConstitutiveLawAssigned(int rIP) const
 {
     if (rIP >= mIntegrationType->GetNumIntegrationPoints())
         throw MechanicsException(__PRETTY_FUNCTION__,
-                "The current integration type does not have that many integrationpoints.");
+                                 "The current integration type does not have that many integrationpoints.");
     return !mLaws.empty();
 }
 

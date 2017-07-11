@@ -36,7 +36,6 @@ public:
     static Eigen::Vector3d To3D(const Eigen::VectorXd& data);
 
 private:
-
     //! @brief converts a string, seperated by rDelimiter, to a vector of doubles
     //! @param rString string to convert
     //! @param rDelimiter delimiters between the entries in each line

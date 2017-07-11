@@ -3,29 +3,33 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
-                                     const Eigen::VectorXd &rKnotsX,
-                                     const Eigen::VectorXd &rKnotsY,
-                                     const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
-                                     const Eigen::MatrixXd &rWeights)
+NuTo::BSplineSurface::BSplineSurface(
+        const Eigen::Vector2i& rDegree, const Eigen::VectorXd& rKnotsX, const Eigen::VectorXd& rKnotsY,
+        const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& rControlPoints,
+        const Eigen::MatrixXd& rWeights)
 
-    : mKnotsX(rKnotsX), mKnotsY(rKnotsY), mDegree(rDegree), mWeights(rWeights), mControlPoints(rControlPoints)
-{}
+    : mKnotsX(rKnotsX)
+    , mKnotsY(rKnotsY)
+    , mDegree(rDegree)
+    , mWeights(rWeights)
+    , mControlPoints(rControlPoints)
+{
+}
 
-NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
-                                     const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
-                                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv)
+NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i& rDegree,
+                                     const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
+                                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& AInv)
 
     : mDegree(rDegree)
 {
-// TODO
+    // TODO
 }
 
 void NuTo::BSplineSurface::ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints,
                                                             Eigen::VectorXd& rParametersX,
                                                             Eigen::VectorXd& rParametersY)
 {
-// TODO
+    // TODO
 }
 
 int NuTo::BSplineSurface::GetNumControlPoints(int dir) const
@@ -36,7 +40,7 @@ int NuTo::BSplineSurface::GetNumControlPoints(int dir) const
 
 int NuTo::BSplineSurface::GetNumControlPoints() const
 {
-    return mControlPoints.rows()*mControlPoints.cols();
+    return mControlPoints.rows() * mControlPoints.cols();
 }
 
 Eigen::VectorXd NuTo::BSplineSurface::GetControlPoint(int rControlPointIDY, int rControlPointIDX) const
@@ -64,14 +68,15 @@ int NuTo::BSplineSurface::GetElementFirstKnotID(int rElementIDinDir, int dir) co
     int elementID = 0;
     int knotID = -1;
 
-    const Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    const Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
 
-    for(int i = 1; i < knots.rows(); i++)
+    for (int i = 1; i < knots.rows(); i++)
     {
-        if (knots(i-1) < knots(i)) elementID++;
-        if (rElementIDinDir == elementID-1)
+        if (knots(i - 1) < knots(i))
+            elementID++;
+        if (rElementIDinDir == elementID - 1)
         {
-            knotID = i-1;
+            knotID = i - 1;
             break;
         }
     }
@@ -85,9 +90,8 @@ Eigen::MatrixXd NuTo::BSplineSurface::GetElementKnots(int rElementIDX, int rElem
 {
     int knotIDX = GetElementFirstKnotID(rElementIDX, 0);
     int knotIDY = GetElementFirstKnotID(rElementIDY, 1);
-    Eigen::MatrixXd knots(2,2);
-    knots << mKnotsX(knotIDX) , mKnotsX(knotIDX+1),
-             mKnotsY(knotIDY) , mKnotsY(knotIDY+1);
+    Eigen::MatrixXd knots(2, 2);
+    knots << mKnotsX(knotIDX), mKnotsX(knotIDX + 1), mKnotsY(knotIDY), mKnotsY(knotIDY + 1);
 
     return knots;
 }
@@ -104,13 +108,15 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementKnotIDs(int rElementIDX, int rEl
 
 int NuTo::BSplineSurface::GetMultiplicityOfKnot(double rKnot, int dir) const
 {
-    const Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    const Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
     int spanIdx = ShapeFunctionsIGA::FindSpan(rKnot, mDegree(dir), knots);
 
     int count = 0;
-    for(int i = spanIdx; i > 0; i--)
-        if(knots(i) == rKnot) count++;
-        else                  break;
+    for (int i = spanIdx; i > 0; i--)
+        if (knots(i) == rKnot)
+            count++;
+        else
+            break;
 
     return count;
 }
@@ -118,13 +124,14 @@ int NuTo::BSplineSurface::GetMultiplicityOfKnot(double rKnot, int dir) const
 int NuTo::BSplineSurface::GetNumIGAElements(int dir) const
 {
     assert(dir == 0 || dir == 1);
-    const Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    const Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
 
     int numElements = 0;
 
-    for(int i = 1; i < knots.rows(); i++)
+    for (int i = 1; i < knots.rows(); i++)
     {
-        if(knots(i-1) < knots(i)) numElements++;
+        if (knots(i - 1) < knots(i))
+            numElements++;
     }
 
     return numElements;
@@ -132,25 +139,25 @@ int NuTo::BSplineSurface::GetNumIGAElements(int dir) const
 
 int NuTo::BSplineSurface::GetNumIGAElements() const
 {
-    return GetNumIGAElements(0)*GetNumIGAElements(1);
+    return GetNumIGAElements(0) * GetNumIGAElements(1);
 }
 
 
 Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDs(int rElementIDX, int rElementIDY) const
 {
-    Eigen::VectorXi ids((mDegree(0)+1)*(mDegree(1)+1));
+    Eigen::VectorXi ids((mDegree(0) + 1) * (mDegree(1) + 1));
 
     int knotIDX = GetElementFirstKnotID(rElementIDX, 0);
     int knotIDY = GetElementFirstKnotID(rElementIDY, 1);
 
     int count = 0;
-    for(int i = 0; i <= mDegree(1); i++)
+    for (int i = 0; i <= mDegree(1); i++)
     {
         int idy = knotIDY - mDegree(1) + i;
-        for(int j = 0; j <= mDegree(0); j++)
+        for (int j = 0; j <= mDegree(0); j++)
         {
             int idx = knotIDX - mDegree(0) + j;
-            ids(count) = idy*GetNumControlPoints(0) + idx;
+            ids(count) = idy * GetNumControlPoints(0) + idx;
             count++;
         }
     }
@@ -158,18 +165,19 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDs(int rElementIDX,
     return ids;
 }
 
-Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY, const Eigen::MatrixXi &rNodeIDs) const
+Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY,
+                                                                      const Eigen::MatrixXi& rNodeIDs) const
 {
-    Eigen::VectorXi ids((mDegree(0)+1)*(mDegree(1)+1));
+    Eigen::VectorXi ids((mDegree(0) + 1) * (mDegree(1) + 1));
 
     int knotIDX = GetElementFirstKnotID(rElementIDX, 0);
     int knotIDY = GetElementFirstKnotID(rElementIDY, 1);
 
     int count = 0;
-    for(int i = 0; i <= mDegree(1); i++)
+    for (int i = 0; i <= mDegree(1); i++)
     {
         int idy = knotIDY - mDegree(1) + i;
-        for(int j = 0; j <= mDegree(0); j++)
+        for (int j = 0; j <= mDegree(0); j++)
         {
             int idx = knotIDX - mDegree(0) + j;
             ids(count) = rNodeIDs(idy, idx);
@@ -180,15 +188,15 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDsGlobal(int rEleme
     return ids;
 }
 
-Eigen::MatrixXd NuTo::BSplineSurface::GetKnotIDControlPoints(const Eigen::Vector2i &rKnotIDs) const
+Eigen::MatrixXd NuTo::BSplineSurface::GetKnotIDControlPoints(const Eigen::Vector2i& rKnotIDs) const
 {
-    Eigen::MatrixXd coords((mDegree(0)+1)*(mDegree(1)+1), GetDimension());
+    Eigen::MatrixXd coords((mDegree(0) + 1) * (mDegree(1) + 1), GetDimension());
 
     int count = 0;
-    for(int i = 0; i <= mDegree(1); i++)
+    for (int i = 0; i <= mDegree(1); i++)
     {
         int idy = rKnotIDs(1) - mDegree(1) + i;
-        for(int j = 0; j <= mDegree(0); j++)
+        for (int j = 0; j <= mDegree(0); j++)
         {
             int idx = rKnotIDs(0) - mDegree(0) + j;
             coords.row(count) = mControlPoints(idy, idx);
@@ -199,30 +207,32 @@ Eigen::MatrixXd NuTo::BSplineSurface::GetKnotIDControlPoints(const Eigen::Vector
     return coords;
 }
 
-Eigen::VectorXd NuTo::BSplineSurface::SurfacePoint(const Eigen::Vector2d &rParameter) const
+Eigen::VectorXd NuTo::BSplineSurface::SurfacePoint(const Eigen::Vector2d& rParameter) const
 {
     Eigen::Vector2i span;
     span(0) = ShapeFunctionsIGA::FindSpan(rParameter(0), mDegree(0), mKnotsX);
     span(1) = ShapeFunctionsIGA::FindSpan(rParameter(1), mDegree(1), mKnotsY);
 
-    Eigen::VectorXd basisFunctions = ShapeFunctionsIGA::BasisFunctions2DRat(rParameter, span, mDegree, mKnotsX, mKnotsY, mWeights);
+    Eigen::VectorXd basisFunctions =
+            ShapeFunctionsIGA::BasisFunctions2DRat(rParameter, span, mDegree, mKnotsX, mKnotsY, mWeights);
 
     Eigen::VectorXd coordinates(GetDimension());
 
     Eigen::MatrixXd cpCoords = GetKnotIDControlPoints(span);
 
-    for(int i = 0; i < GetDimension(); i++) coordinates(i) = basisFunctions.dot(cpCoords.col(i));
+    for (int i = 0; i < GetDimension(); i++)
+        coordinates(i) = basisFunctions.dot(cpCoords.col(i));
 
     return coordinates;
 }
 
-Eigen::MatrixXd NuTo::BSplineSurface::SurfacePoints(const Eigen::MatrixXd &rParameter) const
+Eigen::MatrixXd NuTo::BSplineSurface::SurfacePoints(const Eigen::MatrixXd& rParameter) const
 {
     assert(rParameter.cols() == 2);
 
     Eigen::MatrixXd coordinates(rParameter.rows(), GetDimension());
 
-    for(int i = 0; i < rParameter.rows(); i++)
+    for (int i = 0; i < rParameter.rows(); i++)
     {
         coordinates.row(i) = SurfacePoint(rParameter.row(i));
     }
@@ -234,7 +244,7 @@ void NuTo::BSplineSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, i
 {
     assert(dir == 0 || dir == 1);
 
-    Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
 
     int k = ShapeFunctionsIGA::FindSpan(rKnotToInsert, mDegree(dir), knots);
     int initialMultiplicity = GetMultiplicityOfKnot(rKnotToInsert, dir);
@@ -245,41 +255,51 @@ void NuTo::BSplineSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, i
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots(dir) + rMultiplicity);
 
-    for(int i = 0 ; i <= k; i++)                  newKnots(i) = knots(i);
-    for(int i = 1 ; i <= rMultiplicity; i++)      newKnots(k + i) = rKnotToInsert;
-    for(int i = k + 1; i < GetNumKnots(dir); i++) newKnots(rMultiplicity + i) = knots(i);
+    for (int i = 0; i <= k; i++)
+        newKnots(i) = knots(i);
+    for (int i = 1; i <= rMultiplicity; i++)
+        newKnots(k + i) = rKnotToInsert;
+    for (int i = k + 1; i < GetNumKnots(dir); i++)
+        newKnots(rMultiplicity + i) = knots(i);
 
     Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> newControlPoints;
-    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> Rw(mDegree(dir)+1, 1);
-    Eigen::MatrixXd alpha(mDegree(dir) - initialMultiplicity, rMultiplicity+1);
+    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> Rw(mDegree(dir) + 1, 1);
+    Eigen::MatrixXd alpha(mDegree(dir) - initialMultiplicity, rMultiplicity + 1);
 
-    if(dir == 0)
+    if (dir == 0)
     {
         // new control points
         newControlPoints.resize(GetNumControlPoints(1), GetNumControlPoints(dir) + rMultiplicity);
 
         int L = 0;
-        for(int j = 1; j <= rMultiplicity; j++)
+        for (int j = 1; j <= rMultiplicity; j++)
         {
             L = k - mDegree(dir) + j;
-            for(int i = 0; i <= mDegree(dir) - j - initialMultiplicity; i++) alpha(i,j) = (rKnotToInsert - knots(L+i))/(knots(i+k+1) - knots(L+i));
+            for (int i = 0; i <= mDegree(dir) - j - initialMultiplicity; i++)
+                alpha(i, j) = (rKnotToInsert - knots(L + i)) / (knots(i + k + 1) - knots(L + i));
         }
 
-        for(int row = 0;  row < GetNumControlPoints(1); row++)
+        for (int row = 0; row < GetNumControlPoints(1); row++)
         {
-            for(int i = 0; i <= k - mDegree(dir); i++) newControlPoints(row, i) = mControlPoints(row, i);
-            for(int i = k - initialMultiplicity; i < GetNumControlPoints(dir); i++) newControlPoints(row, i + rMultiplicity) = mControlPoints(row, i);
-            for(int i = 0; i <= mDegree(dir) - initialMultiplicity; i++) Rw(i) = mControlPoints(row, k - mDegree(dir) + i);
+            for (int i = 0; i <= k - mDegree(dir); i++)
+                newControlPoints(row, i) = mControlPoints(row, i);
+            for (int i = k - initialMultiplicity; i < GetNumControlPoints(dir); i++)
+                newControlPoints(row, i + rMultiplicity) = mControlPoints(row, i);
+            for (int i = 0; i <= mDegree(dir) - initialMultiplicity; i++)
+                Rw(i) = mControlPoints(row, k - mDegree(dir) + i);
 
-            for(int j = 1; j <= rMultiplicity; j++)
+            for (int j = 1; j <= rMultiplicity; j++)
             {
                 L = k - mDegree(dir) + j;
-                for(int i = 0; i <= mDegree(dir) - j - initialMultiplicity; i++) Rw(i) = alpha(i,j)*Rw(i+1) + (1.0 - alpha(i,j))*Rw(i);
+                for (int i = 0; i <= mDegree(dir) - j - initialMultiplicity; i++)
+                    Rw(i) = alpha(i, j) * Rw(i + 1) + (1.0 - alpha(i, j)) * Rw(i);
                 newControlPoints(row, L) = Rw(0);
-                newControlPoints(row, k + rMultiplicity - j - initialMultiplicity) = Rw(mDegree(dir) - j - initialMultiplicity);
+                newControlPoints(row, k + rMultiplicity - j - initialMultiplicity) =
+                        Rw(mDegree(dir) - j - initialMultiplicity);
             }
 
-            for(int i = L + 1; i < k - initialMultiplicity; i++) newControlPoints(row, i) = Rw(i-L);
+            for (int i = L + 1; i < k - initialMultiplicity; i++)
+                newControlPoints(row, i) = Rw(i - L);
         }
     }
 
@@ -287,31 +307,32 @@ void NuTo::BSplineSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, i
     mControlPoints = newControlPoints;
 }
 
-void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, int dir)
+void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd& rKnotsToInsert, int dir)
 {
     // TODO: find a bug!
 
     assert(dir == 0 || dir == 1);
 
-    Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
 
     int numInsert = rKnotsToInsert.rows();
-    int begin     = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(0),           mDegree(dir), knots);
-    int end       = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(numInsert-1), mDegree(dir), knots);
+    int begin = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(0), mDegree(dir), knots);
+    int end = ShapeFunctionsIGA::FindSpan(rKnotsToInsert(numInsert - 1), mDegree(dir), knots);
     end++;
 
     int dimension = GetDimension();
-    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> controlPointsProjected(mControlPoints.rows(), mControlPoints.cols());
+    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> controlPointsProjected(mControlPoints.rows(),
+                                                                                          mControlPoints.cols());
 
     Eigen::VectorXd temp(dimension + 1);
-    for(int i = 0; i < mControlPoints.rows(); i++)
+    for (int i = 0; i < mControlPoints.rows(); i++)
     {
-        for(int j = 0; j < mControlPoints.cols(); j++)
+        for (int j = 0; j < mControlPoints.cols(); j++)
         {
-            temp.block(0,0,dimension,1) = mControlPoints(i,j);
-            temp *= mWeights(i,j);
-            temp(dimension) = mWeights(i,j);
-            controlPointsProjected(i,j) = temp;
+            temp.block(0, 0, dimension, 1) = mControlPoints(i, j);
+            temp *= mWeights(i, j);
+            temp(dimension) = mWeights(i, j);
+            controlPointsProjected(i, j) = temp;
         }
     }
 
@@ -320,89 +341,103 @@ void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, in
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots(dir) + numInsert);
 
-    for(int i = 0 ; i <= begin; i++) newKnots(i) = knots(i);
-    for(int i = end + mDegree(dir); i < GetNumKnots(dir); i++) newKnots(numInsert + i) = knots(i);
+    for (int i = 0; i <= begin; i++)
+        newKnots(i) = knots(i);
+    for (int i = end + mDegree(dir); i < GetNumKnots(dir); i++)
+        newKnots(numInsert + i) = knots(i);
 
-    if( dir == 0)
+    if (dir == 0)
     {
         // new control points
         newControlPoints.resize(GetNumControlPoints(1), GetNumControlPoints(dir) + numInsert);
 
-        for(int row = 0; row < GetNumControlPoints(1); row++)
+        for (int row = 0; row < GetNumControlPoints(1); row++)
         {
-            for(int j = 0; j <= begin-mDegree(dir); j++)            newControlPoints(row, j) = controlPointsProjected(row, j);
-            for(int j = end - 1; j < GetNumControlPoints(dir); j++) newControlPoints(row, j + numInsert) = controlPointsProjected(row, j);
+            for (int j = 0; j <= begin - mDegree(dir); j++)
+                newControlPoints(row, j) = controlPointsProjected(row, j);
+            for (int j = end - 1; j < GetNumControlPoints(dir); j++)
+                newControlPoints(row, j + numInsert) = controlPointsProjected(row, j);
         }
 
         int i = end + mDegree(dir) - 1;
         int k = end + mDegree(dir) + numInsert - 1;
 
-        for(int j = numInsert - 1; j >= 0; j--)
+        for (int j = numInsert - 1; j >= 0; j--)
         {
-            while(rKnotsToInsert(j) <= knots(i) && i > begin)
+            while (rKnotsToInsert(j) <= knots(i) && i > begin)
             {
                 newKnots(k) = knots(i);
-                for(int row = 0; row < GetNumControlPoints(1); row++) newControlPoints(row, k - mDegree(dir) - 1) = controlPointsProjected(row, i - mDegree(dir) - 1);
+                for (int row = 0; row < GetNumControlPoints(1); row++)
+                    newControlPoints(row, k - mDegree(dir) - 1) = controlPointsProjected(row, i - mDegree(dir) - 1);
                 k--;
                 i--;
             }
-            for(int row = 0; row < GetNumControlPoints(1); row++) newControlPoints(row, k - mDegree(dir) - 1) = newControlPoints(row, k - mDegree(dir));
-            for(int l = 1; l <= mDegree(dir); l++)
+            for (int row = 0; row < GetNumControlPoints(1); row++)
+                newControlPoints(row, k - mDegree(dir) - 1) = newControlPoints(row, k - mDegree(dir));
+            for (int l = 1; l <= mDegree(dir); l++)
             {
                 int ind = k - mDegree(dir) + l;
                 double alpha = newKnots(k + l) - rKnotsToInsert(j);
-                if(std::fabs(alpha) == 0.0)
+                if (std::fabs(alpha) == 0.0)
                 {
-                    for(int row = 0; row < GetNumControlPoints(1); row++) newControlPoints(row, ind - 1) = newControlPoints(row, ind);
+                    for (int row = 0; row < GetNumControlPoints(1); row++)
+                        newControlPoints(row, ind - 1) = newControlPoints(row, ind);
                 }
                 else
                 {
                     alpha /= (newKnots(k + l) - knots(i - mDegree(dir) + l));
-                    for(int row = 0; row < GetNumControlPoints(1); row++)
-                        newControlPoints(row, ind - 1) = alpha*newControlPoints(row, ind - 1) + (1.0 - alpha)*newControlPoints(row, ind);
+                    for (int row = 0; row < GetNumControlPoints(1); row++)
+                        newControlPoints(row, ind - 1) =
+                                alpha * newControlPoints(row, ind - 1) + (1.0 - alpha) * newControlPoints(row, ind);
                 }
             }
             newKnots(k) = rKnotsToInsert(j);
             k--;
         }
     }
-    if( dir == 1)
+    if (dir == 1)
     {
         // new control points
         newControlPoints.resize(GetNumControlPoints(1) + numInsert, GetNumControlPoints(0));
 
-        for(int col = 0; col < GetNumControlPoints(0); col++)
+        for (int col = 0; col < GetNumControlPoints(0); col++)
         {
-            for(int j = 0; j <= begin-mDegree(dir); j++)            newControlPoints(j, col) = controlPointsProjected(j, col);
-            for(int j = end - 1; j < GetNumControlPoints(dir); j++) newControlPoints(j + numInsert, col) = controlPointsProjected(j, col);
+            for (int j = 0; j <= begin - mDegree(dir); j++)
+                newControlPoints(j, col) = controlPointsProjected(j, col);
+            for (int j = end - 1; j < GetNumControlPoints(dir); j++)
+                newControlPoints(j + numInsert, col) = controlPointsProjected(j, col);
         }
 
         int i = end + mDegree(dir) - 1;
         int k = end + mDegree(dir) + numInsert - 1;
 
-        for(int j = numInsert - 1; j >= 0; j--)
+        for (int j = numInsert - 1; j >= 0; j--)
         {
-            while(rKnotsToInsert(j) <= knots(i) && i > begin)
+            while (rKnotsToInsert(j) <= knots(i) && i > begin)
             {
                 newKnots(k) = knots(i);
-                for(int col = 0; col < GetNumControlPoints(0); col++) newControlPoints(k - mDegree(dir) - 1, col) = controlPointsProjected(i - mDegree(dir) - 1, col);
-                k = k-1;
-                i = i-1;
+                for (int col = 0; col < GetNumControlPoints(0); col++)
+                    newControlPoints(k - mDegree(dir) - 1, col) = controlPointsProjected(i - mDegree(dir) - 1, col);
+                k = k - 1;
+                i = i - 1;
             }
-            for(int col = 0; col < GetNumControlPoints(0); col++) newControlPoints(k - mDegree(dir) - 1, col) = newControlPoints(k - mDegree(dir), col);
-            for(int l = 1; l <= mDegree(dir); l++)
+            for (int col = 0; col < GetNumControlPoints(0); col++)
+                newControlPoints(k - mDegree(dir) - 1, col) = newControlPoints(k - mDegree(dir), col);
+            for (int l = 1; l <= mDegree(dir); l++)
             {
                 int ind = k - mDegree(dir) + l;
-                double alpha = newKnots(k+l) - rKnotsToInsert(j);
-                if(std::fabs(alpha) == 0.0)
+                double alpha = newKnots(k + l) - rKnotsToInsert(j);
+                if (std::fabs(alpha) == 0.0)
                 {
-                    for(int col = 0; col < GetNumControlPoints(0); col++) newControlPoints(ind - 1, col) = newControlPoints(ind, col);
+                    for (int col = 0; col < GetNumControlPoints(0); col++)
+                        newControlPoints(ind - 1, col) = newControlPoints(ind, col);
                 }
                 else
                 {
                     alpha /= (newKnots(k + l) - knots(i - mDegree(dir) + l));
-                    for(int col = 0; col < GetNumControlPoints(0); col++)
-                        newControlPoints(ind - 1, col) = alpha*newControlPoints(ind - 1, col) + (1.0 - alpha)*newControlPoints(ind, col);
+                    for (int col = 0; col < GetNumControlPoints(0); col++)
+                        newControlPoints(ind - 1, col) =
+                                alpha * newControlPoints(ind - 1, col) + (1.0 - alpha) * newControlPoints(ind, col);
                 }
             }
             newKnots(k) = rKnotsToInsert(j);
@@ -414,43 +449,43 @@ void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, in
     mControlPoints.resize(newControlPoints.rows(), newControlPoints.cols());
     mWeights.resize(newControlPoints.rows(), newControlPoints.cols());
     temp(dimension);
-    for(int i = 0; i < newControlPoints.rows(); i++)
+    for (int i = 0; i < newControlPoints.rows(); i++)
     {
-        for(int j = 0; j < newControlPoints.cols(); j++)
+        for (int j = 0; j < newControlPoints.cols(); j++)
         {
-            temp = newControlPoints(i,j).block(0,0,dimension,1);
-            temp /= newControlPoints(i,j)(dimension);
-            mControlPoints(i,j) = temp;
-            mWeights(i,j) = newControlPoints(i,j)(dimension);
+            temp = newControlPoints(i, j).block(0, 0, dimension, 1);
+            temp /= newControlPoints(i, j)(dimension);
+            mControlPoints(i, j) = temp;
+            mWeights(i, j) = newControlPoints(i, j)(dimension);
         }
     }
-
 }
 
 void NuTo::BSplineSurface::DuplicateKnots(int dir)
 {
     assert(dir == 0 || dir == 1);
 
-    Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
+    Eigen::VectorXd& knots = (dir == 0) ? mKnotsX : mKnotsY;
 
     Eigen::VectorXd knotsToInsert(GetNumIGAElements(dir));
     for (int i = 0; i < knotsToInsert.rows(); i++)
     {
         int beginID = GetElementFirstKnotID(i, dir);
-        knotsToInsert(i) = (knots(beginID + 1) + knots(beginID))/2.;
+        knotsToInsert(i) = (knots(beginID + 1) + knots(beginID)) / 2.;
     }
     RefineKnots(knotsToInsert, dir);
 }
 
-void NuTo::BSplineSurface::buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes)
+void NuTo::BSplineSurface::buildIGAStructure(NuTo::Structure& rStructure, const std::set<NuTo::Node::eDof>& rSetOfDOFS,
+                                             int rGroupElements, int rGroupNodes)
 {
     assert(rStructure.GetDimension() == 2);
 
     Eigen::MatrixXi nodeIDs(GetNumControlPoints(1), GetNumControlPoints(0));
 
     // create dofs
-    for(int i = 0; i < GetNumControlPoints(1); i++)
-        for(int j = 0; j < GetNumControlPoints(0); j++)
+    for (int i = 0; i < GetNumControlPoints(1); i++)
+        for (int j = 0; j < GetNumControlPoints(0); j++)
         {
             int id = rStructure.NodeCreateDOFs(rSetOfDOFS, GetControlPoint(i, j));
             nodeIDs(i, j) = id;
@@ -461,16 +496,19 @@ void NuTo::BSplineSurface::buildIGAStructure(NuTo::Structure &rStructure, const 
     std::vector<Eigen::VectorXd> vecKnots;
     vecKnots.push_back(GetKnotVector(0));
     vecKnots.push_back(GetKnotVector(1));
-    for(auto &it : rSetOfDOFS) rStructure.InterpolationTypeAdd(rNewInterpolation, it, NuTo::Interpolation::eTypeOrder::SPLINE, mDegree, vecKnots, mWeights);
+    for (auto& it : rSetOfDOFS)
+        rStructure.InterpolationTypeAdd(rNewInterpolation, it, NuTo::Interpolation::eTypeOrder::SPLINE, mDegree,
+                                        vecKnots, mWeights);
 
 
-    Eigen::VectorXi elementIncidence((mDegree(0) + 1)*(mDegree(1) + 1));
-    for(int elementY = 0; elementY < GetNumIGAElements(1); elementY++)
+    Eigen::VectorXi elementIncidence((mDegree(0) + 1) * (mDegree(1) + 1));
+    for (int elementY = 0; elementY < GetNumIGAElements(1); elementY++)
     {
-        for(int elementX = 0; elementX < GetNumIGAElements(0); elementX++)
+        for (int elementX = 0; elementX < GetNumIGAElements(0); elementX++)
         {
             elementIncidence = GetElementControlPointIDsGlobal(elementX, elementY, nodeIDs);
-            int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(elementX, elementY), GetElementKnotIDs(elementX, elementY));
+            int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(elementX, elementY),
+                                              GetElementKnotIDs(elementX, elementY));
             rStructure.GroupAddElement(rGroupElements, id);
         }
     }

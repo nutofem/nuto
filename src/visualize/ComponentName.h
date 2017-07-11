@@ -5,9 +5,9 @@
 
 namespace NuTo
 {
- 
+
 std::string GetComponentName(eVisualizeWhat component);
 
 eVisualizeWhat GetComponentEnum(std::string component);
 
-} /* NuTo */ 
+} /* NuTo */

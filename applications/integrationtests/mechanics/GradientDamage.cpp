@@ -28,13 +28,13 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
     using namespace NuTo::Constitutive;
     int lawId = rStructure.ConstitutiveLawCreate(eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::DENSITY, 1.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::POISSONS_RATIO, 0.2);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::NONLOCAL_RADIUS, 3);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4./30000., 4. / 0.021));
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::POISSONS_RATIO, 0.2);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::NONLOCAL_RADIUS, 3);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4. / 30000., 4. / 0.021));
     return lawId;
 }
 
@@ -79,7 +79,7 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
 
-    rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu");
+    rStructure.ExportVtkDataFileElements(resultDir + "/Elements.vtu");
 }
 
 void AddInterpolationType(NuTo::Structure& rS, int rITid)
@@ -100,7 +100,8 @@ int AddBoundaryElementsAtCoordinate(NuTo::Structure& rS, double rCoordinate)
     int gBoundaryElements = rS.BoundaryElementsCreate(elemGroupBoundary, gNodesBoundary);
     for (int boundaryElementId : rS.GroupGetMemberIds(gBoundaryElements))
     {
-        auto& boundaryElement = dynamic_cast<NuTo::ContinuumBoundaryElement<TDim>&>(*rS.ElementGetElementPtr(boundaryElementId));
+        auto& boundaryElement =
+                dynamic_cast<NuTo::ContinuumBoundaryElement<TDim>&>(*rS.ElementGetElementPtr(boundaryElementId));
         boundaryElement.SetAlpha(42.);
     }
 
@@ -150,7 +151,6 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
 }
 
 
-
 void TestStructure2D(NuTo::Interpolation::eShapeType rShape, bool isPlaneStrain, bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
@@ -178,7 +178,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, bool isPlaneStrain,
 
     if (rUseRobinBoundaryElements)
     {
-        AddBoundaryElements<2>(s, lX, 2*numElementsY);
+        AddBoundaryElements<2>(s, lX, 2 * numElementsY);
     }
     CheckStiffnesses(s);
     Visualize(s, NuTo::Interpolation::ShapeTypeToString(rShape));
@@ -195,7 +195,7 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
     double lX = 3, lY = 4, lZ = 5;
 
-    int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY, lZ}, {1,1,1}, rShape).second;
+    int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY, lZ}, {1, 1, 1}, rShape).second;
     AddInterpolationType(s, interpolationType);
 
     s.ElementTotalConvertToInterpolationType();
@@ -217,7 +217,7 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
 void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, NuTo::Group<NuTo::NodeBase>& nodes)
 {
-    for (int nodeId : nodes.GetMemberIds()) 
+    for (int nodeId : nodes.GetMemberIds())
     {
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         if (node->GetNum(NuTo::Node::eDof::DISPLACEMENTS) == 0)
@@ -241,6 +241,12 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, std::string rDir)
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
     rTimeIntegration.SetResultDirectory(resultDir, true);
+}
+
+void Info(const NuTo::TimeIntegrationBase& timeIntegration)
+{
+    std::cout << "Solve required " << timeIntegration.GetNumIterations() << " iterations. Result files written to "
+              << timeIntegration.GetResultDirectory() << ".\n";
 }
 
 void Check1D2D3D()
@@ -270,7 +276,8 @@ void Check1D2D3D()
 
     s1D.InterpolationTypeSetIntegrationType(interpolationType1D, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
     s2D.InterpolationTypeSetIntegrationType(interpolationType2D, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
-    s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
+    s3D.InterpolationTypeSetIntegrationType(interpolationType3D,
+                                            NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
 
     s1D.ElementTotalConvertToInterpolationType();
     s2D.ElementTotalConvertToInterpolationType();
@@ -280,7 +287,7 @@ void Check1D2D3D()
     s2D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s2D));
     s3D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s3D));
 
-    auto mySection1D = NuTo::SectionTruss::Create(lz*ly);
+    auto mySection1D = NuTo::SectionTruss::Create(lz * ly);
     auto mySection2D = NuTo::SectionPlane::Create(lz, false);
 
     s1D.ElementTotalSetSection(mySection1D);
@@ -291,17 +298,20 @@ void Check1D2D3D()
     {
         NuTo::ElementBase* element = s1D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
     {
         NuTo::ElementBase* element = s2D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
     {
         NuTo::ElementBase* element = s3D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
 
 
@@ -332,10 +342,12 @@ void Check1D2D3D()
     s3D.Constraints().Add(eDofDispl, Component(rightNodes3D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
 
     // additionally fix y for 2D/3D
-    s2D.Constraints().Add(eDofDispl, Component(s2D.NodeGetAtCoordinate(Eigen::Vector2d::Zero()), {NuTo::eDirection::Y}));
-    s3D.Constraints().Add(eDofDispl, Component(s3D.NodeGetAtCoordinate(Eigen::Vector3d::Zero()), {NuTo::eDirection::Y}));
+    s2D.Constraints().Add(eDofDispl,
+                          Component(s2D.NodeGetAtCoordinate(Eigen::Vector2d::Zero()), {NuTo::eDirection::Y}));
+    s3D.Constraints().Add(eDofDispl,
+                          Component(s3D.NodeGetAtCoordinate(Eigen::Vector3d::Zero()), {NuTo::eDirection::Y}));
 
-    const auto& nFixRotation = s3D.NodeGetAtCoordinate(Eigen::Vector3d({0,0,lz}));
+    const auto& nFixRotation = s3D.NodeGetAtCoordinate(Eigen::Vector3d({0, 0, lz}));
     s3D.Constraints().Add(eDofDispl, Component(nFixRotation, {NuTo::eDirection::Y}));
 
     Visualize(s1D, "tmp");
@@ -366,17 +378,17 @@ void Check1D2D3D()
 
     for (int i = 0; i < numElements; ++i)
     {
-        double stress1D = s1D.ElementGetEngineeringStress(i)(0,0);
-        double stress2D = s2D.ElementGetEngineeringStress(i)(0,0);
-        double stress3D = s3D.ElementGetEngineeringStress(i)(0,0);
+        double stress1D = s1D.ElementGetEngineeringStress(i)(0, 0);
+        double stress2D = s2D.ElementGetEngineeringStress(i)(0, 0);
+        double stress3D = s3D.ElementGetEngineeringStress(i)(0, 0);
 
-        double strain1D = s1D.ElementGetEngineeringStrain(i)(0,0);
-        double strain2D = s2D.ElementGetEngineeringStrain(i)(0,0);
-        double strain3D = s3D.ElementGetEngineeringStrain(i)(0,0);
+        double strain1D = s1D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain2D = s2D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain3D = s3D.ElementGetEngineeringStrain(i)(0, 0);
 
-        double damage1D = s1D.ElementGetDamage(i)(0,0);
-        double damage2D = s2D.ElementGetDamage(i)(0,0);
-        double damage3D = s3D.ElementGetDamage(i)(0,0);
+        double damage1D = s1D.ElementGetDamage(i)(0, 0);
+        double damage2D = s2D.ElementGetDamage(i)(0, 0);
+        double damage3D = s3D.ElementGetDamage(i)(0, 0);
 
         BOOST_CHECK_CLOSE_FRACTION(stress1D, stress2D, 1.e-3);
         BOOST_CHECK_CLOSE_FRACTION(stress1D, stress3D, 1.e-3);
@@ -388,6 +400,9 @@ void Check1D2D3D()
         BOOST_CHECK_CLOSE_FRACTION(damage1D, damage3D, 1.e-3);
     }
     timer.Reset(std::string(__FUNCTION__) + " Cleanup");
+    Info(myIntegrationScheme1D);
+    Info(myIntegrationScheme2D);
+    Info(myIntegrationScheme3D);
 }
 
 bool useRobinBoundaryElements = true;
@@ -399,19 +414,14 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
 
 BOOST_AUTO_TEST_CASE(GradientDamage2D)
 {
-    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D,
-                                         false,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D, false, useRobinBoundaryElements));
 
-    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D,
-                                         true,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D, true, useRobinBoundaryElements));
 }
 
 BOOST_AUTO_TEST_CASE(GradientDamage3D)
 {
-    BOOST_CHECK_NO_THROW(TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, useRobinBoundaryElements));
 }
 
 BOOST_AUTO_TEST_CASE(GradientDamage1D2D3D)

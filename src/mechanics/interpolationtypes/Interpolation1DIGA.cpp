@@ -5,11 +5,13 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/interpolationtypes/Interpolation1DIGA.h"
 
-NuTo::Interpolation1DIGA::Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
-    : InterpolationBaseIGA::InterpolationBaseIGA(rDofType, rTypeOrder, rDimension),
-      mKnots(rKnots),
-      mWeights(rWeights),
-      mDegree(rDegree)
+NuTo::Interpolation1DIGA::Interpolation1DIGA(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                             int rDimension, int rDegree, const Eigen::VectorXd& rKnots,
+                                             const Eigen::VectorXd& rWeights)
+    : InterpolationBaseIGA::InterpolationBaseIGA(rDofType, rTypeOrder, rDimension)
+    , mKnots(rKnots)
+    , mWeights(rWeights)
+    , mDegree(rDegree)
 {
     Initialize();
 }
@@ -29,7 +31,8 @@ NuTo::eIntegrationType NuTo::Interpolation1DIGA::GetStandardIntegrationType() co
     case 4: // (4+4+1)/2 = 4.5 ips or (4+4+3)/2 = 5.5 ips lobatto
         return NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(mDegree) + " IGA not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
+                                                              std::to_string(mDegree) + " IGA not implemented");
     }
 }
 
@@ -37,32 +40,40 @@ NuTo::eIntegrationType NuTo::Interpolation1DIGA::GetStandardIntegrationType() co
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
-    int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0,0), mDegree, mKnots);
-    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), spanIdx, mDegree, mKnots, mWeights);
+    int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0, 0), mDegree, mKnots);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0, 0), spanIdx, mDegree, mKnots,
+                                                              mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates, int rKnotID) const
+Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates,
+                                                                  int rKnotID) const
 {
-    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), rKnotID, mDegree, mKnots, mWeights);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0, 0), rKnotID, mDegree, mKnots,
+                                                              mWeights);
 }
 
-Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::VectorXd NuTo::Interpolation1DIGA::ShapeFunctionsIGA(const Eigen::VectorXd& naturalCoordinates,
+                                                            const Eigen::VectorXi& rKnotIDs) const
 {
     return CalculateShapeFunctions(naturalCoordinates, rKnotIDs(0));
 }
 
 // --- derivatives shape functions --- //
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates) const
+Eigen::MatrixXd
+NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
-    int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0,0), mDegree, mKnots);
-    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), spanIdx, mDegree, mKnots, mWeights);
+    int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0, 0), mDegree, mKnots);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0, 0), spanIdx, mDegree, mKnots,
+                                                              mWeights);
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::DerivativeShapeFunctionsNaturalIGA(const Eigen::VectorXd& rCoordinates,
+                                                                             const Eigen::VectorXi& rKnotIDs) const
 {
-    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), rKnotIDs(0), mDegree, mKnots, mWeights);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0, 0), rKnotIDs(0), mDegree, mKnots,
+                                                              mWeights);
 }
 
 // --- N-matrix --- //
@@ -74,17 +85,20 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNIGA(const Eigen::VectorXd& rCoordinates,
+                                                     const Eigen::VectorXi& rKnotIDs) const
 {
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates, rKnotIDs(0));
     return shapeFunctions.transpose();
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::VectorXd& rParameters,
+                                                               const Eigen::VectorXi& rKnotIDs, int rDerivative,
+                                                               int rDirection) const
 {
     assert(rDerivative >= 0 && rDerivative <= 2);
-    assert(rKnotIDs.rows() == 1 );
+    assert(rKnotIDs.rows() == 1);
     assert(rDirection == 0);
 
     Eigen::VectorXd shapeFunctions;
@@ -92,33 +106,39 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::Vect
     switch (rDerivative)
     {
     case 0:
-        shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0),
+                                                                            mDegree, mKnots, mWeights);
         break;
     case 1:
     {
-        if     (rDirection == 0) // d/dx
+        if (rDirection == 0) // d/dx
         {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0),
+                                                                                rKnotIDs(0), mDegree, mKnots, mWeights);
         }
-        else if(rDirection == 1) // d/dy
+        else if (rDirection == 1) // d/dy
         {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0),
+                                                                                rKnotIDs(0), mDegree, mKnots, mWeights);
         }
         break;
     }
     case 2:
     {
-        if     (rDirection == 0) // d²/d²xx
+        if (rDirection == 0) // d²/d²xx
         {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0),
+                                                                                rKnotIDs(0), mDegree, mKnots, mWeights);
         }
-        else if(rDirection == 1) // d²/d²yy
+        else if (rDirection == 1) // d²/d²yy
         {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0),
+                                                                                rKnotIDs(0), mDegree, mKnots, mWeights);
         }
-        else if(rDirection == 2) // d²/d²xy = d²/d²yx
+        else if (rDirection == 2) // d²/d²xy = d²/d²yx
         {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0),
+                                                                                rKnotIDs(0), mDegree, mKnots, mWeights);
         }
         break;
     }
@@ -132,29 +152,5 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::MatrixNDerivativeIGA(const Eigen::Vect
 
 int NuTo::Interpolation1DIGA::CalculateNumNodes() const
 {
-    return mDegree+1;
+    return mDegree + 1;
 }
-
-#ifdef ENABLE_SERIALIZATION
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template void NuTo::Interpolation1DIGA::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Interpolation1DIGA::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation1DIGA" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseIGA);
-    ar & boost::serialization::make_nvp("mKnots", mKnots);
-    ar & boost::serialization::make_nvp("mDegree", mDegree);
-    ar & boost::serialization::make_nvp("mIPCoordinates", mIPCoordinates);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation1DIGA" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DIGA)
-#endif  // ENABLE_SERIALIZATION

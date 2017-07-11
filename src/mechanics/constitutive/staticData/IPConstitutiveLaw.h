@@ -14,12 +14,11 @@ namespace NuTo
 namespace Constitutive
 {
 
-template<typename TLaw>
-class IPConstitutiveLaw: public IPConstitutiveLawBase
+template <typename TLaw>
+class IPConstitutiveLaw : public IPConstitutiveLawBase
 {
 public:
-
-    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
+    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value, "TLaw must be derived from NuTo::ConstitutiveBase");
 
     using Type = typename TLaw::StaticDataType;
     typedef typename StaticData::DataContainer<Type> Data;
@@ -27,7 +26,10 @@ public:
     //! @brief constructor
     //! @param rLaw underlying constitutive law
     IPConstitutiveLaw(TLaw& rLaw, const Type& rData)
-    : mLaw(rLaw), mData(rData) {}
+        : mLaw(rLaw)
+        , mData(rData)
+    {
+    }
 
     std::unique_ptr<IPConstitutiveLawBase> Clone() const override
     {
@@ -91,7 +93,7 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         mLaw.template Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
@@ -100,7 +102,7 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         mLaw.template Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
@@ -109,13 +111,12 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         mLaw.template Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
 private:
-
     TLaw& mLaw;
     StaticData::DataContainer<Type> mData;
 };

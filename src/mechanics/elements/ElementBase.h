@@ -1,12 +1,6 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/vector.hpp>
-#else
 #include <vector>
-#endif //ENABLE_SERIALIZATION
 
 #include <list>
 #include <map>
@@ -27,24 +21,25 @@ class InterpolationType;
 class NodeBase;
 class Lattice2D;
 class Section;
-template<class T>
+template <class T>
 class SparseMatrix;
 class ElementOutputBase;
 enum class eVisualizeWhat;
-template<typename IOEnum> class ConstitutiveIOMap;
+template <typename IOEnum>
+class ConstitutiveIOMap;
 
 #ifdef ENABLE_VISUALIZE
 namespace Visualize
 {
-    class UnstructuredGrid;
+class UnstructuredGrid;
 }
 enum class eCellTypes;
 #endif // ENABLE_VISUALIZE
 
 namespace Constitutive
 {
-    enum class eInput;
-    enum class eOutput;
+enum class eInput;
+enum class eOutput;
 }
 
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
@@ -52,22 +47,19 @@ using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
 namespace Element
 {
-    enum class eOutput;
-}// namespace Element
+enum class eOutput;
+} // namespace Element
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all elements
 class ElementBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
@@ -75,11 +67,11 @@ public:
     //! @param integrationType ... integration type
     ElementBase(const InterpolationType& interpolationType, const IntegrationTypeBase& integrationType);
 
-    ElementBase(const ElementBase& ) = default;
-    ElementBase(      ElementBase&&) = default;
+    ElementBase(const ElementBase&) = default;
+    ElementBase(ElementBase&&) = default;
 
-    ElementBase& operator=(const ElementBase& ) = default;
-    ElementBase& operator=(      ElementBase&&) = default;
+    ElementBase& operator=(const ElementBase&) = default;
+    ElementBase& operator=(ElementBase&&) = default;
 
     virtual ~ElementBase() = default;
 
@@ -89,7 +81,7 @@ public:
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! @return local dimension
-    virtual int GetLocalDimension() const=0;
+    virtual int GetLocalDimension() const = 0;
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
@@ -106,12 +98,12 @@ public:
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    virtual NodeBase* GetNode(int rLocalNodeNumber)=0;
+    virtual NodeBase* GetNode(int rLocalNodeNumber) = 0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber) const=0;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber) const = 0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @remark overridden by boundary elements
@@ -131,26 +123,27 @@ public:
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType)=0;
+    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) = 0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) const=0;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) const = 0;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
     //! @param pointer to the node
-    virtual void SetNode(int rLocalNodeNumber, NodeBase* rNode)=0;
+    virtual void SetNode(int rLocalNodeNumber, NodeBase* rNode) = 0;
 
     //! @brief resizes the node vector
     //! @param rNewNumNodes new number of nodes
     virtual void ResizeNodes(int rNewNumNodes) = 0;
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)=0;
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still
+    //! identical
+    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) = 0;
 
     //! @brief sets the constitutive law for an element
     //! @param rConstitutiveLaw reference to constitutive law entry
@@ -209,21 +202,23 @@ public:
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
-    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    virtual void Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
+    //! includes inertia terms)
+    virtual void Evaluate(const ConstitutiveInputMap& rInput,
+                          std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) = 0;
 
     //! @brief Evaluate the constitutive law attached to an integration point.
     //! @param rConstitutiveInput Input map of the constitutive law.
     //! @param rConstitutiveOuput Output map of the constitutive law.
     //! @param IP The current integration point.
-    template<int TDim>
-    void EvaluateConstitutiveLaw(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP);
+    template <int TDim>
+    void EvaluateConstitutiveLaw(const ConstitutiveInputMap& rConstitutiveInput,
+                                 ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP);
 
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
-    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
+    //! includes inertia terms)
     void Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
 
     //! @brief integrates the stress over the element
@@ -243,7 +238,8 @@ public:
 
     virtual Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
-    virtual Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
+    virtual Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates,
+                                                 Node::eDof rDofType) const;
 
     Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
@@ -252,11 +248,12 @@ public:
     //! @param rTimeDerivative ... time derivative (0..2)
     //! @param rNaturalCoordinates ... coordinates of the point in natural element coordinates
     //! @param rDofType ... dof type
-    Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
+    Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates,
+                                     Node::eDof rDofType) const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
-    virtual const Eigen::VectorXd GetIntegrationPointVolume() const=0;
+    virtual const Eigen::VectorXd GetIntegrationPointVolume() const = 0;
 
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point
@@ -281,73 +278,59 @@ public:
     //! @return reference on the matrix containing the knots
     virtual const Eigen::MatrixXd& GetKnots() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Only implemented in ContinuumElementIGA.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
     }
 
     //! @brief returns the knotIDs of the element
     //! @return reference on the vector containing the knotIDs
     virtual const Eigen::VectorXi& GetKnotIDs() const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Only implemented in ContinuumElementIGA.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
     }
 
     virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int, const Eigen::VectorXd&, int, int) const
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                "Only implemented in ContinuumElementIGA.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Only implemented in ContinuumElementIGA.");
     }
 
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
-    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the Address in the map
-    //! @param mNodeMapCast   std::map containing the old and new Addresses
-    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
-    {
-        (void)mNodeMapCast;
-        /* Do nothing until needed, see e.g. ConstraintNode-class*/
-    }
-#endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
 
-    //! @brief Computes all data in visualizeComponents for the visualization. Decomposes the element into small cells for the cisualization.
+    //! @brief Computes all data in visualizeComponents for the visualization. Decomposes the element into small cells
+    //! for the cisualization.
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void Visualize(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
+    virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
+                           const std::vector<eVisualizeWhat>& visualizeComponents);
 
-    //! @brief Computes all data in visualizeComponents for the visualization. Extrapolates integration point data to element nodes
+    //! @brief Computes all data in visualizeComponents for the visualization. Extrapolates integration point data to
+    //! element nodes
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
+    virtual void VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
+                                             const std::vector<eVisualizeWhat>& visualizeComponents);
 
-    //! @brief Computes all data in visualizeComponents for the visualization. Visualizes integration point data as vertiex elements
+    //! @brief Computes all data in visualizeComponents for the visualization. Visualizes integration point data as
+    //! vertiex elements
     //! @param visualizer
     //! @param visualizeComponents: a list of visualization components to be visualized
-    virtual void VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer, const std::vector<eVisualizeWhat>& visualizeComponents);
+    virtual void VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
+                                               const std::vector<eVisualizeWhat>& visualizeComponents);
 
-    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
-            std::vector<unsigned int>& VisualizationCellsIP) const;
+    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                       std::vector<double>& VisualizationPointLocalCoordinates,
+                                       unsigned int& NumVisualizationCells,
+                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                       std::vector<unsigned int>& VisualizationCellsIncidence,
+                                       std::vector<unsigned int>& VisualizationCellsIP) const;
 
 #endif // ENABLE_VISUALIZE
 
-    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element
+    //! length/area/volum is negative)
     virtual void CheckElement() = 0;
 
 protected:
-
-#ifdef ENABLE_SERIALIZATION
-    ElementBase() {};
-#endif // ENABLE_SERIALIZATION
-
     //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const;
 
@@ -355,26 +338,21 @@ protected:
     virtual void ReorderNodes();
 
     void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
-    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
+    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global
+    //! dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    //virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
+    // virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
 
-    //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
+    //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the
+    //! global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    //virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
+    // virtual void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs) const = 0;
 
     const InterpolationType* mInterpolationType;
 
     IPData mIPData;
-
 };
 
 std::ostream& operator<<(std::ostream& out, const ElementBase& element);
 
-}    //namespace NuTo
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementBase)
-#endif // ENABLE_SERIALIZATION
-
-
+} // namespace NuTo

@@ -13,7 +13,8 @@ bool NuTo::ImplExCallback::AcceptSolution(double rMaxError, double rThreshold)
         mForceAcceptOfNextSolution = true;
         return false;
     }
-    // accept solution, either the extrapolation is OK or this solution is forced to be accepted (somehow continue the time stepping)
+    // accept solution, either the extrapolation is OK or this solution is forced to be accepted (somehow continue the
+    // time stepping)
     mForceAcceptOfNextSolution = false;
     return true;
 }

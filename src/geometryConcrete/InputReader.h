@@ -8,8 +8,6 @@
 #pragma once
 
 
-
-
 #include <string>
 #include <fstream>
 #include <eigen3/Eigen/Core>
@@ -64,68 +62,66 @@ namespace NuTo
 class InputReader
 {
 public:
-	InputReader(std::string rFileName);
-	void PrintInput();
-	double GetAbsoluteDistance() const;
-	Eigen::MatrixXd GetBoundingBox() const;
-	int GetTypeOfSpecimen() const;
-	Eigen::MatrixXd GetGradingCurve() const;
-	double GetRelativeGrowthRate() const;
-	double GetInitialTimeBarrier() const;
-	long GetNumEventsMax() const;
-	double GetRandomVelocityRange() const;
-	double GetTimeMax() const;
-	double GetTimePrintOut() const;
-	double GetVolumeFraction() const;
-	int GetNumThreads() const;
-	const std::string& GetDirectory() const;
-	void Close();
+    InputReader(std::string rFileName);
+    void PrintInput();
+    double GetAbsoluteDistance() const;
+    Eigen::MatrixXd GetBoundingBox() const;
+    int GetTypeOfSpecimen() const;
+    Eigen::MatrixXd GetGradingCurve() const;
+    double GetRelativeGrowthRate() const;
+    double GetInitialTimeBarrier() const;
+    long GetNumEventsMax() const;
+    double GetRandomVelocityRange() const;
+    double GetTimeMax() const;
+    double GetTimePrintOut() const;
+    double GetVolumeFraction() const;
+    int GetNumThreads() const;
+    const std::string& GetDirectory() const;
+    void Close();
 
-	bool Is2D() const;
-	double GetShrinkage() const;
-	double GetAbsoluteGrowthRate() const;
+    bool Is2D() const;
+    double GetShrinkage() const;
+    double GetAbsoluteGrowthRate() const;
 
 
-	void OpenFile(std::string rFileName);
-	void SkipToNextData();
-	double ReadNumber();
-	Eigen::VectorXd ReadVector();
-	bool ReadBool();
-	std::string ReadString();
+    void OpenFile(std::string rFileName);
+    void SkipToNextData();
+    double ReadNumber();
+    Eigen::VectorXd ReadVector();
+    bool ReadBool();
+    std::string ReadString();
 
-	void ReadFile();
-	void ReadSimulationParameters();
-	void ReadBoundingBox();
-	void ReadGradingCurve();
+    void ReadFile();
+    void ReadSimulationParameters();
+    void ReadBoundingBox();
+    void ReadGradingCurve();
 
 private:
+    void CheckInputs() const;
+    void mThrow(const std::string& rMsg) const;
 
-	void CheckInputs() const;
-	void mThrow(const std::string& rMsg) const;
+    std::ifstream mFile;
 
-	std::ifstream mFile;
+    std::string mDirectory;
 
-	std::string mDirectory;
+    long mNumEventsMax;
+    double mTimeMax;
+    double mTimePrintOut;
+    double mInitialTimeBarrier;
+    double mRandomVelocityRange;
+    double mRelativeGrowthRate;
+    double mAbsoluteGrowthRate;
+    int mNumThreads;
 
-	long mNumEventsMax;
-	double mTimeMax;
-	double mTimePrintOut;
-	double mInitialTimeBarrier;
-	double mRandomVelocityRange;
-	double mRelativeGrowthRate;
-	double mAbsoluteGrowthRate;
-	int mNumThreads;
+    int mTypeOfSpecimen;
+    Eigen::MatrixXd mBoundingBox;
+    bool mIs2D;
 
-	int mTypeOfSpecimen;
-	Eigen::MatrixXd mBoundingBox;
-	bool mIs2D;
+    Eigen::MatrixXd mGradingCurve;
+    double mVolumeFraction;
+    double mAbsoluteDistance;
 
-	Eigen::MatrixXd mGradingCurve;
-	double mVolumeFraction;
-	double mAbsoluteDistance;
-
-	double mShrinkage;
-
+    double mShrinkage;
 };
 
 } /* namespace NuTo */

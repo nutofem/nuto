@@ -1,24 +1,15 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
-
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
 
 
 //! @brief constructor
 NuTo::IntegrationType2D4NLobatto9Ip::IntegrationType2D4NLobatto9Ip()
 {
-    NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
+    NuTo::IntegrationType1D2NLobatto Lobatto1D2N3Ip(3);
     Eigen::Vector3d coordinates1D2N3Ip;
     Eigen::Vector3d weights1D2N3Ip;
 
@@ -34,9 +25,9 @@ NuTo::IntegrationType2D4NLobatto9Ip::IntegrationType2D4NLobatto9Ip()
     mPts.resize(GetNumIntegrationPoints());
     int ipNum = 0;
     for (int i = 0; i < 3; i++)
-        for (int j= 0; j < 3; j++)
+        for (int j = 0; j < 3; j++)
         {
-            mWeights[ipNum] = weights1D2N3Ip[i]*weights1D2N3Ip[j];
+            mWeights[ipNum] = weights1D2N3Ip[i] * weights1D2N3Ip[j];
             mPts[ipNum][0] = coordinates1D2N3Ip[j];
             mPts[ipNum][1] = coordinates1D2N3Ip[i];
             ipNum++;
@@ -49,14 +40,15 @@ NuTo::IntegrationType2D4NLobatto9Ip::IntegrationType2D4NLobatto9Ip()
 Eigen::VectorXd NuTo::IntegrationType2D4NLobatto9Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum > 8)
-        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D4NLobatto9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     return mPts[rIpNum];
 }
 
 
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
-int NuTo::IntegrationType2D4NLobatto9Ip::GetNumIntegrationPoints()const
+int NuTo::IntegrationType2D4NLobatto9Ip::GetNumIntegrationPoints() const
 {
     return 9;
 }
@@ -64,22 +56,22 @@ int NuTo::IntegrationType2D4NLobatto9Ip::GetNumIntegrationPoints()const
 //! @brief returns the weight of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @return weight of integration points
-double NuTo::IntegrationType2D4NLobatto9Ip::GetIntegrationPointWeight(int rIpNum)const
+double NuTo::IntegrationType2D4NLobatto9Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum > 8)
-        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto9Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw MechanicsException(
+                "[NuTo::IntegrationType2D4NLobatto9Ip::GetIntegrationPointWeight] Ip number out of range.");
     return mWeights[rIpNum];
 }
 
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D4NLobatto9Ip::GetVisualizationCells(
-    unsigned int& NumVisualizationPoints,
-    std::vector<double>& VisualizationPointLocalCoordinates,
-    unsigned int& NumVisualizationCells,
-    std::vector<NuTo::eCellTypes>& VisualizationCellType,
-    std::vector<unsigned int>& VisualizationCellsIncidence,
-    std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationType2D4NLobatto9Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                                                                std::vector<double>& VisualizationPointLocalCoordinates,
+                                                                unsigned int& NumVisualizationCells,
+                                                                std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                                                                std::vector<unsigned int>& VisualizationCellsIncidence,
+                                                                std::vector<unsigned int>& VisualizationCellsIP) const
 {
     NumVisualizationPoints = 16;
 
@@ -220,28 +212,5 @@ void NuTo::IntegrationType2D4NLobatto9Ip::GetVisualizationCells(
     VisualizationCellsIncidence.push_back(15);
     VisualizationCellsIncidence.push_back(14);
     VisualizationCellsIP.push_back(8);
-
 }
 #endif // ENABLE_VISUALIZE
-
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D4NLobatto9Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::IntegrationType2D4NLobatto9Ip::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize IntegrationType2D4NLobatto9Ip" << std::endl;
-#endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize IntegrationType2D4NLobatto9Ip" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType2D4NLobatto9Ip)
-#endif // ENABLE_SERIALIZATION

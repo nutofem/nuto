@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
                           << "*********************************** \n\n";
 
     path resultPath(initial_path().string() + "/FetiPreconditionersResultDir_" + std::to_string(structure.mRank));
-    
+
     NewmarkFeti<EigenSolver> newmarkFeti(&structure);
     InitializeNewmarkFeti(newmarkFeti, resultPath.string(), loadId);
     newmarkFeti.Solve(simulationTime);

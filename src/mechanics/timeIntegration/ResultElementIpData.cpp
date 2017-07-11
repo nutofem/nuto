@@ -9,28 +9,30 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
-NuTo::ResultElementIpData::ResultElementIpData(const std::string& rIdent, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType) :
-        ResultBase(rIdent),
-        mElementId(rElementId),
-        mIpDataType(rIpDataType)
+NuTo::ResultElementIpData::ResultElementIpData(const std::string& rIdent, int rElementId,
+                                               NuTo::IpData::eIpStaticDataType rIpDataType)
+    : ResultBase(rIdent)
+    , mElementId(rElementId)
+    , mIpDataType(rIpDataType)
 {
 }
 
 void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
 {
-    assert(rTimeStepPlot>=0);
-    Eigen::Matrix<double, 1, Eigen::Dynamic> ipValues(1,this->GetNumData(rStructure));
-    this->CalculateValues(rStructure,ipValues);
-    if (rTimeStepPlot>=mData.rows())
+    assert(rTimeStepPlot >= 0);
+    Eigen::Matrix<double, 1, Eigen::Dynamic> ipValues(1, this->GetNumData(rStructure));
+    this->CalculateValues(rStructure, ipValues);
+    if (rTimeStepPlot >= mData.rows())
     {
-        this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
+        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
     }
-    if (ipValues.cols()!=mData.cols())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: The allocated number of columns is wrong.");
+    if (ipValues.cols() != mData.cols())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: The allocated number of columns is wrong.");
     mData.row(rTimeStepPlot) = ipValues;
 }
 
-void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const
+void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure,
+                                                Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues) const
 {
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
 
@@ -67,7 +69,7 @@ int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const
     case NuTo::IpData::eIpStaticDataType::SLIP:
     case NuTo::IpData::eIpStaticDataType::BOND_STRESS:
         numComponents = 3;
-            break;
+        break;
     default:
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
     } // switch
@@ -94,7 +96,6 @@ NuTo::eTimeIntegrationResultType NuTo::ResultElementIpData::GetResultType() cons
     default:
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
     } // switch
-
 }
 
 void NuTo::ResultElementIpData::Info() const
@@ -103,5 +104,3 @@ void NuTo::ResultElementIpData::Info() const
     std::cout << "Integration point data type:   " << IpData::IpStaticDataTypeToString(mIpDataType) << std::endl;
     std::cout << "Element id:                    " << mElementId << std::endl;
 }
-
-

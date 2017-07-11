@@ -19,7 +19,6 @@ template <typename Type>
 class DataContainer
 {
 public:
-
     //! @brief ctor, initialized with a single Type
     //! @param rData data
     //! @return DataContainer
@@ -31,7 +30,10 @@ public:
     //! @brief ctor, initialized with a vector of Types
     //! @param rData std::vector of rData
     //! @return DataContainer
-    DataContainer(const std::vector<Type>& rData) : mData(rData) {}
+    DataContainer(const std::vector<Type>& rData)
+        : mData(rData)
+    {
+    }
 
     //! @brief Set a new value for the current static data.
     //! @param rNewData New value for current static data.
@@ -46,7 +48,9 @@ public:
     Type& GetData(unsigned int rTimeStep = 0)
     {
         if (rTimeStep > GetNumData() - 1)
-            throw MechanicsException(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) + ". Number of allocated time steps: " + std::to_string(GetNumData()));
+            throw MechanicsException(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) +
+                                                                  ". Number of allocated time steps: " +
+                                                                  std::to_string(GetNumData()));
         return mData.at(rTimeStep);
     }
 
@@ -107,7 +111,7 @@ private:
     //! @brief defines the serialization of this class
     //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeDataContainer(TStream &rStream)
+    void SerializeDataContainer(TStream& rStream)
     {
         for (Type& data : mData)
             rStream.Serialize(data);
@@ -117,7 +121,6 @@ private:
     std::vector<Type> mData;
 };
 
-}   // namespace StaticData
-}   // namespace Constitutive
-}   // namespace NuTo
-
+} // namespace StaticData
+} // namespace Constitutive
+} // namespace NuTo

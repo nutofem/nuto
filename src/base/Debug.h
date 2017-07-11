@@ -24,7 +24,7 @@
     DBG_OPENER << "Entries of: \"" << #v << "\"" << std::endl;                                                         \
     {                                                                                                                  \
         std::size_t dbg_i(0);                                                                                          \
-        BOOST_FOREACH (BOOST_TYPEOF(*boost::begin(v)) const & x, v)                                                    \
+        BOOST_FOREACH (BOOST_TYPEOF(*boost::begin(v)) const& x, v)                                                     \
             std::cout << #v << "[" << dbg_i++ << "] : \"" << x << "\"" << std::endl;                                   \
     }                                                                                                                  \
     std::cout << std::endl << std::endl;

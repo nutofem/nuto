@@ -6,9 +6,3 @@ NuTo::LoadNode::LoadNode(const NodeBase* rNode)
     , mNode(rNode)
 {
 }
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadNode)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::LoadNode)
-BOOST_CLASS_TRACKING(NuTo::LoadNode, track_always)
-#endif

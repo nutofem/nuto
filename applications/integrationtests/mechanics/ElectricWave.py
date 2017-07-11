@@ -16,8 +16,8 @@ class Wave1D(unittest.TestCase):
         self.s.ElementTotalConvertToInterpolationType()
 
         law_id = self.s.ConstitutiveLawCreate("Linear_Dielectric")
-        dielectric_tensor = np.array([1., 0., 0., 0., 1., 0., 0., 0., 1.])
-        self.s.ConstitutiveLawSetParameterFullVectorDouble(law_id, "Dielectric_Tensor", -dielectric_tensor)
+        dielectric_tensor = np.eye(3)
+        self.s.ConstitutiveLawSetParameterMatrixDouble(law_id, "Dielectric_Tensor", -dielectric_tensor)
         self.s.ElementTotalSetConstitutiveLaw(law_id)
         self.s.ElementTotalSetSection(nuto.SectionTruss_Create(12.))
         self.s.AddVisualizationComponent(self.s.GroupGetElementsTotal(), "ElectricPotential")

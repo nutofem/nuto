@@ -12,34 +12,11 @@
 namespace NuTo
 {
 
-class Interpolation1DInterface: public Interpolation1DTruss
+class Interpolation1DInterface : public Interpolation1DTruss
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    Interpolation1DInterface() = default;
-#endif  // ENABLE_SERIALIZATION
-
 public:
-
     Interpolation1DInterface(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
-
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize Interpolation1DInterface" << std::endl;
-#endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation1DTruss);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize Interpolation1DInterface" << std::endl;
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
@@ -66,13 +43,15 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural coordinates of the elements surface
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                       int rSurface) const override;
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
+    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
+                                                                 int rSurface) const override;
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const override
@@ -81,14 +60,8 @@ public:
     }
 
 private:
-
     //! @brief return the number node depending the shape and the order
     int CalculateNumNodes() const override;
-
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DInterface)
-#endif

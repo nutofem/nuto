@@ -26,14 +26,15 @@ int StructureBase::LoadCreateScalarSource(int rNodeIdent, double rValue)
     {
         nodePtr = NodeGetNodePtr(rNodeIdent);
     }
-    catch (NuTo::MechanicsException &e)
+    catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
         throw;
     }
     catch (...)
     {
-        throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
+        throw MechanicsException(
+                "[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
     }
 
     return this->LoadCreateScalarSource(nodePtr, rValue);
@@ -49,7 +50,7 @@ int StructureBase::LoadCreateScalarSource(const NodeBase* rNode, double rValue)
     loadPtr = new LoadNodeScalarSource(rNode, rValue);
 
     // insert load in load map
-    this->mLoadMap.insert(id,loadPtr);
+    this->mLoadMap.insert(id, loadPtr);
     return id;
 }
 

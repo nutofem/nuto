@@ -14,7 +14,7 @@ BENCHMARK(LinearElasticity, VisualizeBinary, runner)
     NuTo::Benchmark::LinearElasticBenchmarkStructure s(numElements);
     ApplyRandomDisplacements(s.GetStructure());
     s.SetupVisualization();
-    while(runner.KeepRunningIterations(10))
+    while (runner.KeepRunningIterations(10))
     {
         s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualize.vtu");
     }
@@ -26,7 +26,7 @@ BENCHMARK(LinearElasticity, VisualizeAscii, runner)
     NuTo::Benchmark::LinearElasticBenchmarkStructure s(numElements);
     ApplyRandomDisplacements(s.GetStructure());
     s.SetupVisualization();
-    while(runner.KeepRunningIterations(10))
+    while (runner.KeepRunningIterations(10))
     {
         s.GetStructure().ExportVtkDataFileElements("LinearElasticVisualizeAscii.vtu", false);
     }

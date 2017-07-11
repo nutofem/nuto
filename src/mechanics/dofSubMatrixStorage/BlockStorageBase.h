@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#endif // ENABLE_SERIALIZATION
-
 #include <set>
 
 namespace NuTo
@@ -15,8 +9,8 @@ class DofStatus;
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -24,19 +18,14 @@ namespace Node
 //! @remark ... all child classes are expected to hold the data of their subtypes, not references or pointers.
 class BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-protected:
-    BlockStorageBase():mDofStatus(DofStatus()) {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
-
-
     //! @brief ctor
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
-    BlockStorageBase(const DofStatus& rDofStatus) : mDofStatus(rDofStatus) {}
+    BlockStorageBase(const DofStatus& rDofStatus)
+        : mDofStatus(rDofStatus)
+    {
+    }
 
 
     virtual ~BlockStorageBase();
@@ -81,14 +70,7 @@ public:
 
 
 protected:
-
     const DofStatus& mDofStatus;
 };
 
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockStorageBase)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

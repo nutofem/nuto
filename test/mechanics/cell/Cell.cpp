@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     elements[dofDispl] = &displacementElement;
 
     fakeit::Mock<NuTo::IntegrationTypeBase> intType;
-    Method(intType, GetNumIntegrationPoints)   = 4;
+    Method(intType, GetNumIntegrationPoints) = 4;
     Method(intType, GetIntegrationPointWeight) = 1;
     constexpr double a = 0.577350269189626;
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(0)).AlwaysReturn(Eigen::Vector2d({-a, -a}));
@@ -52,12 +52,12 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     nDispl1.SetValue(0, ux);
     nDispl2.SetValue(0, ux);
 
-    double area     = ly;
+    double area = ly;
     double intForce = E * ux / lx * area / 2.;
 
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl],
                                std::vector<double>({-intForce, 0, intForce, 0, intForce, 0, -intForce, 0}), 8);
-    
+
     auto cellIPValuesX = cell.IPValues();
     for (const auto& ipValues : cellIPValuesX)
     {
@@ -77,11 +77,11 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     nDispl2.SetValue(1, uy);
     nDispl3.SetValue(1, uy);
 
-    area     = lx;
+    area = lx;
     intForce = E * uy / ly * area / 2;
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl],
                                std::vector<double>({0, -intForce, 0, -intForce, 0, intForce, 0, intForce}), 8);
-    
+
     auto cellIPValuesY = cell.IPValues();
     for (const auto& ipValues : cellIPValuesY)
     {

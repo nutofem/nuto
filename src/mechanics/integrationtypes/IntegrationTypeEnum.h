@@ -1,4 +1,3 @@
-// $Id$ 
 #pragma once
 
 #include <string>
@@ -19,6 +18,7 @@ enum class eIntegrationType
     IntegrationType1D2NGauss3Ip,
     IntegrationType1D2NGauss4Ip,
     IntegrationType1D2NGauss5Ip,
+    IntegrationType1D2NLobatto,
     IntegrationType1D2NLobatto3Ip,
     IntegrationType1D2NLobatto4Ip,
     IntegrationType1D2NLobatto5Ip,
@@ -52,4 +52,4 @@ enum class eIntegrationType
 std::string IntegrationTypeToString(const eIntegrationType& rIntegrationType);
 eIntegrationType IntegrationTypeToEnum(std::string rIntegrationType);
 
-}// namespace NuTo
+} // namespace NuTo

@@ -35,7 +35,7 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::NONLOCAL_RADIUS, 1);
     rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4./30000, 4./0.021));
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4. / 30000, 4. / 0.021));
     return lawId;
 }
 
@@ -55,28 +55,33 @@ void Extrapolate()
 
     {
         // extrapolate a constitutive scalar
-        NuTo::ConstitutiveScalar X1; X1[0] = 2;
-        NuTo::ConstitutiveScalar X0; X0[0] = 1;
+        NuTo::ConstitutiveScalar X1;
+        X1[0] = 2;
+        NuTo::ConstitutiveScalar X0;
+        X0[0] = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
         BOOST_CHECK_CLOSE(result[0], 2.6, 1.e-10);
     }
 
     {
         // extrapolate a constitutive vector
-        NuTo::ConstitutiveVector<1> X1; X1[0] = 2;
-        NuTo::ConstitutiveVector<1> X0; X0[0] = 1;
+        NuTo::ConstitutiveVector<1> X1;
+        X1[0] = 2;
+        NuTo::ConstitutiveVector<1> X0;
+        X0[0] = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
         BOOST_CHECK_CLOSE(result[0], 2.6, 1.e-10);
     }
 
     {
         // extrapolate a constitutive matrix
-        NuTo::ConstitutiveMatrix<1,1> X1; X1(0,0) = 2;
-        NuTo::ConstitutiveMatrix<1,1> X0; X0(0,0) = 1;
+        NuTo::ConstitutiveMatrix<1, 1> X1;
+        X1(0, 0) = 2;
+        NuTo::ConstitutiveMatrix<1, 1> X0;
+        X0(0, 0) = 1;
         auto result = NuTo::ConstitutiveCalculateStaticData::EulerForward(X1, X0, deltaT);
-        BOOST_CHECK_CLOSE(result(0,0), 2.6, 1.e-10);
+        BOOST_CHECK_CLOSE(result(0, 0), 2.6, 1.e-10);
     }
-
 
 
     NuTo::ConstitutiveTimeStep t(4);
@@ -107,8 +112,10 @@ void ImplEx()
     s.SetVerboseLevel(0);
 
     int interpolationType = NuTo::MeshGenerator::Grid(s, {length}, {numElements}).second;
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create sections
     auto section = NuTo::SectionTruss::Create(area);
@@ -121,21 +128,23 @@ void ImplEx()
 
 
     // Set a pre-damaged spot in the middle element
-    double kappa_i = 4./30000.;
-    double kappa_star =  kappa_i * 3;
-    auto eWeak = s.ElementGetElementPtr(numElements/2.);
+    double kappa_i = 4. / 30000.;
+    double kappa_star = kappa_i * 3;
+    auto eWeak = s.ElementGetElementPtr(numElements / 2.);
     for (int i = 0; i < eWeak->GetNumIntegrationPoints(); ++i)
         eWeak->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa_star);
 
     s.ElementGroupAllocateAdditionalStaticData(s.GroupGetElementsTotal(), 2);
 
     using namespace NuTo::Constraint;
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(s.NodeGetAtCoordinate(Eigen::VectorXd::Zero(1)), {NuTo::eDirection::X}));
-    
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                        Component(s.NodeGetAtCoordinate(Eigen::VectorXd::Zero(1)), {NuTo::eDirection::X}));
+
     auto& nodesBC = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, length);
     double simulationTime = 1;
     double dispEnd = 0.1;
-    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, Component(nodesBC, {NuTo::eDirection::X}, RhsRamp(simulationTime, dispEnd)));
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                        Component(nodesBC, {NuTo::eDirection::X}, RhsRamp(simulationTime, dispEnd)));
 
     int visualizationGroup = s.GroupGetElementsTotal();
     s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
@@ -174,7 +183,6 @@ void ImplEx()
     implex.SetResultDirectory(resultDir, true);
 
     implex.Solve(simulationTime / 5.);
-
 }
 
 BOOST_AUTO_TEST_CASE(ImplexExtrapolate)

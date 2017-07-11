@@ -177,8 +177,7 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
             // ##     normal vector
             // ## = [dX / dAlpha] x [dX / dBeta]
             // #######################################
-            derivativeShapeFunctionsNatural =
-                    interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
+            derivativeShapeFunctionsNatural = interpolationTypeCoords.DerivativeShapeFunctionsNatural(ipCoordsNatural);
             const Eigen::Matrix3d jacobian =
                     elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates); // = [dX / dXi]
 
@@ -220,15 +219,11 @@ void LoadSurfaceBase3D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                     }
                     else
                     {
-                        externalLoad.K[Node::eDof::DISPLACEMENTS](theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
+                        externalLoad.K[Node::eDof::DISPLACEMENTS](
+                                theDof - externalLoad.J[Node::eDof::DISPLACEMENTS].rows()) += theLoad;
                     }
                 }
             }
         }
     }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_IMPLEMENT(LoadSurfaceBase3D)
-#endif

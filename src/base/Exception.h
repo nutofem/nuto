@@ -9,28 +9,31 @@ namespace NuTo
 class Exception : public std::exception
 {
 protected:
-    std::string mMessage;   //!< error message
-    bool mFatalFlag;        //!< flag to decide, if throwing this exception leads to inconsistencies of the program
-                            //!< -> `mFatalFlag=true`
+    std::string mMessage; //!< error message
+    bool mFatalFlag; //!< flag to decide, if throwing this exception leads to inconsistencies of the program
+    //!< -> `mFatalFlag=true`
 
 public:
-
     //! @brief Constructor.
     //! @param rMessage Error message.
     //! @param rFatalFlag Flag to decide if the error is fatal or not.
     //!                   (Exit the program or able to continue in a consistent way)
-    explicit Exception(const std::string& rMessage, bool rFatalFlag = true) :
-        mMessage(rMessage), mFatalFlag(rFatalFlag)
-    {}
+    explicit Exception(const std::string& rMessage, bool rFatalFlag = true)
+        : mMessage(rMessage)
+        , mFatalFlag(rFatalFlag)
+    {
+    }
 
     //! @brief Constructor.
     //! @param rCaller Name of the method that throws.
     //! @param rMessage Error message.
     //! @param rFatalFlag Flag to decide if the error is fatal or not.
     //!                   (Exit the program or able to continue in a consistent way)
-    explicit Exception(const std::string& rCaller, const std::string& rMessage, bool rFatalFlag = true) :
-        mMessage(std::string("[") + rCaller +"]\n" + rMessage), mFatalFlag(rFatalFlag)
-    {}
+    explicit Exception(const std::string& rCaller, const std::string& rMessage, bool rFatalFlag = true)
+        : mMessage(std::string("[") + rCaller + "]\n" + rMessage)
+        , mFatalFlag(rFatalFlag)
+    {
+    }
 
     //! @brief Constructor.
     //! @param rCaller Name of the method that throws.
@@ -38,14 +41,18 @@ public:
     //  Overload of const char*, otherwise std::string would be converted to bool and the first ctor is called.
     //! @param rFatalFlag Flag to decide if the error is fatal or not.
     //!                   (Exit the program or able to continue in a consistent way)
-    explicit Exception(const std::string& rCaller, const char* rMessage, bool rFatalFlag = true) :
-        mMessage(std::string("[") + rCaller +"]\n" + rMessage), mFatalFlag(rFatalFlag)
-    {}
+    explicit Exception(const std::string& rCaller, const char* rMessage, bool rFatalFlag = true)
+        : mMessage(std::string("[") + rCaller + "]\n" + rMessage)
+        , mFatalFlag(rFatalFlag)
+    {
+    }
 
     //! @brief Destructor.
-    virtual ~Exception() {}
+    virtual ~Exception()
+    {
+    }
 
-    Exception(const Exception& ) = default;
+    Exception(const Exception&) = default;
 
     //! @brief Return error message of the exception.
     //! @return Error message.
@@ -67,7 +74,7 @@ public:
 
     //! @brief Add a message to the exception (to be able to rethrow the exception afterwards).
     //! @param message_ Message to add.
-    void AddMessage(const std::string &rMessage)
+    void AddMessage(const std::string& rMessage)
     {
         mMessage += "\n" + rMessage;
     }
@@ -93,4 +100,4 @@ public:
         return new Exception(*this);
     }
 };
-} //namespace NuTo
+} // namespace NuTo

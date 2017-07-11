@@ -7,7 +7,7 @@ double NuTo::Math::LinearInterpolation::operator()(double x)
         throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
-    double m = (mData[index+1][1] - mData[index][1]) / (mData[index+1][0] - mData[index][0]);
+    double m = (mData[index + 1][1] - mData[index][1]) / (mData[index + 1][0] - mData[index][0]);
     double n = mData[index][1];
     double x_tmp = x - mData[index][0];
     return m * x_tmp + n;
@@ -19,6 +19,6 @@ double NuTo::Math::LinearInterpolation::derivative(double x)
         throw NuTo::out_of_range("Input x is not within data range of supplied array");
 
     unsigned index = bisection(x);
-    double m = (mData[index+1][1] - mData[index][1]) / (mData[index+1][0] - mData[index][0]);
+    double m = (mData[index + 1][1] - mData[index][1]) / (mData[index + 1][0] - mData[index][0]);
     return m;
 }

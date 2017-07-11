@@ -10,7 +10,7 @@ void CheckDerivatives(const NuTo::Constitutive::DamageLaw& law, double kappaEnd 
 {
     const double delta = 1.e-8;
     const double kappa0 = law.GetKappa0();
-    for (double kappa = delta; kappa < kappaEnd; kappa += kappa0/5.)
+    for (double kappa = delta; kappa < kappaEnd; kappa += kappa0 / 5.)
     {
         if (kappa < kappa0)
         {

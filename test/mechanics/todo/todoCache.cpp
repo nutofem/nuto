@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(CacheN)
     constexpr int numRuns = 10;
     for (int iRun = 0; iRun < numRuns; ++iRun)
     {
-        interpolation.get().GetN(Eigen::Vector2d(0,0));
+        interpolation.get().GetN(Eigen::Vector2d(0, 0));
     }
     BOOST_CHECK_NO_THROW(fakeit::Verify(Method(interpolation, GetShapeFunctions)).Exactly(1));
 }

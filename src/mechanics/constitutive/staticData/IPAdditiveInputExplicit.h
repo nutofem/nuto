@@ -13,10 +13,9 @@ class AdditiveInputExplicit;
 namespace Constitutive
 {
 
-class IPAdditiveInputExplicit: public IPConstitutiveLawBase
+class IPAdditiveInputExplicit : public IPConstitutiveLawBase
 {
 public:
-
     //! @brief constructor
     //! @param rLaw underlying constitutive law
     IPAdditiveInputExplicit(AdditiveInputExplicit& rLaw);
@@ -46,23 +45,23 @@ public:
     virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override;
 
 protected:
-    template<int TDim>
+    template <int TDim>
     void AdditiveInputExplicitEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput);
+                                       const ConstitutiveOutputMap& rConstitutiveOutput);
 
     template <int TDim>
     void CalculateDerivatives(const ConstitutiveOutputMap& rConstitutiveOutput,
-            std::vector<ConstitutiveOutputMap>& rSublawOutputVec);
+                              std::vector<ConstitutiveOutputMap>& rSublawOutputVec);
 
     template <int TDim>
-    void ApplySublawOutputs(const ConstitutiveInputMap& rMainLawInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, const ConstitutiveOutputMap& rSublawOutput);
+    void ApplySublawOutputs(const ConstitutiveInputMap& rMainLawInput, const ConstitutiveOutputMap& rConstitutiveOutput,
+                            const ConstitutiveOutputMap& rSublawOutput);
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputExplicitEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -71,7 +70,7 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputExplicitEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -80,13 +79,12 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputExplicitEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
     }
 
 private:
-
     AdditiveInputExplicit& mLaw;
     std::unique_ptr<IPConstitutiveLawBase> mMainLawIP;
     boost::ptr_vector<IPConstitutiveLawBase> mSublawIPs;

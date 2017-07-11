@@ -12,13 +12,12 @@ namespace NuTo
 class ConstitutiveIOBase;
 namespace Constitutive
 {
-    enum class eInput;
-    enum class eOutput;
+enum class eInput;
+enum class eOutput;
 }
 
 
-
-template<typename IOEnum>
+template <typename IOEnum>
 class ConstitutiveIOMap : public std::map<IOEnum, std::unique_ptr<ConstitutiveIOBase>>
 {
 public:

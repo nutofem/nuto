@@ -1,7 +1,3 @@
-//
-// Created by Thomas Titscher on 1/17/17.
-//
-
 #pragma once
 
 namespace NuTo
@@ -10,7 +6,6 @@ namespace NuTo
 class ImplExCallback
 {
 public:
-
     virtual ~ImplExCallback() = default;
 
     //! @brief is called after an ImplEx step

@@ -10,7 +10,7 @@ BENCHMARK(LinearElasticity, CompleteRun, runner)
     rk4.SetTimeStep(1);
     rk4.SetResultDirectory("LinearElasticityExplicitResults", true);
 
-    while(runner.KeepRunningIterations(1))
+    while (runner.KeepRunningIterations(1))
     {
         rk4.Solve(10);
     }

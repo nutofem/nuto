@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "optimize/NonlinearSolverBase.h"
 
 namespace NuTo
@@ -13,12 +9,8 @@ namespace NuTo
 //! @brief ... standard class for solving system of nonlinear equations
 class NewtonRaphson : public NonlinearSolverBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
 
 public:
-
     //! @brief constructor
     NewtonRaphson();
 
@@ -28,72 +20,39 @@ public:
     void SetResidualDerivativeFunction(
             boost::function<Eigen::MatrixXd(const Eigen::VectorXd&, Eigen::VectorXd)> rResidualDerivativeFunction)
     {
-    	mResidualDerivativeFunctionBoost = rResidualDerivativeFunction;
-    	mAssignResidualResidualDerivative = true;
+        mResidualDerivativeFunctionBoost = rResidualDerivativeFunction;
+        mAssignResidualResidualDerivative = true;
     }
 
     //! @brief returns mCheckNewtonRaphson, specifying iterator exit
-    double GetCheckNewtonRaphson()const
+    double GetCheckNewtonRaphson() const
     {
-    	return mCheckNewtonRaphson;
+        return mCheckNewtonRaphson;
     }
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version){}
-#endif// SWIG
-
-    //////! @brief ... save the object to a file
-    //////! @param filename ... filename
-    //////! @param rType ... type of file, either BINARY, XML or TEXT
-    void Save ( const std::string &filename, std::string rType)const
-    {
-
-    }
-    //////! @brief ... restore the object from a file
-    //////! @param filename ... filename
-    //////! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore ( const std::string &filename,  std::string rType)
-    {
-
-    }
-
-#endif // ENABLE_SERIALIZATION
 
 
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
-    void Solve(Eigen::VectorXd &rUnknown) override;
+    void Solve(Eigen::VectorXd& rUnknown) override;
 
     //! @brief ... the routine performs line search correction of the Newton step
-    void LineSearch(Eigen::VectorXd &rXold, const double rFold, Eigen::VectorXd &rG, Eigen::VectorXd &rP,
-    		Eigen::VectorXd &rX, double &rF, const double rStpmax, bool &rCheck, Eigen::VectorXd &rFvec) const;
+    void LineSearch(Eigen::VectorXd& rXold, const double rFold, Eigen::VectorXd& rG, Eigen::VectorXd& rP,
+                    Eigen::VectorXd& rX, double& rF, const double rStpmax, bool& rCheck, Eigen::VectorXd& rFvec) const;
 
     //! @brief ... the routine performs Newton-Raphson integration
-    void NewtonRaphsonIterator(Eigen::VectorXd &x, bool &check) const;
+    void NewtonRaphsonIterator(Eigen::VectorXd& x, bool& check) const;
 
 protected:
-    //pointer to the analytical derivative of the residual function (analytic Jacobi matrix)
-    Eigen::MatrixXd (*mResidualDerivativeFunction)(const Eigen::VectorXd&,Eigen::VectorXd);
+    // pointer to the analytical derivative of the residual function (analytic Jacobi matrix)
+    Eigen::MatrixXd (*mResidualDerivativeFunction)(const Eigen::VectorXd&, Eigen::VectorXd);
 
-    boost::function<Eigen::MatrixXd(const Eigen::VectorXd&,Eigen::VectorXd)> mResidualDerivativeFunctionBoost;
+    boost::function<Eigen::MatrixXd(const Eigen::VectorXd&, Eigen::VectorXd)> mResidualDerivativeFunctionBoost;
 
-    //a boolean variable which gets true if a jacobi function is assigned
+    // a boolean variable which gets true if a jacobi function is assigned
     bool mAssignResidualResidualDerivative;
 
-    //! @brief ... specify the exit: false on a normal exit; true if this is a local minimum of Fmin (that is the resudual function is not necessary zeroed)
+    //! @brief ... specify the exit: false on a normal exit; true if this is a local minimum of Fmin (that is the
+    //! resudual function is not necessary zeroed)
     bool mCheckNewtonRaphson;
 };
-} //namespace NuTo
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::NewtonRaphson)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION
-
-
-
+} // namespace NuTo

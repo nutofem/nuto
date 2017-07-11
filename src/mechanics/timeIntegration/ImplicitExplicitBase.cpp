@@ -86,12 +86,12 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         //        evalUpdateStaticData                [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradient;
-        evalInternalGradient[eStructureOutput::INTERNAL_GRADIENT]  = &intForce;
+        evalInternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
         evalInternalGradient[eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradientAndHessian0;
-        evalInternalGradientAndHessian0[eStructureOutput::INTERNAL_GRADIENT]  = &intForce;
-        evalInternalGradientAndHessian0[eStructureOutput::HESSIAN0]           = &hessian0;
+        evalInternalGradientAndHessian0[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+        evalInternalGradientAndHessian0[eStructureOutput::HESSIAN0] = &hessian0;
         evalInternalGradientAndHessian0[eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         /*---------------------------------*\
@@ -124,13 +124,13 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
             // calculate Delta_BRhs and Delta_ExtForce
-            auto bRHS         = UpdateAndGetConstraintRHS(mTime);
+            auto bRHS = UpdateAndGetConstraintRHS(mTime);
             auto prevExtForce = CalculateCurrentExternalLoad(mTime);
 
             mTime += mTimeStep;
 
             auto deltaBRHS = UpdateAndGetConstraintRHS(mTime) - bRHS;
-            auto extForce  = CalculateCurrentExternalLoad(mTime);
+            auto extForce = CalculateCurrentExternalLoad(mTime);
 
             mStructure->GetLogger() << "TimeStep: " << mTimeStep << '\n';
 
@@ -272,7 +272,7 @@ void NuTo::ImplicitExplicitBase::FactorizeConstantHessians(
 
 
         mStructure->DofTypeSetIsActive(dof, true);
-        auto hessian0     = mStructure->BuildGlobalHessian0();
+        auto hessian0 = mStructure->BuildGlobalHessian0();
         auto hessian0_CSR = hessian0.JJ.ExportToCSRGeneral();
         hessian0_CSR.SetOneBasedIndexing();
 

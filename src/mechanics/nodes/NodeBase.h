@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include "mechanics/MechanicsException.h"
 
 #include <eigen3/Eigen/Core>
@@ -15,29 +10,25 @@ namespace NuTo
 {
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @author Thomas Titscher, BAM
 //! @date July 2016
 //! @brief ... standard abstract class for all nodes
 class NodeBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif  // ENABLE_SERIALIZATION
 
 public:
     //! @brief constructor
-    NodeBase() {}
+    NodeBase()
+    {
+    }
 
     //! @brief destructor
-    virtual ~NodeBase() {}
+    virtual ~NodeBase()
+    {
+    }
 
     //! @brief Print information about the node
     friend std::ostream& operator<<(std::ostream& out, const NodeBase& node);
@@ -57,7 +48,7 @@ public:
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
     //! @return number of derivatives
-    virtual int GetNumTimeDerivatives(Node::eDof rDof)const
+    virtual int GetNumTimeDerivatives(Node::eDof rDof) const
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
@@ -155,7 +146,7 @@ public:
     }
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-    virtual NodeBase* Clone()const=0;
+    virtual NodeBase* Clone() const = 0;
 
 protected:
     //! @brief Outstream function for "virtual friend idiom"
@@ -164,8 +155,4 @@ protected:
 
 std::ostream& operator<<(std::ostream& out, const NodeBase& node);
 
-}//namespace NuTo
-
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
-#endif // ENABLE_SERIALIZATION
+} // namespace NuTo

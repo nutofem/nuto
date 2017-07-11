@@ -25,7 +25,7 @@ public:
     ElementSimple& CreateElement(std::vector<NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
     {
         mElements.push_back({rNodes, rInterpolation});
-        return *mElements.rbegin(); 
+        return *mElements.rbegin();
     }
 
     InterpolationSimple& CreateInterpolation(const InterpolationSimple& rInterpolation)

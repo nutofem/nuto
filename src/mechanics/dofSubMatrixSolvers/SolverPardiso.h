@@ -37,6 +37,7 @@ public:
 
         return BlockFullVector<double>(result, rMatrix.GetDofStatus());
     }
+
 private:
     int mNumProcessors;
     bool mShowTime;

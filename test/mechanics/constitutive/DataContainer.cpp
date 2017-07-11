@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(DataContainerConstruction)
         BOOST_CHECK_EQUAL(data.GetData(), 6174);
     }
     {
-        std::vector<int> dataVector({0,1,2});
+        std::vector<int> dataVector({0, 1, 2});
         DataContainer<int> data(dataVector);
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(DataContainerConstruction)
         BOOST_CHECK_EQUAL(data.GetData(2), 2);
     }
     {
-        DataContainer<int> data({0,1,2});
+        DataContainer<int> data({0, 1, 2});
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
         BOOST_CHECK_EQUAL(data.GetData(1), 1);
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(DataContainerSerialze)
     DataContainer<int> dataFromFile(0);
     dataFromFile.AllocateAdditionalData(2);
 
-    {   // write
+    { // write
         NuTo::SerializeStreamOut s("DataContainerSerializeText.dat", false);
         s << data;
     }
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(DataContainerSerialze)
     s >> dataFromFile;
 
     for (unsigned int i = 0; i < data.GetNumData(); ++i)
-        BOOST_CHECK_EQUAL(dataFromFile.GetData(i),data.GetData(i));
+        BOOST_CHECK_EQUAL(dataFromFile.GetData(i), data.GetData(i));
 }
 
 } // namespace DataContainerTest

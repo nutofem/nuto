@@ -11,7 +11,7 @@ public:
         : mDofDimension(rDofDimension)
     {
     }
-    
+
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
         return std::make_unique<InterpolationQuadSerendipity>(*this);
