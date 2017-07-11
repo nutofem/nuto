@@ -99,8 +99,8 @@ struct TimeControl
 
 
 template <int TDim>
-void AddConstraint(NuTo::Structure& rS, NuTo::NewmarkDirect& rTI, std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
-                   unsigned int rDirection, double rValue = 0.0)
+void AddConstraint(NuTo::Structure& rS, NuTo::NewmarkDirect&, std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
+                   unsigned int, double rValue = 0.0)
 {
     assert(rValue <= TDim && "Direction isn't part of current dimension");
     int GRPNodesConstraint = rS.GroupCreate("Nodes");
@@ -266,7 +266,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
 
 
 template <int TDim>
-void CheckResultsSpringDamper(NuTo::Structure& rS, std::vector<double> rL)
+void CheckResultsSpringDamper(NuTo::Structure& rS, std::vector<double>)
 {
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
@@ -299,7 +299,7 @@ void CheckResultsSpringDamper(NuTo::Structure& rS, std::vector<double> rL)
 
 
 template <int TDim>
-void CheckResultsSpringDamperSerial(NuTo::Structure& rS, std::vector<double> rL)
+void CheckResultsSpringDamperSerial(NuTo::Structure& rS, std::vector<double>)
 {
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();

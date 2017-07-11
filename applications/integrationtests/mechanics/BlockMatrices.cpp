@@ -548,7 +548,7 @@ void BlockScalarTest()
 
 
 //!@brief test the serialization of each block structure
-void SerializationTest(std::string rFileType)
+void SerializationTest(std::string)
 {
     NuTo::Timer timer("SerializationTest");
     return;
