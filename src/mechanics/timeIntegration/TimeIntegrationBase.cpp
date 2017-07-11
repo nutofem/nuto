@@ -3,7 +3,7 @@
 #include "base/Timer.h"
 
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/ResultElementIpData.h"
 #include "mechanics/timeIntegration/ResultGroupNodeForce.h"
@@ -54,18 +54,18 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
                                                          const Eigen::MatrixXd& rTimeDependentLoadFactor)
 {
     if (rTimeDependentLoadFactor.cols() != 2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, "
+        throw Exception(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, "
                                                       "second column contains the corresponding value.");
     if (rTimeDependentLoadFactor.rows() < 2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
+        throw Exception(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
     if (rTimeDependentLoadFactor(0, 0) != 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "the first time should always be zero.");
+        throw Exception(__PRETTY_FUNCTION__, "the first time should always be zero.");
 
     // check, if the time is monotonically increasing
     for (int count = 0; count < rTimeDependentLoadFactor.rows() - 1; count++)
     {
         if (rTimeDependentLoadFactor(count, 0) >= rTimeDependentLoadFactor(count + 1, 0))
-            throw MechanicsException(__PRETTY_FUNCTION__, "time has to increase monotonically.");
+            throw Exception(__PRETTY_FUNCTION__, "time has to increase monotonically.");
     }
 
     mTimeDependentLoadFactor = rTimeDependentLoadFactor;
@@ -101,7 +101,7 @@ NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExte
     {
         if (mTimeDependentLoadFactor.rows() == 0)
         {
-            throw MechanicsException(__PRETTY_FUNCTION__, "TimeDependentLoadFactor not set.");
+            throw Exception(__PRETTY_FUNCTION__, "TimeDependentLoadFactor not set.");
         }
         int curStep(0);
         while (mTimeDependentLoadFactor(curStep, 0) < curTime && curStep < mTimeDependentLoadFactor.rows() - 1)
@@ -260,7 +260,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
 
     if (mResultDir.length() == 0)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Set the result directory first.");
+        throw Exception(__PRETTY_FUNCTION__, "Set the result directory first.");
     }
     else
     {
@@ -308,7 +308,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
                 break;
             }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Unknown component in postprocessing.");
+                throw Exception(__PRETTY_FUNCTION__, "Unknown component in postprocessing.");
             }
         }
 
@@ -426,7 +426,7 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
         }
         if (!file.is_open())
         {
-            throw NuTo::MechanicsException(
+            throw NuTo::Exception(
                     std::string("[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ") +
                     resultFile.string());
         }

@@ -92,7 +92,7 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         return tangent;
     }
 
-    throw MechanicsException(__PRETTY_FUNCTION__,
+    throw Exception(__PRETTY_FUNCTION__,
                              "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
 }
 
@@ -150,7 +150,7 @@ ConstitutiveVector<6> EquivalentStrainModifiedMises<3>::GetDerivative() const
 // NuTo::LocalEqStrain NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D(const NuTo::EngineeringStrain3D&
 // rStrain3D) const
 //{
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D] not
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D] not
 //    implemented");
 //}
 //
@@ -196,13 +196,13 @@ ConstitutiveVector<6> EquivalentStrainModifiedMises<3>::GetDerivative() const
 ////    std::cout << e1 << std::endl;
 ////    std::cout << e2 << std::endl;
 //
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D] error");
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D] error");
 //}
 //
 // NuTo::ConstitutiveTangentLocal<6, 1> NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D(const
 // NuTo::EngineeringStrain3D& rStrain3D) const
 //{
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D] not
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D] not
 //    implemented");
 //}
 

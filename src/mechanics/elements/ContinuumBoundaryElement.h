@@ -90,14 +90,14 @@ public:
     //! @param pointer to the node
     void SetNode(int rLocalNodeNumber, NodeBase* rNode) override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Probably not needed.");
+        throw Exception(__PRETTY_FUNCTION__, "Probably not needed.");
     }
 
     //! @brief resizes the node vector
     //! @param rNewNumNodes new number of nodes
     void ResizeNodes(int rNewNumNodes) override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Probably not needed.");
+        throw Exception(__PRETTY_FUNCTION__, "Probably not needed.");
     }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -105,7 +105,7 @@ public:
     //! but the restraints, elements etc. are still identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Probably not needed.");
+        throw Exception(__PRETTY_FUNCTION__, "Probably not needed.");
     }
 
     //! @brief returns a reference to the section of an element
@@ -116,7 +116,7 @@ public:
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     virtual const Eigen::VectorXd GetIntegrationPointVolume() const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
     }
 
     //! @brief getter for alpha parameter
@@ -191,14 +191,14 @@ protected:
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Probably not needed.");
+        throw Exception(__PRETTY_FUNCTION__, "Probably not needed.");
     }
 
     //! @brief ... check if the element is properly defined
     //! (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Probably not needed.");
+        throw Exception(__PRETTY_FUNCTION__, "Probably not needed.");
     }
 
     // The real boundary element that is attached to the virtual boundary element

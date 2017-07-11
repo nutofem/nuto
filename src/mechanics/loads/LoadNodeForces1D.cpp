@@ -1,5 +1,5 @@
 #include <cassert>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeForces1D.h"
@@ -12,7 +12,7 @@ LoadNodeForces1D::LoadNodeForces1D(const NodeBase* rNode, double rDirection, dou
     // set direction
     if (std::abs(rDirection) < 1e-14)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Direction vector has zero length.");
+        throw Exception(__PRETTY_FUNCTION__, "Direction vector has zero length.");
     }
     mDirection = rDirection / std::abs(rDirection);
 

@@ -1,4 +1,4 @@
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include "metamodel/PolynomialLeastSquaresFitting.h"
 
 int main()
@@ -37,14 +37,14 @@ int main()
     // Check coefficients
     if (CoeffCalc.rows() > 1 || CoeffCalc.rows() < 0 || CoeffCalc(0) != 0.5)
     {
-        throw NuTo::MetamodelException(__PRETTY_FUNCTION__, "Constant fit test: Calculated Coefficients are wrong");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Constant fit test: Calculated Coefficients are wrong");
     }
     // Check calues
     for (int i = 0; i < Result.cols(); i++)
     {
         if (Result(i) != 0.5)
         {
-            throw NuTo::MetamodelException(__PRETTY_FUNCTION__, "Constant fit test: Calculated results are wrong");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Constant fit test: Calculated results are wrong");
         }
     }
 
@@ -79,14 +79,14 @@ int main()
         // Check coefficients
         if (CoeffCalc.rows() > pdegree + 1 || CoeffCalc.rows() < 0)
         {
-            throw NuTo::MetamodelException(__PRETTY_FUNCTION__, "Test for degrees 1-5: Wrong number of coefficients");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Test for degrees 1-5: Wrong number of coefficients");
         }
         // Check values
         for (int i = 0; i < pdegree + 1; i++)
         {
             if (std::abs(CoeffCalc(i) - CoeffGiven(i)) > 1e-6)
             {
-                throw NuTo::MetamodelException(
+                throw NuTo::Exception(
                         __PRETTY_FUNCTION__,
                         "Test for degrees 1-5: Calculated polynomial coefficients differ to much from the given ones");
             }
@@ -97,7 +97,7 @@ int main()
         {
             if (std::abs(Result(i) - yVec(i)) > 1e-6)
             {
-                throw NuTo::MetamodelException(
+                throw NuTo::Exception(
                         __PRETTY_FUNCTION__,
                         "Test for degrees 1-5: Calculated function values differ to much from the given ones");
             }
@@ -122,7 +122,7 @@ int main()
     {
         if (std::abs(Result(i) - 1.0) > 1e-6)
         {
-            throw NuTo::MetamodelException(__PRETTY_FUNCTION__, "Test for boundary conditions: Calculated function "
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Test for boundary conditions: Calculated function "
                                                                 "values differ to much from set boundary conditions");
         }
     }

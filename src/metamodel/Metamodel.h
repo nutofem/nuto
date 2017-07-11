@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-#include "metamodel/MetamodelException.h"
+#include "base/Exception.h"
 #include "metamodel/SupportPoints.h"
 
 
@@ -68,7 +68,7 @@ public:
                                                     Eigen::MatrixXd& rOutputCoordinatesMin,
                                                     Eigen::MatrixXd& rOutputCoordinatesMax) const
     {
-        throw MetamodelException(
+        throw Exception(
                 "Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
 

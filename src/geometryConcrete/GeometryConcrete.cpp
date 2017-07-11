@@ -55,15 +55,8 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
     }
     catch (NuTo::Exception& e)
     {
-        e.AddMessage("The simulation stopped with an exception. \n");
-        if (mContinueOnException)
-        {
-            std::cout << e.ErrorMessage() << "\n but I'll continue.";
-        }
-        else
-        {
-            throw;
-        }
+        if (not mContinueOnException)
+            throw e;
     }
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen) << std::endl;
@@ -103,15 +96,8 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
     }
     catch (NuTo::Exception& e)
     {
-        e.AddMessage("The simulation failed. \n");
-        if (mContinueOnException)
-        {
-            std::cout << e.ErrorMessage() << "\n but I'll continue.";
-        }
-        else
-        {
-            throw;
-        }
+        if (not mContinueOnException)
+            throw e;
     }
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen) << std::endl;
