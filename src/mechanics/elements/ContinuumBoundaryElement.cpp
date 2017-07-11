@@ -154,8 +154,7 @@ template <int TDim>
 NuTo::ConstitutiveInputMap
 NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInput =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
 
     for (auto& itInput : constitutiveInput)
     {

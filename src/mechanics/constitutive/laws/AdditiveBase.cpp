@@ -75,14 +75,13 @@ bool NuTo::AdditiveBase::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
 
 
 NuTo::ConstitutiveInputMap
-NuTo::AdditiveBase::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                          const NuTo::InterpolationType& rInterpolationType) const
+NuTo::AdditiveBase::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
     for (auto& sublaw : mSublaws)
     {
-        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
+        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveInputs(rConstitutiveOutput);
         constitutiveInputMap.Merge(singleLawInputMap);
     }
     return constitutiveInputMap;

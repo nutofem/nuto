@@ -525,14 +525,10 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
 
 } // namespace NuTo
 
-NuTo::ConstitutiveInputMap
-NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap&,
-                                              const InterpolationType&) const
+NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
-
     constitutiveInputMap[eInput::ENGINEERING_STRAIN];
-
     return constitutiveInputMap;
 }
 

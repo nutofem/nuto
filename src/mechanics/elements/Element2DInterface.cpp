@@ -92,8 +92,7 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(
 NuTo::ConstitutiveInputMap
 NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInputMap =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
     for (auto& itInput : constitutiveInputMap)
     {
         itInput.second = ConstitutiveIOBase::makeConstitutiveIO<2>(itInput.first);

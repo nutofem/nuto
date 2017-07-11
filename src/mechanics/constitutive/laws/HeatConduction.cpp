@@ -23,8 +23,7 @@ HeatConduction::HeatConduction()
     SetParametersValid();
 }
 
-ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const InterpolationType&) const
+ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

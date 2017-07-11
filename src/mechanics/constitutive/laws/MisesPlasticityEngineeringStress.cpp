@@ -30,15 +30,11 @@ NuTo::MisesPlasticityEngineeringStress::MisesPlasticityEngineeringStress()
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                              const InterpolationType& rInterpolationType) const
+NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
     constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
-    if (rInterpolationType.IsConstitutiveInput(Node::eDof::TEMPERATURE))
-        constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
-
 
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -66,8 +62,7 @@ namespace NuTo
 {
 
 template <>
-void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap&,
-                                                         const ConstitutiveOutputMap&,
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&,
                                                          Data&)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "not implemented for 1D.");

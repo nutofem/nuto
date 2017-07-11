@@ -33,8 +33,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticEn
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                            const InterpolationType&) const
+NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

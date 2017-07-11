@@ -265,12 +265,7 @@ public:
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, Eigen::VectorXd rCoeffs) const override;
 
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship

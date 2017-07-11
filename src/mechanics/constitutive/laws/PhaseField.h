@@ -58,12 +58,7 @@ public:
     //! @brief creates corresponding IPConstitutiveLaw
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
 
-    //! @brief     Determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param[in] rConstitutiveOutput Desired constitutive outputs
-    //! @param[in] rInterpolationType Interpolation type to determine additional inputs
-    //! \return    Constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive law in 1D
     //! @param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)

@@ -115,8 +115,7 @@ NuTo::ConstitutiveInputMap
 NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // create maps with only the keys
-    ConstitutiveInputMap constitutiveInput =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
 
     // attach corresponding scalar/vector/matrix object to each key
     for (auto& itInput : constitutiveInput)

@@ -50,13 +50,7 @@ public:
     //! @return reference to ip law
     ConstitutiveBase& GetSublaw(int rIndex);
 
-
-    //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
-    //! @param rConstitutiveOutput Desired constitutive outputs.
-    //! @param rInterpolationType Interpolation type to determine additional inputs.
-    //! @return Constitutive inputs needed for the evaluation.
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
                                                int rTimeDerivative) const override;

@@ -124,8 +124,7 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
 namespace NuTo // template specialization in same namespace as definition
 {
 template <>
-void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(const ConstitutiveInputMap&,
-                                                  const ConstitutiveOutputMap&, Data&)
+void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
@@ -372,16 +371,13 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
 }
 
 template <>
-void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(const ConstitutiveInputMap&,
-                                                  const ConstitutiveOutputMap&, Data&)
+void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
 }
 
-NuTo::ConstitutiveInputMap
-NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap&,
-                                                       const InterpolationType&) const
+NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
     constitutiveInputMap[Constitutive::eInput::INTERFACE_SLIP];

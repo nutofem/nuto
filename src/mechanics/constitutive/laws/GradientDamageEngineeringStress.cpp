@@ -31,8 +31,7 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap&,
-                                                             const InterpolationType&) const
+NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

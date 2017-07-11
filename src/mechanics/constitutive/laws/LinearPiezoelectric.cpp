@@ -32,27 +32,6 @@ NuTo::LinearPiezoelectric::LinearPiezoelectric()
     SetParametersValid();
 }
 
-//#ifdef ENABLE_SERIALIZATION
-////! @brief serializes the class
-////! @param ar         archive
-////! @param version    version
-// template<class Archive>
-// void NuTo::LinearPiezoelectric::serialize(Archive & ar, const unsigned int version)
-//{
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "start serialize LinearPiezoelectric" << std::endl;
-//#endif
-//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-//    & BOOST_SERIALIZATION_NVP(mE)
-//    & BOOST_SERIALIZATION_NVP(mNu)
-//    & BOOST_SERIALIZATION_NVP(mRho)
-//    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "finish serialize LinearPiezoelectric" << std::endl;
-//#endif
-//}
-// BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearPiezoelectric)
-//#endif // ENABLE_SERIALIZATION
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelectric::CreateIPLaw()
 {
@@ -61,8 +40,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelec
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                 const InterpolationType&) const
+NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
