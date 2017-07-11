@@ -7,6 +7,7 @@
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 
 namespace NuTo
 {
@@ -86,9 +87,10 @@ public:
     std::string GetRestartFileName() const;
 
     //! @brief sets the  time step for the time integration procedure (initial value)
-    virtual void SetTimeStep(double rTimeStep)
+    void SetTimeStep(double rTimeStep)
     {
         mTimeStep = rTimeStep;
+        mTimeControl.SetEquidistantTimestepping(rTimeStep);
     }
 
     //! @brief returns the  time step for the time integration procedure (current value)
@@ -97,9 +99,10 @@ public:
         return mTimeStep;
     }
     //! @brief sets the maximum time step for the time integration procedure
-    virtual void SetMaxTimeStep(double rMaxTimeStep)
+    void SetMaxTimeStep(double rMaxTimeStep)
     {
         mMaxTimeStep = rMaxTimeStep;
+        mTimeControl.SetMaxTimestep(rMaxTimeStep);
     }
 
     //! @brief returns the accumulated global time
@@ -120,9 +123,10 @@ public:
     }
 
     //! @brief sets the minimum time step for the time integration procedure
-    virtual void SetMinTimeStep(double rMinTimeStep)
+    void SetMinTimeStep(double rMinTimeStep)
     {
         mMinTimeStep = rMinTimeStep;
+        mTimeControl.SetMinTimestep(rMinTimeStep);
     }
 
     //! @brief sets the minimum time step for the time integration procedure
@@ -297,5 +301,6 @@ protected:
     std::vector<std::set<Node::eDof>> mStepActiveDofs; //!< stores wich Dofs are active in which calculation step
 
     bool mShowTime = true;
+    TimeControl mTimeControl;
 };
 } // namespace NuTo

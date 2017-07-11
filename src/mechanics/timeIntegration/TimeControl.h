@@ -9,27 +9,27 @@ namespace NuTo
 {
 
 
-class Time
+class TimeControl
 {
 public:
 
     //! @brief ctor
-    Time() = default;
+    TimeControl() = default;
 
     //! @brief copy ctor
-    Time(const Time& rOther) = default;
+    TimeControl(const TimeControl& rOther) = default;
 
     //! @brief move ctor
-    Time(Time&& rOther) = default;
+    TimeControl(TimeControl&& rOther) = default;
 
     //! @brief copy assignment
-    Time& operator=(const Time& rOther) = default;
+    TimeControl& operator=(const TimeControl& rOther) = delete;
 
     //! @brief move assignment
-    Time& operator=(Time&& rOther) = default;
+    TimeControl& operator=(TimeControl&& rOther) = delete;
 
     //! @brief destructor
-    ~Time() = default;
+    ~TimeControl() = default;
 
 
     //! @brief Scales the timestep by the provided factor
@@ -46,7 +46,13 @@ public:
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
     //! @param timestepFunction: function that should be executed when the proceed function is called
-    void SetTimestepFunction(std::function<double(double)> timestepFunction);
+    void SetTimestepFunction(std::function<double()> timestepFunction);
+
+    //! @brief Resets the timestep scaling factor to 1 wich means the timestep is exactly as provided by the timestepfunction
+    void ResetTimestepScaleFactor()
+    {
+        mTimestepScaleFactor    = 1.0;
+    }
 
     //! @brief Resets the current time to the previous time
     void RestorePreviosTime()
@@ -62,31 +68,34 @@ public:
 
     //! @brief Gets the timestep
     //! @return timestep
-    double GetTimestep() const;
+    double GetTimestep() const
+    {
+        return mTimestep;
+    }
 
     // Setter
     // ------
 
     //! @brief sets the maximum time step for the time integration procedure
-    void SetMaxTimestep(double rMaxTimeStep)
-    {
-        mMaxTimeStep = rMaxTimeStep;
-    }
+    void SetMaxTimestep(double rMaxTimeStep);
 
     //! @brief sets the minimum time step for the time integration procedure
-    void SetMinTimestep(double rMinTimeStep)
-    {
-        mMinTimeStep = rMinTimeStep;
-    }
+    void SetMinTimestep(double rMinTimeStep);
+
 protected:
 
-    double mCurrentTime         = 0.0;
-    double mPreviousTime        = 0.0;
-    double mTimestepScaleFactor = 1.0;
-    double mMinTimeStep          = 0.0;
-    double mMaxTimeStep          = std::numeric_limits<double>::max();
+    void UpdateTimestep();
 
-    std::function<double(double)> mTimestepFunction = [](double curTime)->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
+
+
+    double mCurrentTime             = 0.0;
+    double mPreviousTime            = 0.0;
+    double mTimestepScaleFactor     = 1.0;
+    double mTimestep                = 0.0;
+    double mMinTimeStep             = 0.0;
+    double mMaxTimeStep             = std::numeric_limits<double>::max();
+
+    std::function<double()> mTimestepFunction = []()->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
 };
 
 } // namespace NuTo

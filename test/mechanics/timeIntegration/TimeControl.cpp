@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/timeIntegration/Time.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 
 #include <iostream>
 
@@ -28,7 +28,7 @@ bool CheckExceptionMessageCorrect(MechanicsException const& ex,std::string expec
 
 BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
 {
-    Time time;
+    TimeControl timeControl;
 
     std::string expectedMsg = "";
     std::function<bool(MechanicsException const&)> CheckException
@@ -37,10 +37,9 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
                     return CheckExceptionMessageCorrect(ex,expectedMsg);
                 };
 
-    time.SetTimestepFunction([](double curTime)->double{return curTime;});
-
-    expectedMsg = "The current proceed function of the class does not increase the current time!";
-    BOOST_CHECK_EXCEPTION(time.Proceed(),MechanicsException,CheckException);
+    expectedMsg = "Current timestep is 0 or negative!";
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimestepFunction([]()->double{return 0.0;}),
+                          MechanicsException,CheckException);
 
 
 
@@ -60,26 +59,31 @@ BOOST_AUTO_TEST_CASE(Equidistant_Timestepping)
                     return CheckExceptionMessageCorrect(ex,expectedMsg);
                 };
     {
-        Time time;
+        TimeControl timeControl;
 
         expectedMsg = "Timestep must be a positive number!";
-        BOOST_CHECK_EXCEPTION(time.SetEquidistantTimestepping(0),MechanicsException,CheckException);
-        BOOST_CHECK_EXCEPTION(time.SetEquidistantTimestepping(-1337.0),MechanicsException,CheckException);
+        BOOST_CHECK_EXCEPTION(timeControl.SetEquidistantTimestepping(0),MechanicsException,CheckException);
+        BOOST_CHECK_EXCEPTION(timeControl.SetEquidistantTimestepping(-1337.0),MechanicsException,CheckException);
 
-        time.SetEquidistantTimestepping(1);
-        time.Proceed();
-        time.Proceed();
-        BOOST_CHECK_EQUAL(time.Proceed(), 3.0);
+        timeControl.SetEquidistantTimestepping(1);
+        timeControl.Proceed();
+        timeControl.Proceed();
+        BOOST_CHECK_EQUAL(timeControl.Proceed(), 3.0);
 
-        time.SetEquidistantTimestepping(5.5);
+        timeControl.SetEquidistantTimestepping(5.5);
 
-        time.Proceed();
-        time.Proceed();
-        BOOST_CHECK_EQUAL(time.Proceed(), 19.5);
+        timeControl.Proceed();
+        timeControl.Proceed();
+        BOOST_CHECK_EQUAL(timeControl.Proceed(), 19.5);
     }
     {
-        Time time;
+        TimeControl timeControl;
 
+//        std::function<double()> myTimeStepFcn = [&timeControl]()->double
+//                                        {
+//                                            return timeControl.GetCurrentTime();
+//                                        };
+//        timeControl.SetTimestepFunction(myTimeStepFcn);
     }
 
 }

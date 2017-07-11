@@ -3,7 +3,7 @@
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/structures/StructureBaseEnum.h"
-#include "mechanics/timeIntegration/Time.h"
+
 
 namespace NuTo
 {
@@ -76,11 +76,11 @@ protected:
 
     StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
                                              const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+                                             const StructureOutputBlockVector& rDof_dt2) const;
 
     StructureOutputBlockVector CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0,
                                              const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+                                             const StructureOutputBlockVector& rDof_dt2) const;
 
     //! @brief ... builds the modified hessian matrix (including cmat) and solves the system
     BlockFullVector<double> BuildHessianModAndSolveSystem(std::array<NuTo::StructureOutputBlockMatrix, 3>& rHessians,
@@ -104,9 +104,13 @@ protected:
     StructureOutputBlockMatrix CalculateMuDampingMatrix(const StructureOutputBlockMatrix& hessian2) const;
 
     void CalculateResidualTrial(StructureOutputBlockVector& rResidual, const BlockFullVector<double>& rDeltaBRHS,
+//<<<<<<< HEAD
                                 const std::array<NuTo::StructureOutputBlockMatrix, 3>& hessians,
-                                const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2,
-                                double rTimeStep) const;
+                                const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2) const;
+//=======
+//                                const std::vector<NuTo::StructureOutputBlockMatrix>& rHessian_dt,
+//                                const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2) const;
+//>>>>>>> newmarkWork
 
 
     //! @brief Prints Info about the current calculation stage
@@ -116,26 +120,8 @@ protected:
     void PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const;
 
 public:
-    // workaround until dynamic timestepping is also enabled by time class
-    virtual void SetTimeStep(double rTimeStep) override
-    {
-        mTimeStep = rTimeStep;
-        mTimeObject.SetEquidistantTimestepping(rTimeStep);
-    }
 
-    //! @brief sets the maximum time step for the time integration procedure
-    virtual void SetMaxTimeStep(double rMaxTimeStep) override
-    {
-        mMaxTimeStep = rMaxTimeStep;
-        mTimeObject.SetMaxTimestep(rMaxTimeStep);
-    }
 
-    //! @brief sets the minimum time step for the time integration procedure
-    virtual void SetMinTimeStep(double rMinTimeStep) override
-    {
-        mMinTimeStep = rMinTimeStep;
-        mTimeObject.SetMinTimestep(rMinTimeStep);
-    }
 
 protected:
     std::array<StructureOutputBlockVector, 3> InitialState();
@@ -148,12 +134,13 @@ protected:
                                                 StructureOutputBlockVector& extForce,
                                                 StructureOutputBlockVector& delta_dof_dt0,
                                                 std::array<StructureOutputBlockVector, 3>& dof_dt,
-                                                const BlockSparseMatrix& constraintMatrix, double timeStep);
+                                                const BlockSparseMatrix& constraintMatrix);
 
     ConstitutiveInputMap CreateInputMap();
     StructureOutputBlockVector EvaluateInternalGradient();
     std::array<StructureOutputBlockMatrix, 3> EvaluateHessians();
     std::pair<StructureOutputBlockVector, std::array<StructureOutputBlockMatrix, 3>> EvaluateGradientAndHessians();
+
 
 protected:
     double mMinLineSearchStep = 0.01;
@@ -161,7 +148,8 @@ protected:
 
     int mVerboseLevel = 1; //!< controls the output verbosity (0 = silent)
 
-    Time mTimeObject;
+
     StructureOutputBlockMatrix mHessian2;
+
 };
 } // namespace NuTo
