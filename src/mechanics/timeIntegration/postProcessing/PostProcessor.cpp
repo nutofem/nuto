@@ -28,57 +28,17 @@ void PostProcessor::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
         mStructure.WriteRestartFile(GetRestartFileName(), mTimeControl.GetCurrentTime());
 
         // perform Postprocessing
-        for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
+        for (auto& result : mResults)
         {
-            switch (itResult->second->GetResultType())
-            {
-            case eTimeIntegrationResultType::TIME:
-            {
-                ResultTime* resultPtr(itResult->second->AsResultTime());
-                resultPtr->CalculateAndAddValues(mStructure, mTimeStepResult, mTimeControl.GetCurrentTime());
-                break;
-            }
-            case eTimeIntegrationResultType::NODE_ACCELERATION:
-            {
-                ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
-                resultPtr->CalculateAndAddValues(mStructure, mTimeStepResult);
-                break;
-            }
-            case eTimeIntegrationResultType::NODE_DISPLACEMENT:
-            {
-                ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
-                resultPtr->CalculateAndAddValues(mStructure, mTimeStepResult);
-                break;
-            }
-            case eTimeIntegrationResultType::GROUP_NODE_FORCE:
-            {
-                ResultGroupNodeDof* resultPtr(itResult->second->AsResultGroupNodeDof());
-                resultPtr->CalculateAndAddValues(mStructure, mTimeStepResult,
-                                                 rOutOfBalance.J[Node::eDof::DISPLACEMENTS],
-                                                 rOutOfBalance.K[Node::eDof::DISPLACEMENTS]);
-                break;
-            }
-            case eTimeIntegrationResultType::ELEMENT_IP_STRESS:
-            case eTimeIntegrationResultType::ELEMENT_IP_STRAIN:
-            case eTimeIntegrationResultType::ELEMENT_IP_DAMAGE:
-            case eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS:
-            case eTimeIntegrationResultType::ELEMENT_IP_SLIP:
-            {
-                ResultElementIpData* resultPtr(itResult->second->AsResultElementIpData());
-                resultPtr->CalculateAndAddValues(mStructure, mTimeStepResult);
-                break;
-            }
-            default:
-                throw Exception(__PRETTY_FUNCTION__, "Unknown component in postprocessing.");
-            }
+            result.CalculateAndAddValues(mStructure, mTimeStepResult, rOutOfBalance, mTimeControl.GetCurrentTime());
         }
 
         if ((mTimeControl.GetCurrentTime() - mLastTimePlot) >= mMinTimeStepPlot)
         {
             // write the results to files
-            for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
+            for (auto& result : mResults)
             {
-                itResult->second->WriteToFile(mResultDir, mTimeStepResult);
+                result.WriteToFile(mResultDir, mTimeStepResult);
             }
 
 #ifdef ENABLE_VISUALIZE
@@ -93,85 +53,31 @@ void PostProcessor::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
 }
 
 
-int PostProcessor::AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId)
+void PostProcessor::AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId)
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultNodeDisp(rResultStr, rNodeId));
-
-    return resultNumber;
+    mResults.push_back(new ResultNodeDisp(rResultStr, rNodeId));
 }
 
 
-int PostProcessor::AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId)
+void PostProcessor::AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId)
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultNodeAcceleration(rResultStr, rNodeId));
-    return resultNumber;
+    mResults.push_back(new ResultNodeAcceleration(rResultStr, rNodeId));
 }
 
-int PostProcessor::AddResultTime(const std::string& rResultStr)
+void PostProcessor::AddResultTime(const std::string& rResultStr)
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultTime(rResultStr));
-
-    return resultNumber;
+    mResults.push_back(new ResultTime(rResultStr));
 }
 
-int PostProcessor::AddResultElementIpData(const std::string& rResultStr, int rElementId,
-                                                      IpData::eIpStaticDataType rIpDataType)
+void PostProcessor::AddResultElementIpData(const std::string& rResultStr, int rElementId,
+                                           IpData::eIpStaticDataType rIpDataType)
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultElementIpData(rResultStr, rElementId, rIpDataType));
-
-    return resultNumber;
+    mResults.push_back(new ResultElementIpData(rResultStr, rElementId, rIpDataType));
 }
 
-int PostProcessor::AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId)
+void PostProcessor::AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId)
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultGroupNodeForce(rResultStr, rGroupNodeId));
-
-    return resultNumber;
+    mResults.push_back(new ResultGroupNodeForce(rResultStr, rGroupNodeId));
 }
 
 

@@ -4,7 +4,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 using namespace NuTo;
 
@@ -25,15 +24,8 @@ int ResultGroupNodeForce::GetNumData(const StructureBase& rStructure) const
     return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
 }
 
-eTimeIntegrationResultType ResultGroupNodeForce::GetResultType() const
-{
-    return eTimeIntegrationResultType::GROUP_NODE_FORCE;
-}
-
-
 Eigen::VectorXd ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure,
-                                                            const Eigen::VectorXd& rResidual_j,
-                                                            const Eigen::VectorXd& rResidual_k) const
+                                                      const StructureOutputBlockVector& residual) const
 {
     const Group<NodeBase>& nodeGroup = *GetGroupNodePtr(rStructure);
     const int dim = rStructure.GetDimension();
@@ -47,11 +39,11 @@ Eigen::VectorXd ResultGroupNodeForce::CalculateValues(const StructureBase& rStru
             int theDof = itNode.second->GetDof(Node::eDof::DISPLACEMENTS, iDim);
             if (theDof < rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS))
             {
-                result[iDim] -= rResidual_j(theDof); // Defined as minus. [R = F_ext - F_int]
+                result[iDim] -= residual.J[Node::eDof::DISPLACEMENTS](theDof); // Defined as minus. [R = F_ext - F_int]
             }
             else
             {
-                result[iDim] -= rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
+                result[iDim] -= residual.K[Node::eDof::DISPLACEMENTS](theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
             }
         }
     }

@@ -14,16 +14,11 @@ class ResultGroupNodeDof : public ResultBase
 public:
     ResultGroupNodeDof(const std::string& rIdent, int rNodeGroupId);
 
-    NuTo::ResultGroupNodeDof* AsResultGroupNodeDof() override
-    {
-        return this;
-    }
+    virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure,
+                                            const StructureOutputBlockVector& residual) const = 0;
 
-    virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j,
-                                            const Eigen::VectorXd& rResidual_k) const = 0;
-
-    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot, const Eigen::VectorXd& rResidual_j,
-                               const Eigen::VectorXd& rResidual_k);
+    void CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
+                               const StructureOutputBlockVector& residual, double currentTime) override;
 
     const NuTo::Group<NodeBase>* GetGroupNodePtr(const StructureBase& rStructure) const;
 

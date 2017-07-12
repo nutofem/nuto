@@ -16,15 +16,16 @@ void ResultNodeDof::Info() const
 }
 
 
-void ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
+void ResultNodeDof::CalculateAndAddValues(const StructureBase& structure, int timeStep, const StructureOutputBlockVector& residual,
+                           double currentTime)
 {
-    assert(rTimeStepPlot >= 0);
-    Eigen::VectorXd dofValues = this->CalculateValues(rStructure);
-    if (rTimeStepPlot >= mData.rows())
+    assert(timeStep >= 0);
+    Eigen::VectorXd dofValues = CalculateValues(structure);
+    if (timeStep >= mData.rows())
     {
-        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
+        Resize(structure, 2 * (timeStep + 1), false);
     }
     if (dofValues.rows() != mData.cols())
-        throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
-    mData.row(rTimeStepPlot) = dofValues.transpose();
+        throw MechanicsException(__PRETTY_FUNCTION__, "The allocated number of rows is wrong.");
+    mData.row(timeStep) = dofValues.transpose();
 }

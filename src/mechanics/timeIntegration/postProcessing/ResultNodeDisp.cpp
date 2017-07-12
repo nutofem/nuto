@@ -3,7 +3,6 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 using namespace NuTo;
 
@@ -20,9 +19,4 @@ Eigen::VectorXd ResultNodeDisp::CalculateValues(const StructureBase& rStructure)
 int ResultNodeDisp::GetNumData(const StructureBase& rStructure) const
 {
     return rStructure.NodeGetNodePtr(mNodeId)->GetNum(Node::eDof::DISPLACEMENTS);
-}
-
-eTimeIntegrationResultType ResultNodeDisp::GetResultType() const
-{
-    return eTimeIntegrationResultType::NODE_DISPLACEMENT;
 }

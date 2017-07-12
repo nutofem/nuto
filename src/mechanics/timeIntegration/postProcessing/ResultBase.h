@@ -6,16 +6,11 @@
 
 namespace NuTo
 {
-class ResultNodeDof;
-class ResultGroupNodeDof;
-class ResultTime;
-class ResultElementIpData;
 class StructureBase;
+class StructureOutputBlockVector;
 enum class eTimeIntegrationResultType;
 
-//! @author Jörg F. Unger, BAM
-//! @date December 2013
-//! @brief ... standard abstract class for all results
+//! @brief Abstract class for all results
 class ResultBase
 {
 public:
@@ -33,33 +28,13 @@ public:
 
     void Resize(const StructureBase& rStructure, int rNumResultSteps, bool rInitialize);
 
+    virtual void CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
+                                       const StructureOutputBlockVector& residual, double currentTime) = 0;
+
     void WriteToFile(const std::string& rResultDir, int rNumTimeSteps) const;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
     virtual int GetNumData(const StructureBase& rStructure) const = 0;
-
-    virtual NuTo::eTimeIntegrationResultType GetResultType() const = 0;
-
-    virtual ResultNodeDof* AsResultNodeDof()
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
-    }
-
-    virtual ResultTime* AsResultTime()
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
-    }
-
-    virtual ResultGroupNodeDof* AsResultGroupNodeDof()
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
-    }
-
-
-    virtual ResultElementIpData* AsResultElementIpData()
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
-    }
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const

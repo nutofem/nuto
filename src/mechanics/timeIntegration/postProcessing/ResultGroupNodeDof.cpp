@@ -16,20 +16,20 @@ void ResultGroupNodeDof::Info() const
 {
 }
 
-void ResultGroupNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
-                                               const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k)
+void ResultGroupNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int timeStep, const StructureOutputBlockVector& residual,
+                           double currentTime)
 {
-    assert(rTimeStepPlot >= 0);
-    if (rTimeStepPlot >= mData.rows())
+    assert(timeStep >= 0);
+    if (timeStep >= mData.rows())
     {
-        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
+        Resize(rStructure, 2 * (timeStep + 1), false);
     }
-    Eigen::VectorXd values = CalculateValues(rStructure, rResidual_j, rResidual_k);
+    Eigen::VectorXd values = CalculateValues(rStructure, residual);
 
     if (values.rows() != mData.cols())
         throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 
-    mData.row(rTimeStepPlot) = values.transpose();
+    mData.row(timeStep) = values.transpose();
 }
 
 const Group<NodeBase>* ResultGroupNodeDof::GetGroupNodePtr(const StructureBase& rStructure) const

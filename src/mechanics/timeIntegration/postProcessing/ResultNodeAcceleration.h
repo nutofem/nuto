@@ -15,13 +15,6 @@ public:
     //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
     int GetNumData(const StructureBase& rStructure) const override;
 
-    NuTo::eTimeIntegrationResultType GetResultType() const override;
-
-    std::string GetTypeId() const
-    {
-        return std::string("ResultNodeAcceleration");
-    }
-
     void Info() const override
     {
     }

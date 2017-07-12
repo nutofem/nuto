@@ -13,15 +13,11 @@ public:
     ResultNodeDof(const std::string& rIdent, int rNodeId);
 
     //! @brief calculate the relevant nodal dofs and add to the internal routine
-    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
+    void CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
+                               const StructureOutputBlockVector& residual, double currentTime) override;
 
     //! @brief calculate the relevant nodal dofs
     virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const = 0;
-
-    ResultNodeDof* AsResultNodeDof() override
-    {
-        return this;
-    }
 
     void Info() const override;
 

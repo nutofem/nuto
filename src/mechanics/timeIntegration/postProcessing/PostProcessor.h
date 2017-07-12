@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/TimeControl.h"
@@ -46,32 +46,27 @@ public:
     //! @brief monitor the accelerations of a node
     //! @param rNodeId id of the node
     //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId);
+    void AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId);
 
     //! @brief monitor the displacements of a node
     //! @param rNodeId id of the node
     //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId);
+    void AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId);
 
     //! @brief monitor the time
     //! @param rResultId string identifying the result, this is used for the output file
     //! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be
     //! calculated
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId);
+    void AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId);
 
     //! @brief monitor the time
     //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultTime(const std::string& rResultStr);
+    void AddResultTime(const std::string& rResultStr);
 
     //! @brief monitor the integration point values in an element
     //! @param rResultId string identifying the result, this is used for the output file
     //! @param rElementId id of the element to be monitored
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultElementIpData(const std::string& rResultStr, int rElementId,
+    void AddResultElementIpData(const std::string& rResultStr, int rElementId,
                                NuTo::IpData::eIpStaticDataType rIpDataType);
 
 private:
@@ -80,7 +75,7 @@ private:
     bool mExportDataFileNodes = true; //!< if set to true, exports a data file for the nodes
 
     std::string mResultDir; //!< result directory
-    boost::ptr_map<int, ResultBase> mResultMap; //!< specifies what to plot (displacements, reaction forces, etc.)
+    boost::ptr_vector<ResultBase> mResults; //!< specifies what to plot (displacements, reaction forces, etc.)
 
     int mTimeStepResult = 0; //!< time step number is increased each time a value is added to the result matrices
     int mTimeStepVTK = 0; //!< time step number is increased each time a vtk file is extracted

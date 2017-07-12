@@ -20,18 +20,19 @@ ResultElementIpData::ResultElementIpData(const std::string& rIdent, int rElement
 }
 
 
-void ResultElementIpData::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
+void ResultElementIpData::CalculateAndAddValues(const StructureBase& structure, int timeStep,
+                                                const StructureOutputBlockVector& residual, double currentTime)
 {
-    assert(rTimeStepPlot >= 0);
-    Eigen::Matrix<double, 1, Eigen::Dynamic> ipValues(1, this->GetNumData(rStructure));
-    this->CalculateValues(rStructure, ipValues);
-    if (rTimeStepPlot >= mData.rows())
+    assert(timeStep >= 0);
+    Eigen::Matrix<double, 1, Eigen::Dynamic> ipValues(1, GetNumData(structure));
+    CalculateValues(structure, ipValues);
+    if (timeStep >= mData.rows())
     {
-        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
+        Resize(structure, 2 * (timeStep + 1), false);
     }
     if (ipValues.cols() != mData.cols())
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: The allocated number of columns is wrong.");
-    mData.row(rTimeStepPlot) = ipValues;
+    mData.row(timeStep) = ipValues;
 }
 
 
@@ -81,26 +82,6 @@ int ResultElementIpData::GetNumData(const StructureBase& rStructure) const
 
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
     return element->GetNumIntegrationPoints() * numComponents;
-}
-
-
-eTimeIntegrationResultType ResultElementIpData::GetResultType() const
-{
-    switch (mIpDataType)
-    {
-    case IpData::eIpStaticDataType::ENGINEERING_STRESS:
-        return eTimeIntegrationResultType::ELEMENT_IP_STRESS;
-    case IpData::eIpStaticDataType::ENGINEERING_STRAIN:
-        return eTimeIntegrationResultType::ELEMENT_IP_STRAIN;
-    case IpData::eIpStaticDataType::DAMAGE:
-        return eTimeIntegrationResultType::ELEMENT_IP_DAMAGE;
-    case IpData::eIpStaticDataType::BOND_STRESS:
-        return eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS;
-    case IpData::eIpStaticDataType::SLIP:
-        return eTimeIntegrationResultType::ELEMENT_IP_SLIP;
-    default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
-    } // switch
 }
 
 
