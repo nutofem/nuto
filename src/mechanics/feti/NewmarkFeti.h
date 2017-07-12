@@ -1384,6 +1384,8 @@ public:
 protected:
     double mTime = 0.;
     double mTimeStep = 0.;
+    double mMinTimeStep = 0.;
+    double mMaxTimeStep = 1.;
 
 private:
     StructureFeti* mStructureFeti;

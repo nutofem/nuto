@@ -30,9 +30,9 @@ void NewmarkDirect::Solve(double rTimeDelta)
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
     auto dofValues = InitialState();
 
-    if (mAutomaticTimeStepping && mTimeControl.GetMinTimestep() <= 0.)
+    if (mAutomaticTimeStepping && mTimeControl.GetMinTimeStep() <= 0.)
     {
-        mTimeControl.SetMinTimestep(mTimeControl.GetTimestep() * std::pow(0.5, 6.));
+        mTimeControl.SetMinTimeStep(mTimeControl.GetTimeStep() * std::pow(0.5, 6.));
         // the minimal time step is equivalent to six cut-backs
 //        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
@@ -76,7 +76,7 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
     {
         auto hessians = EvaluateHessians();
 
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessians, residual, mTimeControl.GetTimestep());
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessians, residual, mTimeControl.GetTimeStep());
 
         delta_dof_dt0.K = constraintMatrix * delta_dof_dt0.J * (-1.);
         ++mIterationCount;
@@ -92,11 +92,11 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
         {
             trial_dof_dt0 = dof_dt[0] + delta_dof_dt0 * alpha;
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                trial_dof_dt1 = dof_dt[1] + delta_dof_dt0 * (alpha * mGamma / (mTimeControl.GetTimestep() * mBeta));
+                trial_dof_dt1 = dof_dt[1] + delta_dof_dt0 * (alpha * mGamma / (mTimeControl.GetTimeStep() * mBeta));
             if (mStructure->GetNumTimeDerivatives() >= 2)
                 trial_dof_dt2 =
                         dof_dt[2] +
-                        delta_dof_dt0 * (alpha / (mTimeControl.GetTimestep() * mTimeControl.GetTimestep() * mBeta));
+                        delta_dof_dt0 * (alpha / (mTimeControl.GetTimeStep() * mTimeControl.GetTimeStep() * mBeta));
 
             MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
 
@@ -151,7 +151,7 @@ StructureOutputBlockVector NewmarkDirect::CalculateDof1(const StructureOutputBlo
                                                         const StructureOutputBlockVector& rDof_dt1,
                                                         const StructureOutputBlockVector& rDof_dt2) const
 {
-    const auto step = mTimeControl.GetTimestep();
+    const auto step = mTimeControl.GetTimeStep();
     return rDeltaDof_dt0 * (mGamma / (step * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
            rDof_dt2 * (step * (1. - mGamma / (2. * mBeta)));
 }
@@ -161,7 +161,7 @@ StructureOutputBlockVector NewmarkDirect::CalculateDof2(const StructureOutputBlo
                                                         const StructureOutputBlockVector& rDof_dt1,
                                                         const StructureOutputBlockVector& rDof_dt2) const
 {
-    const auto step = mTimeControl.GetTimestep();
+    const auto step = mTimeControl.GetTimeStep();
     return rDeltaDof_dt0 * (1. / (step * step * mBeta)) - rDof_dt1 * (1. / (step * mBeta)) -
            rDof_dt2 * ((0.5 - mBeta) / mBeta);
 }
@@ -450,7 +450,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         mStructure->GetLogger() << "\n"
                                 << "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
 
-        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessians, residual_mod, mTimeControl.GetTimestep());
+        delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessians, residual_mod, mTimeControl.GetTimeStep());
 
         delta_dof_dt0.K = deltaBRHS - constraintMatrix * delta_dof_dt0.J;
         ++mIterationCount;
@@ -487,7 +487,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
             MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
 
             mStructure->GetLogger() << "Convergence after " << iterations << " iterations at time "
-                                    << mTimeControl.GetCurrentTime() << " (timestep " << mTimeControl.GetTimestep()
+                                    << mTimeControl.GetCurrentTime() << " (timestep " << mTimeControl.GetTimeStep()
                                     << ").\n";
             mStructure->GetLogger() << "Residual: \t" << residualNorm << "\n";
             // perform Postprocessing
@@ -502,7 +502,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
             if (mAutomaticTimeStepping && iterations < 0.25 * mMaxNumIterations)
             {
 
-                mTimeControl.ScaleTimestep(1.5);
+                mTimeControl.ScaleTimeStep(1.5);
             }
 
             if (mCallback && mCallback->Exit(*mStructure))
@@ -510,13 +510,13 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         }
         else
         {
-            mStructure->GetLogger() << "No convergence with timestep " << mTimeControl.GetTimestep() << " at time "
+            mStructure->GetLogger() << "No convergence with timestep " << mTimeControl.GetTimeStep() << " at time "
                                     << mTimeControl.GetCurrentTime() << "\n";
             if (mAutomaticTimeStepping)
             {
                 // no convergence, reduce the time step and start from scratch
                 mTimeControl.RestorePreviosTime();
-                mTimeControl.ScaleTimestep(0.5);
+                mTimeControl.ScaleTimeStep(0.5);
             }
             else
             {

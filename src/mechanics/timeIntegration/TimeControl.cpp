@@ -2,74 +2,74 @@
 
 
 
-void NuTo::TimeControl::ScaleTimestep(double scaleFactor)
+void NuTo::TimeControl::ScaleTimeStep(double scaleFactor)
 {
     if (scaleFactor<= 0.0)
         throw MechanicsException(__PRETTY_FUNCTION__,"Scaling factor must be a positive number");
 
-    mTimestepScaleFactor *= scaleFactor;
-    UpdateTimestep();
+    mTimeStepScaleFactor *= scaleFactor;
+    UpdateTimeStep();
 }
 
 double NuTo::TimeControl::Proceed()
 {
     mPreviousTime = mCurrentTime;
 
-    UpdateTimestep();
-    mCurrentTime += mTimestep;
+    UpdateTimeStep();
+    mCurrentTime += mTimeStep;
 
     return mCurrentTime;
 }
 
 
 
-void NuTo::TimeControl::SetEquidistantTimestepping(double timestep)
+void NuTo::TimeControl::SetTimeStep(double TimeStep)
 {
-    if (timestep<=0)
+    if (TimeStep<=0)
         throw MechanicsException(__PRETTY_FUNCTION__,"Timestep must be a positive number!");
 
-    SetTimestepFunction([timestep]()->double
+    SetTimeStepFunction([TimeStep]()->double
                         {
-                            return timestep;
+                            return TimeStep;
                         });
 }
 
 
 
-void NuTo::TimeControl::SetTimestepFunction(std::function<double ()> timestepFunction)
+void NuTo::TimeControl::SetTimeStepFunction(std::function<double ()> TimeStepFunction)
 {
-    mTimestepFunction       = timestepFunction;
-    ResetTimestepScaleFactor();
-    UpdateTimestep();
+    mTimeStepFunction       = TimeStepFunction;
+    ResetTimeStepScaleFactor();
+    UpdateTimeStep();
 }
 
-void NuTo::TimeControl::SetMaxTimestep(double rMaxTimeStep)
+void NuTo::TimeControl::SetMaxTimeStep(double rMaxTimeStep)
 {
     if (rMaxTimeStep <=0.0)
         throw MechanicsException(__PRETTY_FUNCTION__,"Maximal timestep must be a positive number!");
     if (rMaxTimeStep<mMinTimeStep)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Maximal timestep must be bigger than minimal timestep!");
+        throw MechanicsException(__PRETTY_FUNCTION__,"Maximal timestep must be bigger than minimal Timestep!");
     mMaxTimeStep = rMaxTimeStep;
 }
 
-void NuTo::TimeControl::SetMinTimestep(double rMinTimeStep)
+void NuTo::TimeControl::SetMinTimeStep(double rMinTimeStep)
 {
     if (rMinTimeStep>mMaxTimeStep)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Minimal timestep must be smaller than maximal timestep!");
+        throw MechanicsException(__PRETTY_FUNCTION__,"Minimal timestep must be smaller than maximal Timestep!");
     mMinTimeStep = rMinTimeStep;
 }
 
-void NuTo::TimeControl::UpdateTimestep()
+void NuTo::TimeControl::UpdateTimeStep()
 {
-    mTimestep = mTimestepScaleFactor * mTimestepFunction();
+    mTimeStep = mTimeStepScaleFactor * mTimeStepFunction();
 
-    if(mTimestep > mMaxTimeStep)
-        mTimestep =  mMaxTimeStep;
+    if(mTimeStep > mMaxTimeStep)
+        mTimeStep =  mMaxTimeStep;
 
-    if (mTimestep <= 0.0)
+    if (mTimeStep <= 0.0)
         throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is 0 or negative!");
-    if (mTimestep<mMinTimeStep)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is lower than minimum timestep!");
+    if (mTimeStep<mMinTimeStep)
+        throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is lower than minimum Timestep!");
 }
 
 

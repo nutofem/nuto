@@ -34,7 +34,7 @@ public:
 
     //! @brief Scales the timestep by the provided factor
     //! @param scaleFactor: scaling factor (<1 decrease and >1 increase)
-    void ScaleTimestep(double scaleFactor);
+    void ScaleTimeStep(double scaleFactor);
 
     //! @brief Proceeds with the next time step
     //! @return current time value
@@ -42,16 +42,16 @@ public:
 
     //! @brief Sets the time stepping to equidistant
     //! @param timestep: timestep value
-    void SetEquidistantTimestepping(double timestep);
+    void SetTimeStep(double timestep);
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
     //! @param timestepFunction: function that should be executed when the proceed function is called
-    void SetTimestepFunction(std::function<double()> timestepFunction);
+    void SetTimeStepFunction(std::function<double()> timestepFunction);
 
     //! @brief Resets the timestep scaling factor to 1 wich means the timestep is exactly as provided by the timestepfunction
-    void ResetTimestepScaleFactor()
+    void ResetTimeStepScaleFactor()
     {
-        mTimestepScaleFactor    = 1.0;
+        mTimeStepScaleFactor    = 1.0;
     }
 
     //! @brief Resets the current time to the previous time
@@ -68,20 +68,24 @@ public:
 
     //! @brief Gets the timestep
     //! @return timestep
-    double GetTimestep() const {return mTimestep;}
+    double GetTimeStep() const {return mTimeStep;}
 
     //! @brief Gets the minimal timestep
     //! @return minimal timestep
-    double GetMinTimestep() const {return mMinTimeStep;}
+    double GetMinTimeStep() const {return mMinTimeStep;}
+
+    //! @brief Gets the maximum timestep
+    //! @return maximum timestep
+    double GetMaxTimeStep() const {return mMaxTimeStep;}
 
     // Setter
     // ------
 
     //! @brief sets the maximum time step for the time integration procedure
-    void SetMaxTimestep(double rMaxTimeStep);
+    void SetMaxTimeStep(double rMaxTimeStep);
 
     //! @brief sets the minimum time step for the time integration procedure
-    void SetMinTimestep(double rMinTimeStep);
+    void SetMinTimeStep(double rMinTimeStep);
 
 
     //temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived classes solve routines
@@ -92,18 +96,18 @@ public:
 
 protected:
 
-    void UpdateTimestep();
+    void UpdateTimeStep();
 
 
 
     double mCurrentTime             = 0.0;
     double mPreviousTime            = 0.0;
-    double mTimestepScaleFactor     = 1.0;
-    double mTimestep                = 0.0;
+    double mTimeStepScaleFactor     = 1.0;
+    double mTimeStep                = 0.0;
     double mMinTimeStep             = 0.0;
     double mMaxTimeStep             = std::numeric_limits<double>::max();
 
-    std::function<double()> mTimestepFunction = []()->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
+    std::function<double()> mTimeStepFunction = []()->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
 };
 
 } // namespace NuTo

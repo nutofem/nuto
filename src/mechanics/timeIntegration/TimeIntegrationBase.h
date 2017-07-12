@@ -89,19 +89,18 @@ public:
     //! @brief sets the  time step for the time integration procedure (initial value)
     virtual void SetTimeStep(double rTimeStep)
     {
-        mTimeControl.SetEquidistantTimestepping(rTimeStep);
+        mTimeControl.SetTimeStep(rTimeStep);
     }
 
     //! @brief returns the  time step for the time integration procedure (current value)
     virtual double GetTimeStep() const
     {
-        return mTimeControl.GetTimestep();
+        return mTimeControl.GetTimeStep();
     }
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
     {
-        mMaxTimeStep = rMaxTimeStep;
-        mTimeControl.SetMaxTimestep(rMaxTimeStep);
+        mTimeControl.SetMaxTimeStep(rMaxTimeStep);
     }
 
 
@@ -109,14 +108,13 @@ public:
     //! @brief returns the maximum time step for the time integration procedure
     double GetMaxTimeStep() const
     {
-        return mMaxTimeStep;
+        return mTimeControl.GetMaxTimeStep();
     }
 
     //! @brief sets the minimum time step for the time integration procedure
     void SetMinTimeStep(double rMinTimeStep)
     {
-        mMinTimeStep = rMinTimeStep;
-        mTimeControl.SetMinTimestep(rMinTimeStep);
+        mTimeControl.SetMinTimeStep(rMinTimeStep);
     }
 
     //! @brief sets the minimum time step for the time integration procedure
@@ -253,10 +251,6 @@ protected:
 
     bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or
                                          //!decrease, if no convergence can be achieved)
-//    double mTimeStep = 0; //!< initial time step (or at the end this is the last time step used)
-
-    double mMaxTimeStep = 1.;
-    double mMinTimeStep = 0.;
 
     bool mMergeActiveDofValuesOrder1 = true; //!< if set to true, store velocities at the nodes in each time step
                                              //!(required when postprocessing velocities)

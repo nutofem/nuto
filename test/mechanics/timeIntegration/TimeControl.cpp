@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
                 };
 
     expectedMsg = "Current timestep is 0 or negative!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetTimestepFunction([]()->double{return 0.0;}),
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimeStepFunction([]()->double{return 0.0;}),
                           MechanicsException,CheckException);
 
 
@@ -62,15 +62,15 @@ BOOST_AUTO_TEST_CASE(Equidistant_Timestepping)
         TimeControl timeControl;
 
         expectedMsg = "Timestep must be a positive number!";
-        BOOST_CHECK_EXCEPTION(timeControl.SetEquidistantTimestepping(0),MechanicsException,CheckException);
-        BOOST_CHECK_EXCEPTION(timeControl.SetEquidistantTimestepping(-1337.0),MechanicsException,CheckException);
+        BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(0),MechanicsException,CheckException);
+        BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(-1337.0),MechanicsException,CheckException);
 
-        timeControl.SetEquidistantTimestepping(1);
+        timeControl.SetTimeStep(1);
         timeControl.Proceed();
         timeControl.Proceed();
         BOOST_CHECK_EQUAL(timeControl.Proceed(), 3.0);
 
-        timeControl.SetEquidistantTimestepping(5.5);
+        timeControl.SetTimeStep(5.5);
 
         timeControl.Proceed();
         timeControl.Proceed();
