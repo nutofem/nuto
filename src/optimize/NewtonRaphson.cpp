@@ -13,28 +13,6 @@ NuTo::NewtonRaphson::NewtonRaphson()
 }
 
 
-//#ifdef ENABLE_SERIALIZATION
-//// serializes the class
-// template void NuTo::NewtonRaphson::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-// template<class Archive>
-// void NuTo::NewtonRaphson::serialize(Archive & ar, const unsigned int version)
-//{
-//    #ifdef DEBUG_SERIALIZATION
-//        std::cout << "start serialization of NewtonRaphson" << "\n";
-//    #endif
-//        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonlinearSolverBase);
-//           & BOOST_SERIALIZATION_NVP(mResidualDerivativeFunction);
-//    #ifdef DEBUG_SERIALIZATION
-//        std::cout << "finish serialization of NewtonRaphson" << "\n";
-//    #endif
-//}
-//#endif // ENABLE_SERIALIZATION
-
 
 void NuTo::NewtonRaphson::Solve(Eigen::VectorXd& rUnknown)
 {
