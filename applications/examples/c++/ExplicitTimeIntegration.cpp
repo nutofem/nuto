@@ -127,18 +127,18 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     s.SetNumProcessors(1);
     s.SetVerboseLevel(0);
 
-    timeIntegrationScheme.AddResultTime("Time");
-    timeIntegrationScheme.AddResultNodeDisplacements("DisplacementsNodeRight", s.NodeGetId(&nodeRight));
+    timeIntegrationScheme.PostProcessing().AddResultTime("Time");
+    timeIntegrationScheme.PostProcessing().AddResultNodeDisplacements("DisplacementsNodeRight", s.NodeGetId(&nodeRight));
     int plotElement = s.GetNumElements() / 2;
-    timeIntegrationScheme.AddResultElementIpData("StressCenterElement", plotElement,
+    timeIntegrationScheme.PostProcessing().AddResultElementIpData("StressCenterElement", plotElement,
                                                  NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     // only plot at every 5%
-    timeIntegrationScheme.SetMinTimeStepPlot(simulationTime * 0.05);
+    timeIntegrationScheme.PostProcessing().SetMinTimeStepPlot(simulationTime * 0.05);
 
     // set result directory
     bool deleteDirectory(false);
-    timeIntegrationScheme.SetResultDirectory(resultDir, deleteDirectory);
+    timeIntegrationScheme.PostProcessing().SetResultDirectory(resultDir, deleteDirectory);
 
     s.NodeBuildGlobalDofs();
 

@@ -23,6 +23,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constraints/Term.h"
 #include "mechanics/constraints/Equation.h"
@@ -177,6 +178,7 @@ namespace std {
 %include "mechanics/timeIntegration/NewmarkDirect.h"
 %include "mechanics/timeIntegration/RungeKuttaBase.h"
 %include "mechanics/timeIntegration/RungeKutta4.h"
+%include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 %include "mechanics/mesh/MeshGenerator.h"
 

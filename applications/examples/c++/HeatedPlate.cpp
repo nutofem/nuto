@@ -191,7 +191,7 @@ int main()
     newmark.SetAutomaticTimeStepping(true);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("HeatedPlateResults", deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("HeatedPlateResults", deleteDirectory);
     newmark.Solve(simulationTime);
 
     return 0;

@@ -82,9 +82,9 @@ void Mises2D(const std::string& rDir)
 
     NuTo::NewmarkDirect myIntegrationScheme(&s);
 
-    myIntegrationScheme.SetResultDirectory(rDir + "2D/", true);
-    myIntegrationScheme.AddResultGroupNodeForce("Force", s.GroupGetId(&nodesRight));
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", nodesRight.GetMemberIds()[0]);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(rDir + "2D/", true);
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Force", s.GroupGetId(&nodesRight));
+    myIntegrationScheme.PostProcessing().AddResultNodeDisplacements("Displ", nodesRight.GetMemberIds()[0]);
     myIntegrationScheme.SetTimeStep(0.02);
     myIntegrationScheme.SetToleranceForce(1e-6);
     myIntegrationScheme.SetAutomaticTimeStepping(true);
@@ -143,8 +143,8 @@ void Mises3D(const std::string& rDir)
 
     NuTo::NewmarkDirect myIntegrationScheme(&s);
 
-    myIntegrationScheme.AddResultGroupNodeForce("Force", s.GroupGetId(&nodesLeft));
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", nodesLeft.GetMemberIds()[0]);
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Force", s.GroupGetId(&nodesLeft));
+    myIntegrationScheme.PostProcessing().AddResultNodeDisplacements("Displ", nodesLeft.GetMemberIds()[0]);
     myIntegrationScheme.SetTimeStep(0.02);
     myIntegrationScheme.SetToleranceForce(1e-6);
     myIntegrationScheme.SetAutomaticTimeStepping(true);
@@ -154,7 +154,7 @@ void Mises3D(const std::string& rDir)
     myIntegrationScheme.SetPerformLineSearch(true);
 
     bool deleteDirectory = true;
-    myIntegrationScheme.SetResultDirectory(rDir + "3D/", deleteDirectory);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(rDir + "3D/", deleteDirectory);
 
     s.SetVerboseLevel(0);
     myIntegrationScheme.Solve(simulationTime);

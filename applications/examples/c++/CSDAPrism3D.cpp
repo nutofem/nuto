@@ -96,7 +96,7 @@ int main()
     newmark.SetMaxNumIterations(100);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("./CSDAPrism3DOut", deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("./CSDAPrism3DOut", deleteDirectory);
     newmark.Solve(1);
     return EXIT_SUCCESS;
 }

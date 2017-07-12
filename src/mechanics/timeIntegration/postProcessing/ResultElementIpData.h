@@ -1,8 +1,6 @@
 #pragma once
 
-
-#include "mechanics/timeIntegration/ResultBase.h"
-
+#include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 
 namespace NuTo
 {
@@ -14,9 +12,6 @@ namespace IpData
 enum class eIpStaticDataType;
 } // namespace IpData
 
-//! @author Philip Huschke
-//! @date October 2015
-//! @brief Outputs integration point values
 class ResultElementIpData : public ResultBase
 {
 public:
@@ -51,6 +46,11 @@ public:
 
     //! @brief ... Info routine that prints general information about the object
     void Info() const override;
+
+    std::unique_ptr<ResultBase> Clone() const override
+    {
+        return std::make_unique<ResultElementIpData>(*this);
+    }
 
 private:
     int mElementId;

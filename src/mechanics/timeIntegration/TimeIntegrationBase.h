@@ -1,19 +1,17 @@
 #pragma once
 
 #include <vector>
-#include <boost/ptr_container/ptr_map.hpp>
 
-// member
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 #include "mechanics/timeIntegration/TimeControl.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 namespace NuTo
 {
 class CallbackInterface;
 class NodeBase;
-class ResultBase;
 class StructureBase;
 class TimeDependencyBase;
 enum class eError;
@@ -77,15 +75,6 @@ public:
     //! @param rResidual ... residual
     double CalculateNorm(const BlockFullVector<double>& rResidual) const;
 
-    //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-    //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of
-    //! balance force)
-    //! @remark rOutOfBalance here means Residual = ExternalForces - InternalForces
-    void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
-
-    //! @brief returns the name of the restart file
-    std::string GetRestartFileName() const;
-
     //! @brief sets the  time step for the time integration procedure (initial value)
     virtual void SetTimeStep(double rTimeStep)
     {
@@ -117,57 +106,10 @@ public:
         mTimeControl.SetMinTimeStep(rMinTimeStep);
     }
 
-    //! @brief sets the minimum time step for the time integration procedure
-    void SetMinTimeStepPlot(double rMinTimeStepPlot)
-    {
-        mMinTimeStepPlot = rMinTimeStepPlot;
-    }
-
     //! @brief returns the g
     std::vector<int> GetVecGroupNodesReactionForces() const
     {
         return mVecGroupNodesReactionForces;
-    }
-
-    //! @brief monitor the accelerations of a node
-    //! @param rNodeId id of the node
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId);
-
-    //! @brief monitor the displacements of a node
-    //! @param rNodeId id of the node
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId);
-
-    //! @brief monitor the time
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be
-    //! calculated
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId);
-
-    //! @brief monitor the time
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultTime(const std::string& rResultStr);
-
-    //! @brief monitor the integration point values in an element
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @param rElementId id of the element to be monitored
-    //! @return id of the result, so that it could be modified afterwards
-    int AddResultElementIpData(const std::string& rResultStr, int rElementId,
-                               NuTo::IpData::eIpStaticDataType rIpDataType);
-
-    //! @brief sets the result directory
-    //! @param if delete is set, all the content of the directory will be removed
-    void SetResultDirectory(std::string rResultDir, bool rDelete = false);
-
-    //! @brief getter for the result directory
-    std::string GetResultDirectory() const
-    {
-        return mResultDir;
     }
 
     //! @brief getter for iteration count, initialized to zero, incremented on each iteration.
@@ -224,12 +166,20 @@ public:
 
     void SetShowTime(bool showTime);
 
+    PostProcessor& PostProcessing()
+    {
+        return mPostProcessor;
+    }
+
+    const PostProcessor& PostProcessing() const
+    {
+        return mPostProcessor;
+    }
+
 protected:
     //! @brief extracts all dof values
     //! @return ret[0] are the DOF values, ret[1], ret[2] the 1st and 2nd time derivative, respectively
     std::array<StructureOutputBlockVector, 3> ExtractDofValues() const;
-
-    void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
 
     const BlockFullVector<double>& UpdateAndGetConstraintRHS(double rCurrentTime);
 
@@ -252,29 +202,14 @@ protected:
     bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or
                                          //!decrease, if no convergence can be achieved)
 
-    bool mMergeActiveDofValuesOrder1 = true; //!< if set to true, store velocities at the nodes in each time step
-                                             //!(required when postprocessing velocities)
-    bool mMergeActiveDofValuesOrder2 = false; //!< if set to true, store acceleration at the nodes in each time step
-                                              //!(required when postprocessing accelerations)
     bool mCheckCoefficientMatrix = false; //!< if set to true, checks the coefficient matrix in each sub step
-    bool mExportDataFileNodes = true; //!< if set to true, exports a data file for the nodes
 
     BlockScalar mToleranceResidual;
-    //************************
-    //* PostProcessing Stuff *
-    //************************
-    std::string mResultDir; //!< result directory
 
-    boost::ptr_map<int, ResultBase> mResultMap; //!< specifies what to plot (displacements, reaction forces, etc.)
-
-    int mLoadStep = 0; //!< load step number is increased after each converged step (used for successive output)
-    int mTimeStepResult = 0; //!< time step number is increased each time a value is added to the result matrices
-    int mTimeStepVTK = 0; //!< time step number is increased each time a vtk file is extracted
-    double mMinTimeStepPlot = 0; //!< if the time between the current time step and the previous plotted step is larger
-                                 //!than mMaxDeltaTimeStepPlot a vtk plot is performed
-    double mLastTimePlot = -1e99; //!< last time when a vtk file was plotted
     int mIterationCount = 0; //!< iteration count
 
+
+    int mLoadStep = 0; //!< load step number is increased after each converged step (used for successive output)
 
     std::vector<int> mVecGroupNodesReactionForces; //!< vector of groups of nodes for which the residual (corresponding
                                                    //!to the reaction forces induced by constraints) is given as output
@@ -285,5 +220,7 @@ protected:
 
     bool mShowTime = true;
     TimeControl mTimeControl;
+
+    PostProcessor mPostProcessor;
 };
 } // namespace NuTo

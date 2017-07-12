@@ -363,9 +363,9 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
     rTI.SetMaxNumIterations(MAX_ITERATION);
 
     rTI.SetTimeStep(rTC.delta_t);
-    rTI.SetMinTimeStepPlot(rTC.t_write);
+    rTI.PostProcessing().SetMinTimeStepPlot(rTC.t_write);
 
-    rTI.SetResultDirectory(rResultDir, true);
+    rTI.PostProcessing().SetResultDirectory(rResultDir, true);
 }
 
 /*---------------------------------------------*\

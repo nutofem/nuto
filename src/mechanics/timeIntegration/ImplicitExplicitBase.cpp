@@ -113,7 +113,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         timeStep.SetCurrentTimeStep(mTimeStep);
         timeStep.SetCurrentTimeStep(mTimeStep);
 
-        PostProcess(residual);
+        mPostProcessor.PostProcess(residual);
 
         while (mTime < rTimeDelta)
         {
@@ -215,7 +215,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
                 residual = extForce - intForce;
-                PostProcess(residual);
+                mPostProcessor.PostProcess(residual);
 
                 lastConverged_dof_dt0 = dof_dt0;
 

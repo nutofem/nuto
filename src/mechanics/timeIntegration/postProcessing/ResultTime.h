@@ -1,18 +1,12 @@
-// $Id: $
-
 #pragma once
 
-#include "mechanics/timeIntegration/ResultBase.h"
+#include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... standard result class for time
 class ResultTime : public ResultBase
 {
 public:
-    //! @brief constructor
     ResultTime(const std::string& rIdent);
 
     std::string GetTypeId() const
@@ -35,11 +29,11 @@ public:
         return this;
     }
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
-protected:
+    std::unique_ptr<ResultBase> Clone() const override
+    {
+        return std::make_unique<ResultTime>(*this);
+    } 
 };
-}
-
-// namespace NuTo
+} // namespace NuTo

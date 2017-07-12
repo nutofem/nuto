@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
     integrationScheme.SetShowTime(true);
 
     bool deleteDirectory = true;
-    integrationScheme.SetResultDirectory(resultPath.string(), deleteDirectory);
+    integrationScheme.PostProcessing().SetResultDirectory(resultPath.string(), deleteDirectory);
 
     integrationScheme.Solve(simulationTime);
 

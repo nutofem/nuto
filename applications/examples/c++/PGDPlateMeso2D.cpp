@@ -402,7 +402,7 @@ int main()
 
             // set load conditions
             NuTo::NewmarkDirect myIntegrationScheme(&myStructureX);
-            myIntegrationScheme.SetResultDirectory(resultDirectory.string(), false);
+            myIntegrationScheme.PostProcessing().SetResultDirectory(resultDirectory.string(), false);
 
             double simulationTime = 1.0;
 

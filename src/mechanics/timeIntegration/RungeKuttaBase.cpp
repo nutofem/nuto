@@ -177,6 +177,6 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
         // postprocess data for plotting
         mTimeControl.SetCurrentTime(mTime);
-        this->PostProcess(extLoad - intForce);
+        mPostProcessor.PostProcess(extLoad - intForce);
     }
 }

@@ -1,24 +1,15 @@
-// $Id: $
-
 #pragma once
 
-
-#include "mechanics/timeIntegration/ResultBase.h"
-
+#include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 
 namespace NuTo
 {
-
 class StructureBase;
-
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... standard abstract class for all results
 class NodeBase;
+
 class ResultNodeDof : public ResultBase
 {
 public:
-    //! @brief constructor
     ResultNodeDof(const std::string& rIdent, int rNodeId);
 
     //! @brief calculate the relevant nodal dofs and add to the internal routine
@@ -32,12 +23,9 @@ public:
         return this;
     }
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
 protected:
     int mNodeId;
 };
-}
-
-// namespace NuTo
+} // namespace NuTo

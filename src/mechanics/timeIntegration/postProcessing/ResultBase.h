@@ -1,9 +1,7 @@
-// $Id: $
-
 #pragma once
 
-
 #include <eigen3/Eigen/Core>
+#include <memory>
 #include "mechanics/MechanicsException.h"
 
 namespace NuTo
@@ -26,6 +24,8 @@ public:
 
     //! @brief deconstructor
     virtual ~ResultBase();
+
+    virtual std::unique_ptr<ResultBase> Clone() const = 0;
 
     void SetIdent(const std::string& rIdent);
 
@@ -70,4 +70,6 @@ protected:
     std::string mIdent;
     Eigen::MatrixXd mData;
 };
+
+ResultBase* new_clone(const ResultBase& result);
 } // namespace NuTo

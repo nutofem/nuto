@@ -2,7 +2,7 @@
 #include "base/Timer.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/timeIntegration/ResultGroupNodeForce.h"
+#include "mechanics/timeIntegration/postProcessing/ResultGroupNodeForce.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -193,19 +193,11 @@ void NewmarkDirect::CalculateResidualKForPostprocessing(StructureOutputBlockVect
     if (mStructure->GetDofStatus().HasInteractingConstraints())
         return; // in this case, residual.K is needed for the calculation of residual mod and it is already calculated.
 
-    bool hasNodeForce = false;
-    for (const auto& it : mResultMap)
-        if (it.second->GetResultType() == eTimeIntegrationResultType::GROUP_NODE_FORCE)
-        {
-            hasNodeForce = true;
-            break; // exit loop
-        }
-    if (hasNodeForce && mStructure->GetNumTimeDerivatives() >= 2)
+    if (mStructure->GetNumTimeDerivatives() >= 2)
     {
         const auto dof = rDof_dt1 * mMuDampingMass + rDof_dt2;
         rResidual.K -= rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
     }
-    // else:  no need to calculate forces if they are not needed in the post processing
 }
 
 
@@ -333,7 +325,7 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     CalculateResidualKForPostprocessing(residual, hessians[2], dofValues[1], dofValues[2]);
 
 
-    PostProcess(residual);
+    mPostProcessor.PostProcess(residual);
     return dofValues;
 }
 
@@ -495,7 +487,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
             {
                 CalculateResidualKForPostprocessing(prevResidual, hessians[2], dof_dt[1], dof_dt[2]);
 
-                PostProcess(prevResidual);
+                mPostProcessor.PostProcess(prevResidual);
             }
 
             // eventually increase next time step

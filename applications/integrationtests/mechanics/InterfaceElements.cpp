@@ -87,7 +87,7 @@ void Run()
     myIntegrationScheme.SetToleranceForce(Parameters::mToleranceForce);
     myIntegrationScheme.SetAutomaticTimeStepping(Parameters::mAutomaticTimeStepping);
     myIntegrationScheme.SetPerformLineSearch(Parameters::mPerformLineSearch);
-    myIntegrationScheme.SetResultDirectory(resultDir.string(), true);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir.string(), true);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Section                  **" << std::endl;

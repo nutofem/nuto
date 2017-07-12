@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(run2d)
     myIntegrationScheme.SetToleranceForce(Parameters::mToleranceForce);
     myIntegrationScheme.SetAutomaticTimeStepping(Parameters::mAutomaticTimeStepping);
     myIntegrationScheme.SetPerformLineSearch(Parameters::mPerformLineSearch);
-    myIntegrationScheme.SetResultDirectory(resultDir.string(), true);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir.string(), true);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Section                  **" << std::endl;
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE(run3d)
     myIntegrationScheme.SetToleranceForce(Parameters::mToleranceForce);
     myIntegrationScheme.SetAutomaticTimeStepping(Parameters::mAutomaticTimeStepping);
     myIntegrationScheme.SetPerformLineSearch(Parameters::mPerformLineSearch);
-    myIntegrationScheme.SetResultDirectory(resultDir.string(), true);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir.string(), true);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Section                  **" << std::endl;

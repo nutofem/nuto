@@ -1,41 +1,37 @@
-/*
- * ResultDispNode.cpp
- *
- *  Created on: Dec 18, 2013
- *      Author: junger
- */
+#include "mechanics/timeIntegration/postProcessing/ResultGroupNodeForce.h"
 
-#include "mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
-NuTo::ResultGroupNodeForce::ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId)
+using namespace NuTo;
+
+ResultGroupNodeForce::ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId)
     : ResultGroupNodeDof(rIdent, rGroupNodeId)
 {
 }
 
-//! @brief number of dofs (e.g. number of displacement components of a node
-int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure) const
+
+int ResultGroupNodeForce::GetNumData(const StructureBase& rStructure) const
 {
     const Group<NodeBase>& groupNode = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
 
     // all nodes have to have the same dimension (number of displacement components)
     if (groupNode.GetNumMembers() < 1)
-        throw MechanicsException("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
+        throw MechanicsException("[ResultGroupNodeForce::GetNumData] Group has no members.");
 
     return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
 }
 
-NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() const
+eTimeIntegrationResultType ResultGroupNodeForce::GetResultType() const
 {
-    return NuTo::eTimeIntegrationResultType::GROUP_NODE_FORCE;
+    return eTimeIntegrationResultType::GROUP_NODE_FORCE;
 }
 
 
-Eigen::VectorXd NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure,
+Eigen::VectorXd ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure,
                                                             const Eigen::VectorXd& rResidual_j,
                                                             const Eigen::VectorXd& rResidual_k) const
 {

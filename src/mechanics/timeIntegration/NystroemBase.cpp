@@ -181,12 +181,12 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 
             dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
             mStructure->NodeMergeDofValues(0, dof_dt0_new);
-            if (mMergeActiveDofValuesOrder1)
+            if (mStructure->GetNumTimeDerivatives() >= 1)
             {
                 dof_dt1_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_new.J);
                 mStructure->NodeMergeDofValues(1, dof_dt1_new);
             }
-            if (mMergeActiveDofValuesOrder2)
+            if (mStructure->GetNumTimeDerivatives() >= 2)
             {
                 auto dof_dt2_new = (dof_dt1_new - dof_dt1) * (1. / mTimeStep);
                 dof_dt2_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt2_new.J);
@@ -204,7 +204,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
             //**********************************************
             // postprocess data for plotting
             mTimeControl.SetCurrentTime(mTime);
-            this->PostProcess(extLoad - intForce);
+            mPostProcessor.PostProcess(extLoad - intForce);
         }
     }
     catch (MechanicsException& e)
