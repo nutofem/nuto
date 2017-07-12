@@ -163,8 +163,10 @@ int main(int argc, char* argv[])
     newmarkFeti.Solve(simulationTime);
 
     std::ifstream file(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+    std::cout << newmarkFeti.GetResultDirectory() << std::endl;
+
     int numIterations = 0;
-    file >> numIterations;
+    file >> numIterations >> numIterations;
     file.close();
 
     std::cout << "#iterations: \t" << numIterations << std::endl;
