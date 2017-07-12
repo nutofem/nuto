@@ -49,9 +49,22 @@ public:
         mUseDiagonalMassMatrix = rUseDiagonalMassMatrix;
     }
 
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
 
 protected:
     double mTime = 0.;
+    double mTimeStep =0.;
 private:
     // use diagonal mass matrix (standard is true, only for test cases use false)
     bool mUseDiagonalMassMatrix;

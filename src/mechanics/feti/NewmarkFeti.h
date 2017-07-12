@@ -1363,12 +1363,27 @@ public:
         mMaxNumFetiIterations = maxNumFetiIterations;
     }
 
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //          MEMBER VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 protected:
     double mTime = 0.;
+    double mTimeStep = 0.;
 
 private:
     StructureFeti* mStructureFeti;

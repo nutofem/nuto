@@ -59,6 +59,7 @@ protected:
 
 protected:
     double mTime = 0.;
+    double mTimeStep =0.;
 private:
     std::set<Node::eDof> mDofsWithConstantHessian;
 

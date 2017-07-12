@@ -34,7 +34,22 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info() const override;
 
+
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
+
 protected:
     double mTime = 0.;
+    double mTimeStep =0.;
 };
 } // namespace NuTo

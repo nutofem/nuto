@@ -68,10 +68,11 @@ public:
 
     //! @brief Gets the timestep
     //! @return timestep
-    double GetTimestep() const
-    {
-        return mTimestep;
-    }
+    double GetTimestep() const {return mTimestep;}
+
+    //! @brief Gets the minimal timestep
+    //! @return minimal timestep
+    double GetMinTimestep() const {return mMinTimeStep;}
 
     // Setter
     // ------

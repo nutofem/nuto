@@ -87,16 +87,15 @@ public:
     std::string GetRestartFileName() const;
 
     //! @brief sets the  time step for the time integration procedure (initial value)
-    void SetTimeStep(double rTimeStep)
+    virtual void SetTimeStep(double rTimeStep)
     {
-        mTimeStep = rTimeStep;
         mTimeControl.SetEquidistantTimestepping(rTimeStep);
     }
 
     //! @brief returns the  time step for the time integration procedure (current value)
-    double GetTimeStep() const
+    virtual double GetTimeStep() const
     {
-        return mTimeStep;
+        return mTimeControl.GetTimestep();
     }
     //! @brief sets the maximum time step for the time integration procedure
     void SetMaxTimeStep(double rMaxTimeStep)
@@ -254,7 +253,7 @@ protected:
 
     bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or
                                          //!decrease, if no convergence can be achieved)
-    double mTimeStep = 0; //!< initial time step (or at the end this is the last time step used)
+//    double mTimeStep = 0; //!< initial time step (or at the end this is the last time step used)
 
     double mMaxTimeStep = 1.;
     double mMinTimeStep = 0.;

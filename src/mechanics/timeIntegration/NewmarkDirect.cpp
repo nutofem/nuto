@@ -30,10 +30,11 @@ void NewmarkDirect::Solve(double rTimeDelta)
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
     auto dofValues = InitialState();
 
-    if (mAutomaticTimeStepping)
+    if (mAutomaticTimeStepping && mTimeControl.GetMinTimestep() <= 0.)
     {
+        mTimeControl.SetMinTimestep(mTimeControl.GetTimestep() * std::pow(0.5, 6.));
         // the minimal time step is equivalent to six cut-backs
-        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
+//        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
 
     while (mTimeControl.GetCurrentTime() < rTimeDelta)
