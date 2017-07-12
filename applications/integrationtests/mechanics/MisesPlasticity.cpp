@@ -15,6 +15,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 
 void SetConstitutiveLaw(NuTo::Structure& s)

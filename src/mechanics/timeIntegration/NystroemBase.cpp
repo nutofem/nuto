@@ -6,6 +6,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NystroemBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
@@ -204,7 +205,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
             //**********************************************
             // postprocess data for plotting
             mTimeControl.SetCurrentTime(mTime);
-            mPostProcessor.PostProcess(extLoad - intForce);
+            mPostProcessor->PostProcess(extLoad - intForce);
         }
     }
     catch (MechanicsException& e)

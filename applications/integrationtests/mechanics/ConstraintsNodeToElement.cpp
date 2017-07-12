@@ -25,6 +25,7 @@
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/constraints/Constraints.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>

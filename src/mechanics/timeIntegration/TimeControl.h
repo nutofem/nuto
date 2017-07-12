@@ -107,7 +107,9 @@ protected:
     double mMinTimeStep             = 0.0;
     double mMaxTimeStep             = std::numeric_limits<double>::max();
 
+#ifndef SWIG
     std::function<double()> mTimeStepFunction = []()->double{throw MechanicsException(__PRETTY_FUNCTION__,"No timestepping method selected!");};
+#endif
 };
 
 } // namespace NuTo

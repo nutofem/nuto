@@ -21,6 +21,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/structures/Assembler.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure)
     : TimeIntegrationBase(rStructure)
@@ -113,7 +114,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         timeStep.SetCurrentTimeStep(mTimeStep);
         timeStep.SetCurrentTimeStep(mTimeStep);
 
-        mPostProcessor.PostProcess(residual);
+        mPostProcessor->PostProcess(residual);
 
         while (mTime < rTimeDelta)
         {
@@ -215,7 +216,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
                 residual = extForce - intForce;
-                mPostProcessor.PostProcess(residual);
+                mPostProcessor->PostProcess(residual);
 
                 lastConverged_dof_dt0 = dof_dt0;
 

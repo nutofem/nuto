@@ -6,7 +6,6 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixSolvers/SolverBase.h"
 #include "mechanics/timeIntegration/TimeControl.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 namespace NuTo
 {
@@ -14,6 +13,7 @@ class CallbackInterface;
 class NodeBase;
 class StructureBase;
 class TimeDependencyBase;
+class PostProcessor;
 enum class eError;
 
 template <typename T>
@@ -166,14 +166,14 @@ public:
 
     void SetShowTime(bool showTime);
 
-    PostProcessor& PostProcessing()
-    {
-        return mPostProcessor;
-    }
-
     const PostProcessor& PostProcessing() const
     {
-        return mPostProcessor;
+        return *mPostProcessor;
+    }
+
+    PostProcessor& PostProcessing()
+    {
+        return *mPostProcessor;
     }
 
 protected:
@@ -221,6 +221,6 @@ protected:
     bool mShowTime = true;
     TimeControl mTimeControl;
 
-    PostProcessor mPostProcessor;
+    std::unique_ptr<PostProcessor> mPostProcessor;
 };
 } // namespace NuTo

@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMinTimeStep(minTimeStep);
     newmarkFeti.SetMaxTimeStep(maxTimeStep);
     newmarkFeti.SetAutomaticTimeStepping(automaticTimeStepping);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetToleranceResidual(eDof::NONLOCALEQSTRAIN, toleranceNlEqStrain);

@@ -5,6 +5,8 @@
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/structures/StructureBase.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "mechanics/timeIntegration/postProcessing/ResultElementIpData.h"
 #include "mechanics/timeIntegration/postProcessing/ResultElementIpData.h"
 #include "mechanics/timeIntegration/postProcessing/ResultGroupNodeForce.h"
 #include "mechanics/timeIntegration/postProcessing/ResultNodeDisp.h"
@@ -26,7 +28,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure)
     , mLoadVectorTimeDependent(rStructure->GetDofStatus())
     , mToleranceResidual(rStructure->GetDofStatus())
     , mCallback(nullptr)
-    , mPostProcessor(PostProcessor(*rStructure, mTimeControl))
+    , mPostProcessor(std::make_unique<PostProcessor>(*rStructure, mTimeControl))
 {
     ResetForNextLoad();
 }

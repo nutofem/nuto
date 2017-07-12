@@ -9,6 +9,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 using namespace NuTo;
 

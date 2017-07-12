@@ -11,6 +11,7 @@
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 void CheckResult(std::string resultDir, std::string file, Eigen::MatrixXd expected, double tolerance = 1.e-4)

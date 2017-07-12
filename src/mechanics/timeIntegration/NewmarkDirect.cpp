@@ -8,6 +8,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/structures/StructureBaseEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
@@ -325,7 +326,7 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     CalculateResidualKForPostprocessing(residual, hessians[2], dofValues[1], dofValues[2]);
 
 
-    mPostProcessor.PostProcess(residual);
+    mPostProcessor->PostProcess(residual);
     return dofValues;
 }
 
@@ -487,7 +488,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
             {
                 CalculateResidualKForPostprocessing(prevResidual, hessians[2], dof_dt[1], dof_dt[2]);
 
-                mPostProcessor.PostProcess(prevResidual);
+                mPostProcessor->PostProcess(prevResidual);
             }
 
             // eventually increase next time step

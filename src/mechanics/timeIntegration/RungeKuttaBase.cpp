@@ -9,6 +9,7 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
@@ -177,6 +178,6 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
         // postprocess data for plotting
         mTimeControl.SetCurrentTime(mTime);
-        mPostProcessor.PostProcess(extLoad - intForce);
+        mPostProcessor->PostProcess(extLoad - intForce);
     }
 }

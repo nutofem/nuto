@@ -11,6 +11,7 @@
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionTruss.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "visualize/VisualizeEnum.h"
 

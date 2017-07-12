@@ -14,6 +14,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 // Test of explicit time integration schemes (Kunge Kutta 4, Velocity Verlet and Nystroem Qin Zhu)
 // Dynamic simulation of a 1D elastic bar under shock load

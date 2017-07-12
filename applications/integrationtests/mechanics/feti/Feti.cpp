@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
                                        std::to_string(structure.mRank));
 
     newmark.SetTimeStep(timeStep);
-    newmark.SetResultDirectory(resultPath.string(), true);
+    newmark.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmark.SetToleranceIterativeSolver(1.e-7);
 
     Eigen::Matrix2d dispRHS;
@@ -285,7 +285,7 @@ std::map<int, VectorXd> ComputeReferenceSolution(int rank)
                                        std::to_string(rank));
 
     NuTo::NewmarkDirect newmarkDirect(&structure);
-    newmarkDirect.SetResultDirectory(resultPath.string(), true);
+    newmarkDirect.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkDirect.SetTimeStep(timeStep);
 
     structure.GetLogger() << "*********************************** \n"

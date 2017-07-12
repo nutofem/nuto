@@ -24,6 +24,8 @@
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
     using namespace NuTo::Constitutive;

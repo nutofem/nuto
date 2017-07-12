@@ -44,7 +44,7 @@ class TestResultForceDirection(unittest.TestCase):
         BCGroup = self.DefineTestStructure1D(s)
 
         TI.PostProcessing().SetResultDirectory(".", False)
-        TI.AddResultGroupNodeForce("Force" + name, BCGroup)
+        TI.PostProcessing().AddResultGroupNodeForce("Force" + name, BCGroup)
 
         TI.Solve(1.)
 

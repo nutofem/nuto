@@ -17,6 +17,7 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 

@@ -12,6 +12,7 @@
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 

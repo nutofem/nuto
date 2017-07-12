@@ -4,6 +4,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "mechanics/structures/Assembler.h"
@@ -142,7 +143,7 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
             // postprocess data for plotting
             mTimeControl.SetCurrentTime(mTime);
-            mPostProcessor.PostProcess(extLoad - intForce);
+            mPostProcessor->PostProcess(extLoad - intForce);
 
             // calculate new accelerations and velocities of independent dofs
             auto dof_dt2_new = dof_dt2;

@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
     boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/feti_" + std::to_string(rank));
 
     newmarkFeti.SetTimeStep(timeStep);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetToleranceIterativeSolver(1.e-8);
     newmarkFeti.SetMaxNumberOfFetiIterations(100);
 

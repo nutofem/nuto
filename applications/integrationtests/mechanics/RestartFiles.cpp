@@ -16,6 +16,7 @@
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {

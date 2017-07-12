@@ -15,6 +15,7 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -63,7 +63,7 @@ void InitializeNewmarkFeti(NewmarkFeti<EigenSolver>& newmarkFeti, const std::str
     newmarkFeti.SetTimeStep(timeStep);
     newmarkFeti.SetToleranceIterativeSolver(1.e-8);
     newmarkFeti.SetTimeDependentLoadCase(loadId, dispRHS);
-    newmarkFeti.SetResultDirectory(resultPath, true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath, true);
     newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
 }
 

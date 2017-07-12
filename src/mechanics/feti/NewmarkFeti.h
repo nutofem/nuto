@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <boost/mpi.hpp>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/MechanicsException.h"
@@ -498,7 +499,7 @@ public:
     //! \param krylovDimension
     void WriteGmresInfo(const int numIterations, const int numRestarts, const int krylovDimension)
     {
-        std::ofstream file(mResultDir + "/GmresInfo.dat", std::ios::app);
+        std::ofstream file(mPostProcessor->GetResultDirectory() + "/GmresInfo.dat", std::ios::app);
         file << mTime << "\t" << numIterations + (numRestarts * krylovDimension) << "\t" << krylovDimension << "\n";
         file.close();
     }
@@ -1254,7 +1255,7 @@ public:
 
 
                         // perform Postprocessing
-                        std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
+                        std::ofstream file(mPostProcessor->GetResultDirectory() + "/statistics.dat", std::ios::app);
                         file << mTime << "\t" << iteration << "\n";
                         file.close();
 
@@ -1301,7 +1302,7 @@ public:
     {
         StructureOutputBlockVector outOfBalance(dofStatus, true);
         outOfBalance.J = BlockFullVector<double>((mB.transpose() * lambda).head(mNumTotalActiveDofs), dofStatus);
-        TimeIntegrationBase::PostProcess(outOfBalance);
+        mPostProcessor->PostProcess(outOfBalance);
     }
 
 

@@ -21,6 +21,7 @@
 #include "mechanics/sections/SectionFibreMatrixBond.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 constexpr unsigned int dimension = 2;
