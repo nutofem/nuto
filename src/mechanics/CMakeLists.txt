@@ -18,7 +18,6 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/HeatConduction.cpp
     constitutive/laws/LinearDampingEngineeringStress.cpp
     constitutive/laws/LinearDielectric.cpp
-    constitutive/laws/LinearElasticInhomogeneous.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
     constitutive/laws/LinearElasticAnisotropic.cpp
     constitutive/laws/LinearPiezoelectric.cpp

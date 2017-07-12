@@ -127,7 +127,6 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputTyp
     case eInput::WATER_VOLUME_FRACTION_GRADIENT:
     case eInput::TEMPERATURE_GRADIENT:
     case eInput::ELECTRIC_FIELD:
-    case eInput::COORDINATES:
         return std::make_unique<ConstitutiveVector<TDim>>();
     // other
     case eInput::ENGINEERING_STRAIN:
