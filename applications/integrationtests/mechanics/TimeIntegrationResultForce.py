@@ -30,20 +30,20 @@ class TestResultForceDirection(unittest.TestCase):
         s.ElementTotalSetSection(section)
         s.ElementTotalSetConstitutiveLaw(lawId)
     
-        nodeLeft = s.NodeGetIdAtCoordinate(np.array([0.0]), 1.e-10)
-        s.ConstraintLinearSetDisplacementNode(nodeLeft, np.array([1.0]), 0)
+        nodeLeft = s.NodeGetAtCoordinate(np.array([0.0]), 1.e-10)
+        s.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeLeft))
         nodeRight = s.NodeGetIdAtCoordinate(np.array([L]), 1.e-10)
         nodeRightGroup = s.GroupCreate("nodes")
         s.GroupAddNode(nodeRightGroup, nodeRight)
     
-        constraintId = s.ConstraintLinearSetDisplacementNode(nodeRight, np.array([1.0]), 0)
+        nodeRight = s.NodeGetNodePtr(nodeRight)
+        s.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeRight, lambda t: u*t))
     
-        return nodeRightGroup, constraintId
+        return nodeRightGroup
     
     def RunTest(self, s, TI, name):
-        BCGroup, constraintId = self.DefineTestStructure1D(s)
+        BCGroup = self.DefineTestStructure1D(s)
         
-        TI.AddTimeDependentConstraint(constraintId, np.array([[0.,0.], [1.,u]]))
         TI.SetResultDirectory(".", False)
         TI.AddResultGroupNodeForce("Force" +name, BCGroup)
         

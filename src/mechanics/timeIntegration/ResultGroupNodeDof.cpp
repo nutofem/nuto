@@ -10,9 +10,10 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
 
-NuTo::ResultGroupNodeDof::ResultGroupNodeDof(const std::string& rIdent, int rGroupNodeId) : ResultBase(rIdent)
+NuTo::ResultGroupNodeDof::ResultGroupNodeDof(const std::string& rIdent, int rGroupNodeId)
+    : ResultBase(rIdent)
 {
-	mGroupNodeId = rGroupNodeId;
+    mGroupNodeId = rGroupNodeId;
 }
 
 void NuTo::ResultGroupNodeDof::Info() const
@@ -20,23 +21,23 @@ void NuTo::ResultGroupNodeDof::Info() const
 }
 
 void NuTo::ResultGroupNodeDof::CalculateAndAddValues(const NuTo::StructureBase& rStructure, int rTimeStepPlot,
-		const Eigen::VectorXd& rResidual_j,
-		const Eigen::VectorXd& rResidual_k)
+                                                     const Eigen::VectorXd& rResidual_j,
+                                                     const Eigen::VectorXd& rResidual_k)
 {
-	assert(rTimeStepPlot>=0);
-	if (rTimeStepPlot>=mData.rows())
-	{
-		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
-	}
-	Eigen::VectorXd values = CalculateValues(rStructure,rResidual_j,rResidual_k);
+    assert(rTimeStepPlot >= 0);
+    if (rTimeStepPlot >= mData.rows())
+    {
+        this->Resize(rStructure, 2 * (rTimeStepPlot + 1), false);
+    }
+    Eigen::VectorXd values = CalculateValues(rStructure, rResidual_j, rResidual_k);
 
-	if (values.rows()!=mData.cols())
-		throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
+    if (values.rows() != mData.cols())
+        throw Exception(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 
-	mData.row(rTimeStepPlot) = values.transpose();
+    mData.row(rTimeStepPlot) = values.transpose();
 }
 
-const NuTo::Group<NuTo::NodeBase>* NuTo::ResultGroupNodeDof::GetGroupNodePtr(const StructureBase& rStructure)const
+const NuTo::Group<NuTo::NodeBase>* NuTo::ResultGroupNodeDof::GetGroupNodePtr(const StructureBase& rStructure) const
 {
-	return rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
+    return rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
 }

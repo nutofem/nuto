@@ -1,38 +1,43 @@
 if(ENABLE_GEOMETRYCONCRETE)
-if(ENABLE_PYTHON)
-    # add all examples
-    add_test(integration::geometryConcrete::CollisionDetection.py ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CollisionDetection.py)
-    add_test(integration::geometryConcrete::GradingCurve3D.py     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GradingCurve3D.py)
-    add_test(integration::geometryConcrete::GradingCurveFileIO.py ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GradingCurveFileIO.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-
-    # set PYTHONPATH environment for all examples
-    set(MYTESTS
-        integration::geometryConcrete::CollisionDetection.py
-        integration::geometryConcrete::GradingCurveFileIO.py
-        integration::geometryConcrete::GradingCurve3D.py
-    )
-    set_property(TEST ${MYTESTS} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-
     unset(GMSH_PATH CACHE)
     find_program(GMSH_PATH gmsh)
-    # If gmsh is not found, the variables value will be "GMSH_PATH-NOTFOUND", which
-    # is recognized by the IF()-statement
-    # The link to the mechanics library is required, since the successful import
-    # to a structure is tested.
-    if(GMSH_PATH)
-        if(ENABLE_MECHANICS)
-            message(STATUS "Gmsh found: ${GMSH_PATH}")
-            add_test(integration::geometryConcrete::GmshExport.py ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${GMSH_PATH})
-            set_property(TEST integration::geometryConcrete::GmshExport.py PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-        endif()
+    if(ENABLE_PYTHON)
+        foreach(inputFile
+            input2D_test.dat
+            input3D_test.dat
+            )
+            create_symlink("${inputFile}")
+        endforeach()
 
+        foreach(test
+            CollisionDetection
+            GradingCurveFileIO
+            )
+
+            add_test(integration::geometryConcrete::${test}.py ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
+            set_property(TEST integration::geometryConcrete::${test}.py PROPERTY ENVIRONMENT
+                "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+        endforeach()
+
+        if(GMSH_PATH)
+            if(ENABLE_MECHANICS)
+                add_test(integration::geometryConcrete::GmshExport.py ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py
+                    ${GMSH_PATH})
+                set_property(TEST integration::geometryConcrete::GmshExport.py PROPERTY ENVIRONMENT
+                    "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+            endif()
+
+        else()
+            message(STATUS "Gmsh not found. Skipping test integration::geometryConcrete::GmshExport.py")
+        endif()
+    endif()
+
+    if(GMSH_PATH)
         add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)
         target_link_libraries(GeometryConcreteAPI NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
-        add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
-
+        add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
+            ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
     else()
-        message(STATUS "Gmsh not found. Skipping test p::geometryConcrete::GmshExport.py")
-        message(STATUS "Gmsh not found. Skipping test c::geometryConcrete::GeometryConcreteAPI.cpp")
+        message(STATUS "Gmsh not found. Skipping test integration::geometryConcrete::GeometryConcreteAPI.cpp")
     endif()
-endif()
 endif()

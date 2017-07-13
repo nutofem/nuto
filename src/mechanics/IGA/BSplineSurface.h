@@ -4,16 +4,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include <set>
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/export.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 namespace NuTo
 {
 //! @author Peter Otto, BAM
@@ -29,30 +19,33 @@ public:
     /** Constructors **/
 
     //! @brief ... default constructor
-    BSplineSurface(){}
+    BSplineSurface()
+    {
+    }
 
     //! @brief ... constructor
     //! @param rDegree ... degree of the polynomial
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
-    BSplineSurface(const Eigen::Vector2i &rDegree,
-                   const Eigen::VectorXd &rKnotsX,
-                   const Eigen::VectorXd &rKnotsY,
-                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
-                   const Eigen::MatrixXd &rWeights);
+    BSplineSurface(const Eigen::Vector2i& rDegree, const Eigen::VectorXd& rKnotsX, const Eigen::VectorXd& rKnotsY,
+                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& rControlPoints,
+                   const Eigen::MatrixXd& rWeights);
 
     //! @brief ... constructor (interpolation of a point cloud)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
-    BSplineSurface(const Eigen::Vector2i &rDegree,
-                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
-                   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv);
+    BSplineSurface(const Eigen::Vector2i& rDegree,
+                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
+                   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& AInv);
 
     /** Getter **/
 
     // --- Control points --- //
 
-    int GetDimension() const {return mControlPoints(0).rows();}
+    int GetDimension() const
+    {
+        return mControlPoints(0).rows();
+    }
 
     int GetNumControlPoints() const;
 
@@ -60,9 +53,15 @@ public:
 
     Eigen::VectorXd GetControlPoint(int rControlPointIDY, int rControlPointIDX) const;
 
-    const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& GetControlPoints() const {return mControlPoints;}
+    const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& GetControlPoints() const
+    {
+        return mControlPoints;
+    }
 
-    const Eigen::MatrixXd& GetWeights() const {return mWeights;}
+    const Eigen::MatrixXd& GetWeights() const
+    {
+        return mWeights;
+    }
 
     // --- Knot vector --- //
 
@@ -86,27 +85,30 @@ public:
 
     Eigen::VectorXi GetElementControlPointIDs(int rElementIDX, int rElementIDY) const;
 
-    Eigen::VectorXi GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY, const Eigen::MatrixXi &rNodeIDs) const;
+    Eigen::VectorXi GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY,
+                                                    const Eigen::MatrixXi& rNodeIDs) const;
 
-    Eigen::MatrixXd GetKnotIDControlPoints(const Eigen::Vector2i &rKnotIDs) const;
+    Eigen::MatrixXd GetKnotIDControlPoints(const Eigen::Vector2i& rKnotIDs) const;
 
     // --- Points --- //
 
-    Eigen::VectorXd SurfacePoint(const Eigen::Vector2d &rParameter) const;
+    Eigen::VectorXd SurfacePoint(const Eigen::Vector2d& rParameter) const;
 
-    Eigen::MatrixXd SurfacePoints(const Eigen::MatrixXd &rParameter) const;
+    Eigen::MatrixXd SurfacePoints(const Eigen::MatrixXd& rParameter) const;
 
     // --- Degree --- //
 
-    const Eigen::Vector2i& GetDegree() const {return mDegree;}
+    const Eigen::Vector2i& GetDegree() const
+    {
+        return mDegree;
+    }
 
     /** Parametrization **/
 
     //! @brief ... parametrization for given points to interpolate (chord length method)
     //! @param rPoints ... points to interpolate
     //! @return rParameters ... parameters to the given points
-    void ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints,
-                                          Eigen::VectorXd& rParametersX,
+    void ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints, Eigen::VectorXd& rParametersX,
                                           Eigen::VectorXd& rParametersY);
 
     /** Knot refinement **/
@@ -114,30 +116,27 @@ public:
 
     void InsertKnot(double rKnotToInsert, int rMultiplicity, int dir);
 
-    void RefineKnots(const Eigen::VectorXd &rKnotsToInsert, int dir);
+    void RefineKnots(const Eigen::VectorXd& rKnotsToInsert, int dir);
 
     /** build structure **/
 
-    void buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &setOfDOFS, int rGroupElements, int rGroupNodes);
+    void buildIGAStructure(NuTo::Structure& rStructure, const std::set<NuTo::Node::eDof>& setOfDOFS, int rGroupElements,
+                           int rGroupNodes);
 
 private:
+    //! @brief Knot vector (in isogeometric framework each segment between two knots is an element)
+    Eigen::VectorXd mKnotsX;
 
-//! @brief Knot vector (in isogeometric framework each segment between two knots is an element)
-Eigen::VectorXd mKnotsX;
+    //! @brief Knot vector (in isogeometric framework each segment between two knots is an element)
+    Eigen::VectorXd mKnotsY;
 
-//! @brief Knot vector (in isogeometric framework each segment between two knots is an element)
-Eigen::VectorXd mKnotsY;
+    //! @brief Degree of the polynomials
+    Eigen::Vector2i mDegree;
 
-//! @brief Degree of the polynomials
-Eigen::Vector2i mDegree;
+    //! @brief weights for nurbs
+    Eigen::MatrixXd mWeights;
 
-//! @brief weights for nurbs
-Eigen::MatrixXd mWeights;
-
-//! @brief Control points of the BSpline curve
-Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> mControlPoints;
-
-
-
+    //! @brief Control points of the BSpline curve
+    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> mControlPoints;
 };
 }

@@ -4,10 +4,6 @@
  *  Created on: 20 May 2015
  *      Author: Thomas Titscher
  */
-
-#define BOOST_TEST_MODULE LinearInterpolation
-#define BOOST_TEST_DYN_LINK
-
 #include "ElementUniaxialTest.h"
 
 using namespace NuTo::Interpolation;

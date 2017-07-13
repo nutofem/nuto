@@ -1,0 +1,5 @@
+add_unit_test(DamageLaw)
+add_unit_test(DamageLawExponential)
+add_unit_test(DamageLawHermite)
+add_unit_test(DamageLawLinear)
+add_unit_test(DamageLawNoSoftening)

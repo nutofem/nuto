@@ -37,27 +37,24 @@ def SetupMaterial(structure):
 
 
 def SetupBoundaryConditions(structure, BCType):
-    nodeSelectionTolerance = 1.e-6
-    xDirection = np.array([1.0])
-
     # fix left node at x = [0]
-    nodeLeft = structure.NodeGetIdAtCoordinate(np.array([0.]), nodeSelectionTolerance)
-    prescribedDisplacement = 0.
-    structure.ConstraintLinearSetDisplacementNode(nodeLeft, xDirection, prescribedDisplacement)
+    nodeLeft = structure.NodeGetAtCoordinate(np.array([0.]))
+    structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeLeft))
 
     # apply nonzero BC at x = length
-    nodeRight = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]), nodeSelectionTolerance)
+    nodeRight = structure.NodeGetAtCoordinate(np.array([Geometry.lx]))
+    nodeRightId = structure.NodeGetIdAtCoordinate(np.array([Geometry.lx]))
     if BCType == "DisplacmentBC":
-        structure.ConstraintLinearSetDisplacementNode(nodeRight, xDirection, BoundaryCondition.displacement)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Value(nodeRight, BoundaryCondition.displacement))
     if BCType == "ForceBC":
-        structure.SetNumLoadCases(1)
-        structure.LoadCreateNodeForce(0, nodeRight, xDirection, BoundaryCondition.force)
+        xDirection = np.array([1.0])
+        structure.LoadCreateNodeForce(nodeRightId, xDirection, BoundaryCondition.force)
 
 
 def Solve(structure):
-    structure.SolveGlobalSystemStaticElastic(0)
+    structure.SolveGlobalSystemStaticElastic()
     intGradient = structure.BuildGlobalInternalGradient()
-    extGradient = structure.BuildGlobalExternalLoadVector(0)
+    extGradient = structure.BuildGlobalExternalLoadVector()
     residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
     print("residual: {0}".format(np.linalg.norm(residual)))
     print("(should be _very_ close to zero.)")

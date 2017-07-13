@@ -1,9 +1,11 @@
+add_unit_test(Average)
+
 add_unit_test(LinearInterpolation
-    math/Interpolation.cpp 
+    math/Interpolation.cpp
     )
 
 add_unit_test(CubicSplineInterpolation
-    math/Interpolation.cpp 
+    math/Interpolation.cpp
     )
 
 add_unit_test(EigenCompanion)
@@ -17,6 +19,17 @@ add_unit_test(SparseMatrixCSRVector2General
         math/SparseMatrixCSR.cpp
     )
 
+
+add_unit_test(Legendre)
+add_unit_test(NaturalCoordinateMemoizer)
+add_unit_test(NewtonRaphson
+    math/SparseMatrixCSR.cpp
+    math/SparseDirectSolverMUMPS.cpp
+    base/Timer.cpp
+    )
+target_link_libraries(NewtonRaphson ${MUMPS_LIBRARIES})
+
+add_unit_test(Gmres)
 
 
 add_unit_test(SpatialContainer)

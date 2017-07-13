@@ -18,36 +18,31 @@ class SerializeStreamIn;
 //! @date January 2016
 //! @brief ... class for all block vectors with basic operators +,-,*(scalar)
 template <typename T>
-class BlockFullVector: public BlockStorageBase
+class BlockFullVector : public BlockStorageBase
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    BlockFullVector() {}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 
 public:
-
     //! @brief ctor
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
     BlockFullVector(const DofStatus& rDofStatus);
 
     //! @brief copy constructor
-    BlockFullVector(const BlockFullVector&  rOther);
+    BlockFullVector(const BlockFullVector& rOther);
 
     //! @brief destructor
     ~BlockFullVector();
 
 #ifndef SWIG
     //! @brief move constructor
-    BlockFullVector(      BlockFullVector&& rOther);
+    BlockFullVector(BlockFullVector&& rOther);
 #endif
 
     //! @brief import constructor
     //! @param rData ... vector to import from
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
     //! @param rAreActiveDofValues ... true if the rData represents a vector of active dof values
-    BlockFullVector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rData, const DofStatus& rDofStatus, bool rAreActiveDofValues = true);
+    BlockFullVector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rData, const DofStatus& rDofStatus,
+                    bool rAreActiveDofValues = true);
 
     //! @brief allocates the subvectors based on the current dof configuration of the structure
     void AllocateSubvectors();
@@ -56,11 +51,11 @@ public:
 #ifndef SWIG
     //! @brief copy assignment
     //! @remark only copies the active dof types
-    BlockFullVector& operator=(const BlockFullVector&  rOther);
+    BlockFullVector& operator=(const BlockFullVector& rOther);
 
     //! @brief move assignment
     //! @remark moves all values, moving only the active dof types is somehow slower.
-    BlockFullVector& operator=(      BlockFullVector&& rOther);
+    BlockFullVector& operator=(BlockFullVector&& rOther);
 
     //! @brief non-const access
     Eigen::Matrix<T, Eigen::Dynamic, 1>& operator[](Node::eDof rDofRow);
@@ -80,14 +75,20 @@ public:
     //! @brief operator *=
     //! @remark only modifies active dof types
     BlockFullVector& operator*=(double rScalar);
- 
+
     //! @brief operator *=
     //! @remark only modifies active dof types
     BlockFullVector& operator/=(double rScalar);
 
 
-    friend NuTo::BlockFullVector<T> operator+(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs) { return std::move(rLhs += rRhs); }
-    friend NuTo::BlockFullVector<T> operator-(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs) { return std::move(rLhs -= rRhs); }
+    friend NuTo::BlockFullVector<T> operator+(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs)
+    {
+        return std::move(rLhs += rRhs);
+    }
+    friend NuTo::BlockFullVector<T> operator-(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs)
+    {
+        return std::move(rLhs -= rRhs);
+    }
     friend NuTo::BlockFullVector<T> operator*(NuTo::BlockFullVector<T> rLhs, double rScalar)
     {
         return std::move(rLhs *= rScalar);
@@ -106,7 +107,7 @@ public:
     }
 
     template <typename T2>
-    friend std::ostream& operator<< (std::ostream &rOut, const NuTo::BlockFullVector<T2>& rBlockVector);
+    friend std::ostream& operator<<(std::ostream& rOut, const NuTo::BlockFullVector<T2>& rBlockVector);
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
@@ -125,10 +126,16 @@ public:
 #endif
 
     //! @brief comparision, checks equality of all sub vectors
-    inline bool operator==(const BlockFullVector& rOther) { return mData == rOther.mData; }
+    inline bool operator==(const BlockFullVector& rOther)
+    {
+        return mData == rOther.mData;
+    }
 
     //! @brief comparision, checks !equality of all sub vectors
-    inline bool operator!=(const BlockFullVector& rOther) { return !(*this == rOther); }
+    inline bool operator!=(const BlockFullVector& rOther)
+    {
+        return !(*this == rOther);
+    }
 
     //! @brief Imports the active dof type values from a vector
     void Import(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rToImport);
@@ -156,7 +163,7 @@ public:
     BlockScalar CalculateNormL2();
 
     //! @brief Calculates the infinity norm of the block vector for each dof
-    BlockScalar CalculateInfNorm();
+    BlockScalar CalculateInfNorm() const;
 
 #endif
 
@@ -172,22 +179,12 @@ public:
     Eigen::Matrix<T, Eigen::Dynamic, 1> Get(std::string rDofRow) const;
 
 private:
-
     //! @brief defines the serialization of this class
     //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeBlockFullVector(TStream &rStream);
+    void SerializeBlockFullVector(TStream& rStream);
 
     std::unordered_map<Node::eDof, Eigen::Matrix<T, Eigen::Dynamic, 1>, Node::eDofHash> mData;
-
 };
 
 } /* namespace NuTo */
-
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullVector<double>)
-BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullVector<int>)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

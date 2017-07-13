@@ -6,15 +6,14 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
-    class SolverBase
-    {
-    public:
-        virtual ~SolverBase() = default;
+class SolverBase
+{
+public:
+    virtual ~SolverBase() = default;
 
-        virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) = 0;
-    };
+    virtual BlockFullVector<double> Solve(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) = 0;
+};
 } // namespace NuTo

@@ -16,14 +16,6 @@
 %shared_ptr(NuTo::SectionFibreMatrixBond)
 %shared_ptr(NuTo::SectionVariableTruss)
 
-%extend NuTo::Section {
-    std::string __str__() const {
-         std::ostringstream out;
-         out << *$self;
-         return out.str();
-    }
-}
-
 %include "mechanics/sections/Section.h"
 %include "mechanics/sections/SectionFibreMatrixBond.h"
 %include "mechanics/sections/SectionPlane.h"

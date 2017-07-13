@@ -12,27 +12,31 @@
 namespace NuTo
 {
 
-namespace Constitutive {
-namespace StaticData {
+namespace Constitutive
+{
+namespace StaticData
+{
 class Component;
-}}
+}
+}
 
 enum class eDof;
 
-//VHIRTHAMTODO make doxygen/latex description
+// VHIRTHAMTODO make doxygen/latex description
 //! @brief ... moisture transport model
 //! @author Volker Hirthammer, BAM
 //! @date March 2016
 class MoistureTransport : public ConstitutiveBase
 {
 public:
-
     typedef Constitutive::StaticData::DataMoistureTransport StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
 
     //! @brief constructor
-    MoistureTransport() : ConstitutiveBase()
-    {}
+    MoistureTransport()
+        : ConstitutiveBase()
+    {
+    }
 
     //! @brief creates corresponding IPConstitutiveLaw
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
@@ -41,23 +45,24 @@ public:
     }
 
 private:
-
     //! @brief ... Input struct which stores the input data in the evaluate routine
     template <int TDim>
     struct InputData
     {
-        double                          mRelativeHumidity               = std::numeric_limits<double>::min();
-        double                          mRelativeHumidity_dt1           = std::numeric_limits<double>::min();
-        Eigen::Matrix<double, TDim, 1>  mRelativeHumidity_Gradient      = Eigen::MatrixXd::Constant(TDim, 1, std::numeric_limits<double>::min());
-        double                          mWaterVolumeFraction            = std::numeric_limits<double>::min();
-        double                          mWaterVolumeFraction_dt1        = std::numeric_limits<double>::min();
-        Eigen::Matrix<double, TDim, 1>  mWaterVolumeFraction_Gradient   = Eigen::MatrixXd::Constant(TDim, 1, std::numeric_limits<double>::min());
+        double mRelativeHumidity = std::numeric_limits<double>::min();
+        double mRelativeHumidity_dt1 = std::numeric_limits<double>::min();
+        Eigen::Matrix<double, TDim, 1> mRelativeHumidity_Gradient =
+                Eigen::MatrixXd::Constant(TDim, 1, std::numeric_limits<double>::min());
+        double mWaterVolumeFraction = std::numeric_limits<double>::min();
+        double mWaterVolumeFraction_dt1 = std::numeric_limits<double>::min();
+        Eigen::Matrix<double, TDim, 1> mWaterVolumeFraction_Gradient =
+                Eigen::MatrixXd::Constant(TDim, 1, std::numeric_limits<double>::min());
 
 
         static void AssertVectorValueIsNot(const Eigen::Matrix<double, TDim, 1>& rVector, double rValue)
         {
 #ifdef DEBUG
-            for(unsigned int i=0; i<TDim; ++i)
+            for (unsigned int i = 0; i < TDim; ++i)
             {
                 assert(rVector[i] != rValue);
             }
@@ -66,23 +71,18 @@ private:
     };
 
 public:
-
-
     //! @brief ... evaluate the constitutive relation
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     //! @param rStaticData ... static data
     template <int TDim>
-    void Evaluate(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Data& rStaticData);
-
+    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
+                  Data& rStaticData);
 
 
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
     void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport& rStaticData,
-            double rRelativeHumidity);
+                                            double rRelativeHumidity);
 
 private:
     //! @brief Checks if a value is within certain limits
@@ -105,72 +105,72 @@ private:
     void CheckSorptionCoefficients(std::string rCallingFunction, Eigen::VectorXd rSorptionCoefficients) const;
 
 public:
-
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
     //! @brief ... Checks the adsorption coefficients
     //! @param rAdsorptionCoefficients ... Adsorption coefficients
     void CheckAdsorptionCoefficients(Eigen::VectorXd rAdsorptionCoefficients) const
     {
-        CheckSorptionCoefficients(__PRETTY_FUNCTION__,rAdsorptionCoefficients);
+        CheckSorptionCoefficients(__PRETTY_FUNCTION__, rAdsorptionCoefficients);
     }
 
     //! @brief ... Checks the desorption coefficients
     //! @param rDesorptionCoefficients ... Desorption coefficients
     void CheckDesorptionCoefficients(Eigen::VectorXd rDesorptionCoefficients) const
     {
-        CheckSorptionCoefficients(__PRETTY_FUNCTION__,rDesorptionCoefficients);
+        CheckSorptionCoefficients(__PRETTY_FUNCTION__, rDesorptionCoefficients);
     }
 
     //! @brief ... check the boundary diffusion coefficient of the relative humidity
     //! @param rBoundaryDiffusionCoefficientRH ... boundary diffusion coefficient of the relative humidity
     void CheckBoundaryDiffusionCoefficientRH(double rBoundaryDiffusionCoefficientRH) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rBoundaryDiffusionCoefficientRH,true);
+        CheckValuePositive(__PRETTY_FUNCTION__, rBoundaryDiffusionCoefficientRH, true);
     }
 
     //! @brief ... check the boundary diffusion coefficient of the water volume fraction
     //! @param rBoundaryDiffusionCoefficientWV ... boundary diffusion coefficient of the water volume fraction
     void CheckBoundaryDiffusionCoefficientWV(double rBoundaryDiffusionCoefficientWV) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rBoundaryDiffusionCoefficientWV,true);
+        CheckValuePositive(__PRETTY_FUNCTION__, rBoundaryDiffusionCoefficientWV, true);
     }
 
-//    //! @brief ... checks if the constitutive law has a specific parameter
-//    //! @param rIdentifier ... Enum to identify the requested parameter
-//    //! @return ... true/false
-//    virtual bool                                    CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    //    //! @brief ... checks if the constitutive law has a specific parameter
+    //    //! @param rIdentifier ... Enum to identify the requested parameter
+    //    //! @return ... true/false
+    //    virtual bool                                    CheckHaveParameter(Constitutive::eConstitutiveParameter
+    //    rIdentifier) const override;
 
     //! @brief ... check the gradient correction when changing from desorption to adsorption
     //! @param ... gradient correction when changing from desorption to adsorption
-    void CheckGradientCorrDesorptionAdsorption (double rGradientCorrDesorptionAdsorption) const
+    void CheckGradientCorrDesorptionAdsorption(double rGradientCorrDesorptionAdsorption) const
     {
-        CheckValueInLimits(__PRETTY_FUNCTION__,rGradientCorrDesorptionAdsorption,0.0,1.0);
+        CheckValueInLimits(__PRETTY_FUNCTION__, rGradientCorrDesorptionAdsorption, 0.0, 1.0);
     }
 
     //! @brief ... check the gradient correction when changing from adsorption to desorption
     //! @param ... gradient correction when changing from adsorption to desorption
-    void CheckGradientCorrAdsorptionDesorption (double rGradientCorrAdsorptionDesorption) const
+    void CheckGradientCorrAdsorptionDesorption(double rGradientCorrAdsorptionDesorption) const
     {
-        CheckValueInLimits(__PRETTY_FUNCTION__,rGradientCorrAdsorptionDesorption,0.0,1.0);
+        CheckValueInLimits(__PRETTY_FUNCTION__, rGradientCorrAdsorptionDesorption, 0.0, 1.0);
     }
 
     //! @brief ... check if the mass exchange rate is non-negative
     //! @param rMassExchangeRate ... mass exchange rate
-    void                                            CheckMassExchangeRate                                       (double rMassExchangeRate) const
+    void CheckMassExchangeRate(double rMassExchangeRate) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rMassExchangeRate,true);
+        CheckValuePositive(__PRETTY_FUNCTION__, rMassExchangeRate, true);
     }
 
-//    //! @brief ... checks if a constitutive law has an specific output
-//    //! @return ... true/false
-//    virtual bool                                    CheckOutputTypeCompatibility                                (Constitutive::eOutput rOutputEnum) const override;
+    //    //! @brief ... checks if a constitutive law has an specific output
+    //    //! @return ... true/false
+    //    virtual bool                                    CheckOutputTypeCompatibility
+    //    (Constitutive::eOutput rOutputEnum) const override;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
@@ -180,35 +180,35 @@ public:
     //! @param rPorosity ... porosity
     void CheckPoreVolumeFraction(double rPoreVolumeFraction) const
     {
-        CheckValueInLimits(__PRETTY_FUNCTION__,rPoreVolumeFraction,0.0,1.0);
+        CheckValueInLimits(__PRETTY_FUNCTION__, rPoreVolumeFraction, 0.0, 1.0);
     }
 
     //! @brief ... check if the relative humidity diffusion coefficient is non-negative
     //! @param rDiffusionCoefficientRH ... relative humidity diffusion coefficient
     void CheckDiffusionCoefficientRH(double rDiffusionCoefficientRH) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDiffusionCoefficientRH);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDiffusionCoefficientRH);
     }
 
     //! @brief ... check if the water volume fraction diffusion coefficient is non-negative
     //! @param rDiffusionCoefficientWV ... water volume fraction diffusion coefficient
     void CheckDiffusionCoefficientWV(double rDiffusionCoefficientWV) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDiffusionCoefficientWV);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDiffusionCoefficientWV);
     }
 
     //! @brief ... check if the relative humidity diffusion exponent is non-negative
     //! @param rDiffusionExponentRH ... relative humidity diffusion exponent
     void CheckDiffusionExponentRH(double rDiffusionExponentRH) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDiffusionExponentRH);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDiffusionExponentRH);
     }
 
     //! @brief ... check if the water volume fraction diffusion exponent is non-negative
     //! @param rDiffusionExponentWV ... water volume fraction diffusion exponent
     void CheckDiffusionExponentWV(double rDiffusionExponentWV) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDiffusionExponentWV);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDiffusionExponentWV);
     }
 
 
@@ -216,14 +216,14 @@ public:
     //! @param rDensitySaturatedWaterVapor ... the density of saturated water vapor
     void CheckDensitySaturatedWaterVapor(double rDensitySaturatedWaterVapor) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDensitySaturatedWaterVapor);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDensitySaturatedWaterVapor);
     }
 
     //! @brief ... check if water phase density is positive and non-zero
     //! @param rWaterPhaseDensity ... water phase density
     void CheckDensityWater(double rDensityWater) const
     {
-        CheckValuePositive(__PRETTY_FUNCTION__,rDensityWater);
+        CheckValuePositive(__PRETTY_FUNCTION__, rDensityWater);
     }
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
@@ -249,15 +249,17 @@ public:
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::VectorXd
+    GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier,
+                                              Eigen::VectorXd rValue) override;
 
 
-    //VHIRTHAMTODO Check if static function better?
+    // VHIRTHAMTODO Check if static function better?
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
@@ -277,7 +279,8 @@ public:
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType GetType() const override;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const override
     {
@@ -286,14 +289,14 @@ public:
 
 
 protected:
-
     //! @brief Coefficients of the adsorption curve.
-    Eigen::VectorXd   mAdsorptionCoeff = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd mAdsorptionCoeff = Eigen::VectorXd::Zero(3);
 
     //! @brief Coefficients of the desorption curve.
-    Eigen::VectorXd   mDesorptionCoeff = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd mDesorptionCoeff = Eigen::VectorXd::Zero(3);
 
-    //! @brief Controls if a modified tangential stiffness should be used during Newton iteration (less terms to calculate in Hessian_0).
+    //! @brief Controls if a modified tangential stiffness should be used during Newton iteration (less terms to
+    //! calculate in Hessian_0).
     bool mEnableModifiedTangentialStiffness = false;
 
     //! @brief Controls if the sorption hysteresis model should be used.
@@ -334,6 +337,5 @@ protected:
 
     //! @brief Density of saturated water vapor \f$ \rho_v \f$.
     double mDensitySaturatedWaterVapor = 1.0;
-
 };
 }

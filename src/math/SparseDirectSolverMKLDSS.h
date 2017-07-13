@@ -6,12 +6,13 @@
 namespace NuTo
 {
 // forward declarations
-template<class T> class SparseMatrixCSR;
+template <class T>
+class SparseMatrixCSR;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
 //! @brief ... interface for the MKL-DSS sparse direct solver
-class SparseDirectSolverMKLDSS  : public SparseDirectSolver
+class SparseDirectSolverMKLDSS : public SparseDirectSolver
 {
 public:
     //! @brief ... default constructor
@@ -36,6 +37,7 @@ public:
     {
         this->mRefinement = false;
     }
+
 protected:
     //! @brief ... determines wether a refinement is enabled or disabled within the solution strategy
     bool mRefinement;

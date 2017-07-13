@@ -17,7 +17,10 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/PhaseField.cpp
     constitutive/laws/HeatConduction.cpp
     constitutive/laws/LinearDampingEngineeringStress.cpp
+    constitutive/laws/LinearDielectric.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
+    constitutive/laws/LinearElasticAnisotropic.cpp
+    constitutive/laws/LinearPiezoelectric.cpp
     constitutive/laws/LocalDamageModel.cpp
     constitutive/laws/MisesPlasticityEngineeringStress.cpp
     constitutive/laws/MoistureTransport.cpp
@@ -33,26 +36,8 @@ set(NuToMechanicsConstitutiveSources
     )
 
 set(NuToMechanicsConstraintSources
-    constraints/ConstraintBase.cpp
-    constraints/ConstraintEquationTerm.cpp
-    constraints/ConstraintLinear.cpp
-    constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
-    constraints/ConstraintLinearEquation.cpp
-    constraints/ConstraintLinearNodeDisplacements1D.cpp
-    constraints/ConstraintLinearNodeDisplacements2D.cpp
-    constraints/ConstraintLinearNodeDisplacements3D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
-    constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
-    constraints/ConstraintLinearNodeGroupRotations2D.cpp
-    constraints/ConstraintLinearNodeGroupTemperature.cpp
-    constraints/ConstraintLinearNodeRelativeHumidity.cpp
-    constraints/ConstraintLinearNodeRotations2D.cpp
-    constraints/ConstraintLinearNodeTemperature.cpp
-    constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
-    constraints/ConstraintNode.cpp
-    constraints/ConstraintNodeGroup.cpp
-    constraints/ConstraintNonlinear.cpp
+    constraints/Constraints.cpp
+    constraints/ConstraintCompanion.cpp
     )
 
 set(NuToMechanicsDofSubMatrixStorageSources
@@ -87,15 +72,8 @@ set(NuToMechanicsGroupsSources
 set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NGauss1Ip.cpp
-    integrationtypes/IntegrationType1D2NGauss2Ip.cpp
-    integrationtypes/IntegrationType1D2NGauss3Ip.cpp
-    integrationtypes/IntegrationType1D2NGauss4Ip.cpp
-    integrationtypes/IntegrationType1D2NGauss5Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
-    integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
+    integrationtypes/IntegrationType1D2NGauss.cpp
+    integrationtypes/IntegrationType1D2NLobatto.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -112,7 +90,8 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
-    integrationtypes/IntegrationType3D6NGauss2x3Ip
+    integrationtypes/IntegrationType3D6NGauss1Ip.cpp
+    integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     integrationtypes/IntegrationType3D8NGauss1Ip.cpp
     integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
     integrationtypes/IntegrationTypeBase.cpp
@@ -145,16 +124,15 @@ set(NuToMechanicsIGASources
     )
 
 set(NuToMechanicsLoadsSources
-    loads/LoadBase.cpp
     loads/LoadNode.cpp
     loads/LoadNodeGroup.cpp
     loads/LoadNodeForces1D.cpp
     loads/LoadNodeForces2D.cpp
     loads/LoadNodeForces3D.cpp
+    loads/LoadNodeScalarSource.cpp
     loads/LoadNodeGroupForces1D.cpp
     loads/LoadNodeGroupForces2D.cpp
     loads/LoadNodeGroupForces3D.cpp
-    loads/LoadNodeHeatFlux1D.cpp
     loads/LoadSurfaceBase2D.cpp
     loads/LoadSurfaceBase3D.cpp
     loads/LoadSurfaceConstDirection2D.cpp
@@ -189,7 +167,6 @@ set(NuToMechanicsSectionSources
 set(NuToMechanicsStructuresSources
     structures/StructureBase.cpp
     structures/StructureBaseConstitutiveLaw.cpp
-    structures/StructureBaseConstraints.cpp
     structures/StructureBaseElement.cpp
     structures/StructureBaseEnum.cpp
     structures/StructureBaseGroup.cpp
@@ -200,19 +177,19 @@ set(NuToMechanicsStructuresSources
     structures/StructureOutputBase.cpp
     structures/StructureOutputBlockMatrix.cpp
     structures/StructureOutputBlockVector.cpp
-    structures/unstructured/Structure.cpp    
+    structures/unstructured/Structure.cpp
     structures/unstructured/StructureElement.cpp
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
     structures/unstructured/StructureNode.cpp
+    structures/Assembler.cpp
     )
 
 
 
 set(NuToMechanicsTimeIntegrationSources
     timeIntegration/NewmarkBase.cpp
-    timeIntegration/NewmarkDirect.cpp    
-    #timeIntegration/JumpDirect.cpp
+    timeIntegration/NewmarkDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
     timeIntegration/ResultBase.cpp
@@ -230,7 +207,6 @@ set(NuToMechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
-    timeIntegration/TimeDependencyBase.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp
@@ -238,6 +214,9 @@ set(NuToMechanicsTimeIntegrationSources
     timeIntegration/VelocityVerlet.cpp
     )
 
+set(NuToMechanicsToolsSources
+    tools/GlobalFractureEnergyIntegrator.cpp
+    )
 
 set(NuToMechanicsSources
     ${NuToMechanicsConstitutiveSources}
@@ -255,6 +234,7 @@ set(NuToMechanicsSources
     ${NuToMechanicsSectionSources}
     ${NuToMechanicsStructuresSources}
     ${NuToMechanicsTimeIntegrationSources}
+    ${NuToMechanicsToolsSources}
     )
 
 
@@ -263,8 +243,6 @@ sources_to_objects("${NuToMechanicsSources}" NuToMechanicsObjects)
 # build static library
 add_library(NuToMechanics ${NuToMechanicsObjects})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
-
-target_link_libraries(NuToMechanics jsoncpp)
 
 if(ENABLE_MPI)
     message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")

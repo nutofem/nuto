@@ -1,99 +1,27 @@
-// $Id$
-
 #include "visualize/Point.h"
-#include "visualize/VisualizeException.h"
-#include "visualize/VisualizeDataScalar.h"
-#include "visualize/VisualizeDataVector.h"
-#include "visualize/VisualizeDataTensor.h"
-#include "visualize/VisualizeDataType.h"
-#include "visualize/VisualizeDataField.h"
+#include "base/Exception.h"
 
-// constructor
-NuTo::Point::Point(const double* rCoordinates)
+using namespace NuTo::Visualize;
+
+Point::Point(Eigen::Vector3d coordinates, int numData)
+    : mCoordinates(coordinates)
 {
-    this->mCoordinates[0] = rCoordinates[0];
-    this->mCoordinates[1] = rCoordinates[1];
-    this->mCoordinates[2] = rCoordinates[2];
+    mData.resize(numData);
 }
 
-NuTo::Point::~Point()
-{}
-
-// add scalar data
-void NuTo::Point::AddDataScalar(unsigned int rDataIndex)
+void Point::SetData(int dataIndex, Eigen::VectorXd data)
 {
-    if (rDataIndex != this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::AddDataScalar] invalid data index.");
-    }
-    this->mData.push_back(new NuTo::VisualizeDataScalar());
+    if (dataIndex >= static_cast<int>(this->mData.size()))
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid data index.");
+    mData[dataIndex] = data;
 }
 
-// add vector data
-void NuTo::Point::AddDataVector(unsigned int rDataIndex)
+const Eigen::Vector3d& Point::GetCoordinates() const
 {
-    if (rDataIndex != this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::AddDataVector] invalid data index.");
-    }
-    this->mData.push_back(new NuTo::VisualizeDataVector());
+    return mCoordinates;
 }
 
-// set scalar data
-void NuTo::Point::SetDataScalar(unsigned int rDataIndex, double rData)
+const Eigen::VectorXd& Point::GetData(int dataIndex) const
 {
-    if (rDataIndex >= this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data index.");
-    }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::SCALAR)
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::SetDataScalar] invalid data type.");
-    }
-    this->mData[rDataIndex].SetData(&rData);
-}
-
-// set vector data
-void NuTo::Point::SetDataVector(unsigned int rDataIndex, double rData[3])
-{
-    if (rDataIndex >= this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data index.");
-    }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::VECTOR)
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data type.");
-    }
-    this->mData[rDataIndex].SetData(rData);
-}
-
-
-// add tensor data
-void NuTo::Point::AddDataTensor(unsigned int rDataIndex)
-{
-    if (rDataIndex != this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::AddDataTensor] invalid data index.");
-    }
-    this->mData.push_back(new NuTo::VisualizeDataTensor());
-}
-
-// add field data
-void NuTo::Point::AddDataField(unsigned int rDataIndex, unsigned int rNumData)
-{
-    if (rDataIndex != this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::AddDataField] invalid data index.");
-    }
-    this->mData.push_back(new NuTo::VisualizeDataField(rNumData));
-}
-
-// get point data
-const NuTo::VisualizeDataBase* NuTo::Point::GetData(unsigned int rDataIndex) const
-{
-    if (rDataIndex >= this->mData.size())
-    {
-        throw NuTo::VisualizeException("[NuTo::Point::GetData] invalid data index.");
-    }
-    return &(this->mData[rDataIndex]);
+    return mData[dataIndex];
 }

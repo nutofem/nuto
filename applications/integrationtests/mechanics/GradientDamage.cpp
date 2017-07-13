@@ -3,17 +3,17 @@
 #include <boost/filesystem.hpp>
 
 #include "base/Timer.h"
+
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
+
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"
-#include "mechanics/groups/GroupEnum.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/groups/GroupBase.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionVariableTruss.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
@@ -23,71 +23,18 @@
 
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "math/SparseMatrixCSRVector2General.h"
-#include "visualize/VisualizeEnum.h"
-
-void CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
-{
-    double epsilon = 1.e-8;
-    double E = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
-    double e0 = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) / E;
-    double step = e0 / 5;
-    for (int i = 1; i < 100; ++i)
-    {
-        double kappa = i * step + epsilon;
-//        kappa = i*step;
-        double sigma1 = (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E * kappa;
-        double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa + epsilon)) * E * (kappa + epsilon);
-
-        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa) * E * kappa + (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E;
-        double DsigmaDkappa_CDF = (sigma2 - sigma1) / epsilon;
-
-        BOOST_CHECK_SMALL(DsigmaDkappa - DsigmaDkappa_CDF, 1.e-3);
-    }
-}
-
-void CheckDamageLaws()
-{
-    NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE));
-    CheckDamageLawsDerivatives(myConstitutiveLaw);
-}
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
-    // create a damage law
-    int lawId = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::MAX_OMEGA, 0.925);
-    rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
-
-    BOOST_CHECK_CLOSE(rStructure.ConstitutiveLawGetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::MAX_OMEGA), 0.925, 1.e-10);
-
+    using namespace NuTo::Constitutive;
+    int lawId = rStructure.ConstitutiveLawCreate(eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::POISSONS_RATIO, 0.2);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::NONLOCAL_RADIUS, 3);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetDamageLaw(lawId, DamageLawExponential::Create(4. / 30000., 4. / 0.021));
     return lawId;
 }
 
@@ -132,7 +79,7 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
 
-    rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    rStructure.ExportVtkDataFileElements(resultDir + "/Elements.vtu");
 }
 
 void AddInterpolationType(NuTo::Structure& rS, int rITid)
@@ -153,7 +100,8 @@ int AddBoundaryElementsAtCoordinate(NuTo::Structure& rS, double rCoordinate)
     int gBoundaryElements = rS.BoundaryElementsCreate(elemGroupBoundary, gNodesBoundary);
     for (int boundaryElementId : rS.GroupGetMemberIds(gBoundaryElements))
     {
-        auto& boundaryElement = dynamic_cast<NuTo::ContinuumBoundaryElement<TDim>&>(*rS.ElementGetElementPtr(boundaryElementId));
+        auto& boundaryElement =
+                dynamic_cast<NuTo::ContinuumBoundaryElement<TDim>&>(*rS.ElementGetElementPtr(boundaryElementId));
         boundaryElement.SetAlpha(42.);
     }
 
@@ -203,7 +151,6 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
 }
 
 
-
 void TestStructure2D(NuTo::Interpolation::eShapeType rShape, bool isPlaneStrain, bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
@@ -231,7 +178,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, bool isPlaneStrain,
 
     if (rUseRobinBoundaryElements)
     {
-        AddBoundaryElements<2>(s, lX, 2*numElementsY);
+        AddBoundaryElements<2>(s, lX, 2 * numElementsY);
     }
     CheckStiffnesses(s);
     Visualize(s, NuTo::Interpolation::ShapeTypeToString(rShape));
@@ -248,7 +195,7 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
     double lX = 3, lY = 4, lZ = 5;
 
-    int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY, lZ}, {1,1,1}, rShape).second;
+    int interpolationType = NuTo::MeshGenerator::Grid(s, {lX, lY, lZ}, {1, 1, 1}, rShape).second;
     AddInterpolationType(s, interpolationType);
 
     s.ElementTotalConvertToInterpolationType();
@@ -268,29 +215,21 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 }
 
 
-void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
+void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, NuTo::Group<NuTo::NodeBase>& nodes)
 {
-    for (int nodeId : rStructure.GroupGetMemberIds(rGroupNodeId))
+    for (int nodeId : nodes.GetMemberIds())
     {
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         if (node->GetNum(NuTo::Node::eDof::DISPLACEMENTS) == 0)
-        {
-            NuTo::GroupBase* group = rStructure.GroupGetGroupPtr(rGroupNodeId);
-            group->RemoveMember(nodeId);
-        }
+            nodes.RemoveMember(nodeId);
     }
 }
 
-void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rDir)
+void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, std::string rDir)
 {
     double simulationTime = 1;
-    double dispEnd = 0.01;
     int numLoadSteps = 3;
 
-    Eigen::Matrix2d timeDepDisp;
-    timeDepDisp << 0, 0, simulationTime, dispEnd;
-
-    rTimeIntegration.AddTimeDependentConstraint(rBC, timeDepDisp);
     rTimeIntegration.SetTimeStep(simulationTime / numLoadSteps);
     rTimeIntegration.SetAutomaticTimeStepping(false);
     rTimeIntegration.SetToleranceForce(1e-8);
@@ -302,6 +241,12 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rD
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
     rTimeIntegration.SetResultDirectory(resultDir, true);
+}
+
+void Info(const NuTo::TimeIntegrationBase& timeIntegration)
+{
+    std::cout << "Solve required " << timeIntegration.GetNumIterations() << " iterations. Result files written to "
+              << timeIntegration.GetResultDirectory() << ".\n";
 }
 
 void Check1D2D3D()
@@ -331,7 +276,8 @@ void Check1D2D3D()
 
     s1D.InterpolationTypeSetIntegrationType(interpolationType1D, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
     s2D.InterpolationTypeSetIntegrationType(interpolationType2D, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
-    s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
+    s3D.InterpolationTypeSetIntegrationType(interpolationType3D,
+                                            NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
 
     s1D.ElementTotalConvertToInterpolationType();
     s2D.ElementTotalConvertToInterpolationType();
@@ -341,7 +287,7 @@ void Check1D2D3D()
     s2D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s2D));
     s3D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s3D));
 
-    auto mySection1D = NuTo::SectionTruss::Create(lz*ly);
+    auto mySection1D = NuTo::SectionTruss::Create(lz * ly);
     auto mySection2D = NuTo::SectionPlane::Create(lz, false);
 
     s1D.ElementTotalSetSection(mySection1D);
@@ -352,35 +298,30 @@ void Check1D2D3D()
     {
         NuTo::ElementBase* element = s1D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
     {
         NuTo::ElementBase* element = s2D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
     {
         NuTo::ElementBase* element = s3D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa);
+            element->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(
+                    kappa);
     }
 
 
-    int leftNodes1D = s1D.GroupCreate(NuTo::eGroupId::Nodes);
-    int leftNodes2D = s2D.GroupCreate(NuTo::eGroupId::Nodes);
-    int leftNodes3D = s3D.GroupCreate(NuTo::eGroupId::Nodes);
+    auto& leftNodes1D = s1D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    auto& leftNodes2D = s2D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+    auto& leftNodes3D = s3D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
 
-    int rightNodes1D = s1D.GroupCreate(NuTo::eGroupId::Nodes);
-    int rightNodes2D = s2D.GroupCreate(NuTo::eGroupId::Nodes);
-    int rightNodes3D = s3D.GroupCreate(NuTo::eGroupId::Nodes);
-
-    s1D.GroupAddNodeCoordinateRange(leftNodes1D, 0, -1.e-4, 1.e-4);
-    s2D.GroupAddNodeCoordinateRange(leftNodes2D, 0, -1.e-4, 1.e-4);
-    s3D.GroupAddNodeCoordinateRange(leftNodes3D, 0, -1.e-4, 1.e-4);
-
-    s1D.GroupAddNodeCoordinateRange(rightNodes1D, 0, lx - 1.e-4, lx + 1.e-4);
-    s2D.GroupAddNodeCoordinateRange(rightNodes2D, 0, lx - 1.e-4, lx + 1.e-4);
-    s3D.GroupAddNodeCoordinateRange(rightNodes3D, 0, lx - 1.e-4, lx + 1.e-4);
+    auto& rightNodes1D = s1D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
+    auto& rightNodes2D = s2D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
+    auto& rightNodes3D = s3D.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
 
     GroupRemoveNodesWithoutDisplacements(s1D, leftNodes1D);
     GroupRemoveNodesWithoutDisplacements(s1D, rightNodes1D);
@@ -389,19 +330,25 @@ void Check1D2D3D()
     GroupRemoveNodesWithoutDisplacements(s3D, leftNodes3D);
     GroupRemoveNodesWithoutDisplacements(s3D, rightNodes3D);
 
-    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
-    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
-    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
+    const NuTo::Node::eDof eDofDispl = NuTo::Node::eDof::DISPLACEMENTS;
+    using namespace NuTo::Constraint;
+    s1D.Constraints().Add(eDofDispl, Component(leftNodes1D, {NuTo::eDirection::X}));
+    s2D.Constraints().Add(eDofDispl, Component(leftNodes2D, {NuTo::eDirection::X}));
+    s3D.Constraints().Add(eDofDispl, Component(leftNodes3D, {NuTo::eDirection::X}));
 
-    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
-    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
-    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
+    const double dispBC = 0.01;
+    s1D.Constraints().Add(eDofDispl, Component(rightNodes1D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
+    s2D.Constraints().Add(eDofDispl, Component(rightNodes2D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
+    s3D.Constraints().Add(eDofDispl, Component(rightNodes3D, {NuTo::eDirection::X}, RhsRamp(1, dispBC)));
 
-    s2D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
-    s3D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector3d::UnitY(), 0.);
+    // additionally fix y for 2D/3D
+    s2D.Constraints().Add(eDofDispl,
+                          Component(s2D.NodeGetAtCoordinate(Eigen::Vector2d::Zero()), {NuTo::eDirection::Y}));
+    s3D.Constraints().Add(eDofDispl,
+                          Component(s3D.NodeGetAtCoordinate(Eigen::Vector3d::Zero()), {NuTo::eDirection::Y}));
 
-    int nFixRotation = s3D.NodeGetIdAtCoordinate(Eigen::Vector3d({0,0,lz}), 1.e-4);
-    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, Eigen::Vector3d::UnitY(), 0.);
+    const auto& nFixRotation = s3D.NodeGetAtCoordinate(Eigen::Vector3d({0, 0, lz}));
+    s3D.Constraints().Add(eDofDispl, Component(nFixRotation, {NuTo::eDirection::Y}));
 
     Visualize(s1D, "tmp");
     Visualize(s2D, "tmp");
@@ -416,9 +363,9 @@ void Check1D2D3D()
     NuTo::NewmarkDirect myIntegrationScheme2D(&s2D);
     NuTo::NewmarkDirect myIntegrationScheme3D(&s3D);
 
-    SetupNewmark(myIntegrationScheme1D, bc1D, "Newmark1D");
-    SetupNewmark(myIntegrationScheme2D, bc2D, "Newmark2D");
-    SetupNewmark(myIntegrationScheme3D, bc3D, "Newmark3D");
+    SetupNewmark(myIntegrationScheme1D, "Newmark1D");
+    SetupNewmark(myIntegrationScheme2D, "Newmark2D");
+    SetupNewmark(myIntegrationScheme3D, "Newmark3D");
 
     timer.Reset(std::string(__FUNCTION__) + " Solution via NewmarkDirect");
 
@@ -431,17 +378,17 @@ void Check1D2D3D()
 
     for (int i = 0; i < numElements; ++i)
     {
-        double stress1D = s1D.ElementGetEngineeringStress(i)(0,0);
-        double stress2D = s2D.ElementGetEngineeringStress(i)(0,0);
-        double stress3D = s3D.ElementGetEngineeringStress(i)(0,0);
+        double stress1D = s1D.ElementGetEngineeringStress(i)(0, 0);
+        double stress2D = s2D.ElementGetEngineeringStress(i)(0, 0);
+        double stress3D = s3D.ElementGetEngineeringStress(i)(0, 0);
 
-        double strain1D = s1D.ElementGetEngineeringStrain(i)(0,0);
-        double strain2D = s2D.ElementGetEngineeringStrain(i)(0,0);
-        double strain3D = s3D.ElementGetEngineeringStrain(i)(0,0);
+        double strain1D = s1D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain2D = s2D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain3D = s3D.ElementGetEngineeringStrain(i)(0, 0);
 
-        double damage1D = s1D.ElementGetDamage(i)(0,0);
-        double damage2D = s2D.ElementGetDamage(i)(0,0);
-        double damage3D = s3D.ElementGetDamage(i)(0,0);
+        double damage1D = s1D.ElementGetDamage(i)(0, 0);
+        double damage2D = s2D.ElementGetDamage(i)(0, 0);
+        double damage3D = s3D.ElementGetDamage(i)(0, 0);
 
         BOOST_CHECK_CLOSE_FRACTION(stress1D, stress2D, 1.e-3);
         BOOST_CHECK_CLOSE_FRACTION(stress1D, stress3D, 1.e-3);
@@ -453,11 +400,9 @@ void Check1D2D3D()
         BOOST_CHECK_CLOSE_FRACTION(damage1D, damage3D, 1.e-3);
     }
     timer.Reset(std::string(__FUNCTION__) + " Cleanup");
-}
-
-BOOST_AUTO_TEST_CASE(GradientDamageDmgLaws)
-{
-    CheckDamageLaws();
+    Info(myIntegrationScheme1D);
+    Info(myIntegrationScheme2D);
+    Info(myIntegrationScheme3D);
 }
 
 bool useRobinBoundaryElements = true;
@@ -469,19 +414,14 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
 
 BOOST_AUTO_TEST_CASE(GradientDamage2D)
 {
-    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D,
-                                         false,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D, false, useRobinBoundaryElements));
 
-    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D,
-                                         true,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D, true, useRobinBoundaryElements));
 }
 
 BOOST_AUTO_TEST_CASE(GradientDamage3D)
 {
-    BOOST_CHECK_NO_THROW(TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D,
-                                         useRobinBoundaryElements));
+    BOOST_CHECK_NO_THROW(TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, useRobinBoundaryElements));
 }
 
 BOOST_AUTO_TEST_CASE(GradientDamage1D2D3D)

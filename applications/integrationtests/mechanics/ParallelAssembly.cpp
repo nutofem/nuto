@@ -24,12 +24,12 @@ void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)
 
     double lx = 2, ly = 3, lz = 4.;
 
-    int interpolationType = NuTo::MeshGenerator::Grid(
-        rStructure, {lx, ly, lz},
-        {rNumElementsPerDimension, rNumElementsPerDimension, rNumElementsPerDimension}).second;
+    int interpolationType =
+            NuTo::MeshGenerator::Grid(rStructure, {lx, ly, lz},
+                                      {rNumElementsPerDimension, rNumElementsPerDimension, rNumElementsPerDimension})
+                    .second;
 
-    rStructure.InterpolationTypeAdd(interpolationType,
-                                    NuTo::Node::eDof::DISPLACEMENTS,
+    rStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,
                                     NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     rStructure.ElementTotalConvertToInterpolationType();

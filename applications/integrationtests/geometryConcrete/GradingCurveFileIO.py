@@ -1,117 +1,73 @@
-# -*- coding: utf-8 -*-
-
-import nuto
-import math
-import sys
+#!/usr/bin/env python3
 import os
 import numpy as np
+import nuto
+
+""" Test Input File reading
+
+For 2D and 3D do:
+  1) Read information from an input file
+  2) Perform the take-and-place algorithm
+  3) Perform the EDMD algorithm
+
+If everything runs without SEGFAULTS or exceptions, the test passes.
+"""
 
 
+def RunSimulationFromInputFile(inputFile, visuFileName):
+    reader = nuto.InputReader(inputFile)
+    reader.ReadFile()
 
-# ======================================================
-# ==                                                  ==
-# ==  FOR 2D and 3D DO:                               ==
-# ==    1) Read information from an input file        ==
-# ==    2) Perform the take-and-place algorithm       ==
-# ==    3) Perform the EDMD algorithm                 ==
-# ==                                                  ==
-# ==  If everything runs without SEGFAULTS or         ==
-# ==  exceptions, the test passes.                    ==
-# ==                                                  ==
-# ======================================================
+    specimen = nuto.Specimen(reader.GetBoundingBox(), reader.GetTypeOfSpecimen())
 
-inputFileName3D = "input3D_test.dat"
-IN_seed = 6174
+    creator = nuto.ParticleCreator(specimen, reader.GetShrinkage())
+    spheresBoundary = np.zeros((0, 4))
+    seed = 6174
+    spheresMatrix = creator.CreateSpheresInSpecimen(
+        reader.GetVolumeFraction(),
+        reader.GetGradingCurve(),
+        0.0,
+        reader.GetAbsoluteDistance(),
+        seed,
+        spheresBoundary)
+
+    # particle handler
+    spheres = nuto.ParticleHandler(
+        spheresMatrix,
+        reader.GetRandomVelocityRange(),
+        reader.GetRelativeGrowthRate(),
+        reader.GetAbsoluteGrowthRate())
+    spheres.SetVisualizationFileName(visuFileName)
+    minDist = spheres.GetAbsoluteMininimalDistance(specimen)
+    print(minDist)
+
+    # sub box handler
+    subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
+    subBoxes.VisualizeBorders(resultDir + "/borders.vtu")
+
+    collisions = nuto.CollisionHandler(spheres, subBoxes, resultDir)
+
+    wallTimeMax = (1. / (1. - reader.GetShrinkage()) - 1.) / reader.GetRelativeGrowthRate()
+
+    collisions.Simulate(
+        reader.GetNumEventsMax(),
+        reader.GetTimeMax(),
+        wallTimeMax,
+        reader.GetTimePrintOut(),
+        reader.GetInitialTimeBarrier())
+
+    spheres.ExportParticlesToVTU3D(resultDir, 0, 0, False)
+    spheres.ExportParticlesToVTU3D(resultDir, 1, 1, True)
+
+    reader.Close()
 
 
-# ======================================================
-# ==       Function for running an input file         ==
-# ======================================================
-def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
-  IN = nuto.InputReader(rInputFile)
-  IN.ReadFile()
+if __name__ == "__main__":
+    cwd = os.getcwd()
+    resultDir = os.path.join(cwd, "GradingCurveFileIO")
 
-  specimen = nuto.Specimen(IN.GetBoundingBox(), IN.GetTypeOfSpecimen())
-  
-  creator = nuto.ParticleCreator(specimen, IN.GetShrinkage())
-  spheresBoundary = np.zeros((0,4))
-  spheresMatrix = creator.CreateSpheresInSpecimen(
-    IN.GetVolumeFraction(),
-    IN.GetGradingCurve(),
-    0., 
-    IN.GetAbsoluteDistance(),
-    IN_seed,
-    spheresBoundary)
-  
-  # particle handler
-  spheres = nuto.ParticleHandler(
-    spheresMatrix, 
-    IN.GetRandomVelocityRange(), 
-    IN.GetRelativeGrowthRate(), 
-    IN.GetAbsoluteGrowthRate())
-  spheres.SetVisualizationFileName(rVisuFileName)
-  minDist = spheres.GetAbsoluteMininimalDistance(specimen)
-  print (minDist)
-  
-  # sub box handler
-  subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
-  subBoxes.VisualizeBorders(rWorkDir + "/borders.vtu")
+    if not os.path.exists(resultDir):
+        os.makedirs(resultDir)
 
-  collisions = nuto.CollisionHandler(spheres, subBoxes, rWorkDir)
-
-  wallTimeMax = (1. / (1. - IN.GetShrinkage()) - 1.) / IN.GetRelativeGrowthRate();
-
-  collisions.Simulate(
-    IN.GetNumEventsMax(), 
-    IN.GetTimeMax(), 
-    wallTimeMax , 
-    IN.GetTimePrintOut(), 
-    IN.GetInitialTimeBarrier())
-
-  spheres.ExportParticlesToVTU3D(rWorkDir, 0, 0, False);
-  spheres.ExportParticlesToVTU3D(rWorkDir, 1, 1, True);
-
-  IN.Close()  
-  del collisions
-  del subBoxes
-  del spheres
-  del spheresBoundary
-  del spheresMatrix
-  del creator
-
-    
-# ======================================================
-# ==       Build Pathes for workdir and input         ==
-# ======================================================
-
-# Get path to work dir as cmake_current_binary_dir
-pathToWorkDir = sys.argv[1] 
-
-# Split the current filename (basename) from its extension (most likely "GradingCurve") ... 
-testName = fileExt = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-
-# ... and join it with the path to work dir
-workDir = os.path.join(pathToWorkDir, testName)
-
-# get path to input file as cmake_current_source_dir
-inputDir = sys.argv[2]
-
-# create the work dir 
-if not os.path.exists(workDir):
-    os.makedirs(workDir)
-
-print ()
-print ( "   |--->  Read input files from")
-print ( "   |---> ",inputDir)
-print ()
-print ( "   |--->  Print result files to")
-print ( "   |---> ",workDir)
-print ()
-
-inputFile3D = os.path.join(inputDir, inputFileName3D)
-
-# ======================================================
-# ==           Run Examples                           ==
-# ======================================================
-RunSimulationFromInputFile(inputFile3D, workDir, "3dSpheres")
-
+    RunSimulationFromInputFile("input3D_test.dat", "3dSpheres")
+    RunSimulationFromInputFile("input2D_test.dat", "2dSpheres")

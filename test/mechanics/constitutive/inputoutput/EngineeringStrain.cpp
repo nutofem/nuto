@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include <eigen3/Eigen/Dense>
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include <eigen3/Eigen/Dense> // for ::determinant()
 
 using namespace NuTo;
 
@@ -9,9 +9,7 @@ void CheckInvariants(EngineeringStrain<3> r)
 {
 
     Eigen::Matrix3d m;
-    m <<     r[0], .5* r[5], .5* r[4],
-         .5* r[5],     r[1], .5* r[3],
-         .5* r[4], .5* r[3],     r[2];
+    m << r[0], .5 * r[5], .5 * r[4], .5 * r[5], r[1], .5 * r[3], .5 * r[4], .5 * r[3], r[2];
 
     BOOST_CHECK_CLOSE(r.InvariantI1(), m.trace(), 1.e-10);
 
@@ -20,9 +18,9 @@ void CheckInvariants(EngineeringStrain<3> r)
     BOOST_CHECK_CLOSE(r.InvariantI3(), m.determinant(), 1.e-10);
 
     // note: the invariants are not equal but with opposite sign
-    BOOST_CHECK_CLOSE(r.InvariantJ2(), - r.Deviatoric().InvariantI2(), 1.e-10);
+    BOOST_CHECK_CLOSE(r.InvariantJ2(), -r.Deviatoric().InvariantI2(), 1.e-10);
 
-    BOOST_CHECK_CLOSE(r.InvariantJ2(), 1./3. * r.InvariantI1() * r.InvariantI1() - r.InvariantI2(), 1.e-10);
+    BOOST_CHECK_CLOSE(r.InvariantJ2(), 1. / 3. * r.InvariantI1() * r.InvariantI1() - r.InvariantI2(), 1.e-10);
 }
 
 

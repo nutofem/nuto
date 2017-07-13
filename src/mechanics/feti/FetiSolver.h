@@ -11,9 +11,9 @@
 #include <eigen3/Eigen/Sparse>
 
 
-class FetiSolver {
+class FetiSolver
+{
 private:
-
     using MatrixXd = Eigen::MatrixXd;
     using VectorXd = Eigen::VectorXd;
 
@@ -24,23 +24,19 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
+    Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes,
+                                                  const int numRigidBodyModesGlobal)
     {
 
         std::vector<int> recvCount;
         std::vector<int> displ;
         MpiGatherRecvCountAndDispls(recvCount, displ, interfaceRigidBodyModes.size());
 
-        const int numInterfaceEqs               = interfaceRigidBodyModes.rows();
-        MatrixXd interfaceRigidBodyModesGlobal   = MatrixXd::Zero(numInterfaceEqs,numRigidBodyModesGlobal);
+        const int numInterfaceEqs = interfaceRigidBodyModes.rows();
+        MatrixXd interfaceRigidBodyModesGlobal = MatrixXd::Zero(numInterfaceEqs, numRigidBodyModesGlobal);
 
-        MPI_Allgatherv(interfaceRigidBodyModes.data(),
-                       interfaceRigidBodyModes.size(),
-                       MPI_DOUBLE,
-                       interfaceRigidBodyModesGlobal.data(),
-                       recvCount.data(),
-                       displ.data(),
-                       MPI_DOUBLE,
+        MPI_Allgatherv(interfaceRigidBodyModes.data(), interfaceRigidBodyModes.size(), MPI_DOUBLE,
+                       interfaceRigidBodyModesGlobal.data(), recvCount.data(), displ.data(), MPI_DOUBLE,
                        MPI_COMM_WORLD);
 
         return interfaceRigidBodyModesGlobal;
@@ -53,23 +49,18 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    Eigen::VectorXd GatherRigidBodyForceVector(Eigen::VectorXd &rigidBodyForceVectorLocal, const int numRigidBodyModesGlobal)
+    Eigen::VectorXd GatherRigidBodyForceVector(Eigen::VectorXd& rigidBodyForceVectorLocal,
+                                               const int numRigidBodyModesGlobal)
     {
 
-        const int numRigidBodyModesLocal        = rigidBodyForceVectorLocal.rows();
+        const int numRigidBodyModesLocal = rigidBodyForceVectorLocal.rows();
         std::vector<int> recvCount;
         std::vector<int> displ;
         MpiGatherRecvCountAndDispls(recvCount, displ, numRigidBodyModesLocal);
 
-        VectorXd rigidBodyForceVectorGlobal      =VectorXd::Zero(numRigidBodyModesGlobal);
-        MPI_Allgatherv(rigidBodyForceVectorLocal.data(),
-                       rigidBodyForceVectorLocal.size(),
-                       MPI_DOUBLE,
-                       rigidBodyForceVectorGlobal.data(),
-                       recvCount.data(),
-                       displ.data(),
-                       MPI_DOUBLE,
-                       MPI_COMM_WORLD);
+        VectorXd rigidBodyForceVectorGlobal = VectorXd::Zero(numRigidBodyModesGlobal);
+        MPI_Allgatherv(rigidBodyForceVectorLocal.data(), rigidBodyForceVectorLocal.size(), MPI_DOUBLE,
+                       rigidBodyForceVectorGlobal.data(), recvCount.data(), displ.data(), MPI_DOUBLE, MPI_COMM_WORLD);
 
         return rigidBodyForceVectorGlobal;
     }
@@ -79,7 +70,7 @@ public:
     /// \param displs
     /// \param numValues
     ///
-    void MpiGatherRecvCountAndDispls(std::vector<int> &recvCount, std::vector<int> &displs, const int numValues)
+    void MpiGatherRecvCountAndDispls(std::vector<int>& recvCount, std::vector<int>& displs, const int numValues)
     {
         boost::mpi::communicator world;
         const int numProcesses = world.size();
@@ -88,33 +79,25 @@ public:
         recvCount.clear();
         recvCount.resize(numProcesses, 0);
 
-        boost::mpi::all_gather<int>(world,numValues,recvCount);
+        boost::mpi::all_gather<int>(world, numValues, recvCount);
 
         // displs:
         // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
         displs.clear();
         displs.resize(numProcesses, 0);
         for (int i = 1; i < numProcesses; ++i)
-            displs[i] = displs[i-1] + recvCount[i-1];
-
+            displs[i] = displs[i - 1] + recvCount[i - 1];
     }
 
     void AssembleGMatrix(MatrixXd interfaceRigidModes)
     {
-
     }
 
     void Solve()
     {
-
     }
-private:
-    const double    mCpgTolerance     = 1.0e-6;
-    const int       mCpgMaxIterations = 1000;
 
+private:
     MatrixXd mG;
     MatrixXd mGtransGinv;
-
-
 };
-

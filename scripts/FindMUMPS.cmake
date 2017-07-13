@@ -1,4 +1,3 @@
-# $Id$
 
 # find the mumps solver package, sequential version (try to find the mumps header and the mumps libraries)
 #

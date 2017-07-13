@@ -12,47 +12,39 @@
 void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolationType)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    try
+
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup == mGroupMap.end())
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+    if (itGroup->second->GetType() != eGroupId::Elements)
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
+
+    boost::ptr_map<int, InterpolationType>::iterator itInterpolationType =
+            mInterpolationTypeMap.find(rInterpolationType);
+    if (itInterpolationType == mInterpolationTypeMap.end())
+        throw Exception(__PRETTY_FUNCTION__,
+                                 "InterpolationType with the given identifier does not exist.");
+
+    InterpolationType* interpolationType = itInterpolationType->second;
+
+    for (boost::ptr_map<int, ElementBase>::iterator elementIter = this->mElementMap.begin();
+         elementIter != this->mElementMap.end(); elementIter++)
     {
-		boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
-		if (itGroup==mGroupMap.end())
-			throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
-		if (itGroup->second->GetType()!=eGroupId::Elements)
-			throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        ElementBase* element = elementIter->second;
 
-		boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationType);
-		if (itInterpolationType==mInterpolationTypeMap.end())
-            throw MechanicsException(__PRETTY_FUNCTION__, "InterpolationType with the given identifier does not exist.");
-
-		InterpolationType* interpolationType = itInterpolationType->second;
-
-		for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
-	    {
-		    ElementBase* element = elementIter->second;
-
-		    if (&element->GetInterpolationType() == interpolationType)
-				itGroup->second->AddMember(elementIter->first, elementIter->second);
-	    }
-    }
-    catch(NuTo::MechanicsException &e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error adding element.");
-        throw;
-    }
-    catch(...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error adding element.");
+        if (&element->GetInterpolationType() == interpolationType)
+            itGroup->second->AddMember(elementIter->first, elementIter->second);
     }
 }
 
 
 void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
 {
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "An element can be added only to an element group.");
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    if (itGroup == mGroupMap.end())
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+    if (itGroup->second->GetType() != eGroupId::Elements)
+        throw Exception(__PRETTY_FUNCTION__, "An element can be added only to an element group.");
 
     itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
 }
@@ -61,13 +53,13 @@ void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
 
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+    if (itGroup == mGroupMap.end())
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
 
-    if (itGroup->second->GetType()!=eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "An element can be added only to an element group.");
+    if (itGroup->second->GetType() != eGroupId::Elements)
+        throw Exception(__PRETTY_FUNCTION__, "An element can be added only to an element group.");
 
     for (auto const& iPair : mElementMap)
         itGroup->second->AddMember(iPair.first, iPair.second);
@@ -95,18 +87,21 @@ int NuTo::Structure::GroupGetNodesTotal()
     return groupId;
 }
 
-void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax)
+void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup,
+                                                                  int rDirection, double rMin, double rMax)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentNodeGroup);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "A node can be added only to a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "A node can be added only to a node group.");
 
     if (rDirection < 0 || rDirection > mDimension)
-        throw MechanicsException(__PRETTY_FUNCTION__, "The direction is either 0(x),1(Y) or 2(Z) and has to be smaller than the dimension of the structure.");
+        throw Exception(
+                __PRETTY_FUNCTION__,
+                "The direction is either 0(x),1(Y) or 2(Z) and has to be smaller than the dimension of the structure.");
 
     auto elementsInGroup = GroupGetMemberIds(rSearchIdentElementGroup);
 
@@ -125,4 +120,3 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
             itGroup->second->AddMember(iNodeId, nodePtr);
     }
 }
-

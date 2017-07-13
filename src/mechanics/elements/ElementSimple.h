@@ -18,7 +18,7 @@ public:
 
     //! @brief extracts all node values of this element
     //! @remark virtual to make it testable
-    virtual NodeValues ExtractNodeValues() const 
+    virtual NodeValues ExtractNodeValues() const
     {
         int dim = mNodes[0]->GetNumValues();
         Eigen::VectorXd nodeValues(mNodes.size() * dim);

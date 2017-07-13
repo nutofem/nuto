@@ -39,37 +39,26 @@ def SetupStructure(stressState):
     structure.ElementTotalSetConstitutiveLaw(myMatLin)
     structure.ElementTotalSetSection(mySection)
 
-    LoadNodesXPos = structure.GroupCreate("Nodes")
-    LoadNodesXNeg = structure.GroupCreate("Nodes")
-    LoadNodesYPos = structure.GroupCreate("Nodes")
-    LoadNodesYNeg = structure.GroupCreate("Nodes")
-
-    structure.GroupAddNode(LoadNodesXPos, 1)
-    structure.GroupAddNode(LoadNodesXPos, 7)
-    structure.GroupAddNode(LoadNodesYPos, 6)
-    structure.GroupAddNode(LoadNodesYPos, 7)
-
-    structure.GroupAddNode(LoadNodesXNeg, 0)
-    structure.GroupAddNode(LoadNodesXNeg, 6)
-    structure.GroupAddNode(LoadNodesYNeg, 0)
-    structure.GroupAddNode(LoadNodesYNeg, 1)
-
-    directionX = np.array([1.0, 0.0])
-    directionY = np.array([0.0, 1.0])
-
+    LoadNodesXNeg = structure.GroupGetNodesAtCoordinate(nuto.eDirection_X, 0.);
+    LoadNodesXPos = structure.GroupGetNodesAtCoordinate(nuto.eDirection_X, 10.);
+   
+    LoadNodesYNeg = structure.GroupGetNodesAtCoordinate(nuto.eDirection_Y, 0.);
+    LoadNodesYPos = structure.GroupGetNodesAtCoordinate(nuto.eDirection_Y, 10.);
+    
+    origin = structure.NodeGetAtCoordinate(np.array([0., 0.]))
     if stressState == "XX":
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
-        structure.ConstraintLinearSetDisplacementNode(0, directionY, 0)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXNeg, [nuto.eDirection_X]))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXPos, [nuto.eDirection_X], BoundaryDisplacement))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(origin, [nuto.eDirection_Y]))
     elif stressState == "YY":
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYNeg, directionY, 0.0)
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
-        structure.ConstraintLinearSetDisplacementNode(0, directionX, 0)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesYNeg, [nuto.eDirection_Y]))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesYPos, [nuto.eDirection_Y], BoundaryDisplacement))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(origin, [nuto.eDirection_X]))
     elif stressState == "XY":
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionY, 0.0)
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionY, BoundaryDisplacement)
-        structure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, 0)
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXNeg, [nuto.eDirection_X]))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXNeg, [nuto.eDirection_Y]))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXPos, [nuto.eDirection_Y], BoundaryDisplacement))
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(LoadNodesXPos, [nuto.eDirection_X]))
 
     # start analysis
     # build global dof numbering

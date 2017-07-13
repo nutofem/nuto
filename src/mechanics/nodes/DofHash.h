@@ -26,5 +26,5 @@ struct eDofPairHash
     }
 };
 
-}// namespace Node
-}// namespace NuTo
+} // namespace Node
+} // namespace NuTo

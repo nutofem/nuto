@@ -4,12 +4,8 @@
  *  Created on: 20 May 2015
  *      Author: Thomas Titscher
  */
-
-#define BOOST_TEST_MODULE LinearInterpolation
-#define BOOST_TEST_DYN_LINK
-
-#include "mechanics/sections/SectionTruss.h"
 #include "ElementUniaxialTest.h"
+#include "mechanics/sections/SectionTruss.h"
 
 using namespace NuTo::Interpolation;
 
@@ -34,10 +30,10 @@ void Run(eShapeType rShapeType, eTypeOrder rTypeOrder, int rDiv)
 BOOST_AUTO_TEST_CASE(Truss)
 {
     Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT1, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT2, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT3, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT4, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO2, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO3, 3);
-//    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO4, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT2, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT3, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::EQUIDISTANT4, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO2, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO3, 3);
+    Run(eShapeType::TRUSS1D, eTypeOrder::LOBATTO4, 3);
 }

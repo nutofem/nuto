@@ -5,8 +5,9 @@
 
 template <int TDim>
 NuTo::ContinuumBoundaryElementConstrainedControlNode<TDim>::ContinuumBoundaryElementConstrainedControlNode(
-        const ContinuumElement<TDim>& rBaseElement, int rSurfaceId, NodeBase* rControlNode)
-    : ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(rBaseElement, rSurfaceId)
+        const ContinuumElement<TDim>& rBaseElement, const IntegrationTypeBase& integrationType, int rSurfaceId,
+        NodeBase* rControlNode)
+    : ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(rBaseElement, integrationType, rSurfaceId)
     , mControlNode(rControlNode)
 {
 }

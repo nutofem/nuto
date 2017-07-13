@@ -7,23 +7,18 @@ option(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue p
 option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
 option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
-option(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
-option(ENABLE_EXAMPLES "enables examples" FALSE)
+option(ENABLE_EXAMPLES "enables examples" TRUE)
 option(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
 option(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES "enable building private examples in a separate directory (applications/custom)" FALSE)
-option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
-option(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 option(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
-option(ENABLE_SERIALIZATION "enables serialization" FALSE)
-option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" TRUE)
 option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
@@ -31,18 +26,17 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
 include(CompilerFlags)
+include(Version)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
-add_subdirectory(external)
-include_directories(external/jsoncpp/dist/)
-include_directories(external/)
+include_directories(SYSTEM external/)
 
 if(ENABLE_MPI)
 
     message(STATUS "Find MPI")
 
     find_package(MPI REQUIRED)
-    include_directories(${MPI_INCLUDE_PATH})
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
     # These variables are set by FindMPI
     message(STATUS "MPI_CXX_FOUND:              ${MPI_CXX_FOUND}" )
@@ -83,23 +77,6 @@ if(ENABLE_VISUALIZE)
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VISUALIZE")
 endif()
 
-if(ENABLE_SERIALIZATION)
-    add_definitions("-DENABLE_SERIALIZATION")
-    set(NuTo_DOXYGEN_PREDEFINED "ENABLE_SERIALIZATION" ${NuTo_DOXYGEN_PREDEFINED})
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
-endif()
-
-if(ENABLE_VERBOSELEVEL)
-    add_definitions("-DENABLE_VERBOSELEVEL")
-    set(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VERBOSELEVEL")
-endif()
-
-if(ENABLE_SHOW_TIME)
-    add_definitions("-DSHOW_TIME")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DSHOW_TIME")
-endif()
-
 # search path for external libraries
 # check if NUTO_EXTERNAL_LIBRARIES_ROOT is set
 if(NOT NUTO_EXTERNAL_LIBRARIES_ROOT AND DEFINED $ENV{NUTO_EXTERNAL_LIBRARIES_ROOT})
@@ -108,14 +85,6 @@ endif()
 # convert path to unix style path and set search path
 if(NUTO_EXTERNAL_LIBRARIES_ROOT)
     file(TO_CMAKE_PATH ${NUTO_EXTERNAL_LIBRARIES_ROOT} NUTO_EXTERNAL_LIBRARIES_ROOT)
-endif()
-
-if(ENABLE_DEBUG_SERIALIZATION)
-    add_definitions("-DDEBUG_SERIALIZATION")
-endif()
-
-if(ENABLE_OPENACC)
-    add_definitions("-D_OPENACC")
 endif()
 
 if(ENABLE_COVERAGE)
@@ -164,11 +133,6 @@ if(ENABLE_MPI)
     set(NuToBoostComponents ${NuToBoostComponents} mpi)
 endif()
 
-if(ENABLE_SERIALIZATION)
-    set(NuToBoostRequiredVersion 1.58.0)
-    set(NuToBoostComponents ${NuToBoostComponents} serialization)
-endif()
-
 set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
 
 message(STATUS "Requesting BOOST components ${NuToBoostComponents} - at least version ${NuToBoostRequiredVersion} required.")
@@ -179,8 +143,6 @@ include_directories(${Boost_INCLUDE_DIR})
 message(STATUS "Boost version = ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 message(STATUS "Boost_LIBRARY_DIRS = ${Boost_LIBRARY_DIRS}")
-message(STATUS "Boost_SERIALIZATION_FOUND = ${Boost_SERIALIZATION_FOUND}")
-message(STATUS "Boost_SERIALIZATION_LIBRARY = ${Boost_SERIALIZATION_LIBRARY}")
 message(STATUS "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
 message(STATUS "BOOST_INCLUDE_DIRS = ${BOOST_INCLUDE_DIRS}")
 
@@ -313,9 +275,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 # build nuto
 add_subdirectory(src)
 
-# Documentation
-add_subdirectory(doc)
-
 #test Environment
 include(CTest)
 
@@ -332,9 +291,6 @@ endif()
 if(ENABLE_BENCHMARKS)
     add_subdirectory(applications/benchmark)
 endif()
-
-
-
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing

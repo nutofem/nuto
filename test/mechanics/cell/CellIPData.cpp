@@ -2,7 +2,6 @@
 #include <fakeit.hpp>
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/cell/CellIPData.h"
-#include <iostream>
 
 
 constexpr double dN0dX = 1;

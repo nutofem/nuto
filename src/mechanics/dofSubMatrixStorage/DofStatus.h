@@ -1,12 +1,6 @@
 #pragma once
 
 
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <set>
 #include <map>
 
@@ -15,19 +9,14 @@ namespace NuTo
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 
 //! @brief class to store state of the current dof setup
 //! @remark gets modified by the structure after each change of the active/inactive dof types
 class DofStatus
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 public:
-
 #ifndef SWIG
 
     DofStatus();
@@ -51,7 +40,7 @@ public:
 
     void SetDofTypes(const std::set<Node::eDof>& rDofTypes)
     {
-            mDofTypes = rDofTypes;
+        mDofTypes = rDofTypes;
     }
 
     bool HasInteractingConstraints() const
@@ -62,6 +51,21 @@ public:
     void SetHasInteractingConstraints(bool rHasInteractingConstraints)
     {
         mHasInteractingConstraints = rHasInteractingConstraints;
+    }
+
+    int GetNumActiveDofs(Node::eDof dof) const
+    {
+        return mNumActiveDofs.at(dof);
+    }
+
+    int GetNumDependentDofs(Node::eDof dof) const
+    {
+        return mNumDependentDofs.at(dof);
+    }
+
+    int GetNumDofs(Node::eDof dof) const
+    {
+        return GetNumActiveDofs(dof) + GetNumDependentDofs(dof);
     }
 
     const std::map<Node::eDof, int>& GetNumActiveDofsMap() const
@@ -98,10 +102,9 @@ public:
             mSymmetricDofTypes.erase(rDofType);
     }
 
-#endif //SWIG
+#endif // SWIG
 
 private:
-
     std::map<Node::eDof, int> mNumActiveDofs;
     std::map<Node::eDof, int> mNumDependentDofs;
 
@@ -112,14 +115,5 @@ private:
     std::set<Node::eDof> mSymmetricDofTypes;
 
     bool mHasInteractingConstraints;
-
-
-
 };
 } /* namespace NuTo */
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-BOOST_CLASS_EXPORT_KEY(NuTo::DofStatus)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

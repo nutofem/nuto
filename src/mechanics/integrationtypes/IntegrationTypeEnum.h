@@ -1,7 +1,5 @@
-// $Id$ 
 #pragma once
 
-#include <map>
 #include <string>
 
 namespace NuTo
@@ -20,6 +18,7 @@ enum class eIntegrationType
     IntegrationType1D2NGauss3Ip,
     IntegrationType1D2NGauss4Ip,
     IntegrationType1D2NGauss5Ip,
+    IntegrationType1D2NLobatto,
     IntegrationType1D2NLobatto3Ip,
     IntegrationType1D2NLobatto4Ip,
     IntegrationType1D2NLobatto5Ip,
@@ -40,6 +39,7 @@ enum class eIntegrationType
     IntegrationType2D4NLobatto25Ip,
     IntegrationType3D4NGauss1Ip,
     IntegrationType3D4NGauss4Ip,
+    IntegrationType3D6NGauss1Ip,
     IntegrationType3D6NGauss2x3Ip,
     IntegrationType3D8NGauss1Ip,
     IntegrationType3D8NGauss2x2x2Ip,
@@ -49,8 +49,7 @@ enum class eIntegrationType
     NotSet
 };
 
-std::map<eIntegrationType, std::string> GetIntegrationTypeMap();
 std::string IntegrationTypeToString(const eIntegrationType& rIntegrationType);
 eIntegrationType IntegrationTypeToEnum(std::string rIntegrationType);
 
-}// namespace NuTo
+} // namespace NuTo

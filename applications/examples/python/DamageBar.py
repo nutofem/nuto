@@ -44,8 +44,7 @@ structure.ConstitutiveLawSetParameterDouble(damage, "POISSONS_RATIO", 0.2)
 structure.ConstitutiveLawSetParameterDouble(damage, "NONLOCAL_RADIUS", 1)
 structure.ConstitutiveLawSetParameterDouble(damage, "TENSILE_STRENGTH", 4.)
 structure.ConstitutiveLawSetParameterDouble(damage, "COMPRESSIVE_STRENGTH", 4. * 10)
-structure.ConstitutiveLawSetParameterDouble(damage, "FRACTURE_ENERGY", 0.021)
-structure.ConstitutiveLawSetDamageLaw(damage, "ISOTROPIC_EXPONENTIAL_SOFTENING")
+structure.ConstitutiveLawSetDamageLaw(damage, nuto.DamageLawExponential.Create(4./20000, 4./0.021))
 
 structure.ElementTotalSetConstitutiveLaw(damage)
 
@@ -58,23 +57,25 @@ structure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "PrincipalEngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "NonlocalEqStrain")
 
-direction = np.array([1.0])
-structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
+firstNode = structure.NodeGetAtCoordinate(0)
+structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(firstNode, [nuto.eDirection_X]))
 
-structure.LoadCreateNodeForce(0, nodeIDs[0], direction, 100.0)
+lastNode = structure.NodeGetAtCoordinate(length)
+structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(lastNode, [nuto.eDirection_X], lambda t: 0.05 * t))
 
 newmark = nuto.NewmarkDirect(structure)
-loadFactor = np.array([[0.0, 0.0], [1.0, 0.4]])
 newmark.SetTimeStep(0.1)
-newmark.SetTimeDependentLoadCase(0, loadFactor)
 newmark.SetResultDirectory("damage_bar_results", True)
+newmark.SetAutomaticTimeStepping(True)
+newmark.AddResultNodeDisplacements("TopDisplacement", nodeIDs[0])
+groupID = structure.GroupCreate("Nodes")
+structure.GroupAddNode(groupID, nodeIDs[0])
+newmark.AddResultGroupNodeForce("TopForce", groupID)
 newmark.Solve(1.0)
 
-hessian = structure.BuildGlobalHessian0()
-f = structure.BuildGlobalExternalLoadVector(0)
-sol = structure.SolveBlockSystem(hessian.JJ, f.J)
+sol = structure.NodeExtractDofValues(0)
 
-nonlocaleqstrain = sol.Get("Nonlocaleqstrain")
+nonlocaleqstrain = sol.J.Get("Nonlocaleqstrain")
 
 # don't plot during testing
 if len(sys.argv) != 2:

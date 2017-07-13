@@ -1,6 +1,6 @@
 #pragma once
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -75,19 +75,19 @@ public:
     }
 
 protected:
-    bool   mSorptionHistoryDesorption = true;
-    double mLastRelHumValue           = 1.0;
-    double mLastJunctionPoint         = 0.0;
-    double mCurrentJunctionPoint      = 0.0;
+    bool mSorptionHistoryDesorption = true;
+    double mLastRelHumValue = 1.0;
+    double mLastJunctionPoint = 0.0;
+    double mCurrentJunctionPoint = 0.0;
 
     Eigen::VectorXd mCurrentSorptionCoeff = Eigen::VectorXd::Zero(3);
-    Eigen::VectorXd mLastSorptionCoeff    = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd mLastSorptionCoeff = Eigen::VectorXd::Zero(3);
 
 private:
     //! @brief defines the serialization of this class
     //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeDataMoistureTransport(TStream &rStream);
+    void SerializeDataMoistureTransport(TStream& rStream);
 };
 
 } // namespace StaticData

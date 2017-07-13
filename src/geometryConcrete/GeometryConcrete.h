@@ -19,7 +19,6 @@ class ParticleHandler;
 class GeometryConcrete
 {
 public:
-
     enum eGradingCurve
     {
         A16,
@@ -60,6 +59,7 @@ public:
 
     void SetSpecimenBox(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe);
     void SetSpecimenCylinder(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe);
+    void SetSpecimenCylinder(double radius, double height);
 
     //! @brief ... sets the grading curve - DIN
     //! @param rGradingCurveEnum ... enum
@@ -102,7 +102,6 @@ public:
     void SetContinueOnException(bool rContinueOnException);
 
 private:
-
     void CheckParameters();
 
     Specimen* mSpecimen = nullptr;
@@ -122,8 +121,6 @@ private:
     double mAbsoluteGrowthRate = 0.0;
 
     bool mContinueOnException = false;
-
 };
 
 } /* namespace NuTo */
-

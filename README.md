@@ -14,9 +14,9 @@ At your own peril.
 
 First, you need some external dependencies
 
-    sudo apt-get install git swig3.0 cmake doxygen python3-dev python3-numpy python3-instant\
-    libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev \
-    libarpack2-dev libomp-dev gmsh
+    sudo apt-get install git swig3.0 cmake doxygen python3-dev python3-numpy \
+    libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev \
+    libann-dev libarpack2-dev libomp-dev gmsh
 
 Then, you need to check out the source code
 
@@ -37,7 +37,7 @@ Once this ran without errors, you can issue make (`-j4` for parallel building)
 If you want to use the python module, and run all the tests, you need to add 
 the module path to your environment
 
-    export PYTHONPATH=<path/to/nuto/build>:$PYTHONPATH
+    export PYTHONPATH=<path/to/nuto/build/python>:$PYTHONPATH
 
 In the end, run the test suite to see if all went well
 

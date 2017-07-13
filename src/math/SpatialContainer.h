@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ANN/ANN.h>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 #include <set>
 
@@ -20,17 +20,15 @@ template <typename T, typename Coordinate>
 class SpatialContainer
 {
 public:
-
     //! @brief ctor. saves rValues and builds the KD-tree for each coordinate in rValues
     //! @param rValues objects
     SpatialContainer(const std::vector<T>& rValues)
         : mData(rValues)
     {
-        assert (not mData.empty());
+        assert(not mData.empty());
 
         const int dim = Coordinate()(mData[0]).rows();
         const int size = static_cast<int>(mData.size());
-
 
 
         mPoints = annAllocPts(size, dim);
@@ -125,7 +123,6 @@ public:
     }
 
 private:
-
     //! @brief data reference
     const std::vector<T>& mData;
 

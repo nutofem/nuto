@@ -1,5 +1,5 @@
 execute_process(
-    COMMAND /usr/bin/env python -c "import numpy; print(numpy.get_include())"
+    COMMAND /usr/bin/env python3 -c "import numpy; print(numpy.get_include())"
     OUTPUT_VARIABLE PYTHON_SYS_PATH
 )
 string(STRIP ${PYTHON_SYS_PATH} PYTHON_SYS_PATH)

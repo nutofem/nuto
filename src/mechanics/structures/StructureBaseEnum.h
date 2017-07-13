@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 #include <map>
 #include <string>
@@ -23,5 +22,4 @@ std::string StructureOutputToString(eStructureOutput rOutput);
 eStructureOutput StructureOutputToEnum(std::string rOutput);
 
 
-}// namespace NuTo
-
+} // namespace NuTo

@@ -29,11 +29,11 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
     if (rCoordinateInterpolation == NuTo::Interpolation::eTypeOrder::EQUIDISTANT1)
     {
         s.NodeCreate(0, Eigen::Vector3d({-lx, 0, 0}));
-        s.NodeCreate(1, Eigen::Vector3d({0,-ly, 0}));
+        s.NodeCreate(1, Eigen::Vector3d({0, -ly, 0}));
         s.NodeCreate(2, Eigen::Vector3d({0, 0, 0}));
         s.NodeCreate(3, Eigen::Vector3d({0, ly, 0}));
-        s.NodeCreate(4, Eigen::Vector3d({0, -ly/2., lz/2.}));
-        s.NodeCreate(5, Eigen::Vector3d({0, ly/2., lz/2.}));
+        s.NodeCreate(4, Eigen::Vector3d({0, -ly / 2., lz / 2.}));
+        s.NodeCreate(5, Eigen::Vector3d({0, ly / 2., lz / 2.}));
         s.NodeCreate(6, Eigen::Vector3d({0, 0, lz}));
         s.NodeCreate(7, Eigen::Vector3d({lx, 0, 0}));
 
@@ -56,7 +56,6 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
         s.GroupAddElement(gAggreg, 6);
         s.GroupAddElement(gAggreg, 7);
         s.GroupAddElement(gAggreg, 8);
-
     }
     else
     {
@@ -68,31 +67,29 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
         Eigen::Vector3d(0.5, 0.0, 0.5);
 
 
+        s.NodeCreate(0, Eigen::Vector3d({0, -ly / 2, 0}));
+        s.NodeCreate(1, Eigen::Vector3d({lx, 0, 0}));
+        s.NodeCreate(2, Eigen::Vector3d({0, ly / 2, 0}));
+        s.NodeCreate(3, Eigen::Vector3d({0, 0, lz}));
 
-        s.NodeCreate(0, Eigen::Vector3d({0,   -ly/2, 0}));
-        s.NodeCreate(1, Eigen::Vector3d({lx,      0, 0}));
-        s.NodeCreate(2, Eigen::Vector3d({0,    ly/2, 0}));
-        s.NodeCreate(3, Eigen::Vector3d({0,       0, lz}));
+        s.NodeCreate(4, Eigen::Vector3d({lx / 2., -ly / 4, 0}));
+        s.NodeCreate(5, Eigen::Vector3d({lx / 2., ly / 4, 0}));
+        s.NodeCreate(6, Eigen::Vector3d({0, 0, 0}));
 
-        s.NodeCreate(4, Eigen::Vector3d({lx/2.,-ly/4, 0}));
-        s.NodeCreate(5, Eigen::Vector3d({lx/2., ly/4, 0}));
-        s.NodeCreate(6, Eigen::Vector3d({0,        0, 0}));
-
-        s.NodeCreate(7, Eigen::Vector3d({0,    -ly/4, lz/2}));
-        s.NodeCreate(8, Eigen::Vector3d({0,     ly/4, lz/2}));
-        s.NodeCreate(9, Eigen::Vector3d({lx/2.,   0, lz/2}));
-
-
-        s.NodeCreate(10, Eigen::Vector3d({-lx,      0, 0}));
-        s.NodeCreate(11, Eigen::Vector3d({-lx/2.,-ly/4, 0}));
-        s.NodeCreate(12, Eigen::Vector3d({-lx/2., ly/4, 0}));
-        s.NodeCreate(13, Eigen::Vector3d({-lx/2.,   0, lz/2}));
+        s.NodeCreate(7, Eigen::Vector3d({0, -ly / 4, lz / 2}));
+        s.NodeCreate(8, Eigen::Vector3d({0, ly / 4, lz / 2}));
+        s.NodeCreate(9, Eigen::Vector3d({lx / 2., 0, lz / 2}));
 
 
+        s.NodeCreate(10, Eigen::Vector3d({-lx, 0, 0}));
+        s.NodeCreate(11, Eigen::Vector3d({-lx / 2., -ly / 4, 0}));
+        s.NodeCreate(12, Eigen::Vector3d({-lx / 2., ly / 4, 0}));
+        s.NodeCreate(13, Eigen::Vector3d({-lx / 2., 0, lz / 2}));
 
-        s.ElementCreate(1, it, {0,  1, 2, 3,  4,  5, 6, 7, 8,  9});
+
+        s.ElementCreate(1, it, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
         s.ElementCreate(2, it, {0, 10, 2, 3, 11, 12, 6, 7, 8, 13});
-//            s.ElementCreate(2, it, {1, 2, 3, 7});
+        //            s.ElementCreate(2, it, {1, 2, 3, 7});
 
         s.GroupAddElement(gMatrix, 1);
         s.GroupAddElement(gAggreg, 2);
@@ -101,7 +98,8 @@ void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
     auto prism = NuTo::MeshCompanion::ElementPrismsCreate(s, gMatrix, gAggreg, thickness);
 
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(prism.second, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(prism.second, NuTo::Node::eDof::DISPLACEMENTS,
+                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     s.ElementTotalConvertToInterpolationType();
 }

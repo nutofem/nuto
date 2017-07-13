@@ -11,6 +11,7 @@
 %include "typemaps.i"
 %include "eigen.i"
 %eigen_typemaps(Eigen::VectorXd)
+%eigen_typemaps(Eigen::Vector3d)
 %eigen_typemaps(Eigen::MatrixXd)
 %eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>)
 %eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)

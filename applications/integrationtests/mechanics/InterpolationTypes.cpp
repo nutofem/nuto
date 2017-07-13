@@ -11,9 +11,7 @@
 #include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
@@ -23,12 +21,12 @@
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 //! @brief checks if the shape functions sum up to 1 (at all integration points)
-void CheckPartitionOfUnity(const NuTo::InterpolationType &rIT, const NuTo::Node::eDof &dofType)
+void CheckPartitionOfUnity(const NuTo::InterpolationType& rIT, const NuTo::IntegrationTypeBase& integrationType)
 {
-    for (int iIP = 0; iIP < rIT.GetCurrentIntegrationType().GetNumIntegrationPoints(); ++iIP)
+    for (int iIP = 0; iIP < integrationType.GetNumIntegrationPoints(); ++iIP)
     {
-        Eigen::VectorXd ip = rIT.GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates(iIP);
-        BOOST_CHECK_CLOSE(rIT.Get(dofType).CalculateShapeFunctions(ip).sum(),  1., 1.e-6);
+        Eigen::VectorXd ip = integrationType.GetLocalIntegrationPointCoordinates(iIP);
+        BOOST_CHECK_CLOSE(rIT.Get(NuTo::Node::eDof::COORDINATES).ShapeFunctions(ip).sum(), 1., 1.e-6);
     }
 }
 
@@ -41,8 +39,9 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
     {
         auto nodeCoordinates = rIT.GetNaturalNodeCoordinates(i);
 
-        auto B = IT.CalculateDerivativeShapeFunctionsNatural(nodeCoordinates);
-        auto N = IT.CalculateShapeFunctions(nodeCoordinates);
+        IT.ClearCache();
+        auto B = IT.DerivativeShapeFunctionsNatural(nodeCoordinates);
+        auto N = IT.ShapeFunctions(nodeCoordinates);
 
         auto B_CDF = B;
         B_CDF.setZero();
@@ -51,7 +50,7 @@ void CheckDerivatives(NuTo::InterpolationType& rIT)
         for (int iDim = 0; iDim < nodeCoordinates.rows(); ++iDim)
         {
             nodeCoordinates[iDim] += delta;
-            B_CDF.col(iDim) = (IT.CalculateShapeFunctions(nodeCoordinates) - N) / delta;
+            B_CDF.col(iDim) = (IT.ShapeFunctions(nodeCoordinates) - N) / delta;
             nodeCoordinates[iDim] -= delta;
         }
         BOOST_CHECK_SMALL((B - B_CDF).cwiseAbs().maxCoeff(), 1.e-4);
@@ -70,7 +69,7 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         auto naturalNodeCoordinate = rIT.Get(dofType).CalculateNaturalNodeCoordinates(iNode);
-        auto shapeFunctions = rIT.Get(dofType).CalculateShapeFunctions(naturalNodeCoordinate);
+        auto shapeFunctions = rIT.Get(dofType).ShapeFunctions(naturalNodeCoordinate);
         BOOST_CHECK_EQUAL(shapeFunctions.rows(), numNodes);
 
         for (int iShapeFunctions = 0; iShapeFunctions < shapeFunctions.rows(); ++iShapeFunctions)
@@ -81,7 +80,6 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
                 BOOST_CHECK_SMALL(shapeFunctions(iShapeFunctions), 1.e-8);
         }
     }
-    CheckPartitionOfUnity(rIT, dofType);
     CheckDerivatives(rIT);
 }
 
@@ -109,26 +107,26 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
 
 BOOST_AUTO_TEST_CASE(InterpolationTruss)
 {
-        NuTo::IntegrationType1D2NGauss2Ip myIntegrationType;
+    NuTo::IntegrationType1D2NGauss myIntegrationType(2);
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-        myIT.UpdateIntegrationType(myIntegrationType);
+        CheckPartitionOfUnity(myIT, myIntegrationType);
         CheckShapeFunctionsAndNodePositions(myIT, 3);
         myIT.PrintNodeCoordinates();
         myIT.PrintNodeIndices();
-        CheckNodeIndexing (myIT);
+        CheckNodeIndexing(myIT);
     }
 
 
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
-        myIT.UpdateIntegrationType(myIntegrationType);
+        CheckPartitionOfUnity(myIT, myIntegrationType);
         CheckShapeFunctionsAndNodePositions(myIT, 4);
         myIT.PrintNodeCoordinates();
         myIT.PrintNodeIndices();
-        CheckNodeIndexing (myIT);
+        CheckNodeIndexing(myIT);
     }
 
 
@@ -137,10 +135,10 @@ BOOST_AUTO_TEST_CASE(InterpolationTruss)
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
         myIT.AddDofInterpolation(NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myIT.UpdateIntegrationType(myIntegrationType);
+        CheckPartitionOfUnity(myIT, myIntegrationType);
         myIT.PrintNodeCoordinates();
         myIT.PrintNodeIndices();
-        CheckNodeIndexing (myIT);
+        CheckNodeIndexing(myIT);
     }
 }
 
@@ -150,22 +148,22 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangle)
 
     NuTo::InterpolationType myIT3(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
     myIT3.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT3.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT3, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT3, 3);
 
     NuTo::InterpolationType myIT6(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
     myIT6.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT6.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT6, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT6, 6);
 
     NuTo::InterpolationType myIT10(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
     myIT10.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
-    myIT10.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT10, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT10, 10);
 
     NuTo::InterpolationType myIT15(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
     myIT15.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
-    myIT15.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT15, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT15, 15);
 
     NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
@@ -173,7 +171,6 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangle)
     myIT.AddDofInterpolation(NuTo::Node::eDof::TEMPERATURE, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
     myIT.AddDofInterpolation(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
     myIT.AddDofInterpolation(NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT.UpdateIntegrationType(myIntegrationType);
 
     CheckNodeIndexing(myIT);
 }
@@ -185,29 +182,28 @@ BOOST_AUTO_TEST_CASE(InterpolationQuad)
 
     NuTo::InterpolationType myIT4(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT4.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT4.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT4, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT4, 4);
 
     NuTo::InterpolationType myIT8(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT8.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT8.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT8, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT8, 8);
 
     NuTo::InterpolationType myIT9(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT9.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
-    myIT9.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT9, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT9, 9);
 
     NuTo::InterpolationType myIT16(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT16.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO3);
-    myIT16.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT16, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT16, 16);
 
     NuTo::InterpolationType myIT25(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT25.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO4);
-    myIT25.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT25, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT25, 25);
-
 }
 
 BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
@@ -216,14 +212,13 @@ BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
 
     NuTo::InterpolationType myIT4(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, 3);
     myIT4.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT4.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT4, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT4, 4);
 
     NuTo::InterpolationType myIT10(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, 3);
     myIT10.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT10.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT10, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT10, 10);
-
 }
 
 BOOST_AUTO_TEST_CASE(InterpolationBrick)
@@ -232,27 +227,27 @@ BOOST_AUTO_TEST_CASE(InterpolationBrick)
 
     NuTo::InterpolationType myIT8(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT8.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT8.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT8, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT8, 8);
 
     NuTo::InterpolationType myIT20(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT20.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT20.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT20, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT20, 20);
 
     NuTo::InterpolationType myIT27(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT27.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
-    myIT27.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT27, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT27, 27);
 
     NuTo::InterpolationType myIT64(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT64.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO3);
-    myIT64.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT64, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT64, 64);
 
     NuTo::InterpolationType myIT125(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT125.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO4);
-    myIT125.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT125, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT125, 125);
 }
 
@@ -262,23 +257,21 @@ BOOST_AUTO_TEST_CASE(InterpolationPrism)
 
     NuTo::InterpolationType myIT6(NuTo::Interpolation::eShapeType::PRISM3D, 3);
     myIT6.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT6.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT6, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT6, 6);
 
     NuTo::InterpolationType myIT15(NuTo::Interpolation::eShapeType::PRISM3D, 3);
     myIT15.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT15.UpdateIntegrationType(myIntegrationType);
+    CheckPartitionOfUnity(myIT15, myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT15, 18);
 }
-
 
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTruss)
 {
 
     NuTo::Structure myStructureTruss(1);
     int itTruss = myStructureTruss.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    myStructureTruss.InterpolationTypeAdd(itTruss,
-                                          NuTo::Node::eDof::COORDINATES,
+    myStructureTruss.InterpolationTypeAdd(itTruss, NuTo::Node::eDof::COORDINATES,
                                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     Eigen::MatrixXd nodes(1, 2);
@@ -295,17 +288,16 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTruss)
     ids = {nodeIds[1], nodeIds[0]};
     myStructureTruss.ElementCreate(itTruss, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTriangle)
 {
     NuTo::Structure myStructureTriangle(2);
     int itTriangle = myStructureTriangle.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-    myStructureTriangle.InterpolationTypeAdd(itTriangle,
-                                             NuTo::Node::eDof::COORDINATES,
+    myStructureTriangle.InterpolationTypeAdd(itTriangle, NuTo::Node::eDof::COORDINATES,
                                              NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     Eigen::MatrixXd nodes(2, 3);
-    nodes << 0, 2, 2,
-        0, 0, 3;
+    nodes << 0, 2, 2, 0, 0, 3;
 
     std::vector<int> nodeIds = myStructureTriangle.NodesCreate(nodes);
     std::vector<int> ids(3);
@@ -323,13 +315,11 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingQuad)
 {
     NuTo::Structure myStructureQuad(2);
     int itQuad = myStructureQuad.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    myStructureQuad.InterpolationTypeAdd(itQuad,
-                                         NuTo::Node::eDof::COORDINATES,
+    myStructureQuad.InterpolationTypeAdd(itQuad, NuTo::Node::eDof::COORDINATES,
                                          NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     Eigen::MatrixXd nodes(2, 4);
-    nodes << 0, 2, 2, 0,
-        0, 0, 3, 2;
+    nodes << 0, 2, 2, 0, 0, 0, 3, 2;
 
     std::vector<int> nodeIds = myStructureQuad.NodesCreate(nodes);
     std::vector<int> ids(4);
@@ -342,18 +332,16 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingQuad)
     ids = {nodeIds[3], nodeIds[2], nodeIds[1], nodeIds[0]};
     myStructureQuad.ElementCreate(itQuad, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTetrahedron)
 {
     NuTo::Structure myStructureTetrahedron(3);
     int itTetrahedron = myStructureTetrahedron.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
-    myStructureTetrahedron.InterpolationTypeAdd(itTetrahedron,
-                                                NuTo::Node::eDof::COORDINATES,
+    myStructureTetrahedron.InterpolationTypeAdd(itTetrahedron, NuTo::Node::eDof::COORDINATES,
                                                 NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     Eigen::MatrixXd nodes(3, 4);
-    nodes << 0, 2, 0, 0,
-        0, 0, 3, 0,
-        0, 0, 0, 4;
+    nodes << 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4;
 
     std::vector<int> nodeIds = myStructureTetrahedron.NodesCreate(nodes);
     std::vector<int> ids(4);
@@ -366,18 +354,16 @@ BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingTetrahedron)
     ids = {nodeIds[0], nodeIds[3], nodeIds[2], nodeIds[1]};
     myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
 }
+
 BOOST_AUTO_TEST_CASE(InterpolationNodeReorderingBrick)
 {
     NuTo::Structure myStructureBrick(3);
     int itBricks = myStructureBrick.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::BRICK3D);
-    myStructureBrick.InterpolationTypeAdd(itBricks,
-                                          NuTo::Node::eDof::COORDINATES,
+    myStructureBrick.InterpolationTypeAdd(itBricks, NuTo::Node::eDof::COORDINATES,
                                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     Eigen::MatrixXd nodes(3, 8);
-    nodes << 0, 2, 2, 0, 0, 2, 2, 0,
-        0, 0, 3, 3, 0, 0, 3, 3,
-        0, 0, 0, 0, 4, 4, 4, 4;
+    nodes << 0, 2, 2, 0, 0, 2, 2, 0, 0, 0, 3, 3, 0, 0, 3, 3, 0, 0, 0, 0, 4, 4, 4, 4;
 
     std::vector<int> nodeIds = myStructureBrick.NodesCreate(nodes);
     std::vector<int> ids(8);

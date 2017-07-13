@@ -1,17 +1,21 @@
 #include "BoostUnitTest.h"
 
 #include <memory>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
-#include "base/Timer.h"
 #include "base/Exception.h"
 
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 
+BOOST_AUTO_TEST_CASE(RestartFile_InvalidFile)
+{
+    BOOST_CHECK_THROW(NuTo::SerializeStreamIn("invalidFile.restart", true), NuTo::Exception);
+}
+
 //! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
-T WriteReadNumber(const std::string &rFile, bool rIsBinary, T &rValue, T rZero)
+T WriteReadNumber(const std::string& rFile, bool rIsBinary, T& rValue, T rZero)
 {
     // write
     {
@@ -48,7 +52,7 @@ BOOST_AUTO_TEST_CASE(SerializeBool)
 }
 
 template <typename T>
-T WriteReadMatrix(const std::string &rFile, bool rIsBinary, T &rValue)
+T WriteReadMatrix(const std::string& rFile, bool rIsBinary, T& rValue)
 {
     // write
     {
@@ -138,7 +142,6 @@ public:
 class CompoundData : public CompoundDataBase
 {
 public:
-
     Eigen::Vector3d mVector;
     Eigen::MatrixXd mMatrix;
 
@@ -158,12 +161,12 @@ public:
 
     virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) override
     {
-        CompoundDataBase::NuToSerializeSave(rStream);  // explicitly call the base class serialization
+        CompoundDataBase::NuToSerializeSave(rStream); // explicitly call the base class serialization
         SerializeMe(rStream);
     }
     virtual void NuToSerializeLoad(NuTo::SerializeStreamIn& rStream) override
     {
-        CompoundDataBase::NuToSerializeLoad(rStream);  // explicitly call the base class serialization
+        CompoundDataBase::NuToSerializeLoad(rStream); // explicitly call the base class serialization
         SerializeMe(rStream);
     }
 
@@ -175,7 +178,6 @@ private:
         rStream.Serialize(mMatrix);
         rStream.Separator();
     }
-
 };
 
 
@@ -184,14 +186,14 @@ void CheckCompoundData(const std::string& rFile, bool rIsBinary)
     CompoundData values1;
     CompoundData values2;
 
-    values1.SetRandom(5,2);
-    values2.SetRandom(3,7);
+    values1.SetRandom(5, 2);
+    values2.SetRandom(3, 7);
 
     CompoundData valuesFromFile1 = values1;
     CompoundData valuesFromFile2 = values2;
 
-    valuesFromFile1.SetZero(5,2);
-    valuesFromFile2.SetZero(3,7);
+    valuesFromFile1.SetZero(5, 2);
+    valuesFromFile2.SetZero(3, 7);
 
     // write
     {
@@ -205,47 +207,43 @@ void CheckCompoundData(const std::string& rFile, bool rIsBinary)
     streamIn >> valuesFromFile1;
     streamIn >> valuesFromFile2;
 
-    BOOST_CHECK_CLOSE(values1.mScalar,          valuesFromFile1.mScalar,        1.e-10);
-    BOOST_CHECK_CLOSE(values1.mVector.norm(),   valuesFromFile1.mVector.norm(), 1.e-10);
-    BOOST_CHECK_CLOSE(values1.mMatrix.norm(),   valuesFromFile1.mMatrix.norm(), 1.e-10);
+    BOOST_CHECK_CLOSE(values1.mScalar, valuesFromFile1.mScalar, 1.e-10);
+    BOOST_CHECK_CLOSE(values1.mVector.norm(), valuesFromFile1.mVector.norm(), 1.e-10);
+    BOOST_CHECK_CLOSE(values1.mMatrix.norm(), valuesFromFile1.mMatrix.norm(), 1.e-10);
 
-    BOOST_CHECK_CLOSE(values2.mScalar,          valuesFromFile2.mScalar,        1.e-10);
-    BOOST_CHECK_CLOSE(values2.mVector.norm(),   valuesFromFile2.mVector.norm(), 1.e-10);
-    BOOST_CHECK_CLOSE(values2.mMatrix.norm(),   valuesFromFile2.mMatrix.norm(), 1.e-10);
+    BOOST_CHECK_CLOSE(values2.mScalar, valuesFromFile2.mScalar, 1.e-10);
+    BOOST_CHECK_CLOSE(values2.mVector.norm(), valuesFromFile2.mVector.norm(), 1.e-10);
+    BOOST_CHECK_CLOSE(values2.mMatrix.norm(), valuesFromFile2.mMatrix.norm(), 1.e-10);
 }
 
 void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
 {
-    NuTo::Timer timer(__PRETTY_FUNCTION__);
     size_t num = 42;
     std::vector<std::unique_ptr<CompoundDataBase>> values(num);
     std::vector<std::unique_ptr<CompoundDataBase>> valuesFromFile(num);
     for (auto& value : values)
     {
         value = std::make_unique<CompoundData>();
-        static_cast<CompoundData*>(&(*value))->SetRandom(5,3);
+        static_cast<CompoundData*>(&(*value))->SetRandom(5, 3);
     }
 
     for (auto& valueFromFile : valuesFromFile)
     {
         valueFromFile = std::make_unique<CompoundData>();
-        static_cast<CompoundData*>(&(*valueFromFile))->SetZero(5,3);
+        static_cast<CompoundData*>(&(*valueFromFile))->SetZero(5, 3);
     }
 
-    timer.Reset("Write");
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
         for (auto& value : values)
             streamOut << *value;
     }
-    timer.Reset("Read");
     // read
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
     for (auto& valueFromFile : valuesFromFile)
         streamIn >> *valueFromFile;
 
-    timer.Reset("Cleanup");
     for (size_t i = 0; i < num; ++i)
     {
         BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mScalar,
@@ -255,13 +253,24 @@ void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
         BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mMatrix.norm(),
                           static_cast<CompoundData*>(&*valuesFromFile[i])->mMatrix.norm(), 1.e-10);
     }
-
 }
 
-BOOST_AUTO_TEST_CASE(SerializeCompoundDataText)         { CheckCompoundData      ("CompoundDataText.dat"             , false);}
-BOOST_AUTO_TEST_CASE(SerializeCompoundDataBinary)       { CheckCompoundData      ("CompoundDataBinary.dat"           , true );}
-BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataText)   { CheckVectorCompoundData("VectorCompoundDataText.dat"       , false);}
-BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary) { CheckVectorCompoundData("VectorCompoundDataBinary.dat"     , true );}
+BOOST_AUTO_TEST_CASE(SerializeCompoundDataText)
+{
+    CheckCompoundData("CompoundDataText.dat", false);
+}
+BOOST_AUTO_TEST_CASE(SerializeCompoundDataBinary)
+{
+    CheckCompoundData("CompoundDataBinary.dat", true);
+}
+BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataText)
+{
+    CheckVectorCompoundData("VectorCompoundDataText.dat", false);
+}
+BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary)
+{
+    CheckVectorCompoundData("VectorCompoundDataBinary.dat", true);
+}
 
 
 BOOST_AUTO_TEST_CASE(SerializeInvalidWrite)

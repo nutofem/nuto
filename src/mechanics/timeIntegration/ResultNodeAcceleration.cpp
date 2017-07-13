@@ -12,16 +12,17 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
-NuTo::ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, int rNodeId) : ResultNodeDof(rIdent, rNodeId)
+NuTo::ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, int rNodeId)
+    : ResultNodeDof(rIdent, rNodeId)
 {
 }
 
-Eigen::VectorXd NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure)const
+Eigen::VectorXd NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure) const
 {
     return rStructure.NodeGetNodePtr(mNodeId)->Get(Node::eDof::DISPLACEMENTS, 2);
 }
 
-int NuTo::ResultNodeAcceleration::GetNumData(const StructureBase& rStructure)const
+int NuTo::ResultNodeAcceleration::GetNumData(const StructureBase& rStructure) const
 {
     return rStructure.NodeGetNodePtr(mNodeId)->GetNum(Node::eDof::DISPLACEMENTS);
 }
@@ -30,5 +31,3 @@ NuTo::eTimeIntegrationResultType NuTo::ResultNodeAcceleration::GetResultType() c
 {
     return NuTo::eTimeIntegrationResultType::NODE_ACCELERATION;
 }
-
-

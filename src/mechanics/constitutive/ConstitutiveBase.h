@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <eigen3/Eigen/Dense>
 
 #include <functional>
@@ -23,32 +18,37 @@ class InterpolationType;
 class ElementBase;
 class InterpolationType;
 class Logger;
-template<typename IOEnum> class ConstitutiveIOMap;
+template <typename IOEnum>
+class ConstitutiveIOMap;
 
 namespace Element
 {
-    enum class eElementType;
-}// namespace Element
+enum class eElementType;
+} // namespace Element
 
 namespace Constitutive
 {
-    enum class eConstitutiveParameter;
-    enum class eConstitutiveType;
-    enum class eInput;
-    enum class eOutput;
+class DamageLaw;
+enum class eConstitutiveParameter;
+enum class eConstitutiveType;
+enum class eInput;
+enum class eOutput;
 
 class DidNotConverge : public std::runtime_error
 {
 public:
-    DidNotConverge() : std::runtime_error("Constitutive law did not converge") {}
+    DidNotConverge()
+        : std::runtime_error("Constitutive law did not converge")
+    {
+    }
 };
 
-}// namespace Constitutive
+} // namespace Constitutive
 
 namespace Node
 {
-    enum class eDof : unsigned char;
-}// namespace Node
+enum class eDof : unsigned char;
+} // namespace Node
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
 using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
@@ -56,18 +56,16 @@ using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 class ConstitutiveBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    ConstitutiveBase(): mParametersValid(false){};
+    ConstitutiveBase()
+        : mParametersValid(false){};
 
-    ConstitutiveBase(const ConstitutiveBase& ) = default;
-    ConstitutiveBase(      ConstitutiveBase&&) = default;
+    ConstitutiveBase(const ConstitutiveBase&) = default;
+    ConstitutiveBase(ConstitutiveBase&&) = default;
 
-    ConstitutiveBase& operator =(const ConstitutiveBase& ) = default;
-    ConstitutiveBase& operator =(      ConstitutiveBase&&) = default;
+    ConstitutiveBase& operator=(const ConstitutiveBase&) = default;
+    ConstitutiveBase& operator=(ConstitutiveBase&&) = default;
 
     //! @brief ... constructor
     virtual ~ConstitutiveBase() = default;
@@ -85,8 +83,7 @@ public:
     //! @param rDofRow Row DOF.
     //! @param rDofCol Column DOF.
     //! @param rTimeDerivative Time derivative.
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
-            int rTimeDerivative) const = 0;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const = 0;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -117,6 +114,8 @@ public:
 
     virtual void SetParameterFunction(std::function<std::array<double, 2>(double)>);
 
+    virtual void SetDamageLaw(std::shared_ptr<Constitutive::DamageLaw> damageLaw);
+
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
@@ -126,6 +125,16 @@ public:
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue);
+
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... value of the requested variable
+    virtual Eigen::MatrixXd GetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
+
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterMatrixDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::MatrixXd rValue);
 
 
     //! @brief checks parameters, throws if the check failed
@@ -139,6 +148,7 @@ public:
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
     virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const;
+
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -162,26 +172,18 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
 
-    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
+    //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or
+    //! stiffness are calculated)
     //! @return ... see brief explanation
-    virtual bool HaveTmpStaticData() const=0;
+    virtual bool HaveTmpStaticData() const = 0;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrown
     virtual void CheckParameters() const = 0;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
 protected:
-    //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
+    //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and
+    //! <B>false</B> otherwise
     bool mParametersValid;
-
 };
-
-
 }

@@ -1,22 +1,14 @@
 #pragma once
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include <cfloat>
 #include <iosfwd>
 
 namespace NuTo
 {
- 
+
 //! @brief Abstract base class for sections
 class Section
 {
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif // ENABLE_SERIALIZATION
 public:
     //! @brief Destructor
     virtual ~Section() = 0;
@@ -38,15 +30,8 @@ public:
     virtual bool IsPlaneStrain() const;
 
 protected:
+    //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const;
-#ifdef ENABLE_SERIALIZATION
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-    }
-
-    BOOST_CLASS_EXPORT_KEY(NuTo::SectionBase)
-#endif // ENABLE_SERIALIZATION
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Section& section)

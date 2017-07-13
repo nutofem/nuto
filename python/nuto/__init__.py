@@ -8,3 +8,4 @@ from nuto.mechanics.ModuleMechanics import *
 from nuto.metamodel.ModuleMetamodel import *
 from nuto.optimize.ModuleOptimize import *
 from nuto.geometryConcrete.ModuleGeometryConcrete import *
+Version = "${commit_nr}"

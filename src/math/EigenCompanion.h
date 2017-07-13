@@ -1,8 +1,8 @@
 #pragma once
 
-#include <eigen3/Eigen/Core>
 #include <vector>
-
+#include <string>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -30,14 +30,16 @@ public:
     //! @return matrix
     static Eigen::MatrixXd ReadFromFile(const std::string& rFileName, std::string rDelimiter = " ");
 
-private:
+    //! @brief converts data to a 3D vector, fills with zeros if needed
+    //! @param data vector of arbitrary size
+    //! @return 3D vector
+    static Eigen::Vector3d To3D(const Eigen::VectorXd& data);
 
+private:
     //! @brief converts a string, seperated by rDelimiter, to a vector of doubles
     //! @param rString string to convert
     //! @param rDelimiter delimiters between the entries in each line
     //! @return vector containing the numbers in the string
     static std::vector<double> StringToDoubles(const std::string& rString, std::string rDelimiter);
-
 };
-
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -10,35 +10,34 @@ template <int TRows, int TCols>
 class ConstitutiveMatrix : public ConstitutiveIOBase, public Eigen::Matrix<double, TRows, TCols>
 {
 public:
-
     ConstitutiveMatrix()
     {
         this->setZero();
     }
 
-    ConstitutiveMatrix(const ConstitutiveMatrix& )              = default;
-    ConstitutiveMatrix(      ConstitutiveMatrix&&)              = default;
+    ConstitutiveMatrix(const ConstitutiveMatrix&) = default;
+    ConstitutiveMatrix(ConstitutiveMatrix&&) = default;
 
-    virtual ~ConstitutiveMatrix()                               = default;
+    virtual ~ConstitutiveMatrix() = default;
 
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override
     {
         return std::make_unique<ConstitutiveMatrix<TRows, TCols>>(*this);
     }
 
-    ConstitutiveMatrix& operator=(const ConstitutiveMatrix& )   = default;
-    ConstitutiveMatrix& operator=(      ConstitutiveMatrix&&)   = default;
+    ConstitutiveMatrix& operator=(const ConstitutiveMatrix&) = default;
+    ConstitutiveMatrix& operator=(ConstitutiveMatrix&&) = default;
 
 
-    double& operator ()(int rRow, int rCol) override
+    double& operator()(int rRow, int rCol) override
     {
-        return this->Eigen::Matrix<double, TRows, TCols>::operator () (rRow, rCol);
+        return this->Eigen::Matrix<double, TRows, TCols>::operator()(rRow, rCol);
     }
 
 
-    double operator ()(int rRow, int rCol) const override
+    double operator()(int rRow, int rCol) const override
     {
-        return this->Eigen::Matrix<double, TRows, TCols>::operator () (rRow, rCol);
+        return this->Eigen::Matrix<double, TRows, TCols>::operator()(rRow, rCol);
     }
 
     void SetZero() override

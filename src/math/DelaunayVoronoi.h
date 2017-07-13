@@ -4,9 +4,7 @@
  *  Created on: 1 Sep 2015
  *      Author: ttitsche
  */
-
-#ifndef DELAUNAYVORONOI_H_
-#define DELAUNAYVORONOI_H_
+#pragma once
 
 #include <iostream>
 #include <eigen3/Eigen/Dense>
@@ -68,7 +66,8 @@ public:
 
     size_t GetHash() const
     {
-        return std::hash<double>()(P0().x()) + std::hash<double>()(P0().y()) + std::hash<double>()(P1().x()) + std::hash<double>()(P1().y());
+        return std::hash<double>()(P0().x()) + std::hash<double>()(P0().y()) + std::hash<double>()(P1().x()) +
+               std::hash<double>()(P1().y());
     }
 
     //! @brief returns the line parameter l of the line rPoint + l * rDirection
@@ -108,7 +107,6 @@ private:
 class Triangle
 {
 public:
-
     Triangle(Edge rE0, Edge rE1, Edge rE2)
     {
         mEdges[0] = rE0;
@@ -224,7 +222,9 @@ public:
     void Info() const
     {
         auto points = GetUniquePoints();
-        std::cout << "T: \n" << points[0].transpose() << " | " << points[1].transpose() << " | " << points[2].transpose() << " | \n";
+        std::cout << "T: \n"
+                  << points[0].transpose() << " | " << points[1].transpose() << " | " << points[2].transpose()
+                  << " | \n";
     }
 
 private:
@@ -234,10 +234,12 @@ private:
 class Polygon
 {
 public:
-    Polygon(){}
+    Polygon()
+    {
+    }
 
-    Polygon(std::vector<Eigen::Vector2d> rPoints) :
-            mPoints(rPoints)
+    Polygon(std::vector<Eigen::Vector2d> rPoints)
+        : mPoints(rPoints)
     {
         SortAndRemoveDoublicates();
     }
@@ -316,7 +318,8 @@ public:
         return false;
     }
 
-    //! @brief A line from rPoint in rDirection may intersect multiple times with the polygon. This method returns the closest one to rPoint.
+    //! @brief A line from rPoint in rDirection may intersect multiple times with the polygon. This method returns the
+    //! closest one to rPoint.
     Eigen::Vector2d GetClosestIntersection(Eigen::Vector2d rPoint, Eigen::Vector2d rDirection) const
     {
         std::vector<Eigen::Vector2d> intersections;
@@ -328,8 +331,8 @@ public:
             if (lineParameter > 1.e-10)
                 closestLineParameter = std::min(closestLineParameter, lineParameter);
         }
-//        if (closestLineParameter == 1.e10)
-//            throw "No intersection found!";
+        //        if (closestLineParameter == 1.e10)
+        //            throw "No intersection found!";
 
         return Eigen::Vector2d(rPoint + rDirection * closestLineParameter);
     }
@@ -361,7 +364,7 @@ public:
     {
         std::vector<Eigen::Vector2d> points = mPoints;
         auto it = std::find(points.begin(), points.end(), rPoint);
-        assert (it != points.end());
+        assert(it != points.end());
 
         points.erase(it);
         return points;
@@ -418,8 +421,8 @@ public:
                     mPoints.push_back(point);
 
                 SortAndRemoveDoublicates();
-//                if (not PointIsInside(rIP))
-//                    throw "Damn it!";
+                //                if (not PointIsInside(rIP))
+                //                    throw "Damn it!";
             }
         }
     }
@@ -433,8 +436,9 @@ private:
 class DelaunayVoronoi
 {
 public:
-
-    DelaunayVoronoi(const std::vector<Eigen::Vector2d>& rPoints, bool rCalculateInTransformedSystem) : mPoints(rPoints), mCalculateInTransformedSystem(rCalculateInTransformedSystem)
+    DelaunayVoronoi(const std::vector<Eigen::Vector2d>& rPoints, bool rCalculateInTransformedSystem)
+        : mPoints(rPoints)
+        , mCalculateInTransformedSystem(rCalculateInTransformedSystem)
     {
         if (mCalculateInTransformedSystem)
             Transform(mPoints);
@@ -468,26 +472,26 @@ public:
     void Transform(std::vector<Eigen::Vector2d>& rPoints)
     {
         Eigen::Matrix2d T;
-        T << 1,.5,0,std::sqrt(0.75);
+        T << 1, .5, 0, std::sqrt(0.75);
 
         for (auto& point : rPoints)
         {
             auto p = point;
-            point = T*p;
+            point = T * p;
         }
     }
 
     void TransformInverse(std::vector<Eigen::Vector2d>& rPoints)
     {
         Eigen::Matrix2d T;
-        T << 1,.5,0,std::sqrt(0.75);
+        T << 1, .5, 0, std::sqrt(0.75);
 
         auto invT = T.inverse();
 
         for (auto& point : rPoints)
         {
             auto p = point;
-            point = invT*p;
+            point = invT * p;
         }
     }
 
@@ -506,8 +510,8 @@ public:
         }
 
         auto size = superMax - superMin;
-        superMin -= 3* size;
-        superMax += 3* size;
+        superMin -= 3 * size;
+        superMax += 3 * size;
 
         std::array<Eigen::Vector2d, 4> sP;
         sP[0] = superMin;
@@ -515,8 +519,8 @@ public:
         sP[2] = superMax;
         sP[3] = Eigen::Vector2d(superMin.x(), superMax.y());
 
-        mTriangulation.push_back(Triangle(Edge(sP[0],sP[1]), Edge(sP[1],sP[2]), Edge(sP[2],sP[0]) ));
-        mTriangulation.push_back(Triangle(Edge(sP[0],sP[2]), Edge(sP[2],sP[3]), Edge(sP[3],sP[0]) ));
+        mTriangulation.push_back(Triangle(Edge(sP[0], sP[1]), Edge(sP[1], sP[2]), Edge(sP[2], sP[0])));
+        mTriangulation.push_back(Triangle(Edge(sP[0], sP[2]), Edge(sP[2], sP[3]), Edge(sP[3], sP[0])));
 
 
         // add every point from rPoints using the Bowyer–Watson algorithm
@@ -576,16 +580,13 @@ public:
         for (auto triangle : mTriangulation)
         {
             auto points = triangle.GetUniquePoints();
-            file
-                << points[0].transpose() << '\n'
-                << points[1].transpose() << '\n'
-                << points[2].transpose() << '\n'
-                << points[0].transpose() << "\n \n";
+            file << points[0].transpose() << '\n'
+                 << points[1].transpose() << '\n'
+                 << points[2].transpose() << '\n'
+                 << points[0].transpose() << "\n \n";
         }
         file.close();
-
     }
-
 
 
     void CalculateVoronoiPolygons()
@@ -683,7 +684,6 @@ public:
                             continue;
 
                         p0 = mBoundary.GetClosestIntersection(p0, n);
-
                     }
                     p1 = mBoundary.GetClosestIntersection(p0, n);
                 }
@@ -723,7 +723,8 @@ public:
         }
     }
 
-    void CalculateVisualizationCellsPolygon(std::vector<Eigen::Vector2d>& rVisuPoints, std::vector<std::vector<unsigned int>>& rVisuCellIndices)
+    void CalculateVisualizationCellsPolygon(std::vector<Eigen::Vector2d>& rVisuPoints,
+                                            std::vector<std::vector<unsigned int>>& rVisuCellIndices)
     {
         if (mVoronoiPolygons.size() == 0)
             CalculateVoronoiPolygons();
@@ -754,9 +755,12 @@ public:
 
     //! @brief calculates the polygon visualization cells and triangulates them again
     //! @param rVisuPoints ... vector of unique visualization points
-    //! @param rVisuCellIndices ... vector of triangular visualization cells. Each cell contains a vector of visuPoint indices
+    //! @param rVisuCellIndices ... vector of triangular visualization cells. Each cell contains a vector of visuPoint
+    //! indices
     //! @param rCellIPIndex ... contains the index of the integration point of each visualization cell
-    void CalculateVisualizationCellsTriangle(std::vector<Eigen::Vector2d>& rVisuPoints, std::vector<std::array<unsigned int, 3>>& rVisuCellIndices, std::vector<unsigned int>& rCellIPIndex)
+    void CalculateVisualizationCellsTriangle(std::vector<Eigen::Vector2d>& rVisuPoints,
+                                             std::vector<std::array<unsigned int, 3>>& rVisuCellIndices,
+                                             std::vector<unsigned int>& rCellIPIndex)
     {
         rVisuCellIndices.clear();
         rCellIPIndex.clear();
@@ -772,9 +776,9 @@ public:
             for (unsigned int i = 1; i < polygon.size() - 1; ++i)
             {
                 unsigned int p1 = polygon[i];
-                unsigned int p2 = polygon[i+1];
+                unsigned int p2 = polygon[i + 1];
 
-                rVisuCellIndices.push_back({{p0,p1,p2}});
+                rVisuCellIndices.push_back({{p0, p1, p2}});
                 rCellIPIndex.push_back(iIP);
             }
         }
@@ -788,5 +792,3 @@ private:
     Polygon mBoundary;
     bool mCalculateInTransformedSystem;
 };
-
-#endif /* DELAUNAYVORONOI_H_ */

@@ -13,8 +13,10 @@
 namespace NuTo
 {
 class ElementOutputIpData;
-template <typename T> class BlockFullVector;
-template <typename T> class BlockFullMatrix;
+template <typename T>
+class BlockFullVector;
+template <typename T>
+class BlockFullMatrix;
 
 struct EvaluateData
 {
@@ -27,21 +29,19 @@ struct EvaluateData
 };
 
 
-class Element2DInterface: public ElementBase
+class Element2DInterface : public ElementBase
 {
 
-#ifdef ENABLE_SERIALIZATION
-    friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-
 public:
-    Element2DInterface(const std::vector<NuTo::NodeBase*>& rNodes,
-            const InterpolationType& rInterpolationType, int globalDimension);
+    Element2DInterface(const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType,
+                       const IntegrationTypeBase& integrationType, int globalDimension);
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
-    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    void Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
+    //! includes inertia terms)
+    void Evaluate(const ConstitutiveInputMap& rInput,
+                  std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -83,7 +83,8 @@ public:
     void ResizeNodes(int rNewNumNodes) override;
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still
+    //! identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override;
 
     //! @brief Sets the section of an element
@@ -102,42 +103,46 @@ public:
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
 
 
-
-
 protected:
-
     std::vector<NodeBase*> mNodes;
 
     std::shared_ptr<const Section> mSection;
 
     Eigen::MatrixXd mTransformationMatrix;
 
-    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element
+    //! length/area/volum is negative)
     void CheckElement() override;
 
 private:
     const int mGlobalDimension;
 
-    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput);
+    ConstitutiveOutputMap
+    GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput);
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData);
 
-    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const;
-    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0) const;
-    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData) const;
+    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                           BlockFullVector<double>& rInternalGradient) const;
+    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   BlockFullMatrix<double>& rHessian0) const;
+    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                 ElementOutputIpData& rIpData) const;
 
-    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
+    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global
+    //! dof ordering)
     void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
 
-    void CalculateElementOutputs(
-            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+                                 EvaluateData& rData, int rTheIP,
+                                 const ConstitutiveOutputMap& constitutiveOutputMap) const;
 
-    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateData& rData, int rTheIP) const;
+    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateData& rData,
+                                                        int rTheIP,
+                                                        const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateData& rData, int rTheIP,
+                                                const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateData& rData, int rTheIP) const;
 
     //! @brief calculates the rotation matirx based on the orientation of the element
     Eigen::MatrixXd CalculateRotationMatrix();
@@ -146,32 +151,16 @@ private:
     Eigen::MatrixXd CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes);
 
 #ifdef ENABLE_VISUALIZE
-    void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
-            std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const override;
+    void GetVisualizationCells(unsigned int& NumVisualizationPoints,
+                               std::vector<double>& VisualizationPointLocalCoordinates,
+                               unsigned int& NumVisualizationCells,
+                               std::vector<NuTo::eCellTypes>& VisualizationCellType,
+                               std::vector<unsigned int>& VisualizationCellsIncidence,
+                               std::vector<unsigned int>& VisualizationCellsIP) const override;
 
-    void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
+    void Visualize(Visualize::UnstructuredGrid& visualizer,
+                   const std::vector<eVisualizeWhat>& visualizeComponents) override;
 #endif // ENABLE_VISUALIZE
 };
 
 } /* namespace NuTo */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

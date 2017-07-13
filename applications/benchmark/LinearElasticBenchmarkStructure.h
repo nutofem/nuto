@@ -4,6 +4,8 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/groups/Group.h"
 
 namespace NuTo
 {
@@ -13,7 +15,8 @@ namespace Benchmark
 class LinearElasticBenchmarkStructure
 {
 public:
-    LinearElasticBenchmarkStructure(std::vector<int> rNumElements, int rNumProc = 1) : mS(3)
+    LinearElasticBenchmarkStructure(std::vector<int> rNumElements, int rNumProc = 1)
+        : mS(3)
     {
         mS.SetNumProcessors(rNumProc);
         mS.SetShowTime(false);
@@ -51,25 +54,19 @@ public:
 
     void SetupBCs()
     {
-        int bottomNodes = mS.GroupCreate(eGroupId::Nodes);
-        mS.GroupAddNodeCoordinateRange(bottomNodes, 2, 0.0, 0.0);
+        auto& bottomNodes = mS.GroupGetNodesAtCoordinate(NuTo::eDirection::Z, 0);
+        mS.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
+                             NuTo::Constraint::Component(
+                                     bottomNodes, {NuTo::eDirection::X, NuTo::eDirection::Y, NuTo::eDirection::Z}));
 
-        int topNodes = mS.GroupCreate(eGroupId::Nodes);
-        mS.GroupAddNodeCoordinateRange(topNodes, 2, lz, lz);
-
+        auto& topNodes = mS.GroupGetNodesAtCoordinate(NuTo::eDirection::Z, lz);
+        int topNodesId = mS.GroupGetId(&topNodes);
         int topElements = mS.GroupCreate(eGroupId::Elements);
-        mS.GroupAddElementsFromNodes(topElements, topNodes, false);
-
-        mS.ConstraintLinearSetDisplacementNodeGroup(bottomNodes, Eigen::Vector3d::UnitX(), 0.0);
-        mS.ConstraintLinearSetDisplacementNodeGroup(bottomNodes, Eigen::Vector3d::UnitY(), 0.0);
-        mS.ConstraintLinearSetDisplacementNodeGroup(bottomNodes, Eigen::Vector3d::UnitZ(), 0.0);
-
-        mS.SetNumLoadCases(1);
-        mS.LoadSurfacePressureCreate3D(0, topElements, topNodes, 10.0);
+        mS.GroupAddElementsFromNodes(topElements, topNodesId, false);
+        mS.LoadSurfacePressureCreate3D(topElements, topNodesId, 10.0);
     }
 
 private:
-
     void SetupMesh(std::vector<int> rNumElements)
     {
         auto meshInfo = MeshGenerator::Grid(mS, {lx, ly, lz}, rNumElements);
@@ -89,7 +86,6 @@ private:
     static constexpr double lz = 45;
 
     Structure mS;
-
 };
 
 

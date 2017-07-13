@@ -15,16 +15,15 @@ class AdditiveInputImplicit;
 namespace Constitutive
 {
 
-class IPAdditiveInputImplicit: public IPConstitutiveLawBase
+class IPAdditiveInputImplicit : public IPConstitutiveLawBase
 {
 public:
-
     typedef StaticData::DataAdditiveInputImplicit StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
 
     //! @brief constructor
     //! @param rLaw underlying constitutive law
-    IPAdditiveInputImplicit(AdditiveInputImplicit& rLaw, const Data &rData);
+    IPAdditiveInputImplicit(AdditiveInputImplicit& rLaw, const Data& rData);
 
     IPAdditiveInputImplicit(const IPAdditiveInputImplicit& rOther);
 
@@ -51,16 +50,16 @@ public:
     virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override;
 
 protected:
-    template<int TDim>
+    template <int TDim>
     void AdditiveInputImplicitEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput);
+                                       const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputImplicitEvaluate<1>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -69,7 +68,7 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputImplicitEvaluate<2>(rConstitutiveInput, rConstitutiveOutput);
     }
@@ -78,24 +77,23 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output of the constitutive law
     void Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                      const ConstitutiveOutputMap& rConstitutiveOutput) override
+                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         AdditiveInputImplicitEvaluate<3>(rConstitutiveInput, rConstitutiveOutput);
     }
 
 private:
+    template <int TDim>
+    void CalculateGlobalOutputs(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                std::vector<NuTo::ConstitutiveInputMap>& rLocalInputMapVec,
+                                std::vector<ConstitutiveOutputMap>& rLocalOutputMapVec);
 
-    template<int TDim>
-    void CalculateGlobalOutputs(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-                                std::vector<NuTo::ConstitutiveInputMap> &rLocalInputMapVec,
-                                std::vector<ConstitutiveOutputMap> &rLocalOutputMapVec);
-
-    template<int TDim>
-    void CreateLocalInAndOutputMaps(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                    const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-                                    std::vector<NuTo::ConstitutiveInputMap> &rLocalInputMapVec,
-                                    std::vector<ConstitutiveOutputMap> &rLocalOutputMapVec);
+    template <int TDim>
+    void CreateLocalInAndOutputMaps(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                    const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                    std::vector<NuTo::ConstitutiveInputMap>& rLocalInputMapVec,
+                                    std::vector<ConstitutiveOutputMap>& rLocalOutputMapVec);
 
     AdditiveInputImplicit& mLaw;
     Data mData;

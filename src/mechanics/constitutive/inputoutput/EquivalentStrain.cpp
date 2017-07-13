@@ -12,16 +12,18 @@
 namespace NuTo
 {
 template <int TDim>
-EquivalentStrainModifiedMises<TDim>::EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, ePlaneState planeState)
-    : mK1((rK - 1.) / (2. * rK * (1 - 2 * rNu))),
-      mK2(3 / (rK * (1 + rNu) * (1 + rNu))),
-      mStrain3D(rStrain.As3D(rNu, planeState)),
-      mI1(mStrain3D.InvariantI1()),
-      mJ2(mStrain3D.InvariantJ2()),
-      mA(std::sqrt(mK1 * mK1 * mI1 * mI1 + mK2 * mJ2)),
-      mNu(rNu),
-      mPlaneState(planeState)
-{}
+EquivalentStrainModifiedMises<TDim>::EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK,
+                                                                   double rNu, ePlaneState planeState)
+    : mK1((rK - 1.) / (2. * rK * (1 - 2 * rNu)))
+    , mK2(3 / (rK * (1 + rNu) * (1 + rNu)))
+    , mStrain3D(rStrain.As3D(rNu, planeState))
+    , mI1(mStrain3D.InvariantI1())
+    , mJ2(mStrain3D.InvariantJ2())
+    , mA(std::sqrt(mK1 * mK1 * mI1 * mI1 + mK2 * mJ2))
+    , mNu(rNu)
+    , mPlaneState(planeState)
+{
+}
 
 template <int TDim>
 double EquivalentStrainModifiedMises<TDim>::Get() const
@@ -36,7 +38,7 @@ ConstitutiveVector<1> EquivalentStrainModifiedMises<1>::GetDerivative() const
     ConstitutiveVector<1> tangent;
     double dJ2dexx = 2. / 3. * mStrain3D[0] * (1 + mNu) * (1 + mNu);
     double dI1dexx = (1 - 2 * mNu);
-    tangent[0] = mK1 * dI1dexx  + 1. / (2 * mA) * (2 * mK1 * mK1 * mI1 * dI1dexx + mK2 * dJ2dexx);
+    tangent[0] = mK1 * dI1dexx + 1. / (2 * mA) * (2 * mK1 * mK1 * mI1 * dI1dexx + mK2 * dJ2dexx);
     return tangent;
 }
 
@@ -77,8 +79,10 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         }
         else
         {
-            double dJ2dexx = 1. / 3. * (2. * mStrain3D[0] - mStrain3D[1] - 2. * mStrain3D[2] + 2 * mNu / (mNu - 1) * mStrain3D[2]);
-            double dJ2deyy = 1. / 3. * (2. * mStrain3D[1] - mStrain3D[0] - 2. * mStrain3D[2] + 2 * mNu / (mNu - 1) * mStrain3D[2]);
+            double dJ2dexx = 1. / 3. * (2. * mStrain3D[0] - mStrain3D[1] - 2. * mStrain3D[2] +
+                                        2 * mNu / (mNu - 1) * mStrain3D[2]);
+            double dJ2deyy = 1. / 3. * (2. * mStrain3D[1] - mStrain3D[0] - 2. * mStrain3D[2] +
+                                        2 * mNu / (mNu - 1) * mStrain3D[2]);
             double dJ2dgxy = .5 * mStrain3D[5];
 
             tangent[0] = dI1dexxeyy * mK1 + 1. / (2. * mA) * (2. * dI1dexxeyy * mK1 * mK1 * mI1 + mK2 * dJ2dexx);
@@ -88,7 +92,8 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         return tangent;
     }
 
-    throw MechanicsException(__PRETTY_FUNCTION__, "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
+    throw Exception(__PRETTY_FUNCTION__,
+                             "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
 }
 
 template <>
@@ -125,8 +130,8 @@ ConstitutiveVector<6> EquivalentStrainModifiedMises<3>::GetDerivative() const
 } // namespace NuTo
 
 
-
-//NuTo::LocalEqStrain NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain2D(const NuTo::EngineeringStrain2D& rStrain2D) const
+// NuTo::LocalEqStrain NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain2D(const NuTo::EngineeringStrain2D&
+// rStrain2D) const
 //{
 //    NuTo::LocalEqStrain localEqStrain;
 //    // calculate principal strains e1 and e2
@@ -142,12 +147,15 @@ ConstitutiveVector<6> EquivalentStrainModifiedMises<3>::GetDerivative() const
 //    return localEqStrain;
 //}
 //
-//NuTo::LocalEqStrain NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D(const NuTo::EngineeringStrain3D& rStrain3D) const
+// NuTo::LocalEqStrain NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D(const NuTo::EngineeringStrain3D&
+// rStrain3D) const
 //{
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D] not implemented");
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrain3D] not
+//    implemented");
 //}
 //
-//NuTo::ConstitutiveTangentLocal<3, 1> NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D(const NuTo::EngineeringStrain2D& rStrain2D) const
+// NuTo::ConstitutiveTangentLocal<3, 1> NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D(const
+// NuTo::EngineeringStrain2D& rStrain2D) const
 //{
 //    NuTo::ConstitutiveTangentLocal<3, 1> tangent;
 //    double A = (rStrain2D(0) + rStrain2D(1)) / 2.;
@@ -188,12 +196,14 @@ ConstitutiveVector<6> EquivalentStrainModifiedMises<3>::GetDerivative() const
 ////    std::cout << e1 << std::endl;
 ////    std::cout << e2 << std::endl;
 //
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D] error");
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent2D] error");
 //}
 //
-//NuTo::ConstitutiveTangentLocal<6, 1> NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D(const NuTo::EngineeringStrain3D& rStrain3D) const
+// NuTo::ConstitutiveTangentLocal<6, 1> NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D(const
+// NuTo::EngineeringStrain3D& rStrain3D) const
 //{
-//    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D] not implemented");
+//    throw NuTo::Exception("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainTangent3D] not
+//    implemented");
 //}
 
 template class NuTo::EquivalentStrainModifiedMises<1>;

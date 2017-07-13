@@ -1,64 +1,86 @@
 #include "NodeEnum.h"
+#include <map>
 #include <boost/algorithm/string.hpp>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
-const std::set<NuTo::Node::eDof> NuTo::Node::GetDofSet()
+namespace NuTo
 {
-    const std::set<eDof> set =
-    {eDof::COORDINATES,
-     eDof::ROTATIONS,
-     eDof::TEMPERATURE,
-     eDof::DISPLACEMENTS,
-     eDof::FINESCALEDISPLACEMENTS,
-     eDof::NONLOCALDATA,
-     eDof::NONLOCALEQPLASTICSTRAIN,
-     eDof::NONLOCALTOTALSTRAIN,
-     eDof::NONLOCALEQSTRAIN,
-     eDof::WATERVOLUMEFRACTION,
-     eDof::RELATIVEHUMIDITY,
-     eDof::CRACKPHASEFIELD};
+namespace Node
+{
+
+std::set<eDof> GetDofSet()
+{
+    const std::set<eDof> set = {eDof::COORDINATES,       eDof::TEMPERATURE,         eDof::DISPLACEMENTS,
+                                eDof::NONLOCALEQSTRAIN,  eDof::WATERVOLUMEFRACTION, eDof::RELATIVEHUMIDITY,
+                                eDof::ELECTRICPOTENTIAL, eDof::CRACKPHASEFIELD};
     return set;
 }
 
 
-
-const std::map<NuTo::Node::eDof, std::string> NuTo::Node::GetDofMap()
+std::map<eDof, std::string> GetDofMap()
 {
-    const std::map<eDof, std::string> attributeMap =
-       {{eDof::COORDINATES,             "COORDINATES"},
-        {eDof::ROTATIONS,               "ROTATIONS"},
-        {eDof::TEMPERATURE,             "TEMPERATURE"},
-        {eDof::DISPLACEMENTS,           "DISPLACEMENTS"},
-        {eDof::FINESCALEDISPLACEMENTS,  "FINESCALEDISPLACEMENTS"},
-        {eDof::NONLOCALDATA,            "NONLOCALDATA"},
-        {eDof::NONLOCALEQPLASTICSTRAIN, "NONLOCALEQPLASTICSTRAIN"},
-        {eDof::NONLOCALTOTALSTRAIN,     "NONLOCALTOTALSTRAIN"},
-        {eDof::NONLOCALEQSTRAIN,        "NONLOCALEQSTRAIN"},
-        {eDof::WATERVOLUMEFRACTION,     "WATERVOLUMEFRACTION"},
-        {eDof::RELATIVEHUMIDITY,        "RELATIVEHUMIDITY"},
-        {eDof::CRACKPHASEFIELD,         "CRACKPHASEFIELD"}};
+    std::map<eDof, std::string> attributeMap = {{eDof::COORDINATES, "COORDINATES"},
+                                                {eDof::TEMPERATURE, "TEMPERATURE"},
+                                                {eDof::DISPLACEMENTS, "DISPLACEMENTS"},
+                                                {eDof::NONLOCALEQSTRAIN, "NONLOCALEQSTRAIN"},
+                                                {eDof::WATERVOLUMEFRACTION, "WATERVOLUMEFRACTION"},
+                                                {eDof::RELATIVEHUMIDITY, "RELATIVEHUMIDITY"},
+                                                {eDof::ELECTRICPOTENTIAL, "ELECTRICPOTENTIAL"},
+                                                {eDof::CRACKPHASEFIELD, "CRACKPHASEFIELD"}};
     return attributeMap;
 }
 
-const std::string NuTo::Node::DofToString(NuTo::Node::eDof rDof)
+
+std::string DofToString(eDof rDof)
 {
     try
     {
-        return GetDofMap().find(rDof)->second;
+        return GetDofMap().at(rDof);
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException("[NuTo::Node::DofToString] Enum undefined or not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
 
-NuTo::Node::eDof NuTo::Node::DofToEnum(std::string rDof)
-{
-    std::string uppercase = boost::to_upper_copy(rDof);
 
-    for(auto entry : GetDofMap())
+eDof DofToEnum(std::string dof)
+{
+    std::string uppercase = boost::to_upper_copy(dof);
+
+    for (const auto& entry : GetDofMap())
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::MechanicsException("[NuTo::Node::DofToEnum] DofType " + rDof + " has no enum equivalent or is not implemented.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                   "DofType " + dof + " has no enum equivalent or is not implemented.");
 }
+
+
+bool IsScalar(eDof dofType)
+{
+    switch (dofType)
+    {
+    case eDof::COORDINATES:
+    case eDof::DISPLACEMENTS:
+        return false;
+    case eDof::TEMPERATURE:
+    case eDof::NONLOCALEQSTRAIN:
+    case eDof::RELATIVEHUMIDITY:
+    case eDof::WATERVOLUMEFRACTION:
+    case eDof::CRACKPHASEFIELD:
+    case eDof::ELECTRICPOTENTIAL:
+        return true;
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "DOF type not found.");
+    }
+}
+
+
+int GetNumComponents(eDof dofType, int dimension)
+{
+    return IsScalar(dofType) ? 1 : dimension;
+}
+
+} // namespace Node
+} // namespace NuTo

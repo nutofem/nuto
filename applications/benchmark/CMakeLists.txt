@@ -5,14 +5,17 @@ if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
+    LinearElasticityExplicit
+    LinearElasticityVisualize
     AssembleSparseMatrix
+    ShapeFunctionMemoization
     Solvers
     )
 
     add_executable(${test} ${test}.cpp)
     target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
     if(MUMPS_FOUND)
-        target_link_libraries(${test} -lprofiler ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} NuToVisualize)
@@ -37,3 +40,6 @@ if(ENABLE_GEOMETRYCONCRETE)
     target_link_libraries(DenseSpherePacking NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
     add_test(benchmark::DenseSpherePacking ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 endif()
+
+add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
+target_link_libraries(NewtonRaphsonBenchmark) 

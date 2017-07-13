@@ -1,13 +1,3 @@
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp> #include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
-#endif // ENABLE_SERIALIZATION
-
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "base/CallbackInterface.h"
 #include "base/Timer.h"
@@ -27,15 +17,14 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
+#include "mechanics/structures/Assembler.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
 NuTo::NewmarkDirect::NewmarkDirect(StructureBase* rStructure)
     : NewmarkBase(rStructure)
+
 {
-    mMinLineSearchStep         = 0.01;
-    mVisualizeResidualTimeStep = 0;
-    mPerformLineSearch         = true;
 }
 
 
@@ -58,9 +47,9 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
 
     if (mMaxTimeStep == 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
+        throw Exception(__PRETTY_FUNCTION__, "max time step is set to zero.");
 
-    double curTime  = mTime;
+    double curTime = mTime;
     double timeStep = mTimeStep;
 
     const DofStatus& dofStatus = mStructure->GetDofStatus();
@@ -79,7 +68,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         {
             if (mStepActiveDofs[i].empty())
             {
-                throw MechanicsException(__PRETTY_FUNCTION__,
+                throw Exception(__PRETTY_FUNCTION__,
                                          "Calculation step " + std::to_string(i) + " has no active DOFs.");
             }
         }
@@ -128,7 +117,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     BlockFullVector<double> bRHS(dofStatus);
     BlockFullVector<double> deltaBRHS(dofStatus);
 
-    const auto& cmat = mStructure->GetConstraintMatrix();
+    const auto& cmat = mStructure->GetAssembler().GetConstraintMatrix();
 
     /*---------------------------------*\
     |    Declare and fill Output Maps   |
@@ -139,17 +128,17 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
 
-    evaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT]                  = &intForce;
+    evaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
     evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
 
     evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
-    evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0]                 = &hessian0;
+    evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN0] = &hessian0;
 
     if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
     {
         hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
         evaluate_InternalGradient_Hessian0Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
-        evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1]                 = &hessian1;
+        evaluate_Hessian0_Hessian1[eStructureOutput::HESSIAN1] = &hessian1;
     }
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
@@ -208,7 +197,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
     if (mToleranceResidual < residual_mod.CalculateInfNorm())
     {
         mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-        throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+        throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
 
     CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
@@ -241,11 +230,11 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
 
         if (timeStep < mMinTimeStep)
-            throw MechanicsException(__PRETTY_FUNCTION__,
+            throw Exception(__PRETTY_FUNCTION__,
                                      "time step is smaller than minimum - no convergence is obtained.");
 
         // calculate Delta_BRhs and Delta_ExtForce
-        bRHS         = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+        bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
         prevExtForce = CalculateCurrentExternalLoad(curTime);
 
         curTime += timeStep;
@@ -257,7 +246,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
         unsigned int staggeredStepNumber = 0; // at the moment needed to do the postprocessing after the last step and
-                                              // not after every step of a staggered solution.
+        // not after every step of a staggered solution.
         for (const auto& activeDofs : mStepActiveDofs)
         {
 
@@ -349,7 +338,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     mStructure->Evaluate(inputMap, evaluate_InternalGradient);
                     // ******************************************************
 
-                    residual = CalculateResidual(intForce, prevExtForce, hessian2, trial_dof_dt1, trial_dof_dt2);
+                    residual = CalculateResidual(intForce, extForce, hessian2, trial_dof_dt1, trial_dof_dt2);
                     residual.ApplyCMatrix(residual_mod, cmat);
 
                     trialNormResidual = residual_mod.CalculateInfNorm();
@@ -369,7 +358,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     if (mStructure->GetNumTimeDerivatives() >= 1)
                         dof_dt1 = trial_dof_dt1;
                     if (mStructure->GetNumTimeDerivatives() >= 2)
-                        dof_dt2  = trial_dof_dt2;
+                        dof_dt2 = trial_dof_dt2;
                     normResidual = trialNormResidual;
 
                     PrintInfoIteration(normResidual, iteration);
@@ -443,13 +432,13 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     {
                         mStructure->GetLogger() << "The minimal time step achieved, the actual time step is "
                                                 << timeStep << "\n";
-                        throw MechanicsException(__PRETTY_FUNCTION__,
+                        throw Exception(__PRETTY_FUNCTION__,
                                                  "No convergence, the current time step is too short.");
                     }
                 }
                 else
                 {
-                    throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
+                    throw Exception(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
                                                                   "iterations, either use automatic time stepping, "
                                                                   "reduce the time step or the minimal line search cut "
                                                                   "back factor.");
@@ -466,10 +455,10 @@ void NuTo::NewmarkDirect::CalculateMuDampingMatrix(StructureOutputBlockMatrix& r
     if (mMuDampingMass != 0)
     {
         if (mStructure->GetNumTimeDerivatives() < 2)
-            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+            throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                                      "] MuDampingMass requires a mass matrix (2nd time derivatives).");
         //        if (!rHessian2.IsConstant())
-        //            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a
+        //            throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a
         //            constant mass matrix.");
 
         rHessian_dt1.Resize(mStructure->GetDofStatus().GetNumActiveDofsMap(),
@@ -670,36 +659,9 @@ NuTo::NewmarkDirect::BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& r
         if (mStructure->GetNumTimeDerivatives() >= 2)
             rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
 
-        rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+        rHessian_dt0.ApplyCMatrix(mStructure->GetAssembler().GetConstraintMatrix());
 
         auto result = mSolver->Solve(rHessian_dt0.JJ, rResidualMod);
         return result;
     }
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-#ifndef SWIG
-// serializes the class
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::NewmarkDirect::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of NewmarkDirect"
-              << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase) & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of NewmarkDirect"
-              << "\n";
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewmarkDirect)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

@@ -193,8 +193,6 @@ Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epe
         Amesos Factory;
         std::string solverType = "Mumps";
         bool solverAvail = Factory.Query(solverType);
-        if (rA.Comm().MyPID() == 0)
-            std::cout << "Direct Solver '" << solverType << "' available: " << (solverAvail ? "oh yeah" : "oh no") << std::endl;
         if (solverAvail)
         {
             Teuchos::ParameterList params;
@@ -1880,7 +1878,7 @@ void run_Test_2D(int argc, char** argv)
     int numSubDomains_Y = 0;
     int numElementsPerSubDomain_X = 1;  //200
     int numElementsPerSubDomain_Y = 1;  //100
-    bool saveSolution = true;
+    bool saveSolution = false;
 
     if (argc >= 2 && (strcmp(argv[1], "help")== 0))
     {

@@ -14,6 +14,11 @@ if(ENABLE_MECHANICS)
     add_subdirectory(mechanics)
 endif()
 
+if(ENABLE_VISUALIZE)
+    add_subdirectory(visualize)
+endif()
+
+
 add_executable(SparseMatrixTests SparseMatrixTests.cpp)
 target_link_libraries(SparseMatrixTests NuToMath NuToBase)
 add_test(integration::SparseMatrixTests.cpp ${CMAKE_CURRENT_BINARY_DIR}/SparseMatrixTests)

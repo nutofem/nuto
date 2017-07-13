@@ -6,30 +6,25 @@
  */
 
 #pragma once
+#include "BoostUnitTest.h"
 
 #include <iomanip>
-
-#include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
-#include "mechanics/mesh/MeshGenerator.h"
-
 #include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/elements/ElementBase.h"
+#include "mechanics/groups/Group.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
-#include "math/SparseDirectSolverMUMPS.h"
-
-
-#ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeEnum.h"
-#endif
+#include "mechanics/mesh/MeshGenerator.h"
 
 /*
  *    Interface for displacement controlled uni-axial tensile test
@@ -40,7 +35,6 @@ namespace NuToTest
 class ElementUniaxialTest
 {
 public:
-
     double lX = 365;
     double lY = 13;
     double lZ = 37;
@@ -52,114 +46,96 @@ public:
 
     //! @brief provide a structure that contains the geometry
     //! of a uniaxial test, starting from (0,0,0) to (lx, ly, lz)
-    void Run(NuTo::Structure& rS, const std::string& rVisualizationDirectory)
+    void Run(NuTo::Structure& s, const std::string& rVisualizationDirectory)
     {
 
-        CheckVolume(rS);
+        CheckVolume(s);
 
-        rS.SetVerboseLevel(10);
-        rS.SetShowTime(true);
+        s.SetVerboseLevel(10);
+        s.SetShowTime(true);
 
 
-        SetConstitutiveLaw(rS);
-        SetBoundaryConditions(rS);
+        SetConstitutiveLaw(s);
+        SetBoundaryConditions(s);
 
-        rS.NodeBuildGlobalDofs();
-        rS.CalculateMaximumIndependentSets();
+        s.NodeBuildGlobalDofs();
+        s.CalculateMaximumIndependentSets();
 
-        rS.NodeInfo(10);
+        s.NodeInfo(10);
 
-        CheckStiffness(rS);
-        Solve(rS);
-        CheckSolution(rS);
-        CheckMass(rS);
-        Visualize(rS, rVisualizationDirectory);
+        CheckStiffness(s);
+        Solve(s);
+        CheckSolution(s);
+        CheckMass(s);
+        Visualize(s, rVisualizationDirectory);
     }
 
 private:
-
-    void CheckVolume(NuTo::Structure& rS)
+    void CheckVolume(NuTo::Structure& s)
     {
-        double volume = rS.ElementGroupGetVolume(rS.GroupGetElementsTotal());
-        if (rS.GetDimension() == 2)
+        double volume = s.ElementGroupGetVolume(s.GroupGetElementsTotal());
+        if (s.GetDimension() == 2)
             volume *= lZ;
-        if (rS.GetDimension() == 1)
+        if (s.GetDimension() == 1)
             volume *= lY * lZ;
 
         BOOST_CHECK_CLOSE(volume, lX * lY * lZ, 1.e-6);
     }
 
-    void SetConstitutiveLaw(NuTo::Structure& rS)
+    void SetConstitutiveLaw(NuTo::Structure& s)
     {
-        rS.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-        rS.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
-        rS.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,nu);
-        rS.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
-        rS.ElementTotalSetConstitutiveLaw(0);
+        using namespace NuTo::Constitutive;
+        s.ConstitutiveLawCreate(0, eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+        s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::YOUNGS_MODULUS, E);
+        s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::POISSONS_RATIO, nu);
+        s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::DENSITY, rho);
+        s.ElementTotalSetConstitutiveLaw(0);
     }
 
-    void SetBoundaryConditions(NuTo::Structure& rS)
+    void SetBoundaryConditions(NuTo::Structure& s)
     {
+        int dimension = s.GetDimension();
 
-        int dimension = rS.GetDimension();
-
-        Eigen::MatrixXd directions = Eigen::MatrixXd::Identity(dimension, dimension);
-
-        double eps = 1.e-3;
+        const NuTo::Node::eDof eDofDispl = NuTo::Node::eDof::DISPLACEMENTS;
 
         // fix origin
-        Eigen::VectorXd origin(dimension);
-        origin.setZero();
-        int nodeGroupOrigin = rS.GroupCreate("Nodes");
-        rS.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, eps);
-
-        if (rS.GroupGetNumMembers(nodeGroupOrigin) != 1)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Node at origin (0,0,0) does not exist.");
-
-        int nodeOrigin = rS.GroupGetMemberIds(nodeGroupOrigin)[0];
+        const auto& nodeOrigin = s.NodeGetAtCoordinate(Eigen::VectorXd::Zero(dimension));
         for (int iDim = 1; iDim < dimension; ++iDim)
-            rS.ConstraintLinearSetDisplacementNode(nodeOrigin, directions.col(iDim), 0.0);
+            s.Constraints().Add(eDofDispl,
+                                NuTo::Constraint::Component(nodeOrigin, {static_cast<NuTo::eDirection>(iDim)}));
 
         if (dimension == 3)
         {
-        // fix rotation
-            Eigen::VectorXd originRot(3);
-            originRot << 0, 0, lZ;
-            int nodeGroupOriginRot = rS.GroupCreate(NuTo::eGroupId::Nodes);
-            rS.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, eps);
-
-            int nodeOriginRot = rS.GroupGetMemberIds(nodeGroupOriginRot)[0];
-            rS.ConstraintLinearSetDisplacementNode(nodeOriginRot, directions.col(1), 0.0);
+            // fix rotation
+            const auto& nodeRotation = s.NodeGetAtCoordinate(Eigen::Vector3d(0, 0, lZ));
+            s.Constraints().Add(eDofDispl, NuTo::Constraint::Component(nodeRotation, {NuTo::eDirection::Y}));
         }
 
         // fix x = 0 plane
-        int nodesX0 = rS.GroupCreate(NuTo::eGroupId::Nodes);
-        rS.GroupAddNodeCoordinateRange(nodesX0, 0, -eps, eps);
-        rS.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directions.col(0), 0.);
+        const auto& groupX0 = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0);
+        s.Constraints().Add(eDofDispl, NuTo::Constraint::Component(groupX0, {NuTo::eDirection::X}));
 
         // apply displacement on x = lX plane
-        int nodesXlX = rS.GroupCreate(NuTo::eGroupId::Nodes);
-        rS.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-eps, lX+eps);
-        rS.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directions.col(0), deltaL);
-
+        const auto& groupXlX = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lX);
+        s.Constraints().Add(eDofDispl, NuTo::Constraint::Component(groupXlX, {NuTo::eDirection::X}, deltaL));
     }
 
-    void CheckStiffness(NuTo::Structure& rS)
+    void CheckStiffness(NuTo::Structure& s)
     {
-        if (rS.GetNumTotalDofs() > 50)
+        if (s.GetNumTotalDofs() > 50)
             return;
-        BOOST_CHECK(rS.ElementCheckHessian0(1.e-8, 1.e-6, true));
-        BOOST_CHECK(rS.CheckHessian0(1.e-8, 1.e-6, true));
+        BOOST_CHECK(s.ElementCheckHessian0(1.e-8, 1.e-6, true));
+        BOOST_CHECK(s.CheckHessian0(1.e-8, 1.e-6, true));
     }
 
-    void Solve(NuTo::Structure& rS)
+    void Solve(NuTo::Structure& s)
     {
-        rS.SolveGlobalSystemStaticElastic();
-        auto internalGradient = rS.BuildGlobalInternalGradient();
+        s.SolveGlobalSystemStaticElastic();
+        auto internalGradient = s.BuildGlobalInternalGradient();
         BOOST_CHECK_SMALL(internalGradient.J.CalculateNormL2()[NuTo::Node::eDof::DISPLACEMENTS], 1e-8);
     }
 
-    void CheckSolution(NuTo::Structure& rS)
+    void CheckSolution(NuTo::Structure& s)
     {
         double analyticStrainX = deltaL / lX;
         double analyticStressX = analyticStrainX * E;
@@ -169,20 +145,16 @@ private:
         std::cout << "sigma_xx: " << analyticStressX << std::endl;
         std::cout << "force_x : " << analyticForce << std::endl;
 
-        std::cout << rS.ElementGetEngineeringStrain(0) << std::endl;
-
         // get element stresses
-        int allElements = rS.GroupCreate(NuTo::eGroupId::Elements);
-        int allNodes    = rS.GroupCreate(NuTo::eGroupId::Nodes);
-        rS.GroupAddNodeCoordinateRange(allNodes, 0, -0.1, lX+0.1);
-        rS.GroupAddElementsFromNodes(allElements, allNodes, true);
-        for (int elementId : rS.GroupGetMemberIds(allElements))
+        int allElements = s.GroupGetElementsTotal();
+        for (int elementId : s.GroupGetMemberIds(allElements))
         {
-            auto stress = rS.ElementGetEngineeringStress(elementId);
+            auto stress = s.ElementGetEngineeringStress(elementId);
             for (int iIP = 0; iIP < stress.cols(); ++iIP)
             {
-                double numericStress = stress(0,iIP);
-                std::cout << "numeric stress in element " << elementId << " at IP " << iIP << ": " << numericStress << std::endl;
+                double numericStress = stress(0, iIP);
+                std::cout << "numeric stress in element " << elementId << " at IP " << iIP << ": " << numericStress
+                          << std::endl;
 
                 BOOST_CHECK_CLOSE_FRACTION(numericStress, analyticStressX, 1.e-6);
             }
@@ -191,23 +163,22 @@ private:
 
         // sum up reaction forces in x direction of all nodes on x = 0
         double numericForce = 0;
-        int nodesX0 = rS.GroupCreate(NuTo::eGroupId::Nodes);
-        rS.GroupAddNodeCoordinateRange(nodesX0, 0, lX-1.e-6, lX+1.e-6);
-        for (int nodeId : rS.GroupGetMemberIds(nodesX0))
+        const auto& nodesX0 = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lX);
+        for (int nodeId : nodesX0.GetMemberIds())
         {
             Eigen::VectorXd force;
-            rS.NodeInternalForce(nodeId, force);
+            s.NodeInternalForce(nodeId, force);
             numericForce += force(0);
         }
 
         BOOST_CHECK_CLOSE(numericForce, analyticForce, 1.e-6);
     }
 
-    void CheckMass(NuTo::Structure& rS)
+    void CheckMass(NuTo::Structure& s)
     {
-        double analyticMass = lX*lY*lZ*rho;
+        double analyticMass = lX * lY * lZ * rho;
 
-        auto hessian2 = rS.BuildGlobalHessian2();
+        auto hessian2 = s.BuildGlobalHessian2();
 
         double numericMass = 0;
         numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
@@ -215,11 +186,11 @@ private:
         numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
         numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
-        numericMass /= rS.GetDimension(); // since the mass is added to nodes in every direction
+        numericMass /= s.GetDimension(); // since the mass is added to nodes in every direction
 
         BOOST_CHECK_CLOSE(numericMass, analyticMass, 1.e-6);
 
-        hessian2 = rS.BuildGlobalHessian2Lumped();
+        hessian2 = s.BuildGlobalHessian2Lumped();
 
         numericMass = 0;
         numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
@@ -227,51 +198,36 @@ private:
         numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
         numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
-        numericMass /= rS.GetDimension(); // since the mass is added to nodes in every direction
+        numericMass /= s.GetDimension(); // since the mass is added to nodes in every direction
 
         BOOST_CHECK_CLOSE(numericMass, analyticMass, 1.e-6);
     }
 
-    void Visualize(NuTo::Structure& rS, const std::string& rVisualizationDirectory)
+    void Visualize(NuTo::Structure& s, const std::string& rVisualizationDirectory)
     {
 #ifdef ENABLE_VISUALIZE
         if (rVisualizationDirectory == "")
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
 
         boost::filesystem::path directory(rVisualizationDirectory);
         boost::filesystem::create_directory(directory);
 
-        // get a random element
-        const NuTo::ElementBase* element = nullptr;
-        int elementID = 0;
-        while (element == nullptr)
-        {
-            try
-            {
-                element = rS.ElementGetElementPtr(elementID);
-            }
-            catch (...){}
-            elementID++;
-        }
-        std::string fileName = NuTo::Interpolation::ShapeTypeToString(element->GetInterpolationType().GetShapeType());
-        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType().Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
+        const auto& interpolationType = *s.InterpolationTypeGet(0);
+        std::string fileName = NuTo::Interpolation::ShapeTypeToString(interpolationType.GetShapeType());
+        fileName += NuTo::Interpolation::TypeOrderToString(
+                interpolationType.Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
         fileName += ".vtu";
         directory /= fileName;
 
-        int visualizationGroup = rS.GroupCreate(NuTo::eGroupId::Elements);
-        rS.GroupAddElementsTotal(visualizationGroup);
+        int visualizationGroup = s.GroupCreate(NuTo::eGroupId::Elements);
+        s.GroupAddElementsTotal(visualizationGroup);
 
-        rS.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        rS.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-        rS.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+        s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+        s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
-        rS.ExportVtkDataFileElements(directory.string(),true);
-
+        s.ExportVtkDataFileElements(directory.string());
 #endif
     }
-
-
 };
-
-}//namespace NuToTest
-
+} // namespace NuToTest

@@ -7,5 +7,16 @@ foreach(test
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} NuToVisualize)
     endif()
-    add_test(almost::mechanics::constitutive::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
-endforeach()
+    add_test(almost::mechanics::constraints::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+endforeach() 
+
+add_unit_test(ConstraintCompanion
+    mechanics/groups/GroupBase.cpp
+    mechanics/groups/Group.cpp)
+
+add_unit_test(Constraints
+    mechanics/nodes/NodeEnum.cpp
+    mechanics/nodes/NodeBase.cpp
+    math/SparseMatrixCSRGeneral.cpp
+    math/SparseMatrixCSR.cpp)
+

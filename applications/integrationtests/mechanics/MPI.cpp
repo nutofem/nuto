@@ -19,5 +19,4 @@ int main(int argc, char* argv[])
     std::cout << "Hello from process: \t" << rank << "/" << size << std::endl;
 
     MPI_Finalize();
-
 }

@@ -17,7 +17,9 @@ constexpr int numBenchmarkRuns = 10;
 class Setup
 {
 public:
-    Setup() : mBenchmarkStructure({10,10,100}), mS(mBenchmarkStructure.GetStructure())
+    Setup()
+        : mBenchmarkStructure({10, 10, 100})
+        , mS(mBenchmarkStructure.GetStructure())
     {
         mS.NodeBuildGlobalDofs();
 
@@ -29,10 +31,22 @@ public:
         mKe = Eigen::MatrixXd::Random(mNumDofsPerElement, mNumDofsPerElement);
     }
 
-    int NumDofs() const {return mS.GetNumTotalDofs();}
-    int NumElements() const {return mS.GetNumElements();}
-    Eigen::VectorXi DofNumbering(int rElementId) const {return mDofNumbers[rElementId];}
-    Eigen::MatrixXd Ke() {return mKe;}
+    int NumDofs() const
+    {
+        return mS.GetNumTotalDofs();
+    }
+    int NumElements() const
+    {
+        return mS.GetNumElements();
+    }
+    Eigen::VectorXi DofNumbering(int rElementId) const
+    {
+        return mDofNumbers[rElementId];
+    }
+    Eigen::MatrixXd Ke()
+    {
+        return mKe;
+    }
 
 private:
     NuTo::Benchmark::LinearElasticBenchmarkStructure mBenchmarkStructure;
@@ -41,7 +55,6 @@ private:
     std::vector<Eigen::VectorXi> mDofNumbers;
     int mNumDofsPerElement;
     Eigen::MatrixXd mKe;
-
 };
 
 
@@ -59,23 +72,22 @@ BENCHMARK(Assembly, NuToVector2, runner)
 
             for (int i = 0; i < Ke.rows(); ++i)
                 for (int j = 0; j < Ke.rows(); ++j)
-                    mVector2.AddValue(dofs[i], dofs[j], Ke(i,j));
+                    mVector2.AddValue(dofs[i], dofs[j], Ke(i, j));
         }
         // convert to CSR format
         NuTo::SparseMatrixCSRGeneral<double> m(mVector2);
     }
 
     int numDoublesNuTo = mVector2.GetNumEntries();
-    int numIntsNuTo    = mVector2.GetNumEntries();
+    int numIntsNuTo = mVector2.GetNumEntries();
     int numVectorsNuTo = 2 * mVector2.GetNumRows() + 2;
 
-    int sizeNuTo
-        = sizeof(double) * numDoublesNuTo
-            + sizeof(int)    * numIntsNuTo
-            + sizeof(std::vector<char*>) * numVectorsNuTo;
+    int sizeNuTo =
+            sizeof(double) * numDoublesNuTo + sizeof(int) * numIntsNuTo + sizeof(std::vector<char*>) * numVectorsNuTo;
 
     std::cout << " ##############   Approx size NuToVector2:        " << sizeNuTo / 1024 / 1024 << " MB" << std::endl;
-    std::cout << " ############## NumEntries/Size " << (double)mVector2.GetNumEntries() / mVector2.GetNumRows() / mVector2.GetNumColumns() << std::endl;
+    std::cout << " ############## NumEntries/Size "
+              << (double)mVector2.GetNumEntries() / mVector2.GetNumRows() / mVector2.GetNumColumns() << std::endl;
 }
 
 
@@ -96,7 +108,7 @@ BENCHMARK(Assembly, EigenSparseTriplet, runner)
 
             for (int i = 0; i < Ke.rows(); ++i)
                 for (int j = 0; j < Ke.rows(); ++j)
-                    coeffs.push_back(Eigen::Triplet<double>(dofs[i], dofs[j], Ke(i,j)));
+                    coeffs.push_back(Eigen::Triplet<double>(dofs[i], dofs[j], Ke(i, j)));
         }
         Eigen::SparseMatrix<double> m(s.NumDofs(), s.NumDofs());
         m.setFromTriplets(coeffs.begin(), coeffs.end());
@@ -105,7 +117,7 @@ BENCHMARK(Assembly, EigenSparseTriplet, runner)
     int sizeofTriplet = sizeof(Eigen::Triplet<double>);
     int sizeEigen = sizeof(std::vector<char*>) + coeffs.size() * sizeofTriplet;
 
-    std::cout << " ##############   Approx size EigenTripletList:   " << sizeEigen / 1024 / 1024 << " MB"  << std::endl;
+    std::cout << " ##############   Approx size EigenTripletList:   " << sizeEigen / 1024 / 1024 << " MB" << std::endl;
 }
 
 BENCHMARK(Assembly, EigenSparseInsert, runner)
@@ -113,8 +125,8 @@ BENCHMARK(Assembly, EigenSparseInsert, runner)
     Setup s;
     while (runner.KeepRunningIterations(numBenchmarkRuns))
     {
-        Eigen::SparseMatrix<double> m(s.NumDofs(),s.NumDofs());
-        m.reserve(Eigen::VectorXi::Constant(s.NumDofs(),s.Ke().rows()*20));
+        Eigen::SparseMatrix<double> m(s.NumDofs(), s.NumDofs());
+        m.reserve(Eigen::VectorXi::Constant(s.NumDofs(), s.Ke().rows() * 20));
         {
             for (int iElement = 0; iElement < s.NumElements(); ++iElement)
             {

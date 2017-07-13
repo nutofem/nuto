@@ -9,13 +9,14 @@
 #include <iostream>
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/MechanicsEnums.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "visualize/VisualizeEnum.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/mesh/MeshGenerator.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/sections/SectionTruss.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 
@@ -28,7 +29,6 @@ int main()
 
     // boundaries
     double boundary_temperature = 20.0;
-    double boundary_flux = 10.0;
 
     // material
     double conductivity = 1.0;
@@ -38,8 +38,7 @@ int main()
 
     int interpolationType = MeshGenerator::Grid(structure, {length}, {num_elements}).second;
 
-    structure.InterpolationTypeAdd(interpolationType, Node::eDof::TEMPERATURE,
-                                     Interpolation::eTypeOrder::EQUIDISTANT1);
+    structure.InterpolationTypeAdd(interpolationType, Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeSetIntegrationType(interpolationType, "IntegrationType1D2NGauss2Ip");
     structure.ElementTotalConvertToInterpolationType();
 
@@ -49,20 +48,20 @@ int main()
 
     // create material law
     auto material = structure.ConstitutiveLawCreate("Heat_Conduction");
-    structure.ConstitutiveLawSetParameterDouble(material, 
-        Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
+    structure.ConstitutiveLawSetParameterDouble(material, Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY,
+                                                conductivity);
     structure.ElementTotalSetConstitutiveLaw(material);
 
     // set boundary conditions and loads
-    Eigen::VectorXd direction(1);
-    direction(0) = 1.0;
-    structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
-    structure.SetNumLoadCases(1);
-    structure.LoadCreateNodeHeatFlux(0, num_elements, direction, boundary_flux);
+    auto& origin = structure.NodeGetAtCoordinate(0);
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(origin, boundary_temperature));
+
+    auto& nodeRight = structure.NodeGetAtCoordinate(length);
+    structure.Constraints().Add(Node::eDof::TEMPERATURE, Constraint::Value(nodeRight, boundary_temperature + 20));
 
     // start analysis
-    structure.SolveGlobalSystemStaticElastic(0);
-    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector(0);
+    structure.SolveGlobalSystemStaticElastic();
+    auto residual = structure.BuildGlobalInternalGradient() - structure.BuildGlobalExternalLoadVector();
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
     // visualize results

@@ -49,7 +49,7 @@ NuTo::ElementBase* NuTo::Structure::ElementGetElementPtr(int rIdent)
         return it->second;
     else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Element with identifier " + std::to_string(rIdent) + " does not exist.");
     }
 }
@@ -64,7 +64,7 @@ const NuTo::ElementBase* NuTo::Structure::ElementGetElementPtr(int rIdent) const
         return it->second;
     else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Element with identifier " + std::to_string(rIdent) + " does not exist.");
     }
 }
@@ -79,7 +79,7 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement) const
         if (it->second == rElement)
             return it->first;
     }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Element does not exist.");
+    throw Exception(__PRETTY_FUNCTION__, "Element does not exist.");
 }
 
 //! @brief returns a vector with the node ids of an element
@@ -151,10 +151,10 @@ void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationT
     boost::ptr_map<int, InterpolationType>::iterator itInterpolationType =
             mInterpolationTypeMap.find(rInterpolationTypeId);
     if (itInterpolationType == mInterpolationTypeMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
 
     for (const auto& elementPair : mElementMap)
-        ElementSetInterpolationType(elementPair.first, rInterpolationTypeId);
+        ElementSetInterpolationType(elementPair.second, itInterpolationType->second);
 }
 
 void NuTo::Structure::ElementTotalConvertToInterpolationType()
@@ -222,73 +222,54 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     boost::ptr_map<int, InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
 
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
 
     InterpolationType& interpolationType = *itIterator->second;
 
     if (not interpolationType.IsDof(Node::eDof::COORDINATES))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
 
     unsigned int numNodesCoordinates = interpolationType.Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != nodeVector.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                                        "COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) +
                                                " nodes. " + std::to_string(nodeVector.size()) + " are provided.");
 
+    interpolationType.ClearCache();
+    const auto& integrationType = *GetPtrIntegrationType(interpolationType.GetStandardIntegrationType());
+
     ElementBase* ptrElement = nullptr;
-
-    if (not interpolationType.HasIntegrationType())
+    switch (interpolationType.GetShapeType())
     {
-        eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
-        IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
-        interpolationType.UpdateIntegrationType(*integrationType);
+    case NuTo::Interpolation::eShapeType::SPRING:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSS1D:
+    case NuTo::Interpolation::eShapeType::TRUSSXD:
+    case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+    case NuTo::Interpolation::eShapeType::QUAD2D:
+    case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+    case NuTo::Interpolation::eShapeType::BRICK3D:
+    case NuTo::Interpolation::eShapeType::INTERFACE:
+        throw NuTo::Exception(
+                __PRETTY_FUNCTION__,
+                "Please use approriate functions for element creation, this is IGA implementation.");
+        break;
+    case NuTo::Interpolation::eShapeType::IGA1D:
+        ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType,
+                                                GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::IGA2D:
+        ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, integrationType,
+                                                GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "invalid dimension.");
     }
 
-    try
-    {
-        switch (interpolationType.GetShapeType())
-        {
-        case NuTo::Interpolation::eShapeType::SPRING:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
-            //            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType,
-            //            interpolationType);
-            //            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSS1D:
-        case NuTo::Interpolation::eShapeType::TRUSSXD:
-        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
-        case NuTo::Interpolation::eShapeType::QUAD2D:
-        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
-        case NuTo::Interpolation::eShapeType::BRICK3D:
-        case NuTo::Interpolation::eShapeType::INTERFACE:
-            throw NuTo::MechanicsException(
-                    __PRETTY_FUNCTION__,
-                    "Please use approriate functions for element creation, this is IGA implementation.");
-            break;
-        case NuTo::Interpolation::eShapeType::IGA1D:
-            ptrElement = new ContinuumElementIGA<1>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::IGA2D:
-            ptrElement = new ContinuumElementIGA<2>(nodeVector, rKnots, rKnotIDs, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
-        }
-
-        mElementMap.insert(rElementNumber, ptrElement);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber) + ".");
-        throw;
-    }
-    catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Error creating element " + std::to_string(rElementNumber) + ".");
-    }
+    mElementMap.insert(rElementNumber, ptrElement);
 }
 
 void NuTo::Structure::ElementCreate(int elementNumber, int interpolationTypeId, const std::vector<int>& rNodeNumbers)
@@ -306,113 +287,85 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     boost::ptr_map<int, InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
 
     if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Interpolation type does not exist.");
 
     InterpolationType& interpolationType = *itIterator->second;
 
     if (not interpolationType.IsDof(Node::eDof::COORDINATES))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation required.");
 
     unsigned int numNodesCoordinates = interpolationType.Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != rNodes.size())
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "COORDINATE interpolation requires " +
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "COORDINATE interpolation requires " +
                                                                     std::to_string(numNodesCoordinates) + " nodes. " +
                                                                     std::to_string(rNodes.size()) + " are provided.");
 
+    interpolationType.ClearCache();
+    const auto& integrationType = *GetPtrIntegrationType(interpolationType.GetStandardIntegrationType());
+
     ElementBase* ptrElement = nullptr;
-
-    if (not interpolationType.HasIntegrationType())
+    switch (interpolationType.GetShapeType())
     {
-        eIntegrationType integrationTypeEnum = interpolationType.GetStandardIntegrationType();
-        IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
-        interpolationType.UpdateIntegrationType(*integrationType);
+    case NuTo::Interpolation::eShapeType::SPRING:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSS1D:
+        ptrElement = new ContinuumElement<1>(rNodes, interpolationType, integrationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TRUSSXD:
+        ptrElement = new Element1DInXD(rNodes, interpolationType, integrationType, GetDofStatus(), mDimension);
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+    case NuTo::Interpolation::eShapeType::QUAD2D:
+        ptrElement = new ContinuumElement<2>(rNodes, interpolationType, integrationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+    case NuTo::Interpolation::eShapeType::BRICK3D:
+    case NuTo::Interpolation::eShapeType::PRISM3D:
+        ptrElement = new ContinuumElement<3>(rNodes, interpolationType, integrationType, GetDofStatus());
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::INTERFACE:
+        ptrElement = new Element2DInterface(rNodes, interpolationType, integrationType, mDimension);
+        ptrElement->CheckElement();
+        break;
+    case NuTo::Interpolation::eShapeType::IGA1D:
+        throw NuTo::Exception(
+                __PRETTY_FUNCTION__,
+                "Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
+        break;
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "invalid dimension.");
     }
 
-    try
-    {
-        switch (interpolationType.GetShapeType())
-        {
-        case NuTo::Interpolation::eShapeType::SPRING:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element1DSpring currently not implemented.");
-            //            ptrElement = new Element1DSpring(this, nodeVector, interpolationType);
-            //            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSS1D:
-            ptrElement = new ContinuumElement<1>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRUSSXD:
-            ptrElement = new Element1DInXD(rNodes, interpolationType, GetDofStatus(), mDimension);
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
-        case NuTo::Interpolation::eShapeType::QUAD2D:
-            ptrElement = new ContinuumElement<2>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
-        case NuTo::Interpolation::eShapeType::BRICK3D:
-        case NuTo::Interpolation::eShapeType::PRISM3D:
-            ptrElement = new ContinuumElement<3>(rNodes, interpolationType, GetDofStatus());
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::INTERFACE:
-            ptrElement = new Element2DInterface(rNodes, interpolationType, mDimension);
-            ptrElement->CheckElement();
-            break;
-        case NuTo::Interpolation::eShapeType::IGA1D:
-            throw NuTo::MechanicsException(
-                    __PRETTY_FUNCTION__,
-                    "Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "invalid dimension.");
-        }
-
-        mElementMap.insert(rElementNumber, ptrElement);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber) + ".");
-        throw;
-    }
-    catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
-                                       "Error creating element " + std::to_string(rElementNumber) + ".");
-    }
+    mElementMap.insert(rElementNumber, ptrElement);
 }
 
 
 int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, const Eigen::MatrixXi& rNodeNumbers)
 {
-    std::cout << rNodeNumbers << std::endl;
     std::vector<int> newElementIds;
     // go through the elements
     for (int iNode = 0; iNode < rNodeNumbers.cols(); ++iNode)
     {
-        std::cout << rNodeNumbers.col(iNode) << std::endl;
         auto column = rNodeNumbers.col(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
-        for (int i : incidence)
-            std::cout << i << std::endl;
         int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }
 
-#ifdef SHOW_TIME
     bool showTime = mShowTime;
     mShowTime = false;
-#endif
 
     // create element group containing the new elements
     int newElementGroup = GroupCreate(eGroupId::Elements);
     for (int newElementId : newElementIds)
         GroupAddElement(newElementGroup, newElementId);
 
-#ifdef SHOW_TIME
     mShowTime = showTime;
-#endif
     return newElementGroup;
 }
 
@@ -424,15 +377,15 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     // find groups
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroupBoundaryNodes = mGroupMap.find(rNodeGroupId);
     if (itGroupBoundaryNodes == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupBoundaryNodes->second->GetType() != NuTo::eGroupId::Nodes)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not a node group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not a node group.");
 
     Group<ElementBase>& elementGroup = *(itGroupElements->second->AsGroupElement());
     Group<NodeBase>& nodeGroup = *(itGroupBoundaryNodes->second->AsGroupNode());
@@ -456,7 +409,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
         // std::cout << typeid(ContinuumElement<1>).name() << std::endl;
         if (typeid(*elementPtr) != typeid(ContinuumElement<1>) && typeid(*elementPtr) != typeid(ContinuumElement<2>) &&
             typeid(*elementPtr) != typeid(ContinuumElement<3>))
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element is not a ContinuumElement.");
+            throw Exception(__PRETTY_FUNCTION__, "Element is not a ContinuumElement.");
 
         // loop over all surfaces
         for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); ++iSurface)
@@ -492,114 +445,119 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
             ElementBase* boundaryElement = nullptr;
             ConstitutiveBase& constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
 
-            eIntegrationType integrationType = eIntegrationType::NotSet;
-
             switch (elementPtr->GetLocalDimension())
             {
             case 1:
             {
+                const auto& integrationType = *GetPtrIntegrationType(eIntegrationType::IntegrationType0DBoundary);
                 auto& element = dynamic_cast<ContinuumElement<1>&>(*elementPtr);
                 if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<1>(element, surfaceId);
+                    boundaryElement = new ContinuumBoundaryElement<1>(element, integrationType, surfaceId);
                 else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<1>(element, surfaceId, rControlNode);
-                integrationType = eIntegrationType::IntegrationType0DBoundary;
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
                 break;
             }
             case 2:
             {
-                auto& element = dynamic_cast<ContinuumElement<2>&>(*elementPtr);
-                if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<2>(element, surfaceId);
-                else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<2>(element, surfaceId, rControlNode);
-
+                eIntegrationType integrationTypeEnum;
                 // check for 2D types
-                switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                switch (interpolationType.GetStandardIntegrationType())
                 {
                 case eIntegrationType::IntegrationType2D3NGauss1Ip:
                 case eIntegrationType::IntegrationType2D4NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss1Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss3Ip:
                 case eIntegrationType::IntegrationType2D4NGauss4Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss2Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss6Ip:
                 case eIntegrationType::IntegrationType2D4NGauss9Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss3Ip;
                     break;
                 case eIntegrationType::IntegrationType2D3NGauss12Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NGauss5Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto9Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto3Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto16Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto4Ip;
                     break;
 
                 case eIntegrationType::IntegrationType2D4NLobatto25Ip:
-                    integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType1D2NLobatto5Ip;
                     break;
 
                 default:
-                    break;
+                    throw Exception(
+                            __PRETTY_FUNCTION__,
+                            "Could not automatically determine integration type of the boundary element.");
                 }
+                const auto& integrationType = *GetPtrIntegrationType(integrationTypeEnum);
+                auto& element = dynamic_cast<ContinuumElement<2>&>(*elementPtr);
+                if (rControlNode == nullptr)
+                    boundaryElement = new ContinuumBoundaryElement<2>(element, integrationType, surfaceId);
+                else
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
+
                 break;
             }
             case 3:
             {
-                auto& element = dynamic_cast<ContinuumElement<3>&>(*elementPtr);
-                if (rControlNode == nullptr)
-                    boundaryElement = new ContinuumBoundaryElement<3>(element, surfaceId);
-                else
-                    boundaryElement =
-                            new ContinuumBoundaryElementConstrainedControlNode<3>(element, surfaceId, rControlNode);
-
+                eIntegrationType integrationTypeEnum;
                 // check for 3D types
-                switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
+                switch (interpolationType.GetStandardIntegrationType())
                 {
                 case eIntegrationType::IntegrationType3D4NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D3NGauss1Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D4NGauss4Ip:
-                    integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D3NGauss3Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NGauss1Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NGauss1Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NGauss4Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto9Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                     break;
 
                 case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-                    integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
+                    integrationTypeEnum = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                     break;
 
                 default:
-                    break;
+                    throw Exception(
+                            __PRETTY_FUNCTION__,
+                            "Could not automatically determine integration type of the boundary element.");
                 }
 
+                const auto& integrationType = *GetPtrIntegrationType(integrationTypeEnum);
+                auto& element = dynamic_cast<ContinuumElement<3>&>(*elementPtr);
+                if (rControlNode == nullptr)
+                    boundaryElement = new ContinuumBoundaryElement<3>(element, integrationType, surfaceId);
+                else
+                    boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(element, integrationType,
+                                                                                            surfaceId, rControlNode);
                 break;
             }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Boundary element for Continuum element with dimension " +
+                throw Exception(__PRETTY_FUNCTION__, "Boundary element for Continuum element with dimension " +
                                                                       std::to_string(elementPtr->GetLocalDimension()) +
                                                                       "not implemented");
             }
@@ -607,11 +565,6 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
             mElementMap.insert(elementId, boundaryElement);
             newBoundaryElementIds.push_back(elementId);
 
-            if (integrationType == eIntegrationType::NotSet)
-                throw MechanicsException(__PRETTY_FUNCTION__,
-                                         "Could not automatically determine integration type of the boundary element.");
-
-            boundaryElement->SetIntegrationType(*GetPtrIntegrationType(integrationType));
             boundaryElement->SetConstitutiveLaw(constitutiveLaw);
         }
     }
@@ -630,9 +583,9 @@ std::pair<int, int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId
     // find element group
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
 
     // gets member ids from an element group. The element group must only contain truss elements
@@ -715,9 +668,9 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumber);
     if (itGroup == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
     if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+        throw Exception(__PRETTY_FUNCTION__, "Group is not an element group.");
 
     // the group has to be copied, since the elements are removed from this group, which invalidates the iterators
     Group<ElementBase> copyOfElementGroup = Group<ElementBase>(*(itGroup->second->AsGroupElement()));
@@ -768,7 +721,7 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
     boost::ptr_map<int, ElementBase>::iterator itElement = mElementMap.find(rElementId);
     if (itElement == this->mElementMap.end())
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Element does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "Element does not exist.");
     }
     else
     {

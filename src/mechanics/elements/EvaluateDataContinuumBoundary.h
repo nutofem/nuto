@@ -2,7 +2,7 @@
 
 namespace NuTo
 {
-template<int TDim>
+template <int TDim>
 struct EvaluateDataContinuumBoundary
 {
 

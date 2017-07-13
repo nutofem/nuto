@@ -1,11 +1,11 @@
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 
 using namespace NuTo::Constitutive::StaticData;
 
-Eigen::VectorXd DataMoistureTransport::GetCurrentSorptionCoeff () const
+Eigen::VectorXd DataMoistureTransport::GetCurrentSorptionCoeff() const
 {
     return mCurrentSorptionCoeff;
 }
@@ -41,18 +41,18 @@ void DataMoistureTransport::SetCurrentSorptionCoeff(Eigen::VectorXd rCurrentSorp
     case 4:
     {
         mCurrentSorptionCoeff.resize(3);
-        for(int i=0; i<3; i++)
+        for (int i = 0; i < 3; i++)
         {
-            mCurrentSorptionCoeff(i) = rCurrentSorptionCoeff(i+1);
+            mCurrentSorptionCoeff(i) = rCurrentSorptionCoeff(i + 1);
         }
         break;
     }
     default:
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(
+                __PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
-        break;
     }
     }
 }
@@ -76,18 +76,18 @@ void DataMoistureTransport::SetLastSorptionCoeff(Eigen::VectorXd rLastSorptionCo
     case 4:
     {
         mLastSorptionCoeff.resize(3);
-        for(int i=0; i<3; i++)
+        for (int i = 0; i < 3; i++)
         {
-            mLastSorptionCoeff(i) = rLastSorptionCoeff(i+1);
+            mLastSorptionCoeff(i) = rLastSorptionCoeff(i + 1);
         }
         break;
     }
     default:
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(
+                __PRETTY_FUNCTION__,
                 "The vector for the sorption coefficients must have 3 or 4 rows. Its a third degree polynomial; "
                 "in case of 4 coefficients the constant term will be deleted");
-        break;
     }
     }
 }
@@ -113,7 +113,7 @@ bool DataMoistureTransport::operator==(const DataMoistureTransport& rhs) const
 
 bool DataMoistureTransport::operator!=(const DataMoistureTransport& rhs) const
 {
-    return !this->operator==(rhs); 
+    return !this->operator==(rhs);
 }
 
 
@@ -140,22 +140,29 @@ void DataMoistureTransport::SetCurrentJunctionPoint(double newCurrentJunctionPoi
     mCurrentJunctionPoint = newCurrentJunctionPoint;
 }
 
-namespace NuTo{namespace Constitutive{ namespace StaticData{
+namespace NuTo
+{
+namespace Constitutive
+{
+namespace StaticData
+{
 std::ostream& operator<<(std::ostream& os, const DataMoistureTransport& data)
 {
-    os << "SorptionHistoryDesorption: "     << data.mSorptionHistoryDesorption << "\n";
-    os << "Last relative humidity value: "  << data.mLastRelHumValue << "\n";
-    os << "Last junction point: "           << data.mLastJunctionPoint << "\n";
-    os << "Current junction point: "        << data.mCurrentJunctionPoint << "\n";
+    os << "SorptionHistoryDesorption: " << data.mSorptionHistoryDesorption << "\n";
+    os << "Last relative humidity value: " << data.mLastRelHumValue << "\n";
+    os << "Last junction point: " << data.mLastJunctionPoint << "\n";
+    os << "Current junction point: " << data.mCurrentJunctionPoint << "\n";
 
     os << "Current sorption coefficients: " << data.mCurrentSorptionCoeff << "\n";
-    os << "Last sorption coefficients: "    << data.mLastSorptionCoeff << "\n";
+    os << "Last sorption coefficients: " << data.mLastSorptionCoeff << "\n";
     return os;
 }
-}}} // namespaces
+}
+}
+} // namespaces
 
 template <typename TStream>
-void DataMoistureTransport::SerializeDataMoistureTransport(TStream &rStream)
+void DataMoistureTransport::SerializeDataMoistureTransport(TStream& rStream)
 {
     rStream.Serialize(mSorptionHistoryDesorption);
     rStream.Serialize(mLastRelHumValue);
@@ -165,5 +172,7 @@ void DataMoistureTransport::SerializeDataMoistureTransport(TStream &rStream)
     rStream.Serialize(mLastRelHumValue);
 }
 
-template void DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamIn>(SerializeStreamIn& rStream);
-template void DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamOut>(SerializeStreamOut& rStream);
+template void
+DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamIn>(SerializeStreamIn& rStream);
+template void
+DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamOut>(SerializeStreamOut& rStream);

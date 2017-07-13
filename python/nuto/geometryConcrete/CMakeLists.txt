@@ -13,6 +13,8 @@ set(SWIG_MODULE_ModuleGeometryConcrete_EXTRA_DEPS
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/collision/handler/CollisionHandler.h
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/takeAndPlace/ParticleCreator.h
         ${CMAKE_SOURCE_DIR}/src/geometryConcrete/InputReader.h
+        
+        ${CMAKE_SOURCE_DIR}/python/nuto/math/NuToMath.i
         )
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)

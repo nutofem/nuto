@@ -1,8 +1,9 @@
 #include "BoostUnitTest.h"
-
+#include <boost/test/output_test_stream.hpp>
+#include <fstream>
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -37,7 +38,8 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     coordinate << 0.0;
     node1.Set(Node::eDof::COORDINATES, 0, coordinate);
     dTemperatureDTime << 1.0;
-    node1.Set(Node::eDof::TEMPERATURE, 1, dTemperatureDTime); // set first time derivative for internal gradient calculation
+    node1.Set(Node::eDof::TEMPERATURE, 1,
+              dTemperatureDTime); // set first time derivative for internal gradient calculation
 
     coordinate << 1.0;
     node2.Set(Node::eDof::COORDINATES, 0, coordinate);
@@ -50,20 +52,21 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     InterpolationType interpolationType(truss, 1);
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
     interpolationType.AddDofInterpolation(Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
-    IntegrationType1D2NGauss2Ip integrationType;
-    interpolationType.UpdateIntegrationType(integrationType);
+    IntegrationType1D2NGauss integrationType(2);
 
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;
     dofs.insert(Node::eDof::TEMPERATURE);
     dofStatus.SetDofTypes(dofs);
     dofStatus.SetActiveDofTypes(dofs);
-    ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, dofStatus);
+    ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, integrationType, dofStatus);
 
     ConstitutiveInputMap inputMap;
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
-    outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
-    outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
+    outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
+    outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
     outputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
 
     auto area = SectionTruss::Create(1.0);
@@ -86,7 +89,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     auto blockhessian1 = outputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
     auto hessian1 = blockhessian1.Get("Temperature", "Temperature");
     Eigen::Matrix<double, 2, 2> expected_hessian1;
-    expected_hessian1 << 1.0/3.0, 1.0/6.0, 1.0/6.0, 1.0/3.0;
+    expected_hessian1 << 1.0 / 3.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 3.0;
     BOOST_CHECK_SMALL((hessian1 - expected_hessian1).norm(), 1e-15);
 
     auto blockgradient = outputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
@@ -94,4 +97,21 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     Eigen::Matrix<double, 2, 1> expected_gradient;
     expected_gradient << 0.5, 0.5;
     BOOST_CHECK_SMALL((gradient - expected_gradient).norm(), 1e-15);
+
+    boost::test_tools::output_test_stream output;
+    output << element;
+    std::string expected = "InterpolationTypeInfo:\n"
+                           "COORDINATES: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "TEMPERATURE: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "\n"
+                           "NodeInfo of local node 0: \n"
+                           "COORDINATES: 1 dt:2\n"
+                           "TEMPERATURE: 1 dt:2\n"
+                           "\n"
+                           "NodeInfo of local node 1: \n"
+                           "COORDINATES: 1 dt:2\n"
+                           "TEMPERATURE: 1 dt:2\n"
+                           "\n";
+
+    BOOST_CHECK(output.is_equal(expected));
 }

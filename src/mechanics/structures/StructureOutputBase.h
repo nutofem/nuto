@@ -13,7 +13,6 @@ class StructureOutputBlockVector;
 class StructureOutputBase
 {
 public:
-
     StructureOutputBase();
 
 #ifndef SWIG
@@ -26,7 +25,7 @@ public:
 
     virtual void SetSymmetry(bool rSymmetric);
 
-    virtual bool IsSymmetric()const;
+    virtual bool IsSymmetric() const;
 
     virtual void SetZero();
 

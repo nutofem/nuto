@@ -2,24 +2,32 @@
 // Created by Thomas Titscher on 10/26/16.
 //
 #pragma once
+#include <iostream>
+
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+
 namespace NuTo
 {
 namespace Test
 {
-    using namespace NuTo::Constitutive;
+using namespace NuTo::Constitutive;
 template <int TDim>
 class ConstitutiveTangentTester
 {
 public:
-    ConstitutiveTangentTester(IPConstitutiveLawBase& rLaw): mLaw(rLaw) {};
+    ConstitutiveTangentTester(IPConstitutiveLawBase& rLaw)
+        : mLaw(rLaw){};
     ConstitutiveTangentTester(IPConstitutiveLawBase& rLaw, double rDelta, double rTolerance)
-        : mLaw(rLaw), mDelta(rDelta), mTolerance(rTolerance) {}
-
-    bool CheckTangent( ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue, eOutput rTangent)
+        : mLaw(rLaw)
+        , mDelta(rDelta)
+        , mTolerance(rTolerance)
     {
-        Eigen::MatrixXd tangent     = CalculateOutput(rInput, rTangent)->CopyToEigenMatrix();
+    }
+
+    bool CheckTangent(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue, eOutput rTangent)
+    {
+        Eigen::MatrixXd tangent = CalculateOutput(rInput, rTangent)->CopyToEigenMatrix();
         Eigen::MatrixXd tangent_cdf = CalculateTangentCDF(rInput, rParameter, rValue, rTangent);
 
         // If tangent is a ConstitutiveVector, its orientation is lost.
@@ -32,7 +40,8 @@ public:
         Eigen::MatrixXd diffMatrix = (tangent - tangent_cdf).cwiseAbs();
         double maxEntry = diffMatrix.maxCoeff(&row, &col);
 
-        std::cout << "Max. abs. error = " << maxEntry << " at (" << row << "," << col << ")   -  Tolerance = " << mTolerance << std::endl;
+        std::cout << "Max. abs. error = " << maxEntry << " at (" << row << "," << col
+                  << ")   -  Tolerance = " << mTolerance << std::endl;
         if (maxEntry > mTolerance)
         {
 
@@ -51,7 +60,8 @@ public:
     }
 
 private:
-    Eigen::MatrixXd CalculateTangentCDF(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue, eOutput rTangent)
+    Eigen::MatrixXd CalculateTangentCDF(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue,
+                                        eOutput rTangent)
     {
         auto value = CalculateOutput(rInput, rValue);
         auto& input = *rInput[rParameter];
@@ -68,7 +78,7 @@ private:
             input[i] -= mDelta / 2; // back to normal
 
             for (int j = 0; j < tangent_cdf.rows(); ++j)
-                tangent_cdf(i, j) = ( (*valuePlus)[j] - (*valueMinus)[j] ) / mDelta;
+                tangent_cdf(i, j) = ((*valuePlus)[j] - (*valueMinus)[j]) / mDelta;
         }
         return tangent_cdf;
     }
@@ -82,8 +92,8 @@ private:
     }
 
     IPConstitutiveLawBase& mLaw;
-    double mDelta       = 1.e-6;
-    double mTolerance   = 1.e-6;
+    double mDelta = 1.e-6;
+    double mTolerance = 1.e-6;
 };
-}   // namespace Test
-}   // namespace NuTo
+} // namespace Test
+} // namespace NuTo
