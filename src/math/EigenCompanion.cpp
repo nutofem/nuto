@@ -37,7 +37,7 @@ void EigenCompanion::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::stri
     }
 }
 
-Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName, std::string rDelimiter)
+Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string &rFileName)
 {
     std::ifstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())
@@ -56,7 +56,7 @@ Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName, std::
 
     // read first line in order to obtain number of columns
     getline(fileStream, line);
-    unsigned int numColumns = StringToDoubles(line, rDelimiter).size();
+    unsigned int numColumns = StringToDoubles(line).size();
 
     // resize matrix
     Eigen::MatrixXd m(numRows, numColumns);
@@ -69,7 +69,7 @@ Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName, std::
     for (unsigned int iRow = 0; iRow < numRows; ++iRow)
     {
         getline(fileStream, line);
-        auto columnValues = StringToDoubles(line, rDelimiter);
+        auto columnValues = StringToDoubles(line);
 
         for (unsigned int iColumn = 0; iColumn < columnValues.size(); ++iColumn)
             m(iRow, iColumn) = columnValues[iColumn];
@@ -87,7 +87,7 @@ Eigen::Vector3d EigenCompanion::To3D(const Eigen::VectorXd& data)
 }
 
 
-std::vector<double> EigenCompanion::StringToDoubles(const std::string& rString, std::string rDelimiter)
+std::vector<double> EigenCompanion::StringToDoubles(const std::string& rString)
 {
     std::istringstream lineStream(rString);
     std::vector<std::string> splitLine;

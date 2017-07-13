@@ -50,7 +50,7 @@ Eigen::MatrixXd InterpolationBaseFEM::CalculateMatrixN(const Eigen::VectorXd& rC
     return matrixN;
 }
 
-int InterpolationBaseFEM::GetSplineDegree(int dir) const
+int InterpolationBaseFEM::GetSplineDegree(int) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
 }

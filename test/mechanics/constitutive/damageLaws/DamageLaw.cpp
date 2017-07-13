@@ -10,11 +10,11 @@ public:
     }
 
 protected:
-    double Damage(const double kappa) const override
+    double Damage(const double) const override
     {
         return 42;
     }
-    double Derivative(const double kappa) const override
+    double Derivative(const double) const override
     {
         return 42;
     }

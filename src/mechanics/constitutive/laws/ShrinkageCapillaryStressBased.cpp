@@ -37,8 +37,7 @@ void NuTo::ShrinkageCapillaryStressBased::CheckParameters() const
 
 
 NuTo::ConstitutiveInputMap
-NuTo::ShrinkageCapillaryStressBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const NuTo::InterpolationType& rInterpolationType) const
+NuTo::ShrinkageCapillaryStressBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
     for (const auto& itOutput : rConstitutiveOutput)

@@ -504,7 +504,7 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
 }
 
 template <int TDim>
-void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int> rN, std::vector<double> rL)
+void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int>, std::vector<double>)
 {
 
 

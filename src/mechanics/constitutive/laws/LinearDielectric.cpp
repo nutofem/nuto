@@ -23,8 +23,7 @@ LinearDielectric::LinearDielectric()
     SetParametersValid();
 }
 
-ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                             const InterpolationType&) const
+ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

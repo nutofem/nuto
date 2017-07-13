@@ -405,7 +405,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
               << std::endl;
 }
 
-void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);

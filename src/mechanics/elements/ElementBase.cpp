@@ -89,7 +89,7 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
     return mIPData.HasConstitutiveLawAssigned(rIP);
 }
 
-void NuTo::ElementBase::SetSection(std::shared_ptr<const Section> section)
+void NuTo::ElementBase::SetSection(std::shared_ptr<const Section>)
 {
     throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
 }
@@ -110,7 +110,7 @@ int NuTo::ElementBase::GetNumNodes(Node::eDof rDofType) const
     return mInterpolationType->Get(rDofType).GetNumNodes();
 }
 
-Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
+Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int, Node::eDof) const
 {
     throw NuTo::Exception("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
@@ -226,7 +226,7 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
     return globalIntegrationPointCoordinates;
 }
 
-bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const
+bool NuTo::ElementBase::GetLocalPointCoordinates(const double*, double*) const
 {
     throw NuTo::Exception(
             "[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
@@ -483,8 +483,8 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
-                                                    const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&,
+                                                    const std::vector<eVisualizeWhat>&)
 {
     throw NuTo::Exception(
             std::string(__PRETTY_FUNCTION__) +
@@ -494,11 +494,6 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&
 void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
                                                       const std::vector<eVisualizeWhat>& visualizeComponents)
 {
-    //
-    //  This function is still in beta and only works for engineering strain. Implementation is still in progress...
-    //
-
-    // get visualization cells from integration type
 
     struct IpInfo
     {

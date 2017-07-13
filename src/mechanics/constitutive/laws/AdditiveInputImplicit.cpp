@@ -18,11 +18,10 @@ NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputImplicit::GetType() con
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::AdditiveInputImplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                   const NuTo::InterpolationType& rInterpolationType) const
+NuTo::AdditiveInputImplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap =
-            AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
+            AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput);
 
     for (const auto& itOutput : rConstitutiveOutput)
     {

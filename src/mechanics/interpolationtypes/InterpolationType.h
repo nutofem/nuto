@@ -54,7 +54,7 @@ public:
     eIntegrationType GetStandardIntegrationType() const;
 
     //! @brief returns the shape type
-    const Interpolation::eShapeType GetShapeType() const;
+    Interpolation::eShapeType GetShapeType() const;
 
     //! @brief clears the cached shape functions / N-matrices
     void ClearCache() const;

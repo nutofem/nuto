@@ -45,7 +45,7 @@ NuTo::ElementOutputIpData& NuTo::ElementOutputBase::GetIpData()
     throw Exception("[ElementOutputBase::GetIpData] ipdata is not stored.");
 }
 
-void NuTo::ElementOutputBase::SetSymmetry(bool rSymmetric)
+void NuTo::ElementOutputBase::SetSymmetry(bool)
 {
     throw Exception("[ElementOutputBase::SetSymmetry] symmetry is not stored.");
 }
@@ -55,7 +55,7 @@ bool NuTo::ElementOutputBase::GetSymmetry() const
     throw Exception("[ElementOutputBase::SetSymmetry] symmetry is not stored.");
 }
 
-void NuTo::ElementOutputBase::SetConstant(bool rConstant)
+void NuTo::ElementOutputBase::SetConstant(bool)
 {
     throw Exception("[ElementOutputBase::SetConstant] constness is not stored.");
 }

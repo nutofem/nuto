@@ -168,7 +168,7 @@ void Run2d(Eigen::VectorXd rNodeCoords0, Eigen::VectorXd rNodeCoords1, Eigen::Ve
     }
 }
 
-int main(int argc, char* argv[])
+int main()
 {
 
     // node coordinates

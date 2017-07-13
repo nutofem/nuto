@@ -21,7 +21,8 @@ IPAdditiveInputImplicit::IPAdditiveInputImplicit(AdditiveInputImplicit& rLaw, co
 
 
 IPAdditiveInputImplicit::IPAdditiveInputImplicit(const IPAdditiveInputImplicit& rOther)
-    : mLaw(rOther.mLaw)
+    : IPConstitutiveLawBase(rOther)
+    , mLaw(rOther.mLaw)
     , mData(rOther.mData)
     , mSublawIPs(rOther.mSublawIPs)
 {
@@ -90,7 +91,7 @@ void IPAdditiveInputImplicit::NuToSerializeLoad(SerializeStreamIn& rStream)
 template <int TDim>
 void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                      const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                     std::vector<NuTo::ConstitutiveInputMap>& rLocalInputMapVec,
+                                                     std::vector<NuTo::ConstitutiveInputMap>&,
                                                      std::vector<ConstitutiveOutputMap>& rLocalOutputMapVec)
 {
     static const bool SublawsHaveDamping =
@@ -132,8 +133,8 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
                 Eigen::VectorXd& SDPreviousStrainRate = mData.GetData(1).GetLocalInputRates();
                 if (SDCurrentStrain.size() != numLocalUnknownsPerTimeDer &&
                     SDPreviousStrain.size() != numLocalUnknownsPerTimeDer) // So far I have no idea, how to resize the
-                                                                           // vector before the first call of evaluate
-                                                                           // --- data during construction is missing
+                // vector before the first call of evaluate
+                // --- data during construction is missing
                 {
                     SDCurrentStrain.resize(numLocalUnknownsPerTimeDer);
                     SDCurrentStrain.setZero();
@@ -343,9 +344,9 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
                     Eigen::VectorXd& SDPreviousStrainRate = mData.GetData(1).GetLocalInputRates();
                     if (SDCurrentStrain.size() != numLocalUnknownsPerTimeDer &&
                         SDPreviousStrain.size() != numLocalUnknownsPerTimeDer) // So far I have no idea, how to resize
-                                                                               // the vector before the first call of
-                                                                               // evaluate --- data during construction
-                                                                               // is missing
+                    // the vector before the first call of
+                    // evaluate --- data during construction
+                    // is missing
                     {
                         SDCurrentStrain.resize(numLocalUnknownsPerTimeDer);
                         SDCurrentStrain.setZero();

@@ -11,8 +11,8 @@ namespace NuTo
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
 template <>
-void SparseMatrixCSRSymmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA,
-                                                             const NuTo::SparseMatrixCSRSymmetric<int>& rMatrixB)
+void SparseMatrixCSRSymmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>&,
+                                                             const NuTo::SparseMatrixCSRSymmetric<int>&)
 {
     throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
 }
@@ -110,7 +110,7 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
 // subtract (trans(A) * B + trans(B) * A) from the matrix (A and B are general matrices)
 template <>
 void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
-        const NuTo::SparseMatrixCSRGeneral<int>& rMatrixA, const NuTo::SparseMatrixCSRGeneral<int>& rMatrixB)
+        const NuTo::SparseMatrixCSRGeneral<int>&, const NuTo::SparseMatrixCSRGeneral<int>&)
 {
     throw Exception(
             "[SparseMatrixCSRSymmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
@@ -178,7 +178,7 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
 
 // multiply sparse matrix with full matrix
 template <>
-Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi& rMatrix) const
+Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi&) const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
@@ -217,7 +217,7 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator*(const Eigen::MatrixX
 
 // multiply sparse matrix with scalar
 template <>
-SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int& rScal) const
+SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int&) const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
@@ -236,7 +236,7 @@ SparseMatrixCSRSymmetric<double> SparseMatrixCSRSymmetric<double>::operator*(con
 //! @param rMatrix ... sparse matrix
 //! @return ... this
 template <>
-SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRSymmetric<int>& rMatrix)
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRSymmetric<int>&)
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }
@@ -273,7 +273,7 @@ SparseMatrix<double>& SparseMatrixCSRSymmetric<double>::operator+=(const SparseM
 //! @param rMatrix ... sparse matrix
 //! @return ... this
 template <>
-SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRVector2Symmetric<int>& rMatrix)
+SparseMatrix<int>& SparseMatrixCSRSymmetric<int>::operator+=(const SparseMatrixCSRVector2Symmetric<int>&)
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator+=] not implemented for this data type.");
 }

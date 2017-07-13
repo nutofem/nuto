@@ -148,7 +148,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
             parameters, &msglvl, &ddum, &ddum, &error, dparameters);
     if (error != 0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
+        throw NuTo::MathException(__PRETTY_FUNCTION__,
                                   "Numerical factorization phase: " + this->GetErrorString(error) + ".");
     }
 
@@ -162,7 +162,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
             dparameters);
     if (error != 0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Back substitution and iterative refinement phase: " +
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "Back substitution and iterative refinement phase: " +
                                                                this->GetErrorString(error) + ".");
     }
 

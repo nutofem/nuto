@@ -83,7 +83,7 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
 template <int TDim>
 void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-        EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInput,
+        EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP, const ConstitutiveInputMap&,
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
     rData.mDetJxWeightIPxSection =
@@ -124,8 +124,8 @@ void NuTo::ContinuumContactElement<TDim>::ProjectIntegrationPointOnMaster()
 
 template <int TDim>
 void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
-        BlockFullMatrix<double>& rGapMatrix, EvaluateDataContinuumBoundary<TDim>& rData,
-        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
+        BlockFullMatrix<double>&, EvaluateDataContinuumBoundary<TDim>&,
+        const ConstitutiveOutputMap&, int rTheIP) const
 {
     // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
 

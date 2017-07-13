@@ -40,8 +40,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelec
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                 const InterpolationType& rInterpolationType) const
+NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

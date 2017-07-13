@@ -154,8 +154,7 @@ template <int TDim>
 NuTo::ConstitutiveInputMap
 NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInput =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
 
     for (auto& itInput : constitutiveInput)
     {
@@ -346,7 +345,7 @@ template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(
         BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim>& rData,
         const ConstitutiveInputMap& constitutiveInput, const ConstitutiveOutputMap& constitutiveOutput,
-        int rTheIP) const
+        int) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -611,7 +610,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
 
 
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput,
+void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap&,
                                                                              BlockFullMatrix<double>& rHessian0) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -743,8 +742,8 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 
 #ifdef ENABLE_VISUALIZE
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::Visualize(Visualize::UnstructuredGrid& visualize,
-                                                     const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ContinuumBoundaryElement<TDim>::Visualize(Visualize::UnstructuredGrid&,
+                                                     const std::vector<eVisualizeWhat>&)
 {
     std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }
@@ -835,7 +834,7 @@ double ContinuumBoundaryElement<TDim>::CalculateAlpha() const
 
 
 template <>
-Eigen::Matrix<double, 0, 1> ContinuumBoundaryElement<1>::CalculateIPCoordinatesSurface(int rTheIP) const
+Eigen::Matrix<double, 0, 1> ContinuumBoundaryElement<1>::CalculateIPCoordinatesSurface(int) const
 {
     return Eigen::Matrix<double, 0, 1>();
 }
@@ -854,7 +853,7 @@ Eigen::Matrix<double, 2, 1> ContinuumBoundaryElement<3>::CalculateIPCoordinatesS
 
 
 template <>
-double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(double, int) const
 {
 
     return mBaseElement.mSection->GetArea();

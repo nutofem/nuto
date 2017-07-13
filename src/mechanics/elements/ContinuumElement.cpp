@@ -115,8 +115,7 @@ NuTo::ConstitutiveInputMap
 NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // create maps with only the keys
-    ConstitutiveInputMap constitutiveInput =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
 
     // attach corresponding scalar/vector/matrix object to each key
     for (auto& itInput : constitutiveInput)
@@ -417,7 +416,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 }
 
 template <int TDim>
-void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput,
+void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap&,
                                                                      BlockFullMatrix<double>& rHessian2) const
 {
     for (auto dofRow : mDofStatus.GetActiveDofTypes())
@@ -1316,7 +1315,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
 
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData,
-                                                                EvaluateDataContinuum<TDim>& rData, int rTheIP,
+                                                                EvaluateDataContinuum<TDim>&, int rTheIP,
                                                                 const ConstitutiveOutputMap& constitutiveOutput) const
 {
     for (auto& it :

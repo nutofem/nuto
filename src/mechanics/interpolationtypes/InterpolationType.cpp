@@ -251,7 +251,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
 }
 
 
-const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() const
+NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() const
 {
     return mShapeType;
 }

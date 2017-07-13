@@ -98,8 +98,7 @@ bool ThermalStrains::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof
     return false;
 }
 
-ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const InterpolationType&) const
+ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

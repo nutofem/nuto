@@ -182,7 +182,7 @@ void NuTo::BlockFullVector<T>::Info() const
 
 
 template <typename T>
-int NuTo::BlockFullVector<T>::GetNumColumnsDof(const std::set<Node::eDof>& rDofTypes) const
+int NuTo::BlockFullVector<T>::GetNumColumnsDof(const std::set<Node::eDof>&) const
 {
     return 1;
 }

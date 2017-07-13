@@ -17,7 +17,8 @@ IPAdditiveInputExplicit::IPAdditiveInputExplicit(AdditiveInputExplicit& rLaw)
 
 
 IPAdditiveInputExplicit::IPAdditiveInputExplicit(const IPAdditiveInputExplicit& rOther)
-    : mLaw(rOther.mLaw)
+    : IPConstitutiveLawBase(rOther)
+    , mLaw(rOther.mLaw)
     , mSublawIPs(rOther.mSublawIPs)
 {
     this->mMainLawIP = rOther.mMainLawIP->Clone();

@@ -9,7 +9,7 @@
 //! @brief ... checks if the constitutive law has a specific parameter
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... true/false
-bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter) const
 {
     throw NuTo::Exception(
             "[NuTo::ConstitutiveBase::CheckHaveParameter] Not implemented for this constitutive law.");
@@ -18,7 +18,7 @@ bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiv
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter) const
 {
     throw NuTo::Exception(
             "[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
@@ -27,7 +27,7 @@ bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveP
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
+void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter, bool)
 {
     throw NuTo::Exception(
             "[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
@@ -36,7 +36,7 @@ void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveP
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const
+double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutiveParameter) const
 {
     throw NuTo::Exception(
             "[NuTo::ConstitutiveBase::GetParameterDouble] This constitutive law has no variables of type double.");
@@ -45,7 +45,7 @@ double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutivePar
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter, double)
 {
     throw NuTo::Exception(
             "[NuTo::ConstitutiveBase::SetParameterDouble] This constitutive law has no variables of type double.");
@@ -59,7 +59,7 @@ void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<doubl
     throw NuTo::Exception(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
 }
 
-void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::DamageLaw> damageLaw)
+void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::DamageLaw>)
 {
     throw NuTo::Exception(__PRETTY_FUNCTION__, "This constitutive law has no damage law.");
 }
@@ -68,7 +68,7 @@ void NuTo::ConstitutiveBase::SetDamageLaw(std::shared_ptr<NuTo::Constitutive::Da
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 Eigen::VectorXd
-NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has "
                                    "no variables of type Eigen::VectorXd.");
@@ -77,8 +77,8 @@ NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConsti
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
-                                                          Eigen::VectorXd rValue)
+void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter,
+                                                          Eigen::VectorXd)
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has "
                                    "no variables of type Eigen::VectorXd.");
@@ -88,7 +88,7 @@ void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eC
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 Eigen::MatrixXd
-NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::GetParameterMatrixDouble] This constitutive law has no "
                                    "variables of type Eigen::MatrixXd.");
@@ -97,8 +97,8 @@ NuTo::ConstitutiveBase::GetParameterMatrixDouble(NuTo::Constitutive::eConstituti
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier,
-                                                      Eigen::MatrixXd rValue)
+void NuTo::ConstitutiveBase::SetParameterMatrixDouble(NuTo::Constitutive::eConstitutiveParameter,
+                                                      Eigen::MatrixXd)
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::SetParameterMatrixDouble] This constitutive law has no "
                                    "variables of type Eigen::MatrixXd.");
@@ -149,8 +149,8 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity
 //! @return ... equilibrium water volume fraction
-double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity,
-                                                                 Eigen::VectorXd rCoeffs) const
+double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double,
+                                                                 Eigen::VectorXd) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive "
                                    "relationship does not have this parameter.");
@@ -159,7 +159,7 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 
 //! @brief ... checks if a constitutive law has an specific output
 //! @return ... true/false
-bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const
+bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput) const
 {
     throw NuTo::Exception("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented "
                                    "for this constitutive law.");
@@ -186,7 +186,7 @@ void NuTo::ConstitutiveBase::SetParametersValid()
 
 
 // info routine
-void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger) const
+void NuTo::ConstitutiveBase::Info(unsigned short, Logger&) const
 {
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }

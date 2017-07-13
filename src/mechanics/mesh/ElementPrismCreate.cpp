@@ -245,7 +245,7 @@ NuTo::NodeBase* CloneNode(NuTo::Structure& rS, const NuTo::NodeBase* rNode)
     return rS.NodeGetNodePtr(nodeId);
 }
 
-NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
+NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int)
 {
     auto* firstElement = rS.ElementGetElementPtr(rS.GroupGetMemberIds(rGroupMaster)[0]);
     NuTo::Interpolation::eTypeOrder coordinateInterpolation =

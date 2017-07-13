@@ -141,7 +141,7 @@ public:
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>& rMatrix)
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
                             "implemented for this matrix type.");
@@ -150,7 +150,7 @@ public:
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>& rMatrix)
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
                             "not implemented for this matrix type.");
