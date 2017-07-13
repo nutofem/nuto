@@ -2,7 +2,7 @@
 #include "base/Logger.h"
 
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/staticData/DataMisesPlasticity.h"
@@ -11,7 +11,7 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -49,7 +49,7 @@ NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const Constitutive
         case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Output object " + OutputToString(itOutput.first) +
+            throw Exception(__PRETTY_FUNCTION__, "Output object " + OutputToString(itOutput.first) +
                                                                   " cannot be calculated by "
                                                                   "this constitutive law.");
         }
@@ -65,7 +65,7 @@ template <>
 void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&,
                                                          Data&)
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "not implemented for 1D.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "not implemented for 1D.");
 }
 
 template <>
@@ -77,7 +77,7 @@ void NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(const ConstitutiveInput
     const auto& planeState =
             *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
     if (planeState.GetPlaneState() != ePlaneState::PLANE_STRAIN)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Only implemented for PLANE_STRAIN");
+        throw Exception(__PRETTY_FUNCTION__, "Only implemented for PLANE_STRAIN");
 
     const auto& engineeringStrain =
             rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
@@ -691,11 +691,11 @@ double NuTo::MisesPlasticityEngineeringStress::GetParameterDouble(eConstitutiveP
     {
     case eConstitutiveParameter::INITIAL_HARDENING_MODULUS:
         if (mH.size() == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Size of hardening modulus vector is zero.");
+            throw Exception(__PRETTY_FUNCTION__, "Size of hardening modulus vector is zero.");
         return mH[0].second;
     case eConstitutiveParameter::INITIAL_YIELD_STRENGTH:
         if (mSigma.size() == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Size of yield strength vector is zero.");
+            throw Exception(__PRETTY_FUNCTION__, "Size of yield strength vector is zero.");
         return mSigma[0].second;
     case eConstitutiveParameter::POISSONS_RATIO:
         return this->mNu;
@@ -705,7 +705,7 @@ double NuTo::MisesPlasticityEngineeringStress::GetParameterDouble(eConstitutiveP
         return this->mRho;
     default:
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
     }
 }
@@ -719,18 +719,18 @@ void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(eConstitutivePar
     case eConstitutiveParameter::INITIAL_HARDENING_MODULUS:
     {
         if (mH.size() == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Size of hardening modulus vector is zero.");
+            throw Exception(__PRETTY_FUNCTION__, "Size of hardening modulus vector is zero.");
         if (rValue < 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Initial hardening modulus must not be negative.");
+            throw Exception(__PRETTY_FUNCTION__, "Initial hardening modulus must not be negative.");
         mH[0].second = rValue;
         break;
     }
     case eConstitutiveParameter::INITIAL_YIELD_STRENGTH:
     {
         if (mSigma.size() == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Size of yield strength vector is zero.");
+            throw Exception(__PRETTY_FUNCTION__, "Size of yield strength vector is zero.");
         if (rValue <= 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Initial yield strength has to be positive.");
+            throw Exception(__PRETTY_FUNCTION__, "Initial yield strength has to be positive.");
         mSigma[0].second = rValue;
         break;
     }
@@ -750,7 +750,7 @@ void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(eConstitutivePar
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable.");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable.");
     }
 
     this->SetParametersValid();
@@ -772,9 +772,9 @@ Eigen::MatrixXd NuTo::MisesPlasticityEngineeringStress::GetYieldStrength() const
 void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, double rSigma)
 {
     if (rEpsilon <= 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Equivalente strain has to be positive.");
+        throw Exception(__PRETTY_FUNCTION__, "Equivalente strain has to be positive.");
     if (rSigma <= 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Yield strength has to be positive.");
+        throw Exception(__PRETTY_FUNCTION__, "Yield strength has to be positive.");
     std::vector<std::pair<double, double>>::iterator it;
     for (it = mSigma.begin(); it != mSigma.end(); ++it)
     {
@@ -783,7 +783,7 @@ void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, d
             if (it != mSigma.begin())
             {
                 if ((it - 1)->second > (it->second))
-                    throw MechanicsException(__PRETTY_FUNCTION__, "The yield strength can only increase for "
+                    throw Exception(__PRETTY_FUNCTION__, "The yield strength can only increase for "
                                                                   "increasing epsilon equivalent.");
             }
             break;
@@ -809,9 +809,9 @@ Eigen::MatrixXd NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus() co
 void NuTo::MisesPlasticityEngineeringStress::AddHardeningModulus(double rEpsilon, double rH)
 {
     if (rEpsilon <= 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Equivalente strain has to be positive.");
+        throw Exception(__PRETTY_FUNCTION__, "Equivalente strain has to be positive.");
     if (rH < 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Hardening modul must not be negative.");
+        throw Exception(__PRETTY_FUNCTION__, "Hardening modul must not be negative.");
     std::vector<std::pair<double, double>>::iterator it;
     for (it = mH.begin(); it != mH.end(); ++it)
     {
@@ -835,21 +835,21 @@ void NuTo::MisesPlasticityEngineeringStress::CheckYieldStrength(std::vector<std:
 {
     if (rSigma.size() == 0)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "At least an initial yield strength is required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "At least an initial yield strength is required.");
     }
     if (rSigma[0].second <= 0.0)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The initial yield strength must be a positive value.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "The initial yield strength must be a positive value.");
     }
     rSigma[0].first = 0.;
 
     for (unsigned int count = 1; count < rSigma.size(); count++)
     {
         if (rSigma[count - 1].first >= rSigma[count].first)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "For multilinear plasticity, the epsilon should always increase.");
         if (rSigma[count - 1].second > rSigma[count].second)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "For multilinear plasticity, the yield strength should always increase.");
     }
 }
@@ -859,11 +859,11 @@ void NuTo::MisesPlasticityEngineeringStress::CheckHardeningModulus(std::vector<s
 {
     if (rH.size() == 0)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "At least an initial hardening modulus is required.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "At least an initial hardening modulus is required.");
     }
     if (rH[0].second < 0.0)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                                        "The initial hardening modulus must not be a negative value.");
     }
     rH[0].first = 0.;
@@ -871,10 +871,10 @@ void NuTo::MisesPlasticityEngineeringStress::CheckHardeningModulus(std::vector<s
     for (unsigned int count = 1; count < rH.size(); count++)
     {
         if (rH[count - 1].first >= rH[count].first)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "For multilinear plasticity, the epsilon should always increase.");
         if (rH[count].second < 0)
-            throw NuTo::MechanicsException(
+            throw NuTo::Exception(
                     __PRETTY_FUNCTION__,
                     "For multilinear plasticity, the hardening modulus should always be positive.");
     }

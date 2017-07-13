@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include <eigen3/Eigen/Core>
 
 #ifdef HAVE_ARPACK

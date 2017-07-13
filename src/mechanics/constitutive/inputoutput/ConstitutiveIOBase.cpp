@@ -92,7 +92,7 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputT
     case eOutput::UPDATE_STATIC_DATA:
         return nullptr;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Don't know how to create constitutive output for " +
+        throw Exception(__PRETTY_FUNCTION__, "Don't know how to create constitutive output for " +
                                                               Constitutive::OutputToString(outputType));
     }
 }
@@ -139,7 +139,7 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputTyp
     case eInput::PLANE_STATE:
         return std::make_unique<ConstitutivePlaneState>(NuTo::ePlaneState::PLANE_STRESS);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Don't know how to create Constitutive input for this input type");
     }
 }
@@ -179,24 +179,24 @@ Eigen::MatrixXd NuTo::ConstitutiveIOBase::CopyToEigenMatrix() const
 
 double& NuTo::ConstitutiveIOBase::operator()(int, int)
 {
-    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
 double NuTo::ConstitutiveIOBase::operator()(int, int) const
 {
-    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
 double& NuTo::ConstitutiveIOBase::operator[](int)
 {
-    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 double NuTo::ConstitutiveIOBase::operator[](int) const
 {
-    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
@@ -204,7 +204,7 @@ void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum,
 {
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;
     if (isNotScalar)
-        throw MechanicsException(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
+        throw Exception(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
                                                       " is not a ConstitutiveScalar.");
 }
 
@@ -214,7 +214,7 @@ namespace NuTo
 template <int TDim>
 EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain()
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "invalid diemnsion");
+    throw Exception(__PRETTY_FUNCTION__, "invalid diemnsion");
 }
 
 template <>
@@ -239,7 +239,7 @@ EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>()
 template <int TDim>
 const EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "invalid diemnsion");
+    throw Exception(__PRETTY_FUNCTION__, "invalid diemnsion");
 }
 
 template <>

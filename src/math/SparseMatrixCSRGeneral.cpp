@@ -5,7 +5,7 @@
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRGeneral.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -15,7 +15,7 @@ SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi&, doub
                                                     double)
     : SparseMatrixCSR<int>(0, 0)
 {
-    throw MathException(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
+    throw Exception(__PRETTY_FUNCTION__, "Conversion from full matrix not implemented for integers.");
 }
 
 template <>
@@ -60,14 +60,14 @@ template <>
 void SparseMatrixCSRGeneral<int>::Gauss(Eigen::MatrixXi&, std::vector<int>&,
                                         std::vector<int>&, double)
 {
-    throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
 
 template <>
 void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>&, std::vector<int>& ,
                                         std::vector<int>&, double)
 {
-    throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
+    throw Exception("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
 
 template <>
@@ -114,7 +114,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<in
         }
         if (std::abs(pivot) < tolerance)
         {
-            throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+            throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
 
         // now swap the columns
@@ -140,7 +140,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<in
         {
             if (this->mRowIndex[tmpRow] == this->mRowIndex[tmpRow + 1])
             {
-                throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+                throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
             }
             else
             {
@@ -320,7 +320,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         }
         if (std::abs(pivot) < tolerance)
         {
-            throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+            throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
 
         // now swap the columns
@@ -347,7 +347,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         {
             if (this->mRowIndex[tmpRow] == this->mRowIndex[tmpRow + 1])
             {
-                throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
+                throw Exception("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
             }
             else
             {
@@ -513,7 +513,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 template <>
 void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi&, int&, double)
 {
-    throw MathException(__PRETTY_FUNCTION__, "not implemented for this data-type.");
+    throw Exception(__PRETTY_FUNCTION__, "not implemented for this data-type.");
 }
 
 template <>

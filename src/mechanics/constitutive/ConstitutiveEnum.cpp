@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 const std::map<NuTo::Constitutive::eConstitutiveType, std::string> NuTo::Constitutive::GetConstitutiveTypeMap()
 {
@@ -48,7 +48,7 @@ std::string NuTo::Constitutive::ConstitutiveTypeToString(NuTo::Constitutive::eCo
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
     }
 }
 
@@ -60,7 +60,7 @@ NuTo::Constitutive::eConstitutiveType NuTo::Constitutive::ConstitutiveTypeToEnum
         if (entry.second == rOutput)
             return entry.first;
 
-    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+    throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
 }
 
 const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string>
@@ -126,7 +126,7 @@ std::string NuTo::Constitutive::ConstitutiveParameterToString(NuTo::Constitutive
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
 
@@ -138,7 +138,7 @@ NuTo::Constitutive::eConstitutiveParameter NuTo::Constitutive::ConstitutiveParam
         if (entry.second == rParameter)
             return entry.first;
 
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, rParameter + " has no enum equivalent or is not implemented.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, rParameter + " has no enum equivalent or is not implemented.");
 }
 
 std::string NuTo::Constitutive::InputToString(const NuTo::Constitutive::eInput& e)

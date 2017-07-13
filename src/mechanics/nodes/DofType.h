@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -13,9 +13,9 @@ public:
         , mId(rId)
     {
         if (mName.empty())
-            throw MechanicsException(__PRETTY_FUNCTION__, "Provide a name!");
+            throw Exception(__PRETTY_FUNCTION__, "Provide a name!");
         if (mNum <= 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Number of dofs must be greater than zero.");
+            throw Exception(__PRETTY_FUNCTION__, "Number of dofs must be greater than zero.");
     }
 
     const std::string& GetName() const

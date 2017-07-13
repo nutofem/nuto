@@ -37,7 +37,7 @@ public:
     template <int TDim>
     void Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
     {
-        throw MechanicsException(
+        throw Exception(
                 __PRETTY_FUNCTION__,
                 "Additive Law cannot be evaluated. Their IPAdditiveInputExplicit should be evaluated instead.");
     }

@@ -372,9 +372,9 @@ void NuTo::NeuralNetwork::Jacobian(Eigen::MatrixXd& rJacobian, std::vector<doubl
         numNeurons += mvNumNeurons[currentLayer];
 
     if ((int)pO.size() != numNeurons)
-        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
     if ((int)pA.size() != numNeurons)
-        throw MetamodelException("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
+        throw Exception("[NeuralNetwork::Jacobian] p0 has not the proper size - check source code");
 
     // set input of input layer
     // memcpy(&(pO[0]),&(mSupportPoints.GetTransformedSupportPointsInput().data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -477,7 +477,7 @@ void NuTo::NeuralNetwork::BuildDerived()
         mNumBiases += mvNumNeurons[currentLayer + 1];
         // check if all transfer functions are set
         if (mvTransferFunction[currentLayer] == nullptr)
-            throw MetamodelException(
+            throw Exception(
                     "NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
     }
 
@@ -643,7 +643,7 @@ void NuTo::NeuralNetwork::BuildDerived()
                     vAlphaNew[theAlpha] = 1e-12;
                     printf("gammas[%d] = %g (%g/%g)\n", theAlpha, gammas[theAlpha] / sumW2[theAlpha], gammas[theAlpha],
                            sumW2[theAlpha]);
-                    throw NuTo::MetamodelException("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
+                    throw NuTo::Exception("[NuTo::NeuralNetwork::BuildDerived] Gamma is negative.");
                 }
             }
 
@@ -829,7 +829,7 @@ void NuTo::NeuralNetwork::ForwardPropagateInput(std::vector<double>& pA, std::ve
 void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction)
 {
     if (rLayer >= mNumLayers)
-        throw MetamodelException("Metamodel::SetTransferFunction - Layer out of size.");
+        throw Exception("Metamodel::SetTransferFunction - Layer out of size.");
 
     switch (rTransferFunction)
     {
@@ -879,7 +879,7 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
         mvTransferFunction[rLayer] = new PosLinTransferFunction();
         break;
     default:
-        throw MetamodelException("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
+        throw Exception("NuTo::NeuralNetwork::SetTransferFunction - TransferFunction not known).");
         break;
     }
 }
@@ -888,12 +888,12 @@ void NuTo::NeuralNetwork::SetParameters(const Eigen::MatrixXd& Parameters)
 {
     if (Parameters.rows() != mNumWeights + mNumBiases)
     {
-        throw MetamodelException("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
+        throw Exception("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
     }
 
     if (Parameters.cols() != 1)
     {
-        throw MetamodelException("Metamodel::SetParameters - Number of Columns is not equal to one.");
+        throw Exception("Metamodel::SetParameters - Number of Columns is not equal to one.");
     }
 
     const double* pCurParameter = Parameters.data();
@@ -948,7 +948,7 @@ void NuTo::NeuralNetwork::SolveTransformed(const Eigen::MatrixXd& rInputCoordina
 
     if (rInputCoordinates.rows() != dimInput)
     {
-        throw MetamodelException(
+        throw Exception(
                 "Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
@@ -973,7 +973,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 {
     if (!mBayesian)
     {
-        throw MetamodelException("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence "
+        throw Exception("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence "
                                  "interval is only possible with Bayesian neural networks.");
     }
     int dimInput = mSupportPoints.GetDimInput(), dimOutput = mSupportPoints.GetDimOutput();
@@ -1000,7 +1000,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
 
     if (rInputCoordinates.rows() != dimInput)
     {
-        throw MetamodelException(
+        throw Exception(
                 "Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
@@ -1062,7 +1062,7 @@ void NuTo::NeuralNetwork::GetAlphas(Eigen::VectorXd& rAlpha) const
 
     if (mNumLayers == 1)
     {
-        throw MetamodelException(
+        throw Exception(
                 "Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
     }
     // for the first layer, each input has its own alpha
@@ -1103,7 +1103,7 @@ void NuTo::NeuralNetwork::GetPosInAlphaVector(std::vector<int>& rPosInAlphaVecto
 
     if (mNumLayers == 1)
     {
-        throw MetamodelException(
+        throw Exception(
                 "Metamodel::GetPosInAlphaVector - without hidden layer the definition of alpha is not implemented.");
     }
     // for the first layer, each input has its own alpha

@@ -12,7 +12,7 @@ void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rCo
     if (rModiesInput == Constitutive::eInput::NONE)
     {
         if (mMainLaw != nullptr)
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "There can be only one! --- This additive input law only accepts one law which calculates the "
                     "output. All other laws are only allowed to modify the input to this law. Specify the modifying "
@@ -83,14 +83,14 @@ NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::eOutput
             return Constitutive::eOutput::D_STRAIN_D_TEMPERATURE;
 
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "No partial derivative defined for parameter " +
+            throw Exception(__PRETTY_FUNCTION__, "No partial derivative defined for parameter " +
                                                                   Constitutive::OutputToString(rParameter) +
                                                                   " and global derivative " +
                                                                   Constitutive::OutputToString(rMainDerivative));
         }
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "No partial derivatives defined for parameter " +
+        throw Exception(__PRETTY_FUNCTION__, "No partial derivatives defined for parameter " +
                                                               Constitutive::OutputToString(rParameter));
     }
 }

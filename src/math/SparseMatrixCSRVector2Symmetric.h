@@ -11,7 +11,7 @@
 
 //#include "math/SparseMatrixCSRSymmetric_Def.h"
 //#include "math/SparseMatrixCSRSymmetric.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 //! @brief ... constructor
 //! @param rNumRows_ ... number of rows
@@ -21,7 +21,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
     : NuTo::SparseMatrixCSRVector2<T>(rNumRows_)
 {
     if (rNumRows_ != rNumColumns_)
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] Symmetric matrix must have same number of rows and columns.");
 }
 
@@ -38,7 +38,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(
     : NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.rows())
 {
     if (rFullMatrix.cols() != rFullMatrix.rows())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] Symmetric matrix must have same number of rows and columns.");
 
     double tolerance = rAbsoluteTolerance;
@@ -63,7 +63,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(
             }
             if (col != row && std::abs(rFullMatrix(col, row) - rFullMatrix(row, col)) > tolerance)
             {
-                throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] Full matrix is not symmetric.");
+                throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Full matrix is not symmetric.");
             }
         }
     }
@@ -212,11 +212,11 @@ operator-=(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther)
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); row++)
     {
@@ -237,11 +237,11 @@ operator+=(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther)
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); row++)
     {
@@ -260,16 +260,16 @@ template <class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::
 operator*(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther) const
 {
-    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
     /*  this is just copied from the general matrix (no symmtry)
 
         if (this->GetNumColumns() != rOther.GetNumRows())
             {
-                    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+                    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
             }
             if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
             {
-                    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based
+                    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based
        indexing.");
             }
             SparseMatrixCSRVector2Symmetric<T> result(this->GetNumRows(), rOther.GetNumColumns());
@@ -305,7 +305,7 @@ operator*(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
     if (this->GetNumColumns() != rMatrix.rows())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result =
             Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(this->GetNumRows(), rMatrix.cols());
@@ -374,8 +374,8 @@ template <class T>
 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
 NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
 {
-    throw MathException(__PRETTY_FUNCTION__, "To be implemented.");
-}
+    throw Exception(__PRETTY_FUNCTION__, "To be implemented.");
+}  
 
 //! @brief ... calculate the transpose of the matrix (transpose row and columns)
 //! @return ... transpose of this matrix (sparse csr storage)
@@ -414,13 +414,13 @@ template <class T>
 void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddScal(const SparseMatrixCSRVector2<T>& rOther, T rFactor)
 {
     if (not rOther.IsSymmetric())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] rOther is not symmetric.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] rOther is not symmetric.");
 
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
 
     const auto& values = rOther.GetValues();
     const auto& columns = rOther.GetColumns();
@@ -445,11 +445,11 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddScal(const SparseMatrixCSRSymm
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -468,7 +468,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddScal(const SparseMatrixCSRSymm
 template <class T>
 void NuTo::SparseMatrixCSRVector2Symmetric<T>::ReorderColumns(const std::vector<int>&)
 {
-    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");  
 }
 
 //! @brief ... resize matrix
@@ -481,7 +481,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Resize(int rNumRows, int rNumColu
     assert(rNumRows >= 0);
 
     if (rNumRows != rNumColumns)
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] number of rows and column has to be identical for symmetric matrices.");
 
     // no resize, since the reserved size is only decreased with a copy of a new object
@@ -532,7 +532,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Add_TransA_B_C_Scal(const NuTo::S
     assert(rA.GetNumEntries() == rC.GetNumEntries());
 
     if (not rB.IsSymmetric())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] rB must be symmetric for the symmetric version of this operation");
 
     /*
@@ -555,16 +555,16 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Add_TransA_B_C_Scal(const NuTo::S
 
     if (rA.GetNumRows() != rB.GetNumRows())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A.T * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A.T * B");
     }
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] matrix dimension mismatch of *this and A.T * B");
     }
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
     }
 
 
@@ -641,12 +641,12 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Sub_TransA_B_Plus_C_D_Scal(const 
 {
     if (rB.GetNumColumns() != rC.GetNumRows() or rC.GetNumColumns() != rB.GetNumRows() or
         rB.GetNumEntries() != rC.GetNumEntries())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] B.T should be equal to C for the symmetric version of this method.");
 
     if (rA.GetNumColumns() != rD.GetNumColumns() or rA.GetNumRows() != rD.GetNumRows() or
         rA.GetNumEntries() != rD.GetNumEntries())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] A should be equal to D for the symmetric version of this method.");
 
     /*
@@ -666,15 +666,15 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Sub_TransA_B_Plus_C_D_Scal(const 
 
     if (rC.GetNumColumns() != rA.GetNumRows())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A * B");
     }
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] matrix dimension mismatch of *this and A * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] matrix dimension mismatch of *this and A * B");
     }
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
     }
 
     // calculate C * A

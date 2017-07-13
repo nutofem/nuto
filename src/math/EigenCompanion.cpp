@@ -4,14 +4,14 @@
 #include <iomanip>
 #include <vector>
 #include <iterator>
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 using namespace NuTo;
 
 void EigenCompanion::AppendRows(Eigen::MatrixXd& top, const Eigen::MatrixXd& bottom)
 {
     if (top.cols() != bottom.cols())
-        throw MathException(__PRETTY_FUNCTION__, "Number of columns for both matrices must be identical.");
+        throw Exception(__PRETTY_FUNCTION__, "Number of columns for both matrices must be identical.");
     top.conservativeResize(top.rows() + bottom.rows(), Eigen::NoChange);
     top.bottomRows(bottom.rows()) = bottom;
 }
@@ -20,7 +20,7 @@ void EigenCompanion::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::stri
 {
     std::ofstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())
-        throw MathException(__PRETTY_FUNCTION__, "File " + rFileName + " could not be opened.");
+        throw Exception(__PRETTY_FUNCTION__, "File " + rFileName + " could not be opened.");
 
     // go through the matrix and store the values
     fileStream.setf(std::ios::scientific, std::ios::floatfield);
@@ -41,7 +41,7 @@ Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string &rFileName)
 {
     std::ifstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())
-        throw MathException(__PRETTY_FUNCTION__, "File " + rFileName + " could not be opened.");
+        throw Exception(__PRETTY_FUNCTION__, "File " + rFileName + " could not be opened.");
 
     // get total number of lines
     fileStream.seekg(0, std::ios::beg);

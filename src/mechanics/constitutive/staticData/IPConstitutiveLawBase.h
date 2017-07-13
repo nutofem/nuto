@@ -77,7 +77,7 @@ public:
         }
         catch (std::bad_cast& e)
         {
-            throw MechanicsException(__PRETTY_FUNCTION__, "Wrong ConstitutiveLawType requested.");
+            throw Exception(__PRETTY_FUNCTION__, "Wrong ConstitutiveLawType requested.");
         }
     }
 
@@ -102,7 +102,7 @@ protected:
     //! @return Searched IP constitutive law - nullptr if law is not found
     virtual IPConstitutiveLawBase* GetSublawIP(ConstitutiveBase*)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "This function is only used by additive laws!");
+        throw Exception(__PRETTY_FUNCTION__, "This function is only used by additive laws!");
     }
 };
 

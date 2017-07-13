@@ -1,5 +1,5 @@
 #include "mechanics/constitutive/laws/ThermalStrains.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -133,7 +133,7 @@ void NuTo::ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParamet
         mExpansionCoefficient = rValue;
         return;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
                                                               Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }

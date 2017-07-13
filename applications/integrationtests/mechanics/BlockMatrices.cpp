@@ -15,7 +15,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 
@@ -71,38 +71,38 @@ void BlockFullVectorTest()
     Eigen::VectorXi ev2 = v2.Export();
 
     if (ev1.rows() != 5)
-        throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong size.");
+        throw NuTo::Exception("[BVT:Export] Exported v1 has wrong size.");
     if (ev1.sum() != 23)
-        throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong sum.");
+        throw NuTo::Exception("[BVT:Export] Exported v1 has wrong sum.");
     if (ev2.sum() != 46)
-        throw NuTo::MechanicsException("[BVT:Export] Exported v2 has wrong sum.");
+        throw NuTo::Exception("[BVT:Export] Exported v2 has wrong sum.");
 
     /*
      * Addition
      */
     timer.Reset("BVT:Addition");
     if (v1 + v2 != v2 + v1)
-        throw NuTo::MechanicsException("[BVT:Addition] v1 + v2 != v2 + v1");
+        throw NuTo::Exception("[BVT:Addition] v1 + v2 != v2 + v1");
     if ((v1 + v2).Export() != ev1 + ev2)
-        throw NuTo::MechanicsException("[BVT:Addition] e(v1 + v2) != ev1 + ev2");
+        throw NuTo::Exception("[BVT:Addition] e(v1 + v2) != ev1 + ev2");
 
     /*
      * Subtraction
      */
     timer.Reset("BVT:Subtraction");
     if (v1 - v1 != v2 - v2)
-        throw NuTo::MechanicsException("[BVT:Subtraction] v1 - v1 != v2 - v2");
+        throw NuTo::Exception("[BVT:Subtraction] v1 - v1 != v2 - v2");
     if ((v1 - v2).Export() != ev1 - ev2)
-        throw NuTo::MechanicsException("[BVT:Subtraction] e(v1 - v2) != ev1 - ev2");
+        throw NuTo::Exception("[BVT:Subtraction] e(v1 - v2) != ev1 - ev2");
 
     /*
      * ScalarMultiplication
      */
     timer.Reset("BVT:ScalarMultiplication");
     if (v1 + v1 != v1 * 2)
-        throw NuTo::MechanicsException("[BVT:ScalarMultiplication] v1 + v1 != v1 * 2");
+        throw NuTo::Exception("[BVT:ScalarMultiplication] v1 + v1 != v1 * 2");
     if ((v1 + v1).Export() != ev1 * 2)
-        throw NuTo::MechanicsException("[BVT:ScalarMultiplication] e(v1 + v1) != ev1 * 2");
+        throw NuTo::Exception("[BVT:ScalarMultiplication] e(v1 + v1) != ev1 * 2");
 
     /*
      * Chaining
@@ -123,9 +123,9 @@ void BlockFullVectorTest()
     Eigen::VectorXi eresult = ev1 * 3 + ev1 - ev2 - ev2 + ev2 * 42;
 
     if (result1 != result2)
-        throw NuTo::MechanicsException("[BVT:Chaining] went wrong ... ");
+        throw NuTo::Exception("[BVT:Chaining] went wrong ... ");
     if (result1.Export() != eresult)
-        throw NuTo::MechanicsException("[BVT:Chaining] went wrong ... ");
+        throw NuTo::Exception("[BVT:Chaining] went wrong ... ");
 
 
     /*
@@ -135,15 +135,15 @@ void BlockFullVectorTest()
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
     if (v1.Export().rows() != 3)
-        throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
+        throw NuTo::Exception("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
 
 
     if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 + v1)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Addition changes inactive dofs.");
+        throw NuTo::Exception("[BVT:ActiveDofTypes] Addition changes inactive dofs.");
     if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 - v1)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Subtraction changes inactive dofs.");
+        throw NuTo::Exception("[BVT:ActiveDofTypes] Subtraction changes inactive dofs.");
     if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 * 2)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Multiplication changes inactive dofs.");
+        throw NuTo::Exception("[BVT:ActiveDofTypes] Multiplication changes inactive dofs.");
 
     v1.Info();
 
@@ -168,7 +168,7 @@ void BlockFullVectorTest()
         std::cout << "to Import: \n " << toImport << std::endl;
         std::cout << "imported: \n ";
         std::cout << imported.Export();
-        throw NuTo::MechanicsException("[BVT:Import] failed.");
+        throw NuTo::Exception("[BVT:Import] failed.");
     }
 }
 
@@ -250,28 +250,28 @@ void BlockSparseMatrixTest()
     {
         std::cout << "Reference \n" << exportReference << std::endl;
         std::cout << "Export to CSRVector2 \n" << exportCSRVector2 << std::endl;
-        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSRVector2 failed.");
+        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSRVector2 failed.");
     }
 
     if ((exportCSR - exportReference).norm() > 1.e-8)
     {
         std::cout << "Reference \n" << exportReference << std::endl;
         std::cout << "Export to CSR \n" << exportCSR << std::endl;
-        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSR failed.");
+        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSR failed.");
     }
 
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
     auto CSR = m.ExportToCSR();
     if (not CSR->IsSymmetric())
-        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Symmetric export to CSR failed.");
+        throw NuTo::Exception("[BlockSparseMatrixTest] Symmetric export to CSR failed.");
 
     Eigen::MatrixXd exportCSRSymm = CSR->ConvertToFullMatrix();
     if ((exportCSRSymm - m.ExportToFullMatrix()).norm() > 1.e-8)
     {
         std::cout << "Reference \n" << exportReference << std::endl;
         std::cout << "Export to CSRSymm \n" << exportCSRSymm << std::endl;
-        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSRSymm failed.");
+        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSRSymm failed.");
     }
 }
 
@@ -367,7 +367,7 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
     if (diffMaxMin > tolerance)
     {
         std::cout << diffMaxMin << std::endl;
-        throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestGeneral] ApplyCMatrix incorrect.");
+        throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] ApplyCMatrix incorrect.");
     }
 
 
@@ -375,21 +375,21 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
 
     diff = (JJExp * 3.7 - BM4.JJ.ExportToCSRVector2General());
     if (diff.Max() - diff.Min() > tolerance)
-        throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestGeneral] AddScal for JJ incorrect.");
+        throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] AddScal for JJ incorrect.");
 
     if (rNumDDep > 0)
     {
         diff = (JKExp * 3.7 - BM4.JK.ExportToCSRVector2General());
         if (diff.Max() - diff.Min() > tolerance)
-            throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestGeneral] AddScal for JK incorrect.");
+            throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] AddScal for JK incorrect.");
 
         diff = (KJExp * 3.7 - BM4.KJ.ExportToCSRVector2General());
         if (diff.Max() - diff.Min() > tolerance)
-            throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestGeneral] AddScal for KJ incorrect.");
+            throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] AddScal for KJ incorrect.");
 
         diff = (KKExp * 3.7 - BM4.KK.ExportToCSRVector2General());
         if (diff.Max() - diff.Min() > tolerance)
-            throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestGeneral] AddScal for KK incorrect.");
+            throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] AddScal for KK incorrect.");
     }
 }
 
@@ -456,7 +456,7 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
     if (diffMaxMin > tolerance)
     {
         std::cout << diffMaxMin << std::endl << diff.ConvertToFullMatrix() << std::endl;
-        throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestSymmetric] ApplyCMatrix incorrect.");
+        throw NuTo::Exception("[StructureOutputBlockMatrixTestSymmetric] ApplyCMatrix incorrect.");
     }
 }
 
@@ -504,7 +504,7 @@ void SimpleTestResult(bool rResult, std::string rTestName)
     }
     else
     {
-        throw NuTo::MechanicsException(rTestName + " --- failed.");
+        throw NuTo::Exception(rTestName + " --- failed.");
     }
 }
 
@@ -547,61 +547,17 @@ void BlockScalarTest()
 }
 
 
-//!@brief test the serialization of each block structure
-void SerializationTest(std::string)
-{
-    NuTo::Timer timer("SerializationTest");
-    return;
-}
-
-
 int main()
 {
+    BlockFullVectorTest();
+    BlockFullMatrixTest();
+    BlockScalarTest();
+    BlockSparseMatrixTest();
+    StructureOutputBlockMatrixTestGeneral(10, 8, 0, 0, 1); // cmat == 0
+    StructureOutputBlockMatrixTestGeneral(10, 8, 4, 2, 1);
 
-
-#define TRY_CATCH
-
-    try
-    {
-        BlockFullVectorTest();
-        BlockFullMatrixTest();
-        BlockScalarTest();
-        BlockSparseMatrixTest();
-        StructureOutputBlockMatrixTestGeneral(10, 8, 0, 0, 1); // cmat == 0
-        StructureOutputBlockMatrixTestGeneral(10, 8, 4, 2, 1);
-
-        StructureOutputBlockMatrixTestSymmetric(10, 0, 1); // cmat == 0
-        StructureOutputBlockMatrixTestSymmetric(10, 2, 1);
-
-        SerializationTest("binary");
-        //        int dim = 1e5;
-        //        StructureOutputBlockMatrixTestGeneral(2*dim, dim, 1000, 1000, 0.0001);
-        //        StructureOutputBlockMatrixTestSymmetric(2*dim, 1000, 0.0001);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        std::cout << "\n\n\n NuTo Mechanics errors occurred: \n\n\n";
-        std::cout << e.what();
-        return EXIT_FAILURE;
-    }
-    catch (NuTo::MathException& e)
-    {
-        std::cout << "\n\n\n NuTo Math errors occurred: \n\n\n";
-        std::cout << e.what();
-        return EXIT_FAILURE;
-    }
-    catch (NuTo::Exception& e)
-    {
-        std::cout << "\n\n\n NuTo errors occurred: \n\n\n";
-        std::cout << e.what();
-        return EXIT_FAILURE;
-    }
-    catch (...)
-    {
-        std::cout << "\n\n\n non-NuTo errors occurred \n\n\n";
-        return EXIT_FAILURE;
-    }
-
+    StructureOutputBlockMatrixTestSymmetric(10, 0, 1); // cmat == 0
+    StructureOutputBlockMatrixTestSymmetric(10, 2, 1);
 
     return EXIT_SUCCESS;
 }

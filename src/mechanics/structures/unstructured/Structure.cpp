@@ -74,7 +74,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
 
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-        throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
+        throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     for (auto iteratorOutput : rStructureOutput)
     {
@@ -150,7 +150,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                 }
                 default:
                 {
-                    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                    throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ +
                                                    std::string("] Output request not implemented."));
                 }
                 }
@@ -258,7 +258,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
 
                         default:
                         {
-                            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                                            StructureOutputToString(iteratorOutput.first) +
                                                                    " requested but not implemented.");
                         }
@@ -272,7 +272,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
     } // end loop over independent sets
 
     if (exceptionMessage != "")
-        throw MechanicsException(exceptionMessage);
+        throw Exception(exceptionMessage);
 #else
     } // end loop over elements
 #endif
@@ -329,7 +329,7 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     {
         ++iteration;
         if (iteration > maxIterations)
-            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence while solving for initial value rates!");
+            throw Exception(__PRETTY_FUNCTION__, "No convergence while solving for initial value rates!");
         trialResidual = intForce - extForce;
 
 
@@ -358,30 +358,18 @@ void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    try
-    {
-        std::map<NodeBase*, NodeBase*> old2NewNodePointer;
-        std::map<ElementBase*, ElementBase*> old2NewElementPointer;
-        CopyAndTranslate(rOffset, old2NewNodePointer, old2NewElementPointer);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error translating and copying structure.");
-        throw;
-    }
-    catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error translating and copying structure.");
-    }
+    std::map<NodeBase*, NodeBase*> old2NewNodePointer;
+    std::map<ElementBase*, ElementBase*> old2NewElementPointer;
+    CopyAndTranslate(rOffset, old2NewNodePointer, old2NewElementPointer);
 }
 
 void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer,
                                        std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
     if (rOffset.rows() != mDimension)
-        throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
+        throw Exception(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
     if (rOffset.cols() != 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have a single column.");
+        throw Exception(__PRETTY_FUNCTION__, "offset has to have a single column.");
 
     std::vector<NodeBase*> nodeVector;
     GetNodesTotal(nodeVector);

@@ -2,7 +2,7 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/elements/ElementOutputBase.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -59,7 +59,7 @@ public:
     //! @return cloned output object
     virtual ElementOutputBase* Clone() const override
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented");
     }
 
 
