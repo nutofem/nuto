@@ -31,9 +31,6 @@ public:
     //! @brief number of data points per time step, e.g. number of stress components for an integration point
     int GetNumData(const StructureBase& rStructure) const override;
 
-    //! @brief ... Info routine that prints general information about the object
-    void Info() const override;
-
     std::unique_ptr<ResultBase> Clone() const override
     {
         return std::make_unique<ResultElementIpData>(*this);

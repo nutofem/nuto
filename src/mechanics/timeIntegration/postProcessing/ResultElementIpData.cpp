@@ -7,7 +7,6 @@
 #include "mechanics/elements/ElementOutputIpData.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 using namespace NuTo;
 
@@ -82,12 +81,4 @@ int ResultElementIpData::GetNumData(const StructureBase& rStructure) const
 
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
     return element->GetNumIntegrationPoints() * numComponents;
-}
-
-
-void ResultElementIpData::Info() const
-{
-    std::cout << "ResultElementIpData Info:      " << std::endl;
-    std::cout << "Integration point data type:   " << IpData::IpStaticDataTypeToString(mIpDataType) << std::endl;
-    std::cout << "Element id:                    " << mElementId << std::endl;
 }

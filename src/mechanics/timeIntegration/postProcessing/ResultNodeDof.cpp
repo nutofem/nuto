@@ -11,11 +11,6 @@ ResultNodeDof::ResultNodeDof(const std::string& rIdent, int rNodeId)
 }
 
 
-void ResultNodeDof::Info() const
-{
-}
-
-
 void ResultNodeDof::CalculateAndAddValues(const StructureBase& structure, int timeStep, const StructureOutputBlockVector& residual,
                            double currentTime)
 {

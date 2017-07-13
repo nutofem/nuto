@@ -16,10 +16,6 @@ public:
     Eigen::VectorXd CalculateValues(const StructureBase& rStructure,
                                     const StructureOutputBlockVector& residual) const override;
 
-    void Info() const override
-    {
-    }
-
     std::unique_ptr<ResultBase> Clone() const override
     {
         return std::make_unique<ResultGroupNodeForce>(*this);

@@ -12,12 +12,9 @@ ResultGroupNodeDof::ResultGroupNodeDof(const std::string& rIdent, int rGroupNode
     mGroupNodeId = rGroupNodeId;
 }
 
-void ResultGroupNodeDof::Info() const
-{
-}
 
-void ResultGroupNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int timeStep, const StructureOutputBlockVector& residual,
-                           double currentTime)
+void ResultGroupNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
+                                               const StructureOutputBlockVector& residual, double currentTime)
 {
     assert(timeStep >= 0);
     if (timeStep >= mData.rows())

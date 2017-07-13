@@ -8,7 +8,6 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NystroemBase.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "base/Timer.h"
 

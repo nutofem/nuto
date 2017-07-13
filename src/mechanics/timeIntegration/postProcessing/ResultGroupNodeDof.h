@@ -22,8 +22,6 @@ public:
 
     const NuTo::Group<NodeBase>* GetGroupNodePtr(const StructureBase& rStructure) const;
 
-    void Info() const override;
-
 protected:
     int mGroupNodeId;
 };

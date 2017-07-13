@@ -18,8 +18,6 @@ public:
         return 1;
     }
 
-    void Info() const override;
-
     std::unique_ptr<ResultBase> Clone() const override
     {
         return std::make_unique<ResultTime>(*this);

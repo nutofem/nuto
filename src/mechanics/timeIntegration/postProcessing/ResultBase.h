@@ -8,7 +8,6 @@ namespace NuTo
 {
 class StructureBase;
 class StructureOutputBlockVector;
-enum class eTimeIntegrationResultType;
 
 //! @brief Abstract class for all results
 class ResultBase
@@ -22,10 +21,6 @@ public:
 
     virtual std::unique_ptr<ResultBase> Clone() const = 0;
 
-    void SetIdent(const std::string& rIdent);
-
-    std::string GetIdent() const;
-
     void Resize(const StructureBase& rStructure, int rNumResultSteps, bool rInitialize);
 
     virtual void CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
@@ -35,11 +30,6 @@ public:
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
     virtual int GetNumData(const StructureBase& rStructure) const = 0;
-
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    virtual void Info() const
-    {
-    }
 
 protected:
     std::string mIdent;

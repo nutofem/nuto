@@ -6,7 +6,6 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/RungeKutta2.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 
 //! @brief constructor

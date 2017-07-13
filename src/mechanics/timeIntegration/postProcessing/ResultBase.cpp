@@ -18,18 +18,6 @@ ResultBase::~ResultBase()
 }
 
 
-void ResultBase::SetIdent(const std::string& rIdent)
-{
-    mIdent = rIdent;
-}
-
-
-std::string ResultBase::GetIdent() const
-{
-    return mIdent;
-}
-
-
 void ResultBase::WriteToFile(const std::string& rResultDir, int rTimeStepPlot) const
 {
     boost::filesystem::path resultFileName(rResultDir);

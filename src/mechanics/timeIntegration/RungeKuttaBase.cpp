@@ -11,7 +11,6 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "base/Timer.h"
 

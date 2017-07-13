@@ -43,7 +43,8 @@ Eigen::VectorXd ResultGroupNodeForce::CalculateValues(const StructureBase& rStru
             }
             else
             {
-                result[iDim] -= residual.K[Node::eDof::DISPLACEMENTS](theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
+                result[iDim] -= residual.K[Node::eDof::DISPLACEMENTS](
+                        theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
             }
         }
     }

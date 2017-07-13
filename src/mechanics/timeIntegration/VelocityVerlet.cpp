@@ -6,7 +6,6 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "mechanics/structures/Assembler.h"
 
 #include "base/Timer.h"

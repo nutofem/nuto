@@ -11,6 +11,7 @@ namespace NuTo
 {
 class StructureOutputBlockVector;
 
+//! @brief Class collecting the postprocessing options and functionality
 class PostProcessor
 {
 public:
@@ -18,70 +19,72 @@ public:
         : mStructure(structure)
         , mTimeControl(timeControl){};
 
-    //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-    //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of
-    //! balance force)
-    //! @remark rOutOfBalance here means Residual = ExternalForces - InternalForces
-    void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
+    //! @brief Write out VTK file and result files
+    //! @param outOfBalance Out of balance values of the independent dofs
+    //! @remark `outOfBalance` here means Residual = ExternalForces - InternalForces
+    void PostProcess(const StructureOutputBlockVector& outOfBalance);
 
-    //! @brief sets the minimum time step for the time integration procedure
-    void SetMinTimeStepPlot(double rMinTimeStepPlot)
+    //! @brief Set the minimum time step between writing output files
+    //! @param minTimeStepPlot If less than `minTimeStepPlot` time has passed between "now" and the last time an output
+    //!                        file was written, postprocessing is skipped.
+    void SetMinTimeStepPlot(double minTimeStepPlot)
     {
-        mMinTimeStepPlot = rMinTimeStepPlot;
+        mMinTimeStepPlot = minTimeStepPlot;
     }
 
-    //! @brief sets the result directory
-    //! @param if delete is set, all the content of the directory will be removed
-    void SetResultDirectory(std::string rResultDir, bool rDelete = false);
+    //! @brief Set the result directory
+    //! @param resultDir Directory for writing results into
+    //! @param deleteExisting If `deleteExisting` is set, all the content of the directory will be removed.
+    void SetResultDirectory(std::string resultDir, bool deleteExisting = false);
 
-    //! @brief getter for the result directory
+    //! @brief Get the result directory
     std::string GetResultDirectory() const
     {
         return mResultDir;
     }
 
-    //! @brief returns the name of the restart file
+    //! @brief Get the name of the restart file
     std::string GetRestartFileName() const;
 
-    //! @brief monitor the accelerations of a node
-    //! @param rNodeId id of the node
-    //! @param rResultId string identifying the result, this is used for the output file
-    void AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId);
+    //! @brief Monitor the accelerations of a node
+    //! @param resultName Name used for the output file of the result
+    //! @param nodeId ID of the node
+    void AddResultNodeAccelerations(const std::string& resultName, int nodeId);
 
-    //! @brief monitor the displacements of a node
-    //! @param rNodeId id of the node
-    //! @param rResultId string identifying the result, this is used for the output file
-    void AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId);
+    //! @brief Monitor the displacements of a node
+    //! @param resultName Name used for the output file of the result
+    //! @param nodeId ID of the node
+    void AddResultNodeDisplacements(const std::string& resultName, int nodeId);
 
-    //! @brief monitor the time
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @param rGroupNodeId group id of the node group, for which the reaction forces (out of balance forces) should be
-    //! calculated
-    void AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId);
+    //! @brief Monitor the forces at a group of nodes
+    //! @param resultName Name used for the output file of the result
+    //! @param groupID ID of the group of nodes
+    void AddResultGroupNodeForce(const std::string& resultName, int groupID);
 
-    //! @brief monitor the time
-    //! @param rResultId string identifying the result, this is used for the output file
-    void AddResultTime(const std::string& rResultStr);
+    //! @brief Monitor the time
+    //! @param resultName Name used for the output file of the result
+    void AddResultTime(const std::string& resultName);
 
-    //! @brief monitor the integration point values in an element
-    //! @param rResultId string identifying the result, this is used for the output file
-    //! @param rElementId id of the element to be monitored
-    void AddResultElementIpData(const std::string& rResultStr, int rElementId,
-                               NuTo::IpData::eIpStaticDataType rIpDataType);
+    //! @brief Monitor the integration point values of an element
+    //! @param resultName Name used for the output file of the result
+    //! @param elementID ID of the element
+    //! @param ipDataType Select which IP data are to be written out
+    void AddResultElementIpData(const std::string& resultName, int elementID,
+                               NuTo::IpData::eIpStaticDataType ipDataType);
 
 private:
-    void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
+    void ExportVisualizationFiles(double time, int timeStep);
 
-    bool mExportDataFileNodes = true; //!< if set to true, exports a data file for the nodes
+    bool mExportDataFileNodes = true; //!< If set to true, exports a data file for the nodes
 
-    std::string mResultDir; //!< result directory
-    boost::ptr_vector<ResultBase> mResults; //!< specifies what to plot (displacements, reaction forces, etc.)
+    std::string mResultDir; //!< Result directory
+    boost::ptr_vector<ResultBase> mResults; //!< Specifies what to plot (displacements, reaction forces, etc.)
 
-    int mTimeStepResult = 0; //!< time step number is increased each time a value is added to the result matrices
-    int mTimeStepVTK = 0; //!< time step number is increased each time a vtk file is extracted
-    double mMinTimeStepPlot = 0; //!< if the time between the current time step and the previous plotted step is larger
-    //! than mMaxDeltaTimeStepPlot a vtk plot is performed
-    double mLastTimePlot = -1e99; //!< last time when a vtk file was plotted
+    int mTimeStepResult = 0; //!< Time step number is increased each time a value is added to the result matrices
+    int mTimeStepVTK = 0; //!< Time step number is increased each time a VTK file is written
+
+    double mMinTimeStepPlot = 0; //!< Minimum time between writing results
+    double mLastTimePlot = -1e99; //!< Last time when a VTK file was written
 
     StructureBase& mStructure;
 

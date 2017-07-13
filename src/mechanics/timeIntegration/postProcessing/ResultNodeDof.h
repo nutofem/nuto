@@ -19,8 +19,6 @@ public:
     //! @brief calculate the relevant nodal dofs
     virtual Eigen::VectorXd CalculateValues(const StructureBase& rStructure) const = 0;
 
-    void Info() const override;
-
 protected:
     int mNodeId;
 };

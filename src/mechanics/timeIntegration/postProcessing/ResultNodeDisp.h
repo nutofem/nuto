@@ -15,10 +15,6 @@ public:
     //! @brief number of data points per time step (e.g. number of displacement components of a node
     int GetNumData(const StructureBase& rStructure) const override;
 
-    void Info() const override
-    {
-    }
-
     std::unique_ptr<ResultBase> Clone() const override
     {
         return std::make_unique<ResultNodeDisp>(*this);

@@ -14,7 +14,6 @@
 #include "mechanics/timeIntegration/postProcessing/ResultTime.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
 #include "mechanics/structures/Assembler.h"
