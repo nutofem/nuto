@@ -112,7 +112,3 @@ protected:
     double mRho;
 };
 }
-
-//#ifdef ENABLE_SERIALIZATION
-// BOOST_CLASS_EXPORT_KEY(NuTo::LinearElasticAnisotropic)
-//#endif //ENABLE_SERIALIZATION
