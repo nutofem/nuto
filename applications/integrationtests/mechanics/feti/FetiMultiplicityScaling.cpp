@@ -45,6 +45,8 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
 
+    int numIterationsLumpedNoScaling = 0;
+    int numIterationsLumpedMultiScaling = 0;
     // Conjugate gradient, lumped preconditioner, no scaling
     {
         NuTo::StructureFeti structure(dim);
@@ -57,8 +59,8 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
-        assert(numIterations == 27 and "Number of iterations needed changed unexpectedly");
+        numIterationsLumpedNoScaling =
+                ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     // Conjugate gradient, lumped preconditioner, multiplicity scaling
@@ -73,10 +75,15 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
-        assert(numIterations == 15 and "Number of iterations needed changed unexpectedly");
+        numIterationsLumpedMultiScaling =
+                ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
+    assert(numIterationsLumpedMultiScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    int numIterationsDirichletNoScaling = 0;
+    int numIterationsDirichletMultiScaling = 0;
     // Conjugate gradient, dirichlet preconditioner, no scaling
     {
         NuTo::StructureFeti structure(dim);
@@ -89,8 +96,7 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
-        assert(numIterations == 24 and "Number of iterations needed changed unexpectedly");
+        numIterationsDirichletNoScaling = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
@@ -105,10 +111,10 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
-        assert(numIterations == 11 and "Number of iterations needed changed unexpectedly");
+        numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
+    assert(numIterationsDirichletMultiScaling < numIterationsDirichletNoScaling and "Scaling should improve convergence");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
