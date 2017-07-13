@@ -317,8 +317,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
 
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(
-        NuTo::EvaluateDataContinuumBoundary<TDim>& rData, const NuTo::ConstitutiveInputMap& rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
+        NuTo::EvaluateDataContinuumBoundary<TDim>& rData, const NuTo::ConstitutiveInputMap&,
+        const NuTo::ConstitutiveOutputMap&) const
 {
     if (this->mInterpolationType->GetActiveDofs().find(NuTo::Node::eDof::NONLOCALEQSTRAIN) !=
         this->mInterpolationType->GetActiveDofs().end())

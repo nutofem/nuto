@@ -369,7 +369,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 }
 
 
-void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
+void NuTo::Structure::NodeBuildGlobalDofs(std::string)
 {
     if (not GetAssembler().RenumberingRequired())
         return;
