@@ -297,7 +297,6 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
     return newNodeNumbers;
 }
 
-<<<<<<< HEAD
 
 std::map<int, int> GmshNodes(const std::vector<GmshNode>& rGmshNodes)
 {
@@ -311,10 +310,7 @@ std::map<int, int> GmshNodes(const std::vector<GmshNode>& rGmshNodes)
 }
 
 
-std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string &rFileName)
-=======
 std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string& rFileName)
->>>>>>> origin/master
 {
     return ImportFromGmsh(rS, rFileName, true);
 }

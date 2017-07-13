@@ -42,6 +42,8 @@
 #include "visualize/VisualizeEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/groups/Group.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 
 #include "ConversionTools.h"
@@ -263,7 +265,7 @@ void visualizeResults(NuTo::Structure* rS, const std::string& rResultDir, double
         //plot all elements
         resultFile = rResultDir;
         resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") + ssTimeStepVTK.str() + std::string(".vtu");
-        rS->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string(), true);
+        rS->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string());
 
         //write an additional pvd file
         resultFile = rResultDir;
@@ -279,7 +281,7 @@ void visualizeResults(NuTo::Structure* rS, const std::string& rResultDir, double
         }
         if (!file.is_open())
         {
-            throw NuTo::MechanicsException(std::string("[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ") + resultFile.string());
+            throw NuTo::Exception(std::string("[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ") + resultFile.string());
         }
         std::stringstream endOfXML;
         endOfXML << "</Collection>" << std::endl;
@@ -448,11 +450,15 @@ void run_Test_2D_GivenMesh()
 
 
     //FIX LEFT BOUNDARY
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionX, fixedDisplacement);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
+//    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionX, fixedDisplacement);
+//    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
+    auto leftBoundary = structure.GroupGetNodeCoordinateRange(NuTo::eDirection::X, -1e-6, 1e-6);
+    std::vector<NuTo::eDirection> directionsXY(2);
+    directionsXY[0] = NuTo::eDirection::X;
+    directionsXY[1] = NuTo::eDirection::Y;
+    structure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(leftBoundary, directionsXY, fixedDisplacement));
 
     //SET LOAD ON RIGHT BOUNDARY
-    structure.SetNumLoadCases(1);
     if (enableDisplacementControl)
     {
 //        structure.ConstraintLinearSetDisplacementNode(numElements, directionX, displacement);
@@ -460,7 +466,7 @@ void run_Test_2D_GivenMesh()
     else
     {
 //        structure.LoadCreateNodeForce(0, numElements, directionX, force);
-        structure.LoadCreateNodeGroupForce(0, nodesBCRight, directionX, force);
+        structure.LoadCreateNodeGroupForce(nodesBCRight, directionX, force);
     }
 
     //COMPUTE (LOCAL) HESSIAN AND RESIDUAL
@@ -469,7 +475,7 @@ void run_Test_2D_GivenMesh()
     dofs.J.SetZero();
     dofs.K.SetZero();
 
-    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector(0) + structure.BuildGlobalInternalGradient();
+    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector() + structure.BuildGlobalInternalGradient();
 
     Eigen::SparseMatrix<double> hessian0_eigen = hessian0.JJ.ExportToEigenSparseMatrix();
     Eigen::MatrixXd residual_eigen = residual.J.Export();
@@ -1061,7 +1067,6 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
 //    structure.ConstraintLinearSetDisplacementNodeGroup(nodesBCLeft, directionY, fixedDisplacement);
 
     //SET LOAD ON RIGHT BOUNDARY
-    structure.SetNumLoadCases(1);
     int loadID = -1;
     if (enableDisplacementControl)
     {
@@ -1069,7 +1074,7 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
     }
     else
     {
-        loadID = structure.LoadCreateNodeGroupForce(0, nodesBCRight, directionX, force);
+        loadID = structure.LoadCreateNodeGroupForce(nodesBCRight, directionX, force);
     }
 
     //COMPUTE (LOCAL) HESSIAN AND RESIDUAL
@@ -1078,7 +1083,7 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
     dofs.J.SetZero();
     dofs.K.SetZero();
 
-    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector(0) + structure.BuildGlobalInternalGradient();
+    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector() + structure.BuildGlobalInternalGradient();
 //    structure.Info();
 //    std::cout << "NuTo - Solve starts..." << std::endl;
 //    structure.SolveGlobalSystemStaticElastic();
@@ -1834,7 +1839,7 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
 //    Epetra_Vector lhs(owningMap);
 //    lhs.PutScalar(0.0);
     Epetra_Vector lhs(globalRhsVector);
-    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, true, true);
+    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, false, true);
     sol.Scale(-1);
     //save solution
     if (rSaveSolution)

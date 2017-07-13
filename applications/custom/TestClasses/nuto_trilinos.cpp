@@ -12,6 +12,8 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/sections/SectionPlane.h"
 //#include "mechanics/feti/StructureFeti.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/groups/Group.h"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
@@ -286,7 +288,7 @@ int main(int argc, char** argv)
         int groupLoad = s.GroupCreate(NuTo::eGroupId::Nodes);
 //        s.GroupAddNode(groupLoad, nodeID);
         s.GroupAddNode(groupLoad, localNodeID);
-        loadId = s.LoadCreateNodeGroupForce(0,groupLoad, directionX, load);
+        loadId = s.LoadCreateNodeGroupForce(groupLoad, directionX, load);
     }
 
 
@@ -331,8 +333,17 @@ int main(int argc, char** argv)
 
     double displacement = 0;
 //    int loadId = s.ConstraintLinearSetDisplacementNode(0,directionX, displacement);
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, directionX, displacement);
-    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, directionY, displacement);
+//    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, directionX, displacement);
+//    s.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, directionY, displacement);
+    auto leftBoundary = s.GroupGetNodeCoordinateRange(NuTo::eDirection::X, -1e-6, 1e-6);
+    std::vector<NuTo::eDirection> directionsXY(2);
+    directionsXY[0] = NuTo::eDirection::X;
+    directionsXY[1] = NuTo::eDirection::Y;
+    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(leftBoundary, directionsXY));
+//    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Value(leftBoundary));
+
+
+
 
     // solve system
 //    NuTo::NewmarkDirect newmark(&s);
@@ -358,7 +369,7 @@ int main(int argc, char** argv)
     dofs.J.SetZero();
     dofs.K.SetZero();
 
-    NuTo::StructureOutputBlockVector residual = hessian0 * dofs - s.BuildGlobalExternalLoadVector(0) + s.BuildGlobalInternalGradient();
+    NuTo::StructureOutputBlockVector residual = hessian0 * dofs - s.BuildGlobalExternalLoadVector() + s.BuildGlobalInternalGradient();
 
 
     s.Info();

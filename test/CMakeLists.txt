@@ -6,13 +6,11 @@ if(ENABLE_MECHANICS)
     add_subdirectory(mechanics)
 endif()
 
-<<<<<<< HEAD
 add_subdirectory(trilinos)
-=======
+
 if(ENABLE_VISUALIZE)
     add_subdirectory(visualize)
 endif()
->>>>>>> origin/master
 
 add_custom_target(unit
     COMMAND ctest -R unit

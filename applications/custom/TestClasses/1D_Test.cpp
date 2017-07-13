@@ -30,6 +30,8 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/groups/Group.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
 #include "ConversionTools.h"
 #include "PrintTools.h"
@@ -211,11 +213,11 @@ int main(int argc, char** argv)
                 elementNodes[0] = currElement;
                 elementNodes[1] = currElement + 1;
                 structure.ElementCreate(interpolationType, elementNodes);
-                structure.ElementSetSection(currElement, section);
             }
         }
     }
 
+    structure.ElementTotalSetSection(section);
     structure.ElementTotalSetConstitutiveLaw(material);
     structure.ElementTotalConvertToInterpolationType();
 
@@ -242,10 +244,14 @@ int main(int argc, char** argv)
 
 
     //FIX LEFT BOUNDARY
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodeBCLeft, directionX, fixedDisplacement);
+//    structure.ConstraintLinearSetDisplacementNodeGroup(nodeBCLeft, directionX, fixedDisplacement);
+    auto leftBoundary = structure.GroupGetNodeCoordinateRange(NuTo::eDirection::X, -1e-6, 1e-6);
+    std::vector<NuTo::eDirection> directionsXY(2);
+    directionsXY[0] = NuTo::eDirection::X;
+    directionsXY[1] = NuTo::eDirection::Y;
+    structure.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(leftBoundary, directionsXY, fixedDisplacement));
 
     //SET LOAD ON RIGHT BOUNDARY
-    structure.SetNumLoadCases(1);
     if (enableDisplacementControl)
     {
 //        structure.ConstraintLinearSetDisplacementNode(numElements, directionX, displacement);
@@ -253,7 +259,7 @@ int main(int argc, char** argv)
     else
     {
 //        structure.LoadCreateNodeForce(0, numElements, directionX, force);
-        structure.LoadCreateNodeGroupForce(0, nodeBCRight, directionX, force);
+        structure.LoadCreateNodeGroupForce(nodeBCRight, directionX, force);
     }
 
     //COMPUTE (LOCAL) HESSIAN AND RESIDUAL
@@ -262,7 +268,7 @@ int main(int argc, char** argv)
     dofs.J.SetZero();
     dofs.K.SetZero();
 
-    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector(0) + structure.BuildGlobalInternalGradient();
+    NuTo::StructureOutputBlockVector residual = hessian0*dofs - structure.BuildGlobalExternalLoadVector() + structure.BuildGlobalInternalGradient();
 
     Eigen::SparseMatrix<double> hessian0_eigen = hessian0.JJ.ExportToEigenSparseMatrix();
     Eigen::MatrixXd residual_eigen = residual.J.Export();
