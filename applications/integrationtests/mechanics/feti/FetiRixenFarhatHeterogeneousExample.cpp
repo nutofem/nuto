@@ -30,7 +30,6 @@ using Eigen::MatrixXd;
 using Eigen::Vector2d;
 using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner;
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 
@@ -182,7 +181,6 @@ int main(int argc, char* argv[])
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner::Lumped);
     newmarkFeti.SetMaxNumberOfFetiIterations(1000);
     newmarkFeti.SetToleranceIterativeSolver(1.e-6);
 

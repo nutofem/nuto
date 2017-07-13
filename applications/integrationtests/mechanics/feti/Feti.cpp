@@ -8,32 +8,19 @@
 
 #include "mechanics/feti/StructureFeti.h"
 #include "mechanics/feti/NewmarkFeti.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/DirectionEnum.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/groups/GroupEnum.h"
 #include "mechanics/groups/Group.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/sections/SectionPlane.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #include "visualize/VisualizeEnum.h"
 
-using std::cout;
-using std::endl;
-using namespace NuTo;
-using namespace Constitutive;
-using namespace Interpolation;
-using Node::eDof;
-using Constraint::Component;
-using Eigen::VectorXd;
-using Eigen::Vector2d;
-using Eigen::Matrix2d;
+#include "typedefs.h"
+
+using NuTo::Constraint::Component;
+using NuTo::Constraint::RhsRamp;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NewmarkFeti<EigenSolver>::eFetiPreconditioner;
-using FetiIterativeSolver = NewmarkFeti<EigenSolver>::eIterativeSolver;
-using FetiScaling = NewmarkFeti<EigenSolver>::eFetiScaling;
+using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
+using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 
 // geometry
 constexpr int dimension = 2;
@@ -87,7 +74,8 @@ int main(int argc, char* argv[])
     const auto& groupNodesAtBottomLeft = structure.GroupGetNodeRadiusRange(coordinateAtBottomLeft);
     const auto& groupNodeAtBottomRight = structure.GroupGetNodeRadiusRange(coordinateAtBottomRight);
 
-    const auto groupNodesAtBoundaries = Group<NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
+    const auto groupNodesAtBoundaries =
+            NuTo::Group<NuTo::NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
 
     const auto& groupNodesLoad = structure.GroupGetNodeRadiusRange(coordinateAtLoad, 0, 1.e-6);
 
@@ -249,7 +237,8 @@ std::map<int, VectorXd> ComputeReferenceSolution(int rank)
 
     const int interpolationTypeId = eleGroupAndInterpolationTypeList[0].second;
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
-    structure.InterpolationTypeSetIntegrationType(interpolationTypeId, eIntegrationType::IntegrationType2D4NGauss4Ip);
+    structure.InterpolationTypeSetIntegrationType(interpolationTypeId,
+                                                  NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 
     structure.ElementTotalConvertToInterpolationType();
 
@@ -261,6 +250,7 @@ std::map<int, VectorXd> ComputeReferenceSolution(int rank)
     structure.GetLogger() << "*********************************** \n"
                           << "**      real constraints         ** \n"
                           << "*********************************** \n\n";
+
 
     auto& groupNodesLeftBoundary = structure.GroupGetNodeRadiusRange(coordinateAtBottomLeft);
     structure.Constraints().Add(eDof::DISPLACEMENTS, Component(groupNodesLeftBoundary, {eDirection::X, eDirection::Y}));
@@ -274,8 +264,8 @@ std::map<int, VectorXd> ComputeReferenceSolution(int rank)
                           << "*********************************** \n\n";
 
     auto& loadNodeGroup = structure.GroupGetNodeRadiusRange(coordinateAtLoad, 0, 1.e-6);
-    structure.Constraints().Add(eDof::DISPLACEMENTS, Component(loadNodeGroup, {eDirection::Y},
-                                                               Constraint::RhsRamp(simulationTime, loadFactor)));
+    structure.Constraints().Add(eDof::DISPLACEMENTS,
+                                Component(loadNodeGroup, {eDirection::Y}, RhsRamp(simulationTime, loadFactor)));
 
     structure.GetLogger() << "*********************************** \n"
                           << "**      intergration scheme      ** \n"

@@ -28,6 +28,8 @@
 #include <eigen3/Eigen/Dense>
 
 #include <eigen3/Eigen/Sparse>
+
+#include "mechanics/feti/FetiLumpedPreconditioner.h"
 #include <cmath>
 
 namespace NuTo
@@ -44,13 +46,6 @@ public:
         Direct
     };
 
-    enum class eFetiPreconditioner
-    {
-        None,
-        Lumped,
-        Dirichlet
-    };
-
     enum class eFetiScaling
     {
         None,
@@ -62,15 +57,15 @@ public:
     using VectorXd = Eigen::VectorXd;
     using MatrixXd = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
-    ///
-    /// \brief NewmarkFeti
-    /// \param rStructure
-    ///
+    using PreconditionerType = std::unique_ptr<FetiPreconditioner>;
+
+
     NewmarkFeti(StructureFeti* rStructure)
         : NewmarkDirect(rStructure)
         , mStructureFeti(rStructure)
         , mNumTotalActiveDofs(rStructure->GetNumTotalActiveDofs())
         , mNumTotalDofs(rStructure->GetNumTotalDofs())
+        , mPreconditioner(std::make_unique<FetiLumpedPreconditioner>())
     {
     }
 
@@ -204,7 +199,7 @@ public:
             p = rProj + beta * (p - w * v);
 
             // precondition
-            y = ApplyPreconditionerOnTheLeft(p);
+            y = mPreconditioner->ApplyOnTheLeft(p);
 
             // reprojection
             y = projection * y;
@@ -218,7 +213,7 @@ public:
             s = rProj - alpha * v;
 
             // precondition
-            z = ApplyPreconditionerOnTheLeft(s);
+            z = mPreconditioner->ApplyOnTheLeft(s);
 
             // reprojection
             z = projection * z;
@@ -262,14 +257,6 @@ public:
         return Ax;
     }
 
-    //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
-    VectorXd ApplyPreconditionerOnTheLeft(const VectorXd& x)
-    {
-        VectorXd vec = mLocalPreconditioner * x;
-        MPI_Allreduce(MPI_IN_PLACE, vec.data(), vec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        return vec;
-    }
 
     //! @brief Conjugate projected gradient method (CG)
     //!
@@ -285,7 +272,7 @@ public:
         VectorXd projResidual = projection * (rhs - tmp);
 
         // apply precondtioner and reproject
-        VectorXd precondProjResidual = projection * ApplyPreconditionerOnTheLeft(projResidual);
+        VectorXd precondProjResidual = projection * mPreconditioner->ApplyOnTheLeft(projResidual);
 
         VectorXd z;
 
@@ -312,7 +299,7 @@ public:
                 break;
 
             // precondition and reproject
-            z = projection * ApplyPreconditionerOnTheLeft(projResidual);
+            z = projection * mPreconditioner->ApplyOnTheLeft(projResidual);
 
             const double absOld = absNew;
             absNew = projResidual.dot(z);
@@ -347,7 +334,7 @@ public:
         VectorType projResidual = projection * r;
 
         // precondition
-        VectorType precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+        VectorType precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
         // reproject
         precondProjResidual = projection * precondProjResidual;
@@ -397,7 +384,7 @@ public:
                 w = projection * w;
 
                 // precondition
-                w = ApplyPreconditionerOnTheLeft(w);
+                w = mPreconditioner->ApplyOnTheLeft(w);
 
                 // reproject
                 w = projection * w;
@@ -450,7 +437,7 @@ public:
                     mStructure->GetLogger() << "Projected residual norm: \t" << projResidual.norm() << "\n";
 
                     // precondition
-                    precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+                    precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
                     // reproject
                     precondProjResidual = projection * precondProjResidual;
@@ -475,7 +462,7 @@ public:
             projResidual = projection * r;
 
             // precondition
-            precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+            precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
             // reproject
             precondProjResidual = projection * precondProjResidual;
@@ -596,6 +583,17 @@ public:
         return displacementGap;
     }
 
+    void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
+    {
+        std::ofstream filestream(mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
+        filestream << "iterations"
+                   << "\t"
+                   << "time step"
+                   << "\n";
+        filestream << numIterations << "\t" << timeStep << "\n";
+        filestream.close();
+    }
+
     //! @brief Solves the global and local problem
     //!
     //! Calculates the rigid body modes of the structure.
@@ -678,11 +676,12 @@ public:
 
         if (iterations >= mMaxNumFetiIterations - 1)
         {
-            //            converged = false;
-            //            return StructureOutputBlockVector(structure->GetDofStatus());
-            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
+            converged = false;
+            return StructureOutputBlockVector(mStructure->GetDofStatus());
+            //            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
         }
 
+        WriteFetiSolverInfoToFile(iterations, timeStep);
 
         if (mStructureFeti->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
@@ -769,125 +768,6 @@ public:
         //                                    numLagrangeMultipliersCrack)
         //                                            .norm()));
         //        }
-    }
-
-
-    //! \brief Calculates the local preconditioner (lumped, Dirichlet)
-    //! \param hessian
-    void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
-    {
-        mStructure->GetLogger() << "******************************************** \n"
-                                << "**        calculate local preconditioner  ** \n"
-                                << "******************************************** \n\n";
-
-        Timer timer("Time to calculate the local preconditioner", mStructure->GetShowTime(), mStructure->GetLogger());
-
-        const int numTotalDofs = mStructure->GetNumTotalDofs();
-
-        mLocalPreconditioner.resize(mB.rows(), mB.rows());
-
-        switch (mFetiPreconditioner)
-        {
-        case eFetiPreconditioner::None:
-        {
-            mLocalPreconditioner.setIdentity();
-            break;
-        }
-        case eFetiPreconditioner::Lumped:
-        {
-            auto K = hessian.JJ.ExportToEigenSparseMatrix();
-            K.conservativeResize(numTotalDofs, numTotalDofs);
-
-            mLocalPreconditioner = mScalingMatrix * mB * K * mB.transpose() * mScalingMatrix;
-
-            break;
-        }
-        case eFetiPreconditioner::Dirichlet:
-        {
-
-
-            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-
-
-            std::set<int> internalDofIds;
-            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-            {
-                internalDofIds.insert(j);
-            }
-
-            std::vector<int> lagrangeMultiplierDofIds = mStructureFeti->CalculateLagrangeMultiplierIds();
-
-            for (const auto& id : lagrangeMultiplierDofIds)
-            {
-                internalDofIds.erase(id);
-            }
-
-            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
-
-            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
-            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
-            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
-
-
-            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii;
-            luKii.compute(Kii);
-
-            SparseMatrix KiiInvTimesKib = luKii.solve(Kib);
-            SparseMatrix KbiTimesKiiInvTimesKib = Kbi * KiiInvTimesKib;
-            SparseMatrix Sbb = Kbb - KbiTimesKiiInvTimesKib;
-
-            //
-            //     | 0  0   |
-            // S = | 0  Sbb |
-            //
-            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-
-            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
-                            Sbb.coeff(rowId, colId);
-
-            mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
-
-            break;
-        }
-        default:
-            throw Exception(__PRETTY_FUNCTION__, "Preconditioner is not implemented yet.");
-        }
-    }
-
-    /// \todo this function should not be a member of NewmarkFeti. Move it somewhere appropriate.
-    template <class A, class B>
-    Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
-                                                 const B& colIds)
-    {
-        Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
-
-
-        for (int k = 0; k < mat.outerSize(); ++k)
-        {
-            auto colIt = std::find(colIds.begin(), colIds.end(), k);
-            if (colIt != colIds.end())
-            {
-                for (typename Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it)
-                {
-                    auto rowIt = std::find(rowIds.begin(), rowIds.end(), it.row());
-                    if (rowIt != rowIds.end())
-                    {
-                        int rowId = std::distance(rowIds.begin(), rowIt);
-                        int colId = std::distance(colIds.begin(), colIt);
-                        subMatrix.insert(rowId, colId) = it.value();
-
-                        ++rowId;
-                    }
-                }
-            }
-        }
-
-        subMatrix.makeCompressed();
-
-        return subMatrix;
     }
 
     //! \brief Check the rank of a BlockSparseMatrix using a QR factorization
@@ -1163,13 +1043,15 @@ public:
 
                 VectorXd residual = CalculateResidual(extForce, intForce);
 
-                CalculateLocalPreconditioner(hessian0);
+                mPreconditioner->Compute(hessian0, mB, mStructureFeti->GetLagrangeMultipliersGlobalIdToLocalId());
+                mPreconditioner->AddScaling(mScalingMatrix);
 
                 bool fetiSolverConverged = true;
                 delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
-                int iteration = 0;
+                int numNewtonIterations = 0;
                 if (fetiSolverConverged)
                 {
+
 
                     // calculate trial state
                     dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
@@ -1194,7 +1076,7 @@ public:
 
                     mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
-                    while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
+                    while (not(normResidual < mToleranceResidual) and numNewtonIterations < mMaxNumIterations)
                     {
 
 
@@ -1224,11 +1106,10 @@ public:
 
                         normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
-                        PrintInfoIteration(normResidual, iteration);
+                        PrintInfoIteration(normResidual, numNewtonIterations);
 
-                        iteration++;
-
-                    } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+                        numNewtonIterations++;
+                    }
                 }
 
 
@@ -1248,15 +1129,16 @@ public:
                     mTime += mTimeStep;
 
 
-                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime
-                                            << " (time step " << mTimeStep << ").\n";
+                    mStructure->GetLogger() << "Convergence after " << numNewtonIterations
+                                            << " newton iterations at time " << mTime << " (time step " << mTimeStep
+                                            << ").\n";
 
-                    mTimeStep = KeepOrIncreaseTimeStep(iteration);
+                    mTimeStep = KeepOrIncreaseTimeStep(numNewtonIterations);
 
 
                     // perform Postprocessing
                     std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
-                    file << mTime << "\t" << iteration << "\n";
+                    file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                     file.close();
 
 
@@ -1343,9 +1225,9 @@ public:
         mFetiTolerance = tolerance;
     }
 
-    void SetFetiPreconditioner(eFetiPreconditioner fetiPreconditioner)
+    void SetFetiPreconditioner(PreconditionerType fetiPreconditioner)
     {
-        mFetiPreconditioner = fetiPreconditioner;
+        mPreconditioner = std::move(fetiPreconditioner);
     }
 
     void SetFetiScaling(eFetiScaling fetiScaling)
@@ -1378,7 +1260,6 @@ private:
     double mFetiTolerance = 1.0e-12;
     int mMaxNumFetiIterations = 100;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
-    eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
     eFetiScaling mFetiScaling = eFetiScaling::None;
 
     // Lagrange multiplier
@@ -1388,5 +1269,7 @@ private:
 
     int mNumRigidBodyModesTotal = -1337;
     int mNumLagrangeMultipliers = 0;
+
+    PreconditionerType mPreconditioner;
 };
 } // namespace NuTo

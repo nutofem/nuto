@@ -86,18 +86,21 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
                 for (unsigned i = 0; i < dofVector.size(); ++i)
                 {
-                    // remove the mNumRigidBodyModes because it is only associated with displacements
                     if (dofVector[i] < GetNumActiveDofs(dofType))
-                        mConnectivityMatrix.insert(globalIndex + i + offsetRows, dofVector[i] + offsetCols) =
-                                interface.mValue;
+                    {
+                        const int lagrangeMultiplierId = globalIndex + i + offsetRows;
+                        const int localDofId = dofVector[i] + offsetCols;
+
+                        mConnectivityMatrix.insert(lagrangeMultiplierId, localDofId) = interface.mValue;
+
+                        mLagrangeMultipliersGlobalIdToLocalId.emplace(lagrangeMultiplierId, localDofId);
+                    }
                     else
-                        throw Exception(__PRETTY_FUNCTION__,
-                                                 "All DOFs in the connectivity matrix should be active.");
+                        throw Exception(__PRETTY_FUNCTION__, "All DOFs in the connectivity matrix should be active.");
                 }
             }
 
         offsetRows += NuTo::Node::GetNumComponents(dofType, mDimension) * mNumInterfaceNodesTotal;
-        // remove the mNumRigidBodyModes because it is only associated with displacements
         offsetCols += GetNumActiveDofs(dofType);
     }
 
@@ -106,6 +109,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     for (const int& id : mBoundaryDofIds)
     {
         mConnectivityMatrix.insert(globalIndex, id) = 1;
+        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, id);
         ++globalIndex;
     }
 
@@ -115,7 +119,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     for (const int& id : mPrescribedDisplacementDofIds)
     {
         mConnectivityMatrix.insert(globalIndex, id) = 1;
-
+        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, id);
         mPrescribedDofVector[globalIndex] = 1;
 
         ++globalIndex;
@@ -132,8 +136,6 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     GetLogger() << "Total number of dofs:                        \t" << GetNumTotalDofs() << "\n\n";
     GetLogger() << "Total number of active dofs:                 \t" << GetNumTotalActiveDofs() << "\n\n";
     GetLogger() << "Total number of dependent dofs:              \t" << GetNumTotalDependentDofs() << "\n\n";
-
-    //    GetLogger() << "Connectivity matrix:  \n"        << mConnectivityMatrix  << "\n\n";
 }
 
 
@@ -205,8 +207,7 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
         break;
     }
     default:
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "Not implemented for dimension: " + std::to_string(GetDimension()));
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for dimension: " + std::to_string(GetDimension()));
     }
 }
 
@@ -280,9 +281,8 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
             }
             else
             {
-                throw Exception(__PRETTY_FUNCTION__,
-                                         "Import of element type not implemented. Element type id = " +
-                                                 std::to_string(elementType));
+                throw Exception(__PRETTY_FUNCTION__, "Import of element type not implemented. Element type id = " +
+                                                             std::to_string(elementType));
             }
         }
     }

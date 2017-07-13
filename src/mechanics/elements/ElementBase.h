@@ -114,7 +114,7 @@ public:
         return GetNode(rLocalNodeNumber);
     }
 
-    //! @brief returns the number of nodes in this element of a specific dof
+    //! @brief returns the number of nodes intimei this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
     virtual int GetNumNodes(Node::eDof rDofType) const;
