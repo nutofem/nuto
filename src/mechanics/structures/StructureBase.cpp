@@ -265,10 +265,15 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
+
+std::vector<int> StructureBase::GetVisualizationGroups()
 {
-    return mGroupVisualizeComponentsMap;
+    std::vector<int> vec;
+    for(const auto& entry : mGroupVisualizeComponentsMap)
+        vec.push_back(entry.first);
+    return vec;
 }
+
 
 void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme)
 {

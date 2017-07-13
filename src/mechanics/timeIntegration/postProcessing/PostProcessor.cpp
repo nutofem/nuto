@@ -93,17 +93,17 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
     timeFormatted << time;
 
     // plot all groups separately
-    for (auto const& iVisualizePair : mStructure.GetGroupVisualizeComponentsMap())
+    for (const int& visualizeGroup : mStructure.GetVisualizationGroups())
     {
         // plot all elements
         resultFile = mResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") +
+        resultFile /= std::string("Group") + std::to_string(visualizeGroup) + std::string("_Elements") +
                       std::to_string(timeStep) + std::string(".vtu");
-        mStructure.ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string());
+        mStructure.ElementGroupExportVtkDataFile(visualizeGroup, resultFile.string());
 
         // write an additional pvd file
         resultFile = mResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_ElementsAll") +
+        resultFile /= std::string("Group") + std::to_string(visualizeGroup) + std::string("_ElementsAll") +
                       std::string(".pvd");
 
         std::fstream file;
@@ -130,7 +130,7 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
             // delete the last part of the xml file
             file.seekp(-endOfXML.str().length(), std::ios_base::end);
         }
-        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << iVisualizePair.first
+        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << visualizeGroup
              << "_Elements" << timeStep << ".vtu\"/>" << std::endl;
         file << endOfXML.str();
         file.close();
