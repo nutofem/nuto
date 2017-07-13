@@ -26,6 +26,7 @@ NewmarkDirect::NewmarkDirect(StructureBase* rStructure)
 
 void NewmarkDirect::Solve(double rTimeDelta)
 {
+    mTimeControl.SetTimeFinal(rTimeDelta);
     Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
@@ -38,8 +39,11 @@ void NewmarkDirect::Solve(double rTimeDelta)
 //        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
 
-    while (mTimeControl.GetCurrentTime() < rTimeDelta)
+    mTimeControl.Proceed();
+
+    while (!mTimeControl.Finished())
     {
+
         // LEAVE IT OR FIX IT IF YOU CAN:
         // If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop
         // everything seems to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed
@@ -50,10 +54,9 @@ void NewmarkDirect::Solve(double rTimeDelta)
             mStructure->DofTypeSetIsActive(dof, true);
         }
 
-        const auto bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeControl.GetCurrentTime(), dofValues[0]);
-        const auto prevExtForce = CalculateCurrentExternalLoad(mTimeControl.GetCurrentTime());
+        const auto bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeControl.GetPreviousTime(), dofValues[0]);
+        const auto prevExtForce = CalculateCurrentExternalLoad(mTimeControl.GetPreviousTime());
 
-        mTimeControl.Proceed();
 
         const auto deltaBRHS = UpdateAndGetConstraintRHS(mTimeControl.GetCurrentTime()) - bRHS;
 
@@ -425,6 +428,11 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
                                                         StructureOutputBlockVector(dofStatus, true)};
     StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
     const auto& constraintMatrix = mStructure->GetAssembler().GetConstraintMatrix();
+
+    // Needed for mTimeControl.Proceed() function
+    int timeStepMaxIterations = 0;
+    bool convergence = true;
+
     for (const auto& activeDofs : mStepActiveDofs)
     {
         ++staggeredStepNumber;
@@ -464,7 +472,11 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         const auto iterations = result.first;
         const auto residualNorm = result.second;
 
-        if (residualNorm < mToleranceResidual)
+        if(iterations>timeStepMaxIterations)
+            timeStepMaxIterations = iterations;
+
+        convergence = residualNorm < mToleranceResidual;
+        if (convergence)
         {
             mStructure->ElementTotalUpdateStaticData();
 
@@ -491,12 +503,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
                 mPostProcessor->PostProcess(prevResidual);
             }
 
-            // eventually increase next time step
-            if (mAutomaticTimeStepping && iterations < 0.25 * mMaxNumIterations)
-            {
 
-                mTimeControl.ScaleTimeStep(1.5);
-            }
 
             if (mCallback && mCallback->Exit(*mStructure))
                 return;
@@ -505,21 +512,12 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         {
             mStructure->GetLogger() << "No convergence with timestep " << mTimeControl.GetTimeStep() << " at time "
                                     << mTimeControl.GetCurrentTime() << "\n";
-            if (mAutomaticTimeStepping)
-            {
-                // no convergence, reduce the time step and start from scratch
-                mTimeControl.RestorePreviosTime();
-                mTimeControl.ScaleTimeStep(0.5);
-            }
-            else
-            {
-                throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
-                                                              "iterations, either use automatic time stepping, "
-                                                              "reduce the time step or the minimal line search cut "
-                                                              "back factor.");
-            }
+            break;
         } // if tolerance
     } // active dof loop
+
+    // Continue with next timestep or reduce timestep and restart iteration
+    mTimeControl.Proceed(timeStepMaxIterations,mMaxNumIterations,convergence);
 }
 
 

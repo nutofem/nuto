@@ -122,6 +122,14 @@ public:
     void SetAutomaticTimeStepping(bool rAutomaticTimeStepping)
     {
         mAutomaticTimeStepping = rAutomaticTimeStepping;
+        if(mAutomaticTimeStepping)
+        {
+            mTimeControl.UseDefaultAutomaticTimestepping();
+        }
+        else
+        {
+
+        }
     }
 
 
