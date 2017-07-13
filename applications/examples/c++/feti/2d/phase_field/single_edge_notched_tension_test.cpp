@@ -55,7 +55,7 @@ constexpr double minTimeStep = 1.e-8;
 constexpr double maxTimeStep = 1.e-2;
 constexpr double timeStepPostProcessing = 1.e-5;
 
-constexpr double simulationTime = 10.0e-3;
+constexpr double simulationTime = 10.0e-3 * 0.2;
 constexpr double loadFactor = simulationTime;
 
 void AssignMaterial(NuTo::StructureFeti& structure);
@@ -75,8 +75,7 @@ int main(int argc, char* argv[])
     structure.GetLogger().SetQuiet(true);
 
 
-    std::string meshFile = argv[1] + std::to_string(rank);
-    structure.GetLogger() << meshFile << "\n";
+    std::string meshFile = "single_edge_notched_tension_test_2_subdomains_quad.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);

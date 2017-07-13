@@ -2,8 +2,6 @@
 
 using std::cout;
 using std::endl;
-using NuTo::Constraint::Component;
-using NuTo::Constraint::RhsRamp;
 using NuTo::Group;
 using NuTo::eIntegrationType;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;

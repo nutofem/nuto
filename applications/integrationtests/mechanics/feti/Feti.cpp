@@ -16,6 +16,8 @@
 
 #include "typedefs.h"
 
+using NuTo::Constraint::Component;
+using NuTo::Constraint::RhsRamp;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;

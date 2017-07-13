@@ -163,8 +163,8 @@ int main(int argc, char* argv[])
 
     NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
 
-    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/FetiGradientDamageResultDir_" +
-                                       std::to_string(structure.mRank));
+    boostFs::path resultPath(boostFs::initial_path().string() + "/FetiGradientDamageResultDir_" +
+                             std::to_string(structure.mRank));
 
     newmarkFeti.SetTimeStep(timeStep);
     newmarkFeti.SetMaxNumIterations(maxIterations);

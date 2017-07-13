@@ -16,10 +16,12 @@ foreach(file
         single_edge_notched_tension_test
         )
     add_executable(${file} ${file}.cpp)
-    target_link_libraries(${file} ${MPI_LIBRARIES})
-    target_link_libraries(${file} NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-    target_link_libraries(${file} NuToVisualize)
-    target_link_libraries(${file} NuToFeti)
-    target_link_libraries(${file} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(${file} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(${file} NuToVisualize)
+    endif()
+    set(MPIEXEC_NUMPROC_FLAG -np 2)
+    set(MPIEXEC mpirun)
+    add_test(NAME examples::cpp::feti::${file} COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${file})
 endforeach()
 
