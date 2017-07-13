@@ -489,42 +489,6 @@ void NuTo::StructureFeti::CheckRigidBodyModes(const StructureOutputBlockMatrix& 
            "Calculated rigid body modes are not in the null space of K");
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void NuTo::StructureFeti::CheckStiffnessPartitioning(const StructureOutputBlockMatrix hessian0,
-                                                     const double tolerance) const
-{
-
-    //    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-    //    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
-    //
-    //    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-    //
-    //    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
-    //    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
-    //
-    //
-    //    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
-    //    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
-    //    SparseMatrix asdfaf = hessian0_KK  - tmp;
-    //
-    //    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
-    //
-    //
-    //    MPI_Barrier(MPI_COMM_WORLD);
-    //
-    //    GetLogger() << "Subdomain: \t"          << mRank
-    //                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
-    //                << "\t tolerance: \t"       << tolerance                << "\n\n";
-    //
-    //    MPI_Barrier(MPI_COMM_WORLD);
-    //
-    //    assert(     (norm < tolerance)
-    //            and "Stiffness matrix is not partitioned correctly. Check constraints.");
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

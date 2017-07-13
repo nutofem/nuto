@@ -305,37 +305,37 @@ public:
         return ScalingMatrix;
     }
     ///
-    const Eigen::VectorXd& GetPrescribedDofVector() const
+    Eigen::VectorXd& GetPrescribedDofVector()
     {
         return mPrescribedDofVector;
     }
     ///
-    const Matrix& GetRigidBodyModes() const
+    Matrix& GetRigidBodyModes()
     {
         return mRigidBodyModes;
     }
     ///
-    const int GetNumRigidBodyModes() const
+    int GetNumRigidBodyModes()
     {
         return mNumRigidBodyModes;
     }
     ///
-    const int GetNumRigidBodyModesTotal() const
+    int GetNumRigidBodyModesTotal()
     {
         return mNumRigidBodyModesTotal;
     }
     ///
-    const Matrix& GetG() const
+    Matrix& GetG()
     {
         return mG;
     }
     ///
-    const SparseMatrix& GetConnectivityMatrix() const
+    SparseMatrix& GetConnectivityMatrix()
     {
         return mConnectivityMatrix;
     }
     ///
-    const Matrix& GetProjectionMatrix() const
+    Matrix& GetProjectionMatrix()
     {
         return mProjectionMatrix;
     }
