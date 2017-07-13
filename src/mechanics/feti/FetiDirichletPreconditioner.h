@@ -5,7 +5,8 @@
 #pragma once
 
 #include "mechanics/feti/FetiPreconditioner.h"
-
+#include "mechanics/feti/ReverseMap.h"
+#include <boost/range/adaptor/map.hpp>
 template <class A, class B>
 Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds, const B& colIds);
 
@@ -15,10 +16,9 @@ class FetiDirichletPreconditioner : public FetiPreconditioner
 {
 public:
     virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B,
-                         const std::vector<int> lagrangeMultiplierDofIds) override
+                         const std::map<int,int>& lagrangeMultipliersGlobalIdToLocalId) override
     {
         const int numTotalDofs = B.cols();
-        SparseMatrixType H = hessian.ExportToEigenSparseMatrix();
 
         std::set<int> internalDofIds;
         for (int j = 0; j < numTotalDofs; ++j)
@@ -26,13 +26,17 @@ public:
             internalDofIds.insert(j);
         }
 
-        for (const auto& id : lagrangeMultiplierDofIds)
+        ReverseMap<int> reverseMap(lagrangeMultipliersGlobalIdToLocalId);
+        std::vector<int> lagrangeMultiplierDofIds;
+        for (auto& pair : reverseMap)
         {
-            internalDofIds.erase(id);
+            internalDofIds.erase(pair.first);
+            lagrangeMultiplierDofIds.push_back(pair.first);
         }
 
         std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
 
+        SparseMatrixType H = hessian.ExportToEigenSparseMatrix();
         SparseMatrixType Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
         SparseMatrixType Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
         SparseMatrixType Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
@@ -51,6 +55,7 @@ public:
         // S = | 0  Sbb |
         //
         SparseMatrixType S(numTotalDofs, numTotalDofs);
+
 
         for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
             for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
@@ -73,7 +78,6 @@ public:
 } // namespace NuTo
 
 
-/// \todo this function should not be a member of NewmarkFeti. Move it somewhere appropriate.
 template <class A, class B>
 Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds, const B& colIds)
 {

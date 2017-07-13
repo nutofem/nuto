@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 
     NuTo::FetiIdentityPreconditioner identityPreconditioner;
 
-    std::vector<int> lagrangeMultiplierDofIds;
+    std::map<int,int> lagrangeMultiplierDofIds;
     identityPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
 
     if (not vec.isApprox(identityPreconditioner.ApplyOnTheLeft(vec)))

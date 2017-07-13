@@ -15,10 +15,11 @@ namespace NuTo
 class FetiPreconditioner
 {
 public:
-using SparseMatrixType = Eigen::SparseMatrix<double>;
-using VectorType = Eigen::VectorXd;
+    using SparseMatrixType = Eigen::SparseMatrix<double>;
+    using VectorType = Eigen::VectorXd;
 
-    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) = 0;
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B,
+                         const std::map<int, int>& lagrangeMultipliersGlobalIdToLocalId) = 0;
 
     virtual void AddScaling(const SparseMatrixType& scalingMatrix)
     {
@@ -37,6 +38,4 @@ using VectorType = Eigen::VectorXd;
 protected:
     SparseMatrixType mLocalPreconditioner;
 };
-}// namespace NuTo
-
-
+} // namespace NuTo

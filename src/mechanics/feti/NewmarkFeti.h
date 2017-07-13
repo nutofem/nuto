@@ -586,12 +586,15 @@ public:
     void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
     {
         std::ofstream filestream(mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
-        filestream << "iterations" << "\t" << "time step" << "\n";
+        filestream << "iterations"
+                   << "\t"
+                   << "time step"
+                   << "\n";
         filestream << numIterations << "\t" << timeStep << "\n";
         filestream.close();
     }
 
-//! @brief Solves the global and local problem
+    //! @brief Solves the global and local problem
     //!
     //! Calculates the rigid body modes of the structure.
     //! Calculates the initial guess for the projected CG/BiCGStab method
@@ -675,8 +678,7 @@ public:
         {
             converged = false;
             return StructureOutputBlockVector(mStructure->GetDofStatus());
-//            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
-
+            //            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
         }
 
         WriteFetiSolverInfoToFile(iterations, timeStep);
@@ -1041,14 +1043,14 @@ public:
 
                 VectorXd residual = CalculateResidual(extForce, intForce);
 
-                    mPreconditioner->Compute(hessian0, mB, mStructureFeti->CalculateLagrangeMultiplierIds());
-                    mPreconditioner->AddScaling(mScalingMatrix);
+                mPreconditioner->Compute(hessian0, mB, mStructureFeti->GetLagrangeMultipliersGlobalIdToLocalId());
+                mPreconditioner->AddScaling(mScalingMatrix);
 
-                    bool fetiSolverConverged = true;
-                    delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
-                    int numNewtonIterations = 0;
-                    if (fetiSolverConverged)
-                    {
+                bool fetiSolverConverged = true;
+                delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
+                int numNewtonIterations = 0;
+                if (fetiSolverConverged)
+                {
 
 
                     // calculate trial state
@@ -1074,9 +1076,8 @@ public:
 
                     mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
-                        while (not(normResidual < mToleranceResidual) and numNewtonIterations < mMaxNumIterations)
-                        {
-
+                    while (not(normResidual < mToleranceResidual) and numNewtonIterations < mMaxNumIterations)
+                    {
 
 
                         // ******************************************************
@@ -1105,13 +1106,11 @@ public:
 
                         normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
-                            PrintInfoIteration(normResidual, numNewtonIterations);
+                        PrintInfoIteration(normResidual, numNewtonIterations);
 
-                            numNewtonIterations++;
-
-                        }
+                        numNewtonIterations++;
                     }
-
+                }
 
 
                 if (normResidual < mToleranceResidual and fetiSolverConverged)
@@ -1130,18 +1129,17 @@ public:
                     mTime += mTimeStep;
 
 
-                        mStructure->GetLogger() << "Convergence after "
-                                                << numNewtonIterations << " newton iterations at time " << mTime
-                                                << " (time step " << mTimeStep << ").\n";
+                    mStructure->GetLogger() << "Convergence after " << numNewtonIterations
+                                            << " newton iterations at time " << mTime << " (time step " << mTimeStep
+                                            << ").\n";
 
-                        mTimeStep = KeepOrIncreaseTimeStep(numNewtonIterations);
+                    mTimeStep = KeepOrIncreaseTimeStep(numNewtonIterations);
 
 
-                        // perform Postprocessing
-                        std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
-                        file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
-                        file.close();
-
+                    // perform Postprocessing
+                    std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
+                    file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
+                    file.close();
 
 
                     PostProcess(mLambda, dofStatus);

@@ -34,12 +34,23 @@ public:
         }
     }
 
-    typename std::map<T, vector_t>::const_iterator begin()
+    typename std::map<T, vector_t>::const_iterator cbegin()
     {
         return mMap.begin();
     }
 
-    typename std::map<T, vector_t>::const_iterator end()
+    typename std::map<T, vector_t>::const_iterator cend()
+    {
+        return mMap.end();
+    }
+
+
+    typename std::map<T, vector_t>::iterator begin()
+    {
+        return mMap.begin();
+    }
+
+    typename std::map<T, vector_t>::iterator end()
     {
         return mMap.end();
     }

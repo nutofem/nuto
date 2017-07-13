@@ -10,17 +10,8 @@
 #include "boost/filesystem.hpp"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/groups/Group.h"
+#include "typedefs.h"
 
-
-using std::cout;
-using std::endl;
-using namespace NuTo;
-using namespace Constitutive;
-using namespace Interpolation;
-using Node::eDof;
-using Eigen::VectorXd;
-using Eigen::Vector2d;
-using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
 
 // geometry
@@ -117,7 +108,7 @@ int main(int argc, char* argv[])
     const auto& groupNodesAtBottomLeft = structure.GroupGetNodeRadiusRange(coordinateAtBottomLeft);
     const auto& groupNodeAtBottomRight = structure.GroupGetNodeRadiusRange(coordinateAtBottomRight);
 
-    const auto groupNodesAtBoundaries = Group<NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
+    const auto groupNodesAtBoundaries = Group<NuTo::NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
 
     const auto& groupNodeLoad = structure.GroupGetNodeRadiusRange(coordinateAtLoad);
 

@@ -262,30 +262,12 @@ public:
 
         return importContainer;
     }
-    ///
-    std::vector<int> CalculateLagrangeMultiplierIds()
+
+    std::map<int,int> GetLagrangeMultipliersGlobalIdToLocalId() const
     {
+        return mLagrangeMultipliersGlobalIdToLocalId;
+    };
 
-        std::vector<int> lagrangeMultiplierDofIds;
-
-        // add lagrange multipliers from interfaces
-        for (const auto& interface : mInterfaces)
-            for (const auto& nodeIdPair : interface.mNodeIdsMap)
-            {
-                /// \todo Think about other DOFs. They must be added too!
-                auto dofIds = NodeGetDofIds(nodeIdPair.second, NuTo::Node::eDof::DISPLACEMENTS);
-
-                for (const auto& id : dofIds)
-                    lagrangeMultiplierDofIds.push_back(id);
-            }
-
-        lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mBoundaryDofIds.begin(), mBoundaryDofIds.end());
-
-        lagrangeMultiplierDofIds.insert(lagrangeMultiplierDofIds.end(), mPrescribedDisplacementDofIds.begin(),
-                                        mPrescribedDisplacementDofIds.end());
-
-        return lagrangeMultiplierDofIds;
-    }
     /// \brief Assembles vector for multiplicity scaling
     SparseMatrix MultiplicityScaling()
     {
@@ -448,5 +430,8 @@ protected:
 
     /// \brief Sparse matrix that restricts the DOFs of one subdomain to its interface boundary. Contains only (0,1,-1)
     SparseMatrix mConnectivityMatrix;
+
+    /// \brief Maps the global lagrange multiplier ids to the local DOF id
+    std::map<int,int> mLagrangeMultipliersGlobalIdToLocalId;
 };
 } // namespace NuTo

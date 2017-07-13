@@ -12,7 +12,7 @@ class FetiLumpedPreconditioner : public FetiPreconditioner
 {
 public:
 
-    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::vector<int> lagrangeMultiplierDofIds) override
+    virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B, const std::map<int,int>&) override
     {
         const int numTotalDofs = B.cols();
 

@@ -13,19 +13,8 @@
 
 #include "visualize/VisualizeEnum.h"
 
-using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
-using NuTo::Constitutive::eConstitutiveType;
-using NuTo::Constitutive::eConstitutiveParameter;
-using NuTo::Node::eDof;
-using NuTo::Interpolation::eTypeOrder;
-using NuTo::Interpolation::eShapeType;
-using NuTo::eGroupId;
-using NuTo::eVisualizeWhat;
-using NuTo::eDirection;
-using Eigen::VectorXd;
-using Eigen::MatrixXd;
-using Eigen::Vector2d;
-using Eigen::Matrix2d;
+#include "typedefs.h"
+
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
@@ -47,14 +36,122 @@ constexpr double loadFactor = 10.0;
 // auxiliary
 const Vector2d directionX = Vector2d::UnitX();
 
+void InitializeStructure(NuTo::StructureFeti& structure);
+void InitializeNewmarkFeti(NuTo::NewmarkFeti<EigenSolver>& newmarkFeti);
+int ReadNumIterationsFromFile(const std::string& file);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
+
+    // Conjugate gradient, lumped preconditioner, no scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::None);
+
+        newmarkFeti.Solve(simulationTime);
+
+        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        assert(numIterations == 27 and "Number of iterations needed changed unexpectedly");
+    }
+
+    // Conjugate gradient, lumped preconditioner, multiplicity scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
+        newmarkFeti.Solve(simulationTime);
+
+        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        assert(numIterations == 15 and "Number of iterations needed changed unexpectedly");
+    }
+
+    // Conjugate gradient, dirichlet preconditioner, no scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiDirichletPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::None);
+
+        newmarkFeti.Solve(simulationTime);
+
+        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        assert(numIterations == 24 and "Number of iterations needed changed unexpectedly");
+    }
+
+    // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiDirichletPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
+        newmarkFeti.Solve(simulationTime);
+
+        const int numIterations = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        assert(numIterations == 11 and "Number of iterations needed changed unexpectedly");
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int ReadNumIterationsFromFile(const std::string& fileName)
+{
+    int numIterations = 0;
+    std::ifstream file(fileName);
+    std::string line;
+    std::getline(file, line);
+    file >> numIterations;
+    file.close();
+    return numIterations;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void InitializeNewmarkFeti(NuTo::NewmarkFeti<EigenSolver>& newmarkFeti)
+{
+    boost::mpi::communicator world;
+    const int rank = world.rank();
+
+    Matrix2d dispRHS;
+    dispRHS(0, 0) = 0;
+    dispRHS(1, 0) = simulationTime;
+    dispRHS(0, 1) = 0;
+    dispRHS(1, 1) = loadFactor;
+
+    boostFs::path resultPath(boostFs::initial_path().string() + "/feti_" + std::to_string(rank));
+
+    newmarkFeti.SetTimeStep(timeStep);
+    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.SetToleranceIterativeSolver(1.e-8);
+    newmarkFeti.SetMaxNumberOfFetiIterations(100);
+    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
+    newmarkFeti.SetFetiScaling(FetiScaling::None);
+    newmarkFeti.SetTimeDependentLoadCase(0, dispRHS);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void InitializeStructure(NuTo::StructureFeti& structure)
+{
     boost::mpi::communicator world;
 
     const int rank = world.rank();
-
-    NuTo::StructureFeti structure(dim);
     structure.SetNumTimeDerivatives(0);
     structure.GetLogger().OpenFile("output" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
@@ -118,7 +215,7 @@ int main(int argc, char* argv[])
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
 
-    int loadId = structure.LoadCreateNodeGroupForce(&groupNodesLoad, directionX, 0.);
+    structure.LoadCreateNodeGroupForce(&groupNodesLoad, directionX, 0.);
 
 
     structure.GetLogger() << "*********************************** \n"
@@ -129,45 +226,4 @@ int main(int argc, char* argv[])
     structure.GroupCreate(groupAllElements, eGroupId::Elements);
     structure.GroupAddElementsTotal(groupAllElements);
     structure.AddVisualizationComponent(groupAllElements, eVisualizeWhat::DISPLACEMENTS);
-
-    structure.GetLogger() << "*********************************** \n"
-                          << "**      integration scheme       ** \n"
-                          << "*********************************** \n\n";
-
-
-    NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
-
-    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/feti_" + std::to_string(rank));
-
-    newmarkFeti.SetTimeStep(timeStep);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
-    newmarkFeti.SetToleranceIterativeSolver(1.e-8);
-    newmarkFeti.SetMaxNumberOfFetiIterations(100);
-    newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
-    newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiScaling(FetiScaling::None);
-
-
-    Eigen::Matrix2d dispRHS;
-    dispRHS(0, 0) = 0;
-    dispRHS(1, 0) = simulationTime;
-    dispRHS(0, 1) = 0;
-    dispRHS(1, 1) = loadFactor;
-
-    newmarkFeti.SetTimeDependentLoadCase(loadId, dispRHS);
-
-    structure.GetLogger() << "*********************************** \n"
-                          << "**      solve                    ** \n"
-                          << "*********************************** \n\n";
-
-    newmarkFeti.Solve(simulationTime);
-
-    std::ifstream file(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
-    std::cout << newmarkFeti.GetResultDirectory() << std::endl;
-
-    int numIterations = 0;
-    file >> numIterations >> numIterations;
-    file.close();
-
-    std::cout << "#iterations: \t" << numIterations << std::endl;
 }
