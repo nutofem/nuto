@@ -32,51 +32,41 @@ public:
     ~TimeControl() = default;
 
 
-    //! @brief Returnes if the time control has finiched by reaching the final time
+    //! @brief Adjusts the timestep
+    //! @param iterations: Number of iterations that were needed by the time integration scheme at the current time
+    //! @param maxIterations: Maximum number of iterations allowed
+    //! @param converged: Did the solution of the time integration scheme converge?
+    void AdjustTimestep(int iterations, int maxIterations, bool converged);
+
+    //! @brief Returnes if the time control has finished by reaching the final time
     //! @return true/false
-    bool Finished (){return mFinished;}
+    bool Finished (){return mCurrentTime >= mTimeFinal;}
 
-    //! @brief Scales the timestep by the provided factor
-    //! @param scaleFactor: scaling factor (<1 decrease and >1 increase)
-    void ScaleTimeStep(double scaleFactor);
-
-    //! @brief Proceeds with the next time step
-    //! @return current time value
+    //! @brief Proceeds with the next time step    
     void Proceed();
 
-    //! @brief Proceeds with the next time step
-    //! @return current time value
-    void Proceed(double iterations, double maxIterations, bool convergence);
 
-    //! @brief Sets the time stepping to equidistant
-    //! @param timestep: timestep value
-    void SetTimeStep(double timestep);
-
-    //! @brief Sets the final time
-    //! @param timefinal: final time
-    void SetTimeFinal(double timefinal);
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
     //! @param timestepFunction: function that should be executed when the proceed function is called
-    void SetTimeStepFunction(std::function<double(double, double,bool)> timestepFunction);
-
-    //! @brief Resets the timestep scaling factor to 1 wich means the timestep is exactly as provided by the timestepfunction
-    void ResetTimeStepScaleFactor()
-    {
-        mTimeStepScaleFactor    = 1.0;
-    }
+    void SetTimeStepFunction(std::function<double(TimeControl&, int, int, bool)> timestepFunction);
 
     //! @brief Resets the current time to the previous time
-    void RestorePreviosTime()
-    {
-        mCurrentTime = mPreviousTime;
-    }
+    void RestorePreviousTime(){mCurrentTime = mPreviousTime;}
 
     //! @brief Sets the timestep function to the default automatic timestepping method
     void UseDefaultAutomaticTimestepping();
 
     //! @brief Sets the timestep function to the default equidistant timestepping method
     void UseEquidistantTimestepping();
+
+    //! @brief default automatic timestepping function that can be assigned to be the time stepping function of the time control
+    //! @param timeControl: Reference to time control class
+    //! @param iterations: Number of iterations that were needed by the time integration scheme at the current time
+    //! @param maxIterations: Maximum number of iterations allowed
+    //! @param converged: Did the solution of the time integration scheme converge?
+    //! @return adjusted timestep
+    static double DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations,bool converged);
 
     // Getter
     // ------
@@ -109,33 +99,38 @@ public:
     //! @brief sets the minimum time step for the time integration procedure
     void SetMinTimeStep(double rMinTimeStep);
 
+    //! @brief Sets the time stepping to equidistant
+    //! @param timestep: timestep value
+    void SetTimeStep(double timeStep);
+
+    //! @brief Sets the final time
+    //! @param timefinal: final time
+    void SetTimeFinal(double timeFinal);
+
 
     //temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived classes solve routines
+    // problem is that the postprocessor uses the timecontrol data, which is not fully implemented in all time integration schemes
     void SetCurrentTime(double curTime)
     {
         mCurrentTime = curTime;
     }
 
-protected:
 
-    void UpdateTimeStep(double iterations, double maxIterations, bool convergence);
+protected:
 
 
 
     double mCurrentTime             = 0.0;
     double mPreviousTime            = 0.0;
     double mTimeFinal               = 0.0;
-    double mTimeStepScaleFactor     = 1.0;
     double mTimeStep                = 0.0;
     double mMinTimeStep             = 0.0;
     double mMaxTimeStep             = std::numeric_limits<double>::max();
 
-//    bool mAutomaticTimestepping     = false;
-    bool mFinished                  = false;
 
 
 #ifndef SWIG
-    std::function<double(double,double,bool)> mTimeStepFunction = [this](double iterations, double maxIterations,bool convergence)->double{return mTimeStep;};
+    std::function<double(TimeControl&,int,int,bool)> mTimeStepFunction = [](TimeControl& timeControl, int iterations, int maxIterations,bool converged)->double{return timeControl.GetTimeStep();};
 #endif
 };
 

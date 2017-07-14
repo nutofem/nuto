@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(Equidistant_Timestepping)
         TimeControl timeControl;
         timeControl.SetTimeFinal(20);
 
-        expectedMsg = "Timestep must be a positive number!";
+        expectedMsg = "Timestep must be larger tham 0!";
         BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(0),MechanicsException,CheckException);
         BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(-1337.0),MechanicsException,CheckException);
 

@@ -39,10 +39,10 @@ void NewmarkDirect::Solve(double rTimeDelta)
 //        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
 
-    mTimeControl.Proceed();
 
     while (not mTimeControl.Finished())
     {
+        mTimeControl.Proceed();
 
         // LEAVE IT OR FIX IT IF YOU CAN:
         // If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop
@@ -61,6 +61,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
         const auto deltaBRHS = UpdateAndGetConstraintRHS(mTimeControl.GetCurrentTime()) - bRHS;
 
         IterateForActiveDofValues(prevExtForce, deltaBRHS, dofValues);
+
     }
 }
 
@@ -431,7 +432,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
 
     // Needed for mTimeControl.Proceed() function
     int timeStepMaxIterations = 0;
-    bool convergence = true;
+    bool converged = true;
 
     for (const auto& activeDofs : mStepActiveDofs)
     {
@@ -475,8 +476,8 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         if(iterations>timeStepMaxIterations)
             timeStepMaxIterations = iterations;
 
-        convergence = residualNorm < mToleranceResidual;
-        if (convergence)
+        converged = residualNorm < mToleranceResidual;
+        if (converged)
         {
             mStructure->ElementTotalUpdateStaticData();
 
@@ -517,7 +518,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
     } // active dof loop
 
     // Continue with next timestep or reduce timestep and restart iteration
-    mTimeControl.Proceed(timeStepMaxIterations,mMaxNumIterations,convergence);
+    mTimeControl.AdjustTimestep(timeStepMaxIterations,mMaxNumIterations,converged);
 }
 
 
