@@ -297,6 +297,17 @@ install(DIRECTORY src/
     FILES_MATCHING PATTERN "*.h"
     )
 
+install(FILES scripts/NuToMacros.cmake
+    DESTINATION lib/cmake/NuTo
+    )
+
+install(EXPORT NuToTargets
+    FILE NuToTargets.cmake
+    NAMESPACE NuTo::
+    DESTINATION lib/cmake/NuTo
+    )
+
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
 add_custom_target(headers SOURCES ${HeaderFiles})
+

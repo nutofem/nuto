@@ -256,12 +256,6 @@ install(TARGETS Mechanics EXPORT NuToTargets
     LIBRARY DESTINATION lib
     )
 
-install(EXPORT NuToTargets
-    FILE NuToTargets.cmake
-    NAMESPACE NuTo::
-    DESTINATION lib/cmake/NuTo
-    )
-
 if(ENABLE_MPI)
     message(STATUS "Creating feti library...")
     add_subdirectory(feti)
