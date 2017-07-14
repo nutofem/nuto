@@ -41,7 +41,7 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
     mTimeControl.Proceed();
 
-    while (!mTimeControl.Finished())
+    while (not mTimeControl.Finished())
     {
 
         // LEAVE IT OR FIX IT IF YOU CAN:
@@ -76,7 +76,7 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
     BlockScalar residualNorm = residual.CalculateInfNorm();
 
     int iteration = 0;
-    while (!(residualNorm < mToleranceResidual) && iteration < mMaxNumIterations)
+    while (not(residualNorm < mToleranceResidual) and iteration < mMaxNumIterations)
     {
         auto hessians = EvaluateHessians();
 

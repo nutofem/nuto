@@ -112,7 +112,7 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
         else
             file.open(resultFile.string(), std::fstream::out | std::fstream::in | std::ios_base::ate);
 
-        if (!file.is_open())
+        if (not file.is_open())
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error opening file " + resultFile.string());
 
         std::stringstream endOfXML;

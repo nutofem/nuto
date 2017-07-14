@@ -27,7 +27,7 @@ void NuTo::TimeControl::Proceed(double iterations, double maxIterations, bool co
     UpdateTimeStep(iterations,maxIterations,convergence);
     if(mCurrentTime < mTimeFinal)
     {
-        if(!convergence && mPreviousTime !=mCurrentTime)
+        if(not convergence && mPreviousTime !=mCurrentTime)
             throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
                                                           "iterations, either use automatic time stepping, "
                                                           "reduce the time step or the minimal line search cut "
@@ -71,11 +71,11 @@ void NuTo::TimeControl::SetTimeStepFunction(std::function<double(double, double,
 
 void NuTo::TimeControl::UseDefaultAutomaticTimestepping()
 {
-    SetTimeStepFunction([this](double iterations, double maxIterations, bool convergence)->double
+    SetTimeStepFunction([this](double iterations, double maxIterations, bool converged)->double
                         {
                             if(iterations < 0.25 * maxIterations)
                                 return mTimeStep * 1.5;
-                            if(!convergence)
+                            if(not converged)
                                 RestorePreviosTime();
                                 return mTimeStep * 0.5;
                             return mTimeStep;
@@ -119,5 +119,3 @@ void NuTo::TimeControl::UpdateTimeStep(double iterations, double maxIterations, 
     if (mTimeStep<mMinTimeStep)
         throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is lower than minimum Timestep!");
 }
-
-
