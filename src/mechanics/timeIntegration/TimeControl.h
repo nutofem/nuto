@@ -36,17 +36,13 @@ public:
     //! @return true/false
     bool Finished (){return mFinished;}
 
-    //! @brief Scales the timestep by the provided factor
-    //! @param scaleFactor: scaling factor (<1 decrease and >1 increase)
-    void ScaleTimeStep(double scaleFactor);
-
     //! @brief Proceeds with the next time step
     //! @return current time value
     void Proceed();
 
     //! @brief Proceeds with the next time step
     //! @return current time value
-    void Proceed(double iterations, double maxIterations, bool convergence);
+    void AdjustTimestep(int iterations, int maxIterations, bool converged);
 
     //! @brief Sets the time stepping to equidistant
     //! @param timestep: timestep value
@@ -58,13 +54,7 @@ public:
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
     //! @param timestepFunction: function that should be executed when the proceed function is called
-    void SetTimeStepFunction(std::function<double(double, double,bool)> timestepFunction);
-
-    //! @brief Resets the timestep scaling factor to 1 wich means the timestep is exactly as provided by the timestepfunction
-    void ResetTimeStepScaleFactor()
-    {
-        mTimeStepScaleFactor    = 1.0;
-    }
+    void SetTimeStepFunction(std::function<double(TimeControl&, int, int, bool)> timestepFunction);
 
     //! @brief Resets the current time to the previous time
     void RestorePreviosTime()
@@ -118,14 +108,13 @@ public:
 
 protected:
 
-    void UpdateTimeStep(double iterations, double maxIterations, bool convergence);
+    void UpdateTimeStep(int iterations, int maxIterations, bool converged);
 
 
 
     double mCurrentTime             = 0.0;
     double mPreviousTime            = 0.0;
     double mTimeFinal               = 0.0;
-    double mTimeStepScaleFactor     = 1.0;
     double mTimeStep                = 0.0;
     double mMinTimeStep             = 0.0;
     double mMaxTimeStep             = std::numeric_limits<double>::max();
@@ -135,7 +124,7 @@ protected:
 
 
 #ifndef SWIG
-    std::function<double(double,double,bool)> mTimeStepFunction = [this](double iterations, double maxIterations,bool convergence)->double{return mTimeStep;};
+    std::function<double(TimeControl&,int,int,bool)> mTimeStepFunction = [](TimeControl& timeControl, int iterations, int maxIterations,bool converged)->double{return timeControl.GetTimeStep();};
 #endif
 };
 

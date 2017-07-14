@@ -2,21 +2,12 @@
 
 
 
-void NuTo::TimeControl::ScaleTimeStep(double scaleFactor)
-{
-    if (scaleFactor<= 0.0)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Scaling factor must be a positive number");
-
-    mTimeStepScaleFactor *= scaleFactor;
-    UpdateTimeStep(-1.,-1.,true);
-}
-
 void NuTo::TimeControl::Proceed()
 {
-    Proceed(-1.,-1.,true);
+    AdjustTimestep(0.,0.,true);
 }
 
-void NuTo::TimeControl::Proceed(double iterations, double maxIterations, bool convergence)
+void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool converged)
 {
     if(mCurrentTime == mTimeFinal)
     {
@@ -24,22 +15,21 @@ void NuTo::TimeControl::Proceed(double iterations, double maxIterations, bool co
         return;
     }
 
-    UpdateTimeStep(iterations,maxIterations,convergence);
-    if(mCurrentTime < mTimeFinal)
-    {
-        if(!convergence && mPreviousTime !=mCurrentTime)
-            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
-                                                          "iterations, either use automatic time stepping, "
-                                                          "reduce the time step or the minimal line search cut "
-                                                          "back factor. In case you provided a custom timestepping function "
-                                                          "and intend to use some kind of automatic timestepping, call "
-                                                          "the RestorePreviosTime() function of the time control before reducing "
-                                                          "the timestep.");
-        mPreviousTime = mCurrentTime;
-        mCurrentTime += mTimeStep;
-        if (mCurrentTime > mTimeFinal)
-            mCurrentTime = mTimeFinal;
-    }
+    UpdateTimeStep(iterations,maxIterations,converged);
+
+    if(!converged && mPreviousTime !=mCurrentTime)
+        throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
+                                                      "iterations, either use automatic time stepping, "
+                                                      "reduce the time step or the minimal line search cut "
+                                                      "back factor. In case you provided a custom timestepping function "
+                                                      "and intend to use some kind of automatic timestepping, call "
+                                                      "the RestorePreviosTime() function of the time control before reducing "
+                                                      "the timestep.");
+    mPreviousTime = mCurrentTime;
+    mCurrentTime += mTimeStep;
+    if (mCurrentTime > mTimeFinal)
+        mCurrentTime = mTimeFinal;
+
 }
 
 
@@ -64,29 +54,29 @@ void NuTo::TimeControl::SetTimeFinal(double timefinal)
 
 
 
-void NuTo::TimeControl::SetTimeStepFunction(std::function<double(double, double, bool)> TimeStepFunction)
+void NuTo::TimeControl::SetTimeStepFunction(std::function<double(TimeControl&,int, int, bool)> TimeStepFunction)
 {
     mTimeStepFunction       = TimeStepFunction;
 }
 
 void NuTo::TimeControl::UseDefaultAutomaticTimestepping()
 {
-    SetTimeStepFunction([this](double iterations, double maxIterations, bool convergence)->double
+    SetTimeStepFunction([this](TimeControl& timeControl, int iterations, int maxIterations, bool converged)->double
                         {
                             if(iterations < 0.25 * maxIterations)
-                                return mTimeStep * 1.5;
-                            if(!convergence)
+                                return timeControl.GetTimeStep() * 1.5;
+                            if(!converged)
                                 RestorePreviosTime();
-                                return mTimeStep * 0.5;
-                            return mTimeStep;
+                                return timeControl.GetTimeStep() * 0.5;
+                            return timeControl.GetTimeStep();
                         });
 }
 
 void NuTo::TimeControl::UseEquidistantTimestepping()
 {
-    SetTimeStepFunction([this](double iterations, double maxIterations, bool convergence)->double
+    SetTimeStepFunction([this](TimeControl& timeControl, int iterations, int maxIterations, bool converged)->double
                         {
-                            return mTimeStep;
+                            return timeControl.GetTimeStep();
                         });
 }
 
@@ -106,10 +96,9 @@ void NuTo::TimeControl::SetMinTimeStep(double rMinTimeStep)
     mMinTimeStep = rMinTimeStep;
 }
 
-void NuTo::TimeControl::UpdateTimeStep(double iterations, double maxIterations, bool convergence)
+void NuTo::TimeControl::UpdateTimeStep(int iterations, int maxIterations, bool converged)
 {
-//    mTimeStep = mTimeStepScaleFactor * mTimeStepFunction(iterations,maxIterations);
-    mTimeStep = mTimeStepFunction(iterations,maxIterations,convergence);
+    mTimeStep = mTimeStepFunction(*this,iterations,maxIterations,converged);
 
     if(mTimeStep > mMaxTimeStep)
         mTimeStep =  mMaxTimeStep;

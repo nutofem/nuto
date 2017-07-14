@@ -24,6 +24,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constraints/Term.h"
