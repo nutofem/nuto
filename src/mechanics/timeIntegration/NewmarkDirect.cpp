@@ -39,10 +39,10 @@ void NewmarkDirect::Solve(double rTimeDelta)
 //        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
     }
 
-    mTimeControl.Proceed();
 
     while (!mTimeControl.Finished())
     {
+        mTimeControl.Proceed();
 
         // LEAVE IT OR FIX IT IF YOU CAN:
         // If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop

@@ -32,41 +32,41 @@ public:
     ~TimeControl() = default;
 
 
-    //! @brief Returnes if the time control has finiched by reaching the final time
-    //! @return true/false
-    bool Finished (){return mFinished;}
-
-    //! @brief Proceeds with the next time step
-    //! @return current time value
-    void Proceed();
-
-    //! @brief Proceeds with the next time step
-    //! @return current time value
+    //! @brief Adjusts the timestep
+    //! @param iterations: Number of iterations that were needed by the time integration scheme at the current time
+    //! @param maxIterations: Maximum number of iterations allowed
+    //! @param converged: Did the solution of the time integration scheme converge?
     void AdjustTimestep(int iterations, int maxIterations, bool converged);
 
-    //! @brief Sets the time stepping to equidistant
-    //! @param timestep: timestep value
-    void SetTimeStep(double timestep);
+    //! @brief Returnes if the time control has finished by reaching the final time
+    //! @return true/false
+    bool Finished (){return mCurrentTime >= mTimeFinal;}
 
-    //! @brief Sets the final time
-    //! @param timefinal: final time
-    void SetTimeFinal(double timefinal);
+    //! @brief Proceeds with the next time step    
+    void Proceed();
+
+
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
     //! @param timestepFunction: function that should be executed when the proceed function is called
     void SetTimeStepFunction(std::function<double(TimeControl&, int, int, bool)> timestepFunction);
 
     //! @brief Resets the current time to the previous time
-    void RestorePreviosTime()
-    {
-        mCurrentTime = mPreviousTime;
-    }
+    void RestorePreviousTime(){mCurrentTime = mPreviousTime;}
 
     //! @brief Sets the timestep function to the default automatic timestepping method
     void UseDefaultAutomaticTimestepping();
 
     //! @brief Sets the timestep function to the default equidistant timestepping method
     void UseEquidistantTimestepping();
+
+    //! @brief default automatic timestepping function that can be assigned to be the time stepping function of the time control
+    //! @param timeControl: Reference to time control class
+    //! @param iterations: Number of iterations that were needed by the time integration scheme at the current time
+    //! @param maxIterations: Maximum number of iterations allowed
+    //! @param converged: Did the solution of the time integration scheme converge?
+    //! @return adjusted timestep
+    static double DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations,bool converged);
 
     // Getter
     // ------
@@ -99,16 +99,24 @@ public:
     //! @brief sets the minimum time step for the time integration procedure
     void SetMinTimeStep(double rMinTimeStep);
 
+    //! @brief Sets the time stepping to equidistant
+    //! @param timestep: timestep value
+    void SetTimeStep(double timeStep);
+
+    //! @brief Sets the final time
+    //! @param timefinal: final time
+    void SetTimeFinal(double timeFinal);
+
 
     //temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived classes solve routines
+    // problem is that the postprocessor uses the timecontrol data, which is not fully implemented in all time integration schemes
     void SetCurrentTime(double curTime)
     {
         mCurrentTime = curTime;
     }
 
-protected:
 
-    void UpdateTimeStep(int iterations, int maxIterations, bool converged);
+protected:
 
 
 
@@ -119,8 +127,6 @@ protected:
     double mMinTimeStep             = 0.0;
     double mMaxTimeStep             = std::numeric_limits<double>::max();
 
-//    bool mAutomaticTimestepping     = false;
-    bool mFinished                  = false;
 
 
 #ifndef SWIG

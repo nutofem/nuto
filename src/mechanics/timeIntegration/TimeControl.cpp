@@ -4,18 +4,24 @@
 
 void NuTo::TimeControl::Proceed()
 {
-    AdjustTimestep(0.,0.,true);
+    if (mTimeStep <= 0.0)
+        throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is 0 or negative!");
+    mPreviousTime = mCurrentTime;
+    mCurrentTime += mTimeStep;
+    if (mCurrentTime > mTimeFinal)
+    {
+        mCurrentTime = mTimeFinal;
+        mTimeStep = mTimeFinal - mCurrentTime;
+    }
 }
 
 void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool converged)
 {
-    if(mCurrentTime == mTimeFinal)
-    {
-        mFinished = true;
-        return;
-    }
 
-    UpdateTimeStep(iterations,maxIterations,converged);
+    mTimeStep = mTimeStepFunction(*this,iterations,maxIterations,converged);
+
+    if(mTimeStep > mMaxTimeStep)
+        mTimeStep =  mMaxTimeStep;
 
     if(!converged && mPreviousTime !=mCurrentTime)
         throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
@@ -25,31 +31,25 @@ void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool c
                                                       "and intend to use some kind of automatic timestepping, call "
                                                       "the RestorePreviosTime() function of the time control before reducing "
                                                       "the timestep.");
-    mPreviousTime = mCurrentTime;
-    mCurrentTime += mTimeStep;
-    if (mCurrentTime > mTimeFinal)
-        mCurrentTime = mTimeFinal;
-
 }
 
 
 
-void NuTo::TimeControl::SetTimeStep(double TimeStep)
+void NuTo::TimeControl::SetTimeStep(double timeStep)
 {
-    if (TimeStep<=0)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Timestep must be a positive number!");
+    if (timeStep<=0)
+        throw MechanicsException(__PRETTY_FUNCTION__,"Timestep must be larger tham 0!");
 
-    mTimeStep = TimeStep;
+    mTimeStep = timeStep;
 }
 
-void NuTo::TimeControl::SetTimeFinal(double timefinal)
+void NuTo::TimeControl::SetTimeFinal(double timeFinal)
 {
-    if (timefinal <= mCurrentTime)
+    if (timeFinal <= mCurrentTime)
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Final time must be larger than current time!");
     }
-    mTimeFinal          = timefinal;
-    mFinished           = false;
+    mTimeFinal          = timeFinal;
 }
 
 
@@ -61,22 +61,14 @@ void NuTo::TimeControl::SetTimeStepFunction(std::function<double(TimeControl&,in
 
 void NuTo::TimeControl::UseDefaultAutomaticTimestepping()
 {
-    SetTimeStepFunction([this](TimeControl& timeControl, int iterations, int maxIterations, bool converged)->double
-                        {
-                            if(iterations < 0.25 * maxIterations)
-                                return timeControl.GetTimeStep() * 1.5;
-                            if(!converged)
-                                RestorePreviosTime();
-                                return timeControl.GetTimeStep() * 0.5;
-                            return timeControl.GetTimeStep();
-                        });
+    SetTimeStepFunction(DefaultAutomaticTimestepFunction);
 }
 
 void NuTo::TimeControl::UseEquidistantTimestepping()
 {
-    SetTimeStepFunction([this](TimeControl& timeControl, int iterations, int maxIterations, bool converged)->double
+    SetTimeStepFunction([](TimeControl& rTimeControl, int iterations, int maxIterations, bool converged)->double
                         {
-                            return timeControl.GetTimeStep();
+                            return rTimeControl.GetTimeStep();
                         });
 }
 
@@ -96,17 +88,18 @@ void NuTo::TimeControl::SetMinTimeStep(double rMinTimeStep)
     mMinTimeStep = rMinTimeStep;
 }
 
-void NuTo::TimeControl::UpdateTimeStep(int iterations, int maxIterations, bool converged)
+double NuTo::TimeControl::DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations, bool converged)
 {
-    mTimeStep = mTimeStepFunction(*this,iterations,maxIterations,converged);
-
-    if(mTimeStep > mMaxTimeStep)
-        mTimeStep =  mMaxTimeStep;
-
-    if (mTimeStep <= 0.0)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is 0 or negative!");
-    if (mTimeStep<mMinTimeStep)
-        throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is lower than minimum Timestep!");
+    if(iterations < 0.25 * maxIterations)
+        return rTimeControl.GetTimeStep() * 1.5;
+    if(!converged)
+    {
+        rTimeControl.RestorePreviousTime();
+        return rTimeControl.GetTimeStep() * 0.5;
+    }
+    return rTimeControl.GetTimeStep();
 }
+
+
 
 
