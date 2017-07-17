@@ -24,10 +24,11 @@ void ResultGroupNodeDof::CalculateAndAddValues(const StructureBase& rStructure, 
     Eigen::VectorXd values = CalculateValues(rStructure, residual);
 
     if (values.rows() != mData.cols())
-        throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
+        throw Exception(__PRETTY_FUNCTION__, "the allocated number of rows is wrong.");
 
     mData.row(timeStep) = values.transpose();
 }
+
 
 const Group<NodeBase>* ResultGroupNodeDof::GetGroupNodePtr(const StructureBase& rStructure) const
 {

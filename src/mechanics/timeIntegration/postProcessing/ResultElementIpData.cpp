@@ -30,7 +30,7 @@ void ResultElementIpData::CalculateAndAddValues(const StructureBase& structure, 
         Resize(structure, 2 * (timeStep + 1), false);
     }
     if (ipValues.cols() != mData.cols())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: The allocated number of columns is wrong.");
+        throw Exception(__PRETTY_FUNCTION__, "The allocated number of columns is wrong.");
     mData.row(timeStep) = ipValues;
 }
 
@@ -76,7 +76,7 @@ int ResultElementIpData::GetNumData(const StructureBase& rStructure) const
         numComponents = 3;
         break;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
+        throw Exception(__PRETTY_FUNCTION__, "Ip data type not supported yet.");
     } // switch
 
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));

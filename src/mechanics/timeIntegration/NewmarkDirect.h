@@ -151,8 +151,7 @@ private:
     std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
                                                 const StructureOutputBlockVector& extForce,
                                                 StructureOutputBlockVector& delta_dof_dt0,
-                                                std::array<StructureOutputBlockVector, 3>& dof_dt,
-                                                const BlockSparseMatrix& constraintMatrix);
+                                                std::array<StructureOutputBlockVector, 3>& dof_dt);
 
     ConstitutiveInputMap CreateInputMap();
     StructureOutputBlockVector EvaluateInternalGradient();

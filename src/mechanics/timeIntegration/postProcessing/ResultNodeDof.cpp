@@ -11,8 +11,8 @@ ResultNodeDof::ResultNodeDof(const std::string& rIdent, int rNodeId)
 }
 
 
-void ResultNodeDof::CalculateAndAddValues(const StructureBase& structure, int timeStep, const StructureOutputBlockVector& residual,
-                           double currentTime)
+void ResultNodeDof::CalculateAndAddValues(const StructureBase& structure, int timeStep,
+                                          const StructureOutputBlockVector& residual, double currentTime)
 {
     assert(timeStep >= 0);
     Eigen::VectorXd dofValues = CalculateValues(structure);
@@ -21,6 +21,6 @@ void ResultNodeDof::CalculateAndAddValues(const StructureBase& structure, int ti
         Resize(structure, 2 * (timeStep + 1), false);
     }
     if (dofValues.rows() != mData.cols())
-        throw MechanicsException(__PRETTY_FUNCTION__, "The allocated number of rows is wrong.");
+        throw Exception(__PRETTY_FUNCTION__, "The allocated number of rows is wrong.");
     mData.row(timeStep) = dofValues.transpose();
 }

@@ -11,10 +11,12 @@ ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, int rN
 {
 }
 
+
 Eigen::VectorXd ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure) const
 {
     return rStructure.NodeGetNodePtr(mNodeId)->Get(Node::eDof::DISPLACEMENTS, 2);
 }
+
 
 int ResultNodeAcceleration::GetNumData(const StructureBase& rStructure) const
 {

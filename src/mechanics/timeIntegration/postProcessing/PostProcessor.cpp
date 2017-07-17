@@ -4,6 +4,8 @@
 
 #include "base/Exception.h"
 
+#include "mechanics/structures/StructureBase.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 #include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 #include "mechanics/timeIntegration/postProcessing/ResultTime.h"
 #include "mechanics/timeIntegration/postProcessing/ResultNodeDisp.h"
@@ -16,7 +18,7 @@ using namespace NuTo;
 
 void PostProcessor::PostProcess(const StructureOutputBlockVector& outOfBalance)
 {
-    if (mResultDir.length() == 0)
+    if (mResultDir.empty())
         throw Exception(__PRETTY_FUNCTION__, "Set the result directory first.");
 
     mStructure.WriteRestartFile(GetRestartFileName(), mTimeControl.GetCurrentTime());
@@ -113,7 +115,7 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
             file.open(resultFile.string(), std::fstream::out | std::fstream::in | std::ios_base::ate);
 
         if (not file.is_open())
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error opening file " + resultFile.string());
+            throw Exception(__PRETTY_FUNCTION__, "Error opening file " + resultFile.string());
 
         std::stringstream endOfXML;
         endOfXML << "</Collection>" << std::endl;
@@ -130,8 +132,8 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
             // delete the last part of the xml file
             file.seekp(-endOfXML.str().length(), std::ios_base::end);
         }
-        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << visualizeGroup
-             << "_Elements" << timeStep << ".vtu\"/>" << std::endl;
+        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << visualizeGroup << "_Elements"
+             << timeStep << ".vtu\"/>" << std::endl;
         file << endOfXML.str();
         file.close();
     }

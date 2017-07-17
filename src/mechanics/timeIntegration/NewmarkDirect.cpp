@@ -34,9 +34,8 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
     if (mAutomaticTimeStepping && mTimeControl.GetMinTimeStep() <= 0.)
     {
-        mTimeControl.SetMinTimeStep(mTimeControl.GetTimeStep() * std::pow(0.5, 6.));
         // the minimal time step is equivalent to six cut-backs
-//        SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep * std::pow(0.5, 6.));
+        mTimeControl.SetMinTimeStep(mTimeControl.GetTimeStep() * std::pow(0.5, 6.));
     }
 
 
@@ -56,12 +55,9 @@ void NewmarkDirect::Solve(double rTimeDelta)
 
         const auto bRHS = UpdateAndGetAndMergeConstraintRHS(mTimeControl.GetPreviousTime(), dofValues[0]);
         const auto prevExtForce = CalculateCurrentExternalLoad(mTimeControl.GetPreviousTime());
-
-
         const auto deltaBRHS = UpdateAndGetConstraintRHS(mTimeControl.GetCurrentTime()) - bRHS;
 
         IterateForActiveDofValues(prevExtForce, deltaBRHS, dofValues);
-
     }
 }
 
@@ -69,10 +65,10 @@ void NewmarkDirect::Solve(double rTimeDelta)
 std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockVector& structureResidual,
                                                            const StructureOutputBlockVector& extForce,
                                                            StructureOutputBlockVector& delta_dof_dt0,
-                                                           std::array<StructureOutputBlockVector, 3>& dof_dt,
-                                                           const BlockSparseMatrix& constraintMatrix)
+                                                           std::array<StructureOutputBlockVector, 3>& dof_dt)
 {
     const auto& dofStatus = mStructure->GetDofStatus();
+    const auto& constraintMatrix = mStructure->GetAssembler().GetConstraintMatrix();
     auto residual = Assembler::ApplyCMatrix(structureResidual, constraintMatrix);
     BlockScalar residualNorm = residual.CalculateInfNorm();
 
@@ -469,11 +465,11 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         auto intForce = EvaluateInternalGradient();
         residual = CalculateResidual(intForce, extForce, hessians[2], dof_dt[1], dof_dt[2]);
 
-        const auto result = FindEquilibrium(residual, extForce, delta_dof_dt0, dof_dt, constraintMatrix);
+        const auto result = FindEquilibrium(residual, extForce, delta_dof_dt0, dof_dt);
         const auto iterations = result.first;
         const auto residualNorm = result.second;
 
-        if(iterations>timeStepMaxIterations)
+        if (iterations > timeStepMaxIterations)
             timeStepMaxIterations = iterations;
 
         converged = residualNorm < mToleranceResidual;
@@ -503,7 +499,6 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
 
                 mPostProcessor->PostProcess(prevResidual);
             }
-
 
 
             if (mCallback && mCallback->Exit(*mStructure))
@@ -543,8 +538,8 @@ BlockFullVector<double>
 
 
 void NewmarkDirect::MergeDofValues(const StructureOutputBlockVector& rDof_dt0,
-                                       const StructureOutputBlockVector& rDof_dt1,
-                                       const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
+                                   const StructureOutputBlockVector& rDof_dt1,
+                                   const StructureOutputBlockVector& rDof_dt2, bool rMergeAll)
 {
     mStructure->NodeMergeDofValues(0, rDof_dt0.J, rDof_dt0.K);
 

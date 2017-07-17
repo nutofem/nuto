@@ -19,10 +19,11 @@ int ResultGroupNodeForce::GetNumData(const StructureBase& rStructure) const
 
     // all nodes have to have the same dimension (number of displacement components)
     if (groupNode.GetNumMembers() < 1)
-        throw MechanicsException("[ResultGroupNodeForce::GetNumData] Group has no members.");
+        throw Exception(__PRETTY_FUNCTION__, "Group has no members.");
 
     return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
 }
+
 
 Eigen::VectorXd ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure,
                                                       const StructureOutputBlockVector& residual) const

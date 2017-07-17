@@ -3,13 +3,17 @@
 #include <string>
 #include <boost/ptr_container/ptr_vector.hpp>
 
-#include "mechanics/structures/StructureBase.h"
-#include "mechanics/timeIntegration/TimeControl.h"
 #include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 
 namespace NuTo
 {
+namespace IpData
+{
+enum class eIpStaticDataType;
+}
+class StructureBase;
 class StructureOutputBlockVector;
+class TimeControl;
 
 //! @brief Class collecting the postprocessing options and functionality
 class PostProcessor
@@ -70,7 +74,7 @@ public:
     //! @param elementID ID of the element
     //! @param ipDataType Select which IP data are to be written out
     void AddResultElementIpData(const std::string& resultName, int elementID,
-                               NuTo::IpData::eIpStaticDataType ipDataType);
+                                NuTo::IpData::eIpStaticDataType ipDataType);
 
 private:
     void ExportVisualizationFiles(double time, int timeStep);

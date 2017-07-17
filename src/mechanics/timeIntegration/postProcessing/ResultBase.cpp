@@ -38,6 +38,7 @@ void ResultBase::Resize(const StructureBase& rStructure, int rNumTimeSteps, bool
     }
 }
 
+
 ResultBase* new_clone(const ResultBase& result)
 {
     return result.Clone().release();

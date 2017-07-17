@@ -9,6 +9,7 @@ ResultTime::ResultTime(const std::string& rIdent)
 {
 }
 
+
 void ResultTime::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
                                        const StructureOutputBlockVector& residual, double rTime)
 {
