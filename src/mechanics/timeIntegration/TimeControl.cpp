@@ -8,11 +8,11 @@ void NuTo::TimeControl::Proceed()
         throw MechanicsException(__PRETTY_FUNCTION__,"Current timestep is 0 or negative!");
     mPreviousTime = mCurrentTime;
     mCurrentTime += mTimeStep;
-    if (mCurrentTime > mTimeFinal)
-    {
-        mCurrentTime = mTimeFinal;
-        mTimeStep = mTimeFinal - mCurrentTime;
-    }
+//    if (mCurrentTime > mTimeFinal)
+//    {
+//        mCurrentTime = mTimeFinal;
+//        mTimeStep = mTimeFinal - mCurrentTime;
+//    }
 }
 
 void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool converged)
