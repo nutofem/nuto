@@ -8,7 +8,6 @@
 namespace NuTo
 {
 
-
 class TimeControl
 {
 public:

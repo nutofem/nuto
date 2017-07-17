@@ -92,14 +92,18 @@ void NuTo::TimeControl::SetMinTimeStep(double rMinTimeStep)
 
 double NuTo::TimeControl::DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations, bool converged)
 {
-    if(iterations < 0.25 * maxIterations)
-        return rTimeControl.GetTimeStep() * 1.5;
-    if(!converged)
+    if(converged)
+    {
+        if(iterations < 0.25 * maxIterations)
+            return rTimeControl.GetTimeStep() * 1.5;
+        else
+            return rTimeControl.GetTimeStep();
+    }
+    else
     {
         rTimeControl.RestorePreviousTime();
         return rTimeControl.GetTimeStep() * 0.5;
     }
-    return rTimeControl.GetTimeStep();
 }
 
 
