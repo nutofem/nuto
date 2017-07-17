@@ -42,9 +42,8 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "not implemented for constrained systems including multiple dofs.");
+    if (mStructure->HasInteractingConstraints())
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
 
     if (mTimeStep == 0.)
     {
@@ -54,8 +53,7 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
         }
         else
         {
-            throw Exception(
-                    "[NuTo::VelocityVerlet::Solve] time step not set for unconditional stable algorithm.");
+            throw Exception("[NuTo::VelocityVerlet::Solve] time step not set for unconditional stable algorithm.");
         }
     }
 

@@ -1462,15 +1462,7 @@ public:
     //! @param rDofType ... dof type
     bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
-
-    ///
-    /// \brief DofStatusSetHasInteractingConstraints
-    /// \param rHasInteractingConstraints
-    ///
-    /// Sets the member variable mHasInteractingConstraints of mDofStatus to either true or false.
-    /// The mHasInteractingConstraints determines whether K_KJ and K_KK are assembled during the Evaluate function
-    ///
-    void DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints);
+    bool HasInteractingConstraints() const;
 
     bool GetShowTime() const;
 

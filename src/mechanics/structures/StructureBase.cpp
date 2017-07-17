@@ -517,9 +517,6 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
     bool isHessianCorrect = true;
 
     NodeBuildGlobalDofs(__FUNCTION__);
-    bool hasInteractingConstraints = GetDofStatus().HasInteractingConstraints();
-    DofStatusSetHasInteractingConstraints(
-            true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
 
     auto hessian0 = BuildGlobalHessian0();
     auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
@@ -532,8 +529,6 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
                        CheckHessian0_Submatrix(hessian0.KJ, hessian0_CDF.KJ, rRelativeTolerance, rPrintWrongMatrices);
     isHessianCorrect = isHessianCorrect &&
                        CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
-
-    DofStatusSetHasInteractingConstraints(hasInteractingConstraints);
 
     return isHessianCorrect;
 }
@@ -865,17 +860,7 @@ void NuTo::StructureBase::UpdateDofStatus()
 
     GetAssembler().mDofStatus.SetDofTypes(dofTypes);
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
-
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() !=
-                                                           0);
 }
-
-
-void NuTo::StructureBase::DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints)
-{
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
-}
-
 
 int NuTo::StructureBase::GetNumTotalDofs() const
 {
@@ -896,6 +881,11 @@ int NuTo::StructureBase::GetNumTotalDependentDofs() const
     for (auto pair : GetDofStatus().GetNumDependentDofsMap())
         numTotalActiveDofs += pair.second;
     return numTotalActiveDofs;
+}
+
+bool NuTo::StructureBase::HasInteractingConstraints() const
+{
+    return GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0;
 }
 
 std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGetActive() const

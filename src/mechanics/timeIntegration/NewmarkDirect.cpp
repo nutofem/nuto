@@ -200,9 +200,7 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
         throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
 
-    CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
     PostProcess(residual);
-
 
     // the minimal time step defined, which is equivalent to six cut-backs
     if (mAutomaticTimeStepping)
@@ -403,7 +401,6 @@ void NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 // perform Postprocessing
                 if (staggeredStepNumber >= mStepActiveDofs.size())
                 {
-                    CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
                     PostProcess(prevResidual);
                 }
 
@@ -504,32 +501,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateResidual(
         residual -= rHessian_dt2 * (rDof_dt1 * mMuDampingMass + rDof_dt2);
     }
     return residual;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void NuTo::NewmarkDirect::CalculateResidualKForPostprocessing(StructureOutputBlockVector& rResidual,
-                                                              const StructureOutputBlockMatrix& rHessian_dt2,
-                                                              const StructureOutputBlockVector& rDof_dt1,
-                                                              const StructureOutputBlockVector& rDof_dt2) const
-{
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
-        return; // in this case, residual.K is needed for the calculation of residual mod and it is already calculated.
-
-    bool hasNodeForce = false;
-    for (const auto& it : mResultMap)
-        if (it.second->GetResultType() == eTimeIntegrationResultType::GROUP_NODE_FORCE)
-        {
-            hasNodeForce = true;
-            break; // exit loop
-        }
-    if (hasNodeForce && mStructure->GetNumTimeDerivatives() >= 2)
-    {
-        auto dof = rDof_dt1 * mMuDampingMass + rDof_dt2;
-        rResidual.K -= rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
-    }
-    // else:  no need to calculate forces if they are not needed in the post processing
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

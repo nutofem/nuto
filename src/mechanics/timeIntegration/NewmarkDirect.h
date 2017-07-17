@@ -98,14 +98,6 @@ protected:
                                                  const StructureOutputBlockVector& rDof_dt1,
                                                  const StructureOutputBlockVector& rDof_dt2) const;
 
-    //! @brief Calculates (if needed) the residual.K part for the post-processing. Since it is not needed for the actual
-    //! time integration
-    //! its calculation is skipped if Cmat has only zero entries.
-    void CalculateResidualKForPostprocessing(StructureOutputBlockVector& rResidual,
-                                             const StructureOutputBlockMatrix& rHessian_dt2,
-                                             const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2) const;
-
     void CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1,
                                   const StructureOutputBlockMatrix& rHessian_dt2) const;
 

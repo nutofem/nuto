@@ -202,8 +202,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
-                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
-                                    GetDofStatus().HasInteractingConstraints());
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries);
                             break;
                         }
                         case NuTo::eStructureOutput::HESSIAN1:
@@ -213,8 +212,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
-                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
-                                    GetDofStatus().HasInteractingConstraints());
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries);
                             break;
                         }
 
@@ -225,8 +223,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
-                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries,
-                                    true); // always calculate the KJ and KK
+                                    elementVectorGlobalDofsColumn, mToleranceStiffnessEntries);
                             // since its most likely only needed once,
                             // and causes troubles in the test files.
                             break;
