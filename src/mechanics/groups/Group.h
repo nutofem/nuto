@@ -107,6 +107,16 @@ public:
         return returnGroup;
     }
 
+    //! @brief Intersection of groupOne and groupTwo
+    //! @return Intersection of groupOne and groupTwo
+    static Group<T> GetIntersection(const Group<T>& groupOne, const Group<T>& groupTwo)
+    {
+        NuTo::Group<T> returnGroup;
+        std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(returnGroup, returnGroup.begin());
+        std::set_intersection(groupOne.begin(), groupOne.end(), groupTwo.begin(), groupTwo.end(), returnGroupInsertIterator);
+        return returnGroup;
+    }
+
     //! @brief returns a group with all members of current group, which are not presented in the second group
     //! @return group
     GroupBase* Difference(const NuTo::GroupBase* rOther) const override
