@@ -183,6 +183,6 @@ public:
 
     //! @brief gives the group type
     //! @return group type
-    void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
+    void Info(int rVerboseLevel) const override;
 };
 } // namespace NuTo

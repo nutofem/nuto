@@ -20,7 +20,7 @@ void StructureBase::GroupInfo(int rVerboseLevel) const
         for (boost::ptr_map<int, GroupBase>::const_iterator it = mGroupMap.begin(); it != mGroupMap.end(); ++it)
         {
             std::cout << "  Group " << it->first << std::endl;
-            it->second->Info(rVerboseLevel, this);
+            it->second->Info(rVerboseLevel);
             std::cout << std::endl;
         }
     }
