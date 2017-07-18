@@ -80,8 +80,6 @@ void NuTo::TimeIntegrationBase::SetToleranceResidual(NuTo::Node::eDof rDof, doub
 }
 
 
-
-
 void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
 {
     mLoadVectorStatic = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
@@ -99,8 +97,6 @@ void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
     mStructure->GetLogger() << "Sum of loads is " << tmp.J.Export().colwise().sum() + tmp.K.Export().colwise().sum()
                             << "\n";
 }
-
-
 
 
 NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExternalLoad(double curTime)

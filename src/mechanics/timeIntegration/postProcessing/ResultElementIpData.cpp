@@ -34,7 +34,6 @@ void ResultElementIpData::CalculateAndAddValues(const StructureBase& structure, 
     mData.row(timeStep) = ipValues;
 }
 
-
 void ResultElementIpData::CalculateValues(const StructureBase& rStructure,
                                           Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues) const
 {

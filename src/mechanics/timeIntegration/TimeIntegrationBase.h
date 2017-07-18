@@ -93,7 +93,6 @@ public:
     }
 
 
-
     //! @brief returns the maximum time step for the time integration procedure
     double GetMaxTimeStep() const
     {
@@ -122,13 +121,13 @@ public:
     void SetAutomaticTimeStepping(bool rAutomaticTimeStepping)
     {
         mAutomaticTimeStepping = rAutomaticTimeStepping;
-        if(mAutomaticTimeStepping)
+        if (mAutomaticTimeStepping)
         {
             mTimeControl.UseDefaultAutomaticTimestepping();
         }
         else
         {
-
+            mTimeControl.UseEquidistantTimestepping();
         }
     }
 
@@ -208,7 +207,7 @@ protected:
     NuTo::StructureOutputBlockVector mLoadVectorTimeDependent; //!< dynamic external load vector
 
     bool mAutomaticTimeStepping = false; //!< adapt the time step based on the number of iterations required (or
-                                         //!decrease, if no convergence can be achieved)
+    //! decrease, if no convergence can be achieved)
 
     bool mCheckCoefficientMatrix = false; //!< if set to true, checks the coefficient matrix in each sub step
 
@@ -220,7 +219,7 @@ protected:
     int mLoadStep = 0; //!< load step number is increased after each converged step (used for successive output)
 
     std::vector<int> mVecGroupNodesReactionForces; //!< vector of groups of nodes for which the residual (corresponding
-                                                   //!to the reaction forces induced by constraints) is given as output
+    //! to the reaction forces induced by constraints) is given as output
 
     CallbackInterface* mCallback;
 

@@ -11,7 +11,6 @@ namespace NuTo
 class TimeControl
 {
 public:
-
     //! @brief ctor
     TimeControl() = default;
 
@@ -39,11 +38,13 @@ public:
 
     //! @brief Returnes if the time control has finished by reaching the final time
     //! @return true/false
-    bool Finished (){return mCurrentTime >= mTimeFinal;}
+    bool Finished()
+    {
+        return mCurrentTime >= mTimeFinal;
+    }
 
-    //! @brief Proceeds with the next time step    
+    //! @brief Proceeds with the next time step
     void Proceed();
-
 
 
     //! @brief Sets the timestep function that should be executed when the proceed function is called
@@ -51,7 +52,10 @@ public:
     void SetTimeStepFunction(std::function<double(TimeControl&, int, int, bool)> timestepFunction);
 
     //! @brief Resets the current time to the previous time
-    void RestorePreviousTime(){mCurrentTime = mPreviousTime;}
+    void RestorePreviousTime()
+    {
+        mCurrentTime = mPreviousTime;
+    }
 
     //! @brief Sets the timestep function to the default automatic timestepping method
     void UseDefaultAutomaticTimestepping();
@@ -59,35 +63,52 @@ public:
     //! @brief Sets the timestep function to the default equidistant timestepping method
     void UseEquidistantTimestepping();
 
-    //! @brief default automatic timestepping function that can be assigned to be the time stepping function of the time control
+    //! @brief default automatic timestepping function that can be assigned to be the time stepping function of the time
+    //! control
     //! @param timeControl: Reference to time control class
     //! @param iterations: Number of iterations that were needed by the time integration scheme at the current time
     //! @param maxIterations: Maximum number of iterations allowed
     //! @param converged: Did the solution of the time integration scheme converge?
     //! @return adjusted timestep
-    static double DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations,bool converged);
+    static double DefaultAutomaticTimestepFunction(TimeControl& rTimeControl, int iterations, int maxIterations,
+                                                   bool converged);
 
     // Getter
     // ------
     //! @brief Gets the current time
     //! @return current time
-    double GetCurrentTime() const {return mCurrentTime;}
+    double GetCurrentTime() const
+    {
+        return mCurrentTime;
+    }
 
     //! @brief Gets the previous time
     //! @return previous time
-    double GetPreviousTime() const {return mPreviousTime;}
+    double GetPreviousTime() const
+    {
+        return mPreviousTime;
+    }
 
     //! @brief Gets the timestep
     //! @return timestep
-    double GetTimeStep() const {return mTimeStep;}
+    double GetTimeStep() const
+    {
+        return mTimeStep;
+    }
 
     //! @brief Gets the minimal timestep
     //! @return minimal timestep
-    double GetMinTimeStep() const {return mMinTimeStep;}
+    double GetMinTimeStep() const
+    {
+        return mMinTimeStep;
+    }
 
     //! @brief Gets the maximum timestep
     //! @return maximum timestep
-    double GetMaxTimeStep() const {return mMaxTimeStep;}
+    double GetMaxTimeStep() const
+    {
+        return mMaxTimeStep;
+    }
 
     // Setter
     // ------
@@ -107,8 +128,10 @@ public:
     void SetTimeFinal(double timeFinal);
 
 
-    //temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived classes solve routines
-    // problem is that the postprocessor uses the timecontrol data, which is not fully implemented in all time integration schemes
+    // temporary to remove all other time related members from timeIntegrationBase without bigger changes in derived
+    // classes solve routines
+    // problem is that the postprocessor uses the timecontrol data, which is not fully implemented in all time
+    // integration schemes
     void SetCurrentTime(double curTime)
     {
         mCurrentTime = curTime;
@@ -116,20 +139,19 @@ public:
 
 
 protected:
-
-
-
-    double mCurrentTime             = 0.0;
-    double mPreviousTime            = 0.0;
-    double mTimeFinal               = 0.0;
-    double mTimeStep                = 0.0;
-    double mMinTimeStep             = 0.0;
-    double mMaxTimeStep             = std::numeric_limits<double>::max();
-
+    double mCurrentTime = 0.0;
+    double mPreviousTime = 0.0;
+    double mTimeFinal = 0.0;
+    double mTimeStep = 0.0;
+    double mMinTimeStep = 0.0;
+    double mMaxTimeStep = std::numeric_limits<double>::max();
 
 
 #ifndef SWIG
-    std::function<double(TimeControl&,int,int,bool)> mTimeStepFunction = [](TimeControl& timeControl, int iterations, int maxIterations,bool converged)->double{return timeControl.GetTimeStep();};
+    std::function<double(TimeControl&, int, int, bool)> mTimeStepFunction =
+            [](TimeControl& timeControl, int iterations, int maxIterations, bool converged) -> double {
+        return timeControl.GetTimeStep();
+    };
 #endif
 };
 
