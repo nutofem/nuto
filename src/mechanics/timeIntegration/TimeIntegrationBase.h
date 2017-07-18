@@ -37,8 +37,8 @@ public:
     virtual ~TimeIntegrationBase();
 
     //! @brief perform the time integration
-    //! @param rTimeDelta ... length of the simulation
-    virtual void Solve(double rTimeDelta) = 0;
+    //! @param timeFinal ... simulation continues until time hits this value
+    virtual void Solve(double timeFinal) = 0;
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step /
     //! time step

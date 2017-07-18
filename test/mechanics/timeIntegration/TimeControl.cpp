@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
     timeControl.SetTimeStepFunction([](TimeControl&, double, double, bool) -> double { return -1.0; });
     BOOST_CHECK_EXCEPTION(timeControl.Proceed(), MechanicsException, CheckException);
 
-    expectedMsg = "Timestep must be larger tham 0!";
+    expectedMsg = "Timestep must be larger than 0!";
     BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(0.0), MechanicsException, CheckException);
     BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(-1.0), MechanicsException, CheckException);
 

@@ -24,9 +24,9 @@ NewmarkDirect::NewmarkDirect(StructureBase* rStructure)
 }
 
 
-void NewmarkDirect::Solve(double rTimeDelta)
+void NewmarkDirect::Solve(double timeFinal)
 {
-    mTimeControl.SetTimeFinal(rTimeDelta);
+    mTimeControl.SetTimeFinal(timeFinal);
     Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);

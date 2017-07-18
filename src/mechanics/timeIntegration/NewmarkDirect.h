@@ -69,8 +69,8 @@ public:
 
 
     //! @brief perform the time integration
-    //! @param rTimeDelta ... length of the simulation
-    virtual void Solve(double rTimeDelta) override;
+    //! @param timeFinal ... simulation continues until time hits this value
+    virtual void Solve(double timeFinal) override;
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
