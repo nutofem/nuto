@@ -34,7 +34,7 @@ if(ENABLE_GEOMETRYCONCRETE)
 
     if(GMSH_PATH)
         add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)
-        target_link_libraries(GeometryConcreteAPI NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
+        target_link_libraries(GeometryConcreteAPI Math Base GeometryConcrete ${Boost_LIBRARIES})
         add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
             ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
     else()

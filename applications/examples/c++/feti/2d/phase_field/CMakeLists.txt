@@ -16,9 +16,9 @@ foreach(file
         single_edge_notched_tension_test
         )
     add_executable(${file} ${file}.cpp)
-    target_link_libraries(${file} NuToMechanics NuToMath NuToBase NuToFeti ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+    target_link_libraries(${file} Mechanics Math Base FetiLib ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
     if(ENABLE_VISUALIZE)
-        target_link_libraries(${file} NuToVisualize)
+        target_link_libraries(${file} Visualize)
     endif()
     set(MPIEXEC_NUMPROC_FLAG -np 2)
     set(MPIEXEC mpirun)

@@ -5,5 +5,5 @@ endif()
 
 # test the CheckStiffness method globally and locally
 add_executable(PolynomialLeastSquaresFitting PolynomialLeastSquaresFitting.cpp)
-target_link_libraries(PolynomialLeastSquaresFitting NuToMetamodel NuToMath NuToBase ${Boost_LIBRARIES})
+target_link_libraries(PolynomialLeastSquaresFitting Metamodel Math Base ${Boost_LIBRARIES})
 add_test(integration::metamodel::PolynomialLeastSquaresFitting.cpp ${CMAKE_CURRENT_BUILD_DIR}/PolynomialLeastSquaresFitting)
