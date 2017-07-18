@@ -37,5 +37,5 @@ target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
 
 if(ENABLE_ARPACK)
     add_unit_test(EigenSolverArpack)
-    target_link_libraries(EigenSolverArpack NuToMath)
+    target_link_libraries(EigenSolverArpack Math Base)
 endif()

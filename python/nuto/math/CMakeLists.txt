@@ -22,5 +22,5 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # build python modules
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 foreach(NuToMath_SWIG_MODULE ${NuToMath_SWIG_MODULES})
-    nuto_swig_module(${NuToMath_SWIG_MODULE} ${NuToMath_SWIG_MODULE}.i NuToMath)
+    nuto_swig_module(${NuToMath_SWIG_MODULE} ${NuToMath_SWIG_MODULE}.i Math)
 endforeach()

@@ -18,4 +18,4 @@ set(SWIG_MODULE_ModuleGeometryConcrete_EXTRA_DEPS
         )
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-nuto_swig_module(ModuleGeometryConcrete ModuleGeometryConcrete.i NuToGeometryConcrete)
+nuto_swig_module(ModuleGeometryConcrete ModuleGeometryConcrete.i GeometryConcrete)

@@ -26,7 +26,8 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
 include(CompilerFlags)
-include(Version)
+include(GetGitRevisionDescription)
+get_git_head_revision(git_refspec commit_nr)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 include_directories(SYSTEM external/)
@@ -90,12 +91,6 @@ endif()
 if(ENABLE_COVERAGE)
     include(Coverage)
 endif()
-
-# set relative paths for install
-set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
-set(NUTO_LIBRARIES_INSTALL_PATH "lib${LIB_SUFFIX}")
-set(NUTO_INCLUDE_INSTALL_PATH "include")
-
 
 # search for MKL
 if(ENABLE_MKL)
@@ -298,7 +293,22 @@ if(ENABLE_CUSTOM_EXAMPLES)
     add_subdirectory(applications/custom)
 endif()
 
+install(DIRECTORY src/
+    DESTINATION include/nuto
+    FILES_MATCHING PATTERN "*.h"
+    )
+
+install(FILES scripts/NuToMacros.cmake
+    DESTINATION lib/cmake/NuTo
+    )
+
+install(EXPORT NuToTargets
+    FILE NuToTargets.cmake
+    NAMESPACE NuTo::
+    DESTINATION lib/cmake/NuTo
+    )
 
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
 add_custom_target(headers SOURCES ${HeaderFiles})
+
