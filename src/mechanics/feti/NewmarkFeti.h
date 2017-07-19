@@ -586,7 +586,8 @@ public:
 
     void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
     {
-        std::ofstream filestream(mPostProcessor->mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
+        std::ofstream filestream(mPostProcessor->GetResultDirectory() + std::string("/FetiSolverInfo.txt"),
+                                 std::ofstream::app);
         filestream << "iterations"
                    << "\t"
                    << "time step"

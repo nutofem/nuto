@@ -164,13 +164,13 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMaxTimeStep(maxTimeStep);
     newmarkFeti.SetMaxNumIterations(5);
     newmarkFeti.SetAutomaticTimeStepping(automaticTimeStepping);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetToleranceResidual(eDof::CRACKPHASEFIELD, toleranceCrack);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
     newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
-    newmarkFeti.SetMinTimeStepPlot(timeStepPostProcessing);
+    newmarkFeti.PostProcessing().SetMinTimeStepPlot(timeStepPostProcessing);
     newmarkFeti.SetMaxNumberOfFetiIterations(10);
 
     Matrix2d dispRHS;
