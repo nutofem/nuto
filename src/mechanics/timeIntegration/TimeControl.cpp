@@ -19,7 +19,7 @@ void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool c
     if (mTimeStep > mMaxTimeStep)
         mTimeStep = mMaxTimeStep;
 
-    if (!converged && mPreviousTime != mCurrentTime)
+    if (not converged && mPreviousTime != mCurrentTime)
         throw Exception(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
                                              "iterations, either use automatic time stepping, "
                                              "reduce the time step or the minimal line search cut "

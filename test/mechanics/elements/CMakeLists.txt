@@ -1,7 +1,7 @@
 add_executable(ContinuumElement ContinuumElement.cpp)
-target_link_libraries(ContinuumElement NuToMechanics NuToMath NuToBase)
+target_link_libraries(ContinuumElement Mechanics Math Base)
 if(ENABLE_VISUALIZE)
-    target_link_libraries(ContinuumElement NuToVisualize)
+    target_link_libraries(ContinuumElement Visualize)
 endif()
 add_test(almost::mechanics::elements::ContinuumElement ${CMAKE_CURRENT_BINARY_DIR}/ContinuumElement)
 

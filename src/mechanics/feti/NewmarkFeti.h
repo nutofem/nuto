@@ -586,7 +586,7 @@ public:
 
     void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
     {
-        std::ofstream filestream(mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
+        std::ofstream filestream(mPostProcessor->mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
         filestream << "iterations"
                    << "\t"
                    << "time step"
@@ -1134,7 +1134,7 @@ public:
 
                     // perform Postprocessing
                     std::ofstream file(mPostProcessor->GetResultDirectory() + "/statistics.dat", std::ios::app);
-                    file << mTime << "\t" << iteration << "\n";
+                    file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                     file.close();
 
 
