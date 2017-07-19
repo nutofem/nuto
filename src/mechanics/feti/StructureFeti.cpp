@@ -116,11 +116,11 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
     globalIndex = mNumLagrangeMultipliers - mNumTotalPrescribedDisplacementDofIds +
                   mGlobalStartIndexPrescribedDisplacementDofIds;
-    for (const int& id : mPrescribedDisplacementDofIds)
+    for (const auto& idAndValue : mPrescribedDisplacementDofIdToValue)
     {
-        mConnectivityMatrix.insert(globalIndex, id) = 1;
-        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, id);
-        mPrescribedDofVector[globalIndex] = 1;
+        mConnectivityMatrix.insert(globalIndex, idAndValue.first) = 1;
+        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, idAndValue.first);
+        mPrescribedDofVector[globalIndex] = idAndValue.second;
 
         ++globalIndex;
     }
@@ -615,17 +615,13 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
 {
     boost::mpi::communicator world;
 
-
-    for (auto const& idAndDisp : dofIdAndPrescribedDisplacementMap)
-    {
-        mPrescribedDisplacementDofIds.push_back(idAndDisp.first);
-    }
+    mPrescribedDisplacementDofIdToValue = dofIdAndPrescribedDisplacementMap;
 
     // recvCount:
     // Contains the number of elements that are received from each process.
     std::vector<int> recvCount(mNumProcesses, 0);
 
-    int numLocalDofIds = mPrescribedDisplacementDofIds.size();
+    int numLocalDofIds = mPrescribedDisplacementDofIdToValue.size();
     boost::mpi::all_gather<int>(world, numLocalDofIds, recvCount);
 
     // displs:
@@ -637,7 +633,7 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
 
     MPI_Allreduce(&numLocalDofIds, &mNumTotalPrescribedDisplacementDofIds, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-    GetLogger() << "Number of prescribed displacement dof ids:       \t" << mPrescribedDisplacementDofIds.size()
+    GetLogger() << "Number of prescribed displacement dof ids:       \t" << mPrescribedDisplacementDofIdToValue.size()
                 << "\n \n";
     GetLogger() << "Total number of prescribed displacement dof ids: \t" << mNumTotalPrescribedDisplacementDofIds
                 << "\n \n";
@@ -648,8 +644,8 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
     GetLogger() << "mGlobalStartIndexPrescribedDisplacementDofIds: \t" << mGlobalStartIndexPrescribedDisplacementDofIds
                 << "\n \n";
 
-    for (const auto& id : mPrescribedDisplacementDofIds)
-        GetLogger() << "Prescribed displacement dof ids:       \t" << id << "\n \n";
+    for (const auto& idAndValue : mPrescribedDisplacementDofIdToValue)
+        GetLogger() << "Prescribed displacement dof ids:       \t" << idAndValue.first << "\n \n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
