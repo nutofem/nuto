@@ -1,5 +1,3 @@
-// $Id: NystroemQinZhu.cpp 575 2011-09-20 18:05:35Z unger3 $
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -8,7 +6,6 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/NystroemQinZhu.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 
 //! @brief constructor

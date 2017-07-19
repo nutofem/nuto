@@ -10,10 +10,10 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 #include <boost/foreach.hpp>
@@ -235,11 +235,11 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
     rTI.SetMaxNumIterations(MAX_ITERATION);
 
     rTI.SetTimeStep(rTC.delta_t);
-    rTI.SetMinTimeStepPlot(rTC.t_write);
+    rTI.PostProcessing().SetMinTimeStepPlot(rTC.t_write);
 
-    rTI.SetResultDirectory(rResultDir, true);
+    rTI.PostProcessing().SetResultDirectory(rResultDir, true);
 
-    rTI.AddResultNodeDisplacements("Displacements", IDNodeRight);
+    rTI.PostProcessing().AddResultNodeDisplacements("Displacements", IDNodeRight);
 }
 
 

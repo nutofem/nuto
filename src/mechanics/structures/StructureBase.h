@@ -178,8 +178,8 @@ public:
     void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
                                     const std::vector<eVisualizeWhat>& visualizeComponents);
 
-    //! @brief ... returns the map that contains the visualization components to be exported for each element group
-    std::map<int, std::vector<eVisualizeWhat>>& GetGroupVisualizeComponentsMap(void);
+    //! @brief Get all element groups that are supposed to be visualized
+    std::vector<int> GetVisualizationGroups();
 #endif // SWIG
 
 

@@ -6,8 +6,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NystroemBase.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "base/Timer.h"
 
@@ -34,7 +34,6 @@ void NuTo::NystroemBase::Info() const
 void NuTo::NystroemBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timer(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
-
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     if (mStructure->GetDofStatus().HasInteractingConstraints())
@@ -177,12 +176,12 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 
         dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
         mStructure->NodeMergeDofValues(0, dof_dt0_new);
-        if (mMergeActiveDofValuesOrder1)
+        if (mStructure->GetNumTimeDerivatives() >= 1)
         {
             dof_dt1_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_new.J);
             mStructure->NodeMergeDofValues(1, dof_dt1_new);
         }
-        if (mMergeActiveDofValuesOrder2)
+        if (mStructure->GetNumTimeDerivatives() >= 2)
         {
             auto dof_dt2_new = (dof_dt1_new - dof_dt1) * (1. / mTimeStep);
             dof_dt2_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt2_new.J);
@@ -199,6 +198,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
         // PostProcessing
         //**********************************************
         // postprocess data for plotting
-        this->PostProcess(extLoad - intForce);
+        mTimeControl.SetCurrentTime(mTime);
+        mPostProcessor->PostProcess(extLoad - intForce);
     }
 }

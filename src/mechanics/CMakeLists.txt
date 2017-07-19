@@ -188,18 +188,9 @@ set(MechanicsStructuresSources
 
 
 set(MechanicsTimeIntegrationSources
-    timeIntegration/NewmarkBase.cpp
     timeIntegration/NewmarkDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
-    timeIntegration/ResultBase.cpp
-    timeIntegration/ResultElementIpData.cpp
-    timeIntegration/ResultGroupNodeForce.cpp
-    timeIntegration/ResultGroupNodeDof.cpp
-    timeIntegration/ResultNodeAcceleration.cpp
-    timeIntegration/ResultNodeDisp.cpp
-    timeIntegration/ResultNodeDof.cpp
-    timeIntegration/ResultTime.cpp
     timeIntegration/RungeKutta2.cpp
     timeIntegration/RungeKutta3.cpp
     timeIntegration/RungeKutta38.cpp
@@ -207,11 +198,21 @@ set(MechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
+    timeIntegration/TimeControl.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp
     timeIntegration/ImplExCallback.cpp
     timeIntegration/VelocityVerlet.cpp
+    timeIntegration/postProcessing/PostProcessor.cpp
+    timeIntegration/postProcessing/ResultBase.cpp
+    timeIntegration/postProcessing/ResultElementIpData.cpp
+    timeIntegration/postProcessing/ResultGroupNodeForce.cpp
+    timeIntegration/postProcessing/ResultGroupNodeDof.cpp
+    timeIntegration/postProcessing/ResultNodeAcceleration.cpp
+    timeIntegration/postProcessing/ResultNodeDisp.cpp
+    timeIntegration/postProcessing/ResultNodeDof.cpp
+    timeIntegration/postProcessing/ResultTime.cpp
     )
 
 set(MechanicsToolsSources

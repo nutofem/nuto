@@ -65,12 +65,13 @@ structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(lastNode, [n
 
 newmark = nuto.NewmarkDirect(structure)
 newmark.SetTimeStep(0.1)
-newmark.SetResultDirectory("damage_bar_results", True)
 newmark.SetAutomaticTimeStepping(True)
-newmark.AddResultNodeDisplacements("TopDisplacement", nodeIDs[0])
+
 groupID = structure.GroupCreate("Nodes")
 structure.GroupAddNode(groupID, nodeIDs[0])
-newmark.AddResultGroupNodeForce("TopForce", groupID)
+newmark.PostProcessing().AddResultGroupNodeForce("TopForce", groupID)
+newmark.PostProcessing().SetResultDirectory("damage_bar_results", True)
+newmark.PostProcessing().AddResultNodeDisplacements("TopDisplacement", nodeIDs[0])
 newmark.Solve(1.0)
 
 sol = structure.NodeExtractDofValues(0)

@@ -1,8 +1,6 @@
 #pragma once
 
-
-#include "mechanics/timeIntegration/ResultBase.h"
-
+#include "mechanics/timeIntegration/postProcessing/ResultBase.h"
 
 namespace NuTo
 {
@@ -14,9 +12,6 @@ namespace IpData
 enum class eIpStaticDataType;
 } // namespace IpData
 
-//! @author Philip Huschke
-//! @date October 2015
-//! @brief Outputs integration point values
 class ResultElementIpData : public ResultBase
 {
 public:
@@ -27,7 +22,8 @@ public:
     ResultElementIpData(const std::string& rFileName, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType);
 
     //! @brief calculates the relevant integration point data and adds them to the internal routine
-    void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
+    void CalculateAndAddValues(const StructureBase& rStructure, int timeStep,
+                               const StructureOutputBlockVector& residual, double currentTime) override;
 
     //! @brief calculates the relevant integration point data
     void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues) const;
@@ -35,22 +31,10 @@ public:
     //! @brief number of data points per time step, e.g. number of stress components for an integration point
     int GetNumData(const StructureBase& rStructure) const override;
 
-    NuTo::eTimeIntegrationResultType GetResultType() const override;
-
-    //! @brief returns the class name
-    std::string GetTypeId() const
+    std::unique_ptr<ResultBase> Clone() const override
     {
-        return std::string("ResultElementIpValue");
+        return std::make_unique<ResultElementIpData>(*this);
     }
-
-    //! @brief this is used to cast an object of ResultBase to an object of ResultElementIpData
-    ResultElementIpData* AsResultElementIpData() override
-    {
-        return this;
-    }
-
-    //! @brief ... Info routine that prints general information about the object
-    void Info() const override;
 
 private:
     int mElementId;

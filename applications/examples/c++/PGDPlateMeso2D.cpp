@@ -9,6 +9,7 @@
 
 #include "math/EigenCompanion.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "visualize/VisualizeEnum.h"
 
@@ -402,7 +403,7 @@ int main()
 
             // set load conditions
             NuTo::NewmarkDirect myIntegrationScheme(&myStructureX);
-            myIntegrationScheme.SetResultDirectory(resultDirectory.string(), false);
+            myIntegrationScheme.PostProcessing().SetResultDirectory(resultDirectory.string(), false);
 
             double simulationTime = 1.0;
 

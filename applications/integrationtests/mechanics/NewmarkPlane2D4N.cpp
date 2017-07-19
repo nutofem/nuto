@@ -11,6 +11,7 @@
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 void CheckResult(std::string resultDir, std::string file, Eigen::MatrixXd expected, double tolerance = 1.e-4)
@@ -103,10 +104,10 @@ BOOST_AUTO_TEST_CASE(NewmarkPlane2D4N)
     myIntegrationScheme.SetTimeStep(10);
     myIntegrationScheme.SetMaxTimeStep(10);
     myIntegrationScheme.SetMinTimeStep(0.001 * myIntegrationScheme.GetMaxTimeStep());
-    myIntegrationScheme.AddResultTime("Time");
-    myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Left", myStructure.GroupGetId(&grpNodes_Left));
-    myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Right", myStructure.GroupGetId(&grpNodes_Right));
-    myIntegrationScheme.SetResultDirectory(resultDir, true);
+    myIntegrationScheme.PostProcessing().AddResultTime("Time");
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Left", myStructure.GroupGetId(&grpNodes_Left));
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Right", myStructure.GroupGetId(&grpNodes_Right));
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir, true);
     myIntegrationScheme.SetToleranceForce(1.e-10);
     myIntegrationScheme.Solve(simulationTime);
 

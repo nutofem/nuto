@@ -12,6 +12,7 @@
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 
@@ -96,7 +97,7 @@ int main()
     newmark.SetMaxNumIterations(100);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("./CSDAPrism3DOut", deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("./CSDAPrism3DOut", deleteDirectory);
     newmark.Solve(1);
     return EXIT_SUCCESS;
 }

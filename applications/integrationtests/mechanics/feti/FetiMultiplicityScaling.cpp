@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
         newmarkFeti.Solve(simulationTime);
 
         numIterationsLumpedNoScaling =
-                ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     // Conjugate gradient, lumped preconditioner, multiplicity scaling
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
         newmarkFeti.Solve(simulationTime);
 
         numIterationsLumpedMultiScaling =
-                ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     assert(numIterationsLumpedMultiScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletNoScaling = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletNoScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     assert(numIterationsDirichletMultiScaling < numIterationsDirichletNoScaling and "Scaling should improve convergence");
@@ -144,7 +144,7 @@ void InitializeNewmarkFeti(NuTo::NewmarkFeti<EigenSolver>& newmarkFeti)
     boostFs::path resultPath(boostFs::initial_path().string() + "/feti_" + std::to_string(rank));
 
     newmarkFeti.SetTimeStep(timeStep);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetToleranceIterativeSolver(1.e-8);
     newmarkFeti.SetMaxNumberOfFetiIterations(100);
     newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);

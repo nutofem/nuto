@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <boost/mpi.hpp>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/structures/StructureBase.h"
 #include "base/Exception.h"
@@ -485,7 +486,7 @@ public:
     //! \param krylovDimension
     void WriteGmresInfo(const int numIterations, const int numRestarts, const int krylovDimension)
     {
-        std::ofstream file(mResultDir + "/GmresInfo.dat", std::ios::app);
+        std::ofstream file(mPostProcessor->GetResultDirectory() + "/GmresInfo.dat", std::ios::app);
         file << mTime << "\t" << numIterations + (numRestarts * krylovDimension) << "\t" << krylovDimension << "\n";
         file.close();
     }
@@ -585,7 +586,8 @@ public:
 
     void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
     {
-        std::ofstream filestream(mResultDir + std::string("/FetiSolverInfo.txt"), std::ofstream::app);
+        std::ofstream filestream(mPostProcessor->GetResultDirectory() + std::string("/FetiSolverInfo.txt"),
+                                 std::ofstream::app);
         filestream << "iterations"
                    << "\t"
                    << "time step"
@@ -738,12 +740,7 @@ public:
     {
         VectorXd zeroVec = mB * delta_dof_active;
 
-        mStructure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
-
         MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        mStructure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
-
 
         const int numLagrangeMultipliersDisplacement = numInterfaceNodesTotal * 2;
         if (not(zeroVec.head(numLagrangeMultipliersDisplacement).isMuchSmallerThan(1.e-4, 1.e-1)))
@@ -968,10 +965,6 @@ public:
         StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
         StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
 
-        StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
-        StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
-        StructureOutputBlockVector lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
-
         StructureOutputBlockVector extForce(dofStatus, true);
         StructureOutputBlockVector intForce(dofStatus, true);
 
@@ -1007,9 +1000,9 @@ public:
         inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] =
                 std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
-        ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+        auto lastConvergedDofValues = ExtractDofValues();
 
-        UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+        UpdateAndGetAndMergeConstraintRHS(curTime, lastConvergedDofValues[0]);
 
         PostProcess(mLambda, dofStatus);
 
@@ -1052,13 +1045,14 @@ public:
                 if (fetiSolverConverged)
                 {
 
-
                     // calculate trial state
-                    dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+                    dof_dt0 = lastConvergedDofValues[0] + delta_dof_dt0;
                     if (mStructure->GetNumTimeDerivatives() >= 1)
-                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, mTimeStep);
+                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
                     if (mStructure->GetNumTimeDerivatives() >= 2)
-                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, mTimeStep);
+                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
 
 
                     MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
@@ -1070,9 +1064,11 @@ public:
                     mStructure->Evaluate(inputMap, evaluateInternalGradient);
                     // ******************************************************
 
+
                     residual = CalculateResidual(extForce, intForce);
 
                     normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
+
 
                     mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
@@ -1119,9 +1115,9 @@ public:
                     mStructure->ElementTotalUpdateStaticData();
 
                     // store converged step
-                    lastConverged_dof_dt0 = dof_dt0;
-                    lastConverged_dof_dt1 = dof_dt1;
-                    lastConverged_dof_dt2 = dof_dt2;
+                    lastConvergedDofValues[0] = dof_dt0;
+                    lastConvergedDofValues[1] = dof_dt1;
+                    lastConvergedDofValues[2] = dof_dt2;
                     mLambdaOld = mLambda;
 
                     MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
@@ -1137,7 +1133,7 @@ public:
 
 
                     // perform Postprocessing
-                    std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
+                    std::ofstream file(mPostProcessor->GetResultDirectory() + "/statistics.dat", std::ios::app);
                     file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                     file.close();
 
@@ -1153,7 +1149,8 @@ public:
                 {
                     mStructure->GetLogger() << "No convergence with timestep " << mTimeStep << "\n\n";
 
-                    MergeDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, true);
+                    MergeDofValues(lastConvergedDofValues[0], lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                   true);
 
                     mTimeStep = ReduceTimeStep(curTime);
                 }
@@ -1162,6 +1159,23 @@ public:
 
 
         } // end while
+    }
+
+    StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (mGamma / (timeStep * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
+               rDof_dt2 * (timeStep * (1. - mGamma / (2. * mBeta)));
+    }
+
+
+    StructureOutputBlockVector CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (1. / (timeStep * timeStep * mBeta)) - rDof_dt1 * (1. / (timeStep * mBeta)) -
+               rDof_dt2 * ((0.5 - mBeta) / mBeta);
     }
 
     void IncrementDofs(StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
@@ -1178,7 +1192,7 @@ public:
     {
         StructureOutputBlockVector outOfBalance(dofStatus, true);
         outOfBalance.J = BlockFullVector<double>((mB.transpose() * lambda).head(mNumTotalActiveDofs), dofStatus);
-        TimeIntegrationBase::PostProcess(outOfBalance);
+        mPostProcessor->PostProcess(outOfBalance);
     }
 
 
@@ -1240,9 +1254,29 @@ public:
         mMaxNumFetiIterations = maxNumFetiIterations;
     }
 
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //          MEMBER VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+protected:
+    double mTime = 0.;
+    double mTimeStep = 0.;
+    double mMinTimeStep = 0.;
+    double mMaxTimeStep = 1.;
 
 private:
     StructureFeti* mStructureFeti;

@@ -265,9 +265,13 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
+
+std::vector<int> StructureBase::GetVisualizationGroups()
 {
-    return mGroupVisualizeComponentsMap;
+    std::vector<int> vec;
+    for(const auto& entry : mGroupVisualizeComponentsMap)
+        vec.push_back(entry.first);
+    return vec;
 }
 
 void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase&)
@@ -604,7 +608,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector() + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
-    residual.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+    residual.J = Assembler::ApplyCMatrix(residual, GetAssembler().GetConstraintMatrix());
 
     // reuse deltaDof_dt0
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
