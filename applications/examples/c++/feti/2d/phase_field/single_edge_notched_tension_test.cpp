@@ -48,7 +48,6 @@ constexpr double fractureEnergy = 2.7; // N/mm
 constexpr double artificialViscosity = 0.01; // Ns/mm^2
 constexpr ePhaseFieldEnergyDecomposition energyDecomposition = ePhaseFieldEnergyDecomposition::ISOTROPIC;
 
-constexpr bool performLineSearch = true;
 constexpr bool automaticTimeStepping = true;
 constexpr double timeStep = 1.e-3;
 constexpr double minTimeStep = 1.e-8;
@@ -64,7 +63,6 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
-
     const int rank = world.rank();
 
     NuTo::StructureFeti structure(dimension);
@@ -108,8 +106,6 @@ int main(int argc, char* argv[])
                           << "*********************************** \n\n";
 
     structure.NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
-
-    structure.NodeInfo(10);
 
     std::vector<int> boundaryDofIds;
     for (const int nodeId : groupNodesBottomBoundary.GetMemberIds())
@@ -165,7 +161,6 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMaxNumIterations(5);
     newmarkFeti.SetAutomaticTimeStepping(automaticTimeStepping);
     newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
-    newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetToleranceResidual(eDof::CRACKPHASEFIELD, toleranceCrack);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);

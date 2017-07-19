@@ -740,12 +740,7 @@ public:
     {
         VectorXd zeroVec = mB * delta_dof_active;
 
-        mStructure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
-
         MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        mStructure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
-
 
         const int numLagrangeMultipliersDisplacement = numInterfaceNodesTotal * 2;
         if (not(zeroVec.head(numLagrangeMultipliersDisplacement).isMuchSmallerThan(1.e-4, 1.e-1)))
@@ -1053,9 +1048,11 @@ public:
                     // calculate trial state
                     dof_dt0 = lastConvergedDofValues[0] + delta_dof_dt0;
                     if (mStructure->GetNumTimeDerivatives() >= 1)
-                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2]);
+                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
                     if (mStructure->GetNumTimeDerivatives() >= 2)
-                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2]);
+                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
 
 
                     MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
@@ -1067,9 +1064,11 @@ public:
                     mStructure->Evaluate(inputMap, evaluateInternalGradient);
                     // ******************************************************
 
+
                     residual = CalculateResidual(extForce, intForce);
 
                     normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
+
 
                     mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
@@ -1160,6 +1159,23 @@ public:
 
 
         } // end while
+    }
+
+    StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (mGamma / (timeStep * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
+               rDof_dt2 * (timeStep * (1. - mGamma / (2. * mBeta)));
+    }
+
+
+    StructureOutputBlockVector CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (1. / (timeStep * timeStep * mBeta)) - rDof_dt1 * (1. / (timeStep * mBeta)) -
+               rDof_dt2 * ((0.5 - mBeta) / mBeta);
     }
 
     void IncrementDofs(StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
