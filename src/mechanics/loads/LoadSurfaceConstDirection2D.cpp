@@ -10,7 +10,7 @@ LoadSurfaceConstDirection2D::LoadSurfaceConstDirection2D(StructureBase* rStructu
 }
 
 
-void LoadSurfaceConstDirection2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+void LoadSurfaceConstDirection2D::CalculateSurfaceLoad(Eigen::Vector2d&, Eigen::Vector2d&,
                                                        Eigen::Vector2d& rLoadVector) const
 {
     rLoadVector = mLoadVector;

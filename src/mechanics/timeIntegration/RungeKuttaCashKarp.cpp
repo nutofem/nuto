@@ -60,7 +60,7 @@ double NuTo::RungeKuttaCashKarp::GetStageTimeFactor(int rStage) const
         s = 7. / 8.;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageTimeFactor] rStage<6.");
+        throw Exception("[NuTo::RungeKuttaCashKarp::GetStageTimeFactor] rStage<6.");
     }
     return s;
 }
@@ -93,7 +93,7 @@ bool NuTo::RungeKuttaCashKarp::HasTimeChanged(int rStage) const
         s = true;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKuttaCashKarp::HasTimeChanged] rStage<6.");
+        throw Exception("[NuTo::RungeKuttaCashKarp::HasTimeChanged] rStage<6.");
     }
     return s;
 }
@@ -134,7 +134,7 @@ void NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor(std::vector<double>& rWe
         rWeight[4] = 253. / 4096.;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor] rStage<6.");
+        throw Exception("[NuTo::RungeKuttaCashKarp::GetStageDerivativeFactor] rStage<6.");
     }
 }
 
@@ -166,7 +166,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage) const
             s = 0.;
             break;
         default:
-            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+            throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
     }
     if (orderCashKarp == 2)
@@ -192,7 +192,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage) const
             s = 0.;
             break;
         default:
-            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+            throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
     }
     if (orderCashKarp == 3)
@@ -218,7 +218,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage) const
             s = 0.;
             break;
         default:
-            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+            throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
     }
     if (orderCashKarp == 4)
@@ -244,7 +244,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage) const
             s = 0.25;
             break;
         default:
-            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+            throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
     }
     if (orderCashKarp == 5)
@@ -270,7 +270,7 @@ double NuTo::RungeKuttaCashKarp::GetStageWeights(int rStage) const
             s = 512. / 1771.;
             break;
         default:
-            throw MechanicsException("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
+            throw Exception("[NuTo::RungeKuttaCashKarp::GetStageWeights] rStage<6.");
         }
     }
     return s;

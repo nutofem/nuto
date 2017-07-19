@@ -24,7 +24,7 @@ int NuTo::IntegrationType3D4NGauss4Ip::GetNumIntegrationPoints() const
     return 4;
 }
 
-double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum) const
+double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int) const
 {
     return 1. / 24.;
 }

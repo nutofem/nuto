@@ -24,7 +24,7 @@ double NuTo::GradientDamageFatigueEngineeringStress::GetParameterDouble(
     case Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER:
         return mFatigueParameter;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -48,7 +48,7 @@ void NuTo::GradientDamageFatigueEngineeringStress::SetParameterDouble(
         mFatigueParameter = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
     SetParametersValid();
 }

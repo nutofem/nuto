@@ -22,8 +22,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearDampingEn
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearDampingEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                            const InterpolationType& rInterpolationType) const
+NuTo::LinearDampingEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -98,7 +97,7 @@ double NuTo::LinearDampingEngineeringStress::GetParameterDouble(Constitutive::eC
         return mDampingCoefficient;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
                                                               Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
@@ -114,7 +113,7 @@ void NuTo::LinearDampingEngineeringStress::SetParameterDouble(Constitutive::eCon
         break;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
                                                               Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
     SetParametersValid();
@@ -153,7 +152,7 @@ void NuTo::LinearDampingEngineeringStress::Evaluate(const ConstitutiveInputMap& 
                 tangent(0, 0) = mDampingCoefficient;
             }
             else
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Not implemented for dimension 2 and 3");
+                throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented for dimension 2 and 3");
 
             break;
         }

@@ -41,7 +41,7 @@ double NuTo::NystroemQinZhu::GetStageTimeFactor(int rStage) const
         s = (3. + sqrt(3.)) / 6.;
         break;
     default:
-        throw MechanicsException("[NuTo::NystroemQinZhu::GetStageTimeFactor] error with stage number.");
+        throw Exception("[NuTo::NystroemQinZhu::GetStageTimeFactor] error with stage number.");
     }
     return s;
 }
@@ -65,7 +65,7 @@ bool NuTo::NystroemQinZhu::HasTimeChanged(int rStage) const
         s = true;
         break;
     default:
-        throw MechanicsException("[NuTo::NystroemQinZhu::HasTimeChanged] error with stage number.");
+        throw Exception("[NuTo::NystroemQinZhu::HasTimeChanged] error with stage number.");
     }
     return s;
 }
@@ -88,7 +88,7 @@ void NuTo::NystroemQinZhu::GetStageDerivativeFactor(std::vector<double>& rWeight
         rWeight[1] = sqrt(3.) / 6.;
         break;
     default:
-        throw MechanicsException("[NuTo::NystroemQinZhu::GetStageDerivativeFactor] error with stage number.");
+        throw Exception("[NuTo::NystroemQinZhu::GetStageDerivativeFactor] error with stage number.");
     }
 }
 
@@ -109,7 +109,7 @@ double NuTo::NystroemQinZhu::GetStageWeights1(int rStage) const
         s = (1. + sqrt(3.)) / 24.;
         break;
     default:
-        throw MechanicsException("[NuTo::NystroemQinZhu::GetStageWeights1] error with stage number.");
+        throw Exception("[NuTo::NystroemQinZhu::GetStageWeights1] error with stage number.");
     }
     return s;
 }
@@ -131,7 +131,7 @@ double NuTo::NystroemQinZhu::GetStageWeights2(int rStage) const
         s = (3. + 2. * sqrt(3.)) / 12.;
         break;
     default:
-        throw MechanicsException("[NuTo::NystroemQinZhu::GetStageWeights2] error with stage number.");
+        throw Exception("[NuTo::NystroemQinZhu::GetStageWeights2] error with stage number.");
     }
     return s;
 }

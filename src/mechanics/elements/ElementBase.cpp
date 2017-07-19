@@ -5,7 +5,7 @@
 #include <boost/foreach.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -34,7 +34,7 @@
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#include "visualize/VisualizeException.h"
+#include "base/Exception.h"
 #endif
 
 using namespace NuTo;
@@ -89,14 +89,14 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
     return mIPData.HasConstitutiveLawAssigned(rIP);
 }
 
-void NuTo::ElementBase::SetSection(std::shared_ptr<const Section> section)
+void NuTo::ElementBase::SetSection(std::shared_ptr<const Section>)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
+    throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 std::shared_ptr<const Section> NuTo::ElementBase::GetSection() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
+    throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 
@@ -110,9 +110,9 @@ int NuTo::ElementBase::GetNumNodes(Node::eDof rDofType) const
     return mInterpolationType->Get(rDofType).GetNumNodes();
 }
 
-Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
+Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int, Node::eDof) const
 {
-    throw NuTo::MechanicsException("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
+    throw NuTo::Exception("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
 
 
@@ -155,7 +155,7 @@ void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase& rInt
     }
     else
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Integration Type does not match element type of element.");
+        throw Exception(__PRETTY_FUNCTION__, "Integration Type does not match element type of element.");
     }
 }
 
@@ -200,7 +200,7 @@ void NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap
 
     for (auto& itOutput : rConstitutiveOutput)
         if (itOutput.second != nullptr && !itOutput.second->GetIsCalculated()) // check nullptr because of static data
-            throw MechanicsException(__PRETTY_FUNCTION__, "Output " + Constitutive::OutputToString(itOutput.first) +
+            throw Exception(__PRETTY_FUNCTION__, "Output " + Constitutive::OutputToString(itOutput.first) +
                                                                   " not calculated by constitutive law");
 }
 
@@ -226,15 +226,15 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
     return globalIntegrationPointCoordinates;
 }
 
-bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const
+bool NuTo::ElementBase::GetLocalPointCoordinates(const double*, double*) const
 {
-    throw NuTo::MechanicsException(
+    throw NuTo::Exception(
             "[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
 }
 
 NuTo::NodeBase* NuTo::ElementBase::GetBoundaryControlNode() const
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this element type.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented for this element type.");
 }
 
 
@@ -283,7 +283,7 @@ NuTo::IpData::eIpStaticDataType ToIpDataEnum(NuTo::eVisualizeWhat what)
     case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         return IpData::eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eIpStaticDataType");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eIpStaticDataType");
     }
 }
 
@@ -306,7 +306,7 @@ NuTo::Node::eDof ToNodeEnum(NuTo::eVisualizeWhat what)
     case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
         return NuTo::Node::eDof::WATERVOLUMEFRACTION;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eDof");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "No conversion from eVisualizeWhat to eDof");
     }
 }
 
@@ -477,16 +477,16 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
             // do nothing
             break;
         default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "visualization of " + componentName + " not implemented.");
         }
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
-                                                    const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&,
+                                                    const std::vector<eVisualizeWhat>&)
 {
-    throw NuTo::MechanicsException(
+    throw NuTo::Exception(
             std::string(__PRETTY_FUNCTION__) +
             ": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
@@ -494,11 +494,6 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&
 void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
                                                       const std::vector<eVisualizeWhat>& visualizeComponents)
 {
-    //
-    //  This function is still in beta and only works for engineering strain. Implementation is still in progress...
-    //
-
-    // get visualization cells from integration type
 
     struct IpInfo
     {
@@ -534,7 +529,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
             elementIpDataMap[ToIpDataEnum(component)];
             break;
         default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "Visualization component " + GetComponentName(component) +
                                                    " is not implemented or not known at the integration points.");
             break;
@@ -571,7 +566,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         }
         break;
         default:
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "Visualization component " + componentName +
                                                    " is not implemented or not known at the integration points.");
         }

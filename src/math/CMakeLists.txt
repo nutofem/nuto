@@ -10,7 +10,6 @@ set(NuToMathSources
     SparseMatrixCSRSymmetric.cpp
     SparseMatrixCSRVector2General.cpp
     SparseMatrixCSRVector2Symmetric.cpp
-    SparseDirectSolverMKLDSS.cpp
     SparseDirectSolverMKLPardiso.cpp
     SparseDirectSolverPardiso.cpp
     SparseDirectSolverMUMPS.cpp

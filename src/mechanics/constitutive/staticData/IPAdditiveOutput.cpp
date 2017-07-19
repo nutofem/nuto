@@ -18,7 +18,8 @@ IPAdditiveOutput::IPAdditiveOutput(AdditiveOutput& rLaw)
 
 
 IPAdditiveOutput::IPAdditiveOutput(const IPAdditiveOutput& rOther)
-    : mLaw(rOther.mLaw)
+    : IPConstitutiveLawBase(rOther)
+    , mLaw(rOther.mLaw)
     , mSublawIPs(rOther.mSublawIPs)
 {
 }

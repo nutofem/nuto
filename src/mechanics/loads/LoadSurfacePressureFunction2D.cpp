@@ -11,7 +11,7 @@ LoadSurfacePressureFunction2D::LoadSurfacePressureFunction2D(
 }
 
 
-void LoadSurfacePressureFunction2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+void LoadSurfacePressureFunction2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d&,
                                                          Eigen::Vector2d& rLoadVector) const
 {
     rLoadVector = mLoadFunction(rCoordinates);

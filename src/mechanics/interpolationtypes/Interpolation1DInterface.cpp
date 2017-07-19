@@ -1,5 +1,5 @@
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -27,7 +27,7 @@ NuTo::eIntegrationType NuTo::Interpolation1DInterface::GetStandardIntegrationTyp
         return NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
                                                               Interpolation::TypeOrderToString(mTypeOrder) +
                                                               " not implemented");
     }
@@ -42,7 +42,7 @@ Eigen::VectorXd NuTo::Interpolation1DInterface::CalculateNaturalNodeCoordinates(
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctionsInterface2D::NodeCoordinatesInterface2dOrder2(rNodeIndexDof);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " +
+        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " +
                                                               Interpolation::TypeOrderToString(mTypeOrder) +
                                                               " not implemented");
     }
@@ -57,7 +57,7 @@ Eigen::VectorXd NuTo::Interpolation1DInterface::CalculateShapeFunctions(const Ei
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctionsInterface2D::ShapeFunctionsInterface2dOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " +
                                                               Interpolation::TypeOrderToString(mTypeOrder) +
                                                               " not implemented");
     }
@@ -69,26 +69,26 @@ NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural(const E
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder1(rCoordinates);
+        return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder1();
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctionsInterface2D::DerivativeShapeFunctionsInterface2dOrder2(rCoordinates);
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " +
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " +
                                                               Interpolation::TypeOrderToString(mTypeOrder) +
                                                               " not implemented");
     }
 }
 
 Eigen::VectorXd
-NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
-                                                                   int rSurface) const
+NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd&,
+                                                                   int) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates] not implemented");
 }
 
 
 Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates(
-        const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+        const Eigen::VectorXd&, int) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates] not implemented");
 }
@@ -102,7 +102,7 @@ int NuTo::Interpolation1DInterface::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return 6;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " +
+        throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " +
                                                               Interpolation::TypeOrderToString(mTypeOrder) +
                                                               " not implemented");
     }

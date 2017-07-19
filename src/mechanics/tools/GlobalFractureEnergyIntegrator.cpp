@@ -2,7 +2,7 @@
 // Created by Thomas Titscher on 10/28/16.
 //
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "math/EigenCompanion.h"
 
 NuTo::Tools::GlobalFractureEnergyIntegrator::GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces,
@@ -60,14 +60,14 @@ int NuTo::Tools::GlobalFractureEnergyIntegrator::FindIndexJustAboveForceThreshol
 {
     auto numRows = mForce.rows();
     if (rForceThreshold < mForce[numRows - 1])
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces did not drop below the force threshold");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "The forces did not drop below the force threshold");
 
     for (auto i = 0; i < numRows - 1; ++i)
     {
         if (mForce[i] > rForceThreshold && mForce[i + 1] <= rForceThreshold)
             return i;
     }
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces never reach the force threshold");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "The forces never reach the force threshold");
 }
 
 double NuTo::Tools::GlobalFractureEnergyIntegrator::IntegrateSofteningCurveInternal(int rEnd) const
@@ -86,11 +86,11 @@ double NuTo::Tools::GlobalFractureEnergyIntegrator::IntegrateSofteningCurveInter
 void NuTo::Tools::GlobalFractureEnergyIntegrator::CheckData() const
 {
     if (mForce.rows() != mDispl.rows())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Force.Rows != Displacement.Rows()");
+        throw Exception(__PRETTY_FUNCTION__, "Force.Rows != Displacement.Rows()");
 
     if (std::abs(mForce[0]) > 1.e-10)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Forces[0] != 0 ( but has to.)");
+        throw Exception(__PRETTY_FUNCTION__, "Forces[0] != 0 ( but has to.)");
 
     if (std::abs(mDispl[0]) > 1.e-10)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Displacements[0] != 0 ( but has to.)");
+        throw Exception(__PRETTY_FUNCTION__, "Displacements[0] != 0 ( but has to.)");
 }

@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -27,27 +27,6 @@ NuTo::LinearElasticAnisotropic::LinearElasticAnisotropic()
     SetParametersValid();
 }
 
-//#ifdef ENABLE_SERIALIZATION
-////! @brief serializes the class
-////! @param ar         archive
-////! @param version    version
-// template<class Archive>
-// void NuTo::LinearElasticAnisotropic::serialize(Archive & ar, const unsigned int version)
-//{
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "start serialize LinearElasticAnisotropic" << std::endl;
-//#endif
-//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-//    & BOOST_SERIALIZATION_NVP(mE)
-//    & BOOST_SERIALIZATION_NVP(mNu)
-//    & BOOST_SERIALIZATION_NVP(mRho)
-//    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "finish serialize LinearElasticAnisotropic" << std::endl;
-//#endif
-//}
-// BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearElasticAnisotropic)
-//#endif // ENABLE_SERIALIZATION
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAnisotropic::CreateIPLaw()
 {
@@ -56,8 +35,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAn
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                      const InterpolationType& rInterpolationType) const
+NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -82,7 +60,7 @@ NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMa
         default:
             continue;
             //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+            //            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
             //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
             //            law.");
         }
@@ -94,16 +72,14 @@ NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMa
 namespace NuTo // template specialization in same namespace as definition
 {
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }
 
 
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }
@@ -233,7 +209,7 @@ double NuTo::LinearElasticAnisotropic::GetParameterDouble(NuTo::Constitutive::eC
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -248,7 +224,7 @@ void NuTo::LinearElasticAnisotropic::SetParameterDouble(NuTo::Constitutive::eCon
         this->mRho = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -262,7 +238,7 @@ NuTo::LinearElasticAnisotropic::GetParameterMatrixDouble(NuTo::Constitutive::eCo
         return mStiffness;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -278,7 +254,7 @@ void NuTo::LinearElasticAnisotropic::SetParameterMatrixDouble(NuTo::Constitutive
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -328,7 +304,7 @@ void NuTo::LinearElasticAnisotropic::CheckParameters() const
         {
             if (mStiffness(ii, jj) != mStiffness(jj, ii))
             {
-                throw NuTo::MechanicsException(
+                throw NuTo::Exception(
                         BOOST_CURRENT_FUNCTION,
                         "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," + std::to_string(jj) +
                                 "] = " + std::to_string(mStiffness(ii, jj)) + "\n" + "(entry [" + std::to_string(jj) +

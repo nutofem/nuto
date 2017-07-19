@@ -2,7 +2,6 @@
 
 #include <eigen3/Eigen/Core>
 #include <memory>
-#include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {

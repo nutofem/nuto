@@ -5,7 +5,7 @@ namespace NuTo
 {
 
 template <>
-EngineeringStress<3> EngineeringStress<1>::As3D(ePlaneState rPlaneState) const
+EngineeringStress<3> EngineeringStress<1>::As3D(ePlaneState) const
 {
     EngineeringStress<3> stress;
     stress[0] = (*this)[0];
@@ -24,20 +24,20 @@ EngineeringStress<3> EngineeringStress<2>::As3D(ePlaneState rPlaneState) const
     stress[5] = (*this)[2];
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     return stress;
 }
 
 template <>
-EngineeringStress<3> EngineeringStress<3>::As3D(ePlaneState rPlaneState) const
+EngineeringStress<3> EngineeringStress<3>::As3D(ePlaneState) const
 {
     return *this;
 }
 
 template <>
-double EngineeringStress<1>::GetVonMisesStress(ePlaneState rPlaneState) const
+double EngineeringStress<1>::GetVonMisesStress(ePlaneState) const
 {
     return (*this)[0];
 }
@@ -47,7 +47,7 @@ double EngineeringStress<2>::GetVonMisesStress(ePlaneState rPlaneState) const
 {
     if (rPlaneState == ePlaneState::PLANE_STRAIN)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     const auto& s = data();
@@ -57,7 +57,7 @@ double EngineeringStress<2>::GetVonMisesStress(ePlaneState rPlaneState) const
 
 
 template <>
-double EngineeringStress<3>::GetVonMisesStress(ePlaneState rPlaneState) const
+double EngineeringStress<3>::GetVonMisesStress(ePlaneState) const
 {
     const auto& s = data();
     double misesSquared = 0.5 * ((s[0] - s[1]) * (s[0] - s[1]) + (s[1] - s[2]) * (s[1] - s[2]) +

@@ -1,4 +1,4 @@
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/sections/Section.h"
 #include <ostream>
 
@@ -11,28 +11,25 @@ Section::~Section()
 
 double Section::GetArea(double) const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Section type has no cross-section area.");
+    throw Exception(__PRETTY_FUNCTION__, "Section type has no cross-section area.");
 }
 
 
 double Section::GetThickness() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Section type has no thickness.");
+    throw Exception(__PRETTY_FUNCTION__, "Section type has no thickness.");
 }
 
 
 double Section::GetCircumference() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Section type has no circumference.");
+    throw Exception(__PRETTY_FUNCTION__, "Section type has no circumference.");
 }
 
 
 bool Section::IsPlaneStrain() const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Section is not a plane section.");
+    throw Exception(__PRETTY_FUNCTION__, "Section is not a plane section.");
 }
 
 
-void Section::Info(std::ostream& out) const
-{
-}

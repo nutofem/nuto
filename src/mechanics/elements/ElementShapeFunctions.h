@@ -19,7 +19,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder1(int rNodeIndex);
 
 Eigen::Matrix<double, 2, 1> ShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates);
 
-Eigen::Matrix<double, 2, 1> DerivativeShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates);
+Eigen::Matrix<double, 2, 1> DerivativeShapeFunctionsTrussOrder1();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -149,7 +149,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder1(int rNodeIndex);
 
 Eigen::Matrix<double, 4, 1> ShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates);
 
-Eigen::Matrix<double, 4, 3> DerivativeShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates);
+Eigen::Matrix<double, 4, 3> DerivativeShapeFunctionsTetrahedronOrder1();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -227,7 +227,7 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder1(int rNodeIndex);
 
 Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates);
 
-Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates);
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1();
 
 Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex);
 

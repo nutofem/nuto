@@ -25,7 +25,7 @@ namespace NuTo
 {
 template <>
 EngineeringStress<1> EngineeringStressHelper::GetStress<1>(const EngineeringStrain<1>& rElasticStrain, double rE,
-                                                           double rNu, ePlaneState rPlaneState)
+                                                           double, ePlaneState)
 {
     EngineeringStress<1> stress;
     stress[0] = rE * rElasticStrain[0];
@@ -51,7 +51,7 @@ EngineeringStress<2> EngineeringStressHelper::GetStress<2>(const EngineeringStra
 
 template <>
 EngineeringStress<3> EngineeringStressHelper::GetStress<3>(const EngineeringStrain<3>& rElasticStrain, double rE,
-                                                           double rNu, ePlaneState rPlaneState)
+                                                           double rNu, ePlaneState)
 {
     double C11 = 0.0, C12 = 0.0, C44 = 0.0;
     std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(rE, rNu);

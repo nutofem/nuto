@@ -24,12 +24,7 @@ public:
     }
 
 
-    //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
-    //! @param rConstitutiveOutput Desired constitutive outputs
-    //! @param rInterpolationType Interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law

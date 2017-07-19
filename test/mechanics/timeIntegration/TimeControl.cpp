@@ -3,12 +3,13 @@
 #include "mechanics/timeIntegration/TimeControl.h"
 
 #include <iostream>
+#include "base/Exception.h"
 
 using namespace NuTo;
 
 // %%% Helper functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bool CheckExceptionMessageCorrect(MechanicsException const& ex, std::string expectedMsg)
+bool CheckExceptionMessageCorrect(Exception const& ex, std::string expectedMsg)
 {
     std::string refinedErrorMessage = ex.ErrorMessage().substr(ex.ErrorMessage().find_first_of("]") + 2);
 
@@ -34,29 +35,29 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
     TimeControl timeControl;
 
     std::string expectedMsg = "";
-    std::function<bool(MechanicsException const&)> CheckException = [&expectedMsg](
-            MechanicsException const& ex) -> bool { return CheckExceptionMessageCorrect(ex, expectedMsg); };
+    std::function<bool(Exception const&)> CheckException = [&expectedMsg](
+            Exception const& ex) -> bool { return CheckExceptionMessageCorrect(ex, expectedMsg); };
 
     expectedMsg = "Current timestep is 0 or negative!";
     timeControl.SetTimeStepFunction([](TimeControl&, double, double, bool) -> double { return 0.0; });
-    BOOST_CHECK_EXCEPTION(timeControl.Proceed(), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.Proceed(), Exception, CheckException);
     timeControl.SetTimeStepFunction([](TimeControl&, double, double, bool) -> double { return -1.0; });
-    BOOST_CHECK_EXCEPTION(timeControl.Proceed(), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.Proceed(), Exception, CheckException);
 
     expectedMsg = "Timestep must be larger than 0!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(0.0), MechanicsException, CheckException);
-    BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(-1.0), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(0.0), Exception, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimeStep(-1.0), Exception, CheckException);
 
     expectedMsg = "Maximal timestep must be a positive number!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(0.0), MechanicsException, CheckException);
-    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(-1.0), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(0.0), Exception, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(-1.0), Exception, CheckException);
 
     timeControl.SetMinTimeStep(1.0);
     timeControl.SetMaxTimeStep(5.0);
     expectedMsg = "Minimal timestep must be smaller than maximal Timestep!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetMinTimeStep(6.0), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetMinTimeStep(6.0), Exception, CheckException);
     expectedMsg = "Maximal timestep must be bigger than minimal Timestep!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(0.5), MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetMaxTimeStep(0.5), Exception, CheckException);
 
 
     timeControl.SetTimeStepFunction(
@@ -66,7 +67,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
     timeControl.Proceed();
 
     expectedMsg = "Final time must be larger than current time!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetTimeFinal(1.0);, MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimeFinal(1.0);, Exception, CheckException);
 
 
     expectedMsg = "No convergence with the current maximum number of "
@@ -76,7 +77,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
                   "and intend to use some kind of automatic timestepping, call "
                   "the RestorePreviosTime() function of the time control before reducing "
                   "the timestep.";
-    BOOST_CHECK_EXCEPTION(timeControl.AdjustTimestep(10, 10, false);, MechanicsException, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.AdjustTimestep(10, 10, false);, Exception, CheckException);
 }
 
 

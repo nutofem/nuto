@@ -10,7 +10,7 @@ LoadSurfacePressure2D::LoadSurfacePressure2D(StructureBase* rStructure, int rEle
 }
 
 
-void LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+void LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d&, Eigen::Vector2d& rNormal,
                                                  Eigen::Vector2d& rLoadVector) const
 {
     assert(std::abs(rNormal.norm() - 1.) < 1e-5);

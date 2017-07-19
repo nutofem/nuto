@@ -138,7 +138,7 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
 StructureOutputBlockMatrix NewmarkDirect::CalculateMuDampingMatrix(const StructureOutputBlockMatrix& hessian2) const
 {
     if (mUseMuDamping and mStructure->GetNumTimeDerivatives() < 2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "MuDampingMass requires a mass matrix (2nd time derivatives).");
+        throw Exception(__PRETTY_FUNCTION__, "MuDampingMass requires a mass matrix (2nd time derivatives).");
 
     const auto& dofStatus = mStructure->GetDofStatus();
     StructureOutputBlockMatrix hessian1(dofStatus);
@@ -290,7 +290,7 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
         for (const auto& activeDofs : mStepActiveDofs)
         {
             if (activeDofs.empty())
-                throw MechanicsException(__PRETTY_FUNCTION__, "Calculation step has no active DOFs.");
+                throw Exception(__PRETTY_FUNCTION__, "Calculation step has no active DOFs.");
         }
     }
 
@@ -321,7 +321,7 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     if (mToleranceResidual < residual_mod.CalculateInfNorm())
     {
         mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-        throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+        throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
     CalculateResidualKForPostprocessing(residual, hessians[2], dofValues[1], dofValues[2]);
 
@@ -513,7 +513,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
     } // active dof loop
 
     // Continue with next timestep or reduce timestep and restart iteration
-    mTimeControl.AdjustTimestep(timeStepMaxIterations,mMaxNumIterations,converged);
+    mTimeControl.AdjustTimestep(timeStepMaxIterations, mMaxNumIterations, converged);
 }
 
 

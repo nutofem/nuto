@@ -9,7 +9,6 @@
 #include "optimize/CallbackHandlerPython.h"
 #include "optimize/Jacobi.h"
 #include "optimize/MisesWielandt.h"
-#include "optimize/OptimizeException.h"
 %}
 
 %include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix

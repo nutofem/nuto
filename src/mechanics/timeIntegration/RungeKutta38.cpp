@@ -53,7 +53,7 @@ double NuTo::RungeKutta38::GetStageTimeFactor(int rStage) const
         s = 1.0;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKutta38::GetStageTimeFactor] rStage<4.");
+        throw Exception("[NuTo::RungeKutta38::GetStageTimeFactor] rStage<4.");
     }
     return s;
 }
@@ -80,7 +80,7 @@ bool NuTo::RungeKutta38::HasTimeChanged(int rStage) const
         s = true;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKutta38::HasTimeChanged] rStage<4.");
+        throw Exception("[NuTo::RungeKutta38::HasTimeChanged] rStage<4.");
     }
     return s;
 }
@@ -108,7 +108,7 @@ void NuTo::RungeKutta38::GetStageDerivativeFactor(std::vector<double>& rWeight, 
         rWeight[2] = 1.0;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKutta38::GetStageDerivativeFactor] rStage<4.");
+        throw Exception("[NuTo::RungeKutta38::GetStageDerivativeFactor] rStage<4.");
     }
 }
 
@@ -132,7 +132,7 @@ double NuTo::RungeKutta38::GetStageWeights(int rStage) const
         s = 1. / 8.;
         break;
     default:
-        throw MechanicsException("[NuTo::RungeKutta38::GetStageWeights] rStage<4.");
+        throw Exception("[NuTo::RungeKutta38::GetStageWeights] rStage<4.");
     }
     return s;
 }

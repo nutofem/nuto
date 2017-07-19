@@ -8,7 +8,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 
 #include "visualize/VisualizeEnum.h"

@@ -148,7 +148,7 @@ std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(NuTo
             }
         }
         if (not surfaceFound)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "No matching Slaveate surface found.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "No matching Slaveate surface found.");
     }
     return pairs;
 }
@@ -245,7 +245,7 @@ NuTo::NodeBase* CloneNode(NuTo::Structure& rS, const NuTo::NodeBase* rNode)
     return rS.NodeGetNodePtr(nodeId);
 }
 
-NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
+NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int)
 {
     auto* firstElement = rS.ElementGetElementPtr(rS.GroupGetMemberIds(rGroupMaster)[0]);
     NuTo::Interpolation::eTypeOrder coordinateInterpolation =
@@ -255,7 +255,7 @@ NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, 
         auto* e = rS.ElementGetElementPtr(elementId);
         auto type = e->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
         if (type != coordinateInterpolation)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
                                            "All elements in the groups must have the same coordinate interpolation.");
     }
     return coordinateInterpolation;
@@ -384,7 +384,7 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS
     Timer timer(__FUNCTION__, rS.GetShowTime(), rS.GetLogger());
 
     if (not HasOnlyCoordinateInterpolation(rS, rGroupMaster) or not HasOnlyCoordinateInterpolation(rS, rGroupSlave))
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Elements must only have COORDINATES interpolation.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Elements must only have COORDINATES interpolation.");
 
     auto pairs = FindMatchingElements(rS, rGroupMaster, rGroupSlave);
 
@@ -436,7 +436,7 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS
         }
         else
         {
-            throw NuTo::MechanicsException(
+            throw NuTo::Exception(
                     __PRETTY_FUNCTION__, "Only implemented for EQUIDISTANT1 and EQUIDISTANT2 coordinate interpolation");
         }
     }

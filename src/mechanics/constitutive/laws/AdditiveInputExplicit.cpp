@@ -12,7 +12,7 @@ void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rCo
     if (rModiesInput == Constitutive::eInput::NONE)
     {
         if (mMainLaw != nullptr)
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "There can be only one! --- This additive input law only accepts one law which calculates the "
                     "output. All other laws are only allowed to modify the input to this law. Specify the modifying "
@@ -29,12 +29,11 @@ void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rCo
 
 
 NuTo::ConstitutiveInputMap
-NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                   const NuTo::InterpolationType& rInterpolationType) const
+NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // Get Inputs for output returning constitutive law
     ConstitutiveInputMap mainLawConstitutiveInputMap(
-            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType));
+            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput));
 
     // Get Inputs for input modifying constitutive laws
     ConstitutiveInputMap sublawsConstitutiveInputMap;
@@ -53,7 +52,7 @@ NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutpu
 
         // Don't merge the sublaw inputs directly into the main laws input map!  ---> When more than one sublaw is
         // attached the inputs of the first might effect the following laws outputs - have a look at the line above!
-        sublawsConstitutiveInputMap.Merge(mSublaws[i]->GetConstitutiveInputs(sublawOutputMap, rInterpolationType));
+        sublawsConstitutiveInputMap.Merge(mSublaws[i]->GetConstitutiveInputs(sublawOutputMap));
     }
     return mainLawConstitutiveInputMap.Merge(sublawsConstitutiveInputMap);
 }
@@ -84,14 +83,14 @@ NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::eOutput
             return Constitutive::eOutput::D_STRAIN_D_TEMPERATURE;
 
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "No partial derivative defined for parameter " +
+            throw Exception(__PRETTY_FUNCTION__, "No partial derivative defined for parameter " +
                                                                   Constitutive::OutputToString(rParameter) +
                                                                   " and global derivative " +
                                                                   Constitutive::OutputToString(rMainDerivative));
         }
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "No partial derivatives defined for parameter " +
+        throw Exception(__PRETTY_FUNCTION__, "No partial derivatives defined for parameter " +
                                                               Constitutive::OutputToString(rParameter));
     }
 }

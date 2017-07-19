@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include <eigen3/Eigen/Core>
 #include <map>
@@ -40,23 +40,23 @@ public:
     //! @param dof ... specific dof type
     //! @param component ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
     //! @param dofNumber ... dof number
-    virtual void SetDofNumber(Node::eDof rDof, int rComponent, int dofNumber)
+    virtual void SetDofNumber(Node::eDof, int, int)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the number of time derivatives stored at the node
     //! @param rDof ... specific dof type
     //! @return number of derivatives
-    virtual int GetNumTimeDerivatives(Node::eDof rDof) const
+    virtual int GetNumTimeDerivatives(Node::eDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns if the dof type rDof is an actual degree of freedom (in contrast to COORDINATES)
-    virtual bool IsDof(Node::eDof rDof) const
+    virtual bool IsDof(Node::eDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //*************************************************
@@ -66,22 +66,22 @@ public:
     //! @brief returns the total number of dofs
     virtual int GetNumDofs() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the number of dofs for a specific dof type
     //! @param rDof ... specific dof type
-    virtual int GetNum(Node::eDof rDof) const
+    virtual int GetNum(Node::eDof) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the global dof number for a specific dof type
     //! @param rDof ... specific dof type
     //! @param rComponent ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
-    virtual int GetDof(Node::eDof rDof, int rComponent) const
+    virtual int GetDof(Node::eDof, int) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the global dof number for a specific dof type with only one dof (scalar dof)
@@ -91,9 +91,9 @@ public:
     //! @brief returns the dof values for a specific dof
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
-    virtual const Eigen::VectorXd& Get(Node::eDof rDof, int rTimeDerivative) const
+    virtual const Eigen::VectorXd& Get(Node::eDof, int) const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief returns the dof values for a specific dof
@@ -107,9 +107,9 @@ public:
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
     //! @param rValue ... dof value
-    virtual void Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue)
+    virtual void Set(Node::eDof, int, const Eigen::VectorXd&)
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief sets the dof values for a specific dof
@@ -124,7 +124,7 @@ public:
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
     //! @param rValue ... dof scalar value
-    void Set(Node::eDof rDof, int rTimeDerivative, double rValue)
+    void Set(Node::eDof rDof, int, double rValue)
     {
         Eigen::VectorXd value(1);
         value[0] = rValue;
@@ -142,7 +142,7 @@ public:
     //! @brief returns a set containing all dof types
     virtual std::set<Node::eDof> GetDofTypes() const
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for this node type.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for this node type.");
     }
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
@@ -150,7 +150,7 @@ public:
 
 protected:
     //! @brief Outstream function for "virtual friend idiom"
-    virtual void Info(std::ostream& out) const {};
+    virtual void Info(std::ostream& out) const = 0;
 };
 
 std::ostream& operator<<(std::ostream& out, const NodeBase& node);

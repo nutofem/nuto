@@ -1,7 +1,5 @@
 #pragma once
 
-#include "mechanics/MechanicsException.h"
-
 #include <functional>
 #include <limits>
 

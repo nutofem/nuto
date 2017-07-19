@@ -6,6 +6,8 @@
 
 * @ref TikzImages
 
+* @ref BuildLocalDocumentation
+
 ### continuous integration
 
 * @ref Coverage

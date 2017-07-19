@@ -21,8 +21,7 @@ public:
 
     bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const override;
 
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

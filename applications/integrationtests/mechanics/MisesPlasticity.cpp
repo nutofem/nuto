@@ -161,7 +161,7 @@ void Mises3D(const std::string& rDir)
     myIntegrationScheme.Solve(simulationTime);
 }
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
     std::string resultDir = std::string(argv[0]) + "Out/";
     boost::filesystem::create_directory(resultDir);

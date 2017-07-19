@@ -89,14 +89,6 @@ public:
             displs[i] = displs[i - 1] + recvCount[i - 1];
     }
 
-    void AssembleGMatrix(MatrixXd interfaceRigidModes)
-    {
-    }
-
-    void Solve()
-    {
-    }
-
 private:
     MatrixXd mG;
     MatrixXd mGtransGinv;

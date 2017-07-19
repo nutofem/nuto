@@ -2,7 +2,7 @@
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -57,7 +57,7 @@ double NuTo::LocalDamageModel::GetParameterDouble(eConstitutiveParameter rIdenti
         return mCompressiveStrength;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -86,7 +86,7 @@ void NuTo::LocalDamageModel::SetParameterDouble(eConstitutiveParameter rIdentifi
         break;
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -99,7 +99,7 @@ eConstitutiveType NuTo::LocalDamageModel::GetType() const
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void NuTo::LocalDamageModel::Info(unsigned short rVerboseLevel, Logger& rLogger) const
+void NuTo::LocalDamageModel::Info(unsigned short, Logger& rLogger) const
 {
     rLogger << "Info function not yet implemented"
             << "\n";
@@ -117,7 +117,7 @@ template <>
 void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
                                          const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
+    throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
 
     double kappa = GetCurrentStaticData<1>(rStaticData, rConstitutiveInput);
 
@@ -147,7 +147,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
                 EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -228,7 +228,7 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -283,7 +283,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
                 EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -358,7 +358,7 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -502,7 +502,7 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -525,14 +525,10 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
 
 } // namespace NuTo
 
-NuTo::ConstitutiveInputMap
-NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                              const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
-
     constitutiveInputMap[eInput::ENGINEERING_STRAIN];
-
     return constitutiveInputMap;
 }
 
@@ -542,7 +538,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
@@ -587,7 +583,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
     {
         auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
         if (itTimeStep == rConstitutiveInput.end())
-            throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
+            throw Exception(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
         const auto& timeStep = *(itTimeStep->second);
 
         assert(rStaticData.GetNumData() >= 2);
@@ -596,7 +592,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
     }
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 }
 

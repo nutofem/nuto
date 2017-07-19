@@ -7,7 +7,7 @@
 
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 //! @brief ... constructor
 //! @param rNumRows_ ... number of rows
@@ -206,7 +206,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2General<T>:
 {
 
     if (this->mNumColumns != (int)this->mValues.size())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] matrix has to be square.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] matrix has to be square.");
     SparseMatrixCSRVector2Symmetric<T> symmetricMatrix(this->mNumColumns, this->mNumColumns);
     if (this->mOneBasedIndexing)
     {
@@ -250,11 +250,11 @@ operator-=(const NuTo::SparseMatrixCSRVector2General<T>& rOther)
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException("[SparseMatrixCSRVector2General::operator-=] invalid matrix dimensions.");
+        throw Exception("[SparseMatrixCSRVector2General::operator-=] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException("[SparseMatrixCSRVector2General::operator-=] both matrices must have zero based indexing.");
+        throw Exception("[SparseMatrixCSRVector2General::operator-=] both matrices must have zero based indexing.");
     }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -278,11 +278,11 @@ operator+=(const NuTo::SparseMatrixCSRVector2General<T>& rOther)
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -306,11 +306,11 @@ operator+=(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther)
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); ++row)
     {
@@ -333,11 +333,11 @@ operator*(const NuTo::SparseMatrixCSRVector2General<T>& rOther) const
 {
     if (this->GetNumColumns() != rOther.GetNumRows())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     SparseMatrixCSRVector2General<T> result(this->GetNumRows(), rOther.GetNumColumns());
 #ifdef _OPENMP
@@ -397,7 +397,7 @@ operator*(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
     {
         std::cout << "this->GetNumColumns() " << this->GetNumColumns() << " rMatrix.GetNumRows() " << rMatrix.rows()
                   << "\n";
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(), rMatrix.cols());
     if (this->HasOneBasedIndexing())
@@ -471,11 +471,11 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRVector
 
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
 
     const auto& values = rOther.GetValues();
@@ -501,11 +501,11 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRVector
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); row++)
     {
@@ -526,11 +526,11 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRGenera
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); row++)
     {
@@ -549,11 +549,11 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddScal(const SparseMatrixCSRSymmet
 {
     if ((this->GetNumColumns() != rOther.GetNumColumns()) || (this->GetNumRows() != rOther.GetNumRows()))
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
     }
     if (this->HasOneBasedIndexing() || rOther.HasOneBasedIndexing())
     {
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] both matrices must have zero based indexing.");
     }
     for (int row = 0; row < rOther.GetNumRows(); row++)
     {
@@ -575,20 +575,20 @@ void NuTo::SparseMatrixCSRVector2General<T>::Add_TransA_B_C_Scal(const SparseMat
     int resultNumCols = rC.GetNumColumns();
 
     if (rA.IsSymmetric() or rB.IsSymmetric() or rC.IsSymmetric())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] A, B and C must be in General format.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] A, B and C must be in General format.");
 
     if (rA.GetNumRows() != rB.GetNumRows())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A.T * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for A.T * B");
 
     if (rC.GetNumRows() != rB.GetNumColumns())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for (A.T * B) * C");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for (A.T * B) * C");
 
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] matrix dimension mismatch of *this and A.T * B");
 
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
 
     const auto& A = rA.AsSparseMatrixCSRVector2General();
     const auto& B = rB.AsSparseMatrixCSRVector2General();
@@ -638,17 +638,17 @@ void NuTo::SparseMatrixCSRVector2General<T>::Sub_TransA_B_Plus_C_D_Scal(const Sp
     int resultNumCols = rB.GetNumColumns();
 
     if (resultNumRows != rC.GetNumRows() or resultNumCols != rD.GetNumColumns())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] dim(A.T B) != dim (C D)");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] dim(A.T B) != dim (C D)");
 
 
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] matrix dimension mismatch of *this and A.T * B");
 
 
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing() or
         rC.HasOneBasedIndexing() or rD.HasOneBasedIndexing())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
 
 
     /*
@@ -715,7 +715,7 @@ NuTo::SparseMatrixCSRVector2General<T>::TransMult(const Eigen::Matrix<T, Eigen::
 {
     if (this->GetNumRows() != rMatrix.rows())
     {
-        throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
     }
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result =
             Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(this->GetNumColumns(), rMatrix.cols());
@@ -804,12 +804,12 @@ T NuTo::SparseMatrixCSRVector2General<T>::Sum() const
 }
 
 template <class T>
-void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs,
-                                                   std::vector<int>& rMappingNewToInitialOrdering,
-                                                   std::vector<int>& rMappingInitialToNewOrdering,
-                                                   double rRelativeTolerance)
+void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&,
+                                                   std::vector<int>&,
+                                                   std::vector<int>&,
+                                                   double)
 {
-    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] : to be implemented");
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] : to be implemented");
 }
 
 template <class T>
@@ -822,7 +822,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::Gauss(SparseMatrixCSRVector2<T>& rR
      * TODO: fix this as a student project or whatever...
      */
     if (rRhs.IsSymmetric())
-        throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] : rRhs must be in general format.");
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] : rRhs must be in general format.");
 
     SparseMatrixCSRGeneral<T> generalThis(this->AsSparseMatrixCSRVector2General());
     SparseMatrixCSRGeneral<T> generalRhs(rRhs.AsSparseMatrixCSRVector2General());
@@ -879,7 +879,7 @@ template <class T>
 void NuTo::SparseMatrixCSRVector2General<T>::RemoveLastColumns(unsigned int rNumColumns)
 {
     if (this->HasOneBasedIndexing())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] zero based indexing required. Fixing that (if you need it) should be trivial.");
 
     this->mNumColumns -= rNumColumns;
@@ -912,10 +912,10 @@ void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns(const SparseMatr
         int mNumColumns;
     */
     if (this->mOneBasedIndexing != rOther.mOneBasedIndexing)
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] index base (0 or 1) should be identical for both matrices");
     if (this->mValues.size() != rOther.mValues.size())
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] number of rows has to be identical for both matrices.");
 
     for (unsigned int theRow = 0; theRow < this->mValues.size(); theRow++)
@@ -940,10 +940,10 @@ template <class T>
 void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther)
 {
     if (this->mOneBasedIndexing != rOther.mOneBasedIndexing)
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] index base (0 or 1) should be identical for both matrices");
     if (this->mNumColumns != rOther.mNumColumns)
-        throw MathException(std::string("[") + __PRETTY_FUNCTION__ +
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
                             "] number of columns has to be identical for both matrices.");
 
     this->mValues.insert(this->mValues.end(), rOther.mValues.begin(), rOther.mValues.end());

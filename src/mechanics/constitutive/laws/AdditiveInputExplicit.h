@@ -38,17 +38,12 @@ public:
     template <int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
     {
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 __PRETTY_FUNCTION__,
                 "Additive Law cannot be evaluated. Their IPAdditiveInputExplicit should be evaluated instead.");
     }
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship

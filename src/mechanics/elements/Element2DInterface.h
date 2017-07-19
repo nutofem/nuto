@@ -142,7 +142,6 @@ private:
                                                         const ConstitutiveOutputMap& constitutiveOutputMap) const;
     virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateData& rData, int rTheIP,
                                                 const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateData& rData, int rTheIP) const;
 
     //! @brief calculates the rotation matirx based on the orientation of the element
     Eigen::MatrixXd CalculateRotationMatrix();

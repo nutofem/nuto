@@ -88,42 +88,41 @@ public:
     //       SURFACE PARAMETRIZATION
     //********************************************
 
-    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
+    Eigen::VectorXi GetSurfaceNodeIndices(int) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No needed in 1D!");
+        throw Exception(__PRETTY_FUNCTION__, "No needed in 1D!");
     }
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
-    std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override
+    std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        throw Exception(__PRETTY_FUNCTION__, "For 1D no functionality!");
     }
 
     //! @brief returns the natural coordinates of the elements surface
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural coordinates of the elements surface
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
-                                                          int rSurface, const Eigen::MatrixXd& rKnots) const override
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd&, int,
+                                                          const Eigen::MatrixXd&) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        throw Exception(__PRETTY_FUNCTION__, "For 1D no functionality!");
     }
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
-                                                                 int rSurface) const override
+    Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd&, int) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        throw Exception(__PRETTY_FUNCTION__, "For 1D no functionality!");
     }
 
-    int GetSurfaceDegree(int rSurface) const override
+    int GetSurfaceDegree(int) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        throw Exception(__PRETTY_FUNCTION__, "For 1D no functionality!");
     }
 
     //! @brief returns the number of surfaces

@@ -1,7 +1,7 @@
 #include "math/SparseDirectSolverPardiso.h"
 
 #include "base/Timer.h"
-#include "math/MathException.h"
+#include "base/Exception.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 
@@ -29,7 +29,7 @@ NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads, int 
             -1; // enable maximum weighted matching algorithm only for unsymmetric matrices (MKL default)
     this->mSolver = 0; // 0: use direct solver, 1: use iterative solver
 #else // HAVE_PARDISO
-    throw NuTo::MathException("Pardiso-solver was not found on your system (check cmake)");
+    throw NuTo::Exception("Pardiso-solver was not found on your system (check cmake)");
 #endif // HAVE_PARDISO
 }
 
@@ -43,13 +43,13 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                                   "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix must be square.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "matrix must be square.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     const std::vector<int>& matrixColumns = rMatrix.GetColumns();
@@ -74,7 +74,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     // check right hand side
     if (matrixDimension != rRhs.rows())
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
     }
     int rhsNumColumns = 1;
     const double* rhsValues = rRhs.data();
@@ -116,11 +116,11 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     if (error != 0)
     {
         if (error == -10)
-            throw NuTo::MathException(__PRETTY_FUNCTION__, "No license file found.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "No license file found.");
         if (error == -11)
-            throw NuTo::MathException(__PRETTY_FUNCTION__, "License is expired.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "License is expired.");
         if (error == -12)
-            throw NuTo::MathException(__PRETTY_FUNCTION__, "Wrong username or hostname.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Wrong username or hostname.");
     }
 
     timer.Reset(std::string("PARDISO ") + __FUNCTION__ + " reordering and symbolic factorization");
@@ -135,7 +135,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
 
     if (error != 0)
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__,
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
                                   "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
 
@@ -210,7 +210,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
             dparameters);
     if (error != 0)
     {
-        throw NuTo::MathException(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(error) + ".");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(error) + ".");
     }
 }
 

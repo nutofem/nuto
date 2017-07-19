@@ -4,7 +4,7 @@
 #include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -32,27 +32,6 @@ NuTo::LinearPiezoelectric::LinearPiezoelectric()
     SetParametersValid();
 }
 
-//#ifdef ENABLE_SERIALIZATION
-////! @brief serializes the class
-////! @param ar         archive
-////! @param version    version
-// template<class Archive>
-// void NuTo::LinearPiezoelectric::serialize(Archive & ar, const unsigned int version)
-//{
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "start serialize LinearPiezoelectric" << std::endl;
-//#endif
-//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-//    & BOOST_SERIALIZATION_NVP(mE)
-//    & BOOST_SERIALIZATION_NVP(mNu)
-//    & BOOST_SERIALIZATION_NVP(mRho)
-//    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "finish serialize LinearPiezoelectric" << std::endl;
-//#endif
-//}
-// BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LinearPiezoelectric)
-//#endif // ENABLE_SERIALIZATION
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelectric::CreateIPLaw()
 {
@@ -61,8 +40,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearPiezoelec
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                 const InterpolationType& rInterpolationType) const
+NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -95,7 +73,7 @@ NuTo::LinearPiezoelectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rC
         default:
             continue;
             //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-            //            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+            //            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
             //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
             //            law.");
         }
@@ -642,7 +620,7 @@ double NuTo::LinearPiezoelectric::GetParameterDouble(NuTo::Constitutive::eConsti
     case Constitutive::eConstitutiveParameter::DENSITY:
         return this->mRho;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -657,7 +635,7 @@ void NuTo::LinearPiezoelectric::SetParameterDouble(NuTo::Constitutive::eConstitu
         this->mRho = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -679,7 +657,7 @@ NuTo::LinearPiezoelectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstit
         return mPiezo;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -705,7 +683,7 @@ void NuTo::LinearPiezoelectric::SetParameterMatrixDouble(NuTo::Constitutive::eCo
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -762,7 +740,7 @@ void NuTo::LinearPiezoelectric::CheckParameters() const
         {
             if (mStiffness(ii, jj) != mStiffness(jj, ii))
             {
-                throw NuTo::MechanicsException(
+                throw NuTo::Exception(
                         BOOST_CURRENT_FUNCTION,
                         "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," + std::to_string(jj) +
                                 "] = " + std::to_string(mStiffness(ii, jj)) + "\n" + "(entry [" + std::to_string(jj) +

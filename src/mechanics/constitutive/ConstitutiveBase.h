@@ -14,9 +14,7 @@
 
 namespace NuTo
 {
-class InterpolationType;
 class ElementBase;
-class InterpolationType;
 class Logger;
 template <typename IOEnum>
 class ConstitutiveIOMap;
@@ -72,12 +70,10 @@ public:
 
     virtual std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() = 0;
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
+    //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs
+    //! @param rConstitutiveOutput Desired constitutive outputs
     //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const = 0;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const = 0;
 
     //! @brief Determines which submatrices of a multi-doftype problem can be solved by the constitutive law.
     //! @param rDofRow Row DOF.

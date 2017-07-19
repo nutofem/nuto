@@ -64,7 +64,7 @@ public:
     //! @brief [] operator
     //! @param rDof ... degree of freedom
     //! @return reference to map entry
-    const double operator[](Node::eDof rDof) const;
+    double operator[](Node::eDof rDof) const;
 
 
     //! @brief *= operator (only active DOFs)

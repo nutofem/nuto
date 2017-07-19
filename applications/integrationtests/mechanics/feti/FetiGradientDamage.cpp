@@ -7,22 +7,11 @@
 #include <chrono>
 #include "mechanics/feti/NewmarkFeti.h"
 #include "visualize/VisualizeEnum.h"
-
-#include "mechanics/nodes/NodeBase.h"
 #include "boost/filesystem.hpp"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/groups/Group.h"
+#include "typedefs.h"
 
-
-using std::cout;
-using std::endl;
-using namespace NuTo;
-using namespace Constitutive;
-using namespace Interpolation;
-using Node::eDof;
-using Eigen::VectorXd;
-using Eigen::Vector2d;
-using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
 
 // geometry
@@ -119,7 +108,7 @@ int main(int argc, char* argv[])
     const auto& groupNodesAtBottomLeft = structure.GroupGetNodeRadiusRange(coordinateAtBottomLeft);
     const auto& groupNodeAtBottomRight = structure.GroupGetNodeRadiusRange(coordinateAtBottomRight);
 
-    const auto groupNodesAtBoundaries = Group<NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
+    const auto groupNodesAtBoundaries = Group<NuTo::NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
 
     const auto& groupNodeLoad = structure.GroupGetNodeRadiusRange(coordinateAtLoad);
 
@@ -174,8 +163,8 @@ int main(int argc, char* argv[])
 
     NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
 
-    boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/FetiGradientDamageResultDir_" +
-                                       std::to_string(structure.mRank));
+    boostFs::path resultPath(boostFs::initial_path().string() + "/FetiGradientDamageResultDir_" +
+                             std::to_string(structure.mRank));
 
     newmarkFeti.SetTimeStep(timeStep);
     newmarkFeti.SetMaxNumIterations(maxIterations);
@@ -188,7 +177,6 @@ int main(int argc, char* argv[])
     newmarkFeti.SetToleranceResidual(eDof::NONLOCALEQSTRAIN, toleranceNlEqStrain);
     newmarkFeti.SetToleranceIterativeSolver(1.e-4);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
-    newmarkFeti.SetFetiPreconditioner(NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner::Lumped);
 
     Eigen::Matrix2d dispRHS;
     dispRHS(0, 0) = 0;

@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/interpolationtypes/Interpolation2D.h"
 
 NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,

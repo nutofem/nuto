@@ -2,7 +2,7 @@
 
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -22,7 +22,7 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
     if (extLoadVector.rows() != numNodes * dimension)
-        throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] F_ext.GetNumRows() != dimension * "
+        throw NuTo::Exception("[SurfaceLoad::CheckHydrostaticPressure] F_ext.GetNumRows() != dimension * "
                                        "numNodes. Maybe you (mistakenly) applied constraints.");
 
     Eigen::VectorXd resForce = Eigen::VectorXd::Zero(dimension);
@@ -30,7 +30,7 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
         resForce += extLoadVector.block(dimension * iNode, 0, dimension, 1);
 
     if (extLoadVector.cwiseAbs().maxCoeff() < 1.e-6)
-        throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] No external load at all!");
+        throw NuTo::Exception("[SurfaceLoad::CheckHydrostaticPressure] No external load at all!");
 
     double relativeError = resForce.cwiseAbs().maxCoeff() / extLoadVector.cwiseAbs().maxCoeff();
     std::cout << "Relative error: " << std::setw(10) << relativeError << "\t";
@@ -40,7 +40,7 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
         std::cout << resForce << std::endl;
         std::cout << "Total external load vector:" << std::endl;
         std::cout << extLoadVector << std::endl;
-        throw NuTo::MechanicsException(
+        throw NuTo::Exception(
                 "[SurfaceLoad::CheckHydrostaticPressure] The resulting forces should cancel out. But they don't.");
     }
 }
@@ -293,7 +293,7 @@ void CheckSurfaceLoad(NuTo::Structure& rStructure, const Eigen::VectorXd& rLoad,
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
     if (extLoadVector.rows() != numNodes * dimension)
-        throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] F_ext.GetNumRows() != dimension * numNodes. "
+        throw NuTo::Exception("[SurfaceLoad::CheckSurfaceLoad] F_ext.GetNumRows() != dimension * numNodes. "
                                        "Maybe you (mistakenly) applied constraints.");
 
     Eigen::VectorXd resForce = Eigen::VectorXd::Zero(dimension);
@@ -314,7 +314,7 @@ void CheckSurfaceLoad(NuTo::Structure& rStructure, const Eigen::VectorXd& rLoad,
         std::cout << resForceCorrect << std::endl;
         std::cout << "Total external load vector:" << std::endl;
         std::cout << extLoadVector << std::endl;
-        throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] Wrong external load calculation!");
+        throw NuTo::Exception("[SurfaceLoad::CheckSurfaceLoad] Wrong external load calculation!");
     }
 }
 
@@ -405,7 +405,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
               << std::endl;
 }
 
-void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);

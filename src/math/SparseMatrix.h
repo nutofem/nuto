@@ -2,7 +2,7 @@
 
 #include <random>
 #include <eigen3/Eigen/Core>
-#include "math/MathException.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -141,18 +141,18 @@ public:
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>& rMatrix)
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>&)
     {
-        throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
+        throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
                             "implemented for this matrix type.");
     }
 
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>& rMatrix)
+    virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>&)
     {
-        throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
+        throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
                             "not implemented for this matrix type.");
     }
 
@@ -160,25 +160,25 @@ public:
 
     virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
     {
-        throw MathException(
+        throw Exception(
                 "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
     }
 
     virtual SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()
     {
-        throw MathException(
+        throw Exception(
                 "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
     }
 
     virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+        throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
                             "SparseMatrixCSRVector2General.");
     }
 
     virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+        throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
                             "SparseMatrixCSRVector2Symmetric.");
     }
 
@@ -186,25 +186,25 @@ public:
 
     virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral() const
     {
-        throw MathException(
+        throw Exception(
                 "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
     }
 
     virtual const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric() const
     {
-        throw MathException(
+        throw Exception(
                 "[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
     }
 
     virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General() const
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+        throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
                             "SparseMatrixCSRVector2General.");
     }
 
     virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric() const
     {
-        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
+        throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
                             "SparseMatrixCSRVector2Symmetric.");
     }
 #endif // SWIG

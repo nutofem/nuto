@@ -2,7 +2,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
@@ -23,8 +23,7 @@ LinearDielectric::LinearDielectric()
     SetParametersValid();
 }
 
-ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                             const InterpolationType&) const
+ConstitutiveInputMap LinearDielectric::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -155,7 +154,7 @@ NuTo::LinearDielectric::GetParameterMatrixDouble(NuTo::Constitutive::eConstituti
         return mPermittivity;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -170,7 +169,7 @@ void NuTo::LinearDielectric::SetParameterMatrixDouble(NuTo::Constitutive::eConst
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -184,7 +183,7 @@ void NuTo::LinearDielectric::SetParameterDouble(NuTo::Constitutive::eConstitutiv
         break;
     }
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 

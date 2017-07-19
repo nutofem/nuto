@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <eigen3/Eigen/Core>
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
@@ -85,12 +85,12 @@ public:
 
     virtual IpCellInfo GetVisualizationCells() const;
 
-    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                       std::vector<double>& VisualizationPointLocalCoordinates,
-                                       unsigned int& NumVisualizationCells,
-                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                       std::vector<unsigned int>& VisualizationCellsIncidence,
-                                       std::vector<unsigned int>& VisualizationCellsIP) const {};
+    virtual void GetVisualizationCells(unsigned int&,
+                                       std::vector<double>&,
+                                       unsigned int&,
+                                       std::vector<NuTo::eCellTypes>&,
+                                       std::vector<unsigned int>&,
+                                       std::vector<unsigned int>&) const {};
 #endif // ENABLE_VISUALIZE
 protected:
 };

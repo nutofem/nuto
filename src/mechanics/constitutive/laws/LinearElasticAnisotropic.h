@@ -33,12 +33,7 @@ public:
     void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
@@ -112,7 +107,3 @@ protected:
     double mRho;
 };
 }
-
-//#ifdef ENABLE_SERIALIZATION
-// BOOST_CLASS_EXPORT_KEY(NuTo::LinearElasticAnisotropic)
-//#endif //ENABLE_SERIALIZATION

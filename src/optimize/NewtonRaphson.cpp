@@ -1,5 +1,5 @@
 #include "optimize/NewtonRaphson.h"
-#include "optimize/OptimizeException.h"
+#include "base/Exception.h"
 
 #include <eigen3/Eigen/LU>
 
@@ -13,34 +13,12 @@ NuTo::NewtonRaphson::NewtonRaphson()
 }
 
 
-//#ifdef ENABLE_SERIALIZATION
-//// serializes the class
-// template void NuTo::NewtonRaphson::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-// template void NuTo::NewtonRaphson::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-// template<class Archive>
-// void NuTo::NewtonRaphson::serialize(Archive & ar, const unsigned int version)
-//{
-//    #ifdef DEBUG_SERIALIZATION
-//        std::cout << "start serialization of NewtonRaphson" << "\n";
-//    #endif
-//        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonlinearSolverBase);
-//           & BOOST_SERIALIZATION_NVP(mResidualDerivativeFunction);
-//    #ifdef DEBUG_SERIALIZATION
-//        std::cout << "finish serialization of NewtonRaphson" << "\n";
-//    #endif
-//}
-//#endif // ENABLE_SERIALIZATION
-
 
 void NuTo::NewtonRaphson::Solve(Eigen::VectorXd& rUnknown)
 {
     if (not mAssignResidual && mResidualFunction == nullptr)
     {
-        throw OptimizeException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
+        throw Exception("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
     }
 
     this->NewtonRaphsonIterator(rUnknown, this->mCheckNewtonRaphson);
@@ -138,7 +116,7 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
             return;
         }
     }
-    throw NuTo::OptimizeException(__PRETTY_FUNCTION__, "The maximal number of iterations exceeded");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "The maximal number of iterations exceeded");
 }
 
 //! @brief ... the routine performs line search correction of the Newton step

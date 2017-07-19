@@ -13,7 +13,7 @@
 #include "base/Logger.h"
 
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "StructureOutputBlockVector.h"
 
 
@@ -1423,11 +1423,11 @@ public:
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
-    virtual void NuToSerializeSave(SerializeStreamOut& rStream){/* currently no members to serialize */};
+    virtual void NuToSerializeSave(SerializeStreamOut&){/* currently no members to serialize */};
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize input stream
-    virtual void NuToSerializeLoad(SerializeStreamIn& rStream){/* currently no members to serialize */};
+    virtual void NuToSerializeLoad(SerializeStreamIn&){/* currently no members to serialize */};
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be
     //! performed
@@ -1436,15 +1436,15 @@ public:
     // leaving the routine
     // this routine saves the current state before an update in the Newton Raphson iteration is performed
     // this only happens for more than one load step (either prescibed or with automatic load control)
-    virtual void SaveStructure(std::stringstream& rSaveStringStream) const
+    virtual void SaveStructure(std::stringstream&) const
     {
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
     }
 
-    virtual void RestoreStructure(std::stringstream& rSaveStringStream)
+    virtual void RestoreStructure(std::stringstream&)
     {
-        throw MechanicsException(
+        throw Exception(
                 "[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 

@@ -73,7 +73,7 @@ struct TmpNodeCoordinate
 };
 
 //! @brief extract TmpNodes from existing nodes
-std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements,
+std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure&, std::vector<NuTo::ElementBase*> rElements,
                                          std::map<const NuTo::NodeBase*, int> rNodeToId)
 {
     std::vector<TmpNode> existingNodes;
@@ -97,7 +97,7 @@ std::vector<TmpNode> GetExistingTmpNodes(NuTo::Structure& rS, std::vector<NuTo::
 }
 
 //! @brief create TmpNodes from existing nodes
-std::vector<TmpNode> GetNewTmpNodes(NuTo::Structure& rS, std::vector<NuTo::ElementBase*> rElements)
+std::vector<TmpNode> GetNewTmpNodes(NuTo::Structure&, std::vector<NuTo::ElementBase*> rElements)
 {
     std::vector<TmpNode> existingNodes;
     for (NuTo::ElementBase* element : rElements)

@@ -6,7 +6,7 @@
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
 
 #include "base/Logger.h"
-#include "mechanics/MechanicsException.h"
+#include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -31,8 +31,7 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                             const InterpolationType& rInterpolationType) const
+NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -78,7 +77,7 @@ double NuTo::GradientDamageEngineeringStress::EvaluateStaticData(const Constitut
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw MechanicsException(
+            throw Exception(
                     __PRETTY_FUNCTION__,
                     "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
@@ -203,7 +202,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(const Constitut
         }
         itOutput.second->SetIsCalculated(true);
         //        default:
-        //            throw MechanicsException(__PRETTY_FUNCTION__, "output object " +
+        //            throw Exception(__PRETTY_FUNCTION__, "output object " +
         //            NuTo::Constitutive::OutputToString(itOutput.first)
         //                            + " could not be calculated, check the allocated material law and the section
         //                            behavior.");
@@ -239,7 +238,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(const Constitut
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
+        throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -334,7 +333,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(const Constitut
                 engineeringStress3D[5] = (1 - omega) * C33 * engineeringStrain[2];
                 break;
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found!!!");
+                throw Exception(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found!!!");
             }
             break;
         }
@@ -502,7 +501,7 @@ void NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(const Constitut
         }
         itOutput.second->SetIsCalculated(true);
         //        default:
-        //            throw MechanicsException(__PRETTY_FUNCTION__, "output object " +
+        //            throw Exception(__PRETTY_FUNCTION__, "output object " +
         //            NuTo::Constitutive::OutputToString(itOutput.first)
         //                            + " could not be calculated, check the allocated material law and the section
         //                            behavior.");
@@ -517,7 +516,7 @@ double NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(Data& rStatic
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__,
+        throw Exception(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
@@ -543,7 +542,7 @@ double NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(Data& rStatic
     {
         auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
         if (itTimeStep == rConstitutiveInput.end())
-            throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
+            throw Exception(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
         const auto& timeStep = *(itTimeStep->second);
 
         assert(rStaticData.GetNumData() >= 2);
@@ -552,7 +551,7 @@ double NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(Data& rStatic
     }
 
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 }
 
@@ -615,7 +614,7 @@ NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eC
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return mE;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
 }
 
@@ -646,7 +645,7 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
         mE = rValue;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+        throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
     SetParametersValid();
 }
