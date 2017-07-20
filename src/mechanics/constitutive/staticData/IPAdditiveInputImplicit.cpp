@@ -1,10 +1,10 @@
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/constitutive/staticData/IPAdditiveInputImplicit.h"
 #include "mechanics/constitutive/laws/AdditiveInputImplicit.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+
 using namespace NuTo::Constitutive;
 
 

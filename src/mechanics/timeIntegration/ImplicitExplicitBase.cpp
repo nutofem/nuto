@@ -6,11 +6,10 @@
  */
 
 #include "base/CallbackInterface.h"
-#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRGeneral_Def.h"
 #include "mechanics/timeIntegration/ImplicitExplicitBase.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"

@@ -1,52 +1,25 @@
-#include <boost/ptr_container/ptr_list.hpp>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <algorithm>
-#include <sstream>
 #include <iostream>
 #include <string>
 #include "math/EigenSolverArpack.h"
+#include "math/SparseMatrixCSR.h"
+#include "math/SparseMatrixCSRVector2.h"
 
 #include "mechanics/structures/StructureBase.h"
 #include "base/Timer.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseDirectSolverMKLPardiso.h"
 #include "math/SparseDirectSolverPardiso.h"
 
-#include "math/SparseMatrixCSRSymmetric.h"
-#include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -55,7 +28,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "base/Exception.h"
 #include "mechanics/structures/StructureBaseEnum.h"
-#include "mechanics/structures/StructureOutputBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"

@@ -3,6 +3,7 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/loads/LoadNodeGroupForces3D.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 using namespace NuTo;
 

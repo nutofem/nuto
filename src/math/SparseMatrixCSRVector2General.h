@@ -1,12 +1,13 @@
 #pragma once
 
-#include <algorithm>
 #include <numeric>
+#include <iostream>
 
 #include "math/SparseMatrixCSRVector2General_Def.h"
-
+#include "math/SparseMatrixEnum.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
+
 #include "base/Exception.h"
 
 //! @brief ... constructor

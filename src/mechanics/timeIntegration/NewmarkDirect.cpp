@@ -13,6 +13,7 @@
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/structures/Assembler.h"
+#include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
 

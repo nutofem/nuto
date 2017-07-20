@@ -1,17 +1,15 @@
 #pragma once
 
-#include "base/Exception.h"
 #include "mechanics/loads/LoadBase.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 #include <vector>
 
 namespace NuTo
 {
 class IntegrationTypeBase;
-class NodeBase;
 template <int TDim>
 class ContinuumElement;
 class StructureBase;
+class StructureOutputBlockVector;
 
 //! @brief Abstract class for all surface loads in 3D
 class LoadSurfaceBase3D : public LoadBase

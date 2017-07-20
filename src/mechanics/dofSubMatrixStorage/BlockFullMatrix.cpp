@@ -1,8 +1,6 @@
-#include <sstream>
 #include <iostream>
 #include "base/Exception.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/nodes/NodeEnum.h"
 

@@ -2,10 +2,9 @@
 #include <omp.h>
 #endif
 
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
+
 
 //! @brief constructor
 //! @param mDimension number of nodes

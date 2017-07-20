@@ -2,8 +2,6 @@
 #include <omp.h>
 #endif
 
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/RungeKutta38.h"
 

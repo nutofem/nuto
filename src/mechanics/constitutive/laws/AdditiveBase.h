@@ -1,10 +1,10 @@
 #pragma once
 
+#include <set>
+#include <vector>
+
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
-
-#include "base/Exception.h"
 
 namespace NuTo
 {

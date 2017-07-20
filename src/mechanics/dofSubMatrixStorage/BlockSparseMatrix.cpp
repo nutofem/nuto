@@ -10,13 +10,11 @@
 #include "math/SparseMatrixCSRVector2Symmetric_Def.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/StructureBase.h"
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrix.h"
-
-#include "eigen3/Eigen/Sparse"
 
 
 NuTo::BlockSparseMatrix::BlockSparseMatrix(const DofStatus& rDofStatus, bool rCanBeSymmetric)

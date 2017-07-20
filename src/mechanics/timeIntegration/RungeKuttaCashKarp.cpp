@@ -2,12 +2,11 @@
 #include <omp.h>
 #endif
 
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/RungeKuttaCashKarp.h"
 
-#define orderCashKarp 5
+
+const int orderCashKarp=5;
 
 //! @brief constructor
 //! @param mDimension number of nodes

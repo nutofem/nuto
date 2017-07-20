@@ -7,10 +7,7 @@
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/StructureBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 NuTo::FibreMatrixBondStressSlip::FibreMatrixBondStressSlip(int dimension)
     : ConstitutiveBase()

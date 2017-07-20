@@ -1,13 +1,11 @@
 #pragma once
 
 #include <string>
-#include "base/Logger.h"
-
-#include <iosfwd>
 #include <chrono>
 
 namespace NuTo
 {
+class Logger;
 
 //! @brief prints the lifetime of a Timer object on destruction
 class Timer

@@ -1,22 +1,16 @@
 #pragma once
 
 #include "mechanics/constitutive/ConstitutiveBase.h"
-#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "mechanics/constitutive/staticData/DataContainer.h"
 
-#include "eigen3/Eigen/Eigenvalues"
 #include <functional>
 namespace NuTo
 {
 
-template <int TDim>
-class EngineeringStrain;
-template <int TRows, int TCols>
-class ConstitutiveMatrix;
-template <int TRows>
-class ConstitutiveVector;
-class ConstitutiveScalar;
 class ConstitutiveIOBase;
 class Logger;
+class ElementBase;
+class IPConstitutiveLawBase;
 
 namespace Constitutive
 {

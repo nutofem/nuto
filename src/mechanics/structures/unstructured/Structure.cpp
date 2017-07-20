@@ -1,10 +1,6 @@
-#include <boost/assign/ptr_map_inserter.hpp>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#include <boost/spirit/include/classic_core.hpp>
 
 #include "mechanics/structures/unstructured/Structure.h"
 
@@ -12,8 +8,6 @@
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 
-#include "math/SparseMatrixCSRVector2General.h"
-#include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 
 #include "mechanics/elements/ElementBase.h"
@@ -22,13 +16,6 @@
 #include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorInt.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/groups/GroupBase.h"
-#include "mechanics/groups/GroupEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"

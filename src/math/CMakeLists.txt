@@ -8,8 +8,6 @@ set(MathSources
     SparseMatrixCSR.cpp
     SparseMatrixCSRGeneral.cpp
     SparseMatrixCSRSymmetric.cpp
-    SparseMatrixCSRVector2General.cpp
-    SparseMatrixCSRVector2Symmetric.cpp
     SparseDirectSolverMKLPardiso.cpp
     SparseDirectSolverPardiso.cpp
     SparseDirectSolverMUMPS.cpp

@@ -3,7 +3,6 @@
 #endif // ENABLE_VISUALIZE
 
 #include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
 #include "math/Legendre.h"
 
 // constructor

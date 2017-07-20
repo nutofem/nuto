@@ -1,13 +1,13 @@
 #pragma once
+
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/constraints/Constraints.h"
 
 namespace NuTo
 {
+class NodeBase;
 
 template<typename T>
 class BlockFullVector;

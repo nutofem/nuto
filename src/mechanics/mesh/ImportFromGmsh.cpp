@@ -1,5 +1,3 @@
-#include <fstream>
-
 #include "mechanics/mesh/MeshCompanion.h"
 
 #include "mechanics/structures/unstructured/Structure.h"
@@ -12,9 +10,6 @@
 #include "mechanics/interpolationtypes/InterpolationType.h"
 
 #include "base/Exception.h"
-
-#include <iterator>
-#include <sstream>
 
 
 struct GmshHeader

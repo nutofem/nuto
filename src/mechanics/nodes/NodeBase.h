@@ -3,7 +3,6 @@
 #include "base/Exception.h"
 
 #include <eigen3/Eigen/Core>
-#include <map>
 #include <set>
 
 namespace NuTo

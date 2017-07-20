@@ -1,7 +1,8 @@
-#include "mechanics/MechanicsEnums.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include <cassert>
 
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/groups/GroupEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
 
 using namespace NuTo::Interpolation;

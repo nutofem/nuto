@@ -1,11 +1,10 @@
 #pragma once
 
 #include <set>
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 namespace NuTo
 {
-
-class DofStatus;
 
 namespace Node
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/DofHash.h"
 

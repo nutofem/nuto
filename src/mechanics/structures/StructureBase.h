@@ -9,10 +9,9 @@
 #include <eigen3/Eigen/Core>
 
 #include <boost/ptr_container/ptr_map.hpp>
-#include <mechanics/MechanicsEnums.h>
 #include "base/Logger.h"
 
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "mechanics/groups/GroupEnum.h"
 #include "base/Exception.h"
 #include "StructureOutputBlockVector.h"
 
@@ -21,22 +20,17 @@ namespace NuTo
 {
 class Assembler;
 class ConstitutiveBase;
-class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ElementBase;
-class EngineeringStrain2D;
 class GroupBase;
 class IntegrationTypeBase;
-class InterpolationBase;
 class InterpolationType;
 class LoadBase;
-class NewtonRaphsonAuxRoutinesBase;
 class NodeBase;
 class Section;
 class SerializeStreamOut;
 class SerializeStreamIn;
 class StructureOutputBase;
 class StructureOutputBlockMatrix;
-class StructureOutputBlockVector;
 class TimeIntegrationBase;
 template <typename IOEnum>
 class ConstitutiveIOMap;
@@ -46,14 +40,6 @@ template <class T>
 class BlockFullVector;
 template <class T>
 class Group;
-template <class T>
-class SparseMatrixCSRSymmetric;
-template <class T>
-class SparseMatrixCSRGeneral;
-template <class T>
-class SparseMatrixCSRVector2General;
-template <class T>
-class SparseMatrixCSRVector2Symmetric;
 
 enum class eError;
 enum class eGroupId;

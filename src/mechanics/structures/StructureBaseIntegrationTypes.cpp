@@ -1,4 +1,3 @@
-#include <sstream>
 #include <iostream>
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"

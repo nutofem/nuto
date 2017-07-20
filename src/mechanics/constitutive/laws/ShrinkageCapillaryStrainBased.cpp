@@ -1,11 +1,8 @@
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "physics/PhysicalConstantsSI.h"
 #include "physics/PhysicalEquationsSI.h"

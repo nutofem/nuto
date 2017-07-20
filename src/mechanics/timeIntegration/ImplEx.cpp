@@ -13,7 +13,6 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputDummy.h"
-#include "base/serializeStream/SerializeStreamOut.h"
 #include "mechanics/timeIntegration/ImplExCallback.h"
 
 NuTo::ImplEx::ImplEx(StructureBase* rStructure)

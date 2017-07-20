@@ -2,10 +2,6 @@
 #include <omp.h>
 #endif
 
-#include "math/SparseMatrixCSRVector2.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"

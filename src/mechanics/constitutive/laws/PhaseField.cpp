@@ -1,25 +1,19 @@
-﻿#include <numeric>
-
-#include "math/SparseMatrixCSRGeneral.h"
-
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+﻿#include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/laws/PhaseField.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 
 #include "base/Logger.h"
 #include "base/Exception.h"
-#include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Eigenvalues>
 #include <eigen3/Eigen/Core>
+
+#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
 
 NuTo::PhaseField::PhaseField(const double rYoungsModulus, const double rPoissonsRatio,

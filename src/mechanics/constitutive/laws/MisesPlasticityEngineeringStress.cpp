@@ -6,14 +6,10 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/staticData/DataMisesPlasticity.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
 #include "base/Exception.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo::Constitutive;

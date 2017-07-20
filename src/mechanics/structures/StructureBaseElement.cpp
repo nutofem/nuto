@@ -1,9 +1,9 @@
 #include <cassert>
-#include <eigen3/Eigen/Eigenvalues>
 
 #include "mechanics/structures/StructureBase.h"
 
 #include "base/Timer.h"
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"

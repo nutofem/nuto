@@ -2,10 +2,8 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
-#include <type_traits>
 
 namespace NuTo
 {

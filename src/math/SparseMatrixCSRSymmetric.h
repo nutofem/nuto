@@ -1,11 +1,9 @@
-
 #pragma once
 
 #include "base/Exception.h"
 
 #include "math/SparseMatrixCSRSymmetric_Def.h"
-
-#include "math/SparseMatrixCSRVector2Symmetric.h"
+#include "math/SparseMatrixEnum.h"
 
 //! @brief ... constructor
 //! @param rDimension_ ... dimension (number of rows and number of columns) of square matrix

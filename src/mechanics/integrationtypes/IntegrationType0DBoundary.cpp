@@ -1,4 +1,3 @@
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
 
 using namespace NuTo;

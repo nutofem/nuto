@@ -6,7 +6,6 @@
  */
 
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
-#include <iomanip>
 
 
 namespace NuTo
