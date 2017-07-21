@@ -63,7 +63,7 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
     points.push_back(1.);
 
     if (nIps <= 1)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 
     weights.push_back(2. / (nIps * (nIps - 1)));
     for (int i = 1; i < nIps - 1; i++)
@@ -84,7 +84,7 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
     points = NuTo::Math::Polynomial::LegendreRoots(nIps);
 
     if (nIps <= 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 
     for (int i = 0; i < nIps; i++)
     {
@@ -100,7 +100,7 @@ Eigen::VectorXd NuTo::IntegrationTypeTensorProduct<TDim>::GetLocalIntegrationPoi
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mIPts[rIpNum];
     else
-        throw MechanicsException(__PRETTY_FUNCTION__,"Ip number out of range.");
+        throw Exception(__PRETTY_FUNCTION__,"Ip number out of range.");
 }
 
 template<int TDim>
@@ -114,7 +114,7 @@ double NuTo::IntegrationTypeTensorProduct<TDim>::GetIntegrationPointWeight(int r
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mWeights[rIpNum];
-    throw MechanicsException(__PRETTY_FUNCTION__,"Ip number out of range.");
+    throw Exception(__PRETTY_FUNCTION__,"Ip number out of range.");
 }
 
 #ifdef ENABLE_VISUALIZE

@@ -19,6 +19,7 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
