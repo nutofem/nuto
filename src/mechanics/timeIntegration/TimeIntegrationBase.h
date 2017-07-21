@@ -76,6 +76,12 @@ public:
     double CalculateNorm(const BlockFullVector<double>& rResidual) const;
 
     //! @brief sets the  time step for the time integration procedure (initial value)
+    TimeControl& GetTimeControl()
+    {
+        return mTimeControl;
+    }
+
+    //! @brief sets the  time step for the time integration procedure (initial value)
     virtual void SetTimeStep(double rTimeStep)
     {
         mTimeControl.SetTimeStep(rTimeStep);
