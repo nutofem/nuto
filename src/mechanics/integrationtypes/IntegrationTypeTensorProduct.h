@@ -19,14 +19,12 @@ public:
 
     //! @brief computes points and weights for Lobatto quadrature in 1D
     //! @param numIPs number of integration points
-    //! @param weights Quadrature weights
-    //! @param points Quadrature points range [-1,1] including boundary points
+    //! @return pair of quadrature weights and points range [-1,1] including boundary points
     std::pair<std::vector<double>, std::vector<double>>  ComputeWeightsAndPoints1DLobatto(int nIps);
 
     //! @brief computes points and weights for Gauss quadrature in 1D
     //! @param numIPs number of integration points
-    //! @param weights Quadrature weights
-    //! @param points Quadrature points in range (-1,1)
+    //! @return pair of quadrature weights and points range (-1,1)
     std::pair<std::vector<double>, std::vector<double> > ComputeWeightsAndPoints1DGauss(int nIps);
 
     //! @brief returns the dimension

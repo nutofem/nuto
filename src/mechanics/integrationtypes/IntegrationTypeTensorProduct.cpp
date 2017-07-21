@@ -62,18 +62,17 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
     points.insert(points.begin(), -1.);
     points.push_back(1.);
 
-    if (nIps > 1)
+    if (nIps <= 1)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+
+    weights.push_back(2. / (nIps * (nIps - 1)));
+    for (int i = 1; i < nIps - 1; i++)
     {
-        weights.push_back(2. / (nIps * (nIps - 1)));
-        for (int i = 1; i < nIps - 1; i++)
-        {
-            double lp = NuTo::Math::Polynomial::Legendre(nIps - 1, points[i]);
-            weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
-        }
-        weights.push_back(2. / (nIps * (nIps - 1)));
-        return(std::make_pair(weights,points));
+        double lp = NuTo::Math::Polynomial::Legendre(nIps - 1, points[i]);
+        weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
     }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+    weights.push_back(2. / (nIps * (nIps - 1)));
+    return(std::make_pair(weights,points));
 }
 
 template<int TDim>
@@ -84,16 +83,15 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
 
     points = NuTo::Math::Polynomial::LegendreRoots(nIps);
 
-    if (nIps > 0)
+    if (nIps <= 0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+
+    for (int i = 0; i < nIps; i++)
     {
-        for (int i = 0; i < nIps; i++)
-        {
-            double dl = NuTo::Math::Polynomial::Legendre(nIps, points[i], 1);
-            weights.push_back(2. / (1. - points[i] * points[i]) / (dl * dl));
-        }
-        return(std::make_pair(weights,points));
+        double dl = NuTo::Math::Polynomial::Legendre(nIps, points[i], 1);
+        weights.push_back(2. / (1. - points[i] * points[i]) / (dl * dl));
     }
-    throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+    return(std::make_pair(weights,points));
 }
 
 template<int TDim>
