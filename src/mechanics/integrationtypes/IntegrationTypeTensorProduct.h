@@ -21,15 +21,13 @@ public:
     //! @param numIPs number of integration points
     //! @param weights Quadrature weights
     //! @param points Quadrature points range [-1,1] including boundary points
-    void ComputeWeightsAndPoints1DLobatto(size_t nIps,
-                std::vector<double>& weights, std::vector<double>& points);
+    std::pair<std::vector<double>, std::vector<double>>  ComputeWeightsAndPoints1DLobatto(int nIps);
 
     //! @brief computes points and weights for Gauss quadrature in 1D
     //! @param numIPs number of integration points
     //! @param weights Quadrature weights
     //! @param points Quadrature points in range (-1,1)
-    void ComputeWeightsAndPoints1DGauss(size_t nIps,
-                std::vector<double>& weights, std::vector<double>& points);
+    std::pair<std::vector<double>, std::vector<double> > ComputeWeightsAndPoints1DGauss(int nIps);
 
     //! @brief returns the dimension
     int GetDimension() const override {return TDim;}
