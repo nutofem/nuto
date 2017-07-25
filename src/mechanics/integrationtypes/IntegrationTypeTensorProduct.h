@@ -15,20 +15,25 @@ class IntegrationTypeTensorProduct : public IntegrationTypeBase
 {
 public:
     //! @brief constructor
+    //! @param numIPs number of integration points
+    //! @param method integration method (currently either GAUSS or LOBATTO)
     IntegrationTypeTensorProduct(size_t numIps, NuTo::eIntegrationMethod method);
 
     //! @brief computes points and weights for Lobatto quadrature in 1D
     //! @param numIPs number of integration points
     //! @return pair of quadrature weights and points range [-1,1] including boundary points
-    std::pair<std::vector<double>, std::vector<double>>  ComputeWeightsAndPoints1DLobatto(int nIps);
+    std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLobatto(int nIps);
 
     //! @brief computes points and weights for Gauss quadrature in 1D
     //! @param numIPs number of integration points
     //! @return pair of quadrature weights and points range (-1,1)
-    std::pair<std::vector<double>, std::vector<double> > ComputeWeightsAndPoints1DGauss(int nIps);
+    std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGauss(int nIps);
 
     //! @brief returns the dimension
-    int GetDimension() const override {return TDim;}
+    int GetDimension() const override
+    {
+        return TDim;
+    }
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -62,7 +67,8 @@ private:
 
 #ifdef ENABLE_VISUALIZE
     //! @brief ... visualization points in 1D
-    void GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const;
+    void GetVisualizationPoints(unsigned int& NumVisualizationPoints,
+                                std::vector<double>& VisualizationPointLocalCoordinates) const;
 #endif // ENABLE_VISUALIZE
 };
 } // namespace

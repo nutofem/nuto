@@ -7,13 +7,13 @@
 #include <iostream>
 
 // constructor
-template<int TDim>
-NuTo::IntegrationTypeTensorProduct<TDim>::IntegrationTypeTensorProduct(size_t nIps,
-                             NuTo::eIntegrationMethod method)
+template <int TDim>
+NuTo::IntegrationTypeTensorProduct<TDim>::IntegrationTypeTensorProduct(size_t nIps, NuTo::eIntegrationMethod method)
 {
-    std::pair<std::vector<double> , std::vector<double>> weightsAndPoints1D;
+    std::pair<std::vector<double>, std::vector<double>> weightsAndPoints1D;
 
-    switch (method) {
+    switch (method)
+    {
     case NuTo::eIntegrationMethod::GAUSS:
     {
         weightsAndPoints1D = ComputeWeightsAndPoints1DGauss(nIps);
@@ -32,19 +32,20 @@ NuTo::IntegrationTypeTensorProduct<TDim>::IntegrationTypeTensorProduct(size_t nI
     mIPts1D = weightsAndPoints1D.second;
 
     int numIpsDim = 1;
-    for(int dim = 0; dim < TDim; dim++) numIpsDim *= nIps;
+    for (int dim = 0; dim < TDim; dim++)
+        numIpsDim *= nIps;
 
     // calculate the tensor product integration point coordinates and weights
     mWeights.resize(numIpsDim);
     mIPts.resize(numIpsDim);
 
-    for(int i = 0; i < numIpsDim; i++)
+    for (int i = 0; i < numIpsDim; i++)
     {
         mWeights[i] = 1.;
         int power = 1;
-        for(int dim = 0; dim < TDim; dim++)
+        for (int dim = 0; dim < TDim; dim++)
         {
-            int index = (i/power) % nIps;
+            int index = (i / power) % nIps;
             mWeights[i] *= weights1D[index];
             mIPts[i][dim] = mIPts1D[index];
             power *= nIps;
@@ -52,8 +53,9 @@ NuTo::IntegrationTypeTensorProduct<TDim>::IntegrationTypeTensorProduct(size_t nI
     }
 }
 
-template<int TDim>
-std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DLobatto(int nIps)
+template <int TDim>
+std::pair<std::vector<double>, std::vector<double>>
+NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DLobatto(int nIps)
 {
     std::vector<double> weights;
     std::vector<double> points;
@@ -72,11 +74,12 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
         weights.push_back(2. / (nIps * (nIps - 1)) / (lp * lp));
     }
     weights.push_back(2. / (nIps * (nIps - 1)));
-    return(std::make_pair(weights,points));
+    return (std::make_pair(weights, points));
 }
 
-template<int TDim>
-std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DGauss(int nIps)
+template <int TDim>
+std::pair<std::vector<double>, std::vector<double>>
+NuTo::IntegrationTypeTensorProduct<TDim>::ComputeWeightsAndPoints1DGauss(int nIps)
 {
     std::vector<double> weights;
     std::vector<double> points;
@@ -91,41 +94,42 @@ std::pair<std::vector<double> , std::vector<double>> NuTo::IntegrationTypeTensor
         double dl = NuTo::Math::Polynomial::Legendre(nIps, points[i], 1);
         weights.push_back(2. / (1. - points[i] * points[i]) / (dl * dl));
     }
-    return(std::make_pair(weights,points));
+    return (std::make_pair(weights, points));
 }
 
-template<int TDim>
+template <int TDim>
 Eigen::VectorXd NuTo::IntegrationTypeTensorProduct<TDim>::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mIPts[rIpNum];
     else
-        throw Exception(__PRETTY_FUNCTION__,"Ip number out of range.");
+        throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 }
 
-template<int TDim>
+template <int TDim>
 int NuTo::IntegrationTypeTensorProduct<TDim>::GetNumIntegrationPoints() const
 {
     return mIPts.size();
 }
 
-template<int TDim>
+template <int TDim>
 double NuTo::IntegrationTypeTensorProduct<TDim>::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum >= 0 && rIpNum < (int)mIPts.size())
         return mWeights[rIpNum];
-    throw Exception(__PRETTY_FUNCTION__,"Ip number out of range.");
+    throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 }
 
 #ifdef ENABLE_VISUALIZE
-template<int TDim>
-void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
+template <int TDim>
+void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(
+        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
 {
     std::vector<double> VisualizationPoints1D;
-    size_t NumVisualizationPoints1D = mIPts1D.size()+1;
+    size_t NumVisualizationPoints1D = mIPts1D.size() + 1;
 
     VisualizationPoints1D.push_back(-1.);
-    for (size_t i = 1; i < NumVisualizationPoints1D - 1 ; i++)
+    for (size_t i = 1; i < NumVisualizationPoints1D - 1; i++)
     {
         VisualizationPoints1D.push_back(0.5 * (mIPts1D[i - 1] + mIPts1D[i]));
     }
@@ -133,16 +137,17 @@ void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(unsigned i
 
 
     NumVisualizationPoints = 1;
-    for(int dim = 0; dim < TDim; dim++) NumVisualizationPoints *= NumVisualizationPoints1D;
+    for (int dim = 0; dim < TDim; dim++)
+        NumVisualizationPoints *= NumVisualizationPoints1D;
 
     VisualizationPointLocalCoordinates.reserve(NumVisualizationPoints);
 
-    for(unsigned int i = 0; i < NumVisualizationPoints; i++)
+    for (unsigned int i = 0; i < NumVisualizationPoints; i++)
     {
         int power = 1;
-        for(int dim = 0; dim < TDim; dim++)
+        for (int dim = 0; dim < TDim; dim++)
         {
-            size_t index = (i/power) % NumVisualizationPoints1D;
+            size_t index = (i / power) % NumVisualizationPoints1D;
             VisualizationPointLocalCoordinates.push_back(VisualizationPoints1D[index]);
             power *= NumVisualizationPoints1D;
         }
@@ -152,12 +157,10 @@ void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(unsigned i
 namespace NuTo
 {
 template <>
-void NuTo::IntegrationTypeTensorProduct<1>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                                       std::vector<double>& VisualizationPointLocalCoordinates,
-                                                                       unsigned int& NumVisualizationCells,
-                                                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                                                       std::vector<unsigned int>& VisualizationCellsIncidence,
-                                                                       std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationTypeTensorProduct<1>::GetVisualizationCells(
+        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
+        unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
+        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
     GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
@@ -180,30 +183,28 @@ void NuTo::IntegrationTypeTensorProduct<1>::GetVisualizationCells(unsigned int& 
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProduct<2>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                                       std::vector<double>& VisualizationPointLocalCoordinates,
-                                                                       unsigned int& NumVisualizationCells,
-                                                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                                                       std::vector<unsigned int>& VisualizationCellsIncidence,
-                                                                       std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationTypeTensorProduct<2>::GetVisualizationCells(
+        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
+        unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
+        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
     GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
     NumVisualizationCells = 0;
 
     size_t numIPs1D = mIPts1D.size();
-    for(size_t row = 0; row < numIPs1D; row++)
+    for (size_t row = 0; row < numIPs1D; row++)
     {
-        for(size_t col = 0; col < numIPs1D; col++)
+        for (size_t col = 0; col < numIPs1D; col++)
         {
-            size_t start = row*(numIPs1D+1) + col;
+            size_t start = row * (numIPs1D + 1) + col;
 
             VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
 
             VisualizationCellsIncidence.push_back(start);
             VisualizationCellsIncidence.push_back(start + 1);
             VisualizationCellsIncidence.push_back(start + numIPs1D + 2); // the number of 1D cell points is numIPs1D+1
-            VisualizationCellsIncidence.push_back(start + numIPs1D + 1 );
+            VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
 
             VisualizationCellsIP.push_back(NumVisualizationCells);
             NumVisualizationCells++;
@@ -212,32 +213,31 @@ void NuTo::IntegrationTypeTensorProduct<2>::GetVisualizationCells(unsigned int& 
 }
 
 template <>
-void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                                       std::vector<double>& VisualizationPointLocalCoordinates,
-                                                                       unsigned int& NumVisualizationCells,
-                                                                       std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                                                       std::vector<unsigned int>& VisualizationCellsIncidence,
-                                                                       std::vector<unsigned int>& VisualizationCellsIP) const
+void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(
+        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
+        unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
+        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
     GetVisualizationPoints(NumVisualizationPoints, VisualizationPointLocalCoordinates);
 
     NumVisualizationCells = 0;
 
     size_t numIPs1D = mIPts1D.size();
-    for(size_t height = 0; height < numIPs1D; height++)
+    for (size_t height = 0; height < numIPs1D; height++)
     {
-        for(size_t row = 0; row < numIPs1D; row++)
+        for (size_t row = 0; row < numIPs1D; row++)
         {
-            for(size_t col = 0; col < numIPs1D; col++)
+            for (size_t col = 0; col < numIPs1D; col++)
             {
-                size_t start = row*(numIPs1D + 1) + col + height*((numIPs1D + 1)*(numIPs1D + 1));
+                size_t start = row * (numIPs1D + 1) + col + height * ((numIPs1D + 1) * (numIPs1D + 1));
 
                 VisualizationCellsIncidence.push_back(start);
                 VisualizationCellsIncidence.push_back(start + 1);
-                VisualizationCellsIncidence.push_back(start + numIPs1D + 2); // the number of 1D cell points is numIPs1D+1
+                VisualizationCellsIncidence.push_back(start + numIPs1D +
+                                                      2); // the number of 1D cell points is numIPs1D+1
                 VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
 
-                start = row*(numIPs1D + 1) + col + (height+1)*((numIPs1D + 1)*(numIPs1D + 1));
+                start = row * (numIPs1D + 1) + col + (height + 1) * ((numIPs1D + 1) * (numIPs1D + 1));
 
                 VisualizationCellsIncidence.push_back(start);
                 VisualizationCellsIncidence.push_back(start + 1);
