@@ -187,22 +187,6 @@ StructureOutputBlockVector NewmarkDirect::CalculateResidual(const StructureOutpu
 }
 
 
-void NewmarkDirect::CalculateResidualKForPostprocessing(StructureOutputBlockVector& rResidual,
-                                                        const StructureOutputBlockMatrix& rHessian_dt2,
-                                                        const StructureOutputBlockVector& rDof_dt1,
-                                                        const StructureOutputBlockVector& rDof_dt2) const
-{
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
-        return; // in this case, residual.K is needed for the calculation of residual mod and it is already calculated.
-
-    if (mStructure->GetNumTimeDerivatives() >= 2)
-    {
-        const auto dof = rDof_dt1 * mMuDampingMass + rDof_dt2;
-        rResidual.K -= rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
-    }
-}
-
-
 void NewmarkDirect::CalculateResidualTrial(StructureOutputBlockVector& rResidual,
                                            const BlockFullVector<double>& rDeltaBRHS,
                                            const std::array<StructureOutputBlockMatrix, 3>& hessians,
@@ -324,8 +308,6 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
         mStructure->GetLogger() << residual_mod.CalculateInfNorm();
         throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
     }
-    CalculateResidualKForPostprocessing(residual, hessians[2], dofValues[1], dofValues[2]);
-
 
     mPostProcessor->PostProcess(residual);
     return dofValues;
@@ -493,14 +475,9 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
                                     << mTimeControl.GetCurrentTime() << " (timestep " << mTimeControl.GetTimeStep()
                                     << ").\n";
             mStructure->GetLogger() << "Residual: \t" << residualNorm << "\n";
-            // perform Postprocessing
+
             if (staggeredStepNumber >= mStepActiveDofs.size())
-            {
-                CalculateResidualKForPostprocessing(prevResidual, hessians[2], dof_dt[1], dof_dt[2]);
-
                 mPostProcessor->PostProcess(prevResidual);
-            }
-
 
             if (mCallback && mCallback->Exit(*mStructure))
                 return;

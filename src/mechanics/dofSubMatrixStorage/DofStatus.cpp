@@ -11,7 +11,6 @@
 
 
 NuTo::DofStatus::DofStatus()
-    : mHasInteractingConstraints(false)
 {
 }
 

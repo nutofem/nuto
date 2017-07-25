@@ -29,7 +29,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(const ElementBase* rElem
                                                         const NuTo::BlockFullMatrix<double>& rElementMatrix,
                                                         const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
                                                         const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
-                                                        double rAddValueTolerance, bool rAssembleKJKK)
+                                                        double rAddValueTolerance)
 {
     const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
     const auto& numActiveDofTypeMap = JJ.GetDofStatus().GetNumActiveDofsMap();
@@ -88,30 +88,27 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(const ElementBase* rElem
                 }
                 else
                 {
-                    if (rAssembleKJKK)
+                    auto& activeCol = KJ(dofRow, dofCol);
+                    auto& dependentCol = KK(dofRow, dofCol);
+
+                    globalRowDof -= numActiveDofsRow;
+
+                    for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
                     {
-                        auto& activeCol = KJ(dofRow, dofCol);
-                        auto& dependentCol = KK(dofRow, dofCol);
-
-                        globalRowDof -= numActiveDofsRow;
-
-                        for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
+                        double value = elementMatrix(iRow, iCol);
+                        if (std::abs(value - rAddValueTolerance) > 0.)
                         {
-                            double value = elementMatrix(iRow, iCol);
-                            if (std::abs(value - rAddValueTolerance) > 0.)
+                            int globalColDof = globalColDofs[iCol];
+                            if (globalColDof < numActiveDofsCol)
                             {
-                                int globalColDof = globalColDofs[iCol];
-                                if (globalColDof < numActiveDofsCol)
-                                {
-                                    activeCol.AddValue(globalRowDof, globalColDof, value);
-                                }
-                                else
-                                {
-                                    if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
-                                        continue; // entry would be in lower triangle --> not valid for symmetric
-                                    // matrices
-                                    dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
-                                }
+                                activeCol.AddValue(globalRowDof, globalColDof, value);
+                            }
+                            else
+                            {
+                                if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
+                                    continue; // entry would be in lower triangle --> not valid for symmetric
+                                // matrices
+                                dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
                             }
                         }
                     }
@@ -167,14 +164,8 @@ void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(const NuTo::Bloc
 void NuTo::StructureOutputBlockMatrix::ApplyCMatrixScal(BlockSparseMatrix& rHessian, const BlockSparseMatrix& rCmat,
                                                         double rScalar) const
 {
-
     rHessian.AddScal(JJ, rScalar);
-
-    if (not JJ.GetDofStatus().HasInteractingConstraints())
-        return;
-
     const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
-
     for (auto i : activeDofTypes)
     {
         for (auto j : activeDofTypes)
@@ -187,12 +178,7 @@ void NuTo::StructureOutputBlockMatrix::ApplyCMatrixScal(BlockSparseMatrix& rHess
 
 void NuTo::StructureOutputBlockMatrix::ApplyCMatrix(const BlockSparseMatrix& rCmat)
 {
-
-    if (not JJ.GetDofStatus().HasInteractingConstraints())
-        return;
-
     const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
-
     for (auto i : activeDofTypes)
     {
         for (auto j : activeDofTypes)
@@ -222,11 +208,7 @@ operator*(const StructureOutputBlockVector& rRhs) const
     StructureOutputBlockVector result(rRhs.J.GetDofStatus(), true);
 
     result.J = JJ * rRhs.J + JK * rRhs.K;
-
-    if (JJ.GetDofStatus().HasInteractingConstraints())
-    {
-        result.K = KJ * rRhs.J + KK * rRhs.K;
-    }
+    result.K = KJ * rRhs.J + KK * rRhs.K;
 
     return result;
 }
@@ -260,33 +242,22 @@ void NuTo::StructureOutputBlockMatrix::AddScal(const StructureOutputBlockMatrix&
 {
     JJ.AddScal(rOther.JJ, rFactor);
     JK.AddScal(rOther.JK, rFactor);
-
-    if (JJ.GetDofStatus().HasInteractingConstraints())
-    {
-        KJ.AddScal(rOther.KJ, rFactor);
-        KK.AddScal(rOther.KK, rFactor);
-    }
+    KJ.AddScal(rOther.KJ, rFactor);
+    KK.AddScal(rOther.KK, rFactor);
 }
 
 void NuTo::StructureOutputBlockMatrix::AddScalDiag(const StructureOutputBlockVector& rOther, double rFactor)
 {
     JJ.AddScalDiag(rOther.J, rFactor);
-    if (JJ.GetDofStatus().HasInteractingConstraints())
-    {
-        KK.AddScalDiag(rOther.K, rFactor);
-    }
+    KK.AddScalDiag(rOther.K, rFactor);
 }
 
 void NuTo::StructureOutputBlockMatrix::SetZero()
 {
     JJ.SetZero();
     JK.SetZero();
-
-    if (JJ.GetDofStatus().HasInteractingConstraints())
-    {
-        KJ.SetZero();
-        KK.SetZero();
-    }
+    KJ.SetZero();
+    KK.SetZero();
 }
 
 void NuTo::StructureOutputBlockMatrix::CwiseInvert()

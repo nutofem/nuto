@@ -1424,14 +1424,12 @@ public:
     // this only happens for more than one load step (either prescibed or with automatic load control)
     virtual void SaveStructure(std::stringstream&) const
     {
-        throw Exception(
-                "[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
+        throw Exception("[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
     }
 
     virtual void RestoreStructure(std::stringstream&)
     {
-        throw Exception(
-                "[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
+        throw Exception("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
     void SetUpdateTmpStaticDataRequired()
@@ -1448,15 +1446,9 @@ public:
     //! @param rDofType ... dof type
     bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
-
-    ///
-    /// \brief DofStatusSetHasInteractingConstraints
-    /// \param rHasInteractingConstraints
-    ///
-    /// Sets the member variable mHasInteractingConstraints of mDofStatus to either true or false.
-    /// The mHasInteractingConstraints determines whether K_KJ and K_KK are assembled during the Evaluate function
-    ///
-    void DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints);
+    //! @return true if the constraint matrix has non zero entries
+    //! @remark Some time integration schemes cannot handle a non zero constraint matrix and use this method to check it
+    bool HasInteractingConstraints() const;
 
     bool GetShowTime() const;
 

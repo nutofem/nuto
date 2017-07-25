@@ -928,13 +928,8 @@ public:
 
         CalculateStaticAndTimeDependentExternalLoad();
 
-        // sets hasInteractingConstraints to true to also assemble K_KJ and K_KK
         // only necessary for CheckRigidBodyModes
-        mStructure->DofStatusSetHasInteractingConstraints(true);
         const DofStatus& dofStatus = mStructure->GetDofStatus();
-
-
-        assert(dofStatus.HasInteractingConstraints() == true);
 
         if (mStepActiveDofs.empty())
         {
@@ -1025,8 +1020,6 @@ public:
             for (const auto& activeDofSet : mStepActiveDofs)
             {
                 mStructure->DofTypeSetIsActive(activeDofSet);
-
-                mStructure->DofStatusSetHasInteractingConstraints(true);
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evaluateInternalGradientHessian0Hessian1);

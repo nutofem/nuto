@@ -35,9 +35,8 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "not implemented for time dependent constraints including multiple dofs.");
+    if (mStructure->HasInteractingConstraints())
+        throw Exception(__PRETTY_FUNCTION__, "not implemented for time dependent constraints including multiple dofs.");
 
     if (mTimeStep == 0.)
     {
@@ -47,8 +46,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         }
         else
         {
-            throw Exception(
-                    "[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
+            throw Exception("[NuTo::RungeKuttaBase::Solve] time step not set for unconditional stable algorithm.");
         }
     }
 
@@ -122,7 +120,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
             }
             dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
             mStructure->NodeMergeDofValues(0, dof_dt0_tmp);
-            dof_dt1_tmp.K = -1.*(mStructure->GetAssembler().GetConstraintMatrix() * dof_dt1_tmp.J);
+            dof_dt1_tmp.K = -1. * (mStructure->GetAssembler().GetConstraintMatrix() * dof_dt1_tmp.J);
             mStructure->NodeMergeDofValues(1, dof_dt1_tmp);
             mStructure->ElementTotalUpdateTmpStaticData();
 
@@ -151,7 +149,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         // std::cout << "final disp_j_new " << disp_j_new(0) << std::endl;
         dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
         mStructure->NodeMergeDofValues(0, dof_dt0_new);
-        dof_dt1_new.K = -1.*(mStructure->GetAssembler().GetConstraintMatrix() * dof_dt1_new.J);
+        dof_dt1_new.K = -1. * (mStructure->GetAssembler().GetConstraintMatrix() * dof_dt1_new.J);
         mStructure->NodeMergeDofValues(1, dof_dt1_new);
         mStructure->ElementTotalUpdateTmpStaticData();
         mStructure->ElementTotalUpdateStaticData();

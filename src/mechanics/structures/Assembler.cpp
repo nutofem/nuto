@@ -172,9 +172,6 @@ NuTo::BlockFullVector<double> NuTo::Assembler::ApplyCMatrix(const StructureOutpu
 {
     auto result = vec.J;
 
-    if (not vec.J.GetDofStatus().HasInteractingConstraints())
-        return result;
-
     for (auto dof : vec.J.GetDofStatus().GetActiveDofTypes())
         result[dof] -= cMat(dof, dof).TransMult(vec.K[dof]);
 

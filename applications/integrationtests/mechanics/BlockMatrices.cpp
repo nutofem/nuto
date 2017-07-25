@@ -349,9 +349,7 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
 
     timer.Reset("StructureOutputBlockMatrixTestGeneral::ApplyCMatrix_NEW");
 
-    s.SetHasInteractingConstraints(true);
     BM4.ApplyCMatrixScal(hessian, CMatrix, 1);
-
 
     timer.Reset("StructureOutputBlockMatrixTestGeneral::ApplyCMatrix_OLD");
 
@@ -438,9 +436,7 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
 
     timer.Reset("StructureOutputBlockMatrixTestSymmetric::ApplyCMatrix_NEW");
 
-    s.SetHasInteractingConstraints(true);
     BM4.ApplyCMatrixScal(hessian, CMatrix, 1);
-
 
     timer.Reset("StructureOutputBlockMatrixTestSymmetric::ApplyCMatrix_OLD");
 

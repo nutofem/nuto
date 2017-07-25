@@ -43,16 +43,6 @@ public:
         mDofTypes = rDofTypes;
     }
 
-    bool HasInteractingConstraints() const
-    {
-        return mHasInteractingConstraints;
-    }
-
-    void SetHasInteractingConstraints(bool rHasInteractingConstraints)
-    {
-        mHasInteractingConstraints = rHasInteractingConstraints;
-    }
-
     int GetNumActiveDofs(Node::eDof dof) const
     {
         return mNumActiveDofs.at(dof);
@@ -88,7 +78,6 @@ public:
         mNumDependentDofs[rDofType] = rNumDependentDofs;
     }
 
-
     bool IsSymmetric(Node::eDof rDofType) const
     {
         return mSymmetricDofTypes.find(rDofType) != mSymmetricDofTypes.end();
@@ -113,7 +102,5 @@ private:
     std::set<Node::eDof> mActiveDofTypes;
 
     std::set<Node::eDof> mSymmetricDofTypes;
-
-    bool mHasInteractingConstraints;
 };
 } /* namespace NuTo */

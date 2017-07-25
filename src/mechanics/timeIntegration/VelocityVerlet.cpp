@@ -42,7 +42,7 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    if (mStructure->GetDofStatus().HasInteractingConstraints())
+    if (mStructure->HasInteractingConstraints())
         throw Exception(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
 
     if (mTimeStep == 0.)

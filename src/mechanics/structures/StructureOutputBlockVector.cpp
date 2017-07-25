@@ -59,7 +59,6 @@ void NuTo::StructureOutputBlockVector::AddElementVector(const NuTo::BlockFullVec
     }
 }
 
-
 void NuTo::StructureOutputBlockVector::Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap,
                                               const std::map<Node::eDof, int>& rNumDependentDofsMap)
 {
