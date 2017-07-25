@@ -45,11 +45,9 @@ public:
 
 
     //! @brief operator +=
-    //! @remark only modifies active dof types
     BlockFullMatrix& operator+=(const BlockFullMatrix& rRhs);
 
     //! @brief operator -=
-    //! @remark only modifies active dof types
     BlockFullMatrix& operator-=(const BlockFullMatrix& rRhs);
 
     friend NuTo::BlockFullMatrix<T> operator+(NuTo::BlockFullMatrix<T> rLhs, const NuTo::BlockFullMatrix<T>& rRhs)

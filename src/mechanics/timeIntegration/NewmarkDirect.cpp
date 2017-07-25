@@ -413,6 +413,8 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
     int timeStepMaxIterations = 0;
     bool converged = true;
 
+    //auto final_lastConverged_dof_dt = lastConverged_dof_dt;
+
     for (const auto& activeDofs : mStepActiveDofs)
     {
         ++staggeredStepNumber;
@@ -460,16 +462,9 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         {
             mStructure->ElementTotalUpdateStaticData();
 
-            // store converged step
-            lastConverged_dof_dt[0] = dof_dt[0];
-            if (mStructure->GetNumTimeDerivatives() >= 1)
-                lastConverged_dof_dt[1] = dof_dt[1];
-            if (mStructure->GetNumTimeDerivatives() >= 1)
-                lastConverged_dof_dt[2] = dof_dt[2];
-
             auto prevResidual = residual;
 
-            MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true);
+            MergeDofValues(dof_dt[0], dof_dt[1], dof_dt[2], true); // only merges currently active dof types
 
             mStructure->GetLogger() << "Convergence after " << iterations << " iterations at time "
                                     << mTimeControl.GetCurrentTime() << " (timestep " << mTimeControl.GetTimeStep()
@@ -492,6 +487,10 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
 
     // Continue with next timestep or reduce timestep and restart iteration
     mTimeControl.AdjustTimestep(timeStepMaxIterations, mMaxNumIterations, converged);
+
+    // store converged dofs after each staggered step is done
+    if (converged)
+        lastConverged_dof_dt = ExtractDofValues();
 }
 
 
