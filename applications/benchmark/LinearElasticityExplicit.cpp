@@ -8,7 +8,7 @@ BENCHMARK(LinearElasticity, CompleteRun, runner)
     NuTo::Benchmark::LinearElasticBenchmarkStructure s(numElements);
     NuTo::RungeKutta4 rk4(&s.GetStructure());
     rk4.SetTimeStep(1);
-    rk4.SetResultDirectory("LinearElasticityExplicitResults", true);
+    rk4.PostProcessing().SetResultDirectory("LinearElasticityExplicitResults", true);
 
     while (runner.KeepRunningIterations(1))
     {

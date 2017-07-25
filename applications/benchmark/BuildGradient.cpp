@@ -8,7 +8,7 @@
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/interpolation/InterpolationQuadSerendipity.h"
@@ -29,7 +29,7 @@ public:
 
     Eigen::VectorXd BuildInternalGradient() const
     {
-        const NuTo::IntegrationType2D4NGauss4Ip it;
+        const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
 
         Eigen::VectorXd result = Eigen::VectorXd::Zero(16, 1);
 
@@ -136,7 +136,7 @@ public:
 
     SemiFixVector<NuTo::maxDim * NuTo::maxNumNodes> BuildInternalGradient() const
     {
-        const NuTo::IntegrationType2D4NGauss4Ip it;
+        const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
         SemiFixVector<NuTo::maxDim* NuTo::maxNumNodes> result =
                 SemiFixVector<NuTo::maxDim * NuTo::maxNumNodes>::Zero(16, 1);
         const auto disp = GetDisp();
@@ -628,9 +628,9 @@ BENCHMARK(BuildGradient, NuToPDE, runner)
 
     NuTo::LinearElasticLaw2D law(20000, 0.3);
     NuTo::IntegrandLinearElastic<2> integrand(displDof, law);
-    NuTo::IntegrationType2D4NGauss4Ip integrationType;
+    const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
 
-    NuTo::Cell<2> cell(coordElement, elements, integrationType, integrand);
+    NuTo::Cell<2> cell(coordElement, elements, it, integrand);
 
     while (runner.KeepRunningIterations(1e6))
     {
