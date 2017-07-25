@@ -12,24 +12,8 @@
 
 namespace NuTo
 {
-
-template <int TRows, int TCols>
-class ConstitutiveMatrix;
-
 template <int TDim>
 struct EvaluateDataContinuum;
-
-template <int TDim>
-class EngineeringStress;
-
-
-class DeformationGradient1D;
-class TemperatureGradient1D;
-class LocalEqStrain;
-class NonlocalEqStrain;
-class HeatFlux1D;
-template <int TNumRows, int TNumColumns>
-class ConstitutiveTangentNonlocal;
 
 class Element1DInXD : public ContinuumElement<1>
 {

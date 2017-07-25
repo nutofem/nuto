@@ -7,7 +7,7 @@
 
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include <boost/algorithm/string.hpp>
+#include <ostream>
 
 
 NuTo::DofStatus::DofStatus()

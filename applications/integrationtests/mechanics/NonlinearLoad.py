@@ -21,23 +21,21 @@ def SetBCs(structure):
 
     structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodesBottom, [nuto.eDirection_Z]))
 
-
     nodeZero = structure.NodeGetAtCoordinate(np.r_[0.0, 0.0, 0.0])
     structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodeZero, [nuto.eDirection_X, nuto.eDirection_Y]))
 
     nodeOne = structure.NodeGetAtCoordinate(np.r_[1.0, 0.0, 0.0])
     structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, nuto.Component(nodeOne, [nuto.eDirection_Y]))
 
-
     topNodes = nodesTop.GetMemberIds()
     topNodes = list(topNodes)
     primary = structure.NodeGetNodePtr(topNodes.pop(0))
     for secondary in topNodes:
-        secondaryNode = structure.NodeGetNodePtr(secondary) 
+        secondaryNode = structure.NodeGetNodePtr(secondary)
         e = nuto.Equation()
         e.AddTerm(nuto.Term(primary, 2, 1))
         e.AddTerm(nuto.Term(secondaryNode, 2, -1))
-        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, e);
+        structure.Constraints().Add(nuto.eDof_DISPLACEMENTS, e)
 
     elementsTop = structure.GroupCreate("Elements")
     nodesTopId = structure.GroupGetId(nodesTop)
@@ -54,7 +52,7 @@ class NonlinearLoadTestCase(unittest.TestCase):
 
         SetConstitutiveLaw(self.structure)
 
-        self.structure.InterpolationTypeAdd(interpolation, "Displacements", "Equidistant2")  
+        self.structure.InterpolationTypeAdd(interpolation, "Displacements", "Equidistant2")
         self.structure.InterpolationTypeAdd(interpolation, "Nonlocaleqstrain", "Equidistant1")
         self.structure.ElementTotalConvertToInterpolationType()
 
@@ -66,7 +64,7 @@ class NonlinearLoadTestCase(unittest.TestCase):
         newmark.SetTimeDependentLoadCase(0, force_application)
         newmark.SetPerformLineSearch(True)
         newmark.SetTimeStep(1.0)
-        newmark.SetResultDirectory("./NonlinearLoadOut", True)
+        newmark.PostProcessing().SetResultDirectory("./NonlinearLoadOut", True)
         newmark.Solve(1.0)
 
     def testStress(self):

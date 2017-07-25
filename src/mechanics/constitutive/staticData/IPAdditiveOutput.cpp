@@ -1,6 +1,7 @@
 #include "mechanics/constitutive/staticData/IPAdditiveOutput.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 

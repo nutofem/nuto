@@ -1,16 +1,10 @@
-// $Id: SparseMatrixCSRVector2Symmetric.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 
-#include <algorithm>
+#include <iostream>
 
 #include "math/SparseMatrixEnum.h"
 #include "math/SparseMatrixCSRVector2Symmetric_Def.h"
-#include "math/SparseMatrixCSRVector2General.h"
 
-
-//#include "math/SparseMatrixCSRSymmetric_Def.h"
-//#include "math/SparseMatrixCSRSymmetric.h"
 #include "base/Exception.h"
 
 //! @brief ... constructor

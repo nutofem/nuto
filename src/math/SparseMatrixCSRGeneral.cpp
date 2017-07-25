@@ -1,8 +1,5 @@
-#include <fstream>
 #include <iostream>
-#include <string>
 
-#include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "base/Exception.h"

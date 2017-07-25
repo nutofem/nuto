@@ -19,10 +19,12 @@
 #include "mechanics/elements/ElementEnum.h"
 #include "base/CallbackInterface.h"
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "mechanics/timeIntegration/NewmarkBase.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/RungeKutta4.h"
+#include "mechanics/timeIntegration/TimeControl.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constraints/Term.h"
 #include "mechanics/constraints/Equation.h"
@@ -160,10 +162,11 @@ namespace std {
 %include "mechanics/structures/Assembler.h"
 
 %include "mechanics/timeIntegration/TimeIntegrationBase.h"
-%include "mechanics/timeIntegration/NewmarkBase.h"
+%include "mechanics/timeIntegration/TimeControl.h"
 %include "mechanics/timeIntegration/NewmarkDirect.h"
 %include "mechanics/timeIntegration/RungeKuttaBase.h"
 %include "mechanics/timeIntegration/RungeKutta4.h"
+%include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 %include "mechanics/mesh/MeshGenerator.h"
 

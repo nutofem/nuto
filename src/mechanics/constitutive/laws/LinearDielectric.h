@@ -6,8 +6,6 @@
 
 namespace NuTo
 {
-class InterpolationType;
-
 //! Isotropic material with linear relation between electric field E and dielectric displacement D
 
 //! Relation to the anisotropic case:

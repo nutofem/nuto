@@ -17,7 +17,6 @@
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
-#include "mechanics/constitutive/laws/PhaseField.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"

@@ -2,15 +2,11 @@
 #include <omp.h>
 #endif
 
-#include "math/SparseMatrixCSRVector2.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "base/Timer.h"
 
@@ -135,8 +131,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
             d_dof_dt0_tmp[countStage] = dof_dt1_tmp * mTimeStep;
             // std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
             auto forceVector = extLoad - intForce;
-            auto res = forceVector.J * 0.;
-            forceVector.ApplyCMatrix(res, cmat);
+            auto res = Assembler::ApplyCMatrix(forceVector, cmat);
             forceVector.J = res;
             d_dof_dt1_tmp[countStage] = hessian2 * (forceVector)*mTimeStep;
             // std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
@@ -175,6 +170,7 @@ void NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         // outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
 
         // postprocess data for plotting
-        this->PostProcess(extLoad - intForce);
+        mTimeControl.SetCurrentTime(mTime);
+        mPostProcessor->PostProcess(extLoad - intForce);
     }
 }

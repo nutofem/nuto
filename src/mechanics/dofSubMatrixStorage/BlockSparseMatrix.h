@@ -18,15 +18,11 @@ class BlockFullVector;
 template <class T>
 class SparseMatrixCSRGeneral;
 template <class T>
-class SparseMatrixCSRSymmetric;
-template <class T>
 class SparseMatrixCSRVector2;
 template <class T>
 class SparseMatrixCSRVector2General;
 template <class T>
 class SparseMatrixCSR;
-template <class T>
-class SparseMatrixCSRVector2Symmetric;
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016

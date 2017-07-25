@@ -4,8 +4,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "mechanics/structures/Assembler.h"
 
 #include "base/Timer.h"
@@ -113,12 +113,12 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
 
         dof_dt0.K = mStructure->NodeCalculateDependentDofValues(dof_dt0.J); //?
         mStructure->NodeMergeDofValues(0, dof_dt0);
-        if (mMergeActiveDofValuesOrder1)
+        if (mStructure->GetNumTimeDerivatives() >= 1)
         {
             dof_dt1.K = mStructure->NodeCalculateDependentDofValues(dof_dt1.J); //?
             mStructure->NodeMergeDofValues(1, dof_dt1);
         }
-        if (mMergeActiveDofValuesOrder2)
+        if (mStructure->GetNumTimeDerivatives() >= 2)
         {
             dof_dt2.K = mStructure->NodeCalculateDependentDofValues(dof_dt2.J); //?
             mStructure->NodeMergeDofValues(2, dof_dt2);
@@ -137,7 +137,8 @@ void NuTo::VelocityVerlet::Solve(double rTimeDelta)
         //**********************************************
 
         // postprocess data for plotting
-        this->PostProcess(extLoad - intForce);
+        mTimeControl.SetCurrentTime(mTime);
+        mPostProcessor->PostProcess(extLoad - intForce);
 
         // calculate new accelerations and velocities of independent dofs
         auto dof_dt2_new = dof_dt2;

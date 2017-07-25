@@ -3,7 +3,7 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "mechanics/nodes/DofHash.h"
-#include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
 #include <ostream>
 #include <unordered_map>
 #include <map>

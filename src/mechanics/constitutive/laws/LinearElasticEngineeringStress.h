@@ -10,7 +10,6 @@ namespace Constitutive
 {
 class IPConstitutiveLawBase;
 } // namespace Constitutive
-class InterpolationType;
 
 //! @brief ... linear elastic material model
 /*!

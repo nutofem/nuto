@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMaxTimeStep(maxTimeStep);
     newmarkFeti.SetMaxNumIterations(maxIterations);
     newmarkFeti.SetAutomaticTimeStepping(automaticTimeStepping);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ConjugateGradient);

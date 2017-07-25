@@ -8,7 +8,6 @@
 namespace NuTo
 {
 
-class ConstitutiveScalar;
 template <int TRows, int TCols>
 class ConstitutiveMatrix;
 template <int TRows>

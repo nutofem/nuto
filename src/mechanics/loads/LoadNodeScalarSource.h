@@ -1,10 +1,10 @@
 #pragma once
 
 #include "mechanics/loads/LoadNode.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
+class StructureOutputBlockVector;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... class for all scalar source terms (e.g. charges) applied to a single node

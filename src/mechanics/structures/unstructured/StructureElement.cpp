@@ -1,23 +1,15 @@
 #include <cassert>
 #include <typeinfo>
-#include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
 
 #include "base/Timer.h"
 
-
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/elements/IpDataEnum.h"
-
-
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ContinuumElementIGA.h"
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/Element1DInXD.h"
 #include "mechanics/elements/Element2DInterface.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
@@ -30,7 +22,7 @@
 
 #include "mechanics/mesh/MeshCompanion.h"
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 //! @brief returns the number of nodes
 //! @return number of nodes

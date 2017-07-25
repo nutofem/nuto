@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include <vector>
 #include <iostream>
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(NodesAndWeights)
         std::vector<double> nodes(numIps);
         std::vector<double> weights(numIps);
 
-        NuTo::IntegrationType1D2NGauss intType(numIps);
+        NuTo::IntegrationTypeTensorProduct<1> intType(numIps, NuTo::eIntegrationMethod::GAUSS);
         for (int i = 0; i < numIps; i++)
         {
             nodes[i] = intType.GetLocalIntegrationPointCoordinates(i)(0, 0);
@@ -39,3 +39,4 @@ BOOST_AUTO_TEST_CASE(NodesAndWeights)
         }
     }
 }
+

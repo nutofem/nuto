@@ -9,6 +9,7 @@
 #include "mechanics/MechanicsEnums.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 using namespace NuTo;
 
@@ -137,7 +138,7 @@ int main(int argc, char* argv[])
     integrationScheme.SetShowTime(true);
 
     bool deleteDirectory = true;
-    integrationScheme.SetResultDirectory(resultPath.string(), deleteDirectory);
+    integrationScheme.PostProcessing().SetResultDirectory(resultPath.string(), deleteDirectory);
 
     integrationScheme.Solve(simulationTime);
 

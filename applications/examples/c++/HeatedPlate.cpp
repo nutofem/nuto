@@ -19,6 +19,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 
@@ -191,7 +192,7 @@ int main()
     newmark.SetAutomaticTimeStepping(true);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("HeatedPlateResults", deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("HeatedPlateResults", deleteDirectory);
     newmark.Solve(simulationTime);
 
     return 0;

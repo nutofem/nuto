@@ -3,10 +3,8 @@
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
-
 namespace NuTo
 {
-class InterpolationType;
 
 //! Evaluate heat conduction according to Fourier's law.
 

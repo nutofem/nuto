@@ -14,10 +14,6 @@
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-
 #include "mechanics/IGA/BSplineCurve.h"
 #include "mechanics/IGA/BSplineSurface.h"
 

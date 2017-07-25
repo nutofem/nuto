@@ -1,18 +1,19 @@
 #include "boost/filesystem.hpp"
 
 #include "base/Timer.h"
+#include "base/Exception.h"
 
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "base/Exception.h"
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/timeIntegration/ResultElementIpData.h"
-#include "mechanics/timeIntegration/ResultGroupNodeForce.h"
-#include "mechanics/timeIntegration/ResultNodeDisp.h"
-#include "mechanics/timeIntegration/ResultNodeAcceleration.h"
-#include "mechanics/timeIntegration/ResultTime.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "mechanics/timeIntegration/postProcessing/ResultElementIpData.h"
+#include "mechanics/timeIntegration/postProcessing/ResultElementIpData.h"
+#include "mechanics/timeIntegration/postProcessing/ResultGroupNodeForce.h"
+#include "mechanics/timeIntegration/postProcessing/ResultNodeDisp.h"
+#include "mechanics/timeIntegration/postProcessing/ResultNodeAcceleration.h"
+#include "mechanics/timeIntegration/postProcessing/ResultTime.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 #include "mechanics/dofSubMatrixSolvers/SolverMUMPS.h"
 #include "mechanics/structures/Assembler.h"
@@ -26,6 +27,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure)
     , mLoadVectorTimeDependent(rStructure->GetDofStatus())
     , mToleranceResidual(rStructure->GetDofStatus())
     , mCallback(nullptr)
+    , mPostProcessor(std::make_unique<PostProcessor>(*rStructure, mTimeControl))
 {
     ResetForNextLoad();
 }
@@ -55,7 +57,7 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
 {
     if (rTimeDependentLoadFactor.cols() != 2)
         throw Exception(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, "
-                                                      "second column contains the corresponding value.");
+                                             "second column contains the corresponding value.");
     if (rTimeDependentLoadFactor.rows() < 2)
         throw Exception(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
     if (rTimeDependentLoadFactor(0, 0) != 0)
@@ -77,6 +79,7 @@ void NuTo::TimeIntegrationBase::SetToleranceResidual(NuTo::Node::eDof rDof, doub
     mToleranceResidual[rDof] = rTolerance;
 }
 
+
 void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
 {
     mLoadVectorStatic = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
@@ -94,6 +97,7 @@ void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
     mStructure->GetLogger() << "Sum of loads is " << tmp.J.Export().colwise().sum() + tmp.K.Export().colwise().sum()
                             << "\n";
 }
+
 
 NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExternalLoad(double curTime)
 {
@@ -144,98 +148,21 @@ NuTo::TimeIntegrationBase::UpdateAndGetAndMergeConstraintRHS(double rCurrentTime
     return mStructure->GetAssembler().GetConstraintRhs();
 }
 
-int NuTo::TimeIntegrationBase::AddResultNodeDisplacements(const std::string& rResultStr, int rNodeId)
+
+std::array<StructureOutputBlockVector, 3> NuTo::TimeIntegrationBase::ExtractDofValues() const
 {
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultNodeDisp(rResultStr, rNodeId));
-
-    return resultNumber;
-}
-
-int NuTo::TimeIntegrationBase::AddResultNodeAccelerations(const std::string& rResultStr, int rNodeId)
-{
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultNodeAcceleration(rResultStr, rNodeId));
-    mMergeActiveDofValuesOrder2 = true;
-    return resultNumber;
-}
-
-int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
-{
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultTime(rResultStr));
-
-    return resultNumber;
-}
-
-int NuTo::TimeIntegrationBase::AddResultElementIpData(const std::string& rResultStr, int rElementId,
-                                                      NuTo::IpData::eIpStaticDataType rIpDataType)
-{
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultElementIpData(rResultStr, rElementId, rIpDataType));
-
-    return resultNumber;
-}
-
-int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResultStr, int rGroupNodeId)
-{
-    // find unused integer id
-    int resultNumber(mResultMap.size());
-    boost::ptr_map<int, ResultBase>::iterator it = mResultMap.find(resultNumber);
-    while (it != mResultMap.end())
-    {
-        resultNumber++;
-        it = mResultMap.find(resultNumber);
-    }
-
-    mResultMap.insert(resultNumber, new ResultGroupNodeForce(rResultStr, rGroupNodeId));
-
-    return resultNumber;
-}
-
-void NuTo::TimeIntegrationBase::ExtractDofValues(StructureOutputBlockVector& rDof_dt0,
-                                                 StructureOutputBlockVector& rDof_dt1,
-                                                 StructureOutputBlockVector& rDof_dt2) const
-{
-    rDof_dt0 = mStructure->NodeExtractDofValues(0);
+    const auto& dofStatus = mStructure->GetDofStatus();
+    std::array<StructureOutputBlockVector, 3> dofValues = {StructureOutputBlockVector(dofStatus, true),
+                                                           StructureOutputBlockVector(dofStatus, true),
+                                                           StructureOutputBlockVector(dofStatus, true)};
+    dofValues[0] = mStructure->NodeExtractDofValues(0);
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
-        rDof_dt1 = mStructure->NodeExtractDofValues(1);
+        dofValues[1] = mStructure->NodeExtractDofValues(1);
 
     if (mStructure->GetNumTimeDerivatives() >= 2)
-        rDof_dt2 = mStructure->NodeExtractDofValues(2);
+        dofValues[2] = mStructure->NodeExtractDofValues(2);
+    return dofValues;
 }
 
 double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& rResidual) const
@@ -247,89 +174,6 @@ double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& r
     return norm;
 }
 
-std::string NuTo::TimeIntegrationBase::GetRestartFileName() const
-{
-    boost::filesystem::path restartFile(mResultDir);
-    restartFile /= "LastTimeStep.restart";
-    return restartFile.c_str();
-}
-
-void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
-{
-    Timer timer(__FUNCTION__, GetShowTime(), mStructure->GetLogger());
-
-    if (mResultDir.length() == 0)
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Set the result directory first.");
-    }
-    else
-    {
-        mStructure->WriteRestartFile(GetRestartFileName(), mTime);
-
-        // perform Postprocessing
-        for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
-        {
-            switch (itResult->second->GetResultType())
-            {
-            case eTimeIntegrationResultType::TIME:
-            {
-                ResultTime* resultPtr(itResult->second->AsResultTime());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, mTime);
-                break;
-            }
-            case eTimeIntegrationResultType::NODE_ACCELERATION:
-            {
-                ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
-                break;
-            }
-            case eTimeIntegrationResultType::NODE_DISPLACEMENT:
-            {
-                ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
-                break;
-            }
-            case eTimeIntegrationResultType::GROUP_NODE_FORCE:
-            {
-                ResultGroupNodeDof* resultPtr(itResult->second->AsResultGroupNodeDof());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult,
-                                                 rOutOfBalance.J[Node::eDof::DISPLACEMENTS],
-                                                 rOutOfBalance.K[Node::eDof::DISPLACEMENTS]);
-                break;
-            }
-            case eTimeIntegrationResultType::ELEMENT_IP_STRESS:
-            case eTimeIntegrationResultType::ELEMENT_IP_STRAIN:
-            case eTimeIntegrationResultType::ELEMENT_IP_DAMAGE:
-            case eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS:
-            case eTimeIntegrationResultType::ELEMENT_IP_SLIP:
-            {
-                ResultElementIpData* resultPtr(itResult->second->AsResultElementIpData());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
-                break;
-            }
-            default:
-                throw Exception(__PRETTY_FUNCTION__, "Unknown component in postprocessing.");
-            }
-        }
-
-        if ((mTime - mLastTimePlot) >= mMinTimeStepPlot)
-        {
-            // write the results to files
-            for (auto itResult = mResultMap.begin(); itResult != mResultMap.end(); itResult++)
-            {
-                itResult->second->WriteToFile(mResultDir, mTimeStepResult);
-            }
-
-#ifdef ENABLE_VISUALIZE
-            // plot the solution vtk file
-            ExportVisualizationFiles(mResultDir, mTime, mTimeStepVTK);
-#endif
-            mTimeStepVTK++;
-            mLastTimePlot = mTime;
-        }
-        mTimeStepResult++;
-    }
-}
 
 void NuTo::TimeIntegrationBase::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
 {
@@ -352,107 +196,6 @@ void NuTo::TimeIntegrationBase::Info() const
 {
 }
 
-void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool rDelete)
-{
-    mResultDir = rResultDir;
-    // delete result directory
-    if (rDelete)
-    {
-        if (boost::filesystem::exists(rResultDir)) // does p actually exist?
-        {
-            if (boost::filesystem::is_directory(rResultDir)) // is p a directory?
-            {
-                boost::filesystem::remove_all(rResultDir);
-            }
-        }
-        // create result directory
-        boost::filesystem::create_directory(rResultDir);
-    }
-    else
-    {
-        if (boost::filesystem::exists(rResultDir)) // does p actually exist?
-        {
-            if (!boost::filesystem::is_directory(rResultDir)) // is p a directory?
-            {
-                // create result directory
-                boost::filesystem::create_directory(rResultDir);
-            }
-        }
-    }
-}
-
-
-void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rResultDir, double rTime, int rTimeStep)
-{
-#ifdef ENABLE_VISUALIZE
-    // plot the solution vtk file
-    std::stringstream ssTimeStepVTK;
-    ssTimeStepVTK << rTimeStep;
-    boost::filesystem::path resultFile(rResultDir);
-
-    if (mExportDataFileNodes == true)
-    {
-        resultFile /= std::string("Nodes") + ssTimeStepVTK.str() + std::string(".vtu");
-        mStructure->ExportVtkDataFileNodes(resultFile.string());
-    }
-
-    std::stringstream timeFormatted;
-    timeFormatted.width(15);
-    timeFormatted.precision(12);
-    timeFormatted << rTime;
-
-    // plot all groups separately
-    for (auto const& iVisualizePair : mStructure->GetGroupVisualizeComponentsMap())
-    {
-        // plot all elements
-        resultFile = rResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") +
-                      ssTimeStepVTK.str() + std::string(".vtu");
-        mStructure->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string());
-
-        // write an additional pvd file
-        resultFile = rResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_ElementsAll") +
-                      std::string(".pvd");
-
-        std::fstream file;
-        if (rTimeStep == 0)
-        {
-            file.open(resultFile.string(), std::fstream::out);
-        }
-        else
-        {
-            file.open(resultFile.string(), std::fstream::out | std::fstream::in | std::ios_base::ate);
-        }
-        if (!file.is_open())
-        {
-            throw NuTo::Exception(
-                    std::string("[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ") +
-                    resultFile.string());
-        }
-        std::stringstream endOfXML;
-        endOfXML << "</Collection>" << std::endl;
-        endOfXML << "</VTKFile>" << std::endl;
-        if (rTimeStep == 0)
-        {
-            // header /////////////////////////////////////////////////////////////////
-            file << "<?xml version=\"1.0\"?>" << std::endl;
-            file << "<VTKFile type=\"Collection\">" << std::endl;
-            file << "<Collection>" << std::endl;
-        }
-        else
-        {
-            // delete the last part of the xml file
-            file.seekp(-endOfXML.str().length(), std::ios_base::end);
-        }
-        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << iVisualizePair.first
-             << "_Elements" << rTimeStep << ".vtu\"/>" << std::endl;
-        file << endOfXML.str();
-        file.close();
-    }
-
-#endif // ENABLE_VISUALIZE
-}
 
 bool TimeIntegrationBase::GetShowTime() const
 {

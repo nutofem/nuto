@@ -1,13 +1,13 @@
 #pragma once
 
 #include "mechanics/loads/LoadNodeGroup.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
 class NodeBase;
 template <class T>
 class Group;
+class StructureOutputBlockVector;
 
 //! @brief Class for all forces applied to a group of nodes in 3D
 class LoadNodeGroupForces3D : public LoadNodeGroup

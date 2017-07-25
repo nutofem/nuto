@@ -15,7 +15,6 @@
 
 namespace NuTo
 {
-class StructureBase;
 class InterpolationBase;
 enum class eIntegrationType;
 

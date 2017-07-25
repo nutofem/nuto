@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/Exception.h"
 #include <eigen3/Eigen/Core>
 
 #ifdef HAVE_ARPACK

@@ -1,15 +1,6 @@
 #include "AdditiveInputImplicit.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-
-#include "mechanics/nodes/NodeEnum.h"
-
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseDirectSolverMKLPardiso.h"
-#include "math/SparseDirectSolverPardiso.h"
-#include "math/SparseMatrixCSRGeneral.h"
 
 
 NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputImplicit::GetType() const

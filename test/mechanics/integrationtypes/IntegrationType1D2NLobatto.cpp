@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NLobatto.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include <vector>
 #include <iostream>
 
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(NodesAndWeights)
         std::vector<double> nodes(numIps);
         std::vector<double> weights(numIps);
 
-        NuTo::IntegrationType1D2NLobatto intType(numIps);
+        NuTo::IntegrationTypeTensorProduct intType(numIps,NuTo::eIntegrationMethod::LOBATTO);
         for (int i = 0; i < numIps; i++)
         {
             nodes[i] = intType.GetLocalIntegrationPointCoordinates(i)(0, 0);

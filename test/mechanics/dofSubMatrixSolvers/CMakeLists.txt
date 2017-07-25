@@ -6,9 +6,7 @@ set(solverSources
         mechanics/dofSubMatrixStorage/BlockStorageBase.cpp
         mechanics/dofSubMatrixStorage/BlockScalar.cpp
         mechanics/nodes/NodeEnum.cpp
-        math/SparseMatrixCSRVector2General.cpp
         math/SparseMatrixCSRSymmetric.cpp
-        math/SparseMatrixCSRVector2Symmetric.cpp
         math/SparseMatrixCSRGeneral.cpp
         math/SparseMatrixCSR.cpp
     )

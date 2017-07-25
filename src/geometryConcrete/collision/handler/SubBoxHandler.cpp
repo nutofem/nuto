@@ -6,6 +6,7 @@
  */
 
 #include <vector>
+#include <iostream>
 
 #include "base/Exception.h"
 #include "base/Timer.h"

@@ -2,8 +2,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/Section.h"
 #include "mechanics/elements/ElementOutputBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
 
@@ -11,20 +10,7 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/EvaluateDataContinuum.h"
-#include "mechanics/elements/IpDataEnum.h"
-
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-
-#include "mechanics/constitutive/ConstitutiveBase.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 template <int TDim>
 NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const std::vector<NuTo::NodeBase*>& rNodes,

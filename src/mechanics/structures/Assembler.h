@@ -1,13 +1,17 @@
 #pragma once
+
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/constraints/Constraints.h"
 
 namespace NuTo
 {
+class NodeBase;
+
+template<typename T>
+class BlockFullVector;
+class StructureOutputBlockVector;
 
 class Assembler
 {
@@ -70,6 +74,11 @@ public:
     //! @TODO: should not be pulbic
     DofStatus mDofStatus;
 
+    //! @brief adds \f$(\boldsymbol{x}_{J} - \boldsymbol{C}_{mat}^T\,\boldsymbol{x}_{K}),c\f$ to vec
+    //! @remark only calculates active dof types
+    //! @param vec Vector to which to apply the constraint matrix
+    //! @param cMat Constraint matrix
+    static BlockFullVector<double> ApplyCMatrix(const StructureOutputBlockVector& vec, const BlockSparseMatrix& cMat);
 private:
     //! @brief builds the constraint rhs vector before the gauss elimination evaluated at time
     //! @param time global time

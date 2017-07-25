@@ -1,13 +1,10 @@
 #pragma once
 
 #include <vector>
-#include <string>
 #include <cassert>
 #include <iostream>
-#include <fstream>
 
 #include <boost/foreach.hpp>
-
 
 #include "math/SparseMatrix.h"
 #include "base/Exception.h"

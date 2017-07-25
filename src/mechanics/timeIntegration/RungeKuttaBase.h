@@ -38,7 +38,22 @@ public:
     //! @brief ... return, if time (e.g. for the calculation of external loads) has changed
     virtual bool HasTimeChanged(int rStage) const = 0;
 
+
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
+
 protected:
-    // empty private construct required for serialization
+    double mTime = 0.;
+    double mTimeStep =0.;
 };
 } // namespace NuTo

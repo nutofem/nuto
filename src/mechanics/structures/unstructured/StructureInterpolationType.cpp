@@ -7,11 +7,9 @@
 
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/IpDataEnum.h"
 
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 

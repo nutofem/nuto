@@ -1,9 +1,10 @@
 #include "base/Timer.h"
 
 #include <iostream>
-#include <sstream>
 #include <algorithm>
 #include <iomanip>
+
+#include "base/Logger.h"
 
 #ifdef _OPENMP
 #include <ctime>

@@ -2,13 +2,9 @@
 
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/assign/ptr_map_inserter.hpp>
-
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -19,22 +15,17 @@
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/groups/GroupBase.h"
-#include "mechanics/loads/LoadBase.h"
 #include "mechanics/sections/Section.h"
 #include "visualize/ComponentName.h"
 
 #include "math/EigenCompanion.h"
 
-#include <eigen3/Eigen/QR>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#include "base/Exception.h"
 #endif
 
 using namespace NuTo;

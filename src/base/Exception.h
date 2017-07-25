@@ -50,7 +50,12 @@ public:
 
     const char* what() const noexcept override
     {
-        return ErrorMessage().c_str();
+        // you can't do `return ErrorMessage().c_str();`
+        // For uncaught exceptions mMessage is out of scope. Thus
+        // the c_str-pointer to its data points nowhere.
+        // A dynamic allocation solves this problem.ü
+        std::string* error = new std::string(ErrorMessage());
+        return error->c_str();
     }
 };
 } // namespace NuTo

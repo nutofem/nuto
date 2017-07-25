@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <eigen3/Eigen/Dense>
 
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"

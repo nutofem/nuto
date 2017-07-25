@@ -16,6 +16,7 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 
 class ParametersMaterial
@@ -67,7 +68,7 @@ void Run2d(Eigen::VectorXd rNodeCoords0, Eigen::VectorXd rNodeCoords1, Eigen::Ve
 
     NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
     myIntegrationScheme.SetTimeStep(ParametersTimeIntegration::mTimeStep);
-    myIntegrationScheme.SetResultDirectory(resultPath.string(), false);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultPath.string(), false);
 
     //**********************************************
     //          Section

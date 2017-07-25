@@ -3,7 +3,6 @@
 #include "mechanics/constitutive/laws/AdditiveBase.h"
 #include "mechanics/constitutive/staticData/IPAdditiveInputExplicit.h"
 
-#include <set>
 #include <vector>
 
 namespace NuTo
