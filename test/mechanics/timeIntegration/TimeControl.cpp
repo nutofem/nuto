@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
     timeControl.Proceed();
 
     expectedMsg = "Final time must be larger than current time!";
-    BOOST_CHECK_EXCEPTION(timeControl.SetTimeFinal(1.0);, Exception, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.SetTimeFinal(1.0), Exception, CheckException);
 
 
     expectedMsg = "No convergence with the current maximum number of "
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
                   "and intend to use some kind of automatic timestepping, call "
                   "the RestorePreviosTime() function of the time control before reducing "
                   "the timestep.";
-    BOOST_CHECK_EXCEPTION(timeControl.AdjustTimestep(10, 10, false);, Exception, CheckException);
+    BOOST_CHECK_EXCEPTION(timeControl.AdjustTimestep(10, 10, false), Exception, CheckException);
 }
 
 
@@ -139,4 +139,18 @@ BOOST_AUTO_TEST_CASE(Timestepping)
         BOOST_CHECK_EQUAL(timeControl.GetCurrentTime(), 6.0);
         BOOST_CHECK_EQUAL(timeControl.Finished(), true);
     }
+
+    // Automatic timestepping, min time step
+    {
+        TimeControl timeControl;
+        timeControl.SetMinTimeStep(1.0);
+        timeControl.SetTimeFinal(6);
+        timeControl.SetTimeStep(1.5);
+        
+        timeControl.UseDefaultAutomaticTimestepping();
+        
+        // should decrease the time step below min time step
+        BOOST_CHECK_THROW(timeControl.AdjustTimestep(1, 20, false), NuTo::Exception);
+    }
 }
+

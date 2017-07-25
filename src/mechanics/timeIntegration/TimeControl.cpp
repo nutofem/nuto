@@ -12,12 +12,13 @@ void NuTo::TimeControl::Proceed()
 
 void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool converged)
 {
-
-
     mTimeStep = mTimeStepFunction(*this, iterations, maxIterations, converged);
 
     if (mTimeStep > mMaxTimeStep)
         mTimeStep = mMaxTimeStep;
+    
+    if (mTimeStep < mMinTimeStep)
+        throw Exception(__PRETTY_FUNCTION__, "Timestep below minTimeStep. ");
 
     if (not converged && mPreviousTime != mCurrentTime)
         throw Exception(__PRETTY_FUNCTION__, "No convergence with the current maximum number of "
@@ -55,7 +56,6 @@ void NuTo::TimeControl::SetTimeStepFunction(std::function<double(TimeControl&, i
 
 void NuTo::TimeControl::UseDefaultAutomaticTimestepping()
 {
-
     SetTimeStepFunction(DefaultAutomaticTimestepFunction);
 }
 
