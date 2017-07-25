@@ -78,6 +78,11 @@ public:
         mNumDependentDofs[rDofType] = rNumDependentDofs;
     }
 
+    bool IsActive(Node::eDof dofType) const
+    {
+        return mActiveDofTypes.find(dofType) != mActiveDofTypes.end();
+    }
+
     bool IsSymmetric(Node::eDof rDofType) const
     {
         return mSymmetricDofTypes.find(rDofType) != mSymmetricDofTypes.end();

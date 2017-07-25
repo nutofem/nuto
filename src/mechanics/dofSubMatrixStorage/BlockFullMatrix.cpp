@@ -56,10 +56,7 @@ const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>
 template <typename T>
 NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator=(const NuTo::BlockFullMatrix<T>& rOther)
 {
-    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
-    for (auto dofRow : activeDofTypes)
-        for (auto dofCol : activeDofTypes)
-            (*this)(dofRow, dofCol) = rOther(dofRow, dofCol);
+    mData = rOther.mData;
     return *this;
 }
 
@@ -73,8 +70,8 @@ NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator=(NuTo::BlockFullMat
 template <typename T>
 NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator+=(const BlockFullMatrix& rRhs)
 {
-    for (auto dofRow : mDofStatus.GetActiveDofTypes())
-        for (auto dofCol : mDofStatus.GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetDofTypes())
+        for (auto dofCol : mDofStatus.GetDofTypes())
             (*this)(dofRow, dofCol) += rRhs(dofRow, dofCol);
     return *this;
 }
@@ -82,8 +79,8 @@ NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator+=(const BlockFullMa
 template <typename T>
 NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator-=(const BlockFullMatrix& rRhs)
 {
-    for (auto dofRow : mDofStatus.GetActiveDofTypes())
-        for (auto dofCol : mDofStatus.GetActiveDofTypes())
+    for (auto dofRow : mDofStatus.GetDofTypes())
+        for (auto dofCol : mDofStatus.GetDofTypes())
             (*this)(dofRow, dofCol) -= rRhs(dofRow, dofCol);
     return *this;
 }
@@ -217,11 +214,14 @@ template <typename T>
 std::ostream& operator<<(std::ostream& rOut, const BlockFullMatrix<T>& rBlockMatrix)
 {
     Eigen::IOFormat cleanFormat(Eigen::StreamPrecision, 0, " ", "\n", "|", " |");
-    for (auto dof1 : rBlockMatrix.mDofStatus.GetActiveDofTypes())
+    for (auto dof1 : rBlockMatrix.mDofStatus.GetDofTypes())
     {
-        for (auto dof2 : rBlockMatrix.mDofStatus.GetActiveDofTypes())
+        for (auto dof2 : rBlockMatrix.mDofStatus.GetDofTypes())
         {
-            rOut << "[" << Node::DofToString(dof1) << " - " << Node::DofToString(dof2) << "]" << std::endl;
+            bool active = rBlockMatrix.mDofStatus.IsActive(dof1) && rBlockMatrix.mDofStatus.IsActive(dof2);
+            std::string activeString = active ? " active " : "inactive";
+            rOut << "[" << Node::DofToString(dof1) << " - " << Node::DofToString(dof2) << "(" + activeString + ")]"
+                 << std::endl;
             rOut << rBlockMatrix(dof1, dof2).format(cleanFormat) << std::endl << std::endl;
         }
     }
