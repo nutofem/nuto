@@ -37,7 +37,12 @@ ConstitutiveVector<1> EquivalentStrainModifiedMises<1>::GetDerivative() const
     ConstitutiveVector<1> tangent;
     double dJ2dexx = 2. / 3. * mStrain3D[0] * (1 + mNu) * (1 + mNu);
     double dI1dexx = (1 - 2 * mNu);
-    tangent[0] = mK1 * dI1dexx + 1. / (2 * mA) * (2 * mK1 * mK1 * mI1 * dI1dexx + mK2 * dJ2dexx);
+
+    if (mA == 0)
+        tangent[0] = mK1 * dI1dexx; 
+    else
+        tangent[0] = mK1 * dI1dexx + 1. / (2 * mA) * (2 * mK1 * mK1 * mI1 * dI1dexx + mK2 * dJ2dexx);
+
     return tangent;
 }
 
