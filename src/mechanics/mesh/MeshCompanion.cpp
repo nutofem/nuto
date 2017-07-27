@@ -1,7 +1,5 @@
 #include "mechanics/mesh/MeshCompanion.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/nodes/NodeBase.h"
 
 std::vector<NuTo::ElementBase*> NuTo::MeshCompanion::GetElementVector(Structure& rS, int rElementGroupId)
 {

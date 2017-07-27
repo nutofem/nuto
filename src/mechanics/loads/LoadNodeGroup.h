@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/loads/LoadBase.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {

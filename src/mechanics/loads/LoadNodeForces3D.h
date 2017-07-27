@@ -1,10 +1,10 @@
 #pragma once
 
 #include "mechanics/loads/LoadNode.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
+class StructureOutputBlockVector;
 
 class LoadNodeForces3D : public LoadNode
 {

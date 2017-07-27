@@ -10,13 +10,11 @@
 #include "math/SparseMatrixCSRVector2Symmetric_Def.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/StructureBase.h"
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
 
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrix.h"
-
-#include "eigen3/Eigen/Sparse"
 
 
 NuTo::BlockSparseMatrix::BlockSparseMatrix(const DofStatus& rDofStatus, bool rCanBeSymmetric)
@@ -132,7 +130,7 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator*(const BlockFull
 {
     NuTo::BlockFullVector<double> result(mDofStatus);
 
-    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
+    const auto& activeDofTypes = mDofStatus.GetDofTypes();
 
     for (auto dofRow : activeDofTypes)
     {
@@ -152,7 +150,7 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator*(const BlockFull
 
 void NuTo::BlockSparseMatrix::AddScal(const BlockSparseMatrix& rRhs, double rScalar)
 {
-    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
+    const auto& activeDofTypes = mDofStatus.GetDofTypes();
     for (auto dofRow : activeDofTypes)
         for (auto dofCol : activeDofTypes)
             (*this)(dofRow, dofCol).AddScal(rRhs(dofRow, dofCol), rScalar);
@@ -160,7 +158,7 @@ void NuTo::BlockSparseMatrix::AddScal(const BlockSparseMatrix& rRhs, double rSca
 
 void NuTo::BlockSparseMatrix::AddScalDiag(const BlockFullVector<double>& rRhs, double rScalar)
 {
-    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
+    const auto& activeDofTypes = mDofStatus.GetDofTypes();
     for (auto dof : activeDofTypes)
         (*this)(dof, dof).AddScalDiag(rRhs[dof], rScalar);
 }
@@ -259,7 +257,7 @@ void NuTo::BlockSparseMatrix::SetZero()
 //! @brief inverts the matrix coefficient-wise
 void NuTo::BlockSparseMatrix::CwiseInvert()
 {
-    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
+    const auto& activeDofTypes = mDofStatus.GetDofTypes();
     for (auto dofRow : activeDofTypes)
         for (auto dofCol : activeDofTypes)
             (*this)(dofRow, dofCol).CwiseInvert();

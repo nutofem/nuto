@@ -1,6 +1,7 @@
 #include "mechanics/constitutive/staticData/IPAdditiveInputExplicit.h"
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 using namespace NuTo::Constitutive;
 

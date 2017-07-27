@@ -3,7 +3,7 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "mechanics/nodes/DofHash.h"
-#include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
 #include <ostream>
 #include <unordered_map>
 #include <map>
@@ -50,11 +50,9 @@ public:
 
 #ifndef SWIG
     //! @brief copy assignment
-    //! @remark only copies the active dof types
     BlockFullVector& operator=(const BlockFullVector& rOther);
 
     //! @brief move assignment
-    //! @remark moves all values, moving only the active dof types is somehow slower.
     BlockFullVector& operator=(BlockFullVector&& rOther);
 
     //! @brief non-const access
@@ -65,21 +63,16 @@ public:
 
 
     //! @brief operator +=
-    //! @remark only modifies active dof types
     BlockFullVector& operator+=(const BlockFullVector& rRhs);
 
     //! @brief operator -=
-    //! @remark only modifies active dof types
     BlockFullVector& operator-=(const BlockFullVector& rRhs);
 
     //! @brief operator *=
-    //! @remark only modifies active dof types
     BlockFullVector& operator*=(double rScalar);
 
     //! @brief operator *=
-    //! @remark only modifies active dof types
     BlockFullVector& operator/=(double rScalar);
-
 
     friend NuTo::BlockFullVector<T> operator+(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs)
     {

@@ -72,8 +72,6 @@ set(MechanicsGroupsSources
 set(MechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NGauss.cpp
-    integrationtypes/IntegrationType1D2NLobatto.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -82,18 +80,11 @@ set(MechanicsIntegrationtypesSources
     integrationtypes/IntegrationType2D3NGauss6Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
-    integrationtypes/IntegrationType2D4NGauss1Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss4Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss1Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+    integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
@@ -188,18 +179,9 @@ set(MechanicsStructuresSources
 
 
 set(MechanicsTimeIntegrationSources
-    timeIntegration/NewmarkBase.cpp
     timeIntegration/NewmarkDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
-    timeIntegration/ResultBase.cpp
-    timeIntegration/ResultElementIpData.cpp
-    timeIntegration/ResultGroupNodeForce.cpp
-    timeIntegration/ResultGroupNodeDof.cpp
-    timeIntegration/ResultNodeAcceleration.cpp
-    timeIntegration/ResultNodeDisp.cpp
-    timeIntegration/ResultNodeDof.cpp
-    timeIntegration/ResultTime.cpp
     timeIntegration/RungeKutta2.cpp
     timeIntegration/RungeKutta3.cpp
     timeIntegration/RungeKutta38.cpp
@@ -207,11 +189,21 @@ set(MechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
+    timeIntegration/TimeControl.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp
     timeIntegration/ImplExCallback.cpp
     timeIntegration/VelocityVerlet.cpp
+    timeIntegration/postProcessing/PostProcessor.cpp
+    timeIntegration/postProcessing/ResultBase.cpp
+    timeIntegration/postProcessing/ResultElementIpData.cpp
+    timeIntegration/postProcessing/ResultGroupNodeForce.cpp
+    timeIntegration/postProcessing/ResultGroupNodeDof.cpp
+    timeIntegration/postProcessing/ResultNodeAcceleration.cpp
+    timeIntegration/postProcessing/ResultNodeDisp.cpp
+    timeIntegration/postProcessing/ResultNodeDof.cpp
+    timeIntegration/postProcessing/ResultTime.cpp
     )
 
 set(MechanicsToolsSources

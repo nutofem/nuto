@@ -3,18 +3,12 @@
 #include <eigen3/Eigen/Dense>
 
 #include <functional>
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
 #include <memory>
 
-#include "mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
 #include <stdexcept>
 
 namespace NuTo
 {
-class ElementBase;
 class Logger;
 template <typename IOEnum>
 class ConstitutiveIOMap;
@@ -31,6 +25,7 @@ enum class eConstitutiveParameter;
 enum class eConstitutiveType;
 enum class eInput;
 enum class eOutput;
+class IPConstitutiveLawBase;
 
 class DidNotConverge : public std::runtime_error
 {

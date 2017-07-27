@@ -1,5 +1,3 @@
-#include <boost/assign/ptr_map_inserter.hpp>
-
 #include "base/Timer.h"
 
 #include "math/EigenCompanion.h"

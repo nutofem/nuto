@@ -8,10 +8,8 @@
 #include "mechanics/nodes/NodeEnum.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/EvaluateDataContinuum.h"
 
 

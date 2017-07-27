@@ -1,15 +1,13 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
 #include "base/Logger.h"
 #include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;

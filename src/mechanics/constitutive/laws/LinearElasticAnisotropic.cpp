@@ -2,18 +2,14 @@
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
 #include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 #include <boost/current_function.hpp>

@@ -1,11 +1,10 @@
-#include "mechanics/constitutive/ConstitutiveBase.h"
-#include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/Group.h"
+
+#include <iostream>
+
+#include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/GroupEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/loads/LoadBase.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/structures/StructureBase.h"
 
 
 namespace NuTo

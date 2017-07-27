@@ -13,7 +13,6 @@
 
 namespace NuTo
 {
-class ConstitutivePlaneState;
 
 class LocalDamageModel : public ConstitutiveBase
 {

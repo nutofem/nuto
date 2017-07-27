@@ -21,6 +21,7 @@
 #include "mechanics/sections/SectionFibreMatrixBond.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 constexpr unsigned int dimension = 2;
@@ -87,7 +88,7 @@ void Run()
     myIntegrationScheme.SetToleranceForce(Parameters::mToleranceForce);
     myIntegrationScheme.SetAutomaticTimeStepping(Parameters::mAutomaticTimeStepping);
     myIntegrationScheme.SetPerformLineSearch(Parameters::mPerformLineSearch);
-    myIntegrationScheme.SetResultDirectory(resultDir.string(), true);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir.string(), true);
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Section                  **" << std::endl;

@@ -1,9 +1,6 @@
-#include <fstream>
-#include <string>
-
-#include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRVector2Symmetric.h"
 #include "base/Exception.h"
 
 namespace NuTo

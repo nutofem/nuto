@@ -5,6 +5,12 @@
 namespace NuTo
 {
 
+enum class eIntegrationMethod
+{
+    GAUSS,
+    LOBATTO
+};
+
 //! @author Joerg F. Unger
 //! @date May 2, 2010
 //! @brief ...

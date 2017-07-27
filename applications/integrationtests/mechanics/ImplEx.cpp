@@ -20,6 +20,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "visualize/VisualizeEnum.h"
 
@@ -173,14 +174,14 @@ void ImplEx()
 
     int gNodeBC = s.GroupGetId(&nodesBC);
     int iNodeBC = s.GroupGetMemberIds(gNodeBC)[0];
-    implex.AddResultGroupNodeForce("Force", gNodeBC);
-    implex.AddResultNodeDisplacements("Displ", iNodeBC);
+    implex.PostProcessing().AddResultGroupNodeForce("Force", gNodeBC);
+    implex.PostProcessing().AddResultNodeDisplacements("Displ", iNodeBC);
 
     implex.SetExtrapolationErrorThreshold(1);
 
     std::string resultDir = "./ResultsImplex";
     boost::filesystem::create_directory(resultDir);
-    implex.SetResultDirectory(resultDir, true);
+    implex.PostProcessing().SetResultDirectory(resultDir, true);
 
     implex.Solve(simulationTime / 5.);
 }

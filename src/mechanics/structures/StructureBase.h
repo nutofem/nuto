@@ -9,10 +9,9 @@
 #include <eigen3/Eigen/Core>
 
 #include <boost/ptr_container/ptr_map.hpp>
-#include <mechanics/MechanicsEnums.h>
 #include "base/Logger.h"
 
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "mechanics/groups/GroupEnum.h"
 #include "base/Exception.h"
 #include "StructureOutputBlockVector.h"
 
@@ -21,22 +20,17 @@ namespace NuTo
 {
 class Assembler;
 class ConstitutiveBase;
-class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ElementBase;
-class EngineeringStrain2D;
 class GroupBase;
 class IntegrationTypeBase;
-class InterpolationBase;
 class InterpolationType;
 class LoadBase;
-class NewtonRaphsonAuxRoutinesBase;
 class NodeBase;
 class Section;
 class SerializeStreamOut;
 class SerializeStreamIn;
 class StructureOutputBase;
 class StructureOutputBlockMatrix;
-class StructureOutputBlockVector;
 class TimeIntegrationBase;
 template <typename IOEnum>
 class ConstitutiveIOMap;
@@ -46,14 +40,6 @@ template <class T>
 class BlockFullVector;
 template <class T>
 class Group;
-template <class T>
-class SparseMatrixCSRSymmetric;
-template <class T>
-class SparseMatrixCSRGeneral;
-template <class T>
-class SparseMatrixCSRVector2General;
-template <class T>
-class SparseMatrixCSRVector2Symmetric;
 
 enum class eError;
 enum class eGroupId;
@@ -178,8 +164,8 @@ public:
     void ElementGroupAddToVisualize(int rGroupId, Visualize::UnstructuredGrid& visualizer,
                                     const std::vector<eVisualizeWhat>& visualizeComponents);
 
-    //! @brief ... returns the map that contains the visualization components to be exported for each element group
-    std::map<int, std::vector<eVisualizeWhat>>& GetGroupVisualizeComponentsMap(void);
+    //! @brief Get all element groups that are supposed to be visualized
+    std::vector<int> GetVisualizationGroups();
 #endif // SWIG
 
 
@@ -1438,14 +1424,12 @@ public:
     // this only happens for more than one load step (either prescibed or with automatic load control)
     virtual void SaveStructure(std::stringstream&) const
     {
-        throw Exception(
-                "[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
+        throw Exception("[StructureBase::SaveStructure] Saving of the structure not implemented in derived class.");
     }
 
     virtual void RestoreStructure(std::stringstream&)
     {
-        throw Exception(
-                "[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
+        throw Exception("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
     void SetUpdateTmpStaticDataRequired()
@@ -1462,15 +1446,9 @@ public:
     //! @param rDofType ... dof type
     bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
-
-    ///
-    /// \brief DofStatusSetHasInteractingConstraints
-    /// \param rHasInteractingConstraints
-    ///
-    /// Sets the member variable mHasInteractingConstraints of mDofStatus to either true or false.
-    /// The mHasInteractingConstraints determines whether K_KJ and K_KK are assembled during the Evaluate function
-    ///
-    void DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints);
+    //! @return true if the constraint matrix has non zero entries
+    //! @remark Some time integration schemes cannot handle a non zero constraint matrix and use this method to check it
+    bool HasInteractingConstraints() const;
 
     bool GetShowTime() const;
 

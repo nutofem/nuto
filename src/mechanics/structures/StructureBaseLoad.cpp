@@ -1,6 +1,5 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/groups/Group.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/loads/LoadNode.h"
 #include "mechanics/loads/LoadNodeScalarSource.h"
 #include "mechanics/loads/LoadNodeForces1D.h"

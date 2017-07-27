@@ -12,14 +12,6 @@
 namespace NuTo
 {
 
-namespace Constitutive
-{
-namespace StaticData
-{
-class Component;
-}
-}
-
 enum class eDof;
 
 // VHIRTHAMTODO make doxygen/latex description

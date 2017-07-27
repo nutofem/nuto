@@ -13,12 +13,6 @@
 
 namespace NuTo
 {
-template <int TRows, int TCols>
-class ConstitutiveMatrix;
-template <int TRows>
-class ConstitutiveVector;
-class ConstitutiveScalar;
-class ConstitutiveStaticDataBondStressSlip;
 
 class FibreMatrixBondStressSlip : public ConstitutiveBase
 {

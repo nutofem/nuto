@@ -53,14 +53,13 @@ void NuTo::BlockFullVector<T>::AllocateSubvectors()
 {
     mData.clear();
     for (auto dof : mDofStatus.GetDofTypes())
-    {
         mData[dof] = Eigen::Matrix<T, Eigen::Dynamic, 1>();
-    }
 }
 
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(const BlockFullVector<T>& rOther)
 {
+    //mData = rOther.mData;
     for (auto dof : mDofStatus.GetActiveDofTypes())
         mData[dof] = rOther[dof];
     return *this;
@@ -81,7 +80,6 @@ Eigen::Matrix<T, Eigen::Dynamic, 1>& NuTo::BlockFullVector<T>::operator[](Node::
     return (*data).second;
 }
 
-
 template <typename T>
 const Eigen::Matrix<T, Eigen::Dynamic, 1>& NuTo::BlockFullVector<T>::operator[](Node::eDof rDofRow) const
 {
@@ -90,11 +88,10 @@ const Eigen::Matrix<T, Eigen::Dynamic, 1>& NuTo::BlockFullVector<T>::operator[](
     return (*data).second;
 }
 
-
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator+=(const BlockFullVector<T>& rRhs)
 {
-    for (auto dof : mDofStatus.GetActiveDofTypes())
+    for (auto dof : mDofStatus.GetDofTypes())
         (*this)[dof] += rRhs[dof];
     return *this;
 }
@@ -102,7 +99,7 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator+=(const BlockFullVe
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator-=(const BlockFullVector<T>& rRhs)
 {
-    for (auto dof : mDofStatus.GetActiveDofTypes())
+    for (auto dof : mDofStatus.GetDofTypes())
         (*this)[dof] -= rRhs[dof];
     return *this;
 }
@@ -110,7 +107,7 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator-=(const BlockFullVe
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator*=(double rScalar)
 {
-    for (auto dof : mDofStatus.GetActiveDofTypes())
+    for (auto dof : mDofStatus.GetDofTypes())
         (*this)[dof] *= rScalar;
     return *this;
 }
@@ -118,7 +115,7 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator*=(double rScalar)
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator/=(double rScalar)
 {
-    for (auto dof : mDofStatus.GetActiveDofTypes())
+    for (auto dof : mDofStatus.GetDofTypes())
         (*this)[dof] /= rScalar;
     return *this;
 }
@@ -150,8 +147,7 @@ void NuTo::BlockFullVector<T>::Import(const Eigen::Matrix<T, Eigen::Dynamic, 1>&
     if (GetNumActiveRows() != rToImport.rows())
     {
         this->Info();
-        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                       "] BlockFullVector must be sized to the right dimensions");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "BlockFullVector must be sized to the right dimensions");
     }
 
     int blockStartIndex = 0;
@@ -193,9 +189,7 @@ int NuTo::BlockFullVector<T>::GetNumRowsDof(const std::set<Node::eDof>& rDofType
 {
     int numRows = 0;
     for (auto dof : rDofTypes)
-    {
         numRows += (*this)[dof].rows();
-    }
     return numRows;
 }
 
@@ -223,9 +217,8 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateNormL2()
 {
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
-    {
         dofWiseNorm[dof] = mData[dof].norm();
-    }
+   
     return dofWiseNorm;
 }
 
@@ -234,9 +227,8 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm() const
 {
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
-    {
         dofWiseNorm[dof] = (*this)[dof].cwiseAbs().maxCoeff();
-    }
+    
     return dofWiseNorm;
 }
 
@@ -245,9 +237,7 @@ template <typename TStream>
 void NuTo::BlockFullVector<T>::SerializeBlockFullVector(TStream& rStream)
 {
     for (auto& data : mData)
-    {
         rStream.Serialize(data.second);
-    }
 }
 
 namespace NuTo

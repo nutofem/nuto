@@ -1,7 +1,6 @@
 #include "mechanics/constitutive/laws/AdditiveBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 
 
 NuTo::AdditiveBase::AdditiveBase(const int& rNumTimeDerivatives)

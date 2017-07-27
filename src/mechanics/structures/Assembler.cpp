@@ -3,6 +3,8 @@
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "math/SparseMatrixCSRVector2General.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 
 NuTo::Assembler::Assembler()
     : mNodeVectorChanged(false)
@@ -163,4 +165,15 @@ void NuTo::Assembler::ThrowIfRenumberingRequred() const
 {
     if (RenumberingRequired())
         throw Exception(__PRETTY_FUNCTION__, "build global numbering first");
+}
+
+
+NuTo::BlockFullVector<double> NuTo::Assembler::ApplyCMatrix(const StructureOutputBlockVector& vec, const BlockSparseMatrix& cMat)
+{
+    auto result = vec.J;
+
+    for (auto dof : vec.J.GetDofStatus().GetActiveDofTypes())
+        result[dof] -= cMat(dof, dof).TransMult(vec.K[dof]);
+
+    return result;
 }

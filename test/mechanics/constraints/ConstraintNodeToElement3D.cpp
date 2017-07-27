@@ -7,7 +7,6 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"

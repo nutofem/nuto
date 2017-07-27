@@ -2,7 +2,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include "mechanics/sections/SectionFibreMatrixBond.h"
+#include "mechanics/sections/Section.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/ElementOutputBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
@@ -11,7 +11,6 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 
-#include "mechanics/elements/EvaluateDataContinuum.h"
 #include "mechanics/elements/IpDataEnum.h"
 
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
