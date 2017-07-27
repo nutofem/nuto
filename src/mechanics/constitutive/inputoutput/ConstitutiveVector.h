@@ -13,6 +13,15 @@ public:
     ConstitutiveVector(const ConstitutiveVector&) = default;
     ConstitutiveVector(ConstitutiveVector&&) = default;
 
+    ConstitutiveVector(std::initializer_list<double> initList)
+    {
+        if (initList.size() != TRows)
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Wrong number of entries in initializer list.");
+        int position = 0;
+        for (auto n : initList)
+            (*this)[position++] = n;
+    }
+
     virtual ~ConstitutiveVector() = default;
 
     virtual std::unique_ptr<ConstitutiveIOBase> clone() override

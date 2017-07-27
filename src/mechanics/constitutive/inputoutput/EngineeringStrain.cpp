@@ -1,14 +1,9 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
 template <int TDim>
-NuTo::EngineeringStrain<TDim>::EngineeringStrain(std::initializer_list<double> rList)
+NuTo::EngineeringStrain<TDim>::EngineeringStrain(std::initializer_list<double> initList)
+    : ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(initList)
 {
-    assert(rList.size() == ConstitutiveIOBase::GetVoigtDim(TDim));
-    for (auto iterator = rList.begin(); iterator != rList.end(); ++iterator)
-    {
-        int position = std::distance(rList.begin(), iterator);
-        (*this)[position] = *iterator;
-    }
 }
 
 
