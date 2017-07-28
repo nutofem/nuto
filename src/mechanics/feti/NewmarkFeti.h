@@ -870,9 +870,11 @@ public:
     }
 
     //! @brief perform the time integration
-    //! @param rTimeDelta ... length of the simulation
-    void Solve(double rTimeDelta) override
+    //! @param timeFinal ... length of the simulation
+    void Solve(double timeFinal) override
     {
+
+        mTimeControl.SetTimeFinal(timeFinal);
 
         mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
@@ -1006,14 +1008,14 @@ public:
                                 << "**        Start time stepping             ** \n"
                                 << "******************************************** \n\n";
 
-        while (curTime < rTimeDelta)
+        while (curTime < timeFinal)
         {
 
             mStructure->DofTypeActivateAll();
 
             curTime += mTimeStep;
 
-            SetTimeAndTimeStep(curTime, mTimeStep, rTimeDelta);
+            SetTimeAndTimeStep(curTime, mTimeStep, timeFinal);
 
             extForce = CalculateCurrentExternalLoad(curTime);
 
@@ -1130,7 +1132,7 @@ public:
                     file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                     file.close();
 
-
+                    mTimeControl.SetCurrentTime(mTime);
                     PostProcess(mLambda, dofStatus);
 
                     mStructure->GetLogger() << "normResidual: \n" << normResidual << "\n\n";
