@@ -1,5 +1,5 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include <eigen3/Eigen/Dense> // for .eigenvalues
+#include <eigen3/Eigen/Eigenvalues> 
 
 template <int TDim>
 NuTo::EngineeringStress<TDim>::EngineeringStress(std::initializer_list<double> initList)
@@ -30,7 +30,8 @@ template <int TDim>
 double NuTo::EngineeringStress<TDim>::SmoothRankine(ePlaneState planeState) const
 {
     Eigen::Matrix3d stressTensor = ToTensor(As3D());
-    Eigen::Vector3d eigenvalues = stressTensor.eigenvalues().real();
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensolver;
+    Eigen::Vector3d eigenvalues = eigensolver.compute(stressTensor).eigenvalues();
     auto positiveEigenValues = eigenvalues.cwiseMax(Eigen::Vector3d::Zero());
     return positiveEigenValues.norm();
 }
