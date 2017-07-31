@@ -3,7 +3,7 @@
 #include <map>
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include "mechanics/groups/GroupBase.h"
 #include "base/Exception.h"
 

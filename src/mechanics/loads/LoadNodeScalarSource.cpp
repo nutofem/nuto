@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <cassert>
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
