@@ -3,6 +3,7 @@
 #include <map>
 
 #include <algorithm>
+#include <assert.h>
 #include "mechanics/groups/GroupBase.h"
 #include "base/Exception.h"
 
@@ -113,7 +114,8 @@ public:
     {
         NuTo::Group<T> returnGroup;
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(returnGroup, returnGroup.begin());
-        std::set_intersection(groupOne.begin(), groupOne.end(), groupTwo.begin(), groupTwo.end(), returnGroupInsertIterator);
+        std::set_intersection(groupOne.begin(), groupOne.end(), groupTwo.begin(), groupTwo.end(),
+                              returnGroupInsertIterator);
         return returnGroup;
     }
 
@@ -151,8 +153,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw Exception(
-                    "[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
+            throw Exception("[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_symmetric_difference(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(),
                                       returnGroupInsertIterator);
