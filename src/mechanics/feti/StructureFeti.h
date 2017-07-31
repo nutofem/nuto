@@ -404,7 +404,7 @@ protected:
     Eigen::VectorXd mPrescribedDofVector;
 
     /// \brief mPrescribedDisplacementDofIds
-    std::vector<int> mPrescribedDisplacementDofIds;
+    std::map<int, double> mPrescribedDisplacementDofIdToValue;
 
     ///
     /// \brief mGlobalStartIndexBoundaryDofIds

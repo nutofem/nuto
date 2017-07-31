@@ -13,7 +13,6 @@
 
 #include "visualize/VisualizeEnum.h"
 
-
 using std::cout;
 using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
@@ -60,7 +59,6 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
-
     const int rank = world.rank();
 
     NuTo::StructureFeti structure(dim);
@@ -144,7 +142,7 @@ int main(int argc, char* argv[])
     for (auto const& nodeId : nodeIdsLoads)
     {
         std::vector<int> dofIds = structure.NodeGetDofIds(nodeId, eDof::DISPLACEMENTS);
-        dofIdAndPrescribedDisplacementMap.emplace(dofIds[0], 0.);
+        dofIdAndPrescribedDisplacementMap.emplace(dofIds[0], 1.);
     }
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
