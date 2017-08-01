@@ -40,22 +40,22 @@ struct TmpGroup
 };
 
 
-GmshHeader ReadGmshHeader(std::ifstream& rFile)
+GmshHeader ReadGmshHeader(std::ifstream& fileName)
 {
     // ignore first line
     std::string line;
-    getline(rFile, line);
+    getline(fileName, line);
 
 
     GmshHeader header;
     int binary;
-    rFile >> header.version;
-    rFile >> binary;
-    rFile >> header.double_size;
+    fileName >> header.version;
+    fileName >> binary;
+    fileName >> header.double_size;
 
     header.isBinary = binary == 1;
 
-    std::getline(rFile, line); // endl
+    std::getline(fileName, line); // endl
 
     if (static_cast<int>(std::floor(header.version)) != 2)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Incompatible version. Version 2.x required.");
@@ -63,57 +63,57 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
     return header;
 }
 
-std::vector<GmshNode> ReadNodesASCII(std::ifstream& rFile)
+std::vector<GmshNode> ReadNodesASCII(std::ifstream& fileName)
 {
     std::string line;
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndMeshFormat")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
 
     // begin node section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$Nodes")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$Nodes not found.");
 
     // read number of nodes
-    getline(rFile, line);
+    getline(fileName, line);
     int numNodes = std::stoi(line);
 
     // read node data
     std::vector<GmshNode> nodes(numNodes);
     for (GmshNode& node : nodes)
     {
-        rFile >> node.id;
-        rFile >> node.Coordinates[0];
-        rFile >> node.Coordinates[1];
-        rFile >> node.Coordinates[2];
-        getline(rFile, line); // endl
+        fileName >> node.id;
+        fileName >> node.Coordinates[0];
+        fileName >> node.Coordinates[1];
+        fileName >> node.Coordinates[2];
+        getline(fileName, line); // endl
     }
 
     // end node section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndNodes")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found.");
 
     return nodes;
 }
 
-int GetNumNodesPerElementType(int rElementType)
+int GetNumNodesPerElementType(int gmshElementTypeId)
 {
     const std::vector<int> numNodesPerElement(
             {0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15});
-    return numNodesPerElement[rElementType];
+    return numNodesPerElement[gmshElementTypeId];
 }
 
-std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
+std::vector<GmshElement> ReadElementsASCII(std::ifstream& fileName)
 {
     std::string line;
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$Elements")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$Elements not found.");
 
     // read number of elements
-    getline(rFile, line);
+    getline(fileName, line);
     int numElements = std::stoi(line);
     std::vector<GmshElement> elements(numElements);
 
@@ -122,51 +122,51 @@ std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
     for (GmshElement& element : elements)
     {
         int numTags;
-        rFile >> element.id;
-        rFile >> element.type;
-        rFile >> numTags;
+        fileName >> element.id;
+        fileName >> element.type;
+        fileName >> numTags;
 
         int numNodesInThisElement = GetNumNodesPerElementType(element.type);
 
         element.tags.resize(numTags);
         for (auto& tag : element.tags)
-            rFile >> tag;
+            fileName >> tag;
 
         element.nodes.resize(numNodesInThisElement);
         for (auto& node : element.nodes)
-            rFile >> node;
+            fileName >> node;
 
-        getline(rFile, line); // endl;
+        getline(fileName, line); // endl;
     }
     // end element section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndElements")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found.");
 
     return elements;
 }
 
-std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
+std::vector<GmshNode> ReadNodesBinary(std::ifstream& fileName)
 {
     std::string line;
 
     // read the first two lines again
-    getline(rFile, line);
-    getline(rFile, line);
+    getline(fileName, line);
+    getline(fileName, line);
 
     // check size of integer
     int one;
-    rFile.read((char*)&one, sizeof(int));
+    fileName.read((char*)&one, sizeof(int));
     if (one != 1)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Invalid binary format.");
-    rFile.seekg(1, std::ios::cur);
+    fileName.seekg(1, std::ios::cur);
 
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndMeshFormat")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndMeshFormat not found.");
 
     // begin node section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$Nodes")
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$Nodes not found.");
@@ -174,41 +174,41 @@ std::vector<GmshNode> ReadNodesBinary(std::ifstream& rFile)
 
     // read number of nodes
     int numNodes;
-    rFile >> numNodes;
-    getline(rFile, line); // endl
+    fileName >> numNodes;
+    getline(fileName, line); // endl
 
     // read node data
     std::vector<GmshNode> nodes(numNodes);
 
     for (auto& node : nodes)
     {
-        rFile.read((char*)&node.id, sizeof(int));
-        rFile.read((char*)node.Coordinates, 3 * sizeof(double));
+        fileName.read((char*)&node.id, sizeof(int));
+        fileName.read((char*)node.Coordinates, 3 * sizeof(double));
     }
     // endl
-    getline(rFile, line);
+    getline(fileName, line);
 
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndNodes")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found.");
 
     // begin element section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$Elements")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$Elements not found.");
 
     return nodes;
 }
 
-std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
+std::vector<GmshElement> ReadElementsBinary(std::ifstream& fileName)
 {
     std::string line;
 
 
     // read number of elements
     int numElements;
-    rFile >> numElements;
-    getline(rFile, line); // endl
+    fileName >> numElements;
+    getline(fileName, line); // endl
 
     std::vector<GmshElement> elements(numElements);
 
@@ -221,16 +221,16 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
     {
 
         // Read element type
-        rFile.read((char*)&element_type, sizeof(int));
+        fileName.read((char*)&element_type, sizeof(int));
 
         // Read num of Elem with the same header
-        rFile.read((char*)&num_elm_follow, sizeof(int));
+        fileName.read((char*)&num_elm_follow, sizeof(int));
 
         // set num_elemt_node
         int cur_num_elm_nodes = GetNumNodesPerElementType(element_type);
 
         // Read numOfTags
-        rFile.read((char*)&num_tags, sizeof(int));
+        fileName.read((char*)&num_tags, sizeof(int));
 
         for (int indexH = 0; indexH < num_elm_follow; indexH++)
         {
@@ -239,37 +239,37 @@ std::vector<GmshElement> ReadElementsBinary(std::ifstream& rFile)
             elements[elemCount].type = element_type;
 
             // read element number
-            rFile.read((char*)&elements[elemCount].id, sizeof(int));
+            fileName.read((char*)&elements[elemCount].id, sizeof(int));
 
             elements[elemCount].tags.resize(num_tags);
             elements[elemCount].nodes.resize(cur_num_elm_nodes);
 
             // read tags
             for (int tagCount = 0; tagCount < num_tags; tagCount++)
-                rFile.read((char*)&elements[elemCount].tags[tagCount], sizeof(int));
+                fileName.read((char*)&elements[elemCount].tags[tagCount], sizeof(int));
 
             // read nodes
             for (int nodeCount = 0; nodeCount < cur_num_elm_nodes; nodeCount++)
-                rFile.read((char*)&elements[elemCount].nodes[nodeCount], sizeof(int));
+                fileName.read((char*)&elements[elemCount].nodes[nodeCount], sizeof(int));
 
             elemCount += indexH;
         }
     }
-    getline(rFile, line); // endl
+    getline(fileName, line); // endl
 
     // end element section
-    getline(rFile, line);
+    getline(fileName, line);
     if (line != "$EndElements")
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found.");
     return elements;
 }
 
 
-std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>& rGmshNodes)
+std::map<int, int> CreateNodes(NuTo::Structure& s, const std::vector<GmshNode>& gmshNodes)
 {
     // create the nodes
     Eigen::VectorXd coordinates;
-    switch (rS.GetDimension())
+    switch (s.GetDimension())
     {
     case 2:
         coordinates.resize(2);
@@ -281,24 +281,24 @@ std::map<int, int> CreateNodes(NuTo::Structure& rS, const std::vector<GmshNode>&
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
     }
     std::map<int, int> newNodeNumbers;
-    for (const auto& gmshNode : rGmshNodes)
+    for (const auto& gmshNode : gmshNodes)
     {
         coordinates(0) = gmshNode.Coordinates[0];
         coordinates(1) = gmshNode.Coordinates[1];
-        if (rS.GetDimension() == 3)
+        if (s.GetDimension() == 3)
             coordinates(2) = gmshNode.Coordinates[2];
-        newNodeNumbers[gmshNode.id] = rS.NodeCreate(coordinates);
+        newNodeNumbers[gmshNode.id] = s.NodeCreate(coordinates);
     }
     return newNodeNumbers;
 }
 
-std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& rS, const std::string& rFileName)
+std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& s, const std::string& fileName)
 {
-    std::ifstream file(rFileName.c_str(), std::ios::in);
+    std::ifstream file(fileName.c_str(), std::ios::in);
     if (not file.is_open())
     {
-        std::cout << rFileName << std::endl;
-        throw Exception(__PRETTY_FUNCTION__, "Error opening input file for read access.");
+        std::cout << fileName << std::endl;
+        throw Exception(__PRETTY_FUNCTION__, "Error opening input file """ + fileName + """ for read access.");
     }
 
 
@@ -314,11 +314,11 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         if (header.double_size != sizeof(double))
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Invalid size of double.");
 
-        // close rFile and open as binary
+        // close fileName and open as binary
         file.close();
-        file.open(rFileName.c_str(), std::ios::in | std::ios::binary);
+        file.open(fileName.c_str(), std::ios::in | std::ios::binary);
         if (file.is_open() == false)
-            throw Exception(__PRETTY_FUNCTION__, "Error opening input rFile for read access.");
+            throw Exception(__PRETTY_FUNCTION__, "Error opening input fileName for read access.");
         nodes = ReadNodesBinary(file);
         elements = ReadElementsBinary(file);
     }
@@ -328,7 +328,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         elements = ReadElementsASCII(file);
     }
 
-    auto newNodeNumber = CreateNodes(rS, nodes);
+    auto newNodeNumber = CreateNodes(s, nodes);
 
     std::vector<int> nodeNumbers;
     for (auto& element : elements)
@@ -551,13 +551,13 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
         if (tmpGroup.interpolationTypeId == -42) // does not exist
         {
             // create new
-            tmpGroup.interpolationTypeId = rS.InterpolationTypeCreate(Interpolation::ShapeTypeToString(shapeType));
-            rS.InterpolationTypeAdd(tmpGroup.interpolationTypeId, Node::eDof::COORDINATES, typeOrder);
+            tmpGroup.interpolationTypeId = s.InterpolationTypeCreate(Interpolation::ShapeTypeToString(shapeType));
+            s.InterpolationTypeAdd(tmpGroup.interpolationTypeId, Node::eDof::COORDINATES, typeOrder);
         }
         else
         {
             // check if current element matches the interpolation type
-            const InterpolationType& interpolationType = *rS.InterpolationTypeGet(tmpGroup.interpolationTypeId);
+            const InterpolationType& interpolationType = *s.InterpolationTypeGet(tmpGroup.interpolationTypeId);
             Interpolation::eShapeType groupShapeType = interpolationType.GetShapeType();
             Interpolation::eTypeOrder groupTypeOrder = interpolationType.Get(Node::eDof::COORDINATES).GetTypeOrder();
             if (groupShapeType != shapeType or groupTypeOrder != typeOrder)
@@ -567,7 +567,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
                         "ElementType and InterpolationOrder must be equal for all elements in one physical group.");
             }
         }
-        tmpGroup.elementIds.push_back(rS.ElementCreate(tmpGroup.interpolationTypeId, nodeNumbers));
+        tmpGroup.elementIds.push_back(s.ElementCreate(tmpGroup.interpolationTypeId, nodeNumbers));
     }
 
 
@@ -576,9 +576,9 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     {
         int groupId = group.first;
         TmpGroup& tmpGroup = group.second;
-        rS.GroupCreate(groupId, NuTo::eGroupId::Elements);
+        s.GroupCreate(groupId, NuTo::eGroupId::Elements);
         for (int elementId : tmpGroup.elementIds)
-            rS.GroupAddElement(groupId, elementId);
+            s.GroupAddElement(groupId, elementId);
 
         ids.push_back({groupId, tmpGroup.interpolationTypeId});
     }

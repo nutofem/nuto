@@ -23,81 +23,78 @@ struct ElementSurface
 
 struct NodeCoordinate
 {
-    Eigen::VectorXd operator()(const NuTo::NodeBase* rNode) const
+    Eigen::VectorXd operator()(const NuTo::NodeBase* node) const
     {
-        return rNode->Get(NuTo::Node::eDof::COORDINATES);
+        return node->Get(NuTo::Node::eDof::COORDINATES);
     }
 };
 
 using NodeTree = NuTo::SpatialContainer<NuTo::NodeBase*, NodeCoordinate>;
 
 
-std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave)
+std::vector<NuTo::NodeBase*> GetIntersectingNodes(NuTo::Structure& s, int groupIdMaster, int groupIdSlave)
 {
-    int nMaster = rS.GroupCreateNodeGroupFromElements(rGroupMaster);
-    int nSlave = rS.GroupCreateNodeGroupFromElements(rGroupSlave);
-    int gNodesPrism = rS.GroupIntersection(nMaster, nSlave);
+    int nMaster = s.GroupCreateNodeGroupFromElements(groupIdMaster);
+    int nSlave = s.GroupCreateNodeGroupFromElements(groupIdSlave);
+    int gNodesPrism = s.GroupIntersection(nMaster, nSlave);
 
     std::vector<NuTo::NodeBase*> v;
-    v.reserve(rS.GroupGetNumMembers(gNodesPrism));
-    for (int nodeId : rS.GroupGetMemberIds(gNodesPrism))
-        v.push_back(rS.NodeGetNodePtr(nodeId));
+    v.reserve(s.GroupGetNumMembers(gNodesPrism));
+    for (int nodeIndex : s.GroupGetMemberIds(gNodesPrism))
+        v.push_back(s.NodeGetNodePtr(nodeIndex));
 
-    rS.GroupDelete(nMaster);
-    rS.GroupDelete(nSlave);
-    rS.GroupDelete(gNodesPrism);
+    s.GroupDelete(nMaster);
+    s.GroupDelete(nSlave);
+    s.GroupDelete(gNodesPrism);
     return v;
 }
 
-std::vector<NuTo::NodeBase*> GetSurfaceNodes(ElementSurface rElementSurface)
+std::vector<NuTo::NodeBase*> GetSurfaceNodes(ElementSurface elementSurface)
 {
     Eigen::VectorXi surfaceNodeIndices =
-            rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
+            elementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(elementSurface.mSurface);
     auto numSurfaceNodes = surfaceNodeIndices.rows();
     std::vector<NuTo::NodeBase*> surfaceNodes(numSurfaceNodes);
 
     for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
-        surfaceNodes[iSurfaceNode] = rElementSurface.mElement->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
+        surfaceNodes[iSurfaceNode] = elementSurface.mElement->GetNode(surfaceNodeIndices[iSurfaceNode]);
 
     return surfaceNodes;
 }
 
 
-bool IsSurface(ElementSurface rElementSurface, const NodeTree& rNodeTree)
+bool IsSurface(ElementSurface elementSurface, const NodeTree& nodeTree)
 {
-    Eigen::VectorXi surfaceNodeIndices =
-            rElementSurface.mElement->GetInterpolationType().GetSurfaceNodeIndices(rElementSurface.mSurface);
-
-    std::vector<NuTo::NodeBase*> surfaceNodes = GetSurfaceNodes(rElementSurface);
+    std::vector<NuTo::NodeBase*> surfaceNodes = GetSurfaceNodes(elementSurface);
 
     // check, if all surface nodes are in the node tree
     for (auto& surfaceNode : surfaceNodes)
     {
         Eigen::VectorXd coordinate = surfaceNode->Get(NuTo::Node::eDof::COORDINATES);
-        if (not rNodeTree.HasEntryAtCoordinate(coordinate, 1.e-10))
+        if (not nodeTree.HasEntryAtCoordinate(coordinate, 1.e-10))
             return false;
     }
     return true;
 }
 
-int FindSurfaceId(NuTo::ElementBase* rElement, const NodeTree& rNodeTree)
+int FindSurfaceId(NuTo::ElementBase* element, const NodeTree& nodeTree)
 {
-    const auto& it = rElement->GetInterpolationType();
+    const auto& it = element->GetInterpolationType();
     for (int iSurface = 0; iSurface < it.GetNumSurfaces(); ++iSurface)
-        if (IsSurface({rElement, iSurface}, rNodeTree))
+        if (IsSurface({element, iSurface}, nodeTree))
             return iSurface;
 
     return -42; // error code.
 }
 
-std::vector<ElementSurface> GetElementSurfaceVector(NuTo::Structure& rS, int rG, const NodeTree& rNodeTree)
+std::vector<ElementSurface> GetElementSurfaceVector(NuTo::Structure& s, int elementGroup, const NodeTree& nodeTree)
 {
     std::vector<ElementSurface> v;
-    v.reserve(rS.GroupGetNumMembers(rG));
-    for (int elementId : rS.GroupGetMemberIds(rG))
+    v.reserve(s.GroupGetNumMembers(elementGroup));
+    for (int elementId : s.GroupGetMemberIds(elementGroup))
     {
-        NuTo::ElementBase* e = rS.ElementGetElementPtr(elementId);
-        int surfaceId = FindSurfaceId(e, rNodeTree);
+        NuTo::ElementBase* e = s.ElementGetElementPtr(elementId);
+        int surfaceId = FindSurfaceId(e, nodeTree);
         if (surfaceId >= 0)
             v.push_back({e, surfaceId});
         // else: element is not part of the surface
@@ -107,29 +104,18 @@ std::vector<ElementSurface> GetElementSurfaceVector(NuTo::Structure& rS, int rG,
 
 bool AreEqual(const std::vector<NuTo::NodeBase*>& r1, const std::vector<NuTo::NodeBase*>& r2)
 {
-    for (const auto& n1 : r1)
-    {
-        bool n1IsInr2 = false;
-        for (const auto& n2 : r2)
-        {
-            if (n1 == n2)
-                n1IsInr2 = true;
-        }
-        if (not n1IsInr2)
-            return false;
-    }
-    return true;
+    return std::is_permutation(r1.begin(), r1.end(), r2.begin(), r2.end());
 }
 
 
-std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(NuTo::Structure& rS, int rGroupMaster,
-                                                                            int rGroupSlave)
+std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(NuTo::Structure& s, int groupIdMaster,
+                                                                            int groupIdSlave)
 {
-    std::vector<NuTo::NodeBase*> gNodesPrism = GetIntersectingNodes(rS, rGroupMaster, rGroupSlave);
+    std::vector<NuTo::NodeBase*> gNodesPrism = GetIntersectingNodes(s, groupIdMaster, groupIdSlave);
 
     NodeTree nodeTree(gNodesPrism);
-    std::vector<ElementSurface> eMaster = GetElementSurfaceVector(rS, rGroupMaster, nodeTree);
-    std::vector<ElementSurface> eSlave = GetElementSurfaceVector(rS, rGroupSlave, nodeTree);
+    std::vector<ElementSurface> eMaster = GetElementSurfaceVector(s, groupIdMaster, nodeTree);
+    std::vector<ElementSurface> eSlave = GetElementSurfaceVector(s, groupIdSlave, nodeTree);
 
     std::vector<std::pair<ElementSurface, ElementSurface>> pairs;
     pairs.reserve(eMaster.size());
@@ -153,9 +139,9 @@ std::vector<std::pair<ElementSurface, ElementSurface>> FindMatchingElements(NuTo
     return pairs;
 }
 
-bool HasOnlyCoordinateInterpolation(NuTo::Structure& rS, int gElement)
+bool HasOnlyCoordinateInterpolation(NuTo::Structure& s, int gElement)
 {
-    for (auto* e : NuTo::MeshCompanion::GetElementVector(rS, gElement))
+    for (auto* e : NuTo::MeshCompanion::GetElementVector(s, gElement))
     {
         auto dofs = e->GetInterpolationType().GetDofs();
         if (dofs.size() != 1 or *dofs.begin() != NuTo::Node::eDof::COORDINATES)
@@ -165,16 +151,16 @@ bool HasOnlyCoordinateInterpolation(NuTo::Structure& rS, int gElement)
 }
 
 std::vector<std::pair<ElementSurface, ElementSurface>>
-FindElementPairsContainingTheNode(const NuTo::NodeBase* rNode,
-                                  const std::vector<std::pair<ElementSurface, ElementSurface>>& rPairs)
+FindElementPairsContainingTheNode(const NuTo::NodeBase* node,
+                                  const std::vector<std::pair<ElementSurface, ElementSurface>>& surfaceElementPairs)
 {
     std::vector<std::pair<ElementSurface, ElementSurface>> matchingPairs;
-    for (const auto& pair : rPairs)
+    for (const auto& pair : surfaceElementPairs)
     {
         NuTo::ElementBase* element = pair.first.mElement;
         for (int i = 0; i < element->GetNumNodes(); ++i)
         {
-            if (element->GetNode(i) == rNode)
+            if (element->GetNode(i) == node)
             {
                 matchingPairs.push_back(pair);
                 continue;
@@ -184,53 +170,53 @@ FindElementPairsContainingTheNode(const NuTo::NodeBase* rNode,
     return matchingPairs;
 }
 
-int GetNodeCoordinatesIndex(const NuTo::NodeBase* rNode, const NuTo::ElementBase* rElement)
+int GetNodeCoordinatesIndex(const NuTo::NodeBase* node, const NuTo::ElementBase* element)
 {
-    for (int i = 0; i < rElement->GetNumNodes(NuTo::Node::eDof::COORDINATES); ++i)
+    for (int i = 0; i < element->GetNumNodes(NuTo::Node::eDof::COORDINATES); ++i)
     {
-        if (rElement->GetNode(i, NuTo::Node::eDof::COORDINATES) == rNode)
+        if (element->GetNode(i, NuTo::Node::eDof::COORDINATES) == node)
             return i;
     }
     throw;
 }
 
-Eigen::VectorXd GetLocalSurfaceCoordinates(int rNodeIndex, const ElementSurface& rElementSurface)
+Eigen::VectorXd GetLocalSurfaceCoordinates(int nodeIndex, const ElementSurface& elementSurface)
 {
-    const auto& it = rElementSurface.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
+    const auto& it = elementSurface.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
 
     // find surface parameters
-    auto localNodeCoordinates = it.GetNaturalNodeCoordinates(rNodeIndex);
-    Eigen::VectorXd R = it.CalculateNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface) -
+    auto localNodeCoordinates = it.GetNaturalNodeCoordinates(nodeIndex);
+    Eigen::VectorXd R = it.CalculateNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), elementSurface.mSurface) -
                         localNodeCoordinates;
     Eigen::MatrixXd dRdS =
-            it.CalculateDerivativeNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), rElementSurface.mSurface);
+            it.CalculateDerivativeNaturalSurfaceCoordinates(Eigen::VectorXd::Zero(2), elementSurface.mSurface);
 
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(dRdS, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::VectorXd surfaceParameters = -svd.solve(R);
-    assert((localNodeCoordinates - it.CalculateNaturalSurfaceCoordinates(surfaceParameters, rElementSurface.mSurface))
+    assert((localNodeCoordinates - it.CalculateNaturalSurfaceCoordinates(surfaceParameters, elementSurface.mSurface))
                    .norm() < 1.e-10);
     return surfaceParameters;
 }
 
-Eigen::VectorXd GetLocalSurfaceCoordinates(const NuTo::NodeBase* rNode, const ElementSurface& rElementSurface)
+Eigen::VectorXd GetLocalSurfaceCoordinates(const NuTo::NodeBase* node, const ElementSurface& elementSurface)
 {
-    return GetLocalSurfaceCoordinates(GetNodeCoordinatesIndex(rNode, rElementSurface.mElement), rElementSurface);
+    return GetLocalSurfaceCoordinates(GetNodeCoordinatesIndex(node, elementSurface.mElement), elementSurface);
 }
 
 
-Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const ElementSurface& rElementSurface)
+Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* node, const ElementSurface& elementSurface)
 {
-    Eigen::MatrixXd nodeCoordinates = rElementSurface.mElement->ExtractNodeValues(0, NuTo::Node::eDof::COORDINATES);
-    const auto& it = rElementSurface.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
-    Eigen::VectorXd ipCoordsSurface = GetLocalSurfaceCoordinates(rNode, rElementSurface);
-    Eigen::VectorXd ipCoordsNatural = it.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, rElementSurface.mSurface);
+    Eigen::MatrixXd nodeCoordinates = elementSurface.mElement->ExtractNodeValues(0, NuTo::Node::eDof::COORDINATES);
+    const auto& it = elementSurface.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
+    Eigen::VectorXd ipCoordsSurface = GetLocalSurfaceCoordinates(node, elementSurface);
+    Eigen::VectorXd ipCoordsNatural = it.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, elementSurface.mSurface);
 
     Eigen::MatrixXd derivativeShapeFunctionsNatural = it.DerivativeShapeFunctionsNatural(ipCoordsNatural);
-    const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(rElementSurface.mElement)
+    const Eigen::Matrix3d jacobian = dynamic_cast<ContinuumElement<3>*>(elementSurface.mElement)
                                              ->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);
 
     Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = it.CalculateDerivativeNaturalSurfaceCoordinates(
-            ipCoordsSurface, rElementSurface.mSurface); // = [dXi / dAlpha]
+            ipCoordsSurface, elementSurface.mSurface); // = [dXi / dAlpha]
     Eigen::Vector3d dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);
     Eigen::Vector3d dXdBeta = jacobian * derivativeNaturalSurfaceCoordinates.col(1);
 
@@ -239,20 +225,20 @@ Eigen::VectorXd CalculateNormalAtNode(const NuTo::NodeBase* rNode, const Element
     return surfaceNormalVector;
 }
 
-NuTo::NodeBase* CloneNode(NuTo::Structure& rS, const NuTo::NodeBase* rNode)
+NuTo::NodeBase* CloneNode(NuTo::Structure& s, const NuTo::NodeBase* node)
 {
-    int nodeId = rS.NodeCreate(rNode->Get(NuTo::Node::eDof::COORDINATES));
-    return rS.NodeGetNodePtr(nodeId);
+    int nodeIndex = s.NodeCreate(node->Get(NuTo::Node::eDof::COORDINATES));
+    return s.NodeGetNodePtr(nodeIndex);
 }
 
-NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, int rGroupMaster, int)
+NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& s, int groupIdMaster, int)
 {
-    auto* firstElement = rS.ElementGetElementPtr(rS.GroupGetMemberIds(rGroupMaster)[0]);
+    auto* firstElement = s.ElementGetElementPtr(s.GroupGetMemberIds(groupIdMaster)[0]);
     NuTo::Interpolation::eTypeOrder coordinateInterpolation =
             firstElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
-    for (int elementId : rS.GroupGetMemberIds(rGroupMaster))
+    for (int elementId : s.GroupGetMemberIds(groupIdMaster))
     {
-        auto* e = rS.ElementGetElementPtr(elementId);
+        auto* e = s.ElementGetElementPtr(elementId);
         auto type = e->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
         if (type != coordinateInterpolation)
             throw NuTo::Exception(__PRETTY_FUNCTION__,
@@ -261,62 +247,62 @@ NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& rS, 
     return coordinateInterpolation;
 }
 
-NuTo::NodeBase* InterpolateNode(NuTo::Structure& rS, NuTo::NodeBase* rMaster, NuTo::NodeBase* rSlave,
-                                std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rMasterNodeToInterpolatedNode)
+NuTo::NodeBase* InterpolateNode(NuTo::Structure& s, NuTo::NodeBase* nodeMaster, NuTo::NodeBase* nodeSlave,
+                                std::map<NuTo::NodeBase*, NuTo::NodeBase*>& masterNodeToInterpolatedNode)
 {
-    auto it = rMasterNodeToInterpolatedNode.find(rMaster);
-    if (it != rMasterNodeToInterpolatedNode.end())
+    auto it = masterNodeToInterpolatedNode.find(nodeMaster);
+    if (it != masterNodeToInterpolatedNode.end())
         return it->second;
 
     Eigen::Vector3d coords =
-            (rMaster->Get(NuTo::Node::eDof::COORDINATES) + rSlave->Get(NuTo::Node::eDof::COORDINATES)) / 2.;
-    int nodeId = rS.NodeCreate(coords);
+            (nodeMaster->Get(NuTo::Node::eDof::COORDINATES) + nodeSlave->Get(NuTo::Node::eDof::COORDINATES)) / 2.;
+    int nodeIndex = s.NodeCreate(coords);
 
-    NuTo::NodeBase* newNode = rS.NodeGetNodePtr(nodeId);
-    rMasterNodeToInterpolatedNode[rMaster] = newNode;
+    NuTo::NodeBase* newNode = s.NodeGetNodePtr(nodeIndex);
+    masterNodeToInterpolatedNode[nodeMaster] = newNode;
     return newNode;
 }
 
-int CreateLinearPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMaster, int rInterpolationTypeId,
-                      const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rClonedNodesMapping)
+int CreateLinearPrism(NuTo::Structure& s, ElementSurface elementSurfaceMaster, int interpolationTypeId,
+                      const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& clonedNodesMapping)
 {
-    auto surfaceNodes = GetSurfaceNodes(rElementSurfaceMaster);
+    auto surfaceNodes = GetSurfaceNodes(elementSurfaceMaster);
     // linear elements
     assert(surfaceNodes.size() == 3);
     for (int i = 0; i < 3; ++i)
     {
         NuTo::NodeBase* masterNode = surfaceNodes[i];
-        NuTo::NodeBase* slaveNode = rClonedNodesMapping.at(masterNode);
+        NuTo::NodeBase* slaveNode = clonedNodesMapping.at(masterNode);
         surfaceNodes.push_back(slaveNode);
     }
-    return rS.ElementCreate(rInterpolationTypeId, surfaceNodes);
+    return s.ElementCreate(interpolationTypeId, surfaceNodes);
 }
 
-int CreateQuadraticPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMaster, int rInterpolationTypeId,
-                         const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rClonedNodesMapping,
-                         std::map<NuTo::NodeBase*, NuTo::NodeBase*>& rMasterNodeToInterpolatedNode)
+int CreateQuadraticPrism(NuTo::Structure& s, ElementSurface elementSurfaceMaster, int interpolationTypeId,
+                         const std::map<NuTo::NodeBase*, NuTo::NodeBase*>& clonedNodesMapping,
+                         std::map<NuTo::NodeBase*, NuTo::NodeBase*>& masterNodeToInterpolatedNode)
 {
-    const auto& itBase = rElementSurfaceMaster.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
+    const auto& itBase = elementSurfaceMaster.mElement->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES);
 
     std::vector<NuTo::NodeBase*> sortedNodes(6);
 
-    for (int i = 0; i < itBase.GetNumSurfaceNodes(rElementSurfaceMaster.mSurface); ++i)
+    for (int i = 0; i < itBase.GetNumSurfaceNodes(elementSurfaceMaster.mSurface); ++i)
     {
-        int nodeIndex = itBase.GetSurfaceNodeIndex(rElementSurfaceMaster.mSurface, i);
-        Eigen::Vector2d surfaceCoords = GetLocalSurfaceCoordinates(nodeIndex, rElementSurfaceMaster);
+        int nodeIndex = itBase.GetSurfaceNodeIndex(elementSurfaceMaster.mSurface, i);
+        Eigen::Vector2d surfaceCoords = GetLocalSurfaceCoordinates(nodeIndex, elementSurfaceMaster);
 
         if (surfaceCoords.isApprox(Eigen::Vector2d{0, 0}))
-            sortedNodes[0] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[0] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
         if (surfaceCoords.isApprox(Eigen::Vector2d{1, 0}))
-            sortedNodes[1] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[1] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
         if (surfaceCoords.isApprox(Eigen::Vector2d{0, 1}))
-            sortedNodes[2] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[2] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
         if (surfaceCoords.isApprox(Eigen::Vector2d{.5, 0}))
-            sortedNodes[3] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[3] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
         if (surfaceCoords.isApprox(Eigen::Vector2d{.5, .5}))
-            sortedNodes[4] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[4] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
         if (surfaceCoords.isApprox(Eigen::Vector2d{0, .5}))
-            sortedNodes[5] = rElementSurfaceMaster.mElement->GetNode(nodeIndex);
+            sortedNodes[5] = elementSurfaceMaster.mElement->GetNode(nodeIndex);
     }
 
     /*
@@ -350,9 +336,9 @@ int CreateQuadraticPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMast
     nodeVector[2] = sortedNodes[2];
 
     // upper corners
-    nodeVector[3] = rClonedNodesMapping.at(sortedNodes[0]);
-    nodeVector[4] = rClonedNodesMapping.at(sortedNodes[1]);
-    nodeVector[5] = rClonedNodesMapping.at(sortedNodes[2]);
+    nodeVector[3] = clonedNodesMapping.at(sortedNodes[0]);
+    nodeVector[4] = clonedNodesMapping.at(sortedNodes[1]);
+    nodeVector[5] = clonedNodesMapping.at(sortedNodes[2]);
 
     // lower mids
     nodeVector[6] = sortedNodes[3];
@@ -360,36 +346,36 @@ int CreateQuadraticPrism(NuTo::Structure& rS, ElementSurface rElementSurfaceMast
     nodeVector[7] = sortedNodes[5];
 
     // upper mids
-    nodeVector[12] = rClonedNodesMapping.at(sortedNodes[3]);
-    nodeVector[14] = rClonedNodesMapping.at(sortedNodes[4]);
-    nodeVector[13] = rClonedNodesMapping.at(sortedNodes[5]);
+    nodeVector[12] = clonedNodesMapping.at(sortedNodes[3]);
+    nodeVector[14] = clonedNodesMapping.at(sortedNodes[4]);
+    nodeVector[13] = clonedNodesMapping.at(sortedNodes[5]);
 
     // mid corners
-    nodeVector[8] = InterpolateNode(rS, nodeVector[0], nodeVector[3], rMasterNodeToInterpolatedNode);
-    nodeVector[10] = InterpolateNode(rS, nodeVector[1], nodeVector[4], rMasterNodeToInterpolatedNode);
-    nodeVector[11] = InterpolateNode(rS, nodeVector[2], nodeVector[5], rMasterNodeToInterpolatedNode);
+    nodeVector[8] = InterpolateNode(s, nodeVector[0], nodeVector[3], masterNodeToInterpolatedNode);
+    nodeVector[10] = InterpolateNode(s, nodeVector[1], nodeVector[4], masterNodeToInterpolatedNode);
+    nodeVector[11] = InterpolateNode(s, nodeVector[2], nodeVector[5], masterNodeToInterpolatedNode);
 
     // mid mids
-    nodeVector[15] = InterpolateNode(rS, nodeVector[6], nodeVector[12], rMasterNodeToInterpolatedNode);
-    nodeVector[16] = InterpolateNode(rS, nodeVector[7], nodeVector[13], rMasterNodeToInterpolatedNode);
-    nodeVector[17] = InterpolateNode(rS, nodeVector[9], nodeVector[14], rMasterNodeToInterpolatedNode);
+    nodeVector[15] = InterpolateNode(s, nodeVector[6], nodeVector[12], masterNodeToInterpolatedNode);
+    nodeVector[16] = InterpolateNode(s, nodeVector[7], nodeVector[13], masterNodeToInterpolatedNode);
+    nodeVector[17] = InterpolateNode(s, nodeVector[9], nodeVector[14], masterNodeToInterpolatedNode);
 
-    return rS.ElementCreate(rInterpolationTypeId, nodeVector);
+    return s.ElementCreate(interpolationTypeId, nodeVector);
 }
 
 
-std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS, int rGroupMaster, int rGroupSlave,
-                                                             double rThickness)
+std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& s, int groupIdMaster, int groupIdSlave,
+                                                             double thickness)
 {
-    Timer timer(__FUNCTION__, rS.GetShowTime(), rS.GetLogger());
+    Timer timer(__FUNCTION__, s.GetShowTime(), s.GetLogger());
 
-    if (not HasOnlyCoordinateInterpolation(rS, rGroupMaster) or not HasOnlyCoordinateInterpolation(rS, rGroupSlave))
+    if (not HasOnlyCoordinateInterpolation(s, groupIdMaster) or not HasOnlyCoordinateInterpolation(s, groupIdSlave))
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Elements must only have COORDINATES interpolation.");
 
-    auto pairs = FindMatchingElements(rS, rGroupMaster, rGroupSlave);
+    auto pairs = FindMatchingElements(s, groupIdMaster, groupIdSlave);
 
     // UPDATE NODES:
-    std::vector<NuTo::NodeBase*> gNodesPrism = GetIntersectingNodes(rS, rGroupMaster, rGroupSlave);
+    std::vector<NuTo::NodeBase*> gNodesPrism = GetIntersectingNodes(s, groupIdMaster, groupIdSlave);
     std::map<NuTo::NodeBase*, NuTo::NodeBase*> clonedNodesMapping;
     std::map<NuTo::NodeBase*, Eigen::Vector3d> normals;
 
@@ -401,38 +387,38 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& rS
 
     for (NuTo::NodeBase* node : gNodesPrism)
     {
-        NuTo::NodeBase* clonedNode = CloneNode(rS, node);
+        NuTo::NodeBase* clonedNode = CloneNode(s, node);
         Eigen::Vector3d nodeCoordinates = node->Get(NuTo::Node::eDof::COORDINATES);
         const Eigen::Vector3d& normal = normals[node];
 
-        node->Set(NuTo::Node::eDof::COORDINATES, nodeCoordinates - rThickness * 0.5 * normal);
-        clonedNode->Set(NuTo::Node::eDof::COORDINATES, nodeCoordinates + rThickness * 0.5 * normal);
+        node->Set(NuTo::Node::eDof::COORDINATES, nodeCoordinates - thickness * 0.5 * normal);
+        clonedNode->Set(NuTo::Node::eDof::COORDINATES, nodeCoordinates + thickness * 0.5 * normal);
 
         clonedNodesMapping[node] = clonedNode;
 
-        for (int slaveElementId : rS.GroupGetMemberIds(rGroupSlave))
-            rS.ElementGetElementPtr(slaveElementId)->ExchangeNodePtr(node, clonedNode);
+        for (int slaveElementId : s.GroupGetMemberIds(groupIdSlave))
+            s.ElementGetElementPtr(slaveElementId)->ExchangeNodePtr(node, clonedNode);
     }
 
     std::map<NuTo::NodeBase*, NuTo::NodeBase*> masterNodeToInterpolatedNode;
-    int gPrism = rS.GroupCreate(NuTo::eGroupId::Elements);
+    int gPrism = s.GroupCreate(NuTo::eGroupId::Elements);
 
 
-    NuTo::Interpolation::eTypeOrder coordinateInterpolation = GetCoordinateInterpolation(rS, rGroupMaster, rGroupSlave);
-    int it = rS.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::PRISM3D);
-    rS.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, coordinateInterpolation);
+    NuTo::Interpolation::eTypeOrder coordinateInterpolation = GetCoordinateInterpolation(s, groupIdMaster, groupIdSlave);
+    int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::PRISM3D);
+    s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, coordinateInterpolation);
 
     // CREATE PRISMS
     for (auto& pair : pairs)
     {
         if (coordinateInterpolation == NuTo::Interpolation::eTypeOrder::EQUIDISTANT1)
         {
-            rS.GroupAddElement(gPrism, CreateLinearPrism(rS, pair.first, it, clonedNodesMapping));
+            s.GroupAddElement(gPrism, CreateLinearPrism(s, pair.first, it, clonedNodesMapping));
         }
         else if (coordinateInterpolation == NuTo::Interpolation::eTypeOrder::EQUIDISTANT2)
         {
-            rS.GroupAddElement(
-                    gPrism, CreateQuadraticPrism(rS, pair.first, it, clonedNodesMapping, masterNodeToInterpolatedNode));
+            s.GroupAddElement(
+                    gPrism, CreateQuadraticPrism(s, pair.first, it, clonedNodesMapping, masterNodeToInterpolatedNode));
         }
         else
         {

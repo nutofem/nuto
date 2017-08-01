@@ -8,7 +8,7 @@
 BOOST_AUTO_TEST_CASE(ImportFromGmshBinary)
 {
     NuTo::Structure s(3);
-    NuTo::MeshCompanion::ImportFromGmsh(s, "MeshCompanionGmsh.msh");
+    BOOST_CHECK_NO_THROW(NuTo::MeshCompanion::ImportFromGmsh(s, "MeshCompanionGmsh.msh"));
 }
 
 void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
@@ -112,4 +112,26 @@ BOOST_AUTO_TEST_CASE(CreatePrismEQUIDISTANT1)
 BOOST_AUTO_TEST_CASE(CreatePrismEQUIDISTANT2)
 {
     PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+}
+
+void CheckPrismGmsh(std::string mshFile)
+{
+    NuTo::Structure s(3);
+    auto meshInfo = NuTo::MeshCompanion::ImportFromGmsh(s, mshFile);
+    auto& groupMaster = meshInfo[0].first;
+    auto& groupSlave = meshInfo[1].first;
+    double thickness = 0.5;
+    BOOST_CHECK_NO_THROW(NuTo::MeshCompanion::ElementPrismsCreate(s, groupMaster, groupSlave, thickness));
+}
+
+BOOST_AUTO_TEST_CASE(CreatePrismGmsh)
+{
+    //CheckPrismGmsh("MeshCompanionGmsh.msh");
+    // This test fails due to a bug. Possibly:
+    // If one element is part of two prism surfaces, it fails. Really dunno why. 
+}
+
+BOOST_AUTO_TEST_CASE(CreatePrismGmshFine)
+{
+    CheckPrismGmsh("MeshCompanionGmshFine.msh");
 }

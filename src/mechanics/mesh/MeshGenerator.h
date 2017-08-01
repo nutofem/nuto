@@ -13,49 +13,49 @@ class Structure;
 class MeshGenerator
 {
 public:
-    //! @brief creates a grid from origin to rEnd
-    //! @param rS structure
-    //! @param rEnd coordinates of the end point
-    //! @param rNumDivisions number of grid cells in each direction
-    //! @param rElementShape element shape (truss, quad, triangle, ...)
+    //! @brief creates a grid from origin to end
+    //! @param s structure
+    //! @param end coordinates of the end point
+    //! @param numDivisions number of grid cells in each direction
+    //! @param elementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
-    static std::pair<int, int> Grid(Structure& rS, std::vector<double> rEnd, std::vector<int> rNumDivisions,
-                                    Interpolation::eShapeType rElementShape);
+    static std::pair<int, int> Grid(Structure& s, std::vector<double> end, std::vector<int> numDivisions,
+                                    Interpolation::eShapeType elementShape);
 
-    //! @brief creates a grid from origin to rEnd with a default element shape
+    //! @brief creates a grid from origin to end with a default element shape
     //!        1D = Truss | 2D = Quad | 3D = Brick
-    //! @param rS structure
-    //! @param rEnd coordinates of the end point
-    //! @param rNumDivisions number of grid cells in each direction
+    //! @param s structure
+    //! @param end coordinates of the end point
+    //! @param numDivisions number of grid cells in each direction
     //! @return pair<groupId, interpolationTypeId>
-    static std::pair<int, int> Grid(Structure& rS, std::vector<double> rEnd, std::vector<int> rNumDivisions);
+    static std::pair<int, int> Grid(Structure& s, std::vector<double> end, std::vector<int> numDivisions);
 
-    //! @brief creates a grid from rStart to rEnd
-    //! @param rS structure
-    //! @param rEnd coordinates of the start point
-    //! @param rEnd coordinates of the end point
-    //! @param rNumDivisions number of grid cells in each direction
-    //! @param rElementShape element shape (truss, quad, triangle, ...)
+    //! @brief creates a grid from start to end
+    //! @param s structure
+    //! @param end coordinates of the start point
+    //! @param end coordinates of the end point
+    //! @param numDivisions number of grid cells in each direction
+    //! @param elementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
-    static std::pair<int, int> Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
-                                    std::vector<int> rNumDivisions);
+    static std::pair<int, int> Grid(Structure& s, std::vector<double> start, std::vector<double> end,
+                                    std::vector<int> numDivisions);
 
-    //! @brief creates a grid from rStart to rEnd with a default element shape
+    //! @brief creates a grid from start to end with a default element shape
     //!        1D = Truss | 2D = Quad | 3D = Brick
-    //! @param rS structure
-    //! @param rEnd coordinates of the start point
-    //! @param rEnd coordinates of the end point
-    //! @param rNumDivisions number of grid cells in each direction
-    //! @param rElementShape element shape (truss, quad, triangle, ...)
+    //! @param s structure
+    //! @param end coordinates of the start point
+    //! @param end coordinates of the end point
+    //! @param numDivisions number of grid cells in each direction
+    //! @param elementShape element shape (truss, quad, triangle, ...)
     //! @return pair<groupId, interpolationTypeId>
-    static std::pair<int, int> Grid(Structure& rS, std::vector<double> rStart, std::vector<double> rEnd,
-                                    std::vector<int> rNumDivisions, Interpolation::eShapeType rElementShape);
+    static std::pair<int, int> Grid(Structure& s, std::vector<double> start, std::vector<double> end,
+                                    std::vector<int> numDivisions, Interpolation::eShapeType elementShape);
 
-    static std::pair<int, int> Grid(Structure& rS, Eigen::VectorXd rStart, Eigen::VectorXd rEnd,
-                                    Eigen::VectorXi rNumDivisions, Interpolation::eShapeType rElementShape);
+    static std::pair<int, int> Grid(Structure& s, Eigen::VectorXd start, Eigen::VectorXd end,
+                                    Eigen::VectorXi numDivisions, Interpolation::eShapeType elementShape);
 
-    //! @param rRadius ... radius of the cylinder
-    //! @param rHeight ... height of the cylinder
-    static std::function<Eigen::Vector3d(Eigen::Vector3d)> GetCylinderMapping(double rRadius, double rHeight);
+    //! @param radius ... radius of the cylinder
+    //! @param height ... height of the cylinder
+    static std::function<Eigen::Vector3d(Eigen::Vector3d)> GetCylinderMapping(double radius, double height);
 };
 }

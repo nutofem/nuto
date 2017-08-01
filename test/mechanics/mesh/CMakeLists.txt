@@ -1,4 +1,5 @@
 create_symlink("MeshCompanionGmsh.msh")
+create_symlink("MeshCompanionGmshFine.msh")
 
 add_executable(MeshCompanion MeshCompanion.cpp)
 target_link_libraries(MeshCompanion Mechanics Math Base ${Boost_LIBRARIES})
