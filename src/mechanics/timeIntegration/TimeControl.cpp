@@ -10,13 +10,20 @@ void NuTo::TimeControl::Proceed()
     mCurrentTime += mTimeStep;
 }
 
+bool NuTo::TimeControl::Finished()
+{
+    constexpr double timeStepTolerance = 1.e-10;
+    return mTimeFinal - mCurrentTime < timeStepTolerance;
+}
+
+
 void NuTo::TimeControl::AdjustTimestep(int iterations, int maxIterations, bool converged)
 {
     mTimeStep = mTimeStepFunction(*this, iterations, maxIterations, converged);
 
     if (mTimeStep > mMaxTimeStep)
         mTimeStep = mMaxTimeStep;
-    
+
     if (mTimeStep < mMinTimeStep)
         throw Exception(__PRETTY_FUNCTION__, "Timestep below minTimeStep. ");
 

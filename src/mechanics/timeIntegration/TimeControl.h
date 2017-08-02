@@ -36,10 +36,7 @@ public:
 
     //! @brief Returnes if the time control has finished by reaching the final time
     //! @return true/false
-    bool Finished()
-    {
-        return mCurrentTime >= mTimeFinal;
-    }
+    bool Finished();
 
     //! @brief Proceeds with the next time step
     void Proceed();

@@ -152,5 +152,16 @@ BOOST_AUTO_TEST_CASE(Timestepping)
         // should decrease the time step below min time step
         BOOST_CHECK_THROW(timeControl.AdjustTimestep(1, 20, false), NuTo::Exception);
     }
+
+    // floating point accuracy of TimeControl::Finished()
+    {
+        TimeControl timeControl;
+        constexpr int n = 100000;
+        timeControl.SetTimeFinal(n);
+        timeControl.SetTimeStep(1);
+        for (int i = 0; i < n; ++i)
+            timeControl.Proceed();
+        BOOST_CHECK(timeControl.Finished());
+    }
 }
 
