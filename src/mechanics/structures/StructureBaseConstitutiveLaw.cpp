@@ -12,6 +12,7 @@
 #include "mechanics/constitutive/laws/LinearDampingEngineeringStress.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
+#include "mechanics/constitutive/laws/LinearElasticInhomogeneous.h"
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
 #include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
@@ -80,6 +81,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
+            break;
+
+        case eConstitutiveType::LINEAR_ELASTIC_INHOMOGENEOUS:
+            ConstitutiveLawPtr = new NuTo::LinearElasticInhomogeneous();
             break;
 
         case eConstitutiveType::LOCAL_DAMAGE_MODEL:

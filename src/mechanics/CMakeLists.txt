@@ -19,6 +19,7 @@ set(MechanicsConstitutiveSources
     constitutive/laws/LinearDampingEngineeringStress.cpp
     constitutive/laws/LinearDielectric.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
+    constitutive/laws/LinearElasticInhomogeneous.cpp
     constitutive/laws/LinearElasticAnisotropic.cpp
     constitutive/laws/LinearPiezoelectric.cpp
     constitutive/laws/LocalDamageModel.cpp

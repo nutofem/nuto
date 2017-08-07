@@ -33,6 +33,7 @@ foreach(test
     GradientDamage
     IGA
     ImplEx
+    InhomogeneousMaterial
     InterfaceElements
     IntegrationPointVoronoiCells
     InterpolationTypes
