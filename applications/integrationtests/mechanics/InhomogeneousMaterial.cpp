@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(InhomogeneousMaterial1D)
     // Create Law
     int myLawId = s.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_INHOMOGENEOUS);
     NuTo::LinearElasticInhomogeneous& myLaw =
-            (dynamic_cast<NuTo::LinearElasticInhomogeneous*>(*s.ConstitutiveLawGetConstitutiveLawPtr(myLawId)));
+            (dynamic_cast<NuTo::LinearElasticInhomogeneous&>(*s.ConstitutiveLawGetConstitutiveLawPtr(myLawId)));
     myLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.);
     myLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.);
     // Varying Youngs modulus
