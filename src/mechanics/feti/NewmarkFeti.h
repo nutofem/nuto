@@ -861,7 +861,12 @@ public:
         }
         case eFetiScaling::Multiplicity:
         {
-            mScalingMatrix = static_cast<StructureFeti*>(mStructure)->MultiplicityScaling();
+            mScalingMatrix = mStructureFeti->MultiplicityScaling();
+            break;
+        }
+        case eFetiScaling::Superlumped:
+        {
+            mScalingMatrix = mStructureFeti->MultiplicityScaling();
             break;
         }
         default:

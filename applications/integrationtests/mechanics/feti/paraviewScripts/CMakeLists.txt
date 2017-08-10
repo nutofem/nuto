@@ -1,1 +1,2 @@
 configure_file(FetiMultiplicityScaling.py FetiMultiplicityScaling.py)
+configure_file(FetiRixenFarhatHeterogeneousExample.py FetiRixenFarhatHeterogeneousExample.py)
