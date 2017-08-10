@@ -13,6 +13,7 @@ enum class eConstitutiveType
     ADDITIVE_INPUT_EXPLICIT, //!< container for multiple constitutive laws linked by a shared input
     ADDITIVE_INPUT_IMPLICIT, //!< container for multiple constitutive laws linked by a shared input
     ADDITIVE_OUTPUT, //!< container for multiple constitutive laws linked by addition of their outputs
+    CREEP, //!< Kelvin chain based creep model
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS, //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
     FIBRE_MATRIX_BOND_STRESS_SLIP, //!< material model for the matrix-fibre interface
@@ -31,12 +32,12 @@ enum class eConstitutiveType
     MOISTURE_TRANSPORT, //!< moisture transport model
     MULTISCALE, //!< multiscale model, where the average stress is calculated from a full fine scale model
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress
-                                                   //!space
+    //! space
     PHASE_FIELD, //!< phase field model
     SHRINKAGE_CAPILLARY_STRAIN_BASED, //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED, //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and
-                                                          //!plasticity are function of nonlocal total strain)
+    //! plasticity are function of nonlocal total strain)
     THERMAL_STRAINS, //!< strain induced by temperature change
     LINEAR_ELASTIC_ANISOTROPIC, //!< linear elastic fully anisotropic material
     LINEAR_DIELECTRIC, //!< linear isotropic dielectric material (insulating but polarizable)
@@ -106,6 +107,9 @@ enum class eConstitutiveParameter
     HEAT_CAPACITY, //!< specific heat capacity \f$c_T\f$
     INITIAL_HARDENING_MODULUS, //!<
     INITIAL_YIELD_STRENGTH, //!<
+    KELVIN_CHAIN_DAMPING, //!<
+    KELVIN_CHAIN_RETARDATIONTIME, //!<
+    KELVIN_CHAIN_STIFFNESS, //!<
     LENGTH_SCALE_PARAMETER, //!<
     MACROSCOPIC_BULK_MODULUS, //!<
     MASS_EXCHANGE_RATE, //!<

@@ -29,6 +29,7 @@ foreach(test
     CoefficientChecks
     MoistureTransport
     ConstraintsNodeToElement
+    CreepModel
     CSDAInterface
     GradientDamage
     IGA
