@@ -21,6 +21,10 @@ set_target_properties(Optimize PROPERTIES
     )
 
 target_link_libraries(Optimize Math Base ${PYTHON_LIBRARY})
+target_include_directories(Optimize PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 if(ENABLE_VISUALIZE)
     target_link_libraries(Optimize Visualize)
@@ -30,4 +34,5 @@ set_target_properties(Optimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 
 install(TARGETS Optimize EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )

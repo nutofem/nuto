@@ -239,6 +239,10 @@ set_target_properties(Mechanics PROPERTIES
     OUTPUT_NAME NuToMechanics
     )
 target_link_libraries(Mechanics ${ANN_LIBRARIES})
+target_include_directories(Mechanics PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 if(ENABLE_MPI)
     message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")
@@ -247,10 +251,10 @@ endif()
 
 install(TARGETS Mechanics EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )
 
 if(ENABLE_MPI)
     message(STATUS "Creating feti library...")
     add_subdirectory(feti)
 endif()
-

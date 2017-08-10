@@ -17,7 +17,12 @@ set_target_properties(Metamodel PROPERTIES
     )
 
 target_link_libraries(Metamodel Optimize Math Base)
+target_include_directories(Metamodel PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 install(TARGETS Metamodel EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )

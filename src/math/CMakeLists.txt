@@ -21,7 +21,12 @@ set_target_properties(Math PROPERTIES
     )
 
 target_link_libraries(Math Base ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
+target_include_directories(Math PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 install(TARGETS Math EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )
