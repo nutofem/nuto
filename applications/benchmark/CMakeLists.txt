@@ -42,4 +42,5 @@ if(ENABLE_GEOMETRYCONCRETE)
 endif()
 
 add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
-target_link_libraries(NewtonRaphsonBenchmark) 
+target_include_directories(NewtonRaphsonBenchmark PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
