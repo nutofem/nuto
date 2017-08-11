@@ -17,7 +17,6 @@ public:
     // ctor
     DataCreep()
     {
-        int a = 1;
     }
 
 

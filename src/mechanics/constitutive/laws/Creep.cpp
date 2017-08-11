@@ -77,12 +77,9 @@ void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const Const
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<VoigtDim>(itOutput.first, __PRETTY_FUNCTION__);
 
-
             // Calculation
             staticData.mDeltaCreepStrain = Eigen::VectorXd::Zero(VoigtDim);
             staticData.mDeltaStrain = 1. * (engineeringStrain - staticData.mHistoryStrain);
-            const double KelvinChainStiffness = ExponentialAlgorithmCalculateChainStiffness(delta_t);
-
 
             for (unsigned int i = 0; i < VoigtDim; ++i)
             {
@@ -109,11 +106,6 @@ void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const Const
 
             rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)
                     ->AssertIsVector<VoigtDim>(itOutput.first, __PRETTY_FUNCTION__);
-            Eigen::Matrix<double, VoigtDim, 1>& engineeringStrain =
-                    static_cast<ConstitutiveVector<VoigtDim>*>(
-                            rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN).get())
-                            ->AsVector();
-
 
             // Calculation
             engineeringStress3D.SetZero();
