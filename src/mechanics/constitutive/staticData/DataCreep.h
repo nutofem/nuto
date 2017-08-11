@@ -71,11 +71,11 @@ private:
 
 public:
     Eigen::MatrixXd mHistoryData = Eigen::MatrixXd(0, 0);
-    Eigen::VectorXd mHistoryStrain = Eigen::VectorXd(0);
-    Eigen::VectorXd mHistoryStress = Eigen::VectorXd(0);
-    Eigen::VectorXd mDeltaStress = Eigen::VectorXd(0);
-    Eigen::VectorXd mDeltaStrain = Eigen::VectorXd(0);
-    Eigen::VectorXd mDeltaCreepStrain = Eigen::VectorXd(0);
+    Eigen::VectorXd mHistoryStrain = Eigen::VectorXd::Zero(0);
+    Eigen::VectorXd mHistoryStress = Eigen::VectorXd::Zero(0);
+    Eigen::VectorXd mDeltaStress = Eigen::VectorXd::Zero(0);
+    Eigen::VectorXd mDeltaStrain = Eigen::VectorXd::Zero(0);
+    Eigen::VectorXd mDeltaCreepStrain = Eigen::VectorXd::Zero(0);
 
 protected:
     double mCurrentTime = 0.0;
