@@ -264,8 +264,6 @@ if(ENABLE_MKL)
     find_package(LAPACK REQUIRED)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-
 # build nuto
 add_subdirectory(src)
 
@@ -303,7 +301,7 @@ install(FILES scripts/NuToMacros.cmake
     )
 
 install(EXPORT NuToTargets
-    FILE NuToTargets.cmake
+    FILE NuToConfig.cmake
     NAMESPACE NuTo::
     DESTINATION lib/cmake/NuTo
     )
@@ -311,4 +309,3 @@ install(EXPORT NuToTargets
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
 add_custom_target(headers SOURCES ${HeaderFiles})
-

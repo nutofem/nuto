@@ -1,5 +1,8 @@
 %module(package="nuto") ModuleMechanics
+#pragma SWIG nowarn=341
 #pragma SWIG nowarn=362
+#pragma SWIG nowarn=401
+#pragma SWIG nowarn=509
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files

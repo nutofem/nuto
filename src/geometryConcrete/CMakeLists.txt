@@ -38,7 +38,12 @@ if(ENABLE_VISUALIZE)
 else()
     target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math)
 endif()
+target_include_directories(GeometryConcrete PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 install(TARGETS GeometryConcrete EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )

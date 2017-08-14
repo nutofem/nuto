@@ -287,11 +287,12 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
     }
 }
 
+
 BOOST_AUTO_TEST_CASE(SparseGeneral)
 {
     StructureOutputBlockMatrixTestGeneral(10, 8, 0, 0, 1); // cmat == 0
     StructureOutputBlockMatrixTestGeneral(10, 8, 4, 2, 1);
-};
+}
 
 //! @brief StructureOutputBlockMatrixTest
 //! @remark allocates random sparse block matrices

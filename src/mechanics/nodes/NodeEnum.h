@@ -31,8 +31,8 @@ int GetNumComponents(eDof dofType, int dimension);
 
 constexpr unsigned short CombineDofs(eDof rDof1, eDof rDof2)
 {
-    constexpr size_t maxDoFEnumValue = std::numeric_limits<unsigned char>::max();
-    return static_cast<unsigned short>(rDof1) * maxDoFEnumValue + static_cast<unsigned short>(rDof2);
+    return static_cast<unsigned short>(rDof1) * std::numeric_limits<unsigned char>::max() +
+           static_cast<unsigned short>(rDof2);
 }
 
 std::string DofToString(eDof rDof);

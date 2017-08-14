@@ -5,6 +5,7 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
+#include "mechanics/constitutive/laws/Creep.h"
 #include "mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
@@ -128,10 +129,14 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::LinearPiezoelectric();
             break;
 
+        case eConstitutiveType::CREEP:
+            ConstitutiveLawPtr = new NuTo::Creep();
+            break;
+
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Constitutive law " +
-                                                                        Constitutive::ConstitutiveTypeToString(rType) +
-                                                                        " currently not supported.");
+                                                               Constitutive::ConstitutiveTypeToString(rType) +
+                                                               " currently not supported.");
         }
 
         // add section to map (insert does not allow const keys!!!!)
@@ -343,7 +348,6 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
 {
     double EquilibriumWaterVolumeFraction = 0.0;
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-    EquilibriumWaterVolumeFraction =
-            constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
+    EquilibriumWaterVolumeFraction = constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
     return EquilibriumWaterVolumeFraction;
 }

@@ -20,6 +20,7 @@ execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3
 message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
 
 # SWIG required for interface files c++ and python
 message(STATUS "Checking for SWIG...")
@@ -71,5 +72,12 @@ if(SWIG_VERSION VERSION_LESS "3.0.3")
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
 endif()
 
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DESTINATION lib/python${PYTHON_VERSION}/dist-packages
+    FILES_MATCHING PATTERN "*.py"
+    PATTERN "*.so"
+    PATTERN "*.dir" EXCLUDE
+    PATTERN "CMakeFiles" EXCLUDE
+    )
 
 set(CMAKE_CXX_FLAGS "${ORIGINAL_CXX_FLAGS}")

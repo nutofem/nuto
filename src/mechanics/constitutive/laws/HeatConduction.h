@@ -94,7 +94,7 @@ protected:
     struct InputData
     {
         Eigen::Matrix<double, TDim, 1> mTemperatureGradient;
-        double mTemperatureChange;
+        double mTemperatureChange = 0.0;
     };
 };
 }

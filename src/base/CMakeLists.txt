@@ -17,7 +17,12 @@ set_target_properties(Base PROPERTIES
     )
 
 target_link_libraries(Base ${Boost_LIBRARIES})
+target_include_directories(Base PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include/nuto>
+    )
 
 install(TARGETS Base EXPORT NuToTargets
     LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include/nuto
     )
