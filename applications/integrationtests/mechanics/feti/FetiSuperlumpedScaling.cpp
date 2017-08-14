@@ -45,7 +45,25 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
 
+    int numIterationsLumpedNoScaling = 0;
     int numIterationsLumpedSuperlumpedScaling = 0;
+
+    // Conjugate gradient, lumped preconditioner, no scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::None);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsLumpedNoScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+    }
+
     // Conjugate gradient, lumped preconditioner, superlumped scaling
     {
         NuTo::StructureFeti structure(dim);
@@ -68,7 +86,7 @@ int main(int argc, char* argv[])
             std::cout << "K-scaling *************************** \n";
     }
 
-    assert(numIterationsLumpedKScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
+    assert(numIterationsLumpedSuperlumpedScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
 
 }
 
