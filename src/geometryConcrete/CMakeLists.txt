@@ -26,24 +26,9 @@ set(GeometryConcreteSources
     ${GeometryConcreteGradingCurveSources}
     )
 
-sources_to_objects("${GeometryConcreteSources}" GeometryConcreteObjects)
-
-add_library(GeometryConcrete ${GeometryConcreteObjects})
-set_target_properties(GeometryConcrete PROPERTIES
-    OUTPUT_NAME NuToGeometryConcrete
-    )
-
+create_nuto_module(GeometryConcrete "${GeometryConcreteSources}")
 if(ENABLE_VISUALIZE)
     target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math Visualize)
 else()
     target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math)
 endif()
-target_include_directories(GeometryConcrete PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:include/nuto>
-    )
-
-install(TARGETS GeometryConcrete EXPORT NuToTargets
-    LIBRARY DESTINATION lib
-    INCLUDES DESTINATION include/nuto
-    )

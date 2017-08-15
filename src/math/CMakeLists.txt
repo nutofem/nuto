@@ -13,20 +13,5 @@ set(MathSources
     SparseDirectSolverMUMPS.cpp
 )
 
-sources_to_objects("${MathSources}" MathObjects)
-
-add_library(Math ${MathObjects})
-set_target_properties(Math PROPERTIES
-    OUTPUT_NAME NuToMath
-    )
-
+create_nuto_module(Math "${MathSources}")
 target_link_libraries(Math Base ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
-target_include_directories(Math PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:include/nuto>
-    )
-
-install(TARGETS Math EXPORT NuToTargets
-    LIBRARY DESTINATION lib
-    INCLUDES DESTINATION include/nuto
-    )

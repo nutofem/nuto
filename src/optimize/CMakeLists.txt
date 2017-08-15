@@ -13,26 +13,9 @@ find_package(PythonInterp 3 REQUIRED)
 find_package(PythonLibs 3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-sources_to_objects("${OptimizeSources}" OptimizeObjects)
-
-add_library(Optimize ${OptimizeSources})
-set_target_properties(Optimize PROPERTIES
-    OUTPUT_NAME NuToOptimize
-    )
-
+create_nuto_module(Optimize "${OptimizeSources}")
 target_link_libraries(Optimize Math Base ${PYTHON_LIBRARY})
-target_include_directories(Optimize PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:include/nuto>
-    )
-
 if(ENABLE_VISUALIZE)
     target_link_libraries(Optimize Visualize)
 endif()
-
 set_target_properties(Optimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
-
-install(TARGETS Optimize EXPORT NuToTargets
-    LIBRARY DESTINATION lib
-    INCLUDES DESTINATION include/nuto
-    )
