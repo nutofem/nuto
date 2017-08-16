@@ -10,6 +10,7 @@
 #include <fstream>
 #include <set>
 #include <mechanics/MechanicsEnums.h>
+#include <mechanics/nodes/NodeEnum.h>
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/nodes/NodeBase.h"
 
@@ -98,7 +99,7 @@ private:
 
     struct Interface
     {
-        std::map<int, int> mNodeIdsMap;
+        std::map<int, int> mGlobalNodeIdToLocalNodeId;
         int mValue;
     };
 
@@ -263,7 +264,7 @@ public:
         return importContainer;
     }
 
-    std::map<int,int> GetLagrangeMultipliersGlobalIdToLocalId() const
+    std::map<int, int> GetLagrangeMultipliersGlobalIdToLocalId() const
     {
         return mLagrangeMultipliersGlobalIdToLocalId;
     };
@@ -286,7 +287,7 @@ public:
 
         ReverseMap<int> localNodeIdToGlobalNodeIds;
         for (const auto& interface : mInterfaces)
-            localNodeIdToGlobalNodeIds.addMap(interface.mNodeIdsMap);
+            localNodeIdToGlobalNodeIds.addMap(interface.mGlobalNodeIdToLocalNodeId);
 
         for (const auto& pair : localNodeIdToGlobalNodeIds)
         {
@@ -304,6 +305,88 @@ public:
 
         return ScalingMatrix;
     }
+
+
+    /// \brief Assembles vector for superlumped scaling
+    SparseMatrix SuperlumpedScaling(const StructureOutputBlockMatrix& hessian)
+    {
+        constexpr auto DISPLACEMENTS = NuTo::Node::eDof::DISPLACEMENTS;
+
+
+        if (not(GetDimension() == 2))
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
+
+        if (GetDofStatus().GetDofTypes().size() > 1)
+            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
+
+        // \todo special care needs to be taken for multiple dofs
+        const double dim = GetDimension();
+
+        // Vector is initialized with ones because it takes care of all DOFs with Dirichlet BCs
+        // Interfaces are treated separately
+        Eigen::VectorXd multiplicity = Eigen::VectorXd::Ones(mNumLagrangeMultipliers);
+
+        const VectorXd diagonalHessian = hessian.ExportToEigenSparseMatrix().diagonal();
+
+        const auto sizeOfStiffnessVector =
+                NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * mNumInterfaceNodesTotal;
+
+        VectorXd interfaceStiffness = VectorXd::Zero(sizeOfStiffnessVector);
+        VectorXd sumOfInterfaceStiffnesses = VectorXd::Zero(sizeOfStiffnessVector);
+
+        for (const auto& interface : mInterfaces)
+        {
+            for (const auto& globalNodeIdAndLocalNodeId : interface.mGlobalNodeIdToLocalNodeId)
+            {
+                const int globalNodeId = globalNodeIdAndLocalNodeId.first;
+                const int globalDofId = NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * globalNodeId;
+
+                const int localNodeId = globalNodeIdAndLocalNodeId.second;
+
+                const auto dofIds = NodeGetDofIds(localNodeId, DISPLACEMENTS);
+
+                for (size_t index = 0; index < dofIds.size(); ++index)
+                {
+                    interfaceStiffness[globalDofId + index] = diagonalHessian[dofIds[index]];
+                }
+            }
+        }
+
+        MPI_Allreduce(interfaceStiffness.data(), sumOfInterfaceStiffnesses.data(), sumOfInterfaceStiffnesses.size(),
+                      MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        for (int i = 0; i < interfaceStiffness.size(); ++i)
+        {
+            GetLogger() << "stiffness vectors \t" << interfaceStiffness[i] << "\t" << sumOfInterfaceStiffnesses[i]
+                        << "\n";
+        }
+
+        for (const auto& interface : mInterfaces)
+        {
+            for (const auto& globalNodeIdAndLocalNodeId : interface.mGlobalNodeIdToLocalNodeId)
+            {
+                const int globalNodeId = globalNodeIdAndLocalNodeId.first;
+                const int globalDofId = NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * globalNodeId;
+
+                const int localNodeId = globalNodeIdAndLocalNodeId.second;
+
+                const auto dofIds = NodeGetDofIds(localNodeId, DISPLACEMENTS);
+
+                for (size_t index = 0; index < dofIds.size(); ++index)
+                {
+                    multiplicity[dofIds[index]] = interfaceStiffness[globalDofId + index]/sumOfInterfaceStiffnesses[globalDofId + index];
+                }
+            }
+        }
+
+        SparseMatrix ScalingMatrix(mNumLagrangeMultipliers, mNumLagrangeMultipliers);
+        for (int i = 0; i < mNumLagrangeMultipliers; ++i)
+            ScalingMatrix.insert(i, i) = multiplicity[i];
+
+        return ScalingMatrix;
+    }
+
+
     ///
     Eigen::VectorXd& GetPrescribedDofVector()
     {
@@ -362,7 +445,7 @@ private:
 
         for (size_t i = 0; i < nodeIdsInterface.size(); ++i)
         {
-            mInterfaces[interfaceId].mNodeIdsMap.emplace(globalNodeId, nodeIdsInterface[i]);
+            mInterfaces[interfaceId].mGlobalNodeIdToLocalNodeId.emplace(globalNodeId, nodeIdsInterface[i]);
             ++globalNodeId;
         }
     }
@@ -432,6 +515,6 @@ protected:
     SparseMatrix mConnectivityMatrix;
 
     /// \brief Maps the global lagrange multiplier ids to the local DOF id
-    std::map<int,int> mLagrangeMultipliersGlobalIdToLocalId;
+    std::map<int, int> mLagrangeMultipliersGlobalIdToLocalId;
 };
 } // namespace NuTo

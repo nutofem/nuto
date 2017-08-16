@@ -78,7 +78,7 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     for (const auto& dofType : dofTypes)
     {
         for (const auto& interface : mInterfaces)
-            for (const auto& nodePair : interface.mNodeIdsMap)
+            for (const auto& nodePair : interface.mGlobalNodeIdToLocalNodeId)
             {
 
                 const std::vector<int> dofVector = NodeGetDofIds(nodePair.second, dofType);
@@ -151,7 +151,7 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
 
     std::set<int> setNodeIdsInterfaces;
     for (const auto& interface : mInterfaces)
-        for (const auto& nodePair : interface.mNodeIdsMap)
+        for (const auto& nodePair : interface.mGlobalNodeIdToLocalNodeId)
             setNodeIdsInterfaces.insert(nodePair.second);
 
     std::vector<int> nodeIdsVirtualConstraints;
@@ -298,7 +298,7 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
 
         for (unsigned k = 0; k < root["Interface"][i]["NodeIds"][0].size(); ++k)
         {
-            mInterfaces[i].mNodeIdsMap.emplace(globalId, root["Interface"][i]["NodeIds"][0][k]);
+            mInterfaces[i].mGlobalNodeIdToLocalNodeId.emplace(globalId, root["Interface"][i]["NodeIds"][0][k]);
             mSubdomainBoundaryNodeIds.insert(root["Interface"][i]["NodeIds"][0][k].get<int>());
             globalId++;
         }
@@ -444,13 +444,13 @@ void NuTo::StructureFeti::CreateDummy1D()
     if (mRank == 0)
     {
         mInterfaces[0].mValue = 1;
-        mInterfaces[0].mNodeIdsMap.emplace(0, 3);
+        mInterfaces[0].mGlobalNodeIdToLocalNodeId.emplace(0, 3);
     }
 
     if (mRank == 1)
     {
         mInterfaces[0].mValue = -1;
-        mInterfaces[0].mNodeIdsMap.emplace(0, 0);
+        mInterfaces[0].mGlobalNodeIdToLocalNodeId.emplace(0, 0);
     }
 }
 

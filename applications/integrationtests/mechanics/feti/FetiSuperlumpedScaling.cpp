@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
         NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
         InitializeNewmarkFeti(newmarkFeti);
         newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
-        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+        newmarkFeti.SetFetiScaling(FetiScaling::Superlumped);
 
         newmarkFeti.Solve(simulationTime);
 

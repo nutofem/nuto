@@ -72,43 +72,6 @@ public:
 
 
     ///
-    /// \brief GatherInterfaceRigidBodyModes
-    Eigen::MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes,
-                                                  const int numRigidBodyModesGlobal)
-    {
-
-        std::vector<int> recvCount;
-        std::vector<int> displ;
-        MpiGatherRecvCountAndDispls(recvCount, displ, interfaceRigidBodyModes.size());
-
-        const int numInterfaceEqs = interfaceRigidBodyModes.rows();
-        MatrixXd interfaceRigidBodyModesGlobal = MatrixXd::Zero(numInterfaceEqs, numRigidBodyModesGlobal);
-
-        MPI_Allgatherv(interfaceRigidBodyModes.data(), interfaceRigidBodyModes.size(), MPI_DOUBLE,
-                       interfaceRigidBodyModesGlobal.data(), recvCount.data(), displ.data(), MPI_DOUBLE,
-                       MPI_COMM_WORLD);
-
-        return interfaceRigidBodyModesGlobal;
-    }
-
-    ///
-    /// \brief GatherRigidBodyForceVector
-    Eigen::VectorXd GatherRigidBodyForceVector(Eigen::VectorXd& rigidBodyForceVectorLocal,
-                                               const int numRigidBodyModesGlobal)
-    {
-
-        const int numRigidBodyModesLocal = rigidBodyForceVectorLocal.rows();
-        std::vector<int> recvCount;
-        std::vector<int> displ;
-        MpiGatherRecvCountAndDispls(recvCount, displ, numRigidBodyModesLocal);
-
-        VectorXd rigidBodyForceVectorGlobal = VectorXd::Zero(numRigidBodyModesGlobal);
-        MPI_Allgatherv(rigidBodyForceVectorLocal.data(), rigidBodyForceVectorLocal.size(), MPI_DOUBLE,
-                       rigidBodyForceVectorGlobal.data(), recvCount.data(), displ.data(), MPI_DOUBLE, MPI_COMM_WORLD);
-
-        return rigidBodyForceVectorGlobal;
-    }
-    ///
     /// \brief MpiGatherRecvCountAndDispls
     void MpiGatherRecvCountAndDispls(std::vector<int>& recvCount, std::vector<int>& displs, const int numValues)
     {
@@ -1032,6 +995,9 @@ public:
                 mStructure->Evaluate(inputMap, evaluateInternalGradientHessian0Hessian1);
                 // ******************************************************
 
+                if (mFetiScaling == eFetiScaling::Superlumped)
+                    mStructureFeti->SuperlumpedScaling(hessian0);
+                    
                 BuildAndFactorizeMatrix(hessian0, hessian1);
 
                 VectorXd residual = CalculateResidual(extForce, intForce);
