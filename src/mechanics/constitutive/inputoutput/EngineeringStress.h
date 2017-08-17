@@ -32,9 +32,16 @@ template <int TDim>
 class EngineeringStress : public ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>
 {
 public:
+    EngineeringStress() = default;
+    EngineeringStress(std::initializer_list<double> initList);
+    //EngineeringStress(const EngineeringStress&) = default;
+    //EngineeringStress(EngineeringStress&&) = default;
+
     EngineeringStress<3> As3D(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 
-    double GetVonMisesStress(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
+    double VonMisesStress(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
+
+    double SmoothRankine(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 };
 
 } /* namespace NuTo */

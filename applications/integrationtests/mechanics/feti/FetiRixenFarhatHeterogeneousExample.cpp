@@ -13,7 +13,6 @@
 
 #include "visualize/VisualizeEnum.h"
 
-
 using std::cout;
 using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
@@ -30,7 +29,6 @@ using Eigen::MatrixXd;
 using Eigen::Vector2d;
 using Eigen::Matrix2d;
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-using FetiPreconditioner = NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner;
 using FetiIterativeSolver = NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver;
 using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 
@@ -61,7 +59,6 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
-
     const int rank = world.rank();
 
     NuTo::StructureFeti structure(dim);
@@ -145,7 +142,7 @@ int main(int argc, char* argv[])
     for (auto const& nodeId : nodeIdsLoads)
     {
         std::vector<int> dofIds = structure.NodeGetDofIds(nodeId, eDof::DISPLACEMENTS);
-        dofIdAndPrescribedDisplacementMap.emplace(dofIds[0], 0.);
+        dofIdAndPrescribedDisplacementMap.emplace(dofIds[0], 1.);
     }
 
     structure.ApplyPrescribedDisplacements(dofIdAndPrescribedDisplacementMap);
@@ -178,11 +175,10 @@ int main(int argc, char* argv[])
     newmarkFeti.SetMaxTimeStep(maxTimeStep);
     newmarkFeti.SetMaxNumIterations(maxIterations);
     newmarkFeti.SetAutomaticTimeStepping(automaticTimeStepping);
-    newmarkFeti.SetResultDirectory(resultPath.string(), true);
+    newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ConjugateGradient);
-    newmarkFeti.SetFetiPreconditioner(NuTo::NewmarkFeti<EigenSolver>::eFetiPreconditioner::Lumped);
     newmarkFeti.SetMaxNumberOfFetiIterations(1000);
     newmarkFeti.SetToleranceIterativeSolver(1.e-6);
 

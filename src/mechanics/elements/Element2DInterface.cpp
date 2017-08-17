@@ -2,7 +2,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include "mechanics/sections/SectionFibreMatrixBond.h"
+#include "mechanics/sections/Section.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/ElementOutputBase.h"
 #include "mechanics/elements/ElementOutputIpData.h"
@@ -11,7 +11,6 @@
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 
-#include "mechanics/elements/EvaluateDataContinuum.h"
 #include "mechanics/elements/IpDataEnum.h"
 
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
@@ -92,8 +91,7 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(
 NuTo::ConstitutiveInputMap
 NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInputMap =
-            GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
+    ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput);
     for (auto& itInput : constitutiveInputMap)
     {
         itInput.second = ConstitutiveIOBase::makeConstitutiveIO<2>(itInput.first);
@@ -229,7 +227,7 @@ void NuTo::Element2DInterface::ResizeNodes(int rNewNumNodes)
     }
 }
 
-void NuTo::Element2DInterface::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
+void NuTo::Element2DInterface::ExchangeNodePtr(NodeBase*, NodeBase*)
 {
     throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!");
 }
@@ -378,8 +376,6 @@ void NuTo::Element2DInterface::CalculateElementOutputs(
             CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
             break;
         case Element::eOutput::IP_DATA:
-            // CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
-            break;
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
         case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
@@ -395,7 +391,7 @@ void NuTo::Element2DInterface::CalculateElementOutputs(
 }
 
 void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(
-        BlockFullVector<double>& rInternalGradient, EvaluateData& rData, int rTheIP,
+        BlockFullVector<double>& rInternalGradient, EvaluateData& rData, int,
         const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -418,7 +414,7 @@ void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(
 }
 
 void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateData& rData,
-                                                              int rTheIP,
+                                                              int,
                                                               const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -447,12 +443,7 @@ void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<do
     }
 }
 
-void NuTo::Element2DInterface::CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateData& rData,
-                                                            int rTheIP) const
-{
-}
-
-Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
+Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int, Node::eDof rDofType) const
 {
     const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
 

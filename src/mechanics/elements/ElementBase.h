@@ -1,8 +1,6 @@
 #pragma once
 
 #include <vector>
-
-#include <list>
 #include <map>
 #include <eigen3/Eigen/Dense>
 #include "base/Exception.h"
@@ -13,16 +11,11 @@
 namespace NuTo
 {
 
-class BoundaryGradientDamage1D;
 class ConstitutiveBase;
-class ElementDataBase;
 class IntegrationTypeBase;
 class InterpolationType;
 class NodeBase;
-class Lattice2D;
 class Section;
-template <class T>
-class SparseMatrix;
 class ElementOutputBase;
 enum class eVisualizeWhat;
 template <typename IOEnum>
@@ -114,7 +107,7 @@ public:
         return GetNode(rLocalNodeNumber);
     }
 
-    //! @brief returns the number of nodes in this element of a specific dof
+    //! @brief returns the number of nodes intimei this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
     virtual int GetNumNodes(Node::eDof rDofType) const;

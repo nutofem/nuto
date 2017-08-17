@@ -13,12 +13,6 @@
 
 namespace NuTo
 {
-template <int TRows, int TCols>
-class ConstitutiveMatrix;
-template <int TRows>
-class ConstitutiveVector;
-class ConstitutiveScalar;
-class ConstitutiveStaticDataBondStressSlip;
 
 class FibreMatrixBondStressSlip : public ConstitutiveBase
 {
@@ -36,12 +30,7 @@ public:
     //! @param dimension Global dimension of the structure the fibres are embedded in.
     FibreMatrixBondStressSlip(int dimension);
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

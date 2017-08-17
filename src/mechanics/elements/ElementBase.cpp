@@ -2,13 +2,9 @@
 
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/assign/ptr_map_inserter.hpp>
-
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -19,22 +15,17 @@
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/groups/GroupBase.h"
-#include "mechanics/loads/LoadBase.h"
 #include "mechanics/sections/Section.h"
 #include "visualize/ComponentName.h"
 
 #include "math/EigenCompanion.h"
 
-#include <eigen3/Eigen/QR>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#include "base/Exception.h"
 #endif
 
 using namespace NuTo;
@@ -89,7 +80,7 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
     return mIPData.HasConstitutiveLawAssigned(rIP);
 }
 
-void NuTo::ElementBase::SetSection(std::shared_ptr<const Section> section)
+void NuTo::ElementBase::SetSection(std::shared_ptr<const Section>)
 {
     throw Exception(__PRETTY_FUNCTION__, "This element type has so section.");
 }
@@ -110,7 +101,7 @@ int NuTo::ElementBase::GetNumNodes(Node::eDof rDofType) const
     return mInterpolationType->Get(rDofType).GetNumNodes();
 }
 
-Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
+Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int, Node::eDof) const
 {
     throw NuTo::Exception("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
@@ -226,7 +217,7 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
     return globalIntegrationPointCoordinates;
 }
 
-bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const
+bool NuTo::ElementBase::GetLocalPointCoordinates(const double*, double*) const
 {
     throw NuTo::Exception(
             "[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
@@ -483,8 +474,8 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid& visualizer,
-                                                    const std::vector<eVisualizeWhat>& visualizeComponents)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&,
+                                                    const std::vector<eVisualizeWhat>&)
 {
     throw NuTo::Exception(
             std::string(__PRETTY_FUNCTION__) +
@@ -494,11 +485,6 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&
 void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
                                                       const std::vector<eVisualizeWhat>& visualizeComponents)
 {
-    //
-    //  This function is still in beta and only works for engineering strain. Implementation is still in progress...
-    //
-
-    // get visualization cells from integration type
 
     struct IpInfo
     {

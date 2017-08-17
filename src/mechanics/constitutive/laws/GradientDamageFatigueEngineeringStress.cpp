@@ -1,7 +1,5 @@
 #include <iostream>
 
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/damageLaws/DamageLaw.h"

@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <boost/mpi.hpp>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/structures/StructureBase.h"
 #include "base/Exception.h"
@@ -28,6 +29,8 @@
 #include <eigen3/Eigen/Dense>
 
 #include <eigen3/Eigen/Sparse>
+
+#include "mechanics/feti/FetiLumpedPreconditioner.h"
 #include <cmath>
 
 namespace NuTo
@@ -44,13 +47,6 @@ public:
         Direct
     };
 
-    enum class eFetiPreconditioner
-    {
-        None,
-        Lumped,
-        Dirichlet
-    };
-
     enum class eFetiScaling
     {
         None,
@@ -62,15 +58,15 @@ public:
     using VectorXd = Eigen::VectorXd;
     using MatrixXd = Eigen::MatrixXd;
     using SparseMatrix = Eigen::SparseMatrix<double>;
-    ///
-    /// \brief NewmarkFeti
-    /// \param rStructure
-    ///
+    using PreconditionerType = std::unique_ptr<FetiPreconditioner>;
+
+
     NewmarkFeti(StructureFeti* rStructure)
         : NewmarkDirect(rStructure)
         , mStructureFeti(rStructure)
         , mNumTotalActiveDofs(rStructure->GetNumTotalActiveDofs())
         , mNumTotalDofs(rStructure->GetNumTotalDofs())
+        , mPreconditioner(std::make_unique<FetiLumpedPreconditioner>())
     {
     }
 
@@ -204,7 +200,7 @@ public:
             p = rProj + beta * (p - w * v);
 
             // precondition
-            y = ApplyPreconditionerOnTheLeft(p);
+            y = mPreconditioner->ApplyOnTheLeft(p);
 
             // reprojection
             y = projection * y;
@@ -218,7 +214,7 @@ public:
             s = rProj - alpha * v;
 
             // precondition
-            z = ApplyPreconditionerOnTheLeft(s);
+            z = mPreconditioner->ApplyOnTheLeft(s);
 
             // reprojection
             z = projection * z;
@@ -262,14 +258,6 @@ public:
         return Ax;
     }
 
-    //! \brief Applies the local preconditioner on the left and performs an MPI_Allreduce
-    VectorXd ApplyPreconditionerOnTheLeft(const VectorXd& x)
-    {
-        VectorXd vec = mLocalPreconditioner * x;
-        MPI_Allreduce(MPI_IN_PLACE, vec.data(), vec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        return vec;
-    }
 
     //! @brief Conjugate projected gradient method (CG)
     //!
@@ -285,7 +273,7 @@ public:
         VectorXd projResidual = projection * (rhs - tmp);
 
         // apply precondtioner and reproject
-        VectorXd precondProjResidual = projection * ApplyPreconditionerOnTheLeft(projResidual);
+        VectorXd precondProjResidual = projection * mPreconditioner->ApplyOnTheLeft(projResidual);
 
         VectorXd z;
 
@@ -312,7 +300,7 @@ public:
                 break;
 
             // precondition and reproject
-            z = projection * ApplyPreconditionerOnTheLeft(projResidual);
+            z = projection * mPreconditioner->ApplyOnTheLeft(projResidual);
 
             const double absOld = absNew;
             absNew = projResidual.dot(z);
@@ -347,7 +335,7 @@ public:
         VectorType projResidual = projection * r;
 
         // precondition
-        VectorType precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+        VectorType precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
         // reproject
         precondProjResidual = projection * precondProjResidual;
@@ -397,7 +385,7 @@ public:
                 w = projection * w;
 
                 // precondition
-                w = ApplyPreconditionerOnTheLeft(w);
+                w = mPreconditioner->ApplyOnTheLeft(w);
 
                 // reproject
                 w = projection * w;
@@ -450,7 +438,7 @@ public:
                     mStructure->GetLogger() << "Projected residual norm: \t" << projResidual.norm() << "\n";
 
                     // precondition
-                    precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+                    precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
                     // reproject
                     precondProjResidual = projection * precondProjResidual;
@@ -475,7 +463,7 @@ public:
             projResidual = projection * r;
 
             // precondition
-            precondProjResidual = ApplyPreconditionerOnTheLeft(projResidual);
+            precondProjResidual = mPreconditioner->ApplyOnTheLeft(projResidual);
 
             // reproject
             precondProjResidual = projection * precondProjResidual;
@@ -498,7 +486,7 @@ public:
     //! \param krylovDimension
     void WriteGmresInfo(const int numIterations, const int numRestarts, const int krylovDimension)
     {
-        std::ofstream file(mResultDir + "/GmresInfo.dat", std::ios::app);
+        std::ofstream file(mPostProcessor->GetResultDirectory() + "/GmresInfo.dat", std::ios::app);
         file << mTime << "\t" << numIterations + (numRestarts * krylovDimension) << "\t" << krylovDimension << "\n";
         file.close();
     }
@@ -596,6 +584,18 @@ public:
         return displacementGap;
     }
 
+    void WriteFetiSolverInfoToFile(int numIterations, double timeStep)
+    {
+        std::ofstream filestream(mPostProcessor->GetResultDirectory() + std::string("/FetiSolverInfo.txt"),
+                                 std::ofstream::app);
+        filestream << "iterations"
+                   << "\t"
+                   << "time step"
+                   << "\n";
+        filestream << numIterations << "\t" << timeStep << "\n";
+        filestream.close();
+    }
+
     //! @brief Solves the global and local problem
     //!
     //! Calculates the rigid body modes of the structure.
@@ -678,11 +678,12 @@ public:
 
         if (iterations >= mMaxNumFetiIterations - 1)
         {
-            //            converged = false;
-            //            return StructureOutputBlockVector(structure->GetDofStatus());
-            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
+            converged = false;
+            return StructureOutputBlockVector(mStructure->GetDofStatus());
+            //            throw Exception(__PRETTY_FUNCTION__, "Maximum number of iterations exceeded.");
         }
 
+        WriteFetiSolverInfoToFile(iterations, timeStep);
 
         if (mStructureFeti->mRank == 0)
             std::cout << "Iterative solver converged after iterations = \t" << iterations << "\n\n";
@@ -739,12 +740,7 @@ public:
     {
         VectorXd zeroVec = mB * delta_dof_active;
 
-        mStructure->GetLogger() << "B_s * u_s: \n" << zeroVec << "\n\n";
-
         MPI_Allreduce(MPI_IN_PLACE, zeroVec.data(), zeroVec.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        mStructure->GetLogger() << "Sum B * u: \n" << zeroVec << "\n\n";
-
 
         const int numLagrangeMultipliersDisplacement = numInterfaceNodesTotal * 2;
         if (not(zeroVec.head(numLagrangeMultipliersDisplacement).isMuchSmallerThan(1.e-4, 1.e-1)))
@@ -769,125 +765,6 @@ public:
         //                                    numLagrangeMultipliersCrack)
         //                                            .norm()));
         //        }
-    }
-
-
-    //! \brief Calculates the local preconditioner (lumped, Dirichlet)
-    //! \param hessian
-    void CalculateLocalPreconditioner(const StructureOutputBlockMatrix& hessian)
-    {
-        mStructure->GetLogger() << "******************************************** \n"
-                                << "**        calculate local preconditioner  ** \n"
-                                << "******************************************** \n\n";
-
-        Timer timer("Time to calculate the local preconditioner", mStructure->GetShowTime(), mStructure->GetLogger());
-
-        const int numTotalDofs = mStructure->GetNumTotalDofs();
-
-        mLocalPreconditioner.resize(mB.rows(), mB.rows());
-
-        switch (mFetiPreconditioner)
-        {
-        case eFetiPreconditioner::None:
-        {
-            mLocalPreconditioner.setIdentity();
-            break;
-        }
-        case eFetiPreconditioner::Lumped:
-        {
-            auto K = hessian.JJ.ExportToEigenSparseMatrix();
-            K.conservativeResize(numTotalDofs, numTotalDofs);
-
-            mLocalPreconditioner = mScalingMatrix * mB * K * mB.transpose() * mScalingMatrix;
-
-            break;
-        }
-        case eFetiPreconditioner::Dirichlet:
-        {
-
-
-            SparseMatrix H = hessian.ExportToEigenSparseMatrix();
-
-
-            std::set<int> internalDofIds;
-            for (int j = 0; j < mStructure->GetNumTotalDofs(); ++j)
-            {
-                internalDofIds.insert(j);
-            }
-
-            std::vector<int> lagrangeMultiplierDofIds = mStructureFeti->CalculateLagrangeMultiplierIds();
-
-            for (const auto& id : lagrangeMultiplierDofIds)
-            {
-                internalDofIds.erase(id);
-            }
-
-            std::vector<int> internalDofIdsVec(internalDofIds.begin(), internalDofIds.end());
-
-            SparseMatrix Kbb = ExtractSubMatrix(H, lagrangeMultiplierDofIds, lagrangeMultiplierDofIds);
-            SparseMatrix Kii = ExtractSubMatrix(H, internalDofIdsVec, internalDofIdsVec);
-            SparseMatrix Kbi = ExtractSubMatrix(H, lagrangeMultiplierDofIds, internalDofIdsVec);
-            SparseMatrix Kib = ExtractSubMatrix(H, internalDofIdsVec, lagrangeMultiplierDofIds);
-
-
-            Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> luKii;
-            luKii.compute(Kii);
-
-            SparseMatrix KiiInvTimesKib = luKii.solve(Kib);
-            SparseMatrix KbiTimesKiiInvTimesKib = Kbi * KiiInvTimesKib;
-            SparseMatrix Sbb = Kbb - KbiTimesKiiInvTimesKib;
-
-            //
-            //     | 0  0   |
-            // S = | 0  Sbb |
-            //
-            SparseMatrix S(mStructure->GetNumTotalDofs(), mStructure->GetNumTotalDofs());
-
-            for (size_t rowId = 0; rowId < lagrangeMultiplierDofIds.size(); ++rowId)
-                for (size_t colId = 0; colId < lagrangeMultiplierDofIds.size(); ++colId)
-                    S.insert(lagrangeMultiplierDofIds[rowId], lagrangeMultiplierDofIds[colId]) =
-                            Sbb.coeff(rowId, colId);
-
-            mLocalPreconditioner = mScalingMatrix * mB * S * mB.transpose() * mScalingMatrix;
-
-            break;
-        }
-        default:
-            throw Exception(__PRETTY_FUNCTION__, "Preconditioner is not implemented yet.");
-        }
-    }
-
-    /// \todo this function should not be a member of NewmarkFeti. Move it somewhere appropriate.
-    template <class A, class B>
-    Eigen::SparseMatrix<double> ExtractSubMatrix(const Eigen::SparseMatrix<double>& mat, const A& rowIds,
-                                                 const B& colIds)
-    {
-        Eigen::SparseMatrix<double> subMatrix(rowIds.size(), colIds.size());
-
-
-        for (int k = 0; k < mat.outerSize(); ++k)
-        {
-            auto colIt = std::find(colIds.begin(), colIds.end(), k);
-            if (colIt != colIds.end())
-            {
-                for (typename Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it)
-                {
-                    auto rowIt = std::find(rowIds.begin(), rowIds.end(), it.row());
-                    if (rowIt != rowIds.end())
-                    {
-                        int rowId = std::distance(rowIds.begin(), rowIt);
-                        int colId = std::distance(colIds.begin(), colIt);
-                        subMatrix.insert(rowId, colId) = it.value();
-
-                        ++rowId;
-                    }
-                }
-            }
-        }
-
-        subMatrix.makeCompressed();
-
-        return subMatrix;
     }
 
     //! \brief Check the rank of a BlockSparseMatrix using a QR factorization
@@ -993,9 +870,11 @@ public:
     }
 
     //! @brief perform the time integration
-    //! @param rTimeDelta ... length of the simulation
-    void Solve(double rTimeDelta) override
+    //! @param timeFinal ... length of the simulation
+    void Solve(double timeFinal) override
     {
+
+        mTimeControl.SetTimeFinal(timeFinal);
 
         mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
@@ -1051,13 +930,8 @@ public:
 
         CalculateStaticAndTimeDependentExternalLoad();
 
-        // sets hasInteractingConstraints to true to also assemble K_KJ and K_KK
         // only necessary for CheckRigidBodyModes
-        mStructure->DofStatusSetHasInteractingConstraints(true);
         const DofStatus& dofStatus = mStructure->GetDofStatus();
-
-
-        assert(dofStatus.HasInteractingConstraints() == true);
 
         if (mStepActiveDofs.empty())
         {
@@ -1087,10 +961,6 @@ public:
         StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
         StructureOutputBlockVector dof_dt1(dofStatus, true); // e.g. velocity
         StructureOutputBlockVector dof_dt2(dofStatus, true); // e.g. accelerations
-
-        StructureOutputBlockVector lastConverged_dof_dt0(dofStatus, true); // e.g. disp
-        StructureOutputBlockVector lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
-        StructureOutputBlockVector lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
 
         StructureOutputBlockVector extForce(dofStatus, true);
         StructureOutputBlockVector intForce(dofStatus, true);
@@ -1127,9 +997,9 @@ public:
         inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] =
                 std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
-        ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+        auto lastConvergedDofValues = ExtractDofValues();
 
-        UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+        UpdateAndGetAndMergeConstraintRHS(curTime, lastConvergedDofValues[0]);
 
         PostProcess(mLambda, dofStatus);
 
@@ -1138,22 +1008,20 @@ public:
                                 << "**        Start time stepping             ** \n"
                                 << "******************************************** \n\n";
 
-        while (curTime < rTimeDelta)
+        while (curTime < timeFinal)
         {
 
             mStructure->DofTypeActivateAll();
 
             curTime += mTimeStep;
 
-            SetTimeAndTimeStep(curTime, mTimeStep, rTimeDelta);
+            SetTimeAndTimeStep(curTime, mTimeStep, timeFinal);
 
             extForce = CalculateCurrentExternalLoad(curTime);
 
             for (const auto& activeDofSet : mStepActiveDofs)
             {
                 mStructure->DofTypeSetIsActive(activeDofSet);
-
-                mStructure->DofStatusSetHasInteractingConstraints(true);
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evaluateInternalGradientHessian0Hessian1);
@@ -1163,20 +1031,23 @@ public:
 
                 VectorXd residual = CalculateResidual(extForce, intForce);
 
-                CalculateLocalPreconditioner(hessian0);
+                mPreconditioner->Compute(hessian0, mB, mStructureFeti->GetLagrangeMultipliersGlobalIdToLocalId());
+                mPreconditioner->AddScaling(mScalingMatrix);
 
                 bool fetiSolverConverged = true;
                 delta_dof_dt0 = FetiSolve(residual, activeDofSet, mDeltaLambda, mTimeStep, fetiSolverConverged);
-                int iteration = 0;
+                int numNewtonIterations = 0;
                 if (fetiSolverConverged)
                 {
 
                     // calculate trial state
-                    dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+                    dof_dt0 = lastConvergedDofValues[0] + delta_dof_dt0;
                     if (mStructure->GetNumTimeDerivatives() >= 1)
-                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, mTimeStep);
+                        dof_dt1 = CalculateDof1(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
                     if (mStructure->GetNumTimeDerivatives() >= 2)
-                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, mTimeStep);
+                        dof_dt2 = CalculateDof2(delta_dof_dt0, lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                                mTimeStep);
 
 
                     MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
@@ -1188,13 +1059,15 @@ public:
                     mStructure->Evaluate(inputMap, evaluateInternalGradient);
                     // ******************************************************
 
+
                     residual = CalculateResidual(extForce, intForce);
 
                     normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
+
                     mStructure->GetLogger() << "Residual norm: \t" << normResidual << "\n\n";
 
-                    while (not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
+                    while (not(normResidual < mToleranceResidual) and numNewtonIterations < mMaxNumIterations)
                     {
 
 
@@ -1224,11 +1097,10 @@ public:
 
                         normResidual = CalculateResidualNorm(residual, dofStatus, activeDofSet);
 
-                        PrintInfoIteration(normResidual, iteration);
+                        PrintInfoIteration(normResidual, numNewtonIterations);
 
-                        iteration++;
-
-                    } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
+                        numNewtonIterations++;
+                    }
                 }
 
 
@@ -1238,9 +1110,9 @@ public:
                     mStructure->ElementTotalUpdateStaticData();
 
                     // store converged step
-                    lastConverged_dof_dt0 = dof_dt0;
-                    lastConverged_dof_dt1 = dof_dt1;
-                    lastConverged_dof_dt2 = dof_dt2;
+                    lastConvergedDofValues[0] = dof_dt0;
+                    lastConvergedDofValues[1] = dof_dt1;
+                    lastConvergedDofValues[2] = dof_dt2;
                     mLambdaOld = mLambda;
 
                     MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
@@ -1248,18 +1120,19 @@ public:
                     mTime += mTimeStep;
 
 
-                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime
-                                            << " (time step " << mTimeStep << ").\n";
+                    mStructure->GetLogger() << "Convergence after " << numNewtonIterations
+                                            << " newton iterations at time " << mTime << " (time step " << mTimeStep
+                                            << ").\n";
 
-                    mTimeStep = KeepOrIncreaseTimeStep(iteration);
+                    mTimeStep = KeepOrIncreaseTimeStep(numNewtonIterations);
 
 
                     // perform Postprocessing
-                    std::ofstream file(mResultDir + "/statistics.dat", std::ios::app);
-                    file << mTime << "\t" << iteration << "\n";
+                    std::ofstream file(mPostProcessor->GetResultDirectory() + "/statistics.dat", std::ios::app);
+                    file << "Time: \t" << mTime << "\t # newton iterations: \t" << numNewtonIterations << "\n";
                     file.close();
 
-
+                    mTimeControl.SetCurrentTime(mTime);
                     PostProcess(mLambda, dofStatus);
 
                     mStructure->GetLogger() << "normResidual: \n" << normResidual << "\n\n";
@@ -1271,7 +1144,8 @@ public:
                 {
                     mStructure->GetLogger() << "No convergence with timestep " << mTimeStep << "\n\n";
 
-                    MergeDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, true);
+                    MergeDofValues(lastConvergedDofValues[0], lastConvergedDofValues[1], lastConvergedDofValues[2],
+                                   true);
 
                     mTimeStep = ReduceTimeStep(curTime);
                 }
@@ -1280,6 +1154,23 @@ public:
 
 
         } // end while
+    }
+
+    StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (mGamma / (timeStep * mBeta)) + rDof_dt1 * (1. - mGamma / mBeta) +
+               rDof_dt2 * (timeStep * (1. - mGamma / (2. * mBeta)));
+    }
+
+
+    StructureOutputBlockVector CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0,
+                                             const StructureOutputBlockVector& rDof_dt1,
+                                             const StructureOutputBlockVector& rDof_dt2, const double timeStep) const
+    {
+        return rDeltaDof_dt0 * (1. / (timeStep * timeStep * mBeta)) - rDof_dt1 * (1. / (timeStep * mBeta)) -
+               rDof_dt2 * ((0.5 - mBeta) / mBeta);
     }
 
     void IncrementDofs(StructureOutputBlockVector& dof_dt0, StructureOutputBlockVector& dof_dt1,
@@ -1296,7 +1187,7 @@ public:
     {
         StructureOutputBlockVector outOfBalance(dofStatus, true);
         outOfBalance.J = BlockFullVector<double>((mB.transpose() * lambda).head(mNumTotalActiveDofs), dofStatus);
-        TimeIntegrationBase::PostProcess(outOfBalance);
+        mPostProcessor->PostProcess(outOfBalance);
     }
 
 
@@ -1343,9 +1234,9 @@ public:
         mFetiTolerance = tolerance;
     }
 
-    void SetFetiPreconditioner(eFetiPreconditioner fetiPreconditioner)
+    void SetFetiPreconditioner(PreconditionerType fetiPreconditioner)
     {
-        mFetiPreconditioner = fetiPreconditioner;
+        mPreconditioner = std::move(fetiPreconditioner);
     }
 
     void SetFetiScaling(eFetiScaling fetiScaling)
@@ -1358,9 +1249,29 @@ public:
         mMaxNumFetiIterations = maxNumFetiIterations;
     }
 
+    // temporary fix
+    //! @brief sets the  time step for the time integration procedure (initial value)
+    virtual void SetTimeStep(double rTimeStep) override
+    {
+        mTimeStep = rTimeStep;
+    }
+
+    //! @brief returns the  time step for the time integration procedure (current value)
+    virtual double GetTimeStep() const override
+    {
+        return mTimeStep;
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //          MEMBER VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+protected:
+    double mTime = 0.;
+    double mTimeStep = 0.;
+    double mMinTimeStep = 0.;
+    double mMaxTimeStep = 1.;
 
 private:
     StructureFeti* mStructureFeti;
@@ -1378,7 +1289,6 @@ private:
     double mFetiTolerance = 1.0e-12;
     int mMaxNumFetiIterations = 100;
     eIterativeSolver mIterativeSolver = eIterativeSolver::ConjugateGradient;
-    eFetiPreconditioner mFetiPreconditioner = eFetiPreconditioner::Lumped;
     eFetiScaling mFetiScaling = eFetiScaling::None;
 
     // Lagrange multiplier
@@ -1388,5 +1298,7 @@ private:
 
     int mNumRigidBodyModesTotal = -1337;
     int mNumLagrangeMultipliers = 0;
+
+    PreconditionerType mPreconditioner;
 };
 } // namespace NuTo

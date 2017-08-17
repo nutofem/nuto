@@ -3,6 +3,7 @@
 #include <map>
 
 #include <algorithm>
+#include <cassert>
 #include "mechanics/groups/GroupBase.h"
 #include "base/Exception.h"
 
@@ -107,6 +108,17 @@ public:
         return returnGroup;
     }
 
+    //! @brief Intersection of groupOne and groupTwo
+    //! @return Intersection of groupOne and groupTwo
+    static Group<T> GetIntersection(const Group<T>& groupOne, const Group<T>& groupTwo)
+    {
+        NuTo::Group<T> returnGroup;
+        std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(returnGroup, returnGroup.begin());
+        std::set_intersection(groupOne.begin(), groupOne.end(), groupTwo.begin(), groupTwo.end(),
+                              returnGroupInsertIterator);
+        return returnGroup;
+    }
+
     //! @brief returns a group with all members of current group, which are not presented in the second group
     //! @return group
     GroupBase* Difference(const NuTo::GroupBase* rOther) const override
@@ -141,8 +153,7 @@ public:
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
         const Group<T>* rOtherT = dynamic_cast<const Group<T>*>(rOther);
         if (rOtherT == nullptr)
-            throw Exception(
-                    "[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
+            throw Exception("[NuTo::Group::SymmetricDifference] Groups to be united do not have the same type.");
         std::insert_iterator<NuTo::Group<T>> returnGroupInsertIterator(*returnGroup, returnGroup->begin());
         std::set_symmetric_difference(this->begin(), this->end(), rOtherT->begin(), rOtherT->end(),
                                       returnGroupInsertIterator);
@@ -173,6 +184,6 @@ public:
 
     //! @brief gives the group type
     //! @return group type
-    void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
+    void Info(int rVerboseLevel) const override;
 };
 } // namespace NuTo

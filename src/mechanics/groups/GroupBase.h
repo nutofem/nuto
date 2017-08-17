@@ -5,7 +5,6 @@
 
 namespace NuTo
 {
-class StructureBase;
 class ElementBase;
 class NodeBase;
 template <class T>
@@ -71,9 +70,7 @@ public:
     //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
     virtual const Group<NodeBase>* AsGroupNode() const = 0;
 
-    //! @brief gives the group type
-    //! @return group type
-    virtual void Info(int rVerboseLevel, const StructureBase* rStructure) const = 0;
+    virtual void Info(int rVerboseLevel) const = 0;
 
     // *********************************************************************
     // * AddMember routine is to be implemented for all new group entities *

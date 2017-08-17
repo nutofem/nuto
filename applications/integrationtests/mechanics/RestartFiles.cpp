@@ -16,6 +16,7 @@
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
 {
@@ -175,17 +176,17 @@ BOOST_AUTO_TEST_CASE(RestartFiles_FromPostprocesss)
 
     std::string resultDir = "./RestartFilesOut";
     boost::filesystem::create_directory(resultDir);
-    newmark.SetResultDirectory(resultDir, true);
+    newmark.PostProcessing().SetResultDirectory(resultDir, true);
 
     // If the restart exists from a previous run, this could make the test useless.
     // So check, if it cannot be opened.
-    BOOST_CHECK_THROW(NuTo::SerializeStreamIn(newmark.GetRestartFileName(), true), NuTo::Exception);
+    BOOST_CHECK_THROW(NuTo::SerializeStreamIn(newmark.PostProcessing().GetRestartFileName(), true), NuTo::Exception);
 
-    newmark.PostProcess(someBlockVector);
+    newmark.PostProcessing().PostProcess(someBlockVector);
 
     NuTo::Structure b(2);
     CreateTestStructure(b, false);
-    double globalTime = b.ReadRestartFile(newmark.GetRestartFileName());
+    double globalTime = b.ReadRestartFile(newmark.PostProcessing().GetRestartFileName());
     CheckDofs(a, b);
     BOOST_CHECK_SMALL(globalTime, 1.e-10);
 }

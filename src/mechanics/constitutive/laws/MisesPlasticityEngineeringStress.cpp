@@ -6,14 +6,10 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/staticData/DataMisesPlasticity.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
 #include "base/Exception.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo::Constitutive;
@@ -30,15 +26,11 @@ NuTo::MisesPlasticityEngineeringStress::MisesPlasticityEngineeringStress()
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                              const InterpolationType& rInterpolationType) const
+NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
     constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
-    if (rInterpolationType.IsConstitutiveInput(Node::eDof::TEMPERATURE))
-        constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
-
 
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -66,9 +58,8 @@ namespace NuTo
 {
 
 template <>
-void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                         const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                         Data& rStaticData)
+void NuTo::MisesPlasticityEngineeringStress::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&,
+                                                         Data&)
 {
     throw NuTo::Exception(__PRETTY_FUNCTION__, "not implemented for 1D.");
 }

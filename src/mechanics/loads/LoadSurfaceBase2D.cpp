@@ -7,7 +7,6 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/loads/LoadSurfaceBase2D.h"
-#include "mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"

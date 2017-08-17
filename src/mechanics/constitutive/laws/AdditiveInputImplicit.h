@@ -35,7 +35,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the static data.
     template <int TDim>
-    void Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+    void Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
     {
         throw Exception(
                 __PRETTY_FUNCTION__,
@@ -43,12 +43,7 @@ public:
     }
 
 
-    //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
-    //! @param rConstitutiveOutput Desired constitutive outputs.
-    //! @param rInterpolationType Interpolation type to determine additional inputs.
-    //! @return Constitutive inputs needed for the evaluation.
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Get the type of the constitutive relationship.
     //! @return Type of the constitutive relationship.

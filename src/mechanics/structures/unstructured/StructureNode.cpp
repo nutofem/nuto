@@ -7,8 +7,7 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "math/SparseMatrixCSRGeneral.h"
-#include "mechanics/groups/Group.h"
+#include "mechanics/groups/GroupBase.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -369,7 +368,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 }
 
 
-void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
+void NuTo::Structure::NodeBuildGlobalDofs(std::string)
 {
     if (not GetAssembler().RenumberingRequired())
         return;

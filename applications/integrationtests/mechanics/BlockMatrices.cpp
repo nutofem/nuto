@@ -1,3 +1,5 @@
+#include "BoostUnitTest.h"
+
 #include "base/Timer.h"
 #include <iostream>
 
@@ -19,42 +21,14 @@
 #include "mechanics/nodes/NodeEnum.h"
 
 
-//! @brief converts a NuTo SparseMatrix in Vector2 format to a Eigen SparseMatrix
-void SparseNuToToEigen(NuTo::SparseMatrixCSRVector2General<double>& rNuTo, Eigen::SparseMatrix<double>& rEigen)
-{
-
-    const std::vector<std::vector<int>>& columns = rNuTo.GetColumns();
-    const std::vector<std::vector<double>>& values = rNuTo.GetValues();
-
-    rEigen.resize(rNuTo.GetNumRows(), rNuTo.GetNumColumns());
-
-    std::vector<Eigen::Triplet<double>> tripletList;
-
-
-    // insert every nonzero element...
-    for (unsigned int row = 0; row < columns.size(); row++)
-        for (unsigned int col_count = 0; col_count < columns[row].size(); col_count++)
-        {
-            int col = columns[row][col_count];
-            double val = values[row][col_count];
-            tripletList.push_back(Eigen::Triplet<double>(row, col, val));
-        }
-
-    rEigen.setFromTriplets(tripletList.begin(), tripletList.end());
-    rEigen.makeCompressed();
-}
-
 //! @brief BlockFullVectorTest [BVT]
 //! @remark tests are done with int-vectors for easier comparison without epsilons...
 //! @remark assertion: NuTo::FullVector calculations are correct.
-void BlockFullVectorTest()
+BOOST_AUTO_TEST_CASE(BlockFullVector)
 {
-    NuTo::Timer timer("BVT - BlockFullVectorTest:Init");
-
     NuTo::DofStatus s;
     s.SetDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
-
 
     NuTo::BlockFullVector<int> v1(s), v2(s);
     v1[NuTo::Node::eDof::DISPLACEMENTS] = Eigen::Vector3i({1, 1, 1});
@@ -63,55 +37,30 @@ void BlockFullVectorTest()
     v1[NuTo::Node::eDof::TEMPERATURE] = Eigen::Vector2i({10, 10});
     v2[NuTo::Node::eDof::TEMPERATURE] = Eigen::Vector2i({20, 20});
 
-    /*
-     * Export
-     */
-    timer.Reset("BVT:Export");
+    // Export
     Eigen::VectorXi ev1 = v1.Export();
     Eigen::VectorXi ev2 = v2.Export();
+    BOOST_CHECK_EQUAL(ev1.rows(), 5);
+    BOOST_CHECK_EQUAL(ev1.sum(), 23);
+    BOOST_CHECK_EQUAL(ev2.sum(), 46);
 
-    if (ev1.rows() != 5)
-        throw NuTo::Exception("[BVT:Export] Exported v1 has wrong size.");
-    if (ev1.sum() != 23)
-        throw NuTo::Exception("[BVT:Export] Exported v1 has wrong sum.");
-    if (ev2.sum() != 46)
-        throw NuTo::Exception("[BVT:Export] Exported v2 has wrong sum.");
+    // Addition
+    BOOST_CHECK(v1 + v2 == v2 + v1);
+    BOOST_CHECK((v1 + v2).Export() == ev2 + ev1);
 
-    /*
-     * Addition
-     */
-    timer.Reset("BVT:Addition");
-    if (v1 + v2 != v2 + v1)
-        throw NuTo::Exception("[BVT:Addition] v1 + v2 != v2 + v1");
-    if ((v1 + v2).Export() != ev1 + ev2)
-        throw NuTo::Exception("[BVT:Addition] e(v1 + v2) != ev1 + ev2");
+    // Subtraction
+    BOOST_CHECK(v1 - v1 == v2 - v2);
+    BOOST_CHECK((v1 - v2).Export() == ev1 - ev2);
 
-    /*
-     * Subtraction
-     */
-    timer.Reset("BVT:Subtraction");
-    if (v1 - v1 != v2 - v2)
-        throw NuTo::Exception("[BVT:Subtraction] v1 - v1 != v2 - v2");
-    if ((v1 - v2).Export() != ev1 - ev2)
-        throw NuTo::Exception("[BVT:Subtraction] e(v1 - v2) != ev1 - ev2");
+    // ScalarMultiplication
+    BOOST_CHECK(v1 + v1 == v1 * 2);
+    BOOST_CHECK((v1 + v1).Export() == ev1 * 2);
 
-    /*
-     * ScalarMultiplication
-     */
-    timer.Reset("BVT:ScalarMultiplication");
-    if (v1 + v1 != v1 * 2)
-        throw NuTo::Exception("[BVT:ScalarMultiplication] v1 + v1 != v1 * 2");
-    if ((v1 + v1).Export() != ev1 * 2)
-        throw NuTo::Exception("[BVT:ScalarMultiplication] e(v1 + v1) != ev1 * 2");
-
-    /*
-     * Chaining
-     */
-    timer.Reset("BVT:Chaining");
+    // Chaining
     NuTo::BlockFullVector<int> result1(s), result2(s);
     result1 = v1 * 3 + v1 - v2 - v2 + v2 * 42;
 
-    std::cout << "Chained operations done." << std::endl;
+    BOOST_TEST_MESSAGE("Chained operations done.");
 
     result2 = v1;
     result2 *= 3;
@@ -121,39 +70,16 @@ void BlockFullVectorTest()
     result2 += v2 * 42;
 
     Eigen::VectorXi eresult = ev1 * 3 + ev1 - ev2 - ev2 + ev2 * 42;
+    BOOST_CHECK(result1 == result2);
+    BOOST_CHECK(result1.Export() == eresult);
 
-    if (result1 != result2)
-        throw NuTo::Exception("[BVT:Chaining] went wrong ... ");
-    if (result1.Export() != eresult)
-        throw NuTo::Exception("[BVT:Chaining] went wrong ... ");
-
-
-    /*
-     * ActiveDofTypes
-     */
-    timer.Reset("BVT:ActiveDofTypes");
+    // ActiveDofTypes
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
-
-    if (v1.Export().rows() != 3)
-        throw NuTo::Exception("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
-
-
-    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 + v1)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::Exception("[BVT:ActiveDofTypes] Addition changes inactive dofs.");
-    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 - v1)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::Exception("[BVT:ActiveDofTypes] Subtraction changes inactive dofs.");
-    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1 * 2)[NuTo::Node::eDof::TEMPERATURE])
-        throw NuTo::Exception("[BVT:ActiveDofTypes] Multiplication changes inactive dofs.");
-
+    BOOST_CHECK_EQUAL(v1.Export().rows(), 3);
     v1.Info();
-
-
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
-    /*
-     * import
-     */
-
+    // import
     // allocate BlockFullVector with the right dimensions.
     NuTo::BlockFullVector<int> imported(v1);
 
@@ -163,28 +89,19 @@ void BlockFullVectorTest()
     // import and check if equal.
     imported.Import(toImport);
 
-    if (toImport != imported.Export())
-    {
-        std::cout << "to Import: \n " << toImport << std::endl;
-        std::cout << "imported: \n ";
-        std::cout << imported.Export();
-        throw NuTo::Exception("[BVT:Import] failed.");
-    }
+    BoostUnitTest::CheckEigenMatrix(toImport, imported.Export());
 }
 
 
 //! @brief BlockFullMatrixTest [BMT]
 //! @remark just test the access operators
-void BlockFullMatrixTest()
+BOOST_AUTO_TEST_CASE(BlockFullMatrix)
 {
-    NuTo::Timer timer("BlockFullMatrixTest:Init");
-
     NuTo::DofStatus s;
     s.SetDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
     NuTo::BlockFullMatrix<double> m(s);
-
 
     int numD = 3;
     int numT = 2;
@@ -201,15 +118,14 @@ void BlockFullMatrixTest()
     matrixTT.resize(numT, numT);
 
     m.Info();
-    m.CheckDimensions();
+    BOOST_TEST_MESSAGE("" << m);
+    BOOST_CHECK_NO_THROW(m.CheckDimensions());
 }
 
 //! @brief BlockSparseMatrixTest
 //! @remark tests access operations, vector*matrix operation,
-void BlockSparseMatrixTest()
+BOOST_AUTO_TEST_CASE(BlockSparseMatrix)
 {
-    NuTo::Timer timer("BMT - BlockSparseMatrixTest:Init");
-
     NuTo::DofStatus s;
     s.SetDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
@@ -229,10 +145,9 @@ void BlockSparseMatrixTest()
             NuTo::SparseMatrixCSRVector2General<double>::Random(numT, numD, density);
     m(NuTo::Node::eDof::TEMPERATURE, NuTo::Node::eDof::TEMPERATURE) =
             NuTo::SparseMatrixCSRVector2General<double>::Random(numT, numT, density);
-    m.CheckDimensions();
+    BOOST_CHECK_NO_THROW(m.CheckDimensions());
     m.Info();
 
-    timer.Reset("BMT - vector*matrix");
 
     NuTo::BlockFullVector<double> v(s);
     v[NuTo::Node::eDof::DISPLACEMENTS] = Eigen::VectorXd::Random(numD);
@@ -240,39 +155,20 @@ void BlockSparseMatrixTest()
 
     auto result = m * v * 4 + m * v;
 
-    timer.Reset("BMT - Export");
-
     Eigen::MatrixXd exportReference = m.ExportToFullMatrix();
     Eigen::MatrixXd exportCSRVector2 = m.ExportToCSRVector2General().ConvertToFullMatrix();
     Eigen::MatrixXd exportCSR = m.ExportToCSRGeneral().ConvertToFullMatrix();
 
-    if ((exportCSRVector2 - exportReference).norm() > 1.e-8)
-    {
-        std::cout << "Reference \n" << exportReference << std::endl;
-        std::cout << "Export to CSRVector2 \n" << exportCSRVector2 << std::endl;
-        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSRVector2 failed.");
-    }
-
-    if ((exportCSR - exportReference).norm() > 1.e-8)
-    {
-        std::cout << "Reference \n" << exportReference << std::endl;
-        std::cout << "Export to CSR \n" << exportCSR << std::endl;
-        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSR failed.");
-    }
+    BoostUnitTest::CheckEigenMatrix(exportCSRVector2, exportReference);
+    BoostUnitTest::CheckEigenMatrix(exportCSR, exportReference);
 
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
     auto CSR = m.ExportToCSR();
-    if (not CSR->IsSymmetric())
-        throw NuTo::Exception("[BlockSparseMatrixTest] Symmetric export to CSR failed.");
-
+    BOOST_CHECK(CSR->IsSymmetric());
+    
     Eigen::MatrixXd exportCSRSymm = CSR->ConvertToFullMatrix();
-    if ((exportCSRSymm - m.ExportToFullMatrix()).norm() > 1.e-8)
-    {
-        std::cout << "Reference \n" << exportReference << std::endl;
-        std::cout << "Export to CSRSymm \n" << exportCSRSymm << std::endl;
-        throw NuTo::Exception("[BlockSparseMatrixTest] Export to CSRSymm failed.");
-    }
+    BoostUnitTest::CheckEigenMatrix(exportCSRSymm, m.ExportToFullMatrix());
 }
 
 //! @brief StructureOutputBlockMatrixTest
@@ -349,9 +245,7 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
 
     timer.Reset("StructureOutputBlockMatrixTestGeneral::ApplyCMatrix_NEW");
 
-    s.SetHasInteractingConstraints(true);
     BM4.ApplyCMatrixScal(hessian, CMatrix, 1);
-
 
     timer.Reset("StructureOutputBlockMatrixTestGeneral::ApplyCMatrix_OLD");
 
@@ -391,6 +285,13 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
         if (diff.Max() - diff.Min() > tolerance)
             throw NuTo::Exception("[StructureOutputBlockMatrixTestGeneral] AddScal for KK incorrect.");
     }
+}
+
+
+BOOST_AUTO_TEST_CASE(SparseGeneral)
+{
+    StructureOutputBlockMatrixTestGeneral(10, 8, 0, 0, 1); // cmat == 0
+    StructureOutputBlockMatrixTestGeneral(10, 8, 4, 2, 1);
 }
 
 //! @brief StructureOutputBlockMatrixTest
@@ -438,9 +339,7 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
 
     timer.Reset("StructureOutputBlockMatrixTestSymmetric::ApplyCMatrix_NEW");
 
-    s.SetHasInteractingConstraints(true);
     BM4.ApplyCMatrixScal(hessian, CMatrix, 1);
-
 
     timer.Reset("StructureOutputBlockMatrixTestSymmetric::ApplyCMatrix_OLD");
 
@@ -460,64 +359,19 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
     }
 }
 
-
-//! @brief CSR vs CSRVector2 ... simulates the calculation of the hessian in the time integration
-//! @remark conjecture confirmed: Vector2+conversion is much (>> factor 1000 for big matrices) faster.
-void RandomAddition_CSR_vs_CSRVector2()
+BOOST_AUTO_TEST_CASE(SparseSymmetric)
 {
-    NuTo::Timer timer("CSR_vs_CSRVector2");
-
-    size_t dim = 1e4;
-    double density = 5. / dim;
-
-    auto CSRVector2a = NuTo::SparseMatrixCSRVector2General<double>::Random(dim, dim, density, 17);
-    auto CSRVector2b = NuTo::SparseMatrixCSRVector2General<double>::Random(dim, dim, density, 1337);
-    auto CSRVector2c = NuTo::SparseMatrixCSRVector2General<double>::Random(dim, dim, density, 42);
-
-
-    NuTo::SparseMatrixCSRGeneral<double> CSRa(CSRVector2a);
-    NuTo::SparseMatrixCSRGeneral<double> CSRb(CSRVector2b);
-    NuTo::SparseMatrixCSRGeneral<double> CSRc(CSRVector2c);
-
-    timer.Reset("CSR");
-
-    NuTo::SparseMatrixCSRGeneral<double> resultCSR = CSRa;
-    resultCSR += CSRb;
-    resultCSR += CSRc;
-
-
-    timer.Reset("CSRVector2");
-    NuTo::SparseMatrixCSRVector2General<double> tmp = CSRVector2a;
-    tmp += CSRVector2b;
-    tmp += CSRVector2c;
-    NuTo::SparseMatrixCSRGeneral<double> resultCSRVector2(tmp);
-
-    timer.Reset("cleanup.");
+    StructureOutputBlockMatrixTestSymmetric(10, 0, 1); // cmat == 0
+    StructureOutputBlockMatrixTestSymmetric(10, 2, 1);
 }
 
-
-void SimpleTestResult(bool rResult, std::string rTestName)
+BOOST_AUTO_TEST_CASE(BlockScalarTest)
 {
-    if (rResult)
-    {
-        std::cout << rTestName << " --- passed" << std::endl;
-    }
-    else
-    {
-        throw NuTo::Exception(rTestName + " --- failed.");
-    }
-}
-
-//! @brief Test the block scalar class
-void BlockScalarTest()
-{
-    NuTo::Timer timer("BlockScalarTest");
     NuTo::DofStatus s;
     s.SetDofTypes(
             {NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE, NuTo::Node::eDof::WATERVOLUMEFRACTION});
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
-    std::cout << "Active Dofs: DISPLACEMENTS / TEMPERATURE" << std::endl << std::endl;
     NuTo::BlockScalar A(s);
     A.DefineDefaultValueToIninitializedDofTypes(-3.);
     NuTo::BlockScalar B(s);
@@ -533,31 +387,16 @@ void BlockScalarTest()
     D.Info();
     E.Info();
 
-    SimpleTestResult(A.CheckDofWiseLessActivDofs(B), std::string("[BlockScalarTest] A.CheckDofWiseLessActivDofs(B)"));
-    SimpleTestResult(A < B, std::string("[BlockScalarTest] A < B"));
-    SimpleTestResult(A != B, std::string("[BlockScalarTest] A!=B"));
-    SimpleTestResult(B == C, std::string("[BlockScalarTest] B==C"));
-    SimpleTestResult(B.CheckDofWiseLessActivDofs(D), std::string("[BlockScalarTest] B.CheckDofWiseLessActivDofs(D)"));
-    SimpleTestResult(B < D, std::string("[BlockScalarTest] B < D"));
-    SimpleTestResult(C == E, std::string("[BlockScalarTest] C==E"));
+    BOOST_CHECK(A.CheckDofWiseLessActivDofs(B));
+    BOOST_CHECK(A < B);
+    BOOST_CHECK(A != B);
+    BOOST_CHECK(B == C);
+    BOOST_CHECK(B.CheckDofWiseLessActivDofs(D));
+    BOOST_CHECK(B < D);
+    BOOST_CHECK(C == E);
 
     B[NuTo::Node::eDof::DISPLACEMENTS] = 10;
-    SimpleTestResult(!(B.CheckDofWiseLessActivDofs(D)),
-                     std::string("[BlockScalarTest] B.CheckDofWiseLessActivDofs(D) modified"));
+    BOOST_CHECK(!(B.CheckDofWiseLessActivDofs(D)));
 }
 
 
-int main()
-{
-    BlockFullVectorTest();
-    BlockFullMatrixTest();
-    BlockScalarTest();
-    BlockSparseMatrixTest();
-    StructureOutputBlockMatrixTestGeneral(10, 8, 0, 0, 1); // cmat == 0
-    StructureOutputBlockMatrixTestGeneral(10, 8, 4, 2, 1);
-
-    StructureOutputBlockMatrixTestSymmetric(10, 0, 1); // cmat == 0
-    StructureOutputBlockMatrixTestSymmetric(10, 2, 1);
-
-    return EXIT_SUCCESS;
-}

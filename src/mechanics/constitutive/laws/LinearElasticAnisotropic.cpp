@@ -2,18 +2,14 @@
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "base/Logger.h"
 #include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 #include <boost/current_function.hpp>
@@ -35,8 +31,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticAn
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                      const InterpolationType& rInterpolationType) const
+NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -73,16 +68,14 @@ NuTo::LinearElasticAnisotropic::GetConstitutiveInputs(const ConstitutiveOutputMa
 namespace NuTo // template specialization in same namespace as definition
 {
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }
 
 
 template <>
-void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                 const ConstitutiveOutputMap& rConstitutiveOutput)
+void NuTo::LinearElasticAnisotropic::Evaluate<2>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
 {
     std::cout << "Not implemented" << std::endl;
 }

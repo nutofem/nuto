@@ -2,10 +2,8 @@
 #include "base/Exception.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
@@ -98,8 +96,7 @@ bool ThermalStrains::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof
     return false;
 }
 
-ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const InterpolationType&) const
+ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

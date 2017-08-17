@@ -65,6 +65,17 @@ BOOST_AUTO_TEST_CASE(CheckEqStrainDerivatives)
     CheckLocalEqStrainDerivativesMises<3>();
 }
 
+BOOST_AUTO_TEST_CASE(EqStrainZero)
+{
+    const double k = 10;
+    const double nu = 0.;
+    EngineeringStrain<1> strain1D{0.};
+    EngineeringStrain<2> strain2D{0., 0., 0.};
+    EngineeringStrain<3> strain3D{0., 0., 0., 0., 0., 0.};
+    BOOST_CHECK_SMALL(EquivalentStrainModifiedMises<1>(strain1D, k, nu).Get(), 1.e-6);
+    BOOST_CHECK_SMALL(EquivalentStrainModifiedMises<2>(strain2D, k, nu).Get(), 1.e-6);
+    BOOST_CHECK_SMALL(EquivalentStrainModifiedMises<3>(strain3D, k, nu).Get(), 1.e-6);
+}
 
 BOOST_AUTO_TEST_CASE(EqStrain)
 {

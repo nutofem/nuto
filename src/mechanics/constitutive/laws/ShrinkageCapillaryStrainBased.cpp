@@ -1,11 +1,8 @@
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "physics/PhysicalConstantsSI.h"
 #include "physics/PhysicalEquationsSI.h"
@@ -36,8 +33,7 @@ void NuTo::ShrinkageCapillaryStrainBased::CheckParameters() const
 
 
 NuTo::ConstitutiveInputMap
-NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const NuTo::InterpolationType& rInterpolationType) const
+NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
     for (const auto& itOutput : rConstitutiveOutput)
@@ -45,14 +41,14 @@ NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveInputs(const NuTo::Constitut
         switch (itOutput.first)
         {
         case Constitutive::eOutput::ENGINEERING_STRESS: // VHIRTHAMTODO Temporary, because additiveInputExplicit isn't
-                                                        // correct so far.
+        // correct so far.
         case Constitutive::eOutput::ENGINEERING_STRAIN:
         case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY: // VHIRTHAMTODO must be the derivative of
-                                                                              // the strain instead of stress
+        // the strain instead of stress
         case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION: // VHIRTHAMTODO must be the derivative
-                                                                                  // of the strain instead of stress
+            // of the strain instead of stress
             constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY];
             constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION];
             return constitutiveInputMap;

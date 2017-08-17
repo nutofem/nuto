@@ -1,9 +1,10 @@
 create_symlink("MeshCompanionGmsh.msh")
+create_symlink("MeshCompanionGmshFine.msh")
 
 add_executable(MeshCompanion MeshCompanion.cpp)
-target_link_libraries(MeshCompanion NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES})
+target_link_libraries(MeshCompanion Mechanics Math Base ${Boost_LIBRARIES})
 if(ENABLE_VISUALIZE)
-    target_link_libraries(MeshCompanion NuToVisualize)
+    target_link_libraries(MeshCompanion Visualize)
 endif()
 add_test(almost::mechanics::mesh::MeshCompanion ${CMAKE_CURRENT_BINARY_DIR}/MeshCompanion)
 

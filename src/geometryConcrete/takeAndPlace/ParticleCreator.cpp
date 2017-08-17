@@ -4,6 +4,8 @@
  *  Created on: 27 Feb 2014
  *      Author: junger, improved by ttitsche
  */
+#include <iostream>
+
 #include "base/Exception.h"
 #include "base/Timer.h"
 

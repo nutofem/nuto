@@ -1,13 +1,10 @@
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "physics/PhysicalConstantsSI.h"
 #include "physics/PhysicalEquationsSI.h"
 
@@ -37,8 +34,7 @@ void NuTo::ShrinkageCapillaryStressBased::CheckParameters() const
 
 
 NuTo::ConstitutiveInputMap
-NuTo::ShrinkageCapillaryStressBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const NuTo::InterpolationType& rInterpolationType) const
+NuTo::ShrinkageCapillaryStressBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
     for (const auto& itOutput : rConstitutiveOutput)

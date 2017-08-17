@@ -8,10 +8,8 @@
 #include "mechanics/nodes/NodeEnum.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/EvaluateDataContinuum.h"
 
 
@@ -135,7 +133,7 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
 }
 
 void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-                                                         EvaluateDataContinuum<1>& rData, int rTheIP,
+                                                         EvaluateDataContinuum<1>& rData, int,
                                                          const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -181,8 +179,8 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
 }
 
 void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(
-        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP,
-        const ConstitutiveInputMap& constitutiveInputMap, const ConstitutiveOutputMap& constitutiveOutputMap) const
+        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int,
+        const ConstitutiveInputMap&, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {

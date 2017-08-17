@@ -1,27 +1,19 @@
-﻿
-
-#include <numeric>
-
-#include "math/SparseMatrixCSRGeneral.h"
-
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+﻿#include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/laws/PhaseField.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 
 #include "base/Logger.h"
 #include "base/Exception.h"
-#include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Eigenvalues>
 #include <eigen3/Eigen/Core>
+
+#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
 
 NuTo::PhaseField::PhaseField(const double rYoungsModulus, const double rPoissonsRatio,
@@ -50,8 +42,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::PhaseField::Cre
     return std::make_unique<Constitutive::IPConstitutiveLaw<PhaseField>>(*this, 0.);
 }
 
-NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                                   const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -562,8 +553,7 @@ namespace NuTo
 {
 
 template <>
-void NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                   const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
+void NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -612,16 +602,14 @@ void NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInpu
 }
 
 template <>
-void NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
-                                   const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
+void NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 } // namespace NuTo
 
-double NuTo::PhaseField::CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp,
-                                                               const ConstitutiveInputMap& rConstitutiveInput) const
+double NuTo::PhaseField::CalculateStaticDataExtrapolationError(ElementBase&, int, const ConstitutiveInputMap&) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -678,7 +666,7 @@ double NuTo::PhaseField::GetParameterDouble(Constitutive::eConstitutiveParameter
     }
 }
 
-void NuTo::PhaseField::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::PhaseField::SetParameterDouble(Constitutive::eConstitutiveParameter, double)
 {
     throw Exception(__PRETTY_FUNCTION__, "Function must not be used");
 }

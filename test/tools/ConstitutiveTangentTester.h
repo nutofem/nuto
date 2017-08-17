@@ -16,12 +16,12 @@ template <int TDim>
 class ConstitutiveTangentTester
 {
 public:
-    ConstitutiveTangentTester(IPConstitutiveLawBase& rLaw)
-        : mLaw(rLaw){};
-    ConstitutiveTangentTester(IPConstitutiveLawBase& rLaw, double rDelta, double rTolerance)
-        : mLaw(rLaw)
-        , mDelta(rDelta)
-        , mTolerance(rTolerance)
+    ConstitutiveTangentTester(IPConstitutiveLawBase& law)
+        : mLaw(law){};
+    ConstitutiveTangentTester(IPConstitutiveLawBase& law, double delta, double relativeTolerance)
+        : mLaw(law)
+        , mDelta(delta)
+        , mRelativeTolerance(relativeTolerance)
     {
     }
 
@@ -40,9 +40,13 @@ public:
         Eigen::MatrixXd diffMatrix = (tangent - tangent_cdf).cwiseAbs();
         double maxEntry = diffMatrix.maxCoeff(&row, &col);
 
+        double maxCDF = tangent_cdf.cwiseAbs().maxCoeff();
+
         std::cout << "Max. abs. error = " << maxEntry << " at (" << row << "," << col
-                  << ")   -  Tolerance = " << mTolerance << std::endl;
-        if (maxEntry > mTolerance)
+                  << ")   -  relativeTolerance = " << mRelativeTolerance << std::endl;
+        std::cout << "Max. abs. error / reference = " << maxEntry / maxCDF << " at (" << row << "," << col
+                  << ")   -  relativeTolerance = " << mRelativeTolerance << std::endl;
+        if (maxEntry / maxCDF > mRelativeTolerance)
         {
 
             std::cout << "Tangent - Tangent_cdf: \n";
@@ -61,7 +65,7 @@ public:
 
 private:
     Eigen::MatrixXd CalculateTangentCDF(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue,
-                                        eOutput rTangent)
+                                        eOutput)
     {
         auto value = CalculateOutput(rInput, rValue);
         auto& input = *rInput[rParameter];
@@ -93,7 +97,7 @@ private:
 
     IPConstitutiveLawBase& mLaw;
     double mDelta = 1.e-6;
-    double mTolerance = 1.e-6;
+    double mRelativeTolerance = 1.e-6;
 };
 } // namespace Test
 } // namespace NuTo

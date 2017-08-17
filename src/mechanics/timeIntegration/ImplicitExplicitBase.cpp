@@ -6,11 +6,10 @@
  */
 
 #include "base/CallbackInterface.h"
-#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRGeneral_Def.h"
 #include "mechanics/timeIntegration/ImplicitExplicitBase.h"
 #include "base/Timer.h"
 #include "mechanics/structures/StructureBase.h"
-#include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"
@@ -21,6 +20,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/structures/Assembler.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure)
     : TimeIntegrationBase(rStructure)
@@ -34,7 +34,6 @@ NuTo::ImplicitExplicitBase::~ImplicitExplicitBase()
 void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
-
     NuTo::Timer timerDebug("Init", true, mStructure->GetLogger());
 
     mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
@@ -102,8 +101,8 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
     auto& timeStep = *static_cast<ConstitutiveTimeStep*>(input[Constitutive::eInput::TIME_STEP].get());
     input[Constitutive::eInput::CALCULATE_STATIC_DATA] =
             std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::USE_PREVIOUS, 1);
-    auto& calculateStaticData = *static_cast<ConstitutiveCalculateStaticData*>(
-            input[Constitutive::eInput::CALCULATE_STATIC_DATA].get());
+    auto& calculateStaticData =
+            *static_cast<ConstitutiveCalculateStaticData*>(input[Constitutive::eInput::CALCULATE_STATIC_DATA].get());
 
     timeStep.SetCurrentTimeStep(mTimeStep);
     timeStep.SetCurrentTimeStep(mTimeStep);
@@ -111,7 +110,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
     timeStep.SetCurrentTimeStep(mTimeStep);
     timeStep.SetCurrentTimeStep(mTimeStep);
 
-    PostProcess(residual);
+    mPostProcessor->PostProcess(residual);
 
     while (mTime < rTimeDelta)
     {
@@ -171,7 +170,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                 residual = (extForce - intForce) + prevExtForce + extForce;
                 residual -= hessian0 * delta_dof_dt0;
                 const auto& CMat = mStructure->GetAssembler().GetConstraintMatrix();
-                residual.ApplyCMatrix(CMat);
+                residual.J = Assembler::ApplyCMatrix(residual, CMat);
                 hessian0.ApplyCMatrix(CMat);
 
                 delta_dof_dt0.J = mSolver->Solve(hessian0.JJ, residual.J);
@@ -213,7 +212,7 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
             residual = extForce - intForce;
-            PostProcess(residual);
+            mPostProcessor->PostProcess(residual);
 
             lastConverged_dof_dt0 = dof_dt0;
 
@@ -241,7 +240,6 @@ void NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
     {
         itPair.second.CleanUp();
     }
-    
 }
 
 double NuTo::ImplicitExplicitBase::CalculateCriticalTimeStep() const
@@ -260,8 +258,7 @@ void NuTo::ImplicitExplicitBase::FactorizeConstantHessians(
     for (auto dof : mDofsWithConstantHessian)
     {
         if (mStructure->GetNumDependentDofs(dof) > 0)
-            throw Exception(__PRETTY_FUNCTION__,
-                                     "Constant Hessian with constrained dofs is currently not supported.");
+            throw Exception(__PRETTY_FUNCTION__, "Constant Hessian with constrained dofs is currently not supported.");
 
 
         mStructure->DofTypeSetIsActive(dof, true);

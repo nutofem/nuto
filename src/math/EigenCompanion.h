@@ -28,7 +28,7 @@ public:
     //! @param rFileName file name
     //! @param rDelimiter delimiters between the entries in each line, default = space
     //! @return matrix
-    static Eigen::MatrixXd ReadFromFile(const std::string& rFileName, std::string rDelimiter = " ");
+    static Eigen::MatrixXd ReadFromFile(const std::string& rFileName);
 
     //! @brief converts data to a 3D vector, fills with zeros if needed
     //! @param data vector of arbitrary size
@@ -40,6 +40,6 @@ private:
     //! @param rString string to convert
     //! @param rDelimiter delimiters between the entries in each line
     //! @return vector containing the numbers in the string
-    static std::vector<double> StringToDoubles(const std::string& rString, std::string rDelimiter);
+    static std::vector<double> StringToDoubles(const std::string& rString);
 };
 }

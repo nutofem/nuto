@@ -9,8 +9,6 @@
 
 namespace NuTo
 {
-template <typename T>
-class BlockFullVector;
 //! @author Thomas Titscher, BAM
 //! @date January 2016
 //! @brief ... class for all block full matrices, only for storing data, no calculations
@@ -47,11 +45,9 @@ public:
 
 
     //! @brief operator +=
-    //! @remark only modifies active dof types
     BlockFullMatrix& operator+=(const BlockFullMatrix& rRhs);
 
     //! @brief operator -=
-    //! @remark only modifies active dof types
     BlockFullMatrix& operator-=(const BlockFullMatrix& rRhs);
 
     friend NuTo::BlockFullMatrix<T> operator+(NuTo::BlockFullMatrix<T> rLhs, const NuTo::BlockFullMatrix<T>& rRhs)

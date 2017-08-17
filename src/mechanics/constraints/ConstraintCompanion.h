@@ -26,7 +26,7 @@ inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
 //! @return ... constant function f(t) = constant value
 inline RhsFunction RhsConstant(double constantValue)
 {
-    return [=](double time) { return constantValue; };
+    return [=](double) { return constantValue; };
 }
 
 

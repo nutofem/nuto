@@ -3,7 +3,7 @@
 #include <fstream>
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/elements/ElementEnum.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     InterpolationType interpolationType(truss, 1);
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
     interpolationType.AddDofInterpolation(Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
-    IntegrationType1D2NGauss integrationType(2);
+    IntegrationTypeTensorProduct<1> integrationType(2,NuTo::eIntegrationMethod::GAUSS);
 
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;

@@ -1,11 +1,10 @@
-#include "mechanics/constitutive/ConstitutiveBase.h"
-#include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/Group.h"
+
+#include <iostream>
+
+#include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/GroupEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/loads/LoadBase.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/structures/StructureBase.h"
 
 
 namespace NuTo
@@ -93,7 +92,7 @@ const Group<NodeBase>* Group<NodeBase>::AsGroupNode() const
 //! @param rVerboseLevel verbose Level
 //! @param rStructure Structure that holds the members
 template <>
-void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const
+    void Group<NodeBase>::Info(int rVerboseLevel) const
 {
     std::cout << "    Type              : Nodes" << std::endl;
     std::cout << "    Number of members : " << this->size() << std::endl;
@@ -111,7 +110,7 @@ void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStruct
 //! @param rVerboseLevel verbose Level
 //! @param rStructure Structure that holds the members
 template <>
-void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const
+    void Group<ElementBase>::Info(int rVerboseLevel) const
 {
     std::cout << "    Type              : Elements" << std::endl;
     std::cout << "    Number of members : " << this->size() << std::endl;

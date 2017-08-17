@@ -4,7 +4,7 @@
 
 BOOST_AUTO_TEST_CASE(Jacobian1DDet)
 {
-    Eigen::MatrixXd B = NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(Eigen::VectorXd());
+    Eigen::MatrixXd B = NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1();
     Eigen::VectorXd coordinates = Eigen::Vector2d({12., 17});
     NuTo::Jacobian<1> jacobian(coordinates, B);
     BOOST_CHECK_CLOSE(jacobian.Det(), 2.5, 1.e-10);
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(Jacobian2DDet)
 
 BOOST_AUTO_TEST_CASE(Jacobian3DDet)
 {
-    Eigen::MatrixXd B = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1(Eigen::Vector3d({0, 0, 0}));
+    Eigen::MatrixXd B = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
     Eigen::VectorXd coordinates = Eigen::VectorXd(12);
     coordinates << 0, 0, 0, 10, 0, 0, 0, 5, 0, 0, 0, 42;
 

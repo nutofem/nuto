@@ -13,7 +13,6 @@
 
 namespace NuTo
 {
-class ConstitutivePlaneState;
 
 class LocalDamageModel : public ConstitutiveBase
 {
@@ -29,12 +28,7 @@ public:
         return std::make_unique<Constitutive::IPConstitutiveLaw<LocalDamageModel>>(*this, 0.);
     }
 
-    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! @param rConstitutiveOutput ... desired constitutive outputs
-    //! @param rInterpolationType ... interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

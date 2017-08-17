@@ -1,52 +1,25 @@
-#include <boost/ptr_container/ptr_list.hpp>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <algorithm>
-#include <sstream>
 #include <iostream>
 #include <string>
 #include "math/EigenSolverArpack.h"
+#include "math/SparseMatrixCSR.h"
+#include "math/SparseMatrixCSRVector2.h"
 
 #include "mechanics/structures/StructureBase.h"
 #include "base/Timer.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseDirectSolverMKLPardiso.h"
 #include "math/SparseDirectSolverPardiso.h"
 
-#include "math/SparseMatrixCSRSymmetric.h"
-#include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupBase.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NGauss.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NGauss9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
-#include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -55,7 +28,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "base/Exception.h"
 #include "mechanics/structures/StructureBaseEnum.h"
-#include "mechanics/structures/StructureOutputBase.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
@@ -265,12 +237,16 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::vector<NuTo::eVisualizeWhat>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
+
+std::vector<int> StructureBase::GetVisualizationGroups()
 {
-    return mGroupVisualizeComponentsMap;
+    std::vector<int> vec;
+    for(const auto& entry : mGroupVisualizeComponentsMap)
+        vec.push_back(entry.first);
+    return vec;
 }
 
-void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase& rTimeIntegrationScheme)
+void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase&)
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -517,9 +493,6 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
     bool isHessianCorrect = true;
 
     NodeBuildGlobalDofs(__FUNCTION__);
-    bool hasInteractingConstraints = GetDofStatus().HasInteractingConstraints();
-    DofStatusSetHasInteractingConstraints(
-            true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
 
     auto hessian0 = BuildGlobalHessian0();
     auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
@@ -532,8 +505,6 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
                        CheckHessian0_Submatrix(hessian0.KJ, hessian0_CDF.KJ, rRelativeTolerance, rPrintWrongMatrices);
     isHessianCorrect = isHessianCorrect &&
                        CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
-
-    DofStatusSetHasInteractingConstraints(hasInteractingConstraints);
 
     return isHessianCorrect;
 }
@@ -604,7 +575,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector() + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
-    residual.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+    residual.J = Assembler::ApplyCMatrix(residual, GetAssembler().GetConstraintMatrix());
 
     // reuse deltaDof_dt0
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
@@ -614,7 +585,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
 }
 
 void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
-                                                                      NuTo::Node::eDof rDofType,
+                                                                      NuTo::Node::eDof,
                                                                       const double rTolerance,
                                                                       Eigen::Vector3d rNodeCoordOffset)
 {
@@ -710,7 +681,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     Constraints().Add(Node::eDof::DISPLACEMENTS, equations);
 }
 
-void NuTo::StructureBase::Contact(const std::vector<int>& rElementGroups)
+void NuTo::StructureBase::Contact(const std::vector<int>&)
 {
 }
 
@@ -865,17 +836,7 @@ void NuTo::StructureBase::UpdateDofStatus()
 
     GetAssembler().mDofStatus.SetDofTypes(dofTypes);
     GetAssembler().mDofStatus.SetActiveDofTypes(activeDofTypes);
-
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(GetAssembler().GetConstraintMatrix().GetNumActiveEntires() !=
-                                                           0);
 }
-
-
-void NuTo::StructureBase::DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints)
-{
-    GetAssembler().mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
-}
-
 
 int NuTo::StructureBase::GetNumTotalDofs() const
 {
@@ -896,6 +857,11 @@ int NuTo::StructureBase::GetNumTotalDependentDofs() const
     for (auto pair : GetDofStatus().GetNumDependentDofsMap())
         numTotalActiveDofs += pair.second;
     return numTotalActiveDofs;
+}
+
+bool NuTo::StructureBase::HasInteractingConstraints() const
+{
+    return GetAssembler().GetConstraintMatrix().GetNumActiveEntires() != 0;
 }
 
 std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGetActive() const

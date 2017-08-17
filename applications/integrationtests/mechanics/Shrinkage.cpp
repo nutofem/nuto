@@ -18,6 +18,7 @@
 #include "mechanics/sections/SectionPlane.h"
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "visualize/VisualizeEnum.h"
 
@@ -434,9 +435,9 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
     rTI.SetMaxNumIterations(MAX_ITERATION);
 
     rTI.SetTimeStep(rTC.delta_t);
-    rTI.SetMinTimeStepPlot(rTC.t_write);
+    rTI.PostProcessing().SetMinTimeStepPlot(rTC.t_write);
 
-    rTI.SetResultDirectory(rResultDir, true);
+    rTI.PostProcessing().SetResultDirectory(rResultDir, true);
 
     if (rStaggered)
     {
@@ -504,7 +505,7 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
 }
 
 template <int TDim>
-void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int> rN, std::vector<double> rL)
+void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int>, std::vector<double>)
 {
 
 

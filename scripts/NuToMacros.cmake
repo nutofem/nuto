@@ -45,6 +45,7 @@ function(add_unit_test ClassName)
     endif()
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    target_include_directories(${ClassName} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})
@@ -57,6 +58,7 @@ function(create_object_lib Source Object)
     # return the link target $<TARGET_OBJECT:target> to Object
     get_target_from_source(${Source} libName)
     add_library(${libName} OBJECT ${Source})
+    target_include_directories(${libName} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
     set(objectLib "$<TARGET_OBJECTS:${libName}>")
     set(${Object} ${objectLib} PARENT_SCOPE)
@@ -92,4 +94,22 @@ endfunction()
 # symlink a given file/directory to the build directory
 function(create_symlink pathName)
     execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${pathName}" "${CMAKE_CURRENT_BINARY_DIR}/${pathName}")
+endfunction()
+
+function(create_nuto_module ModuleName ModuleSources)
+    sources_to_objects("${ModuleSources}" ModuleObjects)
+
+    add_library(${ModuleName} ${ModuleObjects} ${ARGN})
+    set_target_properties(${ModuleName} PROPERTIES
+        OUTPUT_NAME NuTo${ModuleName}
+        )
+    target_include_directories(${ModuleName} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:include/nuto>
+        )
+
+    install(TARGETS ${ModuleName} EXPORT NuToTargets
+        LIBRARY DESTINATION lib
+        INCLUDES DESTINATION include/nuto
+        )
 endfunction()

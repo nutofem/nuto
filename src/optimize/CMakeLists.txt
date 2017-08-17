@@ -1,4 +1,4 @@
-set(NuToOptimizeSources
+set(OptimizeSources
     ConjugateGradientNonLinear.cpp
     CallbackHandler.cpp
     CallbackHandlerPython.cpp
@@ -13,19 +13,9 @@ find_package(PythonInterp 3 REQUIRED)
 find_package(PythonLibs 3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-sources_to_objects("${NuToOptimizeSources}" NuToOptimizeObjects)
-
-add_library(NuToOptimize ${NuToOptimizeSources})
-target_link_libraries(NuToOptimize NuToMath NuToBase ${PYTHON_LIBRARY})
-
+create_nuto_module(Optimize "${OptimizeSources}")
+target_link_libraries(Optimize Math Base ${PYTHON_LIBRARY})
 if(ENABLE_VISUALIZE)
-    target_link_libraries(NuToOptimize NuToVisualize)
+    target_link_libraries(Optimize Visualize)
 endif()
-
-set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
-
-# install library
-install(TARGETS NuToOptimize
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    )
+set_target_properties(Optimize PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")

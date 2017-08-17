@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/Exception.h"
 #include <eigen3/Eigen/Core>
 
 #ifdef HAVE_ARPACK
@@ -51,15 +50,6 @@ public:
     //! @brief ... default constructor
     EigenSolverArpack();
 
-    void Save(const std::string& filename, std::string rType) const
-    {
-        throw Exception("NuTo::EigenSolverArpack::Save] To be implemented.");
-    }
-
-    void Restore(const std::string& filename, std::string rType)
-    {
-        throw Exception("NuTo::EigenSolverArpack::Restore] To be implemented.");
-    }
 
     //! @brief ... solve the eigenvalue problem of a single matrix
     void Solve(const NuTo::SparseMatrix<double>& rK, const NuTo::SparseMatrix<double>* rM, int rNumEigenValues,

@@ -1,8 +1,9 @@
-
 #pragma once
 
-
-#include "mechanics/timeIntegration/NewmarkBase.h"
+#include "mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/structures/StructureBaseEnum.h"
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
 
 
 namespace NuTo
@@ -10,11 +11,17 @@ namespace NuTo
 
 class StructureOutputBlockMatrix;
 class StructureOutputBlockVector;
+enum class eStructureOutput;
+namespace Constitutive
+{
+enum class eInput;
+}
+template <typename IOEnum>
+class ConstitutiveIOMap;
+typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
 
-//! @author Jörg F. Unger, NU
-//! @date February 2012
-//! @brief ... standard class for implicit timeintegration (static Newton Raphson or NewmarkDirect for dynamics)
-class NewmarkDirect : public NewmarkBase
+//! @brief Newmark time integration scheme
+class NewmarkDirect : public TimeIntegrationBase
 {
 
 public:
@@ -62,33 +69,46 @@ public:
 
 
     //! @brief perform the time integration
-    //! @param rTimeDelta ... length of the simulation
-    virtual void Solve(double rTimeDelta) override;
+    //! @param timeFinal ... simulation continues until time hits this value
+    virtual void Solve(double timeFinal) override;
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info() const override;
+    void SetDampingCoefficientMass(double rMuDampingMass)
+    {
+        mUseMuDamping = true;
+        mMuDampingMass = rMuDampingMass;
+    }
+
+    void SetToleranceForce(double rToleranceForce)
+    {
+        mToleranceForce = rToleranceForce;
+    }
+
+    void SetMaxNumIterations(int rMaxNumIterations)
+    {
+        mMaxNumIterations = rMaxNumIterations;
+    }
+
+    //! @brief merges the dof values depending on the numTimeDerivatives and rMergeAll
+    //! @param rDof_dt0 ... 0th time derivative
+    //! @param rDof_dt1 ... 1st time derivative
+    //! @param rDof_dt2 ... 2nd time derivative
+    //! @param rMergeAll ... false: merges dof_dt1 only when mMuMassDamping = 0, ignores dof_dt2
+    void MergeDofValues(const StructureOutputBlockVector& rDof_dt0, const StructureOutputBlockVector& rDof_dt1,
+                        const StructureOutputBlockVector& rDof_dt2, bool rMergeAll);
 
 protected:
+    using StructureOutputMap = std::map<eStructureOutput, StructureOutputBase*>;
+
     StructureOutputBlockVector CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0,
                                              const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+                                             const StructureOutputBlockVector& rDof_dt2) const;
 
     StructureOutputBlockVector CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0,
                                              const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+                                             const StructureOutputBlockVector& rDof_dt2) const;
 
     //! @brief ... builds the modified hessian matrix (including cmat) and solves the system
-    //! @param rHessian_dt0 ... hessian_dt0 matrix
-    //! @param rHessian_dt1 ... hessian_dt1 matrix
-    //! @param rHessian_dt2 ... hessian_dt2 matrix
-    //! @param rResidualMod ... modified residual (including the cmatrix)
-    //! @param rTimeStep ... current time step
-    //! @return ... deltaDof_dt0.J
-    //! @remark ... If hessian_dt0 is constant, its values are preserved (hessianMod = temporary matrix). Otherwise,
-    //! hessian0 will be used (hessianMod = hessian0)
-    BlockFullVector<double> BuildHessianModAndSolveSystem(StructureOutputBlockMatrix& rHessian_dt0,
-                                                          const StructureOutputBlockMatrix& rHessian_dt1,
-                                                          const StructureOutputBlockMatrix& rHessian_dt2,
+    BlockFullVector<double> BuildHessianModAndSolveSystem(std::array<NuTo::StructureOutputBlockMatrix, 3>& rHessians,
                                                           const BlockFullVector<double>& rResidualMod,
                                                           double rTimeStep) const;
 
@@ -98,23 +118,12 @@ protected:
                                                  const StructureOutputBlockVector& rDof_dt1,
                                                  const StructureOutputBlockVector& rDof_dt2) const;
 
-    //! @brief Calculates (if needed) the residual.K part for the post-processing. Since it is not needed for the actual
-    //! time integration
-    //! its calculation is skipped if Cmat has only zero entries.
-    void CalculateResidualKForPostprocessing(StructureOutputBlockVector& rResidual,
-                                             const StructureOutputBlockMatrix& rHessian_dt2,
-                                             const StructureOutputBlockVector& rDof_dt1,
-                                             const StructureOutputBlockVector& rDof_dt2) const;
-
-    void CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1,
-                                  const StructureOutputBlockMatrix& rHessian_dt2) const;
+    StructureOutputBlockMatrix CalculateMuDampingMatrix(const StructureOutputBlockMatrix& hessian2) const;
 
     void CalculateResidualTrial(StructureOutputBlockVector& rResidual, const BlockFullVector<double>& rDeltaBRHS,
-                                const StructureOutputBlockMatrix& rHessian_dt0,
-                                const StructureOutputBlockMatrix& rHessian_dt1,
-                                const StructureOutputBlockMatrix& rHessian_dt2,
-                                const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2,
-                                double rTimeStep) const;
+                                const std::array<NuTo::StructureOutputBlockMatrix, 3>& hessians,
+                                const StructureOutputBlockVector& rDof_dt1,
+                                const StructureOutputBlockVector& rDof_dt2) const;
 
 
     //! @brief Prints Info about the current calculation stage
@@ -123,10 +132,46 @@ protected:
     //! @brief Prints Info about the current iteration
     void PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const;
 
+private:
+    std::array<StructureOutputBlockVector, 3> InitialState();
+
+    void IterateForActiveDofValues(const StructureOutputBlockVector& prevExtForce,
+                                   const BlockFullVector<double>& deltaBRHS,
+                                   std::array<NuTo::StructureOutputBlockVector, 3>& lastConverged_dof_dt);
+
+
+    std::pair<int, BlockScalar> FindEquilibrium(StructureOutputBlockVector& structureResidual,
+                                                const StructureOutputBlockVector& extForce,
+                                                StructureOutputBlockVector& delta_dof_dt0,
+                                                std::array<StructureOutputBlockVector, 3>& dof_dt);
+
+    ConstitutiveInputMap CreateInputMap();
+    StructureOutputBlockVector EvaluateInternalGradient();
+    std::array<StructureOutputBlockMatrix, 3> EvaluateHessians();
+    std::pair<StructureOutputBlockVector, std::array<StructureOutputBlockMatrix, 3>> EvaluateGradientAndHessians();
+
+
 protected:
     double mMinLineSearchStep = 0.01;
     bool mPerformLineSearch = true;
 
     int mVerboseLevel = 1; //!< controls the output verbosity (0 = silent)
+
+
+    StructureOutputBlockMatrix mHessian2;
+
+    bool mUseMuDamping = false;
+    double mMuDampingMass = 0; //!< damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
+    StructureOutputBlockMatrix mDampingMatrix;
+
+    // NewtonRaphson parameters
+    double mToleranceForce = 1.e-6;
+    int mMaxNumIterations = 20;
+
+    // Newmark parameters
+    double mBeta = 0.25;
+    double mGamma = 0.5;
+
+    bool mUseLumpedMass = false;
 };
 } // namespace NuTo

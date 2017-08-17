@@ -127,6 +127,7 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputTyp
     case eInput::WATER_VOLUME_FRACTION_GRADIENT:
     case eInput::TEMPERATURE_GRADIENT:
     case eInput::ELECTRIC_FIELD:
+    case eInput::COORDINATES:
         return std::make_unique<ConstitutiveVector<TDim>>();
     // other
     case eInput::ENGINEERING_STRAIN:
@@ -177,24 +178,24 @@ Eigen::MatrixXd NuTo::ConstitutiveIOBase::CopyToEigenMatrix() const
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol)
+double& NuTo::ConstitutiveIOBase::operator()(int, int)
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
-double NuTo::ConstitutiveIOBase::operator()(int rRow, int rCol) const
+double NuTo::ConstitutiveIOBase::operator()(int, int) const
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
 
-double& NuTo::ConstitutiveIOBase::operator[](int rRow)
+double& NuTo::ConstitutiveIOBase::operator[](int)
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
 
-double NuTo::ConstitutiveIOBase::operator[](int rRow) const
+double NuTo::ConstitutiveIOBase::operator[](int) const
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] not supported.");
 }
@@ -202,12 +203,10 @@ double NuTo::ConstitutiveIOBase::operator[](int rRow) const
 
 void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
 {
-#ifdef DEBUG
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;
     if (isNotScalar)
         throw Exception(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
                                                       " is not a ConstitutiveScalar.");
-#endif
 }
 
 

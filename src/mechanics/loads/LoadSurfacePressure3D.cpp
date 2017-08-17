@@ -10,7 +10,7 @@ LoadSurfacePressure3D::LoadSurfacePressure3D(StructureBase* rStructure, int rEle
 }
 
 
-void LoadSurfacePressure3D::CalculateSurfaceLoad(Eigen::Vector3d& rCoordinates, Eigen::Vector3d& rNormal,
+void LoadSurfacePressure3D::CalculateSurfaceLoad(Eigen::Vector3d&, Eigen::Vector3d& rNormal,
                                                  Eigen::Vector3d& rLoadVector) const
 {
     assert(std::abs(rNormal.norm() - 1.) < 1e-5);

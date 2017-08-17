@@ -85,17 +85,6 @@ public:
     void AddElementVector(const NuTo::BlockFullVector<double>& rElementVector,
                           const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers);
 
-    //! @brief adds \f$(\boldsymbol{R}_{J} - \boldsymbol{C}_{mat}^T\,\boldsymbol{R}_{K}),c\f$ to rResidual
-    //! @remark only calculates active dof types
-    //! @param rResidual ... global residual
-    //! @param rCmat ... constraint matrix
-    void ApplyCMatrix(BlockFullVector<double>& rResidual, const BlockSparseMatrix& rCmat) const;
-
-    //! @brief adds \f$(- \boldsymbol{C}_{mat}^T\,\boldsymbol{R}_{K}),c\f$ to this.J
-    //! @remark only calculates active dof types
-    //! @param rCmat ... constraint matrix
-    void ApplyCMatrix(const BlockSparseMatrix& rCmat);
-
     //! @brief resizes every member vector according to numActiveDofs/numDependentDofs
     void Resize(const std::map<Node::eDof, int>& rNumActiveDofsMap,
                 const std::map<Node::eDof, int>& rNumDependentDofsMap);

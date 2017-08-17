@@ -11,6 +11,7 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/loads/LoadSurfaceBase3D.h"
 #include "mechanics/elements/ContinuumElement.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 using namespace NuTo;
 

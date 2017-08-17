@@ -6,6 +6,7 @@
  */
 
 #include <iomanip>
+#include <iostream>
 
 #include "base/Timer.h"
 

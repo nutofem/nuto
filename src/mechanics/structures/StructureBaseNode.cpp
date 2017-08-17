@@ -1,5 +1,3 @@
-#include <boost/assign/ptr_map_inserter.hpp>
-
 #include "base/Timer.h"
 
 #include "math/EigenCompanion.h"
@@ -349,13 +347,12 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     }
 }
 
-
-void NuTo::StructureBase::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
+void NuTo::StructureBase::NodeGetElements(const int, std::vector<int>&)
 {
     throw Exception(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }
 
-void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
+void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase*, std::vector<NuTo::ElementBase*>&)
 {
     throw Exception(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }

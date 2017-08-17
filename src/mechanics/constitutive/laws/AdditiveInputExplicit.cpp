@@ -1,8 +1,5 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 using namespace NuTo::Constitutive;
 
@@ -29,12 +26,11 @@ void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rCo
 
 
 NuTo::ConstitutiveInputMap
-NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                   const NuTo::InterpolationType& rInterpolationType) const
+NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // Get Inputs for output returning constitutive law
     ConstitutiveInputMap mainLawConstitutiveInputMap(
-            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType));
+            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput));
 
     // Get Inputs for input modifying constitutive laws
     ConstitutiveInputMap sublawsConstitutiveInputMap;
@@ -53,7 +49,7 @@ NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutpu
 
         // Don't merge the sublaw inputs directly into the main laws input map!  ---> When more than one sublaw is
         // attached the inputs of the first might effect the following laws outputs - have a look at the line above!
-        sublawsConstitutiveInputMap.Merge(mSublaws[i]->GetConstitutiveInputs(sublawOutputMap, rInterpolationType));
+        sublawsConstitutiveInputMap.Merge(mSublaws[i]->GetConstitutiveInputs(sublawOutputMap));
     }
     return mainLawConstitutiveInputMap.Merge(sublawsConstitutiveInputMap);
 }

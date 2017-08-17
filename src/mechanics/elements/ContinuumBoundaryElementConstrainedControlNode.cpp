@@ -1,6 +1,5 @@
 #include "mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/elements/ElementEnum.h"
 
 
 template <int TDim>

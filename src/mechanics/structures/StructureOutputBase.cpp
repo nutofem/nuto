@@ -20,7 +20,7 @@ NuTo::StructureOutputBlockVector& NuTo::StructureOutputBase::AsStructureOutputBl
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "[ StructureOutput is not of type BlockVector");
 }
 
-void NuTo::StructureOutputBase::SetSymmetry(bool rSymmetric)
+void NuTo::StructureOutputBase::SetSymmetry(bool)
 {
     throw Exception("[StructureOutputBase::SetSymmetry] symmetry is not stored.");
 }

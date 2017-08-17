@@ -5,11 +5,8 @@
 #include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
 
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
@@ -99,7 +96,7 @@ eConstitutiveType NuTo::LocalDamageModel::GetType() const
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void NuTo::LocalDamageModel::Info(unsigned short rVerboseLevel, Logger& rLogger) const
+void NuTo::LocalDamageModel::Info(unsigned short, Logger& rLogger) const
 {
     rLogger << "Info function not yet implemented"
             << "\n";
@@ -525,14 +522,10 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
 
 } // namespace NuTo
 
-NuTo::ConstitutiveInputMap
-NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                              const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
-
     constitutiveInputMap[eInput::ENGINEERING_STRAIN];
-
     return constitutiveInputMap;
 }
 

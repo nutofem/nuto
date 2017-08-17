@@ -86,18 +86,21 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
 
                 for (unsigned i = 0; i < dofVector.size(); ++i)
                 {
-                    // remove the mNumRigidBodyModes because it is only associated with displacements
                     if (dofVector[i] < GetNumActiveDofs(dofType))
-                        mConnectivityMatrix.insert(globalIndex + i + offsetRows, dofVector[i] + offsetCols) =
-                                interface.mValue;
+                    {
+                        const int lagrangeMultiplierId = globalIndex + i + offsetRows;
+                        const int localDofId = dofVector[i] + offsetCols;
+
+                        mConnectivityMatrix.insert(lagrangeMultiplierId, localDofId) = interface.mValue;
+
+                        mLagrangeMultipliersGlobalIdToLocalId.emplace(lagrangeMultiplierId, localDofId);
+                    }
                     else
-                        throw Exception(__PRETTY_FUNCTION__,
-                                                 "All DOFs in the connectivity matrix should be active.");
+                        throw Exception(__PRETTY_FUNCTION__, "All DOFs in the connectivity matrix should be active.");
                 }
             }
 
         offsetRows += NuTo::Node::GetNumComponents(dofType, mDimension) * mNumInterfaceNodesTotal;
-        // remove the mNumRigidBodyModes because it is only associated with displacements
         offsetCols += GetNumActiveDofs(dofType);
     }
 
@@ -106,17 +109,18 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     for (const int& id : mBoundaryDofIds)
     {
         mConnectivityMatrix.insert(globalIndex, id) = 1;
+        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, id);
         ++globalIndex;
     }
 
 
     globalIndex = mNumLagrangeMultipliers - mNumTotalPrescribedDisplacementDofIds +
                   mGlobalStartIndexPrescribedDisplacementDofIds;
-    for (const int& id : mPrescribedDisplacementDofIds)
+    for (const auto& idAndValue : mPrescribedDisplacementDofIdToValue)
     {
-        mConnectivityMatrix.insert(globalIndex, id) = 1;
-
-        mPrescribedDofVector[globalIndex] = 1;
+        mConnectivityMatrix.insert(globalIndex, idAndValue.first) = 1;
+        mLagrangeMultipliersGlobalIdToLocalId.emplace(globalIndex, idAndValue.first);
+        mPrescribedDofVector[globalIndex] = idAndValue.second;
 
         ++globalIndex;
     }
@@ -132,8 +136,6 @@ void NuTo::StructureFeti::AssembleConnectivityMatrix()
     GetLogger() << "Total number of dofs:                        \t" << GetNumTotalDofs() << "\n\n";
     GetLogger() << "Total number of active dofs:                 \t" << GetNumTotalActiveDofs() << "\n\n";
     GetLogger() << "Total number of dependent dofs:              \t" << GetNumTotalDependentDofs() << "\n\n";
-
-    //    GetLogger() << "Connectivity matrix:  \n"        << mConnectivityMatrix  << "\n\n";
 }
 
 
@@ -205,8 +207,7 @@ void NuTo::StructureFeti::ApplyVirtualConstraints(const std::vector<int>& nodeId
         break;
     }
     default:
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "Not implemented for dimension: " + std::to_string(GetDimension()));
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for dimension: " + std::to_string(GetDimension()));
     }
 }
 
@@ -280,9 +281,8 @@ void NuTo::StructureFeti::ImportMeshJson(std::string rFileName, const int interp
             }
             else
             {
-                throw Exception(__PRETTY_FUNCTION__,
-                                         "Import of element type not implemented. Element type id = " +
-                                                 std::to_string(elementType));
+                throw Exception(__PRETTY_FUNCTION__, "Import of element type not implemented. Element type id = " +
+                                                             std::to_string(elementType));
             }
         }
     }
@@ -489,42 +489,6 @@ void NuTo::StructureFeti::CheckRigidBodyModes(const StructureOutputBlockMatrix& 
            "Calculated rigid body modes are not in the null space of K");
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void NuTo::StructureFeti::CheckStiffnessPartitioning(const StructureOutputBlockMatrix hessian0,
-                                                     const double tolerance) const
-{
-
-    //    SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
-    //    Eigen::SparseLU<SparseMatrix> hessian0_JJ_solver(hessian0_JJ);
-    //
-    //    SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
-    //
-    //    SparseMatrix hessian0_KJ = hessian0.KJ.ExportToEigenSparseMatrix();
-    //    SparseMatrix hessian0_KK = hessian0.KK.ExportToEigenSparseMatrix();
-    //
-    //
-    //    SparseMatrix tmp = hessian0_KJ * hessian0_JJ_solver.solve(hessian0_JK);
-    //    Eigen::MatrixXd zeroMatrix0      = hessian0_KK  - tmp;
-    //    SparseMatrix asdfaf = hessian0_KK  - tmp;
-    //
-    //    const double norm = std::max( zeroMatrix0.maxCoeff(), std::abs(zeroMatrix0.minCoeff()) );
-    //
-    //
-    //    MPI_Barrier(MPI_COMM_WORLD);
-    //
-    //    GetLogger() << "Subdomain: \t"          << mRank
-    //                << "\t norm of ( K_kk - K_kj * inv(K_jj) * K_jk: \t"    << norm
-    //                << "\t tolerance: \t"       << tolerance                << "\n\n";
-    //
-    //    MPI_Barrier(MPI_COMM_WORLD);
-    //
-    //    assert(     (norm < tolerance)
-    //            and "Stiffness matrix is not partitioned correctly. Check constraints.");
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -651,17 +615,13 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
 {
     boost::mpi::communicator world;
 
-
-    for (auto const& idAndDisp : dofIdAndPrescribedDisplacementMap)
-    {
-        mPrescribedDisplacementDofIds.push_back(idAndDisp.first);
-    }
+    mPrescribedDisplacementDofIdToValue = dofIdAndPrescribedDisplacementMap;
 
     // recvCount:
     // Contains the number of elements that are received from each process.
     std::vector<int> recvCount(mNumProcesses, 0);
 
-    int numLocalDofIds = mPrescribedDisplacementDofIds.size();
+    int numLocalDofIds = mPrescribedDisplacementDofIdToValue.size();
     boost::mpi::all_gather<int>(world, numLocalDofIds, recvCount);
 
     // displs:
@@ -673,7 +633,7 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
 
     MPI_Allreduce(&numLocalDofIds, &mNumTotalPrescribedDisplacementDofIds, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-    GetLogger() << "Number of prescribed displacement dof ids:       \t" << mPrescribedDisplacementDofIds.size()
+    GetLogger() << "Number of prescribed displacement dof ids:       \t" << mPrescribedDisplacementDofIdToValue.size()
                 << "\n \n";
     GetLogger() << "Total number of prescribed displacement dof ids: \t" << mNumTotalPrescribedDisplacementDofIds
                 << "\n \n";
@@ -684,8 +644,8 @@ void NuTo::StructureFeti::ApplyPrescribedDisplacements(const std::map<int, doubl
     GetLogger() << "mGlobalStartIndexPrescribedDisplacementDofIds: \t" << mGlobalStartIndexPrescribedDisplacementDofIds
                 << "\n \n";
 
-    for (const auto& id : mPrescribedDisplacementDofIds)
-        GetLogger() << "Prescribed displacement dof ids:       \t" << id << "\n \n";
+    for (const auto& idAndValue : mPrescribedDisplacementDofIdToValue)
+        GetLogger() << "Prescribed displacement dof ids:       \t" << idAndValue.first << "\n \n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

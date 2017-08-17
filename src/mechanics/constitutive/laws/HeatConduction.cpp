@@ -1,5 +1,4 @@
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/laws/HeatConduction.h"
 #include "base/Logger.h"
 #include "base/Exception.h"
@@ -9,7 +8,6 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
@@ -23,8 +21,7 @@ HeatConduction::HeatConduction()
     SetParametersValid();
 }
 
-ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                           const InterpolationType&) const
+ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

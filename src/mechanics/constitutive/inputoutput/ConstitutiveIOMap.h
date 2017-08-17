@@ -8,8 +8,6 @@
 namespace NuTo
 {
 
-// Forward declarations
-class ConstitutiveIOBase;
 namespace Constitutive
 {
 enum class eInput;

@@ -3,10 +3,8 @@
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
-
 namespace NuTo
 {
-class InterpolationType;
 
 //! Evaluate heat conduction according to Fourier's law.
 
@@ -28,12 +26,7 @@ public:
     }
 
 
-    //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
-    //! @param rConstitutiveOutput Desired constitutive outputs
-    //! @param rInterpolationType Interpolation type to determine additional inputs
-    //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law
@@ -101,7 +94,7 @@ protected:
     struct InputData
     {
         Eigen::Matrix<double, TDim, 1> mTemperatureGradient;
-        double mTemperatureChange;
+        double mTemperatureChange = 0.0;
     };
 };
 }

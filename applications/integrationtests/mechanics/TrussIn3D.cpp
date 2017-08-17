@@ -20,6 +20,7 @@
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -76,7 +77,7 @@ void Run3d(Eigen::VectorXd rNodeCoords0, Eigen::VectorXd rNodeCoords1, Eigen::Ve
 
     NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
     myIntegrationScheme.SetTimeStep(ParametersTimeIntegration::mTimeStep);
-    myIntegrationScheme.SetResultDirectory(resultPath.string(), false);
+    myIntegrationScheme.PostProcessing().SetResultDirectory(resultPath.string(), false);
 
     //**********************************************
     //          Section

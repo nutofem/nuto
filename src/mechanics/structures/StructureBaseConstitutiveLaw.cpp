@@ -5,6 +5,7 @@
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
+#include "mechanics/constitutive/laws/Creep.h"
 #include "mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
@@ -12,12 +13,12 @@
 #include "mechanics/constitutive/laws/LinearDampingEngineeringStress.h"
 #include "mechanics/constitutive/laws/LinearDielectric.h"
 #include "mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
+#include "mechanics/constitutive/laws/LinearElasticInhomogeneous.h"
 #include "mechanics/constitutive/laws/LinearElasticAnisotropic.h"
 #include "mechanics/constitutive/laws/LinearPiezoelectric.h"
 #include "mechanics/constitutive/laws/LocalDamageModel.h"
 #include "mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "mechanics/constitutive/laws/MoistureTransport.h"
-#include "mechanics/constitutive/laws/PhaseField.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"
@@ -83,6 +84,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
             break;
 
+        case eConstitutiveType::LINEAR_ELASTIC_INHOMOGENEOUS:
+            ConstitutiveLawPtr = new NuTo::LinearElasticInhomogeneous();
+            break;
+
         case eConstitutiveType::LOCAL_DAMAGE_MODEL:
             ConstitutiveLawPtr = new NuTo::LocalDamageModel();
             break;
@@ -124,10 +129,14 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::LinearPiezoelectric();
             break;
 
+        case eConstitutiveType::CREEP:
+            ConstitutiveLawPtr = new NuTo::Creep();
+            break;
+
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Constitutive law " +
-                                                                        Constitutive::ConstitutiveTypeToString(rType) +
-                                                                        " currently not supported.");
+                                                               Constitutive::ConstitutiveTypeToString(rType) +
+                                                               " currently not supported.");
         }
 
         // add section to map (insert does not allow const keys!!!!)
@@ -339,7 +348,6 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
 {
     double EquilibriumWaterVolumeFraction = 0.0;
     const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-    EquilibriumWaterVolumeFraction =
-            constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
+    EquilibriumWaterVolumeFraction = constitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity, rCoeffs);
     return EquilibriumWaterVolumeFraction;
 }

@@ -76,8 +76,7 @@ public:
 
     void AddElementMatrix(const ElementBase* rElementPtr, const NuTo::BlockFullMatrix<double>& rElementMatrix,
                           const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
-                          const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers, double mAddValueTolerance,
-                          bool rAssembleKJKK);
+                          const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers, double mAddValueTolerance);
 
     void AddElementVectorDiagonal(const NuTo::BlockFullVector<double>& rElementVector,
                                   const NuTo::BlockFullVector<int>& rGlobalRowDofNumber, double mAddValueTolerance);

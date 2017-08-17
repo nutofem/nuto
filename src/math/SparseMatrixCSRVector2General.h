@@ -1,12 +1,13 @@
 #pragma once
 
-#include <algorithm>
 #include <numeric>
+#include <iostream>
 
 #include "math/SparseMatrixCSRVector2General_Def.h"
-
+#include "math/SparseMatrixEnum.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
+
 #include "base/Exception.h"
 
 //! @brief ... constructor
@@ -804,10 +805,10 @@ T NuTo::SparseMatrixCSRVector2General<T>::Sum() const
 }
 
 template <class T>
-void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs,
-                                                   std::vector<int>& rMappingNewToInitialOrdering,
-                                                   std::vector<int>& rMappingInitialToNewOrdering,
-                                                   double rRelativeTolerance)
+void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&,
+                                                   std::vector<int>&,
+                                                   std::vector<int>&,
+                                                   double)
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] : to be implemented");
 }

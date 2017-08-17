@@ -1,10 +1,9 @@
-#include <assert.h>
+#include <cassert>
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeScalarSource.h"
-
-#include "math/SparseMatrixCSRGeneral.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 // constructor
 NuTo::LoadNodeScalarSource::LoadNodeScalarSource(const NodeBase* rNode, double rValue)

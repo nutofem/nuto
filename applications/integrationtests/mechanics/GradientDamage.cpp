@@ -24,6 +24,8 @@
 #include "mechanics/elements/ContinuumBoundaryElement.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
     using namespace NuTo::Constitutive;
@@ -240,13 +242,13 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, std::string rDir)
     boost::filesystem::create_directory(resultDir);
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
-    rTimeIntegration.SetResultDirectory(resultDir, true);
+    rTimeIntegration.PostProcessing().SetResultDirectory(resultDir, true);
 }
 
 void Info(const NuTo::TimeIntegrationBase& timeIntegration)
 {
     std::cout << "Solve required " << timeIntegration.GetNumIterations() << " iterations. Result files written to "
-              << timeIntegration.GetResultDirectory() << ".\n";
+              << timeIntegration.PostProcessing().GetResultDirectory() << ".\n";
 }
 
 void Check1D2D3D()

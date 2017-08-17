@@ -1,6 +1,7 @@
 #include "mechanics/constitutive/staticData/IPAdditiveInputExplicit.h"
 #include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 using namespace NuTo::Constitutive;
 
@@ -17,7 +18,8 @@ IPAdditiveInputExplicit::IPAdditiveInputExplicit(AdditiveInputExplicit& rLaw)
 
 
 IPAdditiveInputExplicit::IPAdditiveInputExplicit(const IPAdditiveInputExplicit& rOther)
-    : mLaw(rOther.mLaw)
+    : IPConstitutiveLawBase(rOther)
+    , mLaw(rOther.mLaw)
     , mSublawIPs(rOther.mSublawIPs)
 {
     this->mMainLawIP = rOther.mMainLawIP->Clone();

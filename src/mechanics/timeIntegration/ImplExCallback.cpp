@@ -25,7 +25,7 @@ double NuTo::ImplExCallback::GetNewTimeStep(double rMaxError, double rThreshold,
     return newTimeStep;
 }
 
-double NuTo::ImplExCallback::GetError(double k_tilde_n, double k_n, double k_nn) const
+double NuTo::ImplExCallback::GetError(double, double k_n, double k_nn) const
 {
     return std::abs(k_n - k_nn);
 }

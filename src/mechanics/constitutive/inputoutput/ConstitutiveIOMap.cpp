@@ -3,6 +3,7 @@
 
 template <typename IOEnum>
 NuTo::ConstitutiveIOMap<IOEnum>::ConstitutiveIOMap(const ConstitutiveIOMap<IOEnum>& other)
+    : std::map<IOEnum, std::unique_ptr<ConstitutiveIOBase>>()
 {
     for (auto& it : other)
     {

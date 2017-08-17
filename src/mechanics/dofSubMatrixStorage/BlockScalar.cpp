@@ -56,7 +56,7 @@ double& NuTo::BlockScalar::operator[](Node::eDof rDof)
 //! @brief [] operator
 //! @param rDof ... degree of freedom
 //! @return reference to map entry
-const double NuTo::BlockScalar::operator[](NuTo::Node::eDof rDof) const
+double NuTo::BlockScalar::operator[](NuTo::Node::eDof rDof) const
 {
     assert(mData.find(rDof) != mData.end());
     return mData.at(rDof);
@@ -153,7 +153,7 @@ bool NuTo::BlockScalar::CheckDofWiseGreaterActivDofs(const NuTo::BlockScalar& rO
 //! @brief gets the number of columns of the block storage for a specific set of dofs
 //! @param rDofTypes ... set of dofs
 //! @return number of columns
-int NuTo::BlockScalar::GetNumColumnsDof(const std::set<NuTo::Node::eDof>& rDofTypes) const
+int NuTo::BlockScalar::GetNumColumnsDof(const std::set<NuTo::Node::eDof>&) const
 {
     return 1;
 }

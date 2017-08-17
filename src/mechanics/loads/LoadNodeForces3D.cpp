@@ -1,6 +1,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeForces3D.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
 
 using namespace NuTo;
 

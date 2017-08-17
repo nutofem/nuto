@@ -17,6 +17,7 @@
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
+#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include "mechanics/mesh/MeshCompanion.h"
 
@@ -247,7 +248,7 @@ void CSDA2D()
     newmark.SetMaxNumIterations(20);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("./CSDA2D", deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("./CSDA2D", deleteDirectory);
     newmark.Solve(1);
 }
 
@@ -446,7 +447,7 @@ void CSDA3D(int order)
     newmark.SetMaxNumIterations(100);
 
     bool deleteDirectory = true;
-    newmark.SetResultDirectory("./CSDA3D_" + std::to_string(order), deleteDirectory);
+    newmark.PostProcessing().SetResultDirectory("./CSDA3D_" + std::to_string(order), deleteDirectory);
     newmark.Solve(1);
 }
 

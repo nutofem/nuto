@@ -15,8 +15,9 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/nodes/NodeBase.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/TimeIntegrationBase.h
-    ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/NewmarkBase.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/NewmarkDirect.h
+    ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/TimeControl.h
+    ${CMAKE_SOURCE_DIR}/src/mechanics/timeIntegration/postProcessing/PostProcessor.h
 
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/Assembler.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/StructureBase.h
@@ -31,7 +32,7 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
 
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 if(ENABLE_VISUALIZE)
-    nuto_swig_module(ModuleMechanics ModuleMechanics.i NuToMechanics NuToBase NuToMath NuToVisualize)
+    nuto_swig_module(ModuleMechanics ModuleMechanics.i Mechanics Base Math Visualize)
 else()
-    nuto_swig_module(ModuleMechanics ModuleMechanics.i NuToMechanics NuToBase NuToMath)
+    nuto_swig_module(ModuleMechanics ModuleMechanics.i Mechanics Base Math)
 endif()

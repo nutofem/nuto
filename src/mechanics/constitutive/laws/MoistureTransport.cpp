@@ -1,11 +1,8 @@
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
-#include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/staticData/DataMoistureTransport.h"
 
@@ -755,13 +752,8 @@ void NuTo::MoistureTransport::CheckParameters() const
 }
 
 
-//! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
-//! @param rConstitutiveOutput ... desired constitutive outputs
-//! @param rInterpolationType ... interpolation type to determine additional inputs
-//! @return constitutive inputs needed for the evaluation
 NuTo::ConstitutiveInputMap
-NuTo::MoistureTransport::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                               const NuTo::InterpolationType& rInterpolationType) const
+NuTo::MoistureTransport::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

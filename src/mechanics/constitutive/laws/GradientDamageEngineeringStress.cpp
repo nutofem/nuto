@@ -1,14 +1,11 @@
-#include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
 
 #include "base/Logger.h"
 #include "base/Exception.h"
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
@@ -31,8 +28,7 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress()
 }
 
 NuTo::ConstitutiveInputMap
-NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                             const InterpolationType& rInterpolationType) const
+NuTo::GradientDamageEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

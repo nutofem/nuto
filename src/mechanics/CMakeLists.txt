@@ -1,4 +1,4 @@
-set(NuToMechanicsConstitutiveSources
+set(MechanicsConstitutiveSources
     constitutive/ConstitutiveBase.cpp
     constitutive/ConstitutiveEnum.cpp
     constitutive/inputoutput/ConstitutiveIOBase.cpp
@@ -10,6 +10,7 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/AdditiveInputExplicit.cpp
     constitutive/laws/AdditiveInputImplicit.cpp
     constitutive/laws/AdditiveOutput.cpp
+    constitutive/laws/Creep.cpp
     constitutive/laws/EngineeringStressHelper.cpp
     constitutive/laws/FibreMatrixBondStressSlip.cpp
     constitutive/laws/GradientDamageEngineeringStress.cpp
@@ -19,6 +20,7 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/LinearDampingEngineeringStress.cpp
     constitutive/laws/LinearDielectric.cpp
     constitutive/laws/LinearElasticEngineeringStress.cpp
+    constitutive/laws/LinearElasticInhomogeneous.cpp
     constitutive/laws/LinearElasticAnisotropic.cpp
     constitutive/laws/LinearPiezoelectric.cpp
     constitutive/laws/LocalDamageModel.cpp
@@ -28,6 +30,7 @@ set(NuToMechanicsConstitutiveSources
     constitutive/laws/ShrinkageCapillaryStressBased.cpp
     constitutive/laws/ThermalStrains.cpp
     constitutive/staticData/DataAdditiveInputImplicit.cpp
+    constitutive/staticData/DataCreep.cpp
     constitutive/staticData/DataMisesPlasticity.cpp
     constitutive/staticData/DataMoistureTransport.cpp
     constitutive/staticData/IPAdditiveInputExplicit.cpp
@@ -35,12 +38,12 @@ set(NuToMechanicsConstitutiveSources
     constitutive/staticData/IPAdditiveOutput.cpp
     )
 
-set(NuToMechanicsConstraintSources
+set(MechanicsConstraintSources
     constraints/Constraints.cpp
     constraints/ConstraintCompanion.cpp
     )
 
-set(NuToMechanicsDofSubMatrixStorageSources
+set(MechanicsDofSubMatrixStorageSources
     dofSubMatrixStorage/DofStatus.cpp
     dofSubMatrixStorage/BlockStorageBase.cpp
     dofSubMatrixStorage/BlockSparseMatrix.cpp
@@ -49,7 +52,7 @@ set(NuToMechanicsDofSubMatrixStorageSources
     dofSubMatrixStorage/BlockFullMatrix.cpp
     )
 
-list(APPEND NuToMechanicsElementsSources
+list(APPEND MechanicsElementsSources
     elements/ContinuumElement.cpp
     elements/ContinuumBoundaryElement.cpp
     elements/ContinuumBoundaryElementConstrainedControlNode.cpp
@@ -64,16 +67,14 @@ list(APPEND NuToMechanicsElementsSources
     elements/IPData.cpp
     )
 
-set(NuToMechanicsGroupsSources
+set(MechanicsGroupsSources
     groups/Group.cpp
     groups/GroupBase.cpp
     )
 
-set(NuToMechanicsIntegrationtypesSources
+set(MechanicsIntegrationtypesSources
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NGauss.cpp
-    integrationtypes/IntegrationType1D2NLobatto.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
     integrationtypes/IntegrationType2D3NGauss16Ip.cpp
     integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -82,23 +83,16 @@ set(NuToMechanicsIntegrationtypesSources
     integrationtypes/IntegrationType2D3NGauss6Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
-    integrationtypes/IntegrationType2D4NGauss1Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss4Ip.cpp
-    integrationtypes/IntegrationType2D4NGauss9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
-    integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss1Ip.cpp
-    integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+    integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
 
-set(NuToMechanicsInterpolationtypesSources
+set(MechanicsInterpolationtypesSources
     interpolationtypes/InterpolationBase.cpp
     interpolationtypes/InterpolationBaseFEM.cpp
     interpolationtypes/InterpolationBaseIGA.cpp
@@ -118,12 +112,12 @@ set(NuToMechanicsInterpolationtypesSources
     interpolationtypes/Interpolation2DIGA.cpp
     )
 
-set(NuToMechanicsIGASources
+set(MechanicsIGASources
     IGA/BSplineCurve.cpp
     IGA/BSplineSurface.cpp
     )
 
-set(NuToMechanicsLoadsSources
+set(MechanicsLoadsSources
     loads/LoadNode.cpp
     loads/LoadNodeGroup.cpp
     loads/LoadNodeForces1D.cpp
@@ -142,7 +136,7 @@ set(NuToMechanicsLoadsSources
     loads/LoadSurfacePressureFunction2D.cpp
     )
 
-set(NuToMechanicsMeshSources
+set(MechanicsMeshSources
     mesh/ConvertToInterpolationType.cpp
     mesh/ElementPrismCreate.cpp
     mesh/ImportFromGmsh.cpp
@@ -150,13 +144,13 @@ set(NuToMechanicsMeshSources
     mesh/MeshGenerator.cpp
     )
 
-set(NuToMechanicsNodesSources
+set(MechanicsNodesSources
     nodes/NodeBase.cpp
     nodes/NodeDof.cpp
     nodes/NodeEnum.cpp
     )
 
-set(NuToMechanicsSectionSources
+set(MechanicsSectionSources
     sections/Section.cpp
     sections/SectionTruss.cpp
     sections/SectionVariableTruss.cpp
@@ -164,7 +158,7 @@ set(NuToMechanicsSectionSources
     sections/SectionFibreMatrixBond.cpp
     )
 
-set(NuToMechanicsStructuresSources
+set(MechanicsStructuresSources
     structures/StructureBase.cpp
     structures/StructureBaseConstitutiveLaw.cpp
     structures/StructureBaseElement.cpp
@@ -187,19 +181,10 @@ set(NuToMechanicsStructuresSources
 
 
 
-set(NuToMechanicsTimeIntegrationSources
-    timeIntegration/NewmarkBase.cpp
+set(MechanicsTimeIntegrationSources
     timeIntegration/NewmarkDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
-    timeIntegration/ResultBase.cpp
-    timeIntegration/ResultElementIpData.cpp
-    timeIntegration/ResultGroupNodeForce.cpp
-    timeIntegration/ResultGroupNodeDof.cpp
-    timeIntegration/ResultNodeAcceleration.cpp
-    timeIntegration/ResultNodeDisp.cpp
-    timeIntegration/ResultNodeDof.cpp
-    timeIntegration/ResultTime.cpp
     timeIntegration/RungeKutta2.cpp
     timeIntegration/RungeKutta3.cpp
     timeIntegration/RungeKutta38.cpp
@@ -207,56 +192,52 @@ set(NuToMechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
+    timeIntegration/TimeControl.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp
     timeIntegration/ImplExCallback.cpp
     timeIntegration/VelocityVerlet.cpp
+    timeIntegration/postProcessing/PostProcessor.cpp
+    timeIntegration/postProcessing/ResultBase.cpp
+    timeIntegration/postProcessing/ResultElementIpData.cpp
+    timeIntegration/postProcessing/ResultGroupNodeForce.cpp
+    timeIntegration/postProcessing/ResultGroupNodeDof.cpp
+    timeIntegration/postProcessing/ResultNodeAcceleration.cpp
+    timeIntegration/postProcessing/ResultNodeDisp.cpp
+    timeIntegration/postProcessing/ResultNodeDof.cpp
+    timeIntegration/postProcessing/ResultTime.cpp
     )
 
-set(NuToMechanicsToolsSources
+set(MechanicsToolsSources
     tools/GlobalFractureEnergyIntegrator.cpp
     )
 
-set(NuToMechanicsSources
-    ${NuToMechanicsConstitutiveSources}
-    ${NuToMechanicsConstraintSources}
-    ${NuToMechanicsCrackSources}
-    ${NuToMechanicsDofSubMatrixStorageSources}
-    ${NuToMechanicsElementsSources}
-    ${NuToMechanicsGroupsSources}
-    ${NuToMechanicsIntegrationtypesSources}
-    ${NuToMechanicsInterpolationtypesSources}
-    ${NuToMechanicsIGASources}
-    ${NuToMechanicsLoadsSources}
-    ${NuToMechanicsMeshSources}
-    ${NuToMechanicsNodesSources}
-    ${NuToMechanicsSectionSources}
-    ${NuToMechanicsStructuresSources}
-    ${NuToMechanicsTimeIntegrationSources}
-    ${NuToMechanicsToolsSources}
+set(MechanicsSources
+    ${MechanicsConstitutiveSources}
+    ${MechanicsConstraintSources}
+    ${MechanicsCrackSources}
+    ${MechanicsDofSubMatrixStorageSources}
+    ${MechanicsElementsSources}
+    ${MechanicsGroupsSources}
+    ${MechanicsIntegrationtypesSources}
+    ${MechanicsInterpolationtypesSources}
+    ${MechanicsIGASources}
+    ${MechanicsLoadsSources}
+    ${MechanicsMeshSources}
+    ${MechanicsNodesSources}
+    ${MechanicsSectionSources}
+    ${MechanicsStructuresSources}
+    ${MechanicsTimeIntegrationSources}
+    ${MechanicsToolsSources}
     )
 
-
-sources_to_objects("${NuToMechanicsSources}" NuToMechanicsObjects)
-
-# build static library
-add_library(NuToMechanics ${NuToMechanicsObjects})
-target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
+create_nuto_module(Mechanics "${MechanicsSources}")
+target_link_libraries(Mechanics ${ANN_LIBRARIES})
 
 if(ENABLE_MPI)
     message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")
-    target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
-endif()
-
-# install library
-install(TARGETS NuToMechanics
-    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-    )
-
-if(ENABLE_MPI)
+    target_link_libraries(Mechanics ${MPI_LIBRARIES})
     message(STATUS "Creating feti library...")
     add_subdirectory(feti)
 endif()
-

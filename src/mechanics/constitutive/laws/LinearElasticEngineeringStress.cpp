@@ -7,13 +7,10 @@
 #include "base/Exception.h"
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 #include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 
 
@@ -33,8 +30,7 @@ std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearElasticEn
 
 
 NuTo::ConstitutiveInputMap
-NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                            const InterpolationType& rInterpolationType) const
+NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 

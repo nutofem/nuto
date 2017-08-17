@@ -1,16 +1,10 @@
-// $Id: SparseMatrixCSRVector2Symmetric.h 235 2010-04-22 09:25:38Z arnold2 $
-
 #pragma once
 
-#include <algorithm>
+#include <iostream>
 
 #include "math/SparseMatrixEnum.h"
 #include "math/SparseMatrixCSRVector2Symmetric_Def.h"
-#include "math/SparseMatrixCSRVector2General.h"
 
-
-//#include "math/SparseMatrixCSRSymmetric_Def.h"
-//#include "math/SparseMatrixCSRSymmetric.h"
 #include "base/Exception.h"
 
 //! @brief ... constructor
@@ -371,57 +365,11 @@ operator*(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 }
 
 template <class T>
-Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(
-        const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
+NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
 {
     throw Exception(__PRETTY_FUNCTION__, "To be implemented.");
-    /*  this is just copied from the general matrix (no symmtry)
-            if (this->GetNumRows() != rMatrix.GetNumRows())
-            {
-                    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
-            }
-            Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
-            if (this->HasOneBasedIndexing())
-            {
-                    // loop over columns of transpose
-                    for (int column = 0; column < this->GetNumRows(); column++)
-                    {
-                            // perform multiplication
-                            const std::vector<T>& thisValueVec(this->mValues[column]);
-                            const std::vector<int>& thisColumnVec(this->mColumns[column]);
-                            for (unsigned int pos = 0; pos < thisValueVec.size(); pos++)
-                            {
-                                    int row = thisColumnVec[pos] - 1;
-                                    T value = thisValueVec[pos];
-                                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                                    {
-                                            result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                                    }
-                            }
-                    }
-            }
-            else
-            {
-                    // loop over columns of transpose
-                    for (int column = 0; column < this->GetNumRows(); column++)
-                    {
-                            // perform multiplication
-                            const std::vector<T>& thisValueVec(this->mValues[column]);
-                            const std::vector<int>& thisColumnVec(this->mColumns[column]);
-                            for (unsigned int pos = 0; pos < thisValueVec.size(); pos++)
-                            {
-                                    int row = thisColumnVec[pos];
-                                    T value = thisValueVec[pos];
-                                    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
-                                    {
-                                            result(row,matrixCol) += value * rMatrix(column,matrixCol);
-                                    }
-                            }
-                    }
-            }
-            return result;
-    */
-}
+}  
 
 //! @brief ... calculate the transpose of the matrix (transpose row and columns)
 //! @return ... transpose of this matrix (sparse csr storage)
@@ -512,43 +460,9 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddScal(const SparseMatrixCSRSymm
 //! @brief ... reorder columns of the matrix
 //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
 template <class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering)
+void NuTo::SparseMatrixCSRVector2Symmetric<T>::ReorderColumns(const std::vector<int>&)
 {
-    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
-    /* copied from SparseMatrixCSR
-    for (int row = 0; row < this->GetNumRows(); row++)
-    {
-            for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
-            {
-                    this->mColumns[pos] = rMappingInitialToNewOrdering[this->mColumns[pos]];
-            }
-
-            // sort columns (simple bubble sort algorithm)
-            int start = this->mRowIndex[row];
-            int end = this->mRowIndex[row + 1] - 1;
-            bool swapFlag;
-            do
-            {
-                    swapFlag = false;
-                    for (int pos = start; pos < end; pos++)
-                    {
-                            if (this->mColumns[pos] > this->mColumns[pos + 1])
-                            {
-                                    swapFlag=true;
-                                    int tmpInt = this->mColumns[pos];
-                                    this->mColumns[pos] = this->mColumns[pos + 1];
-                                    this->mColumns[pos + 1] = tmpInt;
-
-                                    T tmpDouble = this->mValues[pos];
-                                    this->mValues[pos] = this->mValues[pos + 1];
-                                    this->mValues[pos + 1] = tmpDouble;
-                            }
-                    }
-                    end--;
-            }
-            while (swapFlag);
-    }
-*/
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");  
 }
 
 //! @brief ... resize matrix

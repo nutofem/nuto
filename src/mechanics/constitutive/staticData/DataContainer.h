@@ -53,6 +53,19 @@ public:
                                                                   std::to_string(GetNumData()));
         return mData.at(rTimeStep);
     }
+    
+    //! @brief Get the data at `timestep`.
+    //! @param rTimeStep Timestep at which to retrieve the data. The timestep is optional and defaults to 0, that is,
+    //!                 the current time step.
+    const Type& GetData(unsigned int rTimeStep = 0) const
+    {
+        if (rTimeStep > GetNumData() - 1)
+            throw Exception(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) +
+                                                                  ". Number of allocated time steps: " +
+                                                                  std::to_string(GetNumData()));
+        return mData.at(rTimeStep);
+    }
+
 
     //! @brief Copies the "current" ([0]) static data `rNumAdditionalData` times.
     void AllocateAdditionalData(unsigned int rNumAdditionalData)

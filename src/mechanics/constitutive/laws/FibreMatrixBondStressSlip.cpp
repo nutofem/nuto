@@ -7,10 +7,7 @@
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "mechanics/elements/ElementEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/StructureBase.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 NuTo::FibreMatrixBondStressSlip::FibreMatrixBondStressSlip(int dimension)
     : ConstitutiveBase()
@@ -124,8 +121,7 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
 namespace NuTo // template specialization in same namespace as definition
 {
 template <>
-void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                  const ConstitutiveOutputMap& rConstitutiveOutput, Data& staticData)
+void NuTo::FibreMatrixBondStressSlip::Evaluate<1>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
@@ -372,16 +368,13 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
 }
 
 template <>
-void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
-                                                  const ConstitutiveOutputMap& rConstitutiveOutput, Data& staticData)
+void NuTo::FibreMatrixBondStressSlip::Evaluate<3>(const ConstitutiveInputMap&, const ConstitutiveOutputMap&, Data&)
 {
     throw Exception(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
 }
 }
 
-NuTo::ConstitutiveInputMap
-NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                       const InterpolationType& rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap&) const
 {
     ConstitutiveInputMap constitutiveInputMap;
     constitutiveInputMap[Constitutive::eInput::INTERFACE_SLIP];

@@ -32,7 +32,7 @@ Eigen::Matrix<double, 2, 1> ShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCo
     return Eigen::Vector2d(0.5 * (1. - rCoordinates[0]), 0.5 * (1. + rCoordinates[0]));
 }
 
-Eigen::Matrix<double, 2, 1> DerivativeShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 2, 1> DerivativeShapeFunctionsTrussOrder1()
 {
     return Eigen::Vector2d(-0.5, 0.5);
 }
@@ -294,7 +294,7 @@ Eigen::Matrix<double, 3, 1> ShapeFunctionsTriangleOrder1(const Eigen::VectorXd& 
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 3, 2> DerivativeShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 3, 2> DerivativeShapeFunctionsTriangleOrder1(const Eigen::VectorXd&)
 {
     Eigen::Matrix<double, 3, 2> derivativeShapeFunctions;
     derivativeShapeFunctions(0, 0) = -1.0;
@@ -959,7 +959,7 @@ Eigen::Matrix<double, 4, 1> ShapeFunctionsTetrahedronOrder1(const Eigen::VectorX
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 4, 3> DerivativeShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 4, 3> DerivativeShapeFunctionsTetrahedronOrder1()
 {
     Eigen::Matrix<double, 4, 3> derivativeShapeFunctions;
     derivativeShapeFunctions(0, 0) = -1;
@@ -1962,7 +1962,7 @@ Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordina
     return Eigen::Vector4d(-N00, -N01, N01, N00);
 }
 
-Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1()
 {
     // this interface element does not need any shape function derivatives
     return Eigen::Matrix2d::Zero();
@@ -2000,7 +2000,7 @@ Eigen::MatrixXd ShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordina
     return (Eigen::MatrixXd(6, 1) << N00, N01, N02, -N02, -N01, -N00).finished();
 }
 
-Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&)
 {
     // this interface element does not need any shape function derivatives
     return Eigen::Matrix2d::Zero();
@@ -2036,7 +2036,7 @@ Eigen::MatrixXd ShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordina
     return Eigen::Vector4d(-N00, -N01, N01, N00);
 }
 
-Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1()
 {
     // this interface element does not need any shape function derivatives
     return Eigen::Matrix3d::Zero();
@@ -2458,7 +2458,7 @@ Eigen::VectorXd DerivativeBernstein1DOrder4(double rParameter)
     return DerivativeBernstein1D(rParameter, 4);
 }
 
-Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder)
+Eigen::VectorXd DerivativeBernstein1D(double, int rOrder)
 {
     Eigen::VectorXd values(rOrder);
     double u1 = rOrder - 1;
