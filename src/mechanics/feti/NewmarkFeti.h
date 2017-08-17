@@ -996,7 +996,7 @@ public:
                 // ******************************************************
 
                 if (mFetiScaling == eFetiScaling::Superlumped)
-                    mStructureFeti->SuperlumpedScaling(hessian0);
+                    mScalingMatrix = mStructureFeti->SuperlumpedScaling(hessian0);
                     
                 BuildAndFactorizeMatrix(hessian0, hessian1);
 
