@@ -391,7 +391,7 @@ int main(int argc, char** argv)
     globalRhsVector.PutScalar(0.0);
 
     //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
-    ConversionTools converter;
+    ConversionTools converter(Comm);
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
     globalMatrix.PutScalar(0.0);

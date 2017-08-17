@@ -37,7 +37,7 @@ void checkVectorConversions(Epetra_SerialComm rComm)
     }
 
 
-    ConversionTools converter;
+    ConversionTools converter(rComm);
 
     Epetra_Map linearMap(-1, numLocalElements, 0, rComm);
     Epetra_Vector epetraVec = converter.convertEigen2EpetraVector(eigenVec, linearMap);
@@ -73,7 +73,7 @@ void checkMatrixConversions(Epetra_SerialComm rComm)
     list.push_back(doubleTrip(0, numLocalElements-1,3.141592));
     eigenMatrix.setFromTriplets(list.begin(), list.end());
 
-    ConversionTools converter;
+    ConversionTools converter(rComm);
     Epetra_CrsMatrix epetraMatrix = converter.convertEigen2EpetraCrsMatrix(eigenMatrix, linearMap, inverseLinearMap);
 
     epetraMatrix.Print(std::cout);

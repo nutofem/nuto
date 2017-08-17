@@ -2,9 +2,12 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
-//#include <Epetra_FECrsMatrix.h>
 #include <Epetra_Vector.h>
-//#include <Epetra_FEVector.h>
+#ifdef HAVE_MPI
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Sparse>
@@ -13,19 +16,39 @@
 class ConversionTools
 {
 public:
-    ConversionTools(){}
+#ifdef HAVE_MPI
+    ConversionTools(Epetra_MpiComm rComm) : mComm(rComm){}
+#else
+    ConversionTools(Epetra_SerialComm rComm) : mComm(rComm){}
+#endif
+    Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, bool rAsGlobal = false, bool rFillComplete = false);
 
+    Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_Map rRowMap, Epetra_Map rColMap, bool rFillComplete = false);
+
+    Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_CrsGraph rGraph, bool rFillComplete = false);
+
+
+    Epetra_Vector convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, bool rAsGlobal = false);
+
+    Epetra_Vector convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Epetra_Map rMap);
+
+private:
     int* map2Array_Int(std::map<int, int> rMap);
 
     std::map<int, int> invertMap_int(std::map<int, int> rMap);
 
-    Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_Map rRowMap, Epetra_Map rColMap);
+    int defineNumLocalElements(int rNumGlobalElements);
 
-    Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Epetra_CrsGraph rGraph);
+    void generateDefaultGlobalMaps(Epetra_Map& rRowMap, Epetra_Map& rColumnMap, int rNumGlobalRows, int rNumGlobalColumns);
 
-    Epetra_Vector convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Epetra_Map rMap);
+    void generateDefaultGlobalMap(Epetra_Map& rMap, int rNumGlobalElements);
 
 
-private:
+protected:
+#ifdef HAVE_MPI
+    Epetra_MpiComm mComm;
+#else
+    Epetra_SerialComm mComm;
+#endif
 
 };//class

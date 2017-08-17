@@ -7,10 +7,20 @@ foreach(rank
 endforeach()
 
 
+set(MESH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/meshes")
+foreach(mesh jsonMesh_Test)
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}.mesh" "${CMAKE_CURRENT_BINARY_DIR}/meshes/${mesh}.mesh")
+    foreach(rank RANGE 0 1)
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}_0${rank}.mesh" "${CMAKE_CURRENT_BINARY_DIR}/meshes/${mesh}_0${rank}.mesh")
+    endforeach()
+endforeach()
+
+
 foreach(myTestFiles
     nuto_trilinos
     1D_Test
-    2D_Test)
+    2D_Test
+    MeshJson_Test)
 #    LoadBalancing)
 
     add_executable(${myTestFiles} ${myTestFiles}.cpp)
@@ -30,7 +40,8 @@ INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
 foreach(myTestFiles
     nuto_trilinos
     1D_Test
-    2D_Test)
+    2D_Test
+    MeshJson_Test)
 #    LoadBalancing)
 
     target_link_libraries(${myTestFiles} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
@@ -44,3 +55,5 @@ add_library(PrintTools PrintTools.cpp)
 add_library(TrilinosUtils TrilinosUtils.cpp)
 target_link_libraries(1D_Test ConversionTools PrintTools)
 target_link_libraries(2D_Test ConversionTools PrintTools TrilinosUtils)
+
+target_link_libraries(MeshJson_Test FetiLib)

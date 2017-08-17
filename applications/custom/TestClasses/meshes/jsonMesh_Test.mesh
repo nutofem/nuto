@@ -1,0 +1,44 @@
+{
+   "Elements" : [
+      {
+         "Indices" : [ 0, 1 ],
+         "Name" : "Domain",
+         "NodalConnectivity" : [
+            [ 0, 1, 4, 5 ],
+            [ 1, 2, 3, 4 ]
+         ],
+         "Type" : 3
+      }
+   ],
+   "Interface" : [
+   ],
+   "LocalToGlobalMap" : [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+   ],
+   "Nodes" : [
+      {
+         "Coordinates" : [
+            [ 0, 0, 0 ],
+            [ 30, 0, 0 ],
+	    [ 60, 0, 0 ],
+	    [ 60, 10, 0 ],
+            [ 30, 10, 0 ],
+            [ 0, 10, 0 ]
+         ],
+         "Indices" : [
+            0,
+            1,
+	    2,
+	    3,
+            4,
+            5
+         ]
+      }
+   ],
+   "NumInterfaceNodes" : [ 0 ]
+}

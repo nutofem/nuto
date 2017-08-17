@@ -42,4 +42,9 @@ if(ENABLE_GEOMETRYCONCRETE)
 endif()
 
 add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
-target_link_libraries(NewtonRaphsonBenchmark) 
+if(MPI_FOUND)
+    target_link_libraries(NewtonRaphsonBenchmark ${MPI_LIBRARIES})
+endif()
+
+
+add_subdirectory(TrilinosBenchmark)

@@ -10,6 +10,8 @@
 #include <cmath>
 #include <chrono>
 
+#include <mpi.h>
+
 namespace BenchmarkInternal
 {
 
@@ -255,7 +257,7 @@ private:
 };
 
 
-std::unique_ptr<Reporter> EvaluateArguments(int argc, char const* argv[])
+std::unique_ptr<Reporter> EvaluateArguments(int argc, char* argv[])
 {
     if (argc == 1) // default case
         return std::make_unique<ReporterCout>();
@@ -294,14 +296,16 @@ std::unique_ptr<Reporter> EvaluateArguments(int argc, char const* argv[])
 }
 } // namespace Benchmark
 
-int main(int argc, char const* argv[])
+int main(int argc, char* argv[])
 {
+    MPI_Init(&argc, &argv);
     auto testReporter = BenchmarkInternal::EvaluateArguments(argc, argv);
     if (testReporter == nullptr)
         return -1;
 
     BenchmarkInternal::Holder::GetInstance().Run(*testReporter);
     testReporter->Report();
+    MPI_Finalize();
     return 0;
 }
 

@@ -45,6 +45,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 
+#include "mechanics/mesh/MeshCompanion.h"
+
 
 #include "ConversionTools.h"
 #include "PrintTools.h"
@@ -400,7 +402,11 @@ void run_Test_2D_GivenMesh()
         importContainer = structure.ImportFromGmsh("trilinos.msh_00000" + std::to_string(rank+1), true, newNodes, gmshNodes);
     }
 
-
+    std::vector<int> vec = NuTo::MeshCompanion::ReadGmshNodes("trilinos.msh");
+    PrintTools printer;
+    printer.printVector(vec, "node IDs complete", rank);
+    vec = NuTo::MeshCompanion::ReadGmshNodes("trilinos.msh_00000" + std::to_string(rank+1));
+    printer.printVector(vec, "node IDs rank " + std::to_string(rank), rank);
 
     structure.SetVerboseLevel(10);
     structure.GetLogger().OpenFile(logDirectory + "/output_" + std::to_string(rank));
@@ -620,7 +626,7 @@ void run_Test_2D_GivenMesh()
     globalRhsVector.PutScalar(0.0);
 
     //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
-    ConversionTools converter;
+    ConversionTools converter(Comm);
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
 
@@ -653,7 +659,7 @@ void run_Test_2D_GivenMesh()
     // --------------------------------
     Epetra_Vector lhs(owningMap);
     lhs.PutScalar(0.0);
-    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, false);
+    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, true);
     sol.Scale(-1);
     //save solution
     EpetraExt::MultiVectorToMatlabFile((resultDirectory + "/solution.mat").c_str(), sol);
@@ -1798,7 +1804,7 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
     globalRhsVector.PutScalar(0.0);
 
     //CONVERT EIGEN::MATRIX AND EIGEN::VECTOR TO EPETRA FORMAT
-    ConversionTools converter;
+    ConversionTools converter(Comm);
     Eigen::SparseMatrix<double, Eigen::RowMajor> hess(hessian0_eigen);
 //    Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hess, overlappingGraph);
@@ -1839,7 +1845,7 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
 //    Epetra_Vector lhs(owningMap);
 //    lhs.PutScalar(0.0);
     Epetra_Vector lhs(globalRhsVector);
-    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, false, true);
+    Epetra_MultiVector sol = solveSystem(globalMatrix, lhs, globalRhsVector, true, false);
     sol.Scale(-1);
     //save solution
     if (rSaveSolution)
@@ -1934,9 +1940,9 @@ int main(int argc, char** argv)
 {
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
-//    run_Test_2D_GivenMesh();
+    run_Test_2D_GivenMesh();
 
-    run_Test_2D(argc, argv);
+//    run_Test_2D(argc, argv);
 
     return 0;
 }

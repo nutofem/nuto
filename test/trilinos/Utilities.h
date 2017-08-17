@@ -82,6 +82,27 @@ int createInverseLinearMap(Epetra_Map& rMap)
 }
 
 
+int createNonStrictlyIncreasingMap(Epetra_Map& rMap)
+{
+    int* mapping = new int[numLocalElements];
+    int procID = rMap.Comm().MyPID();
+    int step = 2;
+    int startValue = step*procID*(numLocalElements-1)+procID;
+
+    for (int i = 0; i < numLocalElements; ++i)
+    {
+        mapping[i] = startValue + step*i;
+    }
+
+    Epetra_Map inverseMap(-1, numLocalElements, mapping, 0, rMap.Comm());
+
+    rMap = inverseMap;
+
+    delete[] mapping;
+    return 0;
+}
+
+
 int createGraph_2(Epetra_CrsGraph& rGraph)
 {
     int mySize = rGraph.Map().NumMyElements();

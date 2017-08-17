@@ -62,6 +62,7 @@ BENCHMARK(Convert, NuToToCSR, runner)
     }
 }
 
+#ifdef HAVE_MUMPS
 BENCHMARK(Solver, MUMPS, runner)
 {
     NuTo::Benchmark::LinearElasticBenchmarkStructure s(numElements);
@@ -72,6 +73,7 @@ BENCHMARK(Solver, MUMPS, runner)
         t.Solve(solver);
     }
 }
+#endif
 
 #ifdef HAVE_PARDISO
 BENCHMARK(Solver, Pardiso, runner)
