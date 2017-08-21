@@ -25,7 +25,7 @@ constexpr double thickness = 1.0;
 constexpr double lengthX = 40.;
 
 // material
-constexpr double youngsModulus = 2.1e5;
+double youngsModulus = 1000;
 constexpr double poissonsRatio = 0.0;
 
 // integration
@@ -62,6 +62,28 @@ int main(int argc, char* argv[])
 
         numIterationsLumpedNoScaling =
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+    }
+
+    // Conjugate gradient, lumped preconditioner, Multiplicity scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        if (structure.mRank == 0)
+            std::cout << "Multiplicity-scaling *************************** \n";
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsLumpedSuperlumpedScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+
+        if (structure.mRank == 0)
+            std::cout << "Multiplicity-scaling *************************** \n";
     }
 
     // Conjugate gradient, lumped preconditioner, superlumped scaling
@@ -119,7 +141,7 @@ void InitializeNewmarkFeti(NuTo::NewmarkFeti<EigenSolver>& newmarkFeti)
     newmarkFeti.SetTimeStep(timeStep);
     newmarkFeti.PostProcessing().SetResultDirectory(resultPath.string(), true);
     newmarkFeti.SetToleranceIterativeSolver(1.e-8);
-    newmarkFeti.SetMaxNumberOfFetiIterations(100);
+    newmarkFeti.SetMaxNumberOfFetiIterations(1000);
     newmarkFeti.SetIterativeSolver(FetiIterativeSolver::ConjugateGradient);
     newmarkFeti.SetFetiScaling(FetiScaling::None);
     newmarkFeti.SetTimeDependentLoadCase(0, dispRHS);
@@ -146,6 +168,9 @@ void InitializeStructure(NuTo::StructureFeti& structure)
     structure.GetLogger() << "*********************************** \n"
                           << "**      material                 ** \n"
                           << "*********************************** \n\n";
+
+    if (structure.mRank == 0)
+        youngsModulus = 10.;
 
     const int materialId = structure.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     structure.ConstitutiveLawSetParameterDouble(materialId, eConstitutiveParameter::YOUNGS_MODULUS, youngsModulus);

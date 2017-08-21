@@ -269,243 +269,28 @@ public:
         return mLagrangeMultipliersGlobalIdToLocalId;
     };
 
+
+
     /// \brief Assembles vector for multiplicity scaling
     SparseMatrix MultiplicityScaling()
     {
-        if (not(GetDimension() == 2))
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
+        VectorXd scalingVector = VectorXd::Zero(mNumLagrangeMultipliers);
+        AddScalingForDirichletBCs(scalingVector);
+        AddMultiplicityScalingForInterfaceDofs(scalingVector);
 
-        if (GetDofStatus().GetDofTypes().size() > 1)
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
+        return InitializeDiagonalSparseMatrixWithVector(scalingVector);
 
-        // \todo special care needs to be taken for multiple dofs
-        const double dim = GetDimension();
-
-        // Vector is initialized with ones because it takes care of all DOFs with Dirichlet BCs
-        // Interfaces are treated separately
-        Eigen::VectorXd multiplicity = Eigen::VectorXd::Ones(mNumLagrangeMultipliers);
-
-        ReverseMap<int> localNodeIdToGlobalNodeIds;
-        for (const auto& interface : mInterfaces)
-            localNodeIdToGlobalNodeIds.addMap(interface.mGlobalNodeIdToLocalNodeId);
-
-        for (const auto& pair : localNodeIdToGlobalNodeIds)
-        {
-            for (const auto& ele : pair.second)
-            {
-                const int numSubdomainsThatShareThisNode = pair.second.size() + 1;
-                multiplicity[dim * ele] = 1. / numSubdomainsThatShareThisNode;
-                multiplicity[dim * ele + 1] = 1. / numSubdomainsThatShareThisNode;
-            }
-        }
-
-        NodeInfo(10);
-        GetLogger() << "local to global map"
-                    << "\n";
-        for (const auto& pair : localNodeIdToGlobalNodeIds)
-        {
-            GetLogger() << pair.first << "\t";
-            for (const auto& ele : pair.second)
-            {
-                GetLogger() << ele << "\t";
-            }
-            GetLogger() << "\n";
-        }
-
-
-        GetLogger() << "Multiplicity"
-                    << "\n";
-        for (int j = 0; j < multiplicity.size(); ++j)
-        {
-            GetLogger() << j << "\t" << multiplicity[j] << "\n";
-        }
-
-
-        SparseMatrix ScalingMatrix(mNumLagrangeMultipliers, mNumLagrangeMultipliers);
-        for (int i = 0; i < mNumLagrangeMultipliers; ++i)
-            ScalingMatrix.insert(i, i) = multiplicity[i];
-
-        return ScalingMatrix;
     }
 
 
     /// \brief Assembles vector for superlumped scaling
     SparseMatrix SuperlumpedScaling(const StructureOutputBlockMatrix& hessian)
     {
-        constexpr auto DISPLACEMENTS = NuTo::Node::eDof::DISPLACEMENTS;
+        VectorXd scalingVector = VectorXd::Zero(mNumLagrangeMultipliers);
+        AddScalingForDirichletBCs(scalingVector);
+        AddSuperlumpedScalingForInterfaceDofs(hessian, scalingVector);
 
-
-        if (not(GetDimension() == 2))
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
-
-        if (GetDofStatus().GetDofTypes().size() > 1)
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
-
-        // \todo special care needs to be taken for multiple dofs
-        const double dim = GetDimension();
-
-        // Vector is initialized with ones because it takes care of all DOFs with Dirichlet BCs
-        // Interfaces are treated separately
-        Eigen::VectorXd multiplicity = Eigen::VectorXd::Ones(mNumLagrangeMultipliers);
-
-        // Gather all global Lagrange multiplier ids and add them to the local to global map
-        ReverseMap<int> localNodeIdToGlobalNodeIds;
-        for (const auto& interface : mInterfaces)
-            localNodeIdToGlobalNodeIds.addMap(interface.mGlobalNodeIdToLocalNodeId);
-
-        std::map<int, int> additionalGlobalToLocalMap;
-//        for (auto& localNodeIdAndGlobalNodeIds : localNodeIdToGlobalNodeIds)
-//        {
-//            if (localNodeIdAndGlobalNodeIds.second.size() >= 2)
-//            {
-//                const int sizeOfTmpVector = mNumProcesses * localNodeIdAndGlobalNodeIds.second.size();
-//                std::vector<int> tmpVector(sizeOfTmpVector);
-//
-//                MPI_Allgather(localNodeIdAndGlobalNodeIds.second.data(), localNodeIdAndGlobalNodeIds.second.size(),
-//                              MPI_INT, tmpVector.data(), localNodeIdAndGlobalNodeIds.second.size(), MPI_INT,
-//                              MPI_COMM_WORLD);
-//
-//
-//                std::set<int> set01(tmpVector.begin(), tmpVector.end());
-//                std::set<int> set02(localNodeIdAndGlobalNodeIds.second.begin(),
-//                                    localNodeIdAndGlobalNodeIds.second.end());
-//
-//                std::vector<int> diff;
-//                std::set_difference(set01.begin(), set01.end(), set02.begin(), set02.end(),
-//                                    std::inserter(diff, diff.begin()));
-//
-//                GetLogger() << "Before emplacing"
-//                            << "\n";
-//
-//                for (const auto& globalId : diff)
-//                    additionalGlobalToLocalMap.emplace(globalId, localNodeIdAndGlobalNodeIds.first);
-//
-//                GetLogger() << "After emplacing"
-//                            << "\n";
-//            }
-//        }
-
-
-
-        const int totalNumNodes = 1000;
-        for (int k = 0; k < totalNumNodes; ++k)
-        {
-            std::vector<int> vectorLocal;
-            if (localNodeIdToGlobalNodeIds.find(k) != localNodeIdToGlobalNodeIds.end())
-                vectorLocal = localNodeIdToGlobalNodeIds[k];
-
-            constexpr int MAX_NODES_AT_CORNER_POINT = 5;
-            vectorLocal.resize(MAX_NODES_AT_CORNER_POINT);
-            const int sizeOfVectorGathered = mNumProcesses * MAX_NODES_AT_CORNER_POINT;
-            std::vector<int> vectorGathered(sizeOfVectorGathered);
-
-            MPI_Allgather(vectorLocal.data(), vectorLocal.size(), MPI_INT, vectorGathered.data(), vectorLocal.size(),
-                          MPI_INT, MPI_COMM_WORLD);
-
-            std::set<int> set01(vectorGathered.begin(), vectorGathered.end());
-            std::set<int> set02(vectorLocal.begin(), vectorLocal.end());
-
-            std::vector<int> diff;
-            std::set_difference(set01.begin(), set01.end(), set02.begin(), set02.end(),
-                                std::inserter(diff, diff.begin()));
-
-            GetLogger() << "Before emplacing"
-                        << "\n";
-
-            if (localNodeIdToGlobalNodeIds.find(k) != localNodeIdToGlobalNodeIds.end())
-            {
-                for (const auto& globalId : diff)
-                    additionalGlobalToLocalMap.emplace(globalId, k);
-            }
-            GetLogger() << "After emplacing"
-                        << "\n";
-        }
-
-
-        const VectorXd diagonalHessian = hessian.ExportToEigenSparseMatrix().diagonal();
-
-        const auto sizeOfStiffnessVector =
-                NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * mNumInterfaceNodesTotal;
-
-        VectorXd interfaceStiffness = VectorXd::Zero(sizeOfStiffnessVector);
-        VectorXd sumOfInterfaceStiffnesses = VectorXd::Zero(sizeOfStiffnessVector);
-
-        for (const auto& interface : mInterfaces)
-        {
-            for (const auto& globalNodeIdAndLocalNodeId : interface.mGlobalNodeIdToLocalNodeId)
-            {
-                const int globalNodeId = globalNodeIdAndLocalNodeId.first;
-                const int globalDofId = NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * globalNodeId;
-
-                const int localNodeId = globalNodeIdAndLocalNodeId.second;
-
-                const auto dofIds = NodeGetDofIds(localNodeId, DISPLACEMENTS);
-
-                for (size_t index = 0; index < dofIds.size(); ++index)
-                {
-                    interfaceStiffness[globalDofId + index] = diagonalHessian[dofIds[index]];
-                }
-            }
-        }
-
-        // additional global ids
-        for (const auto& globalNodeIdAndLocalNodeId : additionalGlobalToLocalMap)
-        {
-            const int globalNodeId = globalNodeIdAndLocalNodeId.first;
-            const int globalDofId = NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * globalNodeId;
-
-            const int localNodeId = globalNodeIdAndLocalNodeId.second;
-
-            const auto dofIds = NodeGetDofIds(localNodeId, DISPLACEMENTS);
-
-            for (size_t index = 0; index < dofIds.size(); ++index)
-            {
-                interfaceStiffness[globalDofId + index] = diagonalHessian[dofIds[index]];
-            }
-        }
-
-        MPI_Allreduce(interfaceStiffness.data(), sumOfInterfaceStiffnesses.data(), sumOfInterfaceStiffnesses.size(),
-                      MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-        GetLogger() << "stiffness vectors"
-                    << "\n";
-        for (int i = 0; i < interfaceStiffness.size(); ++i)
-        {
-            GetLogger() << i << "\t" << interfaceStiffness[i] << "\t" << sumOfInterfaceStiffnesses[i] << "\n";
-        }
-
-        for (const auto& interface : mInterfaces)
-        {
-            for (const auto& globalNodeIdAndLocalNodeId : interface.mGlobalNodeIdToLocalNodeId)
-            {
-                const int globalNodeId = globalNodeIdAndLocalNodeId.first;
-                const int globalDofId = NuTo::Node::GetNumComponents(DISPLACEMENTS, GetDimension()) * globalNodeId;
-
-                const int localNodeId = globalNodeIdAndLocalNodeId.second;
-
-                const auto dofIds = NodeGetDofIds(localNodeId, DISPLACEMENTS);
-
-                for (size_t index = 0; index < dofIds.size(); ++index)
-                {
-                    multiplicity[globalDofId + index] =
-                            interfaceStiffness[globalDofId + index] / sumOfInterfaceStiffnesses[globalDofId + index];
-                }
-            }
-        }
-
-
-        GetLogger() << "Multiplicity"
-                    << "\n";
-        for (int j = 0; j < multiplicity.size(); ++j)
-        {
-            GetLogger() << j << "\t" << multiplicity[j] << "\n";
-        }
-
-        SparseMatrix ScalingMatrix(mNumLagrangeMultipliers, mNumLagrangeMultipliers);
-        for (int i = 0; i < mNumLagrangeMultipliers; ++i)
-            ScalingMatrix.insert(i, i) = multiplicity[i];
-
-        return ScalingMatrix;
+        return InitializeDiagonalSparseMatrixWithVector(scalingVector);
     }
 
 
@@ -546,6 +331,15 @@ public:
     }
 
 private:
+
+    void AddSuperlumpedScalingForInterfaceDofs(const StructureOutputBlockMatrix &hessian, VectorXd &scalingVector);
+
+    void AddScalingForDirichletBCs(VectorXd &scalingVector);
+
+    void AddMultiplicityScalingForInterfaceDofs(VectorXd &scalingVector);
+
+    SparseMatrix InitializeDiagonalSparseMatrixWithVector(const VectorXd &vector);
+
     ///
     /// \param interfaceCoordinates
     /// \param globalNodeId
@@ -638,5 +432,9 @@ protected:
 
     /// \brief Maps the global lagrange multiplier ids to the local DOF id
     std::map<int, int> mLagrangeMultipliersGlobalIdToLocalId;
+
+    std::map<int, int> DetermineAdditionalGlobalToLocalNodeIdMapForCornerNodes();
+
+    VectorXd CalculateStiffnessAtInterfaceNodes(const StructureOutputBlockMatrix &hessian);
 };
 } // namespace NuTo
