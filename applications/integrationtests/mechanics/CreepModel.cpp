@@ -17,13 +17,14 @@
 #include <boost/filesystem.hpp>
 
 #define TIMESTEP 2000.0
-#define SIMULATIONTIME 10000.0
+#define SIMULATIONTIME 100000.0
 #define TOLERANCE 1.e-2
 #define MAXITERATION 20
-#define EXTERNALFORCE -1.e7;
+#define EXTERNALFORCE -1.e9;
 
-
+#include "mechanics/structures/Assembler.h"
 using namespace NuTo;
+using namespace NuTo::Constraint;
 
 template <int TDim>
 void TestCreepModel()
@@ -79,8 +80,14 @@ void TestCreepModel()
                                                   (Eigen::VectorXd(1) << 5.0e9).finished());
     S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
                                                   Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
-                                                  (Eigen::VectorXd(1) << 20000.0).finished());
-    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
+                                                  (Eigen::VectorXd(1) << 10000.).finished());
+    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
+    //    Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
+    //                                                  (Eigen::VectorXd(2) << 5.0e9, 7.5e9).finished());
+    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
+    //                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
+    //                                                  (Eigen::VectorXd(2) << 10000., 50000.).finished());
+    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
 
     //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 60 * 10e9);
@@ -93,27 +100,37 @@ void TestCreepModel()
 
     // Constraints
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    auto virtualNodePtr = S.NodeGetNodePtr(S.NodeCreate(Eigen::VectorXd::Ones(TDim) * -1, {Node::eDof::DISPLACEMENTS}));
+
     auto& leftNodesGroup = S.GroupGetNodeCoordinateRange(eDirection::X, 0.0, 0.0);
+    auto& rightNodesGroup = S.GroupGetNodeCoordinateRange(eDirection::X, 1.0, 1.0);
+    assert(rightNodesGroup.GetNumMembers() > 0);
     assert(leftNodesGroup.GetNumMembers() > 0);
 
     S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(leftNodesGroup, {eDirection::X}));
+    for (auto& itNode : rightNodesGroup)
+    {
+        S.Constraints().Add(Node::eDof::DISPLACEMENTS,
+                            Equation({Term(*virtualNodePtr, 0, 1), Term(*S.NodeGetNodePtr(itNode.first), 0, -1)}));
+    }
 
     // Additional 2D/3D constraints
     if (TDim > 1)
     {
-
         auto& nodeOrigin = S.NodeGetAtCoordinate(Eigen::VectorXd::Zero(TDim));
         S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {eDirection::Y}));
+        S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {eDirection::Y}));
 
         if (TDim > 2)
         {
             S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {eDirection::Z}));
+            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {eDirection::Z}));
 
             auto& additionalNode = S.NodeGetAtCoordinate((Eigen::VectorXd(TDim) << 0.0, 1.0, 0.0).finished());
             S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(additionalNode, {eDirection::Z}));
         }
     }
-
 
     // Loads
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,13 +143,13 @@ void TestCreepModel()
     timeDependentLoad(1, 1) = EXTERNALFORCE;
     timeDependentLoad(2, 1) = EXTERNALFORCE;
 
-    auto& rightNodesGroup = S.GroupGetNodeCoordinateRange(eDirection::X, 1.0, 1.0);
-    assert(rightNodesGroup.GetNumMembers() > 0);
 
     Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
     direction[0] = 1;
-    int load = S.LoadCreateNodeGroupForce(S.GroupGetId(&rightNodesGroup), direction, 1);
+    //    int load = S.LoadCreateNodeGroupForce(S.GroupGetId(&rightNodesGroup), direction, 1);
+    int load = S.LoadCreateNodeForce(virtualNodePtr, direction, 1);
     NM.SetTimeDependentLoadCase(load, timeDependentLoad);
+
 
     //    if (TDim == 2)
     //    {
@@ -182,6 +199,7 @@ void TestCreepModel()
 
 int main(int argc, char* argv[])
 {
+    // TODO: Different number of chain elements
     // TODO: Add direction option to test Y and Z as well
     // TODO: Test Poisson Ratio 0 and some other value
     TestCreepModel<1>();
