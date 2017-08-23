@@ -21,12 +21,15 @@
 #define TOLERANCE 1.e-2
 #define MAXITERATION 20
 #define EXTERNALFORCE -1.e9;
+#define TOTALYOUNGSMODULUS 2.e9;
 
 using namespace NuTo;
 using namespace NuTo::Constraint;
 
 template <int TDim>
-void TestCreepModel(std::array<eDirection, TDim> directions, double poissonRatio)
+void TestCreepModel(std::string testName, const std::array<eDirection, TDim> directions, double YoungsModulus,
+                    Eigen::VectorXd kelvinChainStiffness, Eigen::VectorXd kelvinChainRetardationTimes,
+                    double poissonRatio)
 {
     constexpr int numElementsDirection = 3;
     Structure S(TDim);
@@ -74,22 +77,14 @@ void TestCreepModel(std::array<eDirection, TDim> directions, double poissonRatio
     //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::CREEP);
 
-    Eigen::VectorXd kelvinChainStiffness;
-    Eigen::VectorXd kelvinChainRetardationTime;
-    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 4.e9);
+
+    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
     S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, poissonRatio);
-    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-    //    Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
-    //                                                  (Eigen::VectorXd(1) << 5.0e9).finished());
-    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-    //                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
-    //                                                  (Eigen::VectorXd(1) << 10000.).finished());
 
     S.ConstitutiveLawSetParameterFullVectorDouble(lawID, Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
-                                                  (Eigen::VectorXd(2) << 20.e9, 5.e9).finished());
-    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
-                                                  (Eigen::VectorXd(2) << 5000., 10000.).finished());
+                                                  kelvinChainStiffness);
+    S.ConstitutiveLawSetParameterFullVectorDouble(
+            lawID, Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME, kelvinChainRetardationTimes);
 
     S.ElementGroupSetConstitutiveLaw(elementGroupID, lawID);
     S.InterpolationTypeAdd(interpolationTypeID, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -173,7 +168,9 @@ void TestCreepModel(std::array<eDirection, TDim> directions, double poissonRatio
     resultDir.append("D");
     boost::filesystem::create_directory(resultDir);
 
-    resultDir.append("/direction=");
+    resultDir.append("/");
+    resultDir.append(testName);
+    resultDir.append("_direction=");
     switch (directions[0])
     {
     case eDirection::X:
@@ -204,25 +201,32 @@ void TestCreepModel(std::array<eDirection, TDim> directions, double poissonRatio
 }
 
 
-void PerformTestSeries(double poissonRatio)
+void PerformTestSeries(std::string testName, double YoungsModulus, Eigen::VectorXd kelvinChainStiffness,
+                       Eigen::VectorXd kelvinChainRetardationTimes, double poissonRatio)
 {
-    TestCreepModel<1>({eDirection::X}, poissonRatio);
-    TestCreepModel<2>({eDirection::X, eDirection::Y}, poissonRatio);
-    TestCreepModel<2>({eDirection::Y, eDirection::X}, poissonRatio);
-    TestCreepModel<3>({eDirection::X, eDirection::Y, eDirection::Z}, poissonRatio);
-    TestCreepModel<3>({eDirection::Y, eDirection::Z, eDirection::X}, poissonRatio);
-    TestCreepModel<3>({eDirection::Z, eDirection::X, eDirection::Y}, poissonRatio);
+    TestCreepModel<1>(testName, {eDirection::X}, YoungsModulus, kelvinChainStiffness, kelvinChainRetardationTimes,
+                      poissonRatio);
+    TestCreepModel<2>(testName, {eDirection::X, eDirection::Y}, YoungsModulus, kelvinChainStiffness,
+                      kelvinChainRetardationTimes, poissonRatio);
+    TestCreepModel<2>(testName, {eDirection::Y, eDirection::X}, YoungsModulus, kelvinChainStiffness,
+                      kelvinChainRetardationTimes, poissonRatio);
+    TestCreepModel<3>(testName, {eDirection::X, eDirection::Y, eDirection::Z}, YoungsModulus, kelvinChainStiffness,
+                      kelvinChainRetardationTimes, poissonRatio);
+    TestCreepModel<3>(testName, {eDirection::Y, eDirection::Z, eDirection::X}, YoungsModulus, kelvinChainStiffness,
+                      kelvinChainRetardationTimes, poissonRatio);
+    TestCreepModel<3>(testName, {eDirection::Z, eDirection::X, eDirection::Y}, YoungsModulus, kelvinChainStiffness,
+                      kelvinChainRetardationTimes, poissonRatio);
 }
 
 int main(int argc, char* argv[])
 {
-    // TODO: Different number of chain elements
-
     // Poisson Ratio = 0.0
-    PerformTestSeries(0.0);
+    PerformTestSeries("TwoChainElementsWithSpring", 4.e9, (Eigen::VectorXd(2) << 20.e9, 5.e9).finished(),
+                      (Eigen::VectorXd(2) << 5000., 10000.).finished(), 0.0);
 
     // Poisson Ratio = 0.2
-    PerformTestSeries(0.2);
+    PerformTestSeries("TwoChainElementsWithSpring", 4.e9, (Eigen::VectorXd(2) << 20.e9, 5.e9).finished(),
+                      (Eigen::VectorXd(2) << 5000., 10000.).finished(), 0.2);
 
     return 0;
 }
