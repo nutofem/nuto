@@ -13,7 +13,7 @@
 #include "typedefs.h"
 
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-
+using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 // geometry
 constexpr int dim = 2;
 constexpr double thickness = 1.0;
@@ -176,7 +176,9 @@ int main(int argc, char* argv[])
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetToleranceResidual(eDof::NONLOCALEQSTRAIN, toleranceNlEqStrain);
     newmarkFeti.SetToleranceIterativeSolver(1.e-4);
+    newmarkFeti.SetMaxNumIterations(7);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
+    newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
 
     Eigen::Matrix2d dispRHS;
     dispRHS(0, 0) = 0;

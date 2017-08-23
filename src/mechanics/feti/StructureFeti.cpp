@@ -713,28 +713,40 @@ NuTo::StructureFeti::InitializeDiagonalSparseMatrixWithVector(const NuTo::Struct
 
 void NuTo::StructureFeti::AddMultiplicityScalingForInterfaceDofs(NuTo::StructureFeti::VectorXd& scalingVector)
 {
-
     const auto dim = GetDimension();
 
     if (dim != 2)
         throw Exception(__PRETTY_FUNCTION__, "Multiplicity scaling only implemented for dimension = 2");
 
-    if (GetDofStatus().GetDofTypes().size() > 1)
-        throw Exception(__PRETTY_FUNCTION__, "Multiplicity scaling not implemented for multiple DOFs");
+    const auto& dofTypes = GetDofStatus().GetDofTypes();
 
     ReverseMap<int> localNodeIdToGlobalNodeIds;
     for (const auto& interface : mInterfaces)
         localNodeIdToGlobalNodeIds.addMap(interface.mGlobalNodeIdToLocalNodeId);
 
-    for (const auto& pair : localNodeIdToGlobalNodeIds)
+    int offsetRows = 0;
+
+
+
+    for (const auto& dofType : dofTypes)
     {
-        for (const auto& ele : pair.second)
+        for (const auto& pair : localNodeIdToGlobalNodeIds)
         {
-            const auto numSubdomainsThatShareThisNode = pair.second.size() + 1;
-            scalingVector[dim * ele] = 1. / numSubdomainsThatShareThisNode;
-            scalingVector[dim * ele + 1] = 1. / numSubdomainsThatShareThisNode;
+            for (const auto& globalNodeId : pair.second)
+            {
+                const auto globalDofId = globalNodeId * NuTo::Node::GetNumComponents(dofType, dim);
+                const auto numSubdomainsThatShareThisNode = pair.second.size() + 1;
+
+                for (int i = 0; i < dim; ++i)
+                {
+                    const int lagrangeMultiplierId = globalDofId + i + offsetRows;
+                    scalingVector[lagrangeMultiplierId] = 1. / numSubdomainsThatShareThisNode;
+                }
+            }
         }
+        offsetRows += NuTo::Node::GetNumComponents(dofType, dim) * mNumInterfaceNodesTotal;
     }
+
 }
 
 void NuTo::StructureFeti::AddSuperlumpedScalingForInterfaceDofs(const NuTo::StructureOutputBlockMatrix& hessian,
@@ -822,7 +834,7 @@ std::map<int, int> NuTo::StructureFeti::DetermineAdditionalGlobalToLocalNodeIdMa
 }
 
 NuTo::StructureFeti::VectorXd
-NuTo::StructureFeti::CalculateStiffnessAtInterfaceNodes(const NuTo::StructureOutputBlockMatrix &hessian)
+NuTo::StructureFeti::CalculateStiffnessAtInterfaceNodes(const NuTo::StructureOutputBlockMatrix& hessian)
 {
     constexpr auto DISPLACEMENTS = NuTo::Node::eDof::DISPLACEMENTS;
     const auto dim = GetDimension();

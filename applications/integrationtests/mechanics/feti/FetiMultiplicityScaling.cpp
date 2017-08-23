@@ -79,7 +79,8 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    assert(numIterationsLumpedMultiScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
+    if(numIterationsLumpedMultiScaling > numIterationsLumpedNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     int numIterationsDirichletNoScaling = 0;
@@ -114,7 +115,8 @@ int main(int argc, char* argv[])
         numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    assert(numIterationsDirichletMultiScaling < numIterationsDirichletNoScaling and "Scaling should improve convergence");
+    if(numIterationsDirichletMultiScaling > numIterationsDirichletNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

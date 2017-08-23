@@ -12,7 +12,7 @@
 #include "mechanics/groups/Group.h"
 
 #include "visualize/VisualizeEnum.h"
-
+#include "base/Exception.h"
 #include "typedefs.h"
 
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
@@ -64,27 +64,6 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    // Conjugate gradient, lumped preconditioner, Multiplicity scaling
-    {
-        NuTo::StructureFeti structure(dim);
-        InitializeStructure(structure);
-
-        if (structure.mRank == 0)
-            std::cout << "Multiplicity-scaling *************************** \n";
-
-        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
-        InitializeNewmarkFeti(newmarkFeti);
-        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
-        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
-
-        newmarkFeti.Solve(simulationTime);
-
-        numIterationsLumpedSuperlumpedScaling =
-                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
-
-        if (structure.mRank == 0)
-            std::cout << "Multiplicity-scaling *************************** \n";
-    }
 
     // Conjugate gradient, lumped preconditioner, superlumped scaling
     {
@@ -108,8 +87,59 @@ int main(int argc, char* argv[])
             std::cout << "K-scaling *************************** \n";
     }
 
-    assert(numIterationsLumpedSuperlumpedScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
+    if (numIterationsLumpedSuperlumpedScaling >= numIterationsLumpedNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence. iterations with scaling: " +
+                                                           std::to_string(numIterationsLumpedSuperlumpedScaling) +
+                                                           " iterations withour scaling: " +
+                                                           std::to_string(numIterationsLumpedNoScaling));
 
+    int numIterationsDirichletNoScaling = 0;
+    int numIterationsDirichletSuperlumpedScaling = 0;
+
+    // Conjugate gradient, lumped preconditioner, no scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiDirichletPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::None);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsDirichletNoScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+    }
+
+
+    // Conjugate gradient, lumped preconditioner, superlumped scaling
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
+
+        if (structure.mRank == 0)
+            std::cout << "K-scaling *************************** \n";
+
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiDirichletPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Superlumped);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsDirichletSuperlumpedScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+
+        if (structure.mRank == 0)
+            std::cout << "K-scaling *************************** \n";
+    }
+
+    if (numIterationsDirichletSuperlumpedScaling >= numIterationsDirichletNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence. iterations with scaling: " +
+                                                   std::to_string(numIterationsDirichletSuperlumpedScaling) +
+                                                   " iterations withour scaling: " +
+                                                   std::to_string(numIterationsDirichletNoScaling));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
