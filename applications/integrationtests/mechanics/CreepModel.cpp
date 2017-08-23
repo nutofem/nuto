@@ -26,7 +26,7 @@ using namespace NuTo;
 using namespace NuTo::Constraint;
 
 template <int TDim>
-void TestCreepModel()
+void TestCreepModel(std::array<eDirection, TDim> directions, double poissonRatio)
 {
     constexpr int numElementsDirection = 3;
     Structure S(TDim);
@@ -71,25 +71,25 @@ void TestCreepModel()
 
     // Constitutive law
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::CREEP);
 
     Eigen::VectorXd kelvinChainStiffness;
     Eigen::VectorXd kelvinChainRetardationTime;
-    S.ConstitutiveLawSetParameterFullVectorDouble(lawID, Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
-                                                  (Eigen::VectorXd(1) << 5.0e9).finished());
-    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
-                                                  (Eigen::VectorXd(1) << 10000.).finished());
+    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 4.e9);
+    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, poissonRatio);
+    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
+    //    Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
+    //                                                  (Eigen::VectorXd(1) << 5.0e9).finished());
+    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
+    //                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
+    //                                                  (Eigen::VectorXd(1) << 10000.).finished());
+
     S.ConstitutiveLawSetParameterFullVectorDouble(lawID, Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
                                                   (Eigen::VectorXd(2) << 20.e9, 5.e9).finished());
     S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
                                                   Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
                                                   (Eigen::VectorXd(2) << 5000., 10000.).finished());
-    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-
-    //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 4.e9);
-    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
     S.ElementGroupSetConstitutiveLaw(elementGroupID, lawID);
     S.InterpolationTypeAdd(interpolationTypeID, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -101,32 +101,36 @@ void TestCreepModel()
 
     auto virtualNodePtr = S.NodeGetNodePtr(S.NodeCreate(Eigen::VectorXd::Ones(TDim) * -1, {Node::eDof::DISPLACEMENTS}));
 
-    auto& leftNodesGroup = S.GroupGetNodeCoordinateRange(eDirection::X, 0.0, 0.0);
-    auto& rightNodesGroup = S.GroupGetNodeCoordinateRange(eDirection::X, 1.0, 1.0);
+    auto& leftNodesGroup = S.GroupGetNodeCoordinateRange(directions[0], 0.0, 0.0);
+    auto& rightNodesGroup = S.GroupGetNodeCoordinateRange(directions[0], 1.0, 1.0);
     assert(rightNodesGroup.GetNumMembers() > 0);
     assert(leftNodesGroup.GetNumMembers() > 0);
 
-    S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(leftNodesGroup, {eDirection::X}));
+    S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(leftNodesGroup, {directions[0]}));
     for (auto& itNode : rightNodesGroup)
     {
         S.Constraints().Add(Node::eDof::DISPLACEMENTS,
-                            Equation({Term(*virtualNodePtr, 0, 1), Term(*S.NodeGetNodePtr(itNode.first), 0, -1)}));
+                            Equation({Term(*virtualNodePtr, ToComponentIndex(directions[0]), 1),
+                                      Term(*S.NodeGetNodePtr(itNode.first), ToComponentIndex(directions[0]), -1)}));
     }
 
     // Additional 2D/3D constraints
     if (TDim > 1)
     {
         auto& nodeOrigin = S.NodeGetAtCoordinate(Eigen::VectorXd::Zero(TDim));
-        S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {eDirection::Y}));
-        S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {eDirection::Y}));
+        S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {directions[1]}));
+        S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {directions[1]}));
 
+        // Additional 3D constraints
         if (TDim > 2)
         {
-            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {eDirection::Z}));
-            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {eDirection::Z}));
+            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(nodeOrigin, {directions[2]}));
+            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(*virtualNodePtr, {directions[2]}));
 
-            auto& additionalNode = S.NodeGetAtCoordinate((Eigen::VectorXd(TDim) << 0.0, 1.0, 0.0).finished());
-            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(additionalNode, {eDirection::Z}));
+            Eigen::VectorXd additionalNodeCoordinates = Eigen::VectorXd::Zero(TDim);
+            additionalNodeCoordinates[ToComponentIndex(directions[1])] = 1.0;
+            auto& additionalNode = S.NodeGetAtCoordinate(additionalNodeCoordinates);
+            S.Constraints().Add(Node::eDof::DISPLACEMENTS, Constraint::Component(additionalNode, {directions[2]}));
         }
     }
 
@@ -143,7 +147,7 @@ void TestCreepModel()
 
 
     Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
-    direction[0] = 1;
+    direction[ToComponentIndex(directions[0])] = 1;
     int load = S.LoadCreateNodeForce(virtualNodePtr, direction, 1);
     NM.SetTimeDependentLoadCase(load, timeDependentLoad);
 
@@ -159,7 +163,7 @@ void TestCreepModel()
     S.AddVisualizationComponent(visualizeGroup, eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 
 
-    // Solve
+    // Set result directory
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     std::string resultDir = "CreepModelResults";
     boost::filesystem::create_directory(resultDir);
@@ -167,7 +171,29 @@ void TestCreepModel()
     resultDir.append("/");
     resultDir.append(std::to_string(TDim));
     resultDir.append("D");
+    boost::filesystem::create_directory(resultDir);
 
+    resultDir.append("/direction=");
+    switch (directions[0])
+    {
+    case eDirection::X:
+        resultDir.append("X");
+        break;
+    case eDirection::Y:
+        resultDir.append("Y");
+        break;
+    case eDirection::Z:
+        resultDir.append("Z");
+        break;
+    default:
+        resultDir.append("UNKNOWN");
+        break;
+    }
+    resultDir.append("_nu=");
+    resultDir.append(std::to_string(poissonRatio));
+
+    // Solve
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     NM.SetAutomaticTimeStepping(false);
     NM.SetTimeStep(TIMESTEP);
     NM.SetPerformLineSearch(false);
@@ -178,13 +204,25 @@ void TestCreepModel()
 }
 
 
+void PerformTestSeries(double poissonRatio)
+{
+    TestCreepModel<1>({eDirection::X}, poissonRatio);
+    TestCreepModel<2>({eDirection::X, eDirection::Y}, poissonRatio);
+    TestCreepModel<2>({eDirection::Y, eDirection::X}, poissonRatio);
+    TestCreepModel<3>({eDirection::X, eDirection::Y, eDirection::Z}, poissonRatio);
+    TestCreepModel<3>({eDirection::Y, eDirection::Z, eDirection::X}, poissonRatio);
+    TestCreepModel<3>({eDirection::Z, eDirection::X, eDirection::Y}, poissonRatio);
+}
+
 int main(int argc, char* argv[])
 {
     // TODO: Different number of chain elements
-    // TODO: Add direction option to test Y and Z as well
-    // TODO: Test Poisson Ratio 0 and some other value
-    TestCreepModel<1>();
-    TestCreepModel<2>();
-    TestCreepModel<3>();
+
+    // Poisson Ratio = 0.0
+    PerformTestSeries(0.0);
+
+    // Poisson Ratio = 0.2
+    PerformTestSeries(0.2);
+
     return 0;
 }

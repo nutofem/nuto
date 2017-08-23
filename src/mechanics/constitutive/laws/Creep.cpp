@@ -20,7 +20,7 @@ template <int TDim>
 void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
                      Creep::Data& rStaticData)
 {
-    assert(mKC_E.rows() > 0);
+    //    assert(mKC_E.rows() > 0);
     assert(mKC_E.cols() == 1);
     assert(mKC_E.rows() == mKC_T.rows());
     assert(mKC_E.cols() == mKC_T.cols());
@@ -248,6 +248,9 @@ void Creep::SetParameterDouble(Constitutive::eConstitutiveParameter identifier, 
 {
     switch (identifier)
     {
+    case eConstitutiveParameter::YOUNGS_MODULUS:
+        mE = value;
+        break;
     case eConstitutiveParameter::POISSONS_RATIO:
         mNu = value;
         break;
@@ -368,7 +371,7 @@ double Creep::ExponentialAlgorithmCalculateLambda(unsigned int index, double del
 
 double Creep::ExponentialAlgorithmCalculateChainStiffness(double delta_t) const
 {
-    assert(mKC_E.rows() > 0);
+    //    assert(mKC_E.rows() > 0);
     assert(mKC_E.cols() == 1);
     double KelvinChainStiffnessInverted = 0.0;
     if (mE > 0.)
