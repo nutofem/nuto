@@ -22,7 +22,6 @@
 #define MAXITERATION 20
 #define EXTERNALFORCE -1.e9;
 
-#include "mechanics/structures/Assembler.h"
 using namespace NuTo;
 using namespace NuTo::Constraint;
 
@@ -63,7 +62,7 @@ void TestCreepModel()
         S.ElementTotalSetSection(SectionTruss::Create(1.0));
         break;
     case 2:
-        S.ElementTotalSetSection(SectionPlane::Create(1.0, true));
+        S.ElementTotalSetSection(SectionPlane::Create(1.0, false));
         break;
     default:
         break;
@@ -81,17 +80,16 @@ void TestCreepModel()
     S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
                                                   Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
                                                   (Eigen::VectorXd(1) << 10000.).finished());
-    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-    //    Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
-    //                                                  (Eigen::VectorXd(2) << 5.0e9, 7.5e9).finished());
-    //    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
-    //                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
-    //                                                  (Eigen::VectorXd(2) << 10000., 50000.).finished());
-    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    S.ConstitutiveLawSetParameterFullVectorDouble(lawID, Constitutive::eConstitutiveParameter::KELVIN_CHAIN_STIFFNESS,
+                                                  (Eigen::VectorXd(2) << 20.e9, 5.e9).finished());
+    S.ConstitutiveLawSetParameterFullVectorDouble(lawID,
+                                                  Constitutive::eConstitutiveParameter::KELVIN_CHAIN_RETARDATIONTIME,
+                                                  (Eigen::VectorXd(2) << 5000., 10000.).finished());
+    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
     //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 60 * 10e9);
-    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 4.e9);
+    //    S.ConstitutiveLawSetParameterDouble(lawID, Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
     S.ElementGroupSetConstitutiveLaw(elementGroupID, lawID);
     S.InterpolationTypeAdd(interpolationTypeID, Node::eDof::DISPLACEMENTS, Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -146,25 +144,8 @@ void TestCreepModel()
 
     Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
     direction[0] = 1;
-    //    int load = S.LoadCreateNodeGroupForce(S.GroupGetId(&rightNodesGroup), direction, 1);
     int load = S.LoadCreateNodeForce(virtualNodePtr, direction, 1);
     NM.SetTimeDependentLoadCase(load, timeDependentLoad);
-
-
-    //    if (TDim == 2)
-    //    {
-    //        int rightEdgeNodeGroup = S.GroupCreate(eGroupId::Nodes);
-    //        S.GroupAddNodeFunction(rightEdgeNodeGroup, [](NodeBase* node) -> bool {
-    //            if (node->Get(Node::eDof::COORDINATES)[0] == 1.0 &&
-    //                (node->Get(Node::eDof::COORDINATES)[1] == 0.0 || node->Get(Node::eDof::COORDINATES)[1] == 1.0))
-    //                return true;
-    //            else
-    //                return false;
-    //        });
-    //        assert(S.GroupGetNumMembers(rightEdgeNodeGroup) == 2);
-    //        int loadEdge = S.LoadCreateNodeGroupForce(rightEdgeNodeGroup, direction, 1);
-    //        NM.SetTimeDependentLoadCase(loadEdge, timeDependentLoad);
-    //    }
 
 
     // Visualization
