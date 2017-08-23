@@ -11,29 +11,54 @@
 #include "mechanics/sections/SectionTruss.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/TimeControl.h"
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
 #include <boost/filesystem.hpp>
 
+#define NUMELEMENTSPERDIRECTION 3
+
 #define TIMESTEP 2000.0
 #define SIMULATIONTIME 100000.0
-#define TOLERANCE 1.e-2
+
+#define NUMERICALTOLERANCE 1.e-2
 #define MAXITERATION 20
-#define EXTERNALFORCE -1.e9;
-#define TOTALYOUNGSMODULUS 2.e9;
+
+#define EXTERNALFORCE -1.e9
+#define TOTALYOUNGSMODULUS 2.e9
 
 using namespace NuTo;
 using namespace NuTo::Constraint;
+
+double CalcTotalStiffnes(double YoungsModulus, Eigen::VectorXd kelvinChainStiffness)
+{
+    double totalCompliance = 1 / YoungsModulus;
+    for (unsigned int i = 0; i < kelvinChainStiffness.rows(); ++i)
+    {
+        totalCompliance += 1 / kelvinChainStiffness[i];
+    }
+    return 1 / totalCompliance;
+}
+
+double CalculateTheoreticalKelvinChainStrain()
+{
+    return 0.0;
+}
 
 template <int TDim>
 void TestCreepModel(std::string testName, const std::array<eDirection, TDim> directions, double YoungsModulus,
                     Eigen::VectorXd kelvinChainStiffness, Eigen::VectorXd kelvinChainRetardationTimes,
                     double poissonRatio)
 {
-    constexpr int numElementsDirection = 3;
+    assert(std::abs(CalcTotalStiffnes(YoungsModulus, kelvinChainStiffness) - TOTALYOUNGSMODULUS) < 1.e-6);
+    assert(kelvinChainStiffness.rows() == kelvinChainRetardationTimes.rows());
+    assert(kelvinChainStiffness.cols() == kelvinChainRetardationTimes.cols());
+
     Structure S(TDim);
     NewmarkDirect NM(&S);
+
+    S.SetShowTime(false);
 
     // Mesh
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,14 +66,14 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     switch (TDim)
     {
     case 1:
-        meshData = MeshGenerator::Grid(S, {1.0}, {numElementsDirection});
+        meshData = MeshGenerator::Grid(S, {1.0}, {NUMELEMENTSPERDIRECTION});
         break;
     case 2:
-        meshData = MeshGenerator::Grid(S, {1.0, 1.0}, {numElementsDirection, numElementsDirection});
+        meshData = MeshGenerator::Grid(S, {1.0, 1.0}, {NUMELEMENTSPERDIRECTION, NUMELEMENTSPERDIRECTION});
         break;
     case 3:
         meshData = MeshGenerator::Grid(S, {1.0, 1.0, 1.0},
-                                       {numElementsDirection, numElementsDirection, numElementsDirection});
+                                       {NUMELEMENTSPERDIRECTION, NUMELEMENTSPERDIRECTION, NUMELEMENTSPERDIRECTION});
         break;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Invalid dimension");
@@ -74,7 +99,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
     // Constitutive law
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    //    int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+
     int lawID = S.ConstitutiveLawCreate(Constitutive::eConstitutiveType::CREEP);
 
 
@@ -149,6 +174,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
     // Visualization
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     int visualizeGroup = S.GroupCreate(eGroupId::Elements);
     S.GroupAddElementsTotal(visualizeGroup);
 
@@ -160,6 +186,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
     // Set result directory
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     std::string resultDir = "CreepModelResults";
     boost::filesystem::create_directory(resultDir);
 
@@ -189,15 +216,71 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     resultDir.append("_nu=");
     resultDir.append(std::to_string(poissonRatio));
 
+    // Setup custom postprocessing
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
+    constexpr int numTimesteps = std::ceil(SIMULATIONTIME / TIMESTEP) + 1;
+    int lastCallbackTime = -1;
+
+    Eigen::MatrixXd timeDependentStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
+    Eigen::VectorXd timeVector = Eigen::VectorXd::Zero(numTimesteps);
+
+    // Set postprocessing callback function
+    NM.PostProcessing().SetCallback([&](const StructureBase& Structure, const TimeControl& timeControl) {
+
+        assert(lastCallbackTime < timeControl.GetCurrentTime());
+        lastCallbackTime = timeControl.GetCurrentTime();
+
+        int index = std::ceil(timeControl.GetCurrentTime() / TIMESTEP);
+        assert(index < numTimesteps);
+
+        std::vector<int> elementIDs(0);
+        S.ElementGroupGetMembers(elementGroupID, elementIDs);
+        assert(elementIDs.size() == std::pow(NUMELEMENTSPERDIRECTION, TDim));
+
+        timeVector[index] = timeControl.GetCurrentTime();
+
+        for (unsigned int i = 0; i < elementIDs.size(); ++i)
+        {
+            auto IPStrains = S.ElementGetEngineeringStrain(elementIDs[i]);
+            for (unsigned int j = 0; j < IPStrains.cols(); ++j)
+            {
+                if (i == 0 && j == 0)
+                {
+                    timeDependentStrains.block<VoigtDim, 1>(0, index) = IPStrains.block<VoigtDim, 1>(0, 0);
+                }
+                else
+                {
+                    Eigen::MatrixXd diff =
+                            (timeDependentStrains.block<VoigtDim, 1>(0, index) - IPStrains.block<VoigtDim, 1>(0, j));
+                    if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-12)
+                        throw Exception(__FUNCTION__,
+                                        "Element IP strains differ to much. They should be equal over the whole mesh!");
+                }
+            }
+        }
+    });
+
+
     // Solve
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     NM.SetAutomaticTimeStepping(false);
     NM.SetTimeStep(TIMESTEP);
     NM.SetPerformLineSearch(false);
-    NM.SetToleranceResidual(Node::eDof::DISPLACEMENTS, TOLERANCE);
+    NM.SetToleranceResidual(Node::eDof::DISPLACEMENTS, NUMERICALTOLERANCE);
     NM.SetMaxNumIterations(MAXITERATION);
     NM.PostProcessing().SetResultDirectory(resultDir, true);
     NM.Solve(SIMULATIONTIME);
+
+    // CheckResults
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Eigen::MatrixXd theoreticalStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
+    for (unsigned int i = 0; i < numTimesteps; ++i)
+    {
+    }
 }
 
 
