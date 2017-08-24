@@ -35,7 +35,10 @@ using namespace NuTo::Constraint;
 
 double CalcTotalStiffnes(double YoungsModulus, Eigen::VectorXd kelvinChainStiffness)
 {
-    double totalCompliance = 1 / YoungsModulus;
+
+    double totalCompliance = 0.;
+    if (YoungsModulus > 0.)
+        totalCompliance += 1 / YoungsModulus;
     for (unsigned int i = 0; i < kelvinChainStiffness.rows(); ++i)
     {
         totalCompliance += 1 / kelvinChainStiffness[i];
@@ -363,7 +366,7 @@ int main(int argc, char* argv[])
     // No chain elements, just a spring (linear elastic)
     PerformTestSeries("LinearElastic", 2.e9, Eigen::VectorXd::Zero(0), Eigen::VectorXd::Zero(0), 0.2);
 
-    // No chain elements, just a spring (linear elastic)
+    // No chain elements, just a spring(linear elastic)
     PerformTestSeries("SingleKelvinUnit", 0.0, (Eigen::VectorXd(1) << 2.e9).finished(),
                       (Eigen::VectorXd(1) << 5000.).finished(), 0.2);
 
