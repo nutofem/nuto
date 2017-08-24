@@ -168,7 +168,8 @@ void NuTo::Assembler::ThrowIfRenumberingRequred() const
 }
 
 
-NuTo::BlockFullVector<double> NuTo::Assembler::ApplyCMatrix(const StructureOutputBlockVector& vec, const BlockSparseMatrix& cMat)
+NuTo::BlockFullVector<double> NuTo::Assembler::ApplyCMatrix(const StructureOutputBlockVector& vec,
+                                                            const BlockSparseMatrix& cMat)
 {
     auto result = vec.J;
 

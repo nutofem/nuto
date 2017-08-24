@@ -20,7 +20,7 @@ template <int TDim>
 void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
                      Creep::Data& rStaticData)
 {
-    assert(mKC_E.rows() > 0);
+    assert(mKC_E.rows() > 0 || mE > 0.0);
     assert(mKC_E.cols() == 1);
     assert(mKC_E.rows() == mKC_T.rows());
     assert(mKC_E.cols() == mKC_T.cols());
@@ -32,8 +32,14 @@ void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const Const
     // get static data
     auto& staticData = rStaticData.GetData();
 
+    // get and set time variables
+    const auto& itTime = rConstitutiveInput.find(Constitutive::eInput::TIME);
+    if (itTime != rConstitutiveInput.end())
+        staticData.SetCurrentTime((*itTime->second)[0]);
+    double delta_t = staticData.GetCurrentTime() - staticData.GetPreviousTime();
+
     // initialize history data
-    if (staticData.mHistoryData.rows() < 1 || staticData.mHistoryData.cols() != 1)
+    if (staticData.mHistoryData.rows() != VoigtDim || staticData.mHistoryData.cols() != mKC_E.rows())
     {
         staticData.mHistoryData = Eigen::MatrixXd::Zero(VoigtDim, mKC_E.rows());
         staticData.mHistoryStrain = Eigen::VectorXd::Zero(VoigtDim);
@@ -54,11 +60,6 @@ void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const Const
     assert(staticData.mDeltaStrain.cols() == 1);
     assert(staticData.mDeltaCreepStrain.rows() == VoigtDim);
     assert(staticData.mDeltaCreepStrain.cols() == 1);
-
-    const auto& itTime = rConstitutiveInput.find(Constitutive::eInput::TIME);
-    if (itTime != rConstitutiveInput.end())
-        staticData.SetCurrentTime((*itTime->second)[0]);
-    double delta_t = staticData.GetCurrentTime() - staticData.GetPreviousTime();
 
 
     for (auto& itOutput : rConstitutiveOutput)
@@ -83,7 +84,7 @@ void Creep::Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const Const
 
             for (unsigned int i = 0; i < VoigtDim; ++i)
             {
-                engineeringStress[i] = mKC_E(0) * engineeringStrain[i]; // still linear elastic
+                //                engineeringStress[i] = mKC_E(0) * engineeringStrain[i]; // still linear elastic
                 for (unsigned int j = 0; j < numKelvinUnits; ++j)
                 {
                     staticData.mDeltaCreepStrain[i] +=
@@ -247,6 +248,9 @@ void Creep::SetParameterDouble(Constitutive::eConstitutiveParameter identifier, 
 {
     switch (identifier)
     {
+    case eConstitutiveParameter::YOUNGS_MODULUS:
+        mE = value;
+        break;
     case eConstitutiveParameter::POISSONS_RATIO:
         mNu = value;
         break;
@@ -367,7 +371,7 @@ double Creep::ExponentialAlgorithmCalculateLambda(unsigned int index, double del
 
 double Creep::ExponentialAlgorithmCalculateChainStiffness(double delta_t) const
 {
-    assert(mKC_E.rows() > 0);
+    assert(mKC_E.rows() > 0 || mE > 0.0);
     assert(mKC_E.cols() == 1);
     double KelvinChainStiffnessInverted = 0.0;
     if (mE > 0.)

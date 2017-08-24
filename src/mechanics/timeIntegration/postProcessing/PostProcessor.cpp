@@ -23,6 +23,8 @@ void PostProcessor::PostProcess(const StructureOutputBlockVector& outOfBalance)
 
     mStructure.WriteRestartFile(GetRestartFileName(), mTimeControl.GetCurrentTime());
 
+    mCallback(mStructure, mTimeControl);
+
     for (auto& result : mResults)
         result.CalculateAndAddValues(mStructure, mTimeStepResult, outOfBalance, mTimeControl.GetCurrentTime());
 
