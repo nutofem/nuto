@@ -221,7 +221,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
 
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
-    constexpr int numTimesteps = std::ceil(SIMULATIONTIME / TIMESTEP) + 1;
+    const int numTimesteps = std::ceil(SIMULATIONTIME / TIMESTEP) + 1; // std::ceil is jet not constexpr on clang
     int lastCallbackTime = -1;
 
     Eigen::MatrixXd timeDependentStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
