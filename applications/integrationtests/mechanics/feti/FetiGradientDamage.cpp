@@ -13,15 +13,12 @@
 #include "typedefs.h"
 
 using EigenSolver = Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>;
-
+using FetiScaling = NuTo::NewmarkFeti<EigenSolver>::eFetiScaling;
 // geometry
 constexpr int dim = 2;
 constexpr double thickness = 1.0;
 constexpr double lengthX = 60.;
 constexpr double lengthY = 10.;
-const Vector2d coordinateAtBottomLeft(0., 0.);
-const Vector2d coordinateAtBottomRight(lengthX, 0.);
-const Vector2d coordinateAtLoad(0.5 * lengthX, lengthY);
 
 // material
 constexpr double nonlocalRadius = 4; // mm
@@ -44,8 +41,8 @@ constexpr double toleranceNlEqStrain = 1e-8;
 constexpr double tolerance = 1e-5;
 
 constexpr double simulationTime = 1.0;
-constexpr double loadFactor = -0.5;
-constexpr double maxIterations = 10;
+constexpr double loadFactor = -0.1;
+constexpr int maxIterations = 10;
 
 int main(int argc, char* argv[])
 {
@@ -105,11 +102,15 @@ int main(int argc, char* argv[])
                           << "**      node groups              ** \n"
                           << "*********************************** \n\n";
 
+    const auto coordinateAtBottomLeft = Vector2d(0., 0.);
+    const auto coordinateAtBottomRight = Vector2d(lengthX, 0.);
+
     const auto& groupNodesAtBottomLeft = structure.GroupGetNodeRadiusRange(coordinateAtBottomLeft);
     const auto& groupNodeAtBottomRight = structure.GroupGetNodeRadiusRange(coordinateAtBottomRight);
 
     const auto groupNodesAtBoundaries = Group<NuTo::NodeBase>::Unite(groupNodeAtBottomRight, groupNodesAtBottomLeft);
 
+    const auto coordinateAtLoad = Vector2d(0.5 * lengthX, lengthY);
     const auto& groupNodeLoad = structure.GroupGetNodeRadiusRange(coordinateAtLoad);
 
     structure.GetLogger() << "*********************************** \n"
@@ -176,7 +177,9 @@ int main(int argc, char* argv[])
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetToleranceResidual(eDof::NONLOCALEQSTRAIN, toleranceNlEqStrain);
     newmarkFeti.SetToleranceIterativeSolver(1.e-4);
+    newmarkFeti.SetMaxNumIterations(10);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ProjectedGmres);
+    newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
 
     Eigen::Matrix2d dispRHS;
     dispRHS(0, 0) = 0;

@@ -277,9 +277,7 @@ public:
         VectorXd scalingVector = VectorXd::Zero(mNumLagrangeMultipliers);
         AddScalingForDirichletBCs(scalingVector);
         AddMultiplicityScalingForInterfaceDofs(scalingVector);
-
         return InitializeDiagonalSparseMatrixWithVector(scalingVector);
-
     }
 
 
