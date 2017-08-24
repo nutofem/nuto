@@ -15,11 +15,13 @@
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
+#include <cmath>
 #include <boost/filesystem.hpp>
 
 #define NUMELEMENTSPERDIRECTION 3
 
-#define TIMESTEP 2000.0
+#define INITIALTIMESTEP 1.e-9
+#define TIMESTEP 20000.0
 #define SIMULATIONTIME 100000.0
 
 #define NUMERICALTOLERANCE 1.e-2
@@ -41,10 +43,22 @@ double CalcTotalStiffnes(double YoungsModulus, Eigen::VectorXd kelvinChainStiffn
     return 1 / totalCompliance;
 }
 
-double CalculateTheoreticalKelvinChainStrain()
+
+double CalculateTheoreticalKelvinChainStrain(double YoungsModulus, Eigen::VectorXd kelvinChainStiffness,
+                                             Eigen::VectorXd kelvinChainRetardationTimes, double time)
 {
-    return 0.0;
+    if (time <= 0.)
+        return 0.;
+
+    double totalStrain = 0.0;
+    if (YoungsModulus > 0.)
+        totalStrain += EXTERNALFORCE / YoungsModulus;
+    for (unsigned int i = 0; i < kelvinChainStiffness.rows(); ++i)
+        totalStrain +=
+                EXTERNALFORCE / kelvinChainStiffness[i] * (1. - std::exp(-time / kelvinChainRetardationTimes[i]));
+    return totalStrain;
 }
+
 
 template <int TDim>
 void TestCreepModel(std::string testName, const std::array<eDirection, TDim> directions, double YoungsModulus,
@@ -159,16 +173,16 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
     Eigen::MatrixXd timeDependentLoad(3, 2);
     timeDependentLoad(0, 0) = 0;
-    timeDependentLoad(1, 0) = TIMESTEP;
+    timeDependentLoad(1, 0) = INITIALTIMESTEP;
     timeDependentLoad(2, 0) = SIMULATIONTIME;
     timeDependentLoad(0, 1) = 0;
     timeDependentLoad(1, 1) = EXTERNALFORCE;
     timeDependentLoad(2, 1) = EXTERNALFORCE;
 
 
-    Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
-    direction[ToComponentIndex(directions[0])] = 1;
-    int load = S.LoadCreateNodeForce(virtualNodePtr, direction, 1);
+    Eigen::VectorXd loadDirection = Eigen::VectorXd::Zero(TDim);
+    loadDirection[ToComponentIndex(directions[0])] = 1;
+    int load = S.LoadCreateNodeForce(virtualNodePtr, loadDirection, 1);
     NM.SetTimeDependentLoadCase(load, timeDependentLoad);
 
 
@@ -216,6 +230,22 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     resultDir.append("_nu=");
     resultDir.append(std::to_string(poissonRatio));
 
+
+    // Setup custom timestepping
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    NM.GetTimeControl().SetTimeStepFunction(
+            [](TimeControl& timeControl, int iterations, int maxIterations, bool converged) -> double {
+                if (timeControl.GetCurrentTime() < INITIALTIMESTEP)
+                    return INITIALTIMESTEP;
+                if (timeControl.GetCurrentTime() < TIMESTEP)
+                    return TIMESTEP - timeControl.GetCurrentTime();
+                return TIMESTEP;
+
+            });
+    NM.GetTimeControl().AdjustTimestep(0, 1, true);
+
     // Setup custom postprocessing
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -233,31 +263,35 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
         assert(lastCallbackTime < timeControl.GetCurrentTime());
         lastCallbackTime = timeControl.GetCurrentTime();
 
-        int index = std::ceil(timeControl.GetCurrentTime() / TIMESTEP);
-        assert(index < numTimesteps);
-
-        std::vector<int> elementIDs(0);
-        S.ElementGroupGetMembers(elementGroupID, elementIDs);
-        assert(elementIDs.size() == std::pow(NUMELEMENTSPERDIRECTION, TDim));
-
-        timeVector[index] = timeControl.GetCurrentTime();
-
-        for (unsigned int i = 0; i < elementIDs.size(); ++i)
+        if (timeControl.GetCurrentTime() >= TIMESTEP || timeControl.GetCurrentTime() == 0.)
         {
-            auto IPStrains = S.ElementGetEngineeringStrain(elementIDs[i]);
-            for (unsigned int j = 0; j < IPStrains.cols(); ++j)
+            int index = std::round(timeControl.GetCurrentTime() / TIMESTEP);
+            assert(index < numTimesteps);
+
+            std::vector<int> elementIDs(0);
+            S.ElementGroupGetMembers(elementGroupID, elementIDs);
+            assert(elementIDs.size() == std::pow(NUMELEMENTSPERDIRECTION, TDim));
+
+            timeVector[index] = timeControl.GetCurrentTime();
+
+            for (unsigned int i = 0; i < elementIDs.size(); ++i)
             {
-                if (i == 0 && j == 0)
+                auto IPStrains = S.ElementGetEngineeringStrain(elementIDs[i]);
+                for (unsigned int j = 0; j < IPStrains.cols(); ++j)
                 {
-                    timeDependentStrains.block<VoigtDim, 1>(0, index) = IPStrains.block<VoigtDim, 1>(0, 0);
-                }
-                else
-                {
-                    Eigen::MatrixXd diff =
-                            (timeDependentStrains.block<VoigtDim, 1>(0, index) - IPStrains.block<VoigtDim, 1>(0, j));
-                    if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-12)
-                        throw Exception(__FUNCTION__,
-                                        "Element IP strains differ to much. They should be equal over the whole mesh!");
+                    if (i == 0 && j == 0)
+                    {
+                        timeDependentStrains.block<VoigtDim, 1>(0, index) = IPStrains.block<VoigtDim, 1>(0, 0);
+                    }
+                    else
+                    {
+                        Eigen::MatrixXd diff = (timeDependentStrains.block<VoigtDim, 1>(0, index) -
+                                                IPStrains.block<VoigtDim, 1>(0, j));
+                        if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-12)
+                            throw Exception(
+                                    __FUNCTION__,
+                                    "Element IP strains differ to much. They should be equal over the whole mesh!");
+                    }
                 }
             }
         }
@@ -266,8 +300,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
 
     // Solve
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    NM.SetAutomaticTimeStepping(false);
-    NM.SetTimeStep(TIMESTEP);
+
     NM.SetPerformLineSearch(false);
     NM.SetToleranceResidual(Node::eDof::DISPLACEMENTS, NUMERICALTOLERANCE);
     NM.SetMaxNumIterations(MAXITERATION);
@@ -280,7 +313,23 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     Eigen::MatrixXd theoreticalStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
     for (unsigned int i = 0; i < numTimesteps; ++i)
     {
+        double theoreticalStrain1D = CalculateTheoreticalKelvinChainStrain(YoungsModulus, kelvinChainStiffness,
+                                                                           kelvinChainRetardationTimes, timeVector[i]);
+        theoreticalStrains(ToComponentIndex(directions[0]), i) = theoreticalStrain1D;
+        if (TDim > 1)
+        {
+            theoreticalStrains(ToComponentIndex(directions[1]), i) = -theoreticalStrain1D * poissonRatio;
+            if (TDim > 2)
+                theoreticalStrains(ToComponentIndex(directions[2]), i) = -theoreticalStrain1D * poissonRatio;
+            else
+                // this is necessary in 2D because of plane stress state which produces sheer stresses
+                theoreticalStrains(2, i) = -theoreticalStrain1D * poissonRatio;
+        }
     }
+
+    Eigen::MatrixXd diff = theoreticalStrains - timeDependentStrains;
+    if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-5)
+        throw Exception(__PRETTY_FUNCTION__, "Solution differs too much from theoretical solution");
 }
 
 
@@ -310,6 +359,13 @@ int main(int argc, char* argv[])
     // Poisson Ratio = 0.2
     PerformTestSeries("TwoChainElementsWithSpring", 4.e9, (Eigen::VectorXd(2) << 20.e9, 5.e9).finished(),
                       (Eigen::VectorXd(2) << 5000., 10000.).finished(), 0.2);
+
+    // No chain elements, just a spring (linear elastic)
+    PerformTestSeries("LinearElastic", 2.e9, Eigen::VectorXd::Zero(0), Eigen::VectorXd::Zero(0), 0.2);
+
+    // No chain elements, just a spring (linear elastic)
+    PerformTestSeries("SingleKelvinUnit", 0.0, (Eigen::VectorXd(1) << 2.e9).finished(),
+                      (Eigen::VectorXd(1) << 5000.).finished(), 0.2);
 
     return 0;
 }
