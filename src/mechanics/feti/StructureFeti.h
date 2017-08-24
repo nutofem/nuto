@@ -10,6 +10,7 @@
 #include <fstream>
 #include <set>
 #include <mechanics/MechanicsEnums.h>
+#include <mechanics/nodes/NodeEnum.h>
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/nodes/NodeBase.h"
 
@@ -98,7 +99,7 @@ private:
 
     struct Interface
     {
-        std::map<int, int> mNodeIdsMap;
+        std::map<int, int> mGlobalNodeIdToLocalNodeId;
         int mValue;
     };
 
@@ -263,47 +264,36 @@ public:
         return importContainer;
     }
 
-    std::map<int,int> GetLagrangeMultipliersGlobalIdToLocalId() const
+    std::map<int, int> GetLagrangeMultipliersGlobalIdToLocalId() const
     {
         return mLagrangeMultipliersGlobalIdToLocalId;
     };
 
+
+
     /// \brief Assembles vector for multiplicity scaling
     SparseMatrix MultiplicityScaling()
     {
-        if (not(GetDimension() == 2))
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
+        VectorXd scalingVector = VectorXd::Zero(mNumLagrangeMultipliers);
+        AddScalingForDirichletBCs(scalingVector);
+        AddMultiplicityScalingForInterfaceDofs(scalingVector);
 
-        if (GetDofStatus().GetDofTypes().size() > 1)
-            throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing not implemented for multiple DOFs");
+        return InitializeDiagonalSparseMatrixWithVector(scalingVector);
 
-        // \todo special care needs to be taken for multiple dofs
-        const double dim = GetDimension();
-
-        // Vector is initialized with ones because it takes care of all DOFs with Dirichlet BCs
-        // Interfaces are treated separately
-        Eigen::VectorXd multiplicity = Eigen::VectorXd::Ones(mNumLagrangeMultipliers);
-
-        ReverseMap<int> localNodeIdToGlobalNodeIds;
-        for (const auto& interface : mInterfaces)
-            localNodeIdToGlobalNodeIds.addMap(interface.mNodeIdsMap);
-
-        for (const auto& pair : localNodeIdToGlobalNodeIds)
-        {
-            for (const auto& ele : pair.second)
-            {
-                const int numSubdomainsThatShareThisNode = pair.second.size() + 1;
-                multiplicity[dim * ele] = 1. / numSubdomainsThatShareThisNode;
-                multiplicity[dim * ele + 1] = 1. / numSubdomainsThatShareThisNode;
-            }
-        }
-
-        SparseMatrix ScalingMatrix(mNumLagrangeMultipliers, mNumLagrangeMultipliers);
-        for (int i = 0; i < mNumLagrangeMultipliers; ++i)
-            ScalingMatrix.insert(i, i) = multiplicity[i];
-
-        return ScalingMatrix;
     }
+
+
+    /// \brief Assembles vector for superlumped scaling
+    SparseMatrix SuperlumpedScaling(const StructureOutputBlockMatrix& hessian)
+    {
+        VectorXd scalingVector = VectorXd::Zero(mNumLagrangeMultipliers);
+        AddScalingForDirichletBCs(scalingVector);
+        AddSuperlumpedScalingForInterfaceDofs(hessian, scalingVector);
+
+        return InitializeDiagonalSparseMatrixWithVector(scalingVector);
+    }
+
+
     ///
     Eigen::VectorXd& GetPrescribedDofVector()
     {
@@ -341,6 +331,15 @@ public:
     }
 
 private:
+
+    void AddSuperlumpedScalingForInterfaceDofs(const StructureOutputBlockMatrix &hessian, VectorXd &scalingVector);
+
+    void AddScalingForDirichletBCs(VectorXd &scalingVector);
+
+    void AddMultiplicityScalingForInterfaceDofs(VectorXd &scalingVector);
+
+    SparseMatrix InitializeDiagonalSparseMatrixWithVector(const VectorXd &vector);
+
     ///
     /// \param interfaceCoordinates
     /// \param globalNodeId
@@ -362,7 +361,7 @@ private:
 
         for (size_t i = 0; i < nodeIdsInterface.size(); ++i)
         {
-            mInterfaces[interfaceId].mNodeIdsMap.emplace(globalNodeId, nodeIdsInterface[i]);
+            mInterfaces[interfaceId].mGlobalNodeIdToLocalNodeId.emplace(globalNodeId, nodeIdsInterface[i]);
             ++globalNodeId;
         }
     }
@@ -432,6 +431,10 @@ protected:
     SparseMatrix mConnectivityMatrix;
 
     /// \brief Maps the global lagrange multiplier ids to the local DOF id
-    std::map<int,int> mLagrangeMultipliersGlobalIdToLocalId;
+    std::map<int, int> mLagrangeMultipliersGlobalIdToLocalId;
+
+    std::map<int, int> DetermineAdditionalGlobalToLocalNodeIdMapForCornerNodes();
+
+    VectorXd CalculateStiffnessAtInterfaceNodes(const StructureOutputBlockMatrix &hessian);
 };
 } // namespace NuTo

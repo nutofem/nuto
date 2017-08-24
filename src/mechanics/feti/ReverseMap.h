@@ -65,6 +65,11 @@ public:
         return mMap.size();
     }
 
+    auto find(T key)
+    {
+        return mMap.find(key);
+    }
+
 private:
     std::map<T, vector_t> mMap;
 };
