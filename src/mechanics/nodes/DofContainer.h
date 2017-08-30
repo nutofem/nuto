@@ -1,42 +1,33 @@
 #pragma once
 
-#include <vector>
+#include <map>
 #include "mechanics/nodes/DofType.h"
 
 namespace NuTo
 {
-
-
 template <typename T>
 class DofContainer
 {
 public:
-    DofContainer()
-    {
-        constexpr int magicVectorSize = 10;
-        mData.resize(magicVectorSize);
-    }
-
     virtual ~DofContainer() = default;
+
+    DofContainer() = default;
     DofContainer(const DofContainer&) = default;
     DofContainer(DofContainer&&) = default;
     DofContainer& operator=(const DofContainer&) = default;
     DofContainer& operator=(DofContainer&&) = default;
 
-    T& operator[](const DofType& rDofType)
+    T& operator[](const DofType& dofType)
     {
-        // return mData[rDofType.GetId()];
-        return mData.at(rDofType.GetId());
+        return mData[dofType.GetId()];
     }
 
-    const T& operator[](const DofType& rDofType) const
+    const T& operator[](const DofType& dofType) const
     {
-        // return mData[rDofType.GetId()];
-        return mData.at(rDofType.GetId());
+        return mData.at(dofType.GetId());
     }
 
 protected:
-    std::vector<T> mData;
+    std::map<int, T> mData;
 };
-
 } /* NuTo */

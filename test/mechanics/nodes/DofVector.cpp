@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include "mechanics/nodes/DofVector.h"
+#include <sstream>
 
 BOOST_AUTO_TEST_CASE(DofVectorAddition)
 {
@@ -55,3 +56,17 @@ BOOST_AUTO_TEST_CASE(DofVectorUninitializedAddition)
     BoostUnitTest::CheckVector(dofVector0[dof0], std::vector<double>({11, 22, 33}), 3);
     BoostUnitTest::CheckVector(dofVector0[dof1], std::vector<double>({88, 99}), 2);
 }
+
+BOOST_AUTO_TEST_CASE(DofVectorStream)
+{
+    NuTo::DofType dof0("foo", 1, 0);
+    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofVector<double> dofVector;
+    dofVector[dof0] = Eigen::Vector3d::Zero();
+    dofVector[dof1] = Eigen::Vector3d::Zero();
+    std::stringstream ss;
+    ss << dofVector;
+    BOOST_CHECK(ss.str().find("foo") == std::string::npos);
+    BOOST_CHECK(ss.str().find("bar") == std::string::npos);
+}
+

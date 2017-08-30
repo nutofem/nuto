@@ -11,34 +11,50 @@ template <typename T>
 class DofVector : public DofContainer<Eigen::Matrix<T, Eigen::Dynamic, 1>>
 {
 public:
-    DofVector& operator+=(const DofVector& rOther)
+    DofVector& operator+=(const DofVector& rhs)
     {
-        for (std::size_t i = 0; i < rOther.mData.size(); ++i)
+        for (const auto& it : rhs.mData)
         {
-            if (this->mData[i].rows() == 0)
-                this->mData[i] = rOther.mData[i];
+            auto& thisData = this->mData[it.first];
+            if (thisData.rows() == 0)
+            {
+                thisData = it.second;
+            }
             else
-                this->mData[i] += rOther.mData[i];
+            {
+                assert(thisData.rows() == it.second.rows());
+                thisData += it.second;
+            }
         }
         return *this;
     }
 
-    DofVector& operator*=(double rScalar)
+    DofVector& operator*=(double scalar)
     {
-        for (std::size_t i = 0; i < this->mData.size(); ++i)
-            this->mData[i] *= rScalar;
+        for (auto& it : this->mData)
+            it.second *= scalar;
         return *this;
     }
 
-
-    friend DofVector operator+(DofVector rLhs, const DofVector& rRhs)
+    friend DofVector operator+(DofVector lhs, const DofVector& rhs)
     {
-        return std::move(rLhs += rRhs);
+        return std::move(lhs += rhs);
     }
 
-    friend DofVector operator*(DofVector rLhs, double rScalar)
+    friend DofVector operator*(DofVector lhs, double scalar)
     {
-        return std::move(rLhs *= rScalar);
+        return std::move(lhs *= scalar);
+    }
+    
+    friend std::ostream& operator<<(std::ostream& out, const DofVector<T>& dofVector)
+    {
+        for (auto const& data : dofVector.mData)
+        {
+            out << "====" << std::endl;
+            out << data.second << std::endl;
+        }
+        out << "====" << std::endl;
+        return out;
     }
 };
 } /* NuTo */
