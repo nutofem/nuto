@@ -146,9 +146,9 @@ BOOST_AUTO_TEST_CASE(Timestepping)
         timeControl.SetMinTimeStep(1.0);
         timeControl.SetTimeFinal(6);
         timeControl.SetTimeStep(1.5);
-        
+
         timeControl.UseDefaultAutomaticTimestepping();
-        
+
         // should decrease the time step below min time step
         BOOST_CHECK_THROW(timeControl.AdjustTimestep(1, 20, false), NuTo::Exception);
     }

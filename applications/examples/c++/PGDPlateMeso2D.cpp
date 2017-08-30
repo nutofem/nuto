@@ -265,7 +265,7 @@ int main()
     //    for (int i : NodesConst) std::cout << i << '\t';
     //    std::cout << std::endl;
 
-    //	compute mass matrix for normX
+    //  compute mass matrix for normX
     auto hessian2 = myStructureTemp.BuildGlobalHessian2();
     //  std::cout << "mass matrix \n " << hessian2 << std::endl;
     Eigen::MatrixXd mass = hessian2.JJ.ExportToFullMatrix();
@@ -314,7 +314,7 @@ int main()
             {
                 ValuesE(count) = EnrE(count) * EnrE(count) * CoordinatesE(count);
             }
-            //    		std::cout << "ValuesE: "<< ValuesE.transpose()<< std::endl;
+            //          std::cout << "ValuesE: "<< ValuesE.transpose()<< std::endl;
             double alpha1 = SimpsonsIntegration(MeshE, ValuesE);
 
             //\int_E S n_3(E) dE
@@ -322,7 +322,7 @@ int main()
             {
                 ValuesE(count) = EnrE(count) * LoadE(count);
             }
-            //    		std::cout << "ValuesE: "<< ValuesE.transpose()<< std::endl;
+            //          std::cout << "ValuesE: "<< ValuesE.transpose()<< std::endl;
             double beta1 = SimpsonsIntegration(MeshE, ValuesE);
 
             //\int_L T T dL
@@ -331,7 +331,7 @@ int main()
             {
                 ValuesL(count) = EnrL(count) * EnrL(count);
             }
-            //    		std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
+            //          std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
             double alpha2 = SimpsonsIntegration(MeshL, ValuesL);
 
             //\int_L T n_2(L) dL
@@ -339,7 +339,7 @@ int main()
             {
                 ValuesL(count) = EnrL(count) * LoadL(count);
             }
-            //    		std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
+            //          std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
             double beta2 = SimpsonsIntegration(MeshL, ValuesL);
 
             std::cout << "calculate scalar factors step1 (X): " << std::endl;
@@ -371,11 +371,11 @@ int main()
 
                         std::cout << "alpha1i: " << alpha1i << " alpha2i: " << alpha2i << std::endl;
                         Eigen::VectorXd PGDXNc = PGDX.col(countNc);
-                        //    				std::cout << "PGDXNc " << PGDXNc.transpose() << std::endl;
+                        //                  std::cout << "PGDXNc " << PGDXNc.transpose() << std::endl;
                         Uinit = Uinit +
                                 PGDXNc * alpha1i * alpha2i /
                                         (alpha1 * alpha2); // division of whole equation by alpha1*alpha2
-                        //						std::cout << "Uinit: "<< Uinit.transpose()<<
+                        //                      std::cout << "Uinit: "<< Uinit.transpose()<<
                         //std::endl;
                     }
                 }
@@ -399,7 +399,7 @@ int main()
 
             myStructureX.NodeBuildGlobalDofs();
             myStructureX.CalculateMaximumIndependentSets();
-            //    	    myStructureX.Info();
+            //          myStructureX.Info();
 
             // set load conditions
             NuTo::NewmarkDirect myIntegrationScheme(&myStructureX);
@@ -435,9 +435,9 @@ int main()
             // extract PGD function NewX from FE results
             Eigen::MatrixXd displacementsX;
             myStructureX.NodeGroupGetDisplacements(nodeGroupX, displacementsX);
-            //			std::cout << "DISP: " << displacementsX.transpose() << std::endl;
+            //          std::cout << "DISP: " << displacementsX.transpose() << std::endl;
             int numrows = displacementsX.rows();
-            //			std::cout << "numrows: " << numrows << " numdofs/2 " << MeshX.numdofs/2<< std::endl;
+            //          std::cout << "numrows: " << numrows << " numdofs/2 " << MeshX.numdofs/2<< std::endl;
             // reorganizate displacment matrix in vector according numbering of stiffness matrix without constraints!!
             counter = 0;
             for (int i = 0; i < numrows; i++)
@@ -446,7 +446,7 @@ int main()
                 NewX(counter + 1) = displacementsX(i, 1) - Uinit(counter + 1);
                 counter = counter + 2;
             }
-            //			std::cout << "NewX: " << NewX.transpose() << std::endl;
+            //          std::cout << "NewX: " << NewX.transpose() << std::endl;
 
             normX = NewX.transpose() * (mass * NewX);
             normX = sqrt(normX);
@@ -456,22 +456,22 @@ int main()
             // Step 2: L
             /////////////////////////
             // compute scalar factors (alpha1 and beta1 unchanged)
-            //\int_X R'^2 dx		//
+            //\int_X R'^2 dx        //
             // get stiffness without constraints to calculate integral (it's maybe possible to directly use only the
             // unconstrained problem form the beginning)
             myStructureX.Constraints().RemoveAll();
 
             auto hessian0X = myStructureX.BuildGlobalHessian0();
-            //			std::cout << "After delete Constraints node numbering " << std::endl;
-            //			myStructureX.NodeInfo(10);
-            //			std::cout << "hessian0X" << hessian0X << std::endl;
+            //          std::cout << "After delete Constraints node numbering " << std::endl;
+            //          myStructureX.NodeInfo(10);
+            //          std::cout << "hessian0X" << hessian0X << std::endl;
             Eigen::MatrixXd stiffX = hessian0X.JJ.ExportToFullMatrix();
-            //			std::cout << "stiff\n "<< stiffX << std::endl;
+            //          std::cout << "stiff\n "<< stiffX << std::endl;
             double alpha3 = NewX.transpose() * (stiffX * NewX);
 
             //\int_boundaryX R n_1(x) dboundary_x
             auto ExternalLoad = myStructureX.BuildGlobalExternalLoadVector();
-            //			std::cout << "External Load Vector " << ExternalLoad.J << std::endl;
+            //          std::cout << "External Load Vector " << ExternalLoad.J << std::endl;
             Eigen::VectorXd ExLoad = ExternalLoad.J.Export();
             double beta3 = loadvalue * NewX.transpose() * ExLoad;
 
@@ -482,7 +482,7 @@ int main()
 
             // compute new PGD basis function
             NewL = LoadL * beta3 * beta1;
-            //			std::cout << "NewL: " << NewL.transpose() << std::endl;
+            //          std::cout << "NewL: " << NewL.transpose() << std::endl;
 
             // minus parts from last steps
             if (countN > 0)
@@ -511,7 +511,7 @@ int main()
             {
                 NewL = 1.0 / (alpha1 * alpha3) * NewL;
             }
-            //    		std::cout << "NewL: " << NewL.transpose() << std::endl;
+            //          std::cout << "NewL: " << NewL.transpose() << std::endl;
             normL = MeshL.Valuedelta * NewL.transpose() * NewL;
             normL = sqrt(normL);
             std::cout << "normL: " << normL << std::endl;
@@ -526,7 +526,7 @@ int main()
             {
                 ValuesL(count) = NewL(count) * NewL(count);
             }
-            //    		std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
+            //          std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
             alpha2 = SimpsonsIntegration(MeshL, ValuesL);
 
             //\int_L T n_2(L) dL
@@ -534,7 +534,7 @@ int main()
             {
                 ValuesL(count) = NewL(count) * LoadL(count);
             }
-            //    		std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
+            //          std::cout << "ValuesL: "<< ValuesL.transpose()<< std::endl;
             beta2 = SimpsonsIntegration(MeshL, ValuesL);
 
             std::cout << "calculate scalar factors step3 E: " << std::endl;
@@ -543,7 +543,7 @@ int main()
 
             // compute new PGD basis function
             NewE = LoadE * beta3 * beta2;
-            //			std::cout << "NewE: " << NewE.transpose() << std::endl;
+            //          std::cout << "NewE: " << NewE.transpose() << std::endl;
 
             // minus parts from last steps
             if (countN > 0)
@@ -576,7 +576,7 @@ int main()
             {
                 NewE(count) = 1 / CoordinatesE(count) * NewE(count);
             }
-            //    		std::cout << "NewE: " << NewE.transpose() << std::endl;
+            //          std::cout << "NewE: " << NewE.transpose() << std::endl;
             normE = MeshE.Valuedelta * NewE.transpose() * NewE;
             normE = sqrt(normE);
             std::cout << "normE: " << normE << std::endl;
@@ -586,9 +586,9 @@ int main()
             auto Delta1 = (NewX - EnrX).cwiseAbs();
             auto Delta2 = (NewL - EnrL).cwiseAbs();
             auto Delta3 = (NewE - EnrE).cwiseAbs();
-            //    	    std::cout << "Delta1 " << Delta1.maxCoeff() << std::endl;
-            //    	    std::cout << "Delta2 " << Delta2.maxCoeff() << std::endl;
-            //    	    std::cout << "Delta3 " << Delta3.maxCoeff() << std::endl;
+            //          std::cout << "Delta1 " << Delta1.maxCoeff() << std::endl;
+            //          std::cout << "Delta2 " << Delta2.maxCoeff() << std::endl;
+            //          std::cout << "Delta3 " << Delta3.maxCoeff() << std::endl;
             if ((Delta1.maxCoeff() > 1e-3) || (Delta2.maxCoeff() > 1e-3) || (Delta3.maxCoeff() > 1e-3))
             {
                 std::cout << "######### fix point iteration not converged" << std::endl;
@@ -771,7 +771,7 @@ int main()
                 disp(i) = PGDXneu(count, (PGDmodenum + 1) * 3 - 3 + i);
             }
             myStructureX.NodeSetDisplacements(count, disp);
-            //   		std::cout << "set disp at node " << count << " to " << disp.transpose() << std::endl;
+            //          std::cout << "set disp at node " << count << " to " << disp.transpose() << std::endl;
         }
 
 
@@ -784,9 +784,9 @@ int main()
         myStructureX.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
 
-        //    	Eigen::MatrixXd displacementsX;
-        //    	myStructureX.NodeGroupGetDisplacements(nodeGroupX, displacementsX);
-        //    	std::cout << "disp " << displacementsX << std::endl;
+        //      Eigen::MatrixXd displacementsX;
+        //      myStructureX.NodeGroupGetDisplacements(nodeGroupX, displacementsX);
+        //      std::cout << "disp " << displacementsX << std::endl;
 
         boost::filesystem::path resultFile;
         resultFile = resultDirectory;

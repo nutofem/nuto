@@ -1,4 +1,4 @@
-# - Find MKL Solver 
+# - Find MKL Solver
 # This module finds an installed mkl solver libraries
 #
 # This module sets the following variables:

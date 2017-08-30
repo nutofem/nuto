@@ -1,5 +1,5 @@
 
-# find the Arpack library 
+# find the Arpack library
 #
 # Joerg F. Unger, BAM 2013
 #

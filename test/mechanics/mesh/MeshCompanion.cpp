@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(CreatePrismGmsh)
 {
     //CheckPrismGmsh("MeshCompanionGmsh.msh");
     // This test fails due to a bug. Possibly:
-    // If one element is part of two prism surfaces, it fails. Really dunno why. 
+    // If one element is part of two prism surfaces, it fails. Really dunno why.
 }
 
 BOOST_AUTO_TEST_CASE(CreatePrismGmshFine)

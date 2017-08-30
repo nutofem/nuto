@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     boost::test_tools::output_test_stream output;
     output << element;
     std::string expected = "InterpolationTypeInfo:\n"
-                           "COORDINATES: 2|	|Type and Order: EQUIDISTANT1|\n"
-                           "TEMPERATURE: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "COORDINATES: 2| |Type and Order: EQUIDISTANT1|\n"
+                           "TEMPERATURE: 2| |Type and Order: EQUIDISTANT1|\n"
                            "\n"
                            "NodeInfo of local node 0: \n"
                            "COORDINATES: 1 dt:2\n"

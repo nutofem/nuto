@@ -1,8 +1,8 @@
 # nuto_swig_module(<module> <interface file> <install_path> <dependencies>)
-#	Function to set up a SWIG module for a NuTo library.
-#	<module>		SWIG module name
-#	<interface file>	SWIG .i file
-#	<dependencies>		Dependencies needed by that module. Typically the NuTo library it wraps.
+#   Function to set up a SWIG module for a NuTo library.
+#   <module>        SWIG module name
+#   <interface file>    SWIG .i file
+#   <dependencies>      Dependencies needed by that module. Typically the NuTo library it wraps.
 function(nuto_swig_module module_name interface_file)
     set(libraries ${ARGN})
 
@@ -19,7 +19,7 @@ endfunction()
 
 # `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the
 # name `SomeClass` and all the files required (`FilesItNeedsToLink`), links
-# Boost unit test framework to it, and adds it to the test suite under an 
+# Boost unit test framework to it, and adds it to the test suite under an
 # appropriate name
 function(add_unit_test ClassName)
     # find relative path, i.e. remove the `.../test/`

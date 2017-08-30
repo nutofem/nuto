@@ -1,5 +1,5 @@
 
-# find the ANN library 
+# find the ANN library
 #
 # Joerg F. Unger, Northwestern University Evanston IL, April 2010
 #

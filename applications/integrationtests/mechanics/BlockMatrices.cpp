@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(BlockSparseMatrix)
 
     auto CSR = m.ExportToCSR();
     BOOST_CHECK(CSR->IsSymmetric());
-    
+
     Eigen::MatrixXd exportCSRSymm = CSR->ConvertToFullMatrix();
     BoostUnitTest::CheckEigenMatrix(exportCSRSymm, m.ExportToFullMatrix());
 }

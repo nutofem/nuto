@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(NewtonScalarComplex)
 {
     auto root1 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, .1), ComplexSolver(), 100);
     BOOST_CHECK_SMALL(std::abs(root1 - std::complex<double>(0.,1.)), tolerance);
-    
+
     auto root2 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, -.1), ComplexSolver(), 100);
     BOOST_CHECK_SMALL(std::abs(root2 - std::complex<double>(0.,-1.)), tolerance);
 }
