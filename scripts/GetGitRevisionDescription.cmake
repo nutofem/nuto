@@ -48,7 +48,9 @@ get_filename_component(_gitdescmoddir ${CMAKE_CURRENT_LIST_FILE} PATH)
 function(get_git_head_revision _refspecvar _hashvar)
     set(GIT_PARENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
     set(GIT_DIR "${GIT_PARENT_DIR}/.git")
-    while(NOT EXISTS "${GIT_DIR}")  # .git dir not found, search parent directories
+
+    # .git dir not found, search parent directories
+    while(NOT EXISTS "${GIT_DIR}")
         set(GIT_PREVIOUS_PARENT "${GIT_PARENT_DIR}")
         get_filename_component(GIT_PARENT_DIR ${GIT_PARENT_DIR} PATH)
         if(GIT_PARENT_DIR STREQUAL GIT_PREVIOUS_PARENT)
@@ -62,9 +64,11 @@ function(get_git_head_revision _refspecvar _hashvar)
     # check if this is a submodule
     if(NOT IS_DIRECTORY ${GIT_DIR})
         file(READ ${GIT_DIR} submodule)
-        string(REGEX REPLACE "gitdir: (.*)\n$" "\\1" GIT_DIR_RELATIVE ${submodule})
+        string(REGEX REPLACE "gitdir: (.*)\n$" "\\1"
+            GIT_DIR_RELATIVE ${submodule})
         get_filename_component(SUBMODULE_DIR ${GIT_DIR} PATH)
-        get_filename_component(GIT_DIR ${SUBMODULE_DIR}/${GIT_DIR_RELATIVE} ABSOLUTE)
+        get_filename_component(GIT_DIR ${SUBMODULE_DIR}/${GIT_DIR_RELATIVE}
+            ABSOLUTE)
     endif()
     set(GIT_DATA "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/git-data")
     if(NOT EXISTS "${GIT_DATA}")
@@ -99,16 +103,6 @@ function(git_describe _var)
         set(${_var} "HEAD-HASH-NOTFOUND" PARENT_SCOPE)
         return()
     endif()
-
-    # TODO sanitize
-    #if((${ARGN}" MATCHES "&&") OR
-    #   (ARGN MATCHES "||") OR
-    #   (ARGN MATCHES "\\;"))
-    #   message("Please report the following error to the project!")
-    #   message(FATAL_ERROR "Looks like someone's doing something nefarious with git_describe! Passed arguments ${ARGN}")
-    #endif()
-
-    #message(STATUS "Arguments to execute_process: ${ARGN}")
 
     execute_process(COMMAND
         "${GIT_EXECUTABLE}"

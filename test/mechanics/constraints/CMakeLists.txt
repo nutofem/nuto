@@ -7,8 +7,9 @@ foreach(test
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
     endif()
-    add_test(almost::mechanics::constraints::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
-endforeach() 
+    add_test(almost::mechanics::constraints::${test}
+        ${CMAKE_CURRENT_BUILD_DIR}/${test})
+endforeach()
 
 add_unit_test(ConstraintCompanion
     mechanics/groups/GroupBase.cpp

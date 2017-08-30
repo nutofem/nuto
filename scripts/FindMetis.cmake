@@ -1,7 +1,4 @@
-
-# find the metis package (try to find the metis header and the metis library)
-#
-# Stefan Eckardt, Institute of Structural Mechanics, Bauhaus-University Weimar, August 2009
+# Find the metis package (try to find the metis header and the metis library)
 #
 # variables used by this module (can be also defined as environment variables):
 #   METIS_ROOT - preferred installation prefix for searching for metis
@@ -11,36 +8,40 @@
 #   METIS_INCLUDE_DIR - metis include directory
 #   METIS_LIBRARIES - metis libraries
 
-
 # initialize variables
-MESSAGE(STATUS "Checking for Metis library ...")
+message(STATUS "Checking for Metis library ...")
+
 # check if METIS_ROOT is set
-IF(NOT METIS_ROOT AND NOT $ENV{METIS_ROOT} STREQUAL "")
-  SET(METIS_ROOT $ENV{METIS_ROOT})
-ENDIF(NOT METIS_ROOT AND NOT $ENV{METIS_ROOT} STREQUAL "")
+if(NOT METIS_ROOT AND NOT $ENV{METIS_ROOT} STREQUAL "")
+    set(METIS_ROOT $ENV{METIS_ROOT})
+endif()
 
 # convert path to unix style path and set search path
-IF(METIS_ROOT)
-  FILE(TO_CMAKE_PATH ${METIS_ROOT} METIS_ROOT)
-  SET(_metis_INCLUDE_SEARCH_DIRS ${METIS_ROOT}/include ${METIS_ROOT} ${_metis_INCLUDE_SEARCH_DIRS})
-  SET(_metis_LIBRARIES_SEARCH_DIRS ${METIS_ROOT}/lib ${METIS_ROOT} ${_metis_LIBRARIES_SEARCH_DIRS})
-ENDIF(METIS_ROOT)
+if(METIS_ROOT)
+    file(TO_CMAKE_PATH ${METIS_ROOT} METIS_ROOT)
+    set(_metis_INCLUDE_SEARCH_DIRS ${METIS_ROOT}/include ${METIS_ROOT}
+        ${_metis_INCLUDE_SEARCH_DIRS})
+    set(_metis_LIBRARIES_SEARCH_DIRS ${METIS_ROOT}/lib ${METIS_ROOT}
+        ${_metis_LIBRARIES_SEARCH_DIRS})
+endif()
 
 #sufix for metis
-IF(UNIX AND METIS_FIND_STATIC_LIBRARY)
-  SET(METIS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-  SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-ENDIF(UNIX AND METIS_FIND_STATIC_LIBRARY)
+if(UNIX AND METIS_FIND_STATIC_LIBRARY)
+    set(METIS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
 
 # search for header metis.h
-FIND_PATH(METIS_INCLUDE_DIR PATH_SUFFIXES metis NAMES metis.h HINTS ${_metis_INCLUDE_SEARCH_DIRS})
+find_path(METIS_INCLUDE_DIR PATH_SUFFIXES metis
+    NAMES metis.h
+    HINTS ${_metis_INCLUDE_SEARCH_DIRS})
 
 # search for metis library
-FIND_LIBRARY(METIS_LIBRARIES NAMES metis HINTS ${_metis_LIBRARIES_SEARCH_DIRS})
+find_library(METIS_LIBRARIES NAMES metis HINTS ${_metis_LIBRARIES_SEARCH_DIRS})
 
-MESSAGE(STATUS "Metis include: ${METIS_INCLUDE_DIR}")
-MESSAGE(STATUS "Metis lib: ${METIS_LIBRARIES}")
+message(STATUS "Metis include: ${METIS_INCLUDE_DIR}")
+message(STATUS "Metis lib: ${METIS_LIBRARIES}")
 
 # handle the QUIETLY and REQUIRED arguments
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Metis DEFAULT_MSG METIS_LIBRARIES METIS_INCLUDE_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Metis DEFAULT_MSG METIS_LIBRARIES METIS_INCLUDE_DIR)

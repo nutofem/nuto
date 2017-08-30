@@ -1,4 +1,3 @@
-
 # find the OpenBLAS lib
 #
 # variables used by this module (can be also defined as environment variables):
@@ -10,41 +9,46 @@
 #   OpenBLAS_LIBRARIES - Openblas libraries
 
 # set variables
-SET(OpenBLAS_LIBRARIES)
+set(OpenBLAS_LIBRARIES)
 
-MESSAGE(STATUS "Checking for BLAS lib ...")
+message(STATUS "Checking for BLAS lib ...")
 
 # check if BLAS_ROOT is set
-IF(NOT OpenBLAS_ROOT AND NOT $ENV{OpenBLAS_ROOT} STREQUAL "")
-  SET(OpenBLAS_ROOT $ENV{OpenBLAS_ROOT})
-ENDIF(NOT OpenBLAS_ROOT AND NOT $ENV{OpenBLAS_ROOT} STREQUAL "")
+if(NOT OpenBLAS_ROOT AND NOT $ENV{OpenBLAS_ROOT} STREQUAL "")
+    set(OpenBLAS_ROOT $ENV{OpenBLAS_ROOT})
+endif()
 
 # convert path to unix style path and set search path
-IF(OpenBLAS_ROOT)
-  FILE(TO_CMAKE_PATH ${OpenBLAS_ROOT} OpenBLAS_ROOT)
-  SET(_Openblas_LIBRARIES_SEARCH_DIRS ${OpenBLAS_ROOT}/lib ${OpenBLAS_ROOT}/openblas/lib ${OpenBLAS_ROOT} ${_Openblas_LIBRARIES_SEARCH_DIRS})
-ENDIF(OpenBLAS_ROOT)
+if(OpenBLAS_ROOT)
+    file(TO_CMAKE_PATH ${OpenBLAS_ROOT} OpenBLAS_ROOT)
+    set(_Openblas_LIBRARIES_SEARCH_DIRS ${OpenBLAS_ROOT}/lib
+        ${OpenBLAS_ROOT}/openblas/lib ${OpenBLAS_ROOT}
+        ${_Openblas_LIBRARIES_SEARCH_DIRS})
+endif()
 
 # search for BLAS libraries
-IF(UNIX AND OpenBLAS_FIND_SHARED_LIBRARY)
-  SET(OpenBLAS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-  SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
-ENDIF(UNIX AND OpenBLAS_FIND_SHARED_LIBRARY)
+if(UNIX AND OpenBLAS_FIND_SHARED_LIBRARY)
+    set(OpenBLAS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES
+        ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
+endif()
 
 # check for BLAS libraries
-FIND_LIBRARY(_Openblas_LIB_OpenBLAS NAMES openblas HINTS ${_Openblas_LIBRARIES_SEARCH_DIRS})
+find_library(_Openblas_LIB_OpenBLAS
+    NAMES openblas
+    HINTS ${_Openblas_LIBRARIES_SEARCH_DIRS})
 
-IF(_Openblas_LIB_OpenBLAS)
-  SET(OpenBLAS_LIBRARIES ${_Openblas_LIB_OpenBLAS})
-  SET(OpenBLAS_FOUND TRUE)
-ENDIF(_Openblas_LIB_OpenBLAS)
+if(_Openblas_LIB_OpenBLAS)
+    set(OpenBLAS_LIBRARIES ${_Openblas_LIB_OpenBLAS})
+    set(OpenBLAS_FOUND TRUE)
+endif()
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OpenBLAS DEFAULT_MSG OpenBLAS_LIBRARIES)
 
 
-IF(OpenBLAS_DEBUG)
-  MESSAGE(STATUS "OpenBLAS_FOUND=${OpenBLAS_FOUND}")
-  MESSAGE(STATUS "OpenBLAS_LIBRARIES=${OpenBLAS_LIBRARIES}")
-ENDIF(OpenBLAS_DEBUG)
+if(OpenBLAS_DEBUG)
+    message(STATUS "OpenBLAS_FOUND=${OpenBLAS_FOUND}")
+    message(STATUS "OpenBLAS_LIBRARIES=${OpenBLAS_LIBRARIES}")
+endif()
