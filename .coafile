@@ -10,8 +10,10 @@ bears = GitCommitBear
 
 [Markdown]
 files = **.md
-bears = Markdownbear, AlexBear
+bears = MarkdownBear, AlexBear
 ignore = **/ForwardDeclarations.md
+default_actions = *: ApplyPatchAction
+no_orig = True
 
 [CMake]
 files = src/**, test/**, scripts/**
