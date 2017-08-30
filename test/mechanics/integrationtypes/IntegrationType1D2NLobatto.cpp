@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(NodesAndWeights)
         std::vector<double> nodes(numIps);
         std::vector<double> weights(numIps);
 
-        NuTo::IntegrationTypeTensorProduct intType(numIps,NuTo::eIntegrationMethod::LOBATTO);
+        NuTo::IntegrationTypeTensorProduct intType(numIps, NuTo::eIntegrationMethod::LOBATTO);
         for (int i = 0; i < numIps; i++)
         {
             nodes[i] = intType.GetLocalIntegrationPointCoordinates(i)(0, 0);

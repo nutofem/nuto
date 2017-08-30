@@ -152,7 +152,7 @@ const Eigen::MatrixXd& NuTo::BSplineCurve::GetBezierExtraction(int rElementID) c
     assert(((size_t)rElementID > (mBezierOperators.size() - 1)) || (rElementID < 0));
     if (mBezierOperators.size() == 0)
         throw Exception("[BSplineCurve] The Bézier extraction has to be calculated first. Use the function "
-                                 "'BezierElementExtractionOperators'.");
+                        "'BezierElementExtractionOperators'.");
 
     return mBezierOperators[rElementID];
 }
@@ -161,7 +161,7 @@ const std::vector<Eigen::MatrixXd>& NuTo::BSplineCurve::GetBezierExtraction() co
 {
     if (mBezierOperators.size() == 0)
         throw Exception("[BSplineCurve] The Bézier extraction has to be calculated first. Use the function "
-                                 "'BezierElementExtractionOperators'.");
+                        "'BezierElementExtractionOperators'.");
 
     return mBezierOperators;
 }

@@ -241,7 +241,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 std::vector<int> StructureBase::GetVisualizationGroups()
 {
     std::vector<int> vec;
-    for(const auto& entry : mGroupVisualizeComponentsMap)
+    for (const auto& entry : mGroupVisualizeComponentsMap)
         vec.push_back(entry.first);
     return vec;
 }
@@ -584,8 +584,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
-                                                                      NuTo::Node::eDof,
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof,
                                                                       const double rTolerance,
                                                                       Eigen::Vector3d rNodeCoordOffset)
 {

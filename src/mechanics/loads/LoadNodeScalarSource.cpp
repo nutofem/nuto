@@ -35,7 +35,7 @@ void NuTo::LoadNodeScalarSource::AddLoadToGlobalSubVectors(StructureOutputBlockV
     catch (std::bad_cast& b)
     {
         throw Exception("[NuTo::LoadNodeScalarSource::AddLoad] Node has no electric potential or its "
-                                 "dimension is not equivalent to the 1.");
+                        "dimension is not equivalent to the 1.");
     }
     catch (...)
     {

@@ -69,7 +69,7 @@ public:
         else
         {
             throw Exception("[NuTo::MisesWielandt::SetObjectiveType] ObjectiveType " + upperCaseObjectiveType +
-                                    " does not exist.");
+                            " does not exist.");
         }
     }
 

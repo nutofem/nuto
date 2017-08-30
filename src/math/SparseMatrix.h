@@ -144,7 +144,7 @@ public:
     virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
-                            "implemented for this matrix type.");
+                        "implemented for this matrix type.");
     }
 
     //! @brief ... add sparse matrix
@@ -153,7 +153,7 @@ public:
     virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
-                            "not implemented for this matrix type.");
+                        "not implemented for this matrix type.");
     }
 
     virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertToFullMatrix() const = 0;
@@ -173,13 +173,13 @@ public:
     virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2General.");
+                        "SparseMatrixCSRVector2General.");
     }
 
     virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2Symmetric.");
+                        "SparseMatrixCSRVector2Symmetric.");
     }
 
 #ifndef SWIG
@@ -199,13 +199,13 @@ public:
     virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General() const
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2General.");
+                        "SparseMatrixCSRVector2General.");
     }
 
     virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric() const
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2Symmetric.");
+                        "SparseMatrixCSRVector2Symmetric.");
     }
 #endif // SWIG
 

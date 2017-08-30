@@ -59,7 +59,7 @@ void NuTo::BlockFullVector<T>::AllocateSubvectors()
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(const BlockFullVector<T>& rOther)
 {
-    //mData = rOther.mData;
+    // mData = rOther.mData;
     for (auto dof : mDofStatus.GetActiveDofTypes())
         mData[dof] = rOther[dof];
     return *this;

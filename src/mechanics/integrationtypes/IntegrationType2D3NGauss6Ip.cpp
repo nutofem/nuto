@@ -71,8 +71,7 @@ double NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight(int rIpNum) 
     case 5:
         return d;
     default:
-        throw Exception(
-                "[NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 

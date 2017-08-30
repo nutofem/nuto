@@ -148,12 +148,11 @@ void IPAdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputMap& 
                         assert(itOutput.second->GetIsCalculated() == false &&
                                "Currently, it is not supported that multiple sublaws write to the same derivative.");
                         if (sublawOutput->second->GetIsCalculated() == false)
-                            throw Exception(
-                                    __PRETTY_FUNCTION__,
-                                    "The value " + Constitutive::OutputToString(sublawOutput->first) +
-                                            ", which is necessary to determine " +
-                                            Constitutive::OutputToString(itOutput.first) +
-                                            " was requested from a sublaw but has not been calculated!");
+                            throw Exception(__PRETTY_FUNCTION__,
+                                            "The value " + Constitutive::OutputToString(sublawOutput->first) +
+                                                    ", which is necessary to determine " +
+                                                    Constitutive::OutputToString(itOutput.first) +
+                                                    " was requested from a sublaw but has not been calculated!");
                         const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(
                                 rConstitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)
                                         .get());

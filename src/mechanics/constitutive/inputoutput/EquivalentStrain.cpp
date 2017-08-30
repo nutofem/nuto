@@ -96,8 +96,7 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         return tangent;
     }
 
-    throw Exception(__PRETTY_FUNCTION__,
-                             "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
+    throw Exception(__PRETTY_FUNCTION__, "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
 }
 
 template <>

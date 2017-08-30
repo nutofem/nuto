@@ -92,8 +92,8 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputT
     case eOutput::UPDATE_STATIC_DATA:
         return nullptr;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Don't know how to create constitutive output for " +
-                                                              Constitutive::OutputToString(outputType));
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Don't know how to create constitutive output for " + Constitutive::OutputToString(outputType));
     }
 }
 
@@ -140,8 +140,7 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputTyp
     case eInput::PLANE_STATE:
         return std::make_unique<ConstitutivePlaneState>(NuTo::ePlaneState::PLANE_STRESS);
     default:
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "Don't know how to create Constitutive input for this input type");
+        throw Exception(__PRETTY_FUNCTION__, "Don't know how to create Constitutive input for this input type");
     }
 }
 
@@ -206,7 +205,7 @@ void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum,
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;
     if (isNotScalar)
         throw Exception(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
-                                                      " is not a ConstitutiveScalar.");
+                                             " is not a ConstitutiveScalar.");
 }
 
 

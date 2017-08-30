@@ -398,5 +398,3 @@ BOOST_AUTO_TEST_CASE(BlockScalarTest)
     B[NuTo::Node::eDof::DISPLACEMENTS] = 10;
     BOOST_CHECK(!(B.CheckDofWiseLessActivDofs(D)));
 }
-
-

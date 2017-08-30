@@ -46,7 +46,8 @@ std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGau
     return std::make_pair(weights, points);
 }
 
-std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1D(size_t nIps, NuTo::eIntegrationMethod method)
+std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1D(size_t nIps,
+                                                                              NuTo::eIntegrationMethod method)
 {
     if (method == NuTo::eIntegrationMethod::GAUSS)
         return ComputeWeightsAndPoints1DGauss(nIps);

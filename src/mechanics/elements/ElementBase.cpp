@@ -192,7 +192,7 @@ void NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap
     for (auto& itOutput : rConstitutiveOutput)
         if (itOutput.second != nullptr && !itOutput.second->GetIsCalculated()) // check nullptr because of static data
             throw Exception(__PRETTY_FUNCTION__, "Output " + Constitutive::OutputToString(itOutput.first) +
-                                                                  " not calculated by constitutive law");
+                                                         " not calculated by constitutive law");
 }
 
 
@@ -219,8 +219,7 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
 
 bool NuTo::ElementBase::GetLocalPointCoordinates(const double*, double*) const
 {
-    throw NuTo::Exception(
-            "[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
+    throw NuTo::Exception("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
 }
 
 NuTo::NodeBase* NuTo::ElementBase::GetBoundaryControlNode() const
@@ -468,18 +467,15 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
             // do nothing
             break;
         default:
-            throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "visualization of " + componentName + " not implemented.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "visualization of " + componentName + " not implemented.");
         }
     }
 }
 
-void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&,
-                                                    const std::vector<eVisualizeWhat>&)
+void NuTo::ElementBase::VisualizeExtrapolateToNodes(Visualize::UnstructuredGrid&, const std::vector<eVisualizeWhat>&)
 {
-    throw NuTo::Exception(
-            std::string(__PRETTY_FUNCTION__) +
-            ": \t This function is not ready to be used yet. Choose a different visualization type!");
+    throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) +
+                          ": \t This function is not ready to be used yet. Choose a different visualization type!");
 }
 
 void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGrid& visualizer,
@@ -521,8 +517,8 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "Visualization component " + GetComponentName(component) +
-                                                   " is not implemented or not known at the integration points.");
+                                  "Visualization component " + GetComponentName(component) +
+                                          " is not implemented or not known at the integration points.");
             break;
         }
     }
@@ -558,8 +554,8 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "Visualization component " + componentName +
-                                                   " is not implemented or not known at the integration points.");
+                                  "Visualization component " + componentName +
+                                          " is not implemented or not known at the integration points.");
         }
     }
 }

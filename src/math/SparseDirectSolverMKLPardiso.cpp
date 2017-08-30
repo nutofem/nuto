@@ -41,8 +41,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "one based indexing of sparse rMatrix is required for this solver.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -176,7 +175,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     if (error != 0)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
+                              "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
 
     timer.Restart(__PRETTY_FUNCTION__ + " Numerical factorization");
@@ -188,7 +187,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     if (error != 0)
     {
         throw NuTo::Exception("[SparseDirectSolverMKLPardiso::solve] Numerical factorization phase: " +
-                                  this->GetErrorString(error) + ".");
+                              this->GetErrorString(error) + ".");
     }
 
     timer.Reset(__PRETTY_FUNCTION__ + "Back substitution and iterative refinement.");
@@ -245,7 +244,7 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     if (error != 0)
     {
         throw NuTo::Exception("[SparseDirectSolverMKLPardiso::solve] Termination phase: " +
-                                  this->GetErrorString(error) + ".");
+                              this->GetErrorString(error) + ".");
     }
 }
 

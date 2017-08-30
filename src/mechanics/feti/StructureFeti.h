@@ -270,7 +270,6 @@ public:
     };
 
 
-
     /// \brief Assembles vector for multiplicity scaling
     SparseMatrix MultiplicityScaling()
     {
@@ -329,14 +328,13 @@ public:
     }
 
 private:
+    void AddSuperlumpedScalingForInterfaceDofs(const StructureOutputBlockMatrix& hessian, VectorXd& scalingVector);
 
-    void AddSuperlumpedScalingForInterfaceDofs(const StructureOutputBlockMatrix &hessian, VectorXd &scalingVector);
+    void AddScalingForDirichletBCs(VectorXd& scalingVector);
 
-    void AddScalingForDirichletBCs(VectorXd &scalingVector);
+    void AddMultiplicityScalingForInterfaceDofs(VectorXd& scalingVector);
 
-    void AddMultiplicityScalingForInterfaceDofs(VectorXd &scalingVector);
-
-    SparseMatrix InitializeDiagonalSparseMatrixWithVector(const VectorXd &vector);
+    SparseMatrix InitializeDiagonalSparseMatrixWithVector(const VectorXd& vector);
 
     ///
     /// \param interfaceCoordinates
@@ -433,6 +431,6 @@ protected:
 
     std::map<int, int> DetermineAdditionalGlobalToLocalNodeIdMapForCornerNodes();
 
-    VectorXd CalculateStiffnessAtInterfaceNodes(const StructureOutputBlockMatrix &hessian);
+    VectorXd CalculateStiffnessAtInterfaceNodes(const StructureOutputBlockMatrix& hessian);
 };
 } // namespace NuTo

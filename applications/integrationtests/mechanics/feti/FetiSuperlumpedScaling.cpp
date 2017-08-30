@@ -137,9 +137,9 @@ int main(int argc, char* argv[])
 
     if (numIterationsDirichletSuperlumpedScaling >= numIterationsDirichletNoScaling)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence. iterations with scaling: " +
-                                                   std::to_string(numIterationsDirichletSuperlumpedScaling) +
-                                                   " iterations withour scaling: " +
-                                                   std::to_string(numIterationsDirichletNoScaling));
+                                                           std::to_string(numIterationsDirichletSuperlumpedScaling) +
+                                                           " iterations withour scaling: " +
+                                                           std::to_string(numIterationsDirichletNoScaling));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

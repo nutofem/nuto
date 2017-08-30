@@ -423,7 +423,7 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof, NuTo::Interpolation::eTy
             ConstitutiveOutputTest_CreateConstitutiveOutputMapBoundary<TDim>();
 
     MT.SetupStaticData(); // VHIRTHAMTODO Check static data Coeffs in contitutive law or somewhere else --- maybe
-                          // assert!!!
+    // assert!!!
 
     NuTo::Constitutive::IPConstitutiveLawBase& ipLawBoundary = boundaryElement.GetIPData().GetIPConstitutiveLaw(0);
     ipLawBoundary.Evaluate<TDim>(constitutiveInputMapBoundary, constitutiveOutputMapBoundary);

@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     MPI_Finalize();
 }
-```    
+```
 
 # Implementation
 
@@ -29,7 +29,7 @@ structure.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES,     eType
 structure.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS,   eTypeOrder::EQUIDISTANT1);
 
 structure.ImportMeshJson(meshFile,interpolationTypeId);
-```    
+```
 
 # Assembly of the connectivity matrix
 

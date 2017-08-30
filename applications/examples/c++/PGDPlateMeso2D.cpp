@@ -376,7 +376,7 @@ int main()
                                 PGDXNc * alpha1i * alpha2i /
                                         (alpha1 * alpha2); // division of whole equation by alpha1*alpha2
                         //                      std::cout << "Uinit: "<< Uinit.transpose()<<
-                        //std::endl;
+                        // std::endl;
                     }
                 }
             }

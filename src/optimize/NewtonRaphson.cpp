@@ -13,7 +13,6 @@ NuTo::NewtonRaphson::NewtonRaphson()
 }
 
 
-
 void NuTo::NewtonRaphson::Solve(Eigen::VectorXd& rUnknown)
 {
     if (not mAssignResidual && mResidualFunction == nullptr)
@@ -79,7 +78,7 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
 
         p = fjac.fullPivLu().solve(-fvec).transpose(); // LU SOLVER of fjac * p = -fvec
         //                                                          // SVD
-        //SOLVER
+        // SOLVER
         //      p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
 
         this->LineSearch(xold, fold, g, p, rX, f, stpmax, rCheck, fvec);

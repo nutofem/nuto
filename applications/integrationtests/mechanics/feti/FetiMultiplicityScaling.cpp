@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    if(numIterationsLumpedMultiScaling > numIterationsLumpedNoScaling)
+    if (numIterationsLumpedMultiScaling > numIterationsLumpedNoScaling)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,8 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletNoScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletNoScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
     // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
@@ -112,10 +113,11 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletMultiScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    if(numIterationsDirichletMultiScaling > numIterationsDirichletNoScaling)
+    if (numIterationsDirichletMultiScaling > numIterationsDirichletNoScaling)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 }
 

@@ -505,7 +505,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int> rN, std
 
 
     constexpr const double tolerance = 0.005; // Tolerance because not all necessary value (sorption curve) are given in
-                                              // the paper and must be approximated
+    // the paper and must be approximated
     double deltaL = rL[0] / rN[0];
     unsigned int numMismatchingValues = 0;
 

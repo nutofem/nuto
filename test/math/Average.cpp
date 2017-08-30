@@ -36,6 +36,6 @@ BOOST_AUTO_TEST_CASE(AveragePrecision)
         sum += number;
         a(number);
     }
-    long double mean = static_cast<double>(sum)/n;
+    long double mean = static_cast<double>(sum) / n;
     BOOST_CHECK_CLOSE_FRACTION(a.mCurrentAverage, mean, e);
 }

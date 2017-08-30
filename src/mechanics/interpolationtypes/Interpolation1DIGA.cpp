@@ -30,8 +30,8 @@ NuTo::eIntegrationType NuTo::Interpolation1DIGA::GetStandardIntegrationType() co
     case 4: // (4+4+1)/2 = 4.5 ips or (4+4+3)/2 = 5.5 ips lobatto
         return NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                              std::to_string(mDegree) + " IGA not implemented");
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Interpolation for exact integration of " + std::to_string(mDegree) + " IGA not implemented");
     }
 }
 

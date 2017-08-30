@@ -35,8 +35,9 @@ BOOST_AUTO_TEST_CASE(Debug_Fuctionality)
     TimeControl timeControl;
 
     std::string expectedMsg = "";
-    std::function<bool(Exception const&)> CheckException = [&expectedMsg](
-            Exception const& ex) -> bool { return CheckExceptionMessageCorrect(ex, expectedMsg); };
+    std::function<bool(Exception const&)> CheckException = [&expectedMsg](Exception const& ex) -> bool {
+        return CheckExceptionMessageCorrect(ex, expectedMsg);
+    };
 
     expectedMsg = "Current timestep is 0 or negative!";
     timeControl.SetTimeStepFunction([](TimeControl&, double, double, bool) -> double { return 0.0; });
@@ -164,4 +165,3 @@ BOOST_AUTO_TEST_CASE(Timestepping)
         BOOST_CHECK(timeControl.Finished());
     }
 }
-
