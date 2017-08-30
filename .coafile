@@ -1,4 +1,6 @@
-[cli]
+[spacing]
 bears = SpaceConsistencyBear
 files = src/**/*.cpp
 use_spaces = true
+default_actions = *: ApplyPatchAction
+no_orig = True
