@@ -1,6 +1,38 @@
 [spacing]
 bears = SpaceConsistencyBear
-files = src/**/*.cpp
+files = **.cpp, **.cmake
 use_spaces = true
 default_actions = *: ApplyPatchAction
 no_orig = True
+
+[git]
+bears = GitCommitBear
+
+[Markdown]
+files = **.md
+bears = Markdownbear, AlexBear
+ignore = **/ForwardDeclarations.md
+
+[CMake]
+files = src/**, test/**, scripts/**
+bears = CMakeLintBear
+
+[cpp]
+files = src/**.cpp
+bears = CPPCheckBear
+
+[filename]
+files =src/**.cpp
+bears = FilenameBear
+file_naming_convention = pascal
+default_actions = *: ApplyPatchAction
+no_orig = True
+
+[Json]
+files = **.json
+bears = JSONFormatBear
+
+[line_count]
+files = **.cpp
+bears = LineCountBear
+max_lines_per_file = 2000
