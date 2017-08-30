@@ -38,3 +38,8 @@ bears = JSONFormatBear
 files = **.cpp
 bears = LineCountBear
 max_lines_per_file = 2000
+
+[Shell]
+bears = ShellCheckBear
+files = **.sh
+shell = bash
