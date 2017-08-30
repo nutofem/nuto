@@ -22,6 +22,7 @@ void TestN(int rDim)
 
 BOOST_AUTO_TEST_CASE(InterpolationN)
 {
-    for (int dimension = 1; dimension < 3; ++dimension)
-        TestN(dimension);
+    TestN(1);
+    TestN(2);
+    TestN(3);
 }

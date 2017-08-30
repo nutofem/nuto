@@ -1,5 +1,4 @@
 foreach(test
-    Mesh
     Cache
     Assembly
     )
