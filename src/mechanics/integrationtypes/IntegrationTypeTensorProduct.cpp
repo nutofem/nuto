@@ -5,8 +5,8 @@
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "math/Legendre.h"
 
-//! @brief computes points and weights for Lobatto quadrature in 1D		
-//! @param numIPs number of integration points		
+//! @brief computes points and weights for Lobatto quadrature in 1D
+//! @param numIPs number of integration points
 //! @return pair of quadrature weights and points range [-1,1] including boundary points
 std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLobatto(int nIps)
 {
@@ -28,8 +28,8 @@ std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLob
     return std::make_pair(weights, points);
 }
 
-//! @brief computes points and weights for Gauss quadrature in 1D		
-//! @param numIPs number of integration points		
+//! @brief computes points and weights for Gauss quadrature in 1D
+//! @param numIPs number of integration points
 //! @return pair of quadrature weights and points range (-1,1)
 std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGauss(int nIps)
 {
@@ -217,7 +217,7 @@ void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(
 
                 VisualizationCellsIncidence.push_back(start);
                 VisualizationCellsIncidence.push_back(start + 1);
-                VisualizationCellsIncidence.push_back(start + numIPs1D + 2); 
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 2);
                 VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
 
                 start = row * (numIPs1D + 1) + col + (height + 1) * ((numIPs1D + 1) * (numIPs1D + 1));

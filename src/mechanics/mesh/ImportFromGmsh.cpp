@@ -341,7 +341,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
 
         switch (element.type)
         {
-        case 1: // 	2-node line in 2d/3d
+        case 1: //  2-node line in 2d/3d
             shapeType = Interpolation::eShapeType::TRUSSXD;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
@@ -365,9 +365,9 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
-        //    	case 6: // 6-node prism.
+        //      case 6: // 6-node prism.
 
-        //    	case 7: // 5-node pyramid.
+        //      case 7: // 5-node pyramid.
 
         case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
             shapeType = Interpolation::eShapeType::TRUSSXD;
@@ -439,13 +439,13 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             nodeNumbers[26] = nodeNumbersGmsh[2];
             break;
         }
-        //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3
+        //      case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3
         //    with the quadrangular faces).
 
-        //    	case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1
+        //      case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1
         //    with the quadrangular face).
 
-        //    	case 15: // 1-node point.
+        //      case 15: // 1-node point.
 
         case 16: // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
             shapeType = Interpolation::eShapeType::QUAD2D;
@@ -488,11 +488,11 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             break;
         }
 
-        //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+        //      case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
 
-        //    	case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+        //      case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
 
-        //    	case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the
+        //      case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the
         //    edges)
 
         case 21: // 10-node third order triangle (3 nodes associated with the vertices, 6 with the edges, 1 with the
@@ -501,7 +501,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT3;
             break;
 
-        //    	case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the
+        //      case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the
         //    edges)
 
         case 23: // 15-node fourth order triangle (3 nodes associated with the vertices, 9 with the edges, 3 with the
@@ -510,31 +510,31 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT4;
             break;
 
-        //    	case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the
+        //      case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the
         //    edges)
 
-        //    	case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the
+        //      case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the
         //    edges, 6 with the face)
 
-        //    	case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
+        //      case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
 
-        //    	case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
+        //      case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
 
-        //    	case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
+        //      case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
 
-        //    	case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4
+        //      case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4
         //    with the faces)
 
-        //    	case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges,
+        //      case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges,
         //    12 with the faces, 1 in the volume)
 
-        //    	case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24
+        //      case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24
         //    with the faces, 4 in the volume)
 
-        //    	case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24
+        //      case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24
         //    with the faces, 8 in the volume)
 
-        //    	case 93: //	125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges,
+        //      case 93: // 125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges,
         //    54 with the faces, 27 in the volume)
 
         default:

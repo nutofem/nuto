@@ -83,7 +83,7 @@ void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::Unstructured
     Eigen::Vector3d transversal = random.cross(mDirection);
     Eigen::Vector3d transversal2 = transversal.cross(mDirection);
 
-    //	 normalize to size/2;
+    //   normalize to size/2;
     transversal.normalize();
     transversal2.normalize();
 

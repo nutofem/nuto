@@ -753,7 +753,7 @@ void NuTo::StructureFeti::AddSuperlumpedScalingForInterfaceDofs(const NuTo::Stru
 
     if (dim != 2)
         throw Exception(__PRETTY_FUNCTION__, "Multiplicity sclaing only implemented for dimension = 2");
-    
+
     VectorXd interfaceStiffness = CalculateStiffnessAtInterfaceNodes(hessian);
     VectorXd sumOfInterfaceStiffnesses = VectorXd::Zero(interfaceStiffness.size());
 

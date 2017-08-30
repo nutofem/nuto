@@ -40,7 +40,7 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
 
     test = fvec.array().abs().maxCoeff();
 
-    //	std::cout << "	fvec_norm before LineSearch " << test << std::endl;	// Tests
+    //  std::cout << "  fvec_norm before LineSearch " << test << std::endl; // Tests
 
     if (test < 0.01 * TOLF)
     {
@@ -52,14 +52,14 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
 
     for (its = 0; its < MAXITS; its++)
     {
-        //   		std::cout<< "===== Iteration =====" << its <<std::endl;   // Test
+        //          std::cout<< "===== Iteration =====" << its <<std::endl;   // Test
         if (this->mResidualDerivativeFunction != nullptr || this->mAssignResidualResidualDerivative == true)
         {
             // if analytical Jacobi is given
-            //			fjac = (*mResidualDerivativeFunction)(this->mParameter,rX);
+            //          fjac = (*mResidualDerivativeFunction)(this->mParameter,rX);
             fjac = (mResidualDerivativeFunctionBoost)(this->mParameter, rX);
-            //   			std::cout<<"*** Analytical ***"<<std::endl;  	// Test
-            //   			std::cout << fjac << std::endl;             	// Test
+            //              std::cout<<"*** Analytical ***"<<std::endl;     // Test
+            //              std::cout << fjac << std::endl;                 // Test
         }
         else
         {
@@ -73,21 +73,21 @@ void NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd& rX, bool& rChec
         fold = f;
         p = -fvec;
 
-        // 		std::cout << "	fvec before LineSearch = " << fvec.transpose()<< std::endl;   // Test
-        // 		std::cout << "	p before LineSearch    = " << fjac.fullPivLu().solve(-fvec).transpose()<<
+        //      std::cout << "  fvec before LineSearch = " << fvec.transpose()<< std::endl;   // Test
+        //      std::cout << "  p before LineSearch    = " << fjac.fullPivLu().solve(-fvec).transpose()<<
         // std::endl;   // Test
 
         p = fjac.fullPivLu().solve(-fvec).transpose(); // LU SOLVER of fjac * p = -fvec
-        //															// SVD
+        //                                                          // SVD
         //SOLVER
-        //		p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
+        //      p = fjac.jacobiSvd().solve(-fvec).transpose();      // SVD SOLVER
 
         this->LineSearch(xold, fold, g, p, rX, f, stpmax, rCheck, fvec);
 
-        //      std::cout << "	fvec_norm after LineSearch " << fvec.array().abs().maxCoeff() << std::endl;	 // Test
-        //    	std::cout << "	fvec after LineSearch = " << fvec.transpose()<<std::endl;  					 //
+        //      std::cout << "  fvec_norm after LineSearch " << fvec.array().abs().maxCoeff() << std::endl;  // Test
+        //      std::cout << "  fvec after LineSearch = " << fvec.transpose()<<std::endl;                    //
         //    Test
-        //    	std::cout << "	x    after LineSearch = " << rX.transpose()<<std::endl;  					 //
+        //      std::cout << "  x    after LineSearch = " << rX.transpose()<<std::endl;                      //
         //    Test
 
         test = fvec.array().abs().maxCoeff();

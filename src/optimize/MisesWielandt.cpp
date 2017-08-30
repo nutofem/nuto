@@ -56,12 +56,12 @@ int NuTo::MisesWielandt::Optimize()
 
 
         // r set to zero in MatVec product
-        //		std::cout<<"[MisesWielandt] ATTENTION: has to be D^-1.K not K matrix. \n";
-        //		r=Au;
+        //      std::cout<<"[MisesWielandt] ATTENTION: has to be D^-1.K not K matrix. \n";
+        //      r=Au;
         mpCallbackHandlerGrid->Gradient(u, r);
         // input p=r , output r_new=D^-1K r,
         // r of matrix D^-1K
-        //		y'=D^(-1)*y
+        //      y'=D^(-1)*y
         if (mObjectiveType == MAX_EIGENVALUE_OF_PRECOND_MATRIX || mObjectiveType == SPECTRAL_RADIUS_OF_PRECOND_MATRIX ||
             mObjectiveType == CONDITION_NUMBER_OF_PRECOND_MATRIX)
         {
@@ -71,11 +71,11 @@ int NuTo::MisesWielandt::Optimize()
         // y=(D^(-1)K-lambda I)x
 
         // for spectral radius of M=I-PA
-        //		for(size_t i=0;i<mNumParameters;++i)
-        //		{
-        //			r[i]*=-1;
-        //			r[i]+=u[i];
-        //		}
+        //      for(size_t i=0;i<mNumParameters;++i)
+        //      {
+        //          r[i]*=-1;
+        //          r[i]+=u[i];
+        //      }
         // prevNorm=norm;
         norm = 0.;
         prevLambda = lambda;
@@ -89,7 +89,7 @@ int NuTo::MisesWielandt::Optimize()
         for (size_t i = 0; i < mNumParameters; ++i)
             u[i] = r[i] / norm;
 
-        //		std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
+        //      std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
 
         if (numGradientCalls != 1)
         {
