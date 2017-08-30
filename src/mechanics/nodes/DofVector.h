@@ -17,14 +17,9 @@ public:
         {
             auto& thisData = this->mData[it.first];
             if (thisData.rows() == 0)
-            {
                 thisData = it.second;
-            }
             else
-            {
-                assert(thisData.rows() == it.second.rows());
                 thisData += it.second;
-            }
         }
         return *this;
     }
@@ -38,12 +33,14 @@ public:
 
     friend DofVector operator+(DofVector lhs, const DofVector& rhs)
     {
-        return std::move(lhs += rhs);
+        lhs += rhs;
+        return lhs;
     }
 
     friend DofVector operator*(DofVector lhs, double scalar)
     {
-        return std::move(lhs *= scalar);
+        lhs *= scalar;
+        return lhs;
     }
     
     friend std::ostream& operator<<(std::ostream& out, const DofVector<T>& dofVector)

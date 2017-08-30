@@ -66,7 +66,5 @@ BOOST_AUTO_TEST_CASE(DofVectorStream)
     dofVector[dof1] = Eigen::Vector3d::Zero();
     std::stringstream ss;
     ss << dofVector;
-    BOOST_CHECK(ss.str().find("foo") == std::string::npos);
-    BOOST_CHECK(ss.str().find("bar") == std::string::npos);
 }
 
