@@ -3,9 +3,6 @@
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${PYTHON_CXX_FLAGS}")
 
-find_package(Numpy REQUIRED)
-include_directories(${NUMPY_INCLUDE_PATH})
-
 # Python required for interface files c++ and python
 message(STATUS "Checking for Python...")
 find_package(PythonInterp 3 REQUIRED)
