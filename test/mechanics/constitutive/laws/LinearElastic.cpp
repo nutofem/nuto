@@ -12,15 +12,14 @@ BOOST_AUTO_TEST_CASE(LinearElastic1D)
     auto C = law.Tangent(NuTo::EngineeringStrainPDE<1>::Zero());
     BoostUnitTest::CheckEigenMatrix(C, Eigen::Matrix<double, 1, 1>::Constant(E));
 
-    // I trust Eigen::operator* and check LinearElastic::Stress(...) only once here
-    
     BOOST_CHECK_CLOSE(law.Stress(NuTo::EngineeringStrainPDE<1>::Constant(12))[0], E * 12, 1.e-10);
 }
 
 BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStress)
 {
     NuTo::Laws::LinearElastic<2> law(E, nu, NuTo::ePlaneState::PLANE_STRESS);
-    auto C = law.Tangent(NuTo::EngineeringStrainPDE<2>::Zero());
+    NuTo::EngineeringStrainPDE<2> strain = NuTo::EngineeringStrainPDE<2>::Random();
+    auto C = law.Tangent(strain);
 
     Eigen::Matrix3d expected = Eigen::Matrix3d::Zero();
     expected(0, 0) = 1;
@@ -30,12 +29,14 @@ BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStress)
     expected(2, 2) = (1 - nu) / 2;
     expected *= E / (1 - nu * nu);
     BoostUnitTest::CheckEigenMatrix(C, expected);
+    BoostUnitTest::CheckEigenMatrix(law.Stress(strain), expected * strain);
 }
 
 BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStrain)
 {
     NuTo::Laws::LinearElastic<2> law(E, nu, NuTo::ePlaneState::PLANE_STRAIN);
-    auto C = law.Tangent(NuTo::EngineeringStrainPDE<2>::Zero());
+    NuTo::EngineeringStrainPDE<2> strain = NuTo::EngineeringStrainPDE<2>::Random();
+    auto C = law.Tangent(strain);
 
     Eigen::Matrix3d expected = Eigen::Matrix3d::Zero();
     expected(0, 0) = 1 - nu;
@@ -45,12 +46,14 @@ BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStrain)
     expected(2, 2) = (1 - 2 * nu) / 2;
     expected *= E / ((1 + nu) * (1 - 2 * nu));
     BoostUnitTest::CheckEigenMatrix(C, expected);
+    BoostUnitTest::CheckEigenMatrix(law.Stress(strain), expected * strain);
 }
 
 BOOST_AUTO_TEST_CASE(LinearElastic3D)
 {
     NuTo::Laws::LinearElastic<3> law(E, nu);
-    auto C = law.Tangent(NuTo::EngineeringStrainPDE<3>::Zero());
+    NuTo::EngineeringStrainPDE<3> strain = NuTo::EngineeringStrainPDE<3>::Random();
+    auto C = law.Tangent(strain);
 
     Eigen::Matrix<double, 6, 6> expected = Eigen::Matrix<double, 6, 6>::Zero();
     expected(0, 0) = 1 - nu;
@@ -69,4 +72,5 @@ BOOST_AUTO_TEST_CASE(LinearElastic3D)
     expected(5, 5) = (1 - 2 * nu) / 2;
     expected *= E / ((1 + nu) * (1 - 2 * nu));
     BoostUnitTest::CheckEigenMatrix(C, expected);
+    BoostUnitTest::CheckEigenMatrix(law.Stress(strain), expected * strain);
 }
