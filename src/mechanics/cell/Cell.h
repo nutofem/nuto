@@ -41,6 +41,24 @@ public:
         return gradient;
     }
 
+    //! @brief builds the hessian0 matrix
+    DofMatrix<double> Hessian0() override
+    {
+        DofMatrix<double> hessian0;
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
+            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
+                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
+            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
+            hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
+        }
+        return hessian0;
+    }
+
+
     DofVector<int> DofNumbering() override
     {
         return DofVector<int>();

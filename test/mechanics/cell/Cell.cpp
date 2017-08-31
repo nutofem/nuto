@@ -45,8 +45,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     NuTo::Cell<2> cell(coordinateElement, elements, intType.get(), integrand);
 
-    auto gradient = cell.Gradient();
-    BoostUnitTest::CheckVector(gradient[dofDispl], Eigen::VectorXd::Zero(8), 8);
+    BoostUnitTest::CheckVector(cell.Gradient()[dofDispl], Eigen::VectorXd::Zero(8), 8);
 
     const double ux = 0.4;
     nDispl1.SetValue(0, ux);
@@ -92,5 +91,14 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
         NuTo::IPValue strain = ipValues[1];
         BOOST_CHECK_EQUAL(strain.mName, "Strain");
         BoostUnitTest::CheckEigenMatrix(strain.mValue, Eigen::Vector3d({0, uy / ly, 0}));
+    }
+
+    {
+        // check hessian0
+        auto hessian = cell.Hessian0()(dofDispl, dofDispl);
+        auto gradient = cell.Gradient()[dofDispl];
+        auto u = displacementElement.ExtractNodeValues();
+
+        BoostUnitTest::CheckEigenMatrix(gradient, hessian * u);
     }
 }

@@ -29,11 +29,21 @@ public:
         NuTo::NodeValues u = rCellData.GetNodeValues(mDofType);
         NuTo::DofVector<double> gradient;
 
-        Eigen::VectorXd strain = B * u;
+        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
         gradient[mDofType] = B.transpose() * mLaw.Stress(strain);
         return gradient;
     }
 
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& rCellData,
+                                     const NuTo::CellIPData<TDim>& rCellIPData) override
+    {
+        NuTo::BMatrixStrain B = rCellIPData.GetBMatrixStrain(mDofType);
+        NuTo::DofMatrix<double> hessian0;
+
+        NuTo::EngineeringStrainPDE<TDim> dummy;
+        hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(dummy) * B;
+        return hessian0;
+    }
     std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData,
                                         const NuTo::CellIPData<TDim>& rCellIPData) override
     {
