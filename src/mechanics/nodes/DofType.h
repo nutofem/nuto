@@ -7,10 +7,10 @@ namespace NuTo
 class DofType
 {
 public:
-    DofType(std::string rName, int rNum, int rId)
-        : mName(rName)
-        , mNum(rNum)
-        , mId(rId)
+    DofType(std::string name, int num, int id)
+        : mName(name)
+        , mNum(num)
+        , mId(id)
     {
         if (mName.empty())
             throw Exception(__PRETTY_FUNCTION__, "Provide a name!");

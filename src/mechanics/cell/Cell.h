@@ -13,15 +13,15 @@ template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementSimple& rCoordinateElement, DofContainer<ElementSimple*> rElements,
-         const IntegrationTypeBase& rIntegrationType, const Integrand<TDim>& rIntegrand)
-        : mCoordinateElement(rCoordinateElement)
-        , mElements(rElements)
-        , mIntegrationType(rIntegrationType)
+    Cell(const ElementSimple& coordElement, DofContainer<ElementSimple*> elements,
+         const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
+        : mCoordinateElement(coordElement)
+        , mElements(elements)
+        , mIntegrationType(integrationType)
         , mIntegrand()
     {
-        for (int i = 0; i < rIntegrationType.GetNumIntegrationPoints(); i++)
-            mIntegrand.push_back(rIntegrand.Clone());
+        for (int i = 0; i < integrationType.GetNumIntegrationPoints(); i++)
+            mIntegrand.push_back(integrand.Clone());
     }
 
     //! @brief builds the internal gradien
@@ -40,6 +40,24 @@ public:
         }
         return gradient;
     }
+
+    //! @brief builds the hessian0 matrix
+    DofMatrix<double> Hessian0() override
+    {
+        DofMatrix<double> hessian0;
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
+            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
+                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
+            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
+            hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
+        }
+        return hessian0;
+    }
+
 
     DofVector<int> DofNumbering() override
     {

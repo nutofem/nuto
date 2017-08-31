@@ -11,9 +11,9 @@ template <int TDim>
 class IntegrandLinearElastic : public NuTo::Integrand<TDim>
 {
 public:
-    IntegrandLinearElastic(const NuTo::DofType& rDofType, const Laws::LinearElastic<TDim>& rLaw)
-        : mDofType(rDofType)
-        , mLaw(rLaw)
+    IntegrandLinearElastic(const NuTo::DofType& dofType, const Laws::LinearElastic<TDim>& law)
+        : mDofType(dofType)
+        , mLaw(law)
     {
     }
 
@@ -22,23 +22,33 @@ public:
         return new IntegrandLinearElastic<TDim>(mDofType, mLaw);
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& rCellData,
-                                     const NuTo::CellIPData<TDim>& rCellIPData) override
+    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData,
+                                     const NuTo::CellIPData<TDim>& cellIpData) override
     {
-        NuTo::BMatrixStrain B = rCellIPData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = rCellData.GetNodeValues(mDofType);
+        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
         NuTo::DofVector<double> gradient;
 
-        Eigen::VectorXd strain = B * u;
+        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
         gradient[mDofType] = B.transpose() * mLaw.Stress(strain);
         return gradient;
     }
 
-    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& rCellData,
-                                        const NuTo::CellIPData<TDim>& rCellIPData) override
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData,
+                                     const NuTo::CellIPData<TDim>& cellIpData) override
     {
-        NuTo::BMatrixStrain B = rCellIPData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = rCellData.GetNodeValues(mDofType);
+        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NuTo::DofMatrix<double> hessian0;
+
+        NuTo::EngineeringStrainPDE<TDim> dummy;
+        hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(dummy) * B;
+        return hessian0;
+    }
+    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& cellData,
+                                        const NuTo::CellIPData<TDim>& cellIpData) override
+    {
+        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
 
         std::vector<NuTo::IPValue> ipValues;
         Eigen::VectorXd strain = B * u;

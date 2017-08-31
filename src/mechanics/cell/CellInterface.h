@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "mechanics/nodes/DofVector.h"
+#include "mechanics/nodes/DofMatrix.h"
 #include "mechanics/cell/IPValue.h"
 
 namespace NuTo
@@ -17,6 +18,7 @@ public:
     CellInterface& operator=(CellInterface&&) = default;
 
     virtual DofVector<double> Gradient() = 0;
+    virtual DofMatrix<double> Hessian0() = 0;
     virtual DofVector<int> DofNumbering() = 0;
     virtual std::vector<std::vector<IPValue>> IPValues() = 0;
 };

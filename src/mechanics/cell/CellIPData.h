@@ -13,28 +13,28 @@ template <int TDim>
 class CellIPData
 {
 public:
-    CellIPData(const DofContainer<ElementSimple*> rElements, const NuTo::Jacobian<TDim>& rJacobian,
-               const NaturalCoords& rIPCoords)
-        : mElements(rElements)
-        , mJacobian(rJacobian)
-        , mIPCoords(rIPCoords)
+    CellIPData(const DofContainer<ElementSimple*> elements, const NuTo::Jacobian<TDim>& jacobian,
+               const NaturalCoords& ipCoords)
+        : mElements(elements)
+        , mJacobian(jacobian)
+        , mIPCoords(ipCoords)
     {
     }
 
-    NMatrix GetNMatrix(const DofType& rDofType) const
+    NMatrix GetNMatrix(const DofType& dofType) const
     {
-        return mElements[rDofType]->GetInterpolation().GetN(mIPCoords);
+        return mElements[dofType]->GetInterpolation().GetN(mIPCoords);
     }
 
-    BMatrixGradient GetBMatrixGradient(const DofType& rDofType) const
+    BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
     {
-        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(rDofType);
+        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(dofType);
         return dShapeGlobal.transpose();
     }
 
-    BMatrixStrain GetBMatrixStrain(const DofType& rDofType) const
+    BMatrixStrain GetBMatrixStrain(const DofType& dofType) const
     {
-        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(rDofType);
+        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(dofType);
         const int dim = dShapeGlobal.cols();
         const int numNodes = dShapeGlobal.rows();
         switch (dim)
@@ -102,10 +102,10 @@ public:
     }
 
 private:
-    DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType rDofType) const
+    DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
     {
         DerivativeShapeFunctionsNatural dShapeNatural =
-                mElements[rDofType]->GetInterpolation().GetDerivativeShapeFunctions(mIPCoords);
+                mElements[dofType]->GetInterpolation().GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 

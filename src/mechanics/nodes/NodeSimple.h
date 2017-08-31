@@ -8,10 +8,10 @@ namespace NuTo
 class NodeSimple
 {
 public:
-    NodeSimple(Eigen::VectorXd rValues)
-        : mValues(rValues)
+    NodeSimple(Eigen::VectorXd values)
+        : mValues(values)
+          , mDofNumbers(Eigen::VectorXi::Zero(values.rows()))
     {
-        mDofNumbers.setZero(mValues.rows());
     }
 
     const Eigen::VectorXd& GetValues() const
@@ -19,22 +19,22 @@ public:
         return mValues;
     }
 
-    int GetDofNumber(int rComponent) const
+    int GetDofNumber(int component) const
     {
-        assert(rComponent < mDofNumbers.rows());
-        return mDofNumbers[rComponent];
+        assert(component < mDofNumbers.rows());
+        return mDofNumbers[component];
     }
 
-    void SetValue(int rComponent, double rValue)
+    void SetValue(int component, double value)
     {
-        assert(rComponent < mDofNumbers.rows());
-        mValues[rComponent] = rValue;
+        assert(component < mDofNumbers.rows());
+        mValues[component] = value;
     }
 
-    void SetDofNumber(int rComponent, int rDofNumber)
+    void SetDofNumber(int component, int dofNumber)
     {
-        assert(rComponent < mDofNumbers.rows());
-        mDofNumbers[rComponent] = rDofNumber;
+        assert(component < mDofNumbers.rows());
+        mDofNumbers[component] = dofNumber;
     }
 
     int GetNumValues() const
