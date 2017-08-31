@@ -10,7 +10,7 @@ class NodeSimple
 public:
     NodeSimple(Eigen::VectorXd values)
         : mValues(values)
-          , mDofNumbers(Eigen::VectorXd::Zero(values.rows()))
+          , mDofNumbers(Eigen::VectorXi::Zero(values.rows()))
     {
     }
 
