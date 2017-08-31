@@ -14,14 +14,14 @@ namespace NuTo
 class CellData
 {
 public:
-    CellData(const DofContainer<ElementSimple*>& rElements)
-        : mElements(rElements)
+    CellData(const DofContainer<ElementSimple*>& elements)
+        : mElements(elements)
     {
     }
 
-    NodeValues GetNodeValues(const DofType& rDofType) const
+    NodeValues GetNodeValues(const DofType& dofType) const
     {
-        return mElements[rDofType]->ExtractNodeValues();
+        return mElements[dofType]->ExtractNodeValues();
     }
 
 private:

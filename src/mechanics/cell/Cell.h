@@ -13,15 +13,15 @@ template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementSimple& rCoordinateElement, DofContainer<ElementSimple*> rElements,
-         const IntegrationTypeBase& rIntegrationType, const Integrand<TDim>& rIntegrand)
-        : mCoordinateElement(rCoordinateElement)
-        , mElements(rElements)
-        , mIntegrationType(rIntegrationType)
+    Cell(const ElementSimple& coordElement, DofContainer<ElementSimple*> elements,
+         const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
+        : mCoordinateElement(coordElement)
+        , mElements(elements)
+        , mIntegrationType(integrationType)
         , mIntegrand()
     {
-        for (int i = 0; i < rIntegrationType.GetNumIntegrationPoints(); i++)
-            mIntegrand.push_back(rIntegrand.Clone());
+        for (int i = 0; i < integrationType.GetNumIntegrationPoints(); i++)
+            mIntegrand.push_back(integrand.Clone());
     }
 
     //! @brief builds the internal gradien
