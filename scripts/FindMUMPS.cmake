@@ -22,7 +22,7 @@ if(NOT MUMPS_ROOT AND NOT $ENV{MUMPS_ROOT} STREQUAL "")
 endif()
 
 if(NOT METIS_FOUND)
-    find_package(Metis REQUIRED)
+    find_package(METIS REQUIRED)
 endif()
 
 # convert path to unix style path and set search path

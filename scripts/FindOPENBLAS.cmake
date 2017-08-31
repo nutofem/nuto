@@ -45,7 +45,7 @@ endif()
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(OpenBLAS DEFAULT_MSG OpenBLAS_LIBRARIES)
+find_package_handle_standard_args(OPENBLAS DEFAULT_MSG OpenBLAS_LIBRARIES)
 
 
 if(OpenBLAS_DEBUG)

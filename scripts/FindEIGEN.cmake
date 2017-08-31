@@ -44,4 +44,4 @@ set(EIGEN_VERSION_NUMBER
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Eigen DEFAULT_MSG EIGEN_INCLUDE_DIR)
+find_package_handle_standard_args(EIGEN DEFAULT_MSG EIGEN_INCLUDE_DIR)

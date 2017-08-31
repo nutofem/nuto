@@ -44,4 +44,5 @@ message(STATUS "Metis lib: ${METIS_LIBRARIES}")
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Metis DEFAULT_MSG METIS_LIBRARIES METIS_INCLUDE_DIR)
+find_package_handle_standard_args(METIS DEFAULT_MSG METIS_LIBRARIES
+    METIS_INCLUDE_DIR)
