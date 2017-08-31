@@ -1,5 +1,6 @@
 add_executable(ContinuumElement ContinuumElement.cpp)
-target_link_libraries(ContinuumElement Mechanics Math Base)
+target_link_libraries(ContinuumElement Mechanics Math Base
+    Boost::unit_test_framework)
 if(ENABLE_VISUALIZE)
     target_link_libraries(ContinuumElement Visualize)
 endif()
