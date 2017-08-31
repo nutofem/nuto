@@ -166,7 +166,7 @@ void InitializeStructure(NuTo::StructureFeti& structure)
     structure.GetLogger().OpenFile("output" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "FetiMultiplicityScaling.mesh" + std::to_string(rank);
+    std::string meshFile = "meshes/FetiMultiplicityScaling.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);
