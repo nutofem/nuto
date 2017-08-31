@@ -36,21 +36,21 @@ class EngineeringStrainPDE : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
 public:
     EngineeringStrainPDE() = default;
 
-    // This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
+    //! @brief This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
     template <typename OtherDerived>
     EngineeringStrainPDE(const Eigen::MatrixBase<OtherDerived>& other)
         : Parent(other) 
     {
     }
     
-    // This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
+    //! @brief This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
     template <typename OtherDerived>
     EngineeringStrainPDE(Eigen::MatrixBase<OtherDerived>&& other)
         : Parent(other) 
     {
     }
     
-    // This method allows you to assign Eigen expressions to EngineeringStrainPDE
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStrainPDE
     template <typename OtherDerived>
     EngineeringStrainPDE& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
@@ -58,7 +58,7 @@ public:
         return *this;
     }
     
-    // This method allows you to assign Eigen expressions to EngineeringStrainPDE
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStrainPDE
     template <typename OtherDerived>
     EngineeringStrainPDE& operator=(Eigen::MatrixBase<OtherDerived>&& other)
     {

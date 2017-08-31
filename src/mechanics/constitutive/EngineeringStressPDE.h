@@ -33,21 +33,21 @@ class EngineeringStressPDE : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
 public:
     EngineeringStressPDE() = default;
 
-    // This constructor allows you to construct EngineeringStressPDE from Eigen expressions
+    //! @brief This constructor allows you to construct EngineeringStressPDE from Eigen expressions
     template <typename OtherDerived>
     EngineeringStressPDE(const Eigen::MatrixBase<OtherDerived>& other)
         : Parent(other) 
     {
     }
     
-    // This constructor allows you to construct EngineeringStressPDE from Eigen expressions
+    //! @brief This constructor allows you to construct EngineeringStressPDE from Eigen expressions
     template <typename OtherDerived>
     EngineeringStressPDE(Eigen::MatrixBase<OtherDerived>&& other)
         : Parent(other) 
     {
     }
     
-    // This method allows you to assign Eigen expressions to EngineeringStressPDE
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStressPDE
     template <typename OtherDerived>
     EngineeringStressPDE& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
@@ -55,7 +55,7 @@ public:
         return *this;
     }
     
-    // This method allows you to assign Eigen expressions to EngineeringStressPDE
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStressPDE
     template <typename OtherDerived>
     EngineeringStressPDE& operator=(Eigen::MatrixBase<OtherDerived>&& other)
     {
