@@ -1,6 +1,4 @@
 #pragma once
-#include <memory>
-#include <boost/noncopyable.hpp>
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/CellIPData.h"
 #include "mechanics/nodes/DofVector.h"

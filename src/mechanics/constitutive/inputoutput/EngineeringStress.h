@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
 
 
 namespace NuTo

@@ -1,15 +1,10 @@
 #pragma once
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
 
 namespace NuTo
 {
-
-enum class ePlaneState
-{
-    PLANE_STRESS,
-    PLANE_STRAIN
-};
 
 //! @brief Input to tell the law whether the material is under plane stress or plane strain.
 class ConstitutivePlaneState : public ConstitutiveIOBase

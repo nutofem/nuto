@@ -54,3 +54,5 @@ add_unit_test(Creep
     mechanics/constitutive/ConstitutiveBase.cpp
     mechanics/constitutive/ConstitutiveEnum.cpp
     )
+
+add_unit_test(LinearElastic)

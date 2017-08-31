@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
     CheckDofMatrix(dofMatrix0, dof0, dof1);
 }
 
-BOOST_AUTO_TEST_CASE(DofVectorStream)
+BOOST_AUTO_TEST_CASE(DofMatrixStream)
 {
     NuTo::DofType dof0("foo", 1, 0);
     NuTo::DofType dof1("bar", 1, 1);
@@ -65,4 +65,6 @@ BOOST_AUTO_TEST_CASE(DofVectorStream)
     BOOST_CHECK(ss.str().find("23") != std::string::npos);
     BOOST_CHECK(ss.str().find("32") != std::string::npos);
     BOOST_CHECK(ss.str().find("33") != std::string::npos);
+
+    BOOST_TEST_MESSAGE("" << dofMatrix);
 }
