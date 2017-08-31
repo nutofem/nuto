@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/elements/ElementSimple.h"
+#include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/nodes/DofContainer.h"
 
 namespace NuTo
@@ -14,7 +14,7 @@ namespace NuTo
 class CellData
 {
 public:
-    CellData(const DofContainer<ElementSimple*>& elements)
+    CellData(const DofContainer<CellInterpolationBase*>& elements)
         : mElements(elements)
     {
     }
@@ -25,6 +25,6 @@ public:
     }
 
 private:
-    const DofContainer<ElementSimple*>& mElements;
+    const DofContainer<CellInterpolationBase*>& mElements;
 };
 } /* NuTo */

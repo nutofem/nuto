@@ -2,6 +2,8 @@
 #include <fakeit.hpp>
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/cell/CellIPData.h"
+#include "mechanics/nodes/NodeSimple.h"
+#include "mechanics/interpolation/CellInterpolationFEM.h"
 
 
 constexpr double dN0dX = 1;
@@ -56,7 +58,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
     NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({0, 1}));
     NuTo::InterpolationTriangleLinear interpolation0(22);
-    NuTo::ElementSimple e0({&n0, &n1, &n2}, interpolation0);
+    NuTo::CellInterpolationFEM e0({&n0, &n1, &n2}, interpolation0);
     NuTo::DofType d0("dof0", 2, 0);
 
     NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Matrix<double, 1, 1>::Constant(1));
@@ -64,16 +66,16 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::NodeSimple n5 = NuTo::NodeSimple(Eigen::Matrix<double, 1, 1>::Constant(7));
     fakeit::Mock<NuTo::InterpolationSimple> interpolation1;
     Method(interpolation1, GetDerivativeShapeFunctions) = MockDerivatives2D();
-    NuTo::ElementSimple e1({&n3, &n4, &n5}, interpolation1.get());
+    NuTo::CellInterpolationFEM e1({&n3, &n4, &n5}, interpolation1.get());
     NuTo::DofType d1("dof0", 1, 1);
 
-    NuTo::DofContainer<NuTo::ElementSimple*> elements;
+    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[d0] = &e0;
     elements[d1] = &e1;
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
-    NuTo::Jacobian<2> jac(e0.ExtractNodeValues(), e0.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
+    NuTo::Jacobian<2> jac(e0.ExtractNodeValues(), e0.GetDerivativeShapeFunctions(ipCoords));
 
     NuTo::CellIPData<2> ipData(elements, jac, ipCoords);
 

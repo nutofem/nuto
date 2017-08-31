@@ -1,8 +1,8 @@
 #pragma once
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/elements/ElementSimple.h"
+#include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/interpolation/InterpolationSimple.h"
+#include "mechanics/interpolation/CellInterpolationFEM.h"
 
 namespace NuTo
 {
@@ -16,9 +16,9 @@ public:
         return *mNodes.rbegin();
     }
 
-    ElementSimple& CreateElement(std::vector<NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
+    CellInterpolationBase& CreateElement(std::vector<NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
     {
-        mElements.push_back(new ElementSimple{rNodes, rInterpolation});
+        mElements.push_back(new CellInterpolationFEM{rNodes, rInterpolation});
         return *mElements.rbegin();
     }
 
@@ -30,7 +30,7 @@ public:
 
 private:
     boost::ptr_vector<InterpolationSimple> mInterpolations;
-    boost::ptr_vector<ElementSimple> mElements;
+    boost::ptr_vector<CellInterpolationFEM> mElements;
     boost::ptr_vector<NodeSimple> mNodes;
 };
 } /* NuTo */

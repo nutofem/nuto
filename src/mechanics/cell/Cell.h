@@ -2,7 +2,7 @@
 
 #include "mechanics/cell/CellInterface.h"
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/elements/ElementSimple.h"
+#include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Integrand.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -13,10 +13,10 @@ template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementSimple& coordElement, DofContainer<ElementSimple*> elements,
+    Cell(const CellInterpolationBase& coordinateInterpolation, DofContainer<CellInterpolationBase*> cellinterpolation,
          const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
-        : mCoordinateElement(coordElement)
-        , mElements(elements)
+        : mCoordinateInterpolation(coordinateInterpolation)
+        , mCellInterpolation(cellinterpolation)
         , mIntegrationType(integrationType)
         , mIntegrand()
     {
@@ -28,14 +28,14 @@ public:
     DofVector<double> Gradient() override
     {
         DofVector<double> gradient;
-        CellData cellData(mElements);
+        CellData cellData(mCellInterpolation);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
+            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
+            CellIPData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
             gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
@@ -45,14 +45,14 @@ public:
     DofMatrix<double> Hessian0() override
     {
         DofMatrix<double> hessian0;
-        CellData cellData(mElements);
+        CellData cellData(mCellInterpolation);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
+            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
+            CellIPData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
             hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return hessian0;
@@ -69,21 +69,21 @@ public:
     {
         std::vector<std::vector<IPValue>> ipValues;
 
-        CellData cellData(mElements);
+        CellData cellData(mCellInterpolation);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
+            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
+            CellIPData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
             ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
         }
         return ipValues;
     }
 
 private:
-    const ElementSimple& mCoordinateElement;
-    DofContainer<ElementSimple*> mElements;
+    const CellInterpolationBase& mCoordinateInterpolation;
+    DofContainer<CellInterpolationBase*> mCellInterpolation;
     const IntegrationTypeBase& mIntegrationType;
     boost::ptr_vector<Integrand<TDim>> mIntegrand;
 };

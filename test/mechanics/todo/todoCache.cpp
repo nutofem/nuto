@@ -20,10 +20,10 @@ BOOST_AUTO_TEST_CASE(CacheN)
 
 BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {
-    fakeit::Mock<NuTo::ElementSimple> element;
+    fakeit::Mock<NuTo::CellInterpolationBase> element;
     Method(element, ExtractNodeValues) = Eigen::Vector2d({42, 6174});
     NuTo::DofType dof("dof", 1, 0);
-    NuTo::DofContainer<NuTo::ElementSimple*> elements;
+    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[dof] = &element.get();
 
     NuTo::CellData cell(elements);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/elements/ElementSimple.h"
+#include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Jacobian.h"
 
@@ -13,9 +13,9 @@ template <int TDim>
 class CellIPData
 {
 public:
-    CellIPData(const DofContainer<ElementSimple*> elements, const NuTo::Jacobian<TDim>& jacobian,
+    CellIPData(const DofContainer<CellInterpolationBase*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
                const NaturalCoords& ipCoords)
-        : mElements(elements)
+        : mCellInterpolation(cellInterpolation)
         , mJacobian(jacobian)
         , mIPCoords(ipCoords)
     {
@@ -23,7 +23,15 @@ public:
 
     NMatrix GetNMatrix(const DofType& dofType) const
     {
-        return mElements[dofType]->GetInterpolation().GetN(mIPCoords);
+        int dim = mCellInterpolation[dofType]->GetDofDimension();
+        Eigen::MatrixXd N(dim, dim * mCellInterpolation[dofType]->GetNumNodes());
+
+        auto shapeFunctions = mCellInterpolation[dofType]->GetShapeFunctions(mIPCoords);
+
+        for (int i = 0; i < mCellInterpolation[dofType]->GetNumNodes(); ++i)
+            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
+        return N;
+//        return mCellInterpolation[dofType]->GetInterpolation().GetN(mIPCoords);
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
@@ -104,12 +112,11 @@ public:
 private:
     DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
     {
-        DerivativeShapeFunctionsNatural dShapeNatural =
-                mElements[dofType]->GetInterpolation().GetDerivativeShapeFunctions(mIPCoords);
+        DerivativeShapeFunctionsNatural dShapeNatural =  mCellInterpolation[dofType]->GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const DofContainer<ElementSimple*> mElements;
+    const DofContainer<CellInterpolationBase*> mCellInterpolation;
     const NuTo::Jacobian<TDim>& mJacobian;
     const NaturalCoords& mIPCoords;
 };
