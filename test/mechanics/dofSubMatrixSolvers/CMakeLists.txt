@@ -1,14 +1,14 @@
-set(solverSources 
-        base/Timer.cpp
-        mechanics/dofSubMatrixStorage/BlockSparseMatrix.cpp
-        mechanics/dofSubMatrixStorage/DofStatus.cpp
-        mechanics/dofSubMatrixStorage/BlockFullVector.cpp
-        mechanics/dofSubMatrixStorage/BlockStorageBase.cpp
-        mechanics/dofSubMatrixStorage/BlockScalar.cpp
-        mechanics/nodes/NodeEnum.cpp
-        math/SparseMatrixCSRSymmetric.cpp
-        math/SparseMatrixCSRGeneral.cpp
-        math/SparseMatrixCSR.cpp
+set(solverSources
+    base/Timer.cpp
+    mechanics/dofSubMatrixStorage/BlockSparseMatrix.cpp
+    mechanics/dofSubMatrixStorage/DofStatus.cpp
+    mechanics/dofSubMatrixStorage/BlockFullVector.cpp
+    mechanics/dofSubMatrixStorage/BlockStorageBase.cpp
+    mechanics/dofSubMatrixStorage/BlockScalar.cpp
+    mechanics/nodes/NodeEnum.cpp
+    math/SparseMatrixCSRSymmetric.cpp
+    math/SparseMatrixCSRGeneral.cpp
+    math/SparseMatrixCSR.cpp
     )
 
 add_unit_test(SolverEigen

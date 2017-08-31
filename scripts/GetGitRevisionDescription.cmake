@@ -3,7 +3,8 @@
 # These functions force a re-configure on each git commit so that you can
 # trust the values of the variables in your build system.
 #
-#  get_git_head_revision(<refspecvar> <hashvar> [<additional arguments to git describe> ...])
+#  get_git_head_revision(<refspecvar> <hashvar>
+#                        [<additional arguments to git describe> ...])
 #
 # Returns the refspec and sha hash of the current head revision
 #

@@ -16,7 +16,7 @@ default_actions = *: ApplyPatchAction
 no_orig = True
 
 [CMake]
-files = src/**, test/**, scripts/**
+files = **/CMakeLists.txt, **.cmake
 bears = CMakeLintBear
 
 [cpp]
