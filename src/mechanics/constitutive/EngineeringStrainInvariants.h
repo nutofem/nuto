@@ -29,14 +29,14 @@ Tensor ToTensor(EngineeringStrainPDE<3>& v)
 
 //! @brief returns I1 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double InvariantI1(const EngineeringStrainPDE<3>& v)
+double I1(const EngineeringStrainPDE<3>& v)
 {
     return v.segment<3>(0).sum();
 }
 
 //! @brief returns I2 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double InvariantI2(const EngineeringStrainPDE<3>& v)
+double I2(const EngineeringStrainPDE<3>& v)
 {
     // e_xx = v[0]     || e_yy = v[1]     || e_zz = v[2]
     // e_yz = v[3] / 2 || e_zx = v[4] / 2 || e_xy = v[5] / 2
@@ -45,7 +45,7 @@ double InvariantI2(const EngineeringStrainPDE<3>& v)
 
 //! @brief returns I3 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double InvariantI3(const EngineeringStrainPDE<3>& v)
+double I3(const EngineeringStrainPDE<3>& v)
 {
     // e_xx = v[0]     || e_yy = v[1]     || e_zz = v[2]
     // e_yz = v[3] / 2 || e_zx = v[4] / 2 || e_xy = v[5] / 2
@@ -56,7 +56,7 @@ double InvariantI3(const EngineeringStrainPDE<3>& v)
 //! @brief returns J2 - the second deviatoric strain invariant of the characteristic equation
 //! \f[ \lambda^3 - J_1 \lambda^2 - J_2 \lambda - J_3  \f] Note the minus sign in front of J2. This is not
 //! consistent with the I2 invariant but apparently common practice.
-double InvariantJ2(const EngineeringStrainPDE<3>& v)
+double J2(const EngineeringStrainPDE<3>& v)
 {
     const double eps_xx = v[0];
     const double eps_yy = v[1];
@@ -74,7 +74,7 @@ double InvariantJ2(const EngineeringStrainPDE<3>& v)
 //! @brief returns the deviatoric part
 EngineeringStrainPDE<3> Deviatoric(EngineeringStrainPDE<3> v)
 {
-    double I1_3 = InvariantI1(v) / 3.;
+    double I1_3 = I1(v) / 3.;
     v[0] -= I1_3;
     v[1] -= I1_3;
     v[2] -= I1_3;
