@@ -18,6 +18,7 @@ no_orig = True
 [CMake]
 files = **/CMakeLists.txt, **.cmake
 bears = CMakeLintBear
+ignore = *build*/**
 
 [cpp]
 files = src/**.cpp
