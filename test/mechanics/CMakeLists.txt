@@ -12,6 +12,7 @@ add_subdirectory(sections)
 add_subdirectory(tools)
 add_subdirectory(timeIntegration)
 add_subdirectory(feti)
+add_subdirectory(IGA)
 
 if(NOT DEFINED ENV{TRAVIS}) 
     add_subdirectory(todo)

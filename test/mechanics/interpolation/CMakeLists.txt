@@ -5,4 +5,6 @@ add_unit_test(InterpolationQuadLinear
 add_unit_test(InterpolationQuadSerendipity
     mechanics/elements/ElementShapeFunctions.cpp)
 
+add_unit_test(CellInterpolationFEM mechanics/elements/ElementShapeFunctions.cpp)
+
 add_unit_test(InterpolationSimple)
