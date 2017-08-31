@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(2)).AlwaysReturn(Eigen::Vector2d({a, a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(3)).AlwaysReturn(Eigen::Vector2d({-a, a}));
 
-    NuTo::LinearElasticLaw2D law(E, 0.0);
+    NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
     NuTo::IntegrandLinearElastic<2> integrand({dofDispl}, law);
 
     NuTo::Cell<2> cell(coordinateElement, elements, intType.get(), integrand);
