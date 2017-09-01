@@ -1,7 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <vector>
+#include <set>
 #include <boost/iterator/indirect_iterator.hpp>
 
 namespace NuTo
@@ -10,15 +10,15 @@ namespace Groups
 {
 
 template <typename T>
-class Group : private std::vector<T*>
+class Group : private std::set<T*>
 {
 public:
-    typedef std::vector<T*> parent;
+    typedef std::set<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
     void AddMember(T& element)
     {
-        parent::push_back(&element);
+        parent::insert(&element);
     }
 
     GroupIterator begin()
