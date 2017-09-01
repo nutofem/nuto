@@ -28,9 +28,11 @@ struct GroupTestFixture
         groupOne.AddMember(a);
         groupOne.AddMember(b);
         groupOne.AddMember(c);
+        groupOne.AddMember(a); // duplicate!
 
         groupTwo.AddMember(c);
         groupTwo.AddMember(d);
+        groupTwo.AddMember(d); // duplicate!
     }
 
     Foo a, b, c, d;
