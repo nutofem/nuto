@@ -1,1 +1,2 @@
+add_unit_test(GroupTest)
 add_subdirectory(serializeStream)
