@@ -13,7 +13,8 @@ BOOST_AUTO_TEST_CASE(IdsCreate)
 
 BOOST_AUTO_TEST_CASE(IdsCopyMove)
 {
-    struct Foo : NuTo::UniqueId<Foo> {};
+    struct FooBase : NuTo::UniqueId<FooBase> {};
+    struct Foo : FooBase {};
     Foo foo;
     int id = foo.Id();
     Foo fooCopyCtor(foo); // copy ctor
