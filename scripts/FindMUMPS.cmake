@@ -46,22 +46,13 @@ if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
     find_library(_mumps_LIB_MUMPS_COMMON
         NAMES mumps_common
         HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
-    find_library(_mumps_LIB_MPISEQ
-        NAMES mpiseq mpiseq_seq-4.10.0
-        HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
 else()
-    find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq-4.10.0)
-    find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq-4.10.0)
-    find_library(_mumps_LIB_MPISEQ NAMES mpiseq mpiseq_seq-4.10.0)
+    find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq)
+    find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq)
 endif()
 
-if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON AND NOT _mumps_LIB_MPISEQ)
-    message(WARNING "Only sequential version of MUMPS package is supported")
-endif()
-
-if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON AND _mumps_LIB_MPISEQ)
-    set(MUMPS_LIBRARIES ${_mumps_LIB_DMUMPS} ${_mumps_LIB_MUMPS_COMMON}
-        ${_mumps_LIB_MPISEQ})
+if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON)
+    set(MUMPS_LIBRARIES ${_mumps_LIB_DMUMPS} ${_mumps_LIB_MUMPS_COMMON})
     # search for ordering packages
     find_library(_mumps_LIB_PORD
         NAMES pord
