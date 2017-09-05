@@ -26,7 +26,7 @@ enum class eOutput
     UPDATE_STATIC_DATA,
     UPDATE_TMP_STATIC_DATA,
     IP_DATA, //!< this is primarily for plotting, give the 3D state  so for plane stress there is a z-component in the
-             //!strain
+    //! strain
     GLOBAL_ROW_DOF, //!< calculates the row dofs of the local element matrices
     GLOBAL_COLUMN_DOF //!< calculates the column dofs of the local element matrices
 };

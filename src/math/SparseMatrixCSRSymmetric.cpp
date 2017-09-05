@@ -22,14 +22,12 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
     assert(rMatrixB.GetNumRows() == rMatrixB.GetNumColumns());
     if (rMatrixB.GetNumRows() != rMatrixA.GetNumRows())
     {
-        throw Exception(
-                "[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid dimension of matrices A and B.");
+        throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid dimension of matrices A and B.");
     }
     assert(this->GetNumRows() == this->GetNumColumns());
     if (rMatrixA.GetNumColumns() != this->GetNumRows())
     {
-        throw Exception(
-                "[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid number of columns in matrix A.");
+        throw Exception("[SparseMatrixCSRSymmetric::Add_TransA_Mult_B_Mult_A] invalid number of columns in matrix A.");
     }
     // loop over the columns of trans(A) == rows of A
     const std::vector<int>& matrixARowIndex = rMatrixA.GetRowIndex();
@@ -106,8 +104,8 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
 
 // subtract (trans(A) * B + trans(B) * A) from the matrix (A and B are general matrices)
 template <>
-void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
-        const NuTo::SparseMatrixCSRGeneral<int>&, const NuTo::SparseMatrixCSRGeneral<int>&)
+void SparseMatrixCSRSymmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRGeneral<int>&,
+                                                                         const NuTo::SparseMatrixCSRGeneral<int>&)
 {
     throw Exception(
             "[SparseMatrixCSRSymmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
@@ -121,17 +119,17 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
     if (rMatrixA.GetNumRows() != rMatrixB.GetNumColumns())
     {
         throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of rows "
-                            "of matrix A and B.");
+                        "of matrix A and B.");
     }
     if (rMatrixB.GetNumRows() != this->GetNumRows())
     {
         throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of "
-                            "columns of matrix B.");
+                        "columns of matrix B.");
     }
     if (rMatrixA.GetNumColumns() != this->GetNumColumns())
     {
         throw Exception("[SparseMatrixCSRSymmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] invalid number of "
-                            "columns of matrix A.");
+                        "columns of matrix A.");
     }
 
     // calculate B * A
@@ -175,7 +173,7 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(
 
 // multiply sparse matrix with full matrix
 template <>
-Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi&) const
+Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator*(const Eigen::MatrixXi&)const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
@@ -214,7 +212,7 @@ Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator*(const Eigen::MatrixX
 
 // multiply sparse matrix with scalar
 template <>
-SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int&) const
+SparseMatrixCSRSymmetric<int> SparseMatrixCSRSymmetric<int>::operator*(const int&)const
 {
     throw Exception("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }

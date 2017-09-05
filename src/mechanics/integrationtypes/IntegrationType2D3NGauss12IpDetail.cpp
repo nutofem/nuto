@@ -111,8 +111,7 @@ int NuTo::IntegrationType2D3NGauss12IpDetail::GetNumIntegrationPoints() const
 double NuTo::IntegrationType2D3NGauss12IpDetail::GetIntegrationPointWeight(int rIpNum) const
 {
     if (rIpNum < 0 || rIpNum >= 12)
-        throw Exception(
-                "[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight] Ip number out of range.");
 
     return mIntegrationPointWeights[rIpNum];
 }

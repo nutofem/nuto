@@ -77,9 +77,11 @@ BOOST_AUTO_TEST_CASE(NodesAndWeightsGauss)
     }
 }
 
-double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationTypeBase &intType) {
+double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationTypeBase& intType)
+{
     double result = 0.;
-    for (int i = 0; i < intType.GetNumIntegrationPoints(); i++) {
+    for (int i = 0; i < intType.GetNumIntegrationPoints(); i++)
+    {
         double y = f(intType.GetLocalIntegrationPointCoordinates(i));
         double w = intType.GetIntegrationPointWeight(i);
         result += w * y;
@@ -87,36 +89,50 @@ double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationType
     return (result);
 }
 
-void Integrate1DLine(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method) {
+void Integrate1DLine(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method)
+{
     NuTo::IntegrationTypeTensorProduct<1> intType(numNodes1D, method);
-    for (int i=0; i<=maxOrder; i++) {
-        auto f = [i](Eigen::VectorXd x){ return( std::pow(x[0],i) ); };
+    for (int i = 0; i <= maxOrder; i++)
+    {
+        auto f = [i](Eigen::VectorXd x) { return (std::pow(x[0], i)); };
         double computedResult = integrate(f, intType);
-        double expectedResult = 1./(i+1) * (1. -  std::pow(-1,i+1));
+        double expectedResult = 1. / (i + 1) * (1. - std::pow(-1, i + 1));
         BOOST_CHECK_SMALL(computedResult - expectedResult, 1.e-13);
     }
 }
 
-void Integrate2DQuad(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method) {
+void Integrate2DQuad(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method)
+{
     NuTo::IntegrationTypeTensorProduct<2> intType(numNodes1D, method);
-    for (int n=0; n<=maxOrder; n++) {
-        for (int i = 0; i < n + 1; i++) {
-            auto f = [n,i](Eigen::VectorXd x){ return( std::pow(x[0],i) * std::pow(x[1],n-i) ); };
+    for (int n = 0; n <= maxOrder; n++)
+    {
+        for (int i = 0; i < n + 1; i++)
+        {
+            auto f = [n, i](Eigen::VectorXd x) { return (std::pow(x[0], i) * std::pow(x[1], n - i)); };
             double computedResult = integrate(f, intType);
-            double expectedResult = 1./(i+1)/(n-i+1) * (   (1. - std::pow(-1,i+1) )*(1. - std::pow(-1,n-i+1) ) );
+            double expectedResult =
+                    1. / (i + 1) / (n - i + 1) * ((1. - std::pow(-1, i + 1)) * (1. - std::pow(-1, n - i + 1)));
             BOOST_CHECK_SMALL(computedResult - expectedResult, 1.e-13);
         }
     }
 }
 
-void Integrate3DBrick(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method) {
+void Integrate3DBrick(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod method)
+{
     NuTo::IntegrationTypeTensorProduct<3> intType(numNodes1D, method);
-    for (int n=0; n<=maxOrder; n++) {
-        for (int i = 0; i < n + 1; i++) {
-            for (int j = 0; j < (n + 1 - i); j++) {
-                auto f = [n,i,j](Eigen::VectorXd x){ return( std::pow(x[0],i) * std::pow(x[1],j) * std::pow(x[2],n-i-j) ); };
+    for (int n = 0; n <= maxOrder; n++)
+    {
+        for (int i = 0; i < n + 1; i++)
+        {
+            for (int j = 0; j < (n + 1 - i); j++)
+            {
+                auto f = [n, i, j](Eigen::VectorXd x) {
+                    return (std::pow(x[0], i) * std::pow(x[1], j) * std::pow(x[2], n - i - j));
+                };
                 double computedResult = integrate(f, intType);
-                double expectedResult = 1./(i+1)/(j+1)/(n-i-j+1) * (   (1. - std::pow(-1,i+1) )*(1. - std::pow(-1,j+1) ) * (1. - std::pow(-1,n-i-j+1)) );
+                double expectedResult =
+                        1. / (i + 1) / (j + 1) / (n - i - j + 1) *
+                        ((1. - std::pow(-1, i + 1)) * (1. - std::pow(-1, j + 1)) * (1. - std::pow(-1, n - i - j + 1)));
                 BOOST_CHECK_SMALL(computedResult - expectedResult, 1.e-13);
             }
         }
@@ -125,48 +141,54 @@ void Integrate3DBrick(int maxOrder, int numNodes1D, NuTo::eIntegrationMethod met
 
 BOOST_AUTO_TEST_CASE(Integrate1DLineGauss)
 {
-    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D++)
+    {
         // Gauss integration should be exact for polynomials up to order 2n-1
-        Integrate1DLine(2*numNodes1D-1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
+        Integrate1DLine(2 * numNodes1D - 1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
     }
 }
 
 BOOST_AUTO_TEST_CASE(Integrate2DQuadGauss)
 {
-    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D++)
+    {
         // Gauss integration should be exact for polynomials up to order 2n-1
-        Integrate2DQuad(2*numNodes1D-1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
+        Integrate2DQuad(2 * numNodes1D - 1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
     }
 }
 
 BOOST_AUTO_TEST_CASE(Integrate3DBrickGauss)
 {
-    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 1; numNodes1D < 8; numNodes1D++)
+    {
         // Gauss integration should be exact for polynomials up to order 2n-1
-        Integrate3DBrick(2*numNodes1D-1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
+        Integrate3DBrick(2 * numNodes1D - 1, numNodes1D, NuTo::eIntegrationMethod::GAUSS);
     }
 }
 
 BOOST_AUTO_TEST_CASE(Integrate1DLineLobatto)
 {
-    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D++)
+    {
         // Lobatto integration should be exact for polynomials up to order 2n-3
-        Integrate1DLine(2*numNodes1D-3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
+        Integrate1DLine(2 * numNodes1D - 3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
     }
 }
 
 BOOST_AUTO_TEST_CASE(Integrate2DQuadLobatto)
 {
-    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D++)
+    {
         // Lobatto integration should be exact for polynomials up to order 2n-3
-        Integrate2DQuad(2*numNodes1D-3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
+        Integrate2DQuad(2 * numNodes1D - 3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
     }
 }
 
 BOOST_AUTO_TEST_CASE(Integrate3DBrickLobatto)
 {
-    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D ++) {
+    for (int numNodes1D = 2; numNodes1D < 8; numNodes1D++)
+    {
         // Lobatto integration should be exact for polynomials up to order 2n-3
-        Integrate3DBrick(2*numNodes1D-3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
+        Integrate3DBrick(2 * numNodes1D - 3, numNodes1D, NuTo::eIntegrationMethod::LOBATTO);
     }
 }

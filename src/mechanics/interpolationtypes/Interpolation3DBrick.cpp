@@ -34,8 +34,7 @@ NuTo::eIntegrationType NuTo::Interpolation3DBrick::GetStandardIntegrationType() 
         return NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+                                                     Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -54,9 +53,8 @@ Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const Eigen:
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::ShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -76,9 +74,8 @@ NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural(const Eigen
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Interpolation order for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -97,9 +94,8 @@ Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinates(int 
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::NodeCoordinatesBrickSpectralOrder4(rNodeIndexDof);
     default:
-        throw Exception(__PRETTY_FUNCTION__, "Node arrangement for " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -119,8 +115,7 @@ int NuTo::Interpolation3DBrick::CalculateNumNodes() const
         return 125;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Interpolation type and order " +
-                                                              Interpolation::TypeOrderToString(mTypeOrder) +
-                                                              " not implemented");
+                                                     Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -148,7 +143,7 @@ NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(const Eigen::Vect
         return Eigen::Vector3d(1., alpha, beta);
     default:
         throw Exception(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
 }
 
@@ -186,7 +181,7 @@ Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoo
 
     default:
         throw Exception(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
     return dXidAlpha;
 }

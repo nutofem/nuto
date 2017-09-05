@@ -223,7 +223,7 @@ void NuTo::Element2DInterface::ResizeNodes(int rNewNumNodes)
     else
     {
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                 "] Resize that reduces the number of nodes is not implemented yet.");
+                        "] Resize that reduces the number of nodes is not implemented yet.");
     }
 }
 
@@ -287,9 +287,8 @@ void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInp
 
             break;
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Constitutive input for " +
-                                                                  Constitutive::InputToString(it.first) +
-                                                                  " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");
         }
     }
 }
@@ -407,8 +406,8 @@ void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(
             break;
         }
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -435,9 +434,8 @@ void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<do
             }
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -498,7 +496,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+                                                         Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -526,9 +524,8 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }

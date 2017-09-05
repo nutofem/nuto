@@ -46,8 +46,8 @@ NuTo::MisesPlasticityEngineeringStress::GetConstitutiveInputs(const Constitutive
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "Output object " + OutputToString(itOutput.first) +
-                                                                  " cannot be calculated by "
-                                                                  "this constitutive law.");
+                                                         " cannot be calculated by "
+                                                         "this constitutive law.");
         }
     }
 
@@ -780,7 +780,7 @@ void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, d
             {
                 if ((it - 1)->second > (it->second))
                     throw Exception(__PRETTY_FUNCTION__, "The yield strength can only increase for "
-                                                                  "increasing epsilon equivalent.");
+                                                         "increasing epsilon equivalent.");
             }
             break;
         }
@@ -843,10 +843,10 @@ void NuTo::MisesPlasticityEngineeringStress::CheckYieldStrength(std::vector<std:
     {
         if (rSigma[count - 1].first >= rSigma[count].first)
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "For multilinear plasticity, the epsilon should always increase.");
+                                  "For multilinear plasticity, the epsilon should always increase.");
         if (rSigma[count - 1].second > rSigma[count].second)
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "For multilinear plasticity, the yield strength should always increase.");
+                                  "For multilinear plasticity, the yield strength should always increase.");
     }
 }
 
@@ -859,8 +859,7 @@ void NuTo::MisesPlasticityEngineeringStress::CheckHardeningModulus(std::vector<s
     }
     if (rH[0].second < 0.0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                       "The initial hardening modulus must not be a negative value.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "The initial hardening modulus must not be a negative value.");
     }
     rH[0].first = 0.;
 
@@ -868,11 +867,10 @@ void NuTo::MisesPlasticityEngineeringStress::CheckHardeningModulus(std::vector<s
     {
         if (rH[count - 1].first >= rH[count].first)
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "For multilinear plasticity, the epsilon should always increase.");
+                                  "For multilinear plasticity, the epsilon should always increase.");
         if (rH[count].second < 0)
-            throw NuTo::Exception(
-                    __PRETTY_FUNCTION__,
-                    "For multilinear plasticity, the hardening modulus should always be positive.");
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                  "For multilinear plasticity, the hardening modulus should always be positive.");
     }
 }
 

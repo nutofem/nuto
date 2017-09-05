@@ -2,7 +2,9 @@
 
 First of all, you need to have `lcov` installed, i.e.
 
-    sudo apt-get install lcov
+```
+sudo apt-get install lcov
+```
 
 Then, you need to set `ENABLE_COVERAGE` to `TRUE` in your CMake options.
 

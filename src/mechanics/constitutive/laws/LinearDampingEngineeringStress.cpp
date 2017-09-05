@@ -96,7 +96,7 @@ double NuTo::LinearDampingEngineeringStress::GetParameterDouble(Constitutive::eC
 
     default:
         throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -112,7 +112,7 @@ void NuTo::LinearDampingEngineeringStress::SetParameterDouble(Constitutive::eCon
 
     default:
         throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
     SetParametersValid();
 }

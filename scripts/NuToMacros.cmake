@@ -1,36 +1,42 @@
 # nuto_swig_module(<module> <interface file> <install_path> <dependencies>)
-#	Function to set up a SWIG module for a NuTo library.
-#	<module>		SWIG module name
-#	<interface file>	SWIG .i file
-#	<dependencies>		Dependencies needed by that module. Typically the NuTo library it wraps.
+#   Function to set up a SWIG module for a NuTo library.
+#   <module>        SWIG module name
+#   <interface file>    SWIG .i file
+#   <dependencies>      Dependencies needed by that module.
+#                       Typically the NuTo library it wraps.
 function(nuto_swig_module module_name interface_file)
     set(libraries ${ARGN})
 
     set_source_files_properties(${interface_file} PROPERTIES CPLUSPLUS ON)
-    set_source_files_properties(${interface_file} PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
+    set_source_files_properties(${interface_file}
+        PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
     swig_add_module(${module_name} python ${interface_file})
     # link library
     swig_link_libraries(${module_name} ${libraries} ${PYTHON_LIBRARIES})
     # check for unresolved symbols
-    set_target_properties(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)
+    set_target_properties(${SWIG_MODULE_${module_name}_REAL_NAME}
+        PROPERTIES LINK_FLAGS -Wl,-z,defs)
     # Additional build flags for module
-    set_source_files_properties("${swig_generated_file_fullname}" PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
+    set_source_files_properties("${swig_generated_file_fullname}"
+        PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 endfunction()
 
 # `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the
 # name `SomeClass` and all the files required (`FilesItNeedsToLink`), links
-# Boost unit test framework to it, and adds it to the test suite under an 
+# Boost unit test framework to it, and adds it to the test suite under an
 # appropriate name
 function(add_unit_test ClassName)
     # find relative path, i.e. remove the `.../test/`
-    string(REPLACE "${CMAKE_SOURCE_DIR}/test/" "" relpath ${CMAKE_CURRENT_SOURCE_DIR})
+    string(REPLACE "${CMAKE_SOURCE_DIR}/test/" ""
+        relpath ${CMAKE_CURRENT_SOURCE_DIR})
 
     # if there are additional arguments, transform them from their filename
     # to the appropriate object library targets
     if(ARGN)
         foreach(filename ${ARGN})
             get_target_from_source(${CMAKE_SOURCE_DIR}/src/${filename} target)
-            set(AdditionalObjects "${AdditionalObjects};$<TARGET_OBJECTS:${target}>")
+            set(AdditionalObjects
+                "${AdditionalObjects};$<TARGET_OBJECTS:${target}>")
         endforeach()
     endif()
 
@@ -39,7 +45,8 @@ function(add_unit_test ClassName)
     set(srcObject "${relpath}.${ClassName}")
     # if there is an object (the class is not "header-only"), link it as well
     if(TARGET "${srcObject}")
-        add_executable(${ClassName} ${ClassName}.cpp $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
+        add_executable(${ClassName} ${ClassName}.cpp
+            $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
     else()
         add_executable(${ClassName} ${ClassName}.cpp ${AdditionalObjects})
     endif()
@@ -49,8 +56,10 @@ function(add_unit_test ClassName)
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})
-    add_test(unit::${testname}::${ClassName} ${CMAKE_CURRENT_BUILD_DIR}/${ClassName} --log_level=message)
-    set(all_unit_tests "${all_unit_tests};${ClassName}" CACHE INTERNAL "The names of all the unit tests")
+    add_test(unit::${testname}::${ClassName}
+        ${CMAKE_CURRENT_BUILD_DIR}/${ClassName} --log_level=message)
+    set(all_unit_tests "${all_unit_tests};${ClassName}"
+        CACHE INTERNAL "The names of all the unit tests")
 endfunction()
 
 function(create_object_lib Source Object)
@@ -88,12 +97,15 @@ function(deactivate_module ModuleName)
     file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
     string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.${ModuleName}"
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+        "${MODIFIED_FILE_CONTENT}")
 endfunction()
 
 # symlink a given file/directory to the build directory
 function(create_symlink pathName)
-    execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${pathName}" "${CMAKE_CURRENT_BINARY_DIR}/${pathName}")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${pathName}"
+        "${CMAKE_CURRENT_BINARY_DIR}/${pathName}")
 endfunction()
 
 function(create_nuto_module ModuleName ModuleSources)

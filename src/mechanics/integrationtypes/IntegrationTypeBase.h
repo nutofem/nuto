@@ -85,11 +85,8 @@ public:
 
     virtual IpCellInfo GetVisualizationCells() const;
 
-    virtual void GetVisualizationCells(unsigned int&,
-                                       std::vector<double>&,
-                                       unsigned int&,
-                                       std::vector<NuTo::eCellTypes>&,
-                                       std::vector<unsigned int>&,
+    virtual void GetVisualizationCells(unsigned int&, std::vector<double>&, unsigned int&,
+                                       std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
                                        std::vector<unsigned int>&) const {};
 #endif // ENABLE_VISUALIZE
 protected:

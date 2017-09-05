@@ -3,9 +3,6 @@
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${PYTHON_CXX_FLAGS}")
 
-find_package(Numpy REQUIRED)
-include_directories(${NUMPY_INCLUDE_PATH})
-
 # Python required for interface files c++ and python
 message(STATUS "Checking for Python...")
 find_package(PythonInterp 3 REQUIRED)
@@ -14,9 +11,10 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # get python version
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
-        OUTPUT_VARIABLE PYTHON_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
+    OUTPUT_VARIABLE PYTHON_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
@@ -69,7 +67,8 @@ if(SWIG_VERSION VERSION_LESS "3.0.3")
     file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
     file(READ enum_hack.py ADDITIONAL_ENUMS)
     string(CONCAT MODIFIED_FILE_CONTENT ${FILE_CONTENT} ${ADDITIONAL_ENUMS})
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+        "${MODIFIED_FILE_CONTENT}")
 endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

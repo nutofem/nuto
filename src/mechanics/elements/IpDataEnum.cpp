@@ -47,6 +47,6 @@ NuTo::IpData::eIpStaticDataType NuTo::IpData::IpStaticDataTypeToEnum(const std::
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::Exception("[NuTo::Interpolation::IpStaticDataTypeToEnum] IpStaticDataType " +
-                                   rIpStaticDataType + " has no enum equivalent or is not implemented.");
+    throw NuTo::Exception("[NuTo::Interpolation::IpStaticDataTypeToEnum] IpStaticDataType " + rIpStaticDataType +
+                          " has no enum equivalent or is not implemented.");
 }

@@ -137,9 +137,9 @@ int main(int argc, char* argv[])
 
     if (numIterationsDirichletSuperlumpedScaling >= numIterationsDirichletNoScaling)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence. iterations with scaling: " +
-                                                   std::to_string(numIterationsDirichletSuperlumpedScaling) +
-                                                   " iterations withour scaling: " +
-                                                   std::to_string(numIterationsDirichletNoScaling));
+                                                           std::to_string(numIterationsDirichletSuperlumpedScaling) +
+                                                           " iterations withour scaling: " +
+                                                           std::to_string(numIterationsDirichletNoScaling));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ void InitializeStructure(NuTo::StructureFeti& structure)
     structure.GetLogger().OpenFile("output" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "FetiMultiplicityScaling.mesh" + std::to_string(rank);
+    std::string meshFile = "meshes/FetiMultiplicityScaling.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);

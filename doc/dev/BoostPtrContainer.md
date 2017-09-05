@@ -7,29 +7,37 @@
 
 #### Value semantics:
 
-    boost::ptr_vector<MyClass> vec;
-    vec.push_back(new MyClass);
-    vec[0].foo();
+```
+boost::ptr_vector<MyClass> vec;
+vec.push_back(new MyClass);
+vec[0].foo();
+```
 
 vs. pointer semantics with unique pointers
 
-    std::vector<std::unique_ptr<MyClass>> vec;
-    vec.push_back(std::make_unique<MyClass>());
-    vec[0]->foo();
+```
+std::vector<std::unique_ptr<MyClass>> vec;
+vec.push_back(std::make_unique<MyClass>());
+vec[0]->foo();
+```
 
 #### Propagates constness
 
-    void f(const boost::ptr_vector<MyClass> vec)
-    {
-        vec[0].SetMember(42.0); // Compile time error
-    }
+```
+void f(const boost::ptr_vector<MyClass> vec)
+{
+    vec[0].SetMember(42.0); // Compile time error
+}
+```
 
 vs.
 
-    void g(const std::vector<std::unique_ptr<MyClass>>& vec)
-    {
-        vec[0]->SetMember(42.0); // will compile and run
-    }
+```
+void g(const std::vector<std::unique_ptr<MyClass>>& vec)
+{
+    vec[0]->SetMember(42.0); // will compile and run
+}
+```
 
 #### Built-in support for deep copy semantics
 

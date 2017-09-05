@@ -58,7 +58,7 @@ NuTo::Interpolation::eShapeType NuTo::Interpolation::ShapeTypeToEnum(const std::
             return entry.first;
 
     throw NuTo::Exception("[NuTo::Interpolation::ShapeTypeToEnum] ShapeType " + rShapeType +
-                                   " has no enum equivalent or is not implemented.");
+                          " has no enum equivalent or is not implemented.");
 }
 
 NuTo::Interpolation::eTypeOrder NuTo::Interpolation::TypeOrderToEnum(const std::string& rTypeOrder)
@@ -70,5 +70,5 @@ NuTo::Interpolation::eTypeOrder NuTo::Interpolation::TypeOrderToEnum(const std::
             return entry.first;
 
     throw NuTo::Exception("[NuTo::Interpolation::TypeOrderToEnum] TypeOrder " + rTypeOrder +
-                                   " has no enum equivalent or is not implemented.");
+                          " has no enum equivalent or is not implemented.");
 }

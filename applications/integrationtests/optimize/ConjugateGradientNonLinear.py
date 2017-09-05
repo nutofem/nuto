@@ -11,15 +11,9 @@ createResult = False
 # show the results on the screen
 printResult = True
 
-# system name and processor
-system = sys.argv[1]+sys.argv[2]
-
+basePath = os.path.dirname(sys.argv[0])
 # path in the original source directory and current filename at the and
-pathToResultFiles = os.path.join( sys.argv[3], "results", system, os.path.basename(sys.argv[0]))
-
-# remove the extension
-fileExt = os.path.splitext(sys.argv[0])[1]
-pathToResultFiles = pathToResultFiles.replace(fileExt, '')
+pathToResultFiles = os.path.join(basePath, "results/")
 
 # no error in file, modified, if error is detected
 error = False

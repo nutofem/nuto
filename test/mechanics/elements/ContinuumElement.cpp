@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     InterpolationType interpolationType(truss, 1);
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
     interpolationType.AddDofInterpolation(Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);
-    IntegrationTypeTensorProduct<1> integrationType(2,NuTo::eIntegrationMethod::GAUSS);
+    IntegrationTypeTensorProduct<1> integrationType(2, NuTo::eIntegrationMethod::GAUSS);
 
     DofStatus dofStatus;
     std::set<Node::eDof> dofs;
@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     boost::test_tools::output_test_stream output;
     output << element;
     std::string expected = "InterpolationTypeInfo:\n"
-                           "COORDINATES: 2|	|Type and Order: EQUIDISTANT1|\n"
-                           "TEMPERATURE: 2|	|Type and Order: EQUIDISTANT1|\n"
+                           "COORDINATES: 2|\t|Type and Order: EQUIDISTANT1|\n"
+                           "TEMPERATURE: 2|\t|Type and Order: EQUIDISTANT1|\n"
                            "\n"
                            "NodeInfo of local node 0: \n"
                            "COORDINATES: 1 dt:2\n"

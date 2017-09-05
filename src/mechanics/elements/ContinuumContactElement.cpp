@@ -114,9 +114,10 @@ void NuTo::ContinuumContactElement<TDim>::ProjectIntegrationPointOnMaster()
 }
 
 template <int TDim>
-void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
-        BlockFullMatrix<double>&, EvaluateDataContinuumBoundary<TDim>&,
-        const ConstitutiveOutputMap&, int rTheIP) const
+void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double>&,
+                                                                                EvaluateDataContinuumBoundary<TDim>&,
+                                                                                const ConstitutiveOutputMap&,
+                                                                                int rTheIP) const
 {
     // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
 

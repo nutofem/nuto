@@ -211,8 +211,7 @@ public:
     virtual void MaxEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
         if (mValues.size() == 0)
-            throw Exception(
-                    "[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
+            throw Exception("[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 
@@ -239,8 +238,7 @@ public:
     virtual void MinEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
         if (mValues.size() == 0)
-            throw Exception(
-                    "[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
+            throw Exception("[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
 
         rResultOutput = mValues[0];
 

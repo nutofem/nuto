@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     structure.GetLogger().OpenFile("FetiRixenFarhatHeterogeneousExampleLogFile_" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "FetiRixenFarhatHeterogeneousExample.mesh" + std::to_string(rank);
+    std::string meshFile = "meshes/FetiRixenFarhatHeterogeneousExample.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);

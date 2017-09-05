@@ -123,7 +123,7 @@ int main()
         if (std::abs(Result(i) - 1.0) > 1e-6)
         {
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Test for boundary conditions: Calculated function "
-                                                                "values differ to much from set boundary conditions");
+                                                       "values differ to much from set boundary conditions");
         }
     }
 }

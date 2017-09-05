@@ -27,7 +27,7 @@ Eigen::VectorXd NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPo
         return Eigen::Matrix<double, 1, 1>::Constant(0.774596669241483); // sqr(3/5)
     default:
         throw Exception("[NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPointCoordinates] Ip "
-                                 "number out of range.");
+                        "number out of range.");
     }
 }
 

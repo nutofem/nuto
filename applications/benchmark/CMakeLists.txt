@@ -1,6 +1,5 @@
 add_custom_target(benchmark COMMAND ctest -V -R benchmark)
 
-
 if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
@@ -15,7 +14,8 @@ foreach(test
     add_executable(${test} ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base)
     if(MUMPS_FOUND)
-        target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        target_link_libraries(${test}
+            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
@@ -37,10 +37,12 @@ endif()
 
 if(ENABLE_GEOMETRYCONCRETE)
     add_executable(DenseSpherePacking DenseSpherePacking.cpp)
-    target_link_libraries(DenseSpherePacking Math Base GeometryConcrete ${Boost_LIBRARIES})
-    add_test(benchmark::DenseSpherePacking ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
+    target_link_libraries(DenseSpherePacking
+        Math Base GeometryConcrete ${Boost_LIBRARIES})
+    add_test(benchmark::DenseSpherePacking
+        ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 endif()
 
 add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
-target_include_directories(NewtonRaphsonBenchmark PUBLIC ${CMAKE_SOURCE_DIR}/src)
-
+target_include_directories(NewtonRaphsonBenchmark
+    PUBLIC ${CMAKE_SOURCE_DIR}/src)

@@ -1,5 +1,6 @@
 # use newer c++ standard, enable additional warnings, support for sse4
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic -std=c++14 -fPIC")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic -std=c++14 -fPIC")
 
 # find openmp
 if(ENABLE_OPENMP)
@@ -7,7 +8,8 @@ if(ENABLE_OPENMP)
     find_package(OpenMP)
     if(OPENMP_FOUND)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS
+            "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
     endif()
 else()
     set(OPENMP_FOUND FALSE)
@@ -23,9 +25,11 @@ set(PYTHON_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # Clang specific options
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # prevent warnings from boost and eigen
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=eigen3/")
     # prevent "suggest braces around initialization of subobject" warning
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces -Wno-zero-length-array")
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} -Wno-missing-braces -Wno-zero-length-array")
 endif()
 
 # GCC specific options

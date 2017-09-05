@@ -356,7 +356,7 @@ void StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rInterpol
             mInterpolationTypeMap.find(rInterpolationTypeId);
     if (itInterpolationType == mInterpolationTypeMap.end())
         throw Exception("[StructureBase::ElementGroupSetConstitutiveLaw] Interpolation type with the given "
-                                 "identifier does not exist.");
+                        "identifier does not exist.");
 
     for (auto& element : elementGroup)
     {

@@ -110,8 +110,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-            throw Exception(__PRETTY_FUNCTION__,
-                                     "Case not handled! IMPORTANT: Everything must be set to zero here!!!");
+            throw Exception(__PRETTY_FUNCTION__, "Case not handled! IMPORTANT: Everything must be set to zero here!!!");
             break;
 
         case Element::eOutput::UPDATE_STATIC_DATA:
@@ -258,9 +257,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
             break;
 
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Constitutive input for " +
-                                                                  Constitutive::InputToString(it.first) +
-                                                                  " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");
         }
     }
 }
@@ -314,9 +312,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
 }
 
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(
-        NuTo::EvaluateDataContinuumBoundary<TDim>& rData, const NuTo::ConstitutiveInputMap&,
-        const NuTo::ConstitutiveOutputMap&) const
+void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(NuTo::EvaluateDataContinuumBoundary<TDim>& rData,
+                                                                     const NuTo::ConstitutiveInputMap&,
+                                                                     const NuTo::ConstitutiveOutputMap&) const
 {
     if (this->mInterpolationType->GetActiveDofs().find(NuTo::Node::eDof::NONLOCALEQSTRAIN) !=
         this->mInterpolationType->GetActiveDofs().end())
@@ -342,8 +340,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(
         BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim>& rData,
-        const ConstitutiveInputMap& constitutiveInput, const ConstitutiveOutputMap& constitutiveOutput,
-        int) const
+        const ConstitutiveInputMap& constitutiveInput, const ConstitutiveOutputMap& constitutiveOutput, int) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -383,8 +380,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
             break;
         }
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -454,9 +451,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
                 continue;
                 throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -535,7 +531,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
 
         default:
             throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+                                                         Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -598,9 +594,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
                 continue;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -641,9 +636,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
                 continue;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -712,8 +706,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(Const
                     ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::LOCAL_EQ_STRAIN);
             break;
         default:
-            throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                     "] this ip data type is not implemented.");
+            throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] this ip data type is not implemented.");
         }
     }
 }
@@ -740,8 +733,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 
 #ifdef ENABLE_VISUALIZE
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::Visualize(Visualize::UnstructuredGrid&,
-                                                     const std::vector<eVisualizeWhat>&)
+void NuTo::ContinuumBoundaryElement<TDim>::Visualize(Visualize::UnstructuredGrid&, const std::vector<eVisualizeWhat>&)
 {
     std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }

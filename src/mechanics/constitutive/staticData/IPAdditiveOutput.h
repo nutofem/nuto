@@ -52,7 +52,7 @@ public:
             IPConstitutiveLawBase* ConstitutiveLaw = GetSublawIP(rCLPtr);
             if (ConstitutiveLaw == nullptr)
                 throw Exception(__PRETTY_FUNCTION__,
-                                         "The requested static data/constitutive law is not attached to this law!");
+                                "The requested static data/constitutive law is not attached to this law!");
             return ConstitutiveLaw->GetData<TLaw>();
         }
         catch (std::bad_cast& e)
