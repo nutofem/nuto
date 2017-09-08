@@ -1,12 +1,10 @@
 #pragma once
 
-#include "mechanics/elements/ElementSimple.h"
-#include "mechanics/nodes/DofContainer.h"
+#include "mechanics/cell/PDE_Element.h"
+
 
 namespace NuTo
 {
-
-
 //! @brief Extracts 'cell data' like nodal values from the cell
 //! @remark The life time of objects of this class is limited to the evaluation of one NuTo::Cell. This class will
 //! calculate (and cache) all the information that are required once per cell. Classic example: NodeValues. Even if
@@ -14,17 +12,17 @@ namespace NuTo
 class CellData
 {
 public:
-    CellData(const DofContainer<ElementSimple*>& elements)
-        : mElements(elements)
+    CellData(const PDE_Element& element)
+        : mElement(element)
     {
     }
 
-    NodeValues GetNodeValues(const DofType& dofType) const
+    NodeValues ExtractNodeValues(const DofType& dofType) const
     {
-        return mElements[dofType]->ExtractNodeValues();
+        return mElement.ExtractNodeValues(dofType);
     }
 
 private:
-    const DofContainer<ElementSimple*>& mElements;
+    const PDE_Element& mElement;
 };
 } /* NuTo */

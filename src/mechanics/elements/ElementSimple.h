@@ -32,6 +32,8 @@ public:
         return mInterpolation.GetN(rNaturalCoords) * ExtractNodeValues();
     }
 
+    //this has to be removed and replaced by a standard interface to obtain
+    //directly shape functions and derivatives
     const InterpolationSimple& GetInterpolation() const
     {
         return mInterpolation;
