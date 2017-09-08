@@ -3,7 +3,7 @@
 #include<eigen3/Eigen/Dense>
 #include <array>
 #include <vector>
-
+#include <iostream>
 #include "mechanics/nodes/NodeSimple.h"
 
 namespace NuTo
@@ -57,7 +57,7 @@ public:
 
     std::array<Eigen::Vector2d, TDimParameter> GetKnotVectorElement(std::array<int, TDimParameter> knotIDs) const
     {
-        std::array<Eigen::Vector2d, 2> knots;
+        std::array<Eigen::Vector2d, TDimParameter> knots;
         Eigen::Vector2d knotCoordinates;
         for(int i = 0; i < TDimParameter; i++)
         {
@@ -85,6 +85,8 @@ public:
         coordinates.setZero(GetDimension());
 
         Eigen::VectorXd cpCoords = GetControlPointsElement(spanIdx);
+
+        std::cout << "shapeFunctions: " << shapeFunctions << std::endl;
 
         int numCPs = GetNumControlPointsElement();
 

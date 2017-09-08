@@ -31,10 +31,3 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues)
     BoostUnitTest::CheckVector(nodeValues, std::vector<double>{1, 1, 5, 1, 1, 7}, 6);
 }
 
-
-//BOOST_AUTO_TEST_CASE(Interpolate)
-//{
-//    auto interpolatedValues = TestElement().Interpolate(Eigen::Vector2d({0.5, 0.5}));
-//    std::vector<double> correct = {3., 4.};
-//    BoostUnitTest::CheckVector(interpolatedValues, correct, 2);
-//}

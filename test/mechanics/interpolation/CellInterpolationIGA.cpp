@@ -1,18 +1,21 @@
 #include "BoostUnitTest.h"
+#include <boost/test/output_test_stream.hpp>
 #include <type_traits>
 
-#include "mechanics/IGA/NURBS.h"
+#include "mechanics/interpolation/CellInterpolationIGA.h"
+#include <iostream>
 
-BOOST_AUTO_TEST_CASE(NURBSCopyMove)
+BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::NURBS<1>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::NURBS<1>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIGA<1>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIGA<1>>::value);
 
-    BOOST_CHECK(std::is_copy_constructible<NuTo::NURBS<2>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::NURBS<2>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIGA<2>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIGA<2>>::value);
 }
 
-BOOST_AUTO_TEST_CASE(NURBSCurve)
+
+BOOST_AUTO_TEST_CASE(ExtractNodeValues)
 {
     // IGA geometry of a circle (NURBS curve should exactly fit the circle)
     std::vector<std::vector<NuTo::NodeSimple>> controlPoints;
@@ -40,12 +43,21 @@ BOOST_AUTO_TEST_CASE(NURBSCurve)
 
     NuTo::NURBS<1> curve(knots, controlPoints, weights, degree);
 
-    Eigen::Matrix<double, 1, 1> vec;
+    std::array<int, 1> knotIDsCell = {4};
+    NuTo::CellInterpolationIGA<1> iga(knotIDsCell, curve);
+    NuTo::NodeValues nodeValues = iga.ExtractNodeValues();
 
-    for(int i = 0; i < 100; i++)
-    {
-        vec << i/100.;
-        Eigen::VectorXd vel = curve.Evaluate(vec);
-        BOOST_CHECK_CLOSE(vel(0)*vel(0)+vel(1)*vel(1), 1 , 1.e-10);
-    }
+    // ip coordinates are passed in
+    Eigen::VectorXd param(1); param << 0.;
+    Eigen::VectorXd shapefuns = iga.GetShapeFunctions(param);
+
+    Eigen::Vector2d result(0,0);
+
+    result(0) = shapefuns(0)*nodeValues(0) + shapefuns(1)*nodeValues(2) + shapefuns(2)*nodeValues(4);
+    result(1) = shapefuns(0)*nodeValues(1) + shapefuns(1)*nodeValues(3) + shapefuns(2)*nodeValues(5);
+
+    // curve parameter coordinates are passed in
+    param << 0.375;
+    BoostUnitTest::CheckVector(result, curve.Evaluate(param), 2);
 }
+
