@@ -3,6 +3,7 @@
 
 NuTo::Math::CubicSplineInterpolation::CubicSplineInterpolation(std::vector<std::array<double, 2>> data)
     : Interpolation::Interpolation(data, 2)
+    , ddy(0)
 {
     const unsigned n = mData.size();
     ddy.reserve(n);

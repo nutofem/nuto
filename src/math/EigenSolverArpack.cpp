@@ -1,6 +1,5 @@
 #include <limits> // std::numeric_limits
 #include "math/EigenSolverArpack.h"
-#include "math/EigenSolverArpackEnum.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -10,14 +9,7 @@
 
 NuTo::EigenSolverArpack::EigenSolverArpack()
 {
-#ifdef HAVE_ARPACK
-    mDriver = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
-    mWhich = NuTo::EIGEN_SOLVER_ARPACK::eWhich::LM;
-    mTolerance = std::numeric_limits<double>::epsilon(); // machine precision
-    mSigmaR = 0.; // real shift used for spectral transformations
-    mSigmaI = 0.; // imag shift used for spectral transformations
-    mShowTime = true;
-#else
+#ifndef HAVE_ARPACK
     throw Exception(__PRETTY_FUNCTION__, "NuTo wasn't compiled with ARPACK.");
 #endif
 }
