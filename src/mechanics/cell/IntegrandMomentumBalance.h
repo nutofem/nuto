@@ -10,7 +10,7 @@ namespace NuTo
 
 
 template <int TDim>
-class IntegrandMomentumBalance : public NuTo::IntegrandTimeDependent
+class IntegrandMomentumBalance : public NuTo::IntegrandTimeDependent<TDim>
 {
 public:
     IntegrandMomentumBalance(const NuTo::DofType& dofType, const NuTo::MechanicsLaw<TDim>& law)
@@ -19,13 +19,13 @@ public:
     {
     }
 
-    virtual NuTo::IntegrandTimeDependent* Clone() const override
+    virtual NuTo::IntegrandTimeDependent<TDim>* Clone() const override
     {
         return new IntegrandMomentumBalance<TDim>(mDofType, mLaw);
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData,
-                                     const NuTo::CellIPData& cellIpData) override
+    NuTo::DofVector<double> Gradient(const NuTo::CellData<TDim>& cellData,
+                                     const NuTo::CellIPData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.ExtractNodeValues(mDofType);
@@ -35,8 +35,8 @@ public:
         gradient[mDofType] = B.transpose() * mLaw.Stress(strain);
         return gradient;
     }
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData,
-                                     const NuTo::CellIPData& cellIpData) const override
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData<TDim>& cellData,
+                                     const NuTo::CellIPData<TDim>& cellIpData) const override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::DofMatrix<double> hessian0;

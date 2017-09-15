@@ -37,9 +37,9 @@ BOOST_AUTO_TEST_CASE(CellDataNodeValues)
     element[d0] = &e0;
     element[d1] = &e1;
 
-    NuTo::PDE_Element PDE_element(eCoord,element);
+    NuTo::PDE_Element<2> PDE_element(eCoord,element);
 
-    NuTo::CellData cell(PDE_element);
+    NuTo::CellData<2> cell(PDE_element);
     NuTo::NodeValues nodeValues0 = cell.ExtractNodeValues(d0);
     NuTo::NodeValues nodeValues1 = cell.ExtractNodeValues(d1);
 

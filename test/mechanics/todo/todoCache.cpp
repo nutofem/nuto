@@ -34,8 +34,8 @@ BOOST_AUTO_TEST_CASE(CacheNodeValues)
     NuTo::DofContainer<NuTo::ElementInterpolationBase*> elements;
     elements[dof] = &element.get();
 
-    NuTo::PDE_Element PDE_element(eCoord,elements);
-    NuTo::CellData cell(PDE_element);
+    NuTo::PDE_Element<2> PDE_element(eCoord,elements);
+    NuTo::CellData<2> cell(PDE_element);
 
     constexpr int numRuns = 10;
     for (int iRun = 0; iRun < numRuns; ++iRun)

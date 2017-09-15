@@ -7,6 +7,8 @@
 
 namespace NuTo
 {
+
+template <int TDim>
 class PDE_Element
 {
 public:
@@ -26,9 +28,9 @@ public:
         return DofVector<int>();
     }
 
-    Jacobian ComputeJacobian(const NaturalCoords& naturalIPCoords)const
+    Jacobian<TDim> ComputeJacobian(const NaturalCoords& naturalIPCoords)const
     {
-        return Jacobian(mCoordinateElement.ExtractNodeValues(),
+        return Jacobian<TDim>(mCoordinateElement.ExtractNodeValues(),
                         mCoordinateElement.GetDerivativeShapeFunctions(naturalIPCoords));
     }
 

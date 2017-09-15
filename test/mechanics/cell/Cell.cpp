@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::IntegrandMomentumBalance<2> integrandMomentumBalance(dofDispl, lawLinearElastic);
 
 
-    NuTo::PDE_Element PDE_element(coordinateElement,elements);
-    NuTo::Cell<NuTo::IntegrandTimeDependent> cell(PDE_element, intType.get(), integrandMomentumBalance);
+    NuTo::PDE_Element<2> PDE_element(coordinateElement,elements);
+    NuTo::Cell<NuTo::IntegrandTimeDependent<2> > cell(PDE_element, intType.get(), integrandMomentumBalance);
 
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl], Eigen::VectorXd::Zero(8), 8);
 

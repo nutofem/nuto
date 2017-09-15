@@ -81,8 +81,8 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
-    NuTo::PDE_Element PDE_element(eCoord,elements);
-    NuTo::CellIPData ipData(PDE_element, ipCoords);
+    NuTo::PDE_Element<2> PDE_element(eCoord,elements);
+    NuTo::CellIPData<2> ipData(PDE_element, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(PDE_element.ComputeJacobian(ipCoords).Inv(), Eigen::Matrix2d::Identity());
 

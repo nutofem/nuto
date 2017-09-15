@@ -9,10 +9,11 @@ namespace NuTo
 //! @remark The life time of objects of this class is limited to the evaluation of one NuTo::Cell. This class will
 //! calculate (and cache) all the information that are required once per cell. Classic example: NodeValues. Even if
 //! `GetNodeValues()` is called 42 times, they should only be extracted once. Ehrm [TODO]!
+template <int TDim>
 class CellData
 {
 public:
-    CellData(const PDE_Element& element)
+    CellData(const PDE_Element<TDim>& element)
         : mElement(element)
     {
     }
@@ -23,6 +24,6 @@ public:
     }
 
 private:
-    const PDE_Element& mElement;
+    const PDE_Element<TDim>& mElement;
 };
 } /* NuTo */

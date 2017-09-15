@@ -9,10 +9,11 @@ namespace NuTo
 
 
 //! @brief Similar to NuTo::CellData, but for N and B
+template <int TDim>
 class CellIPData
 {
 public:
-    CellIPData(const PDE_Element& element, const NaturalCoords& ipCoords)
+    CellIPData(const PDE_Element<TDim>& element, const NaturalCoords& ipCoords)
         : mElement(element)
         , mJacobian(element.ComputeJacobian(ipCoords))
         , mIPCoords(ipCoords)
@@ -99,7 +100,7 @@ public:
         }
     }
 
-    const NuTo::Jacobian& Jacobian() const
+    const NuTo::Jacobian<TDim>& Jacobian() const
     {
         return mJacobian;
     }
@@ -112,8 +113,8 @@ private:
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const PDE_Element& mElement;
-    const NuTo::Jacobian mJacobian;
+    const PDE_Element<TDim>& mElement;
+    const NuTo::Jacobian<TDim> mJacobian;
     const NaturalCoords& mIPCoords;
 };
 } /* NuTo */
