@@ -14,10 +14,9 @@ public:
     CellInterpolationFEM(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
         : mNodes(rNodes)
         , mInterpolation(rInterpolation)
-    {}
+    {
+    }
 
-    //! @brief extracts all node values of this element
-    //! @remark virtual to make it testable
     virtual NodeValues ExtractNodeValues() const override
     {
         int dim = mNodes[0]->GetNumValues();
@@ -46,11 +45,6 @@ public:
     {
         return mInterpolation.GetNumNodes();
     }
-
-//    const InterpolationSimple& GetInterpolation() const
-//    {
-//        return mInterpolation;
-//    }
 
 private:
     std::vector<NuTo::NodeSimple*> mNodes;

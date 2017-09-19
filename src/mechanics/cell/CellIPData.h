@@ -31,7 +31,6 @@ public:
         for (int i = 0; i < mCellInterpolation[dofType]->GetNumNodes(); ++i)
             N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
         return N;
-//        return mCellInterpolation[dofType]->GetInterpolation().GetN(mIPCoords);
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
@@ -112,7 +111,8 @@ public:
 private:
     DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
     {
-        DerivativeShapeFunctionsNatural dShapeNatural =  mCellInterpolation[dofType]->GetDerivativeShapeFunctions(mIPCoords);
+        DerivativeShapeFunctionsNatural dShapeNatural =
+                mCellInterpolation[dofType]->GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
