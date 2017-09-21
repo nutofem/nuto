@@ -2,20 +2,20 @@
 #include <type_traits>
 #include <iostream>
 
-#include "mechanics/IGA/NURBS.h"
+#include "mechanics/iga/Nurbs.h"
 
-BOOST_AUTO_TEST_CASE(NURBSCopyMove)
+BOOST_AUTO_TEST_CASE(NurbsCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::NURBS<1>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::NURBS<1>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::Nurbs<1>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::Nurbs<1>>::value);
 
-    BOOST_CHECK(std::is_copy_constructible<NuTo::NURBS<2>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::NURBS<2>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::Nurbs<2>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::Nurbs<2>>::value);
 }
 
-BOOST_AUTO_TEST_CASE(NURBSCurve)
+BOOST_AUTO_TEST_CASE(NurbsCurve)
 {
-    // IGA geometry of a circle (NURBS curve should exactly fit the circle)
+    // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
     std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
     std::vector<NuTo::NodeSimple*> row1;
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(NURBSCurve)
 
     std::array<int, 1> degree = {2};
 
-    NuTo::NURBS<1> curve(knots, controlPoints, weights, degree);
+    NuTo::Nurbs<1> curve(knots, controlPoints, weights, degree);
 
     Eigen::Matrix<double, 1, 1> vec;
 
@@ -99,10 +99,10 @@ BOOST_AUTO_TEST_CASE(NURBSCurve)
     BoostUnitTest::CheckEigenMatrix(derivative, derivativeCheck);
 }
 
-BOOST_AUTO_TEST_CASE(NURBSSurface)
+BOOST_AUTO_TEST_CASE(NurbsSurface)
 {
 
-    // IGA geometry of a circle (NURBS curve should exactly fit the circle)
+    // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
     std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
 
     std::vector<NuTo::NodeSimple*> row1;
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(NURBSSurface)
 
     std::array<int, 2> degree = {2, 2};
 
-    NuTo::NURBS<2> surface(knots, controlPoints, weights, degree);
+    NuTo::Nurbs<2> surface(knots, controlPoints, weights, degree);
 
     Eigen::Matrix<double, 2, 1> vec;
 

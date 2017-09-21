@@ -15,7 +15,7 @@ namespace NuTo
 //! @brief ... NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
 //! @brief ... TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
 template <int TDimParameter>
-class NURBS
+class Nurbs
 {
 public:
     enum mParametrization
@@ -30,7 +30,7 @@ public:
     //! @param rDegree ... degree of the polynomial
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
-    NURBS(const std::array<std::vector<double>, TDimParameter>& knots,
+    Nurbs(const std::array<std::vector<double>, TDimParameter>& knots,
           const std::vector<std::vector<NodeSimple*>>& controlPoints, const std::vector<std::vector<double>>& weights,
           const std::array<int, TDimParameter>& degree)
         : mKnots(knots)
@@ -337,7 +337,7 @@ private:
 };
 
 template <>
-Eigen::VectorXd NURBS<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
+Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
 {
     assert(knotID[0] >= mDegree[0]);
     int dim = GetDimension();
@@ -353,7 +353,7 @@ Eigen::VectorXd NURBS<1>::GetControlPointsElement(const std::array<int, 1>& knot
 }
 
 template <>
-Eigen::VectorXd NURBS<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
+Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
 {
     assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
     int dim = GetDimension();
@@ -376,7 +376,7 @@ Eigen::VectorXd NURBS<2>::GetControlPointsElement(const std::array<int, 2>& knot
 }
 
 template <>
-Eigen::MatrixXd NURBS<1>::BasisFunctionsAndDerivativesRational(int der,
+Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 1, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
@@ -426,7 +426,7 @@ Eigen::MatrixXd NURBS<1>::BasisFunctionsAndDerivativesRational(int der,
 }
 
 template <>
-Eigen::MatrixXd NURBS<2>::BasisFunctionsAndDerivativesRational(int der,
+Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 2, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);

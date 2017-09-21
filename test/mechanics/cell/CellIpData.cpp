@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/elements/ElementShapeFunctions.h"
-#include "mechanics/cell/CellIPData.h"
+#include "mechanics/cell/CellIpData.h"
 #include "mechanics/nodes/NodeSimple.h"
 
 constexpr double dN0dX = 1;
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
     NuTo::Jacobian<2> jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIPData<2> ipData(elements, jac, ipCoords);
+    NuTo::CellIpData<2> ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
     NuTo::Jacobian<3> jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIPData<3> ipData(elements, jac, ipCoords);
+    NuTo::CellIpData<3> ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
     Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);

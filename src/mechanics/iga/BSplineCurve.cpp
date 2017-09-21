@@ -1,4 +1,4 @@
-#include "mechanics/IGA/BSplineCurve.h"
+#include "mechanics/iga/BSplineCurve.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "base/Exception.h"
 

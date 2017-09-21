@@ -2,21 +2,21 @@
 #include <fakeit.hpp>
 #include <type_traits>
 
-#include "mechanics/interpolation/CellInterpolationFEM.h"
+#include "mechanics/interpolation/CellInterpolationFem.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationFEM>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationFEM>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationFem>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationFem>::value);
 }
 
 
-struct TestElement : public NuTo::CellInterpolationFEM
+struct TestElement : public NuTo::CellInterpolationFem
 {
     TestElement()
-        : NuTo::CellInterpolationFEM({&n0, &n1, &n2}, interpolation)
+        : NuTo::CellInterpolationFem({&n0, &n1, &n2}, interpolation)
     {
     }
 
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(CacheN)
     Method(interpolation, GetNumNodes) = 2;
 
     NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-    NuTo::CellInterpolationFEM interpolationFem({&n0}, interpolation.get());
+    NuTo::CellInterpolationFem interpolationFem({&n0}, interpolation.get());
 
     constexpr int numRuns = 10;
     for (int iRun = 0; iRun < numRuns; ++iRun)

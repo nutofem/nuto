@@ -2,22 +2,22 @@
 #include <boost/test/output_test_stream.hpp>
 #include <type_traits>
 
-#include "mechanics/interpolation/CellInterpolationIGA.h"
+#include "mechanics/interpolation/CellInterpolationIga.h"
 #include <iostream>
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIGA<1>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIGA<1>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIga<1>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIga<1>>::value);
 
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIGA<2>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIGA<2>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIga<2>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIga<2>>::value);
 }
 
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 {
-    // IGA geometry of a circle (NURBS curve should exactly fit the circle)
+    // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
     std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
 
     NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 
     std::array<int, 1> degree = {2};
 
-    NuTo::NURBS<1> curve(knots, controlPoints, weights, degree);
+    NuTo::Nurbs<1> curve(knots, controlPoints, weights, degree);
 
     std::array<int, 1> knotIDsCell = {4};
-    NuTo::CellInterpolationIGA<1> iga(knotIDsCell, curve);
+    NuTo::CellInterpolationIga<1> iga(knotIDsCell, curve);
     NuTo::NodeValues nodeValues = iga.ExtractNodeValues();
 
     // ip coordinates are passed in

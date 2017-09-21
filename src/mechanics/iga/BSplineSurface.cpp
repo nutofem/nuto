@@ -1,4 +1,4 @@
-#include "mechanics/IGA/BSplineSurface.h"
+#include "mechanics/iga/BSplineSurface.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"

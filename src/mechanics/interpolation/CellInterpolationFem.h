@@ -10,10 +10,10 @@
 namespace NuTo
 {
 
-class CellInterpolationFEM : public CellInterpolationBase
+class CellInterpolationFem : public CellInterpolationBase
 {
 public:
-    CellInterpolationFEM(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
+    CellInterpolationFem(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
         : mNodes(rNodes)
         , mInterpolation(rInterpolation)
         , mShapeFunctions([=](const Eigen::VectorXd& v) { return mInterpolation.GetShapeFunctions(v); })

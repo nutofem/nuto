@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/IGA/BSplineCurve.h"
+#include "mechanics/iga/BSplineCurve.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include <set>
 

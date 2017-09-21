@@ -10,10 +10,10 @@ namespace NuTo
 
 //! @brief Similar to NuTo::CellData, but for N and B
 template <int TDim>
-class CellIPData
+class CellIpData
 {
 public:
-    CellIPData(const DofContainer<CellInterpolationBase*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
+    CellIpData(const DofContainer<CellInterpolationBase*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
                const NaturalCoords& ipCoords)
         : mCellInterpolation(cellInterpolation)
         , mJacobian(jacobian)

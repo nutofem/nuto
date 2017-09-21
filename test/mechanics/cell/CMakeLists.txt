@@ -10,5 +10,5 @@ add_unit_test(CellData)
 
 add_unit_test(Matrix)
 
-add_unit_test(CellIPData
+add_unit_test(CellIpData
     mechanics/elements/ElementShapeFunctions.cpp)
