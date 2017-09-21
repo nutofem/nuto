@@ -24,6 +24,8 @@ template <typename T, typename TCompare = IdCompare<T>>
 class Group : private std::vector<T*>
 {
     friend class Utils;
+    friend class std::insert_iterator<Group>;
+
 public:
     typedef std::vector<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
@@ -34,7 +36,7 @@ public:
     {
         Add(element);
     }
-    
+
     Group(std::vector<std::reference_wrapper<T>> elements)
     {
         for (auto element : elements)
@@ -58,7 +60,12 @@ public:
 
     bool Empty() const
     {
-        return size() == 0;
+        return Size() == 0;
+    }
+    
+    auto Size() const
+    {
+        return size();
     }
 
     GroupIterator begin()
@@ -71,12 +78,8 @@ public:
         return parent::end();
     }
 
-    using parent::size;
-    using parent::insert;
-    using typename parent::iterator;
-    using typename parent::value_type;
-
 private:
+     using parent::size;
     /**
      * The following methods should be hidden from the user. They are
      * only used by class Utils that is a friend.
