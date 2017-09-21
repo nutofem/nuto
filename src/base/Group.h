@@ -25,7 +25,7 @@ public:
     typedef std::vector<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
-    void AddMember(T& element)
+    void Add(T& element)
     {
         auto it = std::lower_bound(pbegin(), pend(), &element, TCompare());
         if (it == pend() || TCompare()(&element, *it))
