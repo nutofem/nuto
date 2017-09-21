@@ -1,7 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <set>
+#include <vector>
 #include <boost/iterator/indirect_iterator.hpp>
 
 namespace NuTo
@@ -19,15 +19,17 @@ struct IdCompare
 };
 
 template <typename T, typename TCompare = IdCompare<T>>
-class Group : private std::set<T*, TCompare>
+class Group : private std::vector<T*>
 {
 public:
-    typedef std::set<T*, TCompare> parent;
+    typedef std::vector<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
     void AddMember(T& element)
     {
-        parent::insert(&element);
+        auto it = std::lower_bound(pbegin(), pend(), &element, TCompare());
+        if (it == pend() || TCompare()(&element, *it))
+            parent::insert(it, &element);
     }
 
     GroupIterator begin()
