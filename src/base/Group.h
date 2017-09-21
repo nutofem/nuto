@@ -10,10 +10,19 @@ namespace Groups
 {
 
 template <typename T>
-class Group : private std::set<T*>
+struct IdCompare
+{
+    bool operator()(T* a, T* b) const
+    {
+        return a->Id() < b->Id();
+    }
+};
+
+template <typename T, typename TCompare = IdCompare<T>>
+class Group : private std::set<T*, TCompare>
 {
 public:
-    typedef std::set<T*> parent;
+    typedef std::set<T*, TCompare> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
     void AddMember(T& element)

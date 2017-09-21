@@ -1,15 +1,22 @@
 #include "BoostUnitTest.h"
 #include "base/Group.h"
+#include "base/UniqueId.h"
 
 #include <iostream>
 
 using namespace NuTo;
 
+struct FooBase : NuTo::UniqueId<FooBase>
+{
+};
+struct Foo : FooBase
+{
+};
 
 BOOST_AUTO_TEST_CASE(ContainsTest)
 {
-    Groups::Group<int> group;
-    int a = 0;
+    Groups::Group<Foo> group;
+    Foo a;
     BOOST_CHECK(not group.Contains(a));
     group.AddMember(a);
     BOOST_CHECK(group.Contains(a));
@@ -17,9 +24,6 @@ BOOST_AUTO_TEST_CASE(ContainsTest)
     BOOST_CHECK(group.Contains(a));
 }
 
-class Foo
-{
-};
 
 struct GroupTestFixture
 {
