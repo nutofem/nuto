@@ -10,7 +10,7 @@ namespace Groups
 {
 
 template <typename T>
-struct IdCompare
+struct IdSmaller
 {
     bool operator()(const T* a, const T* b) const
     {
@@ -20,7 +20,7 @@ struct IdCompare
 
 class Utils;
 
-template <typename T, typename TCompare = IdCompare<T>>
+template <typename T, typename TCompare = IdSmaller<T>>
 class Group : private std::vector<T*>
 {
     friend class std::insert_iterator<Group>;
