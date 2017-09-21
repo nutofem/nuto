@@ -47,7 +47,7 @@ struct GroupTestFixture
 
 BOOST_FIXTURE_TEST_CASE(unionTest, GroupTestFixture)
 {
-    auto unionGroup = Groups::Unite(groupOne, groupTwo);
+    auto unionGroup = Groups::Utils::Unite(groupOne, groupTwo);
     BOOST_CHECK_EQUAL(unionGroup.size(), 4);
     BOOST_CHECK(unionGroup.Contains(a));
     BOOST_CHECK(unionGroup.Contains(b));
@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(unionTest, GroupTestFixture)
 
 BOOST_FIXTURE_TEST_CASE(differenceTest, GroupTestFixture)
 {
-    auto diffGroup = Groups::Difference(groupOne, groupTwo);
+    auto diffGroup = Groups::Utils::Difference(groupOne, groupTwo);
     BOOST_CHECK_EQUAL(diffGroup.size(), 2);
     BOOST_CHECK(diffGroup.Contains(a));
     BOOST_CHECK(diffGroup.Contains(b));
@@ -69,7 +69,7 @@ BOOST_FIXTURE_TEST_CASE(differenceTest, GroupTestFixture)
 
 BOOST_FIXTURE_TEST_CASE(intersectionTest, GroupTestFixture)
 {
-    auto intersectGroup = Groups::Intersection(groupOne, groupTwo);
+    auto intersectGroup = Groups::Utils::Intersection(groupOne, groupTwo);
     BOOST_CHECK_EQUAL(intersectGroup.size(), 1);
     BOOST_CHECK(not intersectGroup.Contains(a));
     BOOST_CHECK(not intersectGroup.Contains(b));
@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_CASE(intersectionTest, GroupTestFixture)
 
 BOOST_FIXTURE_TEST_CASE(symmetricDiffTest, GroupTestFixture)
 {
-    auto symmetricDiffGroup = Groups::SymmetricDifference(groupOne, groupTwo);
+    auto symmetricDiffGroup = Groups::Utils::SymmetricDifference(groupOne, groupTwo);
     BOOST_CHECK_EQUAL(symmetricDiffGroup.size(), 3);
     BOOST_CHECK(symmetricDiffGroup.Contains(a));
     BOOST_CHECK(symmetricDiffGroup.Contains(b));
@@ -101,6 +101,6 @@ BOOST_AUTO_TEST_CASE(CustomCompare)
     Groups::Group<int, std::less<const int*>> g1;
     g1.Add(b);
 
-    auto intersection = Groups::Intersection(g0, g1);
+    auto intersection = Groups::Utils::Intersection(g0, g1);
     BOOST_CHECK(intersection.Contains(b));
 }
