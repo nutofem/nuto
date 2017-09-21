@@ -28,6 +28,19 @@ public:
     typedef std::vector<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
+    Group() = default;
+
+    Group(T& element)
+    {
+        Add(element);
+    }
+    
+    Group(std::vector<std::reference_wrapper<T>> elements)
+    {
+        for (auto element : elements)
+            Add(element);
+    }
+
     void Add(T& element)
     {
         auto it = std::lower_bound(pbegin(), pend(), &element, TCompare());
@@ -41,6 +54,11 @@ public:
         if (result == pcend())
             return false;
         return *result == &element;
+    }
+
+    bool Empty() const
+    {
+        return size() == 0;
     }
 
     GroupIterator begin()

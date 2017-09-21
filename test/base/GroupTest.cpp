@@ -104,3 +104,19 @@ BOOST_AUTO_TEST_CASE(CustomCompare)
     auto intersection = Groups::Utils::Intersection(g0, g1);
     BOOST_CHECK(intersection.Contains(b));
 }
+
+BOOST_AUTO_TEST_CASE(GroupCtors)
+{
+    Groups::Group<Foo> empty;
+    BOOST_CHECK(empty.Empty());
+
+    Foo a, b, c;
+    Groups::Group<Foo> one(a);
+    BOOST_CHECK(one.Contains(a));
+
+    Groups::Group<Foo> many({a, b, c, a});
+    BOOST_CHECK(many.Contains(a));
+    BOOST_CHECK(many.Contains(b));
+    BOOST_CHECK(many.Contains(c));
+    BOOST_CHECK_EQUAL(many.size(), 3);
+}
