@@ -23,7 +23,6 @@ class Utils;
 template <typename T, typename TCompare = IdCompare<T>>
 class Group : private std::vector<T*>
 {
-    friend class Utils;
     friend class std::insert_iterator<Group>;
 
 public:
@@ -45,8 +44,8 @@ public:
 
     void Add(T& element)
     {
-        auto it = std::lower_bound(pbegin(), pend(), &element, TCompare());
-        if (it == pend() || TCompare()(&element, *it))
+        auto it = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
+        if (it == pcend() || TCompare()(&element, *it))
             parent::insert(it, &element);
     }
 
@@ -62,7 +61,7 @@ public:
     {
         return Size() == 0;
     }
-    
+
     auto Size() const
     {
         return size();
@@ -78,21 +77,9 @@ public:
         return parent::end();
     }
 
-private:
-     using parent::size;
-    /**
-     * The following methods should be hidden from the user. They are
-     * only used by class Utils that is a friend.
-     */
-
     typename parent::iterator pbegin()
     {
         return parent::begin();
-    }
-
-    typename parent::iterator pend()
-    {
-        return parent::end();
     }
 
     typename parent::const_iterator pcbegin() const
@@ -104,49 +91,47 @@ private:
     {
         return parent::cend();
     }
+
+private:
+    using parent::size;
 };
 
-class Utils
+template <typename T, typename TCompare>
+static Group<T, TCompare> Unite(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
-public:
-    template <typename T, typename TCompare>
-    static Group<T, TCompare> Unite(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
-    {
-        Group<T, TCompare> newGroup;
-        std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-        std::set_union(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
-        return newGroup;
-    }
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_union(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
+    return newGroup;
+}
 
-    template <typename T, typename TCompare>
-    static Group<T, TCompare> Difference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
-    {
-        Group<T, TCompare> newGroup;
-        std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-        std::set_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
-        return newGroup;
-    }
+template <typename T, typename TCompare>
+static Group<T, TCompare> Difference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
+{
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
+    return newGroup;
+}
 
-    template <typename T, typename TCompare>
-    static Group<T, TCompare> Intersection(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
-    {
-        Group<T, TCompare> newGroup;
-        std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-        std::set_intersection(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator,
-                              TCompare());
-        return newGroup;
-    }
+template <typename T, typename TCompare>
+static Group<T, TCompare> Intersection(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
+{
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_intersection(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
+    return newGroup;
+}
 
-    template <typename T, typename TCompare>
-    static Group<T, TCompare> SymmetricDifference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
-    {
-        Group<T, TCompare> newGroup;
-        std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-        std::set_symmetric_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator,
-                                      TCompare());
-        return newGroup;
-    }
-}; // class Utils
+template <typename T, typename TCompare>
+static Group<T, TCompare> SymmetricDifference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
+{
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_symmetric_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator,
+                                  TCompare());
+    return newGroup;
+}
 
 } // namespace Group
 } // namespace NuTo
