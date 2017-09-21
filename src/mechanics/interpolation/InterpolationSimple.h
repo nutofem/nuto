@@ -22,18 +22,6 @@ public:
 
     virtual std::unique_ptr<InterpolationSimple> Clone() const = 0;
 
-    NMatrix GetN(const NaturalCoords& rNaturalIPCoords) const
-    {
-        int dim = GetDofDimension();
-        Eigen::MatrixXd N(dim, dim * GetNumNodes());
-
-        auto shapeFunctions = GetShapeFunctions(rNaturalIPCoords);
-
-        for (int i = 0; i < GetNumNodes(); ++i)
-            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
-        return N;
-    }
-
     //! @brief calculates the shape functions
     //! @param rNaturalIPCoords integration point coordinates in the natural coordinate system
     //! @return vector of shape functions, dimension: [GetNumNodes() x 1]

@@ -8,5 +8,3 @@ add_unit_test(InterpolationQuadSerendipity
 add_unit_test(CellInterpolationFEM mechanics/elements/ElementShapeFunctions.cpp)
 
 add_unit_test(CellInterpolationIGA)
-
-add_unit_test(InterpolationSimple)

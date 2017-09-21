@@ -23,14 +23,7 @@ public:
 
     NMatrix GetNMatrix(const DofType& dofType) const
     {
-        int dim = mCellInterpolation[dofType]->GetDofDimension();
-        Eigen::MatrixXd N(dim, dim * mCellInterpolation[dofType]->GetNumNodes());
-
-        auto shapeFunctions = mCellInterpolation[dofType]->GetShapeFunctions(mIPCoords);
-
-        for (int i = 0; i < mCellInterpolation[dofType]->GetNumNodes(); ++i)
-            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
-        return N;
+        return mCellInterpolation[dofType]->GetNMatrix();
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
