@@ -76,42 +76,43 @@ public:
 };
 
 
-template <typename T>
-Group<T> Unite(const Group<T>& one, const Group<T>& two)
+template <typename T, typename TCompare>
+Group<T, TCompare> Unite(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
-    Group<T> newGroup;
-    std::insert_iterator<Group<T>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-    std::set_union(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator);
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_union(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
     return newGroup;
 }
 
 
-template <typename T>
-Group<T> Difference(const Group<T>& one, const Group<T>& two)
+template <typename T, typename TCompare>
+Group<T, TCompare> Difference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
-    Group<T> newGroup;
-    std::insert_iterator<Group<T>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-    std::set_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator);
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
     return newGroup;
 }
 
 
-template <typename T>
-Group<T> Intersection(const Group<T>& one, const Group<T>& two)
+template <typename T, typename TCompare>
+Group<T, TCompare> Intersection(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
-    Group<T> newGroup;
-    std::insert_iterator<Group<T>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-    std::set_intersection(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator);
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_intersection(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator, TCompare());
     return newGroup;
 }
 
 
-template <typename T>
-Group<T> SymmetricDifference(const Group<T>& one, const Group<T>& two)
+template <typename T, typename TCompare>
+Group<T, TCompare> SymmetricDifference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
-    Group<T> newGroup;
-    std::insert_iterator<Group<T>> newGroupInsertIterator(newGroup, newGroup.pbegin());
-    std::set_symmetric_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator);
+    Group<T, TCompare> newGroup;
+    std::insert_iterator<Group<T, TCompare>> newGroupInsertIterator(newGroup, newGroup.pbegin());
+    std::set_symmetric_difference(one.pcbegin(), one.pcend(), two.pcbegin(), two.pcend(), newGroupInsertIterator,
+                                  TCompare());
     return newGroup;
 }
 
