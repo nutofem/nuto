@@ -62,13 +62,12 @@ public:
         return parent::cend();
     }
 
-    bool Contains(const T& element)
+    bool Contains(const T& element) const
     {
-        auto result = std::find(parent::begin(), parent::end(), &element);
-        if (result != parent::end())
-            return true;
-        else
+        auto result = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
+        if (result == pcend())
             return false;
+        return *result == &element;
     }
 
     using parent::size;

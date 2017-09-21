@@ -94,11 +94,11 @@ BOOST_AUTO_TEST_CASE(CustomCompare)
     int b = 6174;
     int c = 42;
 
-    Groups::Group<int, std::less<int*>> g0;
+    Groups::Group<int, std::less<const int*>> g0;
     g0.Add(a);
     g0.Add(b);
     g0.Add(c);
-    Groups::Group<int, std::less<int*>> g1;
+    Groups::Group<int, std::less<const int*>> g1;
     g1.Add(b);
 
     auto intersection = Groups::Intersection(g0, g1);
