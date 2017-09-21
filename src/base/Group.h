@@ -12,7 +12,7 @@ namespace Groups
 template <typename T>
 struct IdCompare
 {
-    bool operator()(T* a, T* b) const
+    bool operator()(const T* a, const T* b) const
     {
         return a->Id() < b->Id();
     }
