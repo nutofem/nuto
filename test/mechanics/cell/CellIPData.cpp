@@ -1,10 +1,11 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/CellInterpolationIGA.h"
 #include "mechanics/cell/CellIPData.h"
 #include "mechanics/nodes/NodeSimple.h"
 #include "mechanics/interpolation/CellInterpolationFEM.h"
-
+#include "mechanics/IGA/NURBS.h"
 
 constexpr double dN0dX = 1;
 constexpr double dN0dY = 2;
@@ -107,6 +108,62 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     correctStrain(2, 4) = dN2dY;
     correctStrain(2, 5) = dN2dX;
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixStrain(d1), correctStrain);
+}
+
+BOOST_AUTO_TEST_CASE(CellIGA)
+{
+    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
+
+    std::vector<NuTo::NodeSimple*> row1;
+    NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({0, 0}));
+    row1.push_back(&n0);
+    NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
+    row1.push_back(&n1);
+    NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({2, 0}));
+    row1.push_back(&n2);
+    controlPoints.push_back(row1);
+
+    std::vector<NuTo::NodeSimple*> row2;
+    NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Vector2d({0, 1}));
+    row2.push_back(&n3);
+    NuTo::NodeSimple n4 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
+    row2.push_back(&n4);
+    NuTo::NodeSimple n5 = NuTo::NodeSimple(Eigen::Vector2d({2, 1}));
+    row2.push_back(&n5);
+    controlPoints.push_back(row2);
+
+    std::vector<NuTo::NodeSimple*> row3;
+    NuTo::NodeSimple n6 = NuTo::NodeSimple(Eigen::Vector2d({0, 2}));
+    row3.push_back(&n6);
+    NuTo::NodeSimple n7 = NuTo::NodeSimple(Eigen::Vector2d({1, 2}));
+    row3.push_back(&n7);
+    NuTo::NodeSimple n8 = NuTo::NodeSimple(Eigen::Vector2d({2, 2}));
+    row3.push_back(&n8);
+    controlPoints.push_back(row3);
+
+    std::vector<double> knots1D = {0, 0, 0, 1, 1, 1};
+    std::array<std::vector<double>, 2> knots = {knots1D, knots1D};
+
+    std::vector<double> weights1D = {1, 1, 1};
+    std::vector<std::vector<double>> weights = {weights1D, weights1D, weights1D};
+
+    std::array<int, 2> degree = {2, 2};
+
+    NuTo::NURBS<2> surface(knots, controlPoints, weights, degree);
+
+    std::array<int, 2> knotIDsCell = {2, 2};
+    NuTo::CellInterpolationIGA<2> iga(knotIDsCell, surface);
+
+    NuTo::DofType d0("dof0", 2, 0);
+
+    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
+    elements[d0] = &iga;
+
+    NuTo::NaturalCoords ipCoords = Eigen::Vector2d({-1. / 3., 1. / 3.});
+
+    NuTo::Jacobian<2> jac(iga.ExtractNodeValues(), iga.GetDerivativeShapeFunctions(ipCoords));
+
+    BoostUnitTest::CheckEigenMatrix(jac.Inv(), 0.5 * Eigen::Matrix2d::Identity());
 }
 
 // BOOST_AUTO_TEST_CASE(InterpolationBStrain1D)

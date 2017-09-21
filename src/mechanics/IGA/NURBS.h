@@ -31,7 +31,7 @@ public:
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
     NURBS(const std::array<std::vector<double>, TDimParameter>& knots,
-          const std::vector<std::vector<NodeSimple>>& controlPoints, const std::vector<std::vector<double>>& weights,
+          const std::vector<std::vector<NodeSimple*>>& controlPoints, const std::vector<std::vector<double>>& weights,
           const std::array<int, TDimParameter>& degree)
         : mKnots(knots)
         , mControlPoints(controlPoints)
@@ -46,7 +46,7 @@ public:
     //! @return ... dimension of the curve
     int GetDimension() const
     {
-        return mControlPoints[0][0].GetNumValues();
+        return mControlPoints[0][0]->GetNumValues();
     }
 
     //! @brief ... get the number of control points for each IGA element (one parametric span) in a specific direction
@@ -83,18 +83,13 @@ public:
         return knots;
     }
 
-    Eigen::VectorXd GetControlPointsElement(std::array<int, TDimParameter> knotID) const
-    {
-        (void)knotID;
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented for an arbitrary dimension!");
-    }
-
+    Eigen::VectorXd GetControlPointsElement(const std::array<int, TDimParameter>& knotID) const;
     /** Evaluation **/
 
-    Eigen::VectorXd Evaluate(const Eigen::Matrix<double, TDimParameter, 1>& parameter) const
+    Eigen::VectorXd Evaluate(const Eigen::Matrix<double, TDimParameter, 1>& parameter, int derivativeOrder = 0) const
     {
         const std::array<int, TDimParameter> spanIdx = FindSpan(parameter);
-        Eigen::MatrixXd shapeFunctions = BasisFunctionsAndDerivativesRational(0, parameter);
+        Eigen::MatrixXd shapeFunctions = BasisFunctionsAndDerivativesRational(derivativeOrder, parameter);
 
         Eigen::VectorXd coordinates(GetDimension());
         coordinates.setZero(GetDimension());
@@ -116,25 +111,25 @@ public:
 
     /** Basis Functions **/
 
-    static int FindSpan(double rParameter, int rDegree, const std::vector<double>& rKnots)
+    static int FindSpan(double parameter, int degree, const std::vector<double>& knots)
     {
-        int size = rKnots.size();
+        int size = knots.size();
         int iterations = 0;
 
-        if (rParameter < rKnots[0] || rParameter > rKnots[size - 1])
-            throw new std::string("The parameter is out of the range of the knot vector.");
+        if (parameter < knots[0] || parameter > knots[size - 1])
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "The parameter is out of the range of the knot vector.");
 
-        int numBasisFuns = size - rDegree - 1;
-        if (rParameter == rKnots[numBasisFuns])
+        int numBasisFuns = size - degree - 1;
+        if (parameter == knots[numBasisFuns])
             return numBasisFuns - 1;
 
-        int low = rDegree;
+        int low = degree;
         int high = numBasisFuns;
         int mid = (low + high) / 2;
 
-        while (rParameter < rKnots[mid] || rParameter >= rKnots[mid + 1])
+        while (parameter < knots[mid] || parameter >= knots[mid + 1])
         {
-            if (rParameter < rKnots[mid])
+            if (parameter < knots[mid])
                 high = mid;
             else
                 low = mid;
@@ -142,7 +137,8 @@ public:
             mid = (low + high) / 2;
             iterations++;
             if (iterations > size)
-                throw new std::string("The maximum number of iterations for finding the span exceeded.");
+                throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                      "The maximum number of iterations for finding the span exceeded.");
         }
         return mid;
     }
@@ -260,7 +256,7 @@ public:
                                                                 int degree, const std::vector<double>& knots,
                                                                 const std::vector<double>& weights)
     {
-        assert(derivativeOrder >= 0 || derivativeOrder <= 2);
+        assert(derivativeOrder >= 0 && derivativeOrder <= 2);
 
         Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(derivativeOrder, parameter, spanIdx, degree, knots);
 
@@ -322,11 +318,8 @@ public:
         return parameterIDs;
     }
 
-    Eigen::MatrixXd BasisFunctionsAndDerivativesRational(int der,
-                                                         const Eigen::Matrix<double, TDimParameter, 1>& parameter) const
-    {
-        throw new std::string("Not implemented for an arbitrary dimension!");
-    }
+    Eigen::MatrixXd
+    BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, TDimParameter, 1>& parameter) const;
 
 private:
     //! @brief Knot vector (in isogeometric framework each segment between two
@@ -334,7 +327,7 @@ private:
     std::array<std::vector<double>, TDimParameter> mKnots;
 
     //! @brief Control points of the BSpline curve (# rows = num control points)
-    std::vector<std::vector<NuTo::NodeSimple>> mControlPoints;
+    std::vector<std::vector<NodeSimple*>> mControlPoints;
 
     //! @brief Weights to NURBS
     std::vector<std::vector<double>> mWeights;
@@ -344,8 +337,9 @@ private:
 };
 
 template <>
-Eigen::VectorXd NURBS<1>::GetControlPointsElement(std::array<int, 1> knotID) const
+Eigen::VectorXd NURBS<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
 {
+    assert(knotID[0] >= mDegree[0]);
     int dim = GetDimension();
 
     int numCPs = GetNumControlPointsElement();
@@ -353,14 +347,15 @@ Eigen::VectorXd NURBS<1>::GetControlPointsElement(std::array<int, 1> knotID) con
     Eigen::VectorXd nodeValues(numCPs * dim);
 
     for (int i = 0; i < numCPs; i++)
-        nodeValues.segment(dim * i, dim) = mControlPoints[0][knotID[0] - mDegree[0] + i].GetValues();
+        nodeValues.segment(dim * i, dim) = mControlPoints[0][knotID[0] - mDegree[0] + i]->GetValues();
 
     return nodeValues;
 }
 
 template <>
-Eigen::VectorXd NURBS<2>::GetControlPointsElement(std::array<int, 2> knotID) const
+Eigen::VectorXd NURBS<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
 {
+    assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
     int dim = GetDimension();
 
     int numCPs = GetNumControlPointsElement();
@@ -368,12 +363,12 @@ Eigen::VectorXd NURBS<2>::GetControlPointsElement(std::array<int, 2> knotID) con
     Eigen::VectorXd nodeValues(numCPs * dim);
 
     int count = 0;
-    for (int i = 0; i < mDegree[1] + 1; i++)
+    for (int i = 0; i <= mDegree[1]; i++)
     {
-        for (int j = 0; j < mDegree[0] + 1; j++)
+        for (int j = 0; j <= mDegree[0]; j++)
         {
             nodeValues.segment(count, dim) =
-                    mControlPoints[knotID[1] - mDegree[1] + i][knotID[0] - mDegree[0] + j].GetValues();
+                    mControlPoints[knotID[1] - mDegree[1] + i][knotID[0] - mDegree[0] + j]->GetValues();
             count += dim;
         }
     }
@@ -384,14 +379,13 @@ template <>
 Eigen::MatrixXd NURBS<1>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 1, 1>& parameter) const
 {
-    assert(der >= 0 || der <= 2);
+    assert(der >= 0 && der <= 2);
 
     int spanIdx = FindSpan(parameter)[0];
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, parameter[0], spanIdx, mDegree[0], mKnots[0]);
 
     // NURBS specific ...
-    Eigen::VectorXd sum(der + 1);
-    sum.setZero(der + 1);
+    Eigen::VectorXd sum = Eigen::VectorXd::Zero(der + 1);
 
     for (int i = 0; i <= mDegree[0]; i++)
     {
@@ -435,7 +429,7 @@ template <>
 Eigen::MatrixXd NURBS<2>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 2, 1>& parameter) const
 {
-    assert(der >= 0 || der <= 2);
+    assert(der >= 0 && der <= 2);
 
     const std::array<int, 2> spanIdx = FindSpan(parameter);
     std::array<Eigen::MatrixXd, 2> shapeFunctions;
