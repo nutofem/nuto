@@ -15,40 +15,21 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 }
 
 
-BOOST_AUTO_TEST_CASE(ExtractNodeValues)
+BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 {
     // IGA geometry of a circle (NURBS curve should exactly fit the circle)
     std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
-    std::vector<NuTo::NodeSimple*> row1;
 
     NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
-    row1.push_back(&n1);
-
     NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({-1, -1}));
-    row1.push_back(&n2);
-
     NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Vector2d({-1, 0}));
-    row1.push_back(&n3);
-
     NuTo::NodeSimple n4 = NuTo::NodeSimple(Eigen::Vector2d({-1, 1}));
-    row1.push_back(&n4);
-
     NuTo::NodeSimple n5 = NuTo::NodeSimple(Eigen::Vector2d({0, 1}));
-    row1.push_back(&n5);
-
     NuTo::NodeSimple n6 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-    row1.push_back(&n6);
-
     NuTo::NodeSimple n7 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
-    row1.push_back(&n7);
-
     NuTo::NodeSimple n8 = NuTo::NodeSimple(Eigen::Vector2d({1, -1}));
-    row1.push_back(&n8);
-
     NuTo::NodeSimple n9 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
-    row1.push_back(&n9);
-
-    controlPoints.push_back(row1);
+    controlPoints.push_back({&n1, &n2, &n3, &n4, &n5, &n6, &n7, &n8, &n9});
 
     std::vector<double> knots1D = {0, 0, 0, 1 / 4., 1 / 4., 1 / 2., 1 / 2., 3 / 4., 3 / 4., 1, 1, 1};
     std::array<std::vector<double>, 1> knots = {knots1D};
@@ -70,8 +51,7 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues)
     param << 0.;
     Eigen::VectorXd shapefuns = iga.GetShapeFunctions(param);
 
-    Eigen::Vector2d result(0, 0);
-
+    Eigen::Vector2d result;
     result(0) = shapefuns(0) * nodeValues(0) + shapefuns(1) * nodeValues(2) + shapefuns(2) * nodeValues(4);
     result(1) = shapefuns(0) * nodeValues(1) + shapefuns(1) * nodeValues(3) + shapefuns(2) * nodeValues(5);
 
