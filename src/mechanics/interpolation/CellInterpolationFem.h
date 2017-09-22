@@ -5,7 +5,6 @@
 #include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/cell/Matrix.h"
-#include "math/NaturalCoordinateMemoizer.h"
 
 namespace NuTo
 {
@@ -16,12 +15,6 @@ public:
     CellInterpolationFem(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
         : mNodes(rNodes)
         , mInterpolation(rInterpolation)
-        , mShapeFunctions([=](const Eigen::VectorXd& v) { return mInterpolation.GetShapeFunctions(v); })
-        , mMatrixN([=](const Eigen::VectorXd& v) {
-            return Matrix::N(mInterpolation.GetShapeFunctions(v), GetNumNodes(), GetDofDimension());
-        })
-        , mDerivativeShapeFunctionsNatural(
-                  [=](const Eigen::VectorXd& v) { return mInterpolation.GetDerivativeShapeFunctions(v); })
     {
     }
 
@@ -36,17 +29,18 @@ public:
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
     {
-        return mMatrixN.Get(ipCoords);
+        return Matrix::N(mInterpolation.GetShapeFunctions(ipCoords), mInterpolation.GetNumNodes(),
+                         mInterpolation.GetDofDimension());
     }
 
     Eigen::VectorXd GetShapeFunctions(Eigen::VectorXd ipCoords) const override
     {
-        return mShapeFunctions.Get(ipCoords); 
+        return mInterpolation.GetShapeFunctions(ipCoords);
     }
 
     Eigen::MatrixXd GetDerivativeShapeFunctions(Eigen::VectorXd ipCoords) const override
     {
-        return mDerivativeShapeFunctionsNatural.Get(ipCoords); 
+        return mInterpolation.GetDerivativeShapeFunctions(ipCoords);
     }
 
     int GetDofDimension() const override
@@ -62,12 +56,5 @@ public:
 private:
     std::vector<NuTo::NodeSimple*> mNodes;
     const InterpolationSimple& mInterpolation;
-
-    template <typename TResult>
-    using Memoizer = NuTo::NaturalCoordinateMemoizerMap<TResult, Eigen::VectorXd>;
-
-    Memoizer<Eigen::VectorXd> mShapeFunctions;
-    Memoizer<Eigen::MatrixXd> mMatrixN;
-    Memoizer<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 };
 } /* NuTo */
