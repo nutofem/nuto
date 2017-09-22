@@ -8,8 +8,6 @@ namespace NuTo
 
 
 //! @brief Base class for the interpolation. The derived classes provide information about the actual interpolation.
-//!        [TODO] Implement 'caching' of the results. Requests for the same local node coordinates
-//!        must be calculated only once.
 class InterpolationSimple
 {
 public:
@@ -21,18 +19,6 @@ public:
     InterpolationSimple& operator=(InterpolationSimple&&) = default;
 
     virtual std::unique_ptr<InterpolationSimple> Clone() const = 0;
-
-    NMatrix GetN(const NaturalCoords& rNaturalIPCoords) const
-    {
-        int dim = GetDofDimension();
-        Eigen::MatrixXd N(dim, dim * GetNumNodes());
-
-        auto shapeFunctions = GetShapeFunctions(rNaturalIPCoords);
-
-        for (int i = 0; i < GetNumNodes(); ++i)
-            N.block(0, i * dim, dim, dim) = Eigen::MatrixXd::Identity(dim, dim) * shapeFunctions[i];
-        return N;
-    }
 
     //! @brief calculates the shape functions
     //! @param rNaturalIPCoords integration point coordinates in the natural coordinate system

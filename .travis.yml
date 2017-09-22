@@ -19,6 +19,8 @@ matrix:
     exclude:
         - compiler: clang
           env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
+        - compiler: clang
+          env: BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
@@ -35,6 +37,7 @@ before_script:
     - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi
 script:
+    - make -j2 unit
     - make -j2 && ctest --output-on-failure
 after_success:
     - cd ..

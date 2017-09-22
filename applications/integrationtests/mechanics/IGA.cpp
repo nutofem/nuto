@@ -14,8 +14,8 @@
 #include "mechanics/MechanicsEnums.h"
 #include "visualize/VisualizeEnum.h"
 
-#include "mechanics/IGA/BSplineCurve.h"
-#include "mechanics/IGA/BSplineSurface.h"
+#include "mechanics/iga/BSplineCurve.h"
+#include "mechanics/iga/BSplineSurface.h"
 
 #include "mechanics/sections/SectionPlane.h"
 
