@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/elements/ElementSimple.h"
+#include "mechanics/interpolation/CellInterpolationBase.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Jacobian.h"
 
@@ -10,12 +10,12 @@ namespace NuTo
 
 //! @brief Similar to NuTo::CellData, but for N and B
 template <int TDim>
-class CellIPData
+class CellIpData
 {
 public:
-    CellIPData(const DofContainer<ElementSimple*> elements, const NuTo::Jacobian<TDim>& jacobian,
+    CellIpData(const DofContainer<CellInterpolationBase*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
                const NaturalCoords& ipCoords)
-        : mElements(elements)
+        : mCellInterpolation(cellInterpolation)
         , mJacobian(jacobian)
         , mIPCoords(ipCoords)
     {
@@ -23,7 +23,7 @@ public:
 
     NMatrix GetNMatrix(const DofType& dofType) const
     {
-        return mElements[dofType]->GetInterpolation().GetN(mIPCoords);
+        return mCellInterpolation[dofType]->GetNMatrix(mIPCoords);
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
@@ -105,11 +105,11 @@ private:
     DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
     {
         DerivativeShapeFunctionsNatural dShapeNatural =
-                mElements[dofType]->GetInterpolation().GetDerivativeShapeFunctions(mIPCoords);
+                mCellInterpolation[dofType]->GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const DofContainer<ElementSimple*> mElements;
+    const DofContainer<CellInterpolationBase*> mCellInterpolation;
     const NuTo::Jacobian<TDim>& mJacobian;
     const NaturalCoords& mIPCoords;
 };

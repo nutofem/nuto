@@ -23,7 +23,7 @@ public:
     }
 
     NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData,
-                                     const NuTo::CellIPData<TDim>& cellIpData) override
+                                     const NuTo::CellIpData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
@@ -35,7 +35,7 @@ public:
     }
 
     NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData,
-                                     const NuTo::CellIPData<TDim>& cellIpData) override
+                                     const NuTo::CellIpData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::DofMatrix<double> hessian0;
@@ -45,7 +45,7 @@ public:
         return hessian0;
     }
     std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& cellData,
-                                        const NuTo::CellIPData<TDim>& cellIpData) override
+                                        const NuTo::CellIpData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
