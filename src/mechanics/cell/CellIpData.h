@@ -23,7 +23,7 @@ public:
 
     NMatrix GetNMatrix(const DofType& dofType) const
     {
-        return mCellInterpolation[dofType]->GetNMatrix();
+        return mCellInterpolation[dofType]->GetNMatrix(mIPCoords);
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
