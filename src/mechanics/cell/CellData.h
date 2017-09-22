@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/interpolation/CellInterpolationBase.h"
-#include "mechanics/nodes/DofContainer.h"
+#include "mechanics/dofs/DofContainer.h"
 
 namespace NuTo
 {

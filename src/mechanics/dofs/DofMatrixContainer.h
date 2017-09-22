@@ -2,7 +2,7 @@
 
 #include <map>
 #include <eigen3/Eigen/Core>
-#include "mechanics/nodes/DofType.h"
+#include "mechanics/dofs/DofType.h"
 
 namespace NuTo
 {

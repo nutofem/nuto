@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "mechanics/nodes/DofVector.h"
-#include "mechanics/nodes/DofMatrix.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/cell/IPValue.h"
 
 namespace NuTo

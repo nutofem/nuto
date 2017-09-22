@@ -3,7 +3,6 @@
 #include "mechanics/cell/CellInterface.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/interpolation/CellInterpolationBase.h"
-#include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Integrand.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 

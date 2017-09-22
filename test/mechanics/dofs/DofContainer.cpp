@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "TypeTraits.h"
-#include "mechanics/nodes/DofContainer.h"
+#include "mechanics/dofs/DofContainer.h"
 
 BOOST_AUTO_TEST_CASE(DofContainerCopyMove)
 {

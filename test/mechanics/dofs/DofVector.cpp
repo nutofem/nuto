@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/nodes/DofVector.h"
+#include "mechanics/dofs/DofVector.h"
 #include <sstream>
 
 BOOST_AUTO_TEST_CASE(DofVectorAddition)

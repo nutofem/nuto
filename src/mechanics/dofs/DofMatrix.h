@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/nodes/DofMatrixContainer.h"
+#include "mechanics/dofs/DofMatrixContainer.h"
 
 namespace NuTo
 {
