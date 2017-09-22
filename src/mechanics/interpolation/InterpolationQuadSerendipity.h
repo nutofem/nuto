@@ -7,8 +7,8 @@ namespace NuTo
 class InterpolationQuadSerendipity : public InterpolationSimple
 {
 public:
-    InterpolationQuadSerendipity(int rDofDimension)
-        : mDofDimension(rDofDimension)
+    InterpolationQuadSerendipity(int dofDimension)
+        : mDofDimension(dofDimension)
     {
     }
 
@@ -17,19 +17,19 @@ public:
         return std::make_unique<InterpolationQuadSerendipity>(*this);
     }
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::ShapeFunctionsQuadOrder2(rNaturalIPCoords);
+        return ShapeFunctions2D::ShapeFunctionsQuadOrder2(naturalIpCoords);
     }
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(rNaturalIPCoords);
+        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(naturalIpCoords);
     }
 
-    NaturalCoords GetLocalCoords(int rNodeId) const override
+    NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions2D::NodeCoordinatesQuadOrder2(rNodeId);
+        return ShapeFunctions2D::NodeCoordinatesQuadOrder2(nodeId);
     }
 
     int GetNumNodes() const override
