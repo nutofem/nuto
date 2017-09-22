@@ -10,32 +10,33 @@ template <int TDim>
 class Jacobian
 {
 public:
-    Jacobian(const NodeValues& nodeValues, const DerivativeShapeFunctionsNatural& derivativeShapeFunctions)
+    Jacobian(const NodeValues& rNodeValues, const DerivativeShapeFunctionsNatural& rDerivativeShapeFunctions)
     {
-        const int numRows = derivativeShapeFunctions.rows();
+        const int numRows = rDerivativeShapeFunctions.rows();
         Eigen::MatrixXd nodeBlockCoordinates(TDim, numRows);
         // convert the coordinates to a block structure
         // x0  x1  x2  x3 ...
         // y0  y1  y2  y3 ...
         // z0  z1  z2  z3 ...
         for (int i = 0; i < numRows; ++i)
-            nodeBlockCoordinates.col(i) = nodeValues.block<TDim, 1>(TDim * i, 0);
+            nodeBlockCoordinates.col(i) = rNodeValues.block<TDim, 1>(TDim * i, 0);
 
-        mJacobian = nodeBlockCoordinates.lazyProduct(derivativeShapeFunctions);
+        mJacobian = nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
         mInvJacobian = mJacobian.inverse();
         mDetJacobian = mJacobian.determinant();
     }
 
     DerivativeShapeFunctionsGlobal
-    TransformDerivativeShapeFunctions(const DerivativeShapeFunctionsNatural& global) const
+    TransformDerivativeShapeFunctions(const DerivativeShapeFunctionsNatural& rGlobal) const
     {
-        return global * Inv();
+        return rGlobal * mInvJacobian;
     }
 
     const Eigen::Matrix<double, TDim, TDim>& Inv() const
     {
         return mInvJacobian;
-    }
+    };
+
 
     double Det() const
     {

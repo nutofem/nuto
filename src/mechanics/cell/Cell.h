@@ -2,41 +2,39 @@
 
 #include "mechanics/cell/CellInterface.h"
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/elements/ElementSimple.h"
+//#include "mechanics/elements/ElementSimple.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Integrand.h"
+#include "mechanics/cell/PDE_Element.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "mechanics/cell/PDE_Element.h"
 
 namespace NuTo
 {
-template <int TDim>
+template <class TIntegrand>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementSimple& coordElement, DofContainer<ElementSimple*> elements,
-         const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
-        : mCoordinateElement(coordElement)
-        , mElements(elements)
+    Cell(const PDE_Element<TIntegrand::Dim>& element, const IntegrationTypeBase& integrationType, const TIntegrand& integrand)
+        : mElement(element)
         , mIntegrationType(integrationType)
-        , mIntegrand()
+        , mIntegrandVec()
     {
         for (int i = 0; i < integrationType.GetNumIntegrationPoints(); i++)
-            mIntegrand.push_back(integrand.Clone());
+            mIntegrandVec.push_back(integrand.Clone());
     }
 
     //! @brief builds the internal gradien
     DofVector<double> Gradient() override
     {
         DofVector<double> gradient;
-        CellData cellData(mElements);
+        CellData<TIntegrand::Dim> cellData(mElement);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
+            CellIPData<TIntegrand::Dim> cellipData(mElement, ipCoords);
+            gradient += mIntegrandVec[iIP].Gradient(cellData, cellipData) * cellipData.Jacobian().Det() * ipWeight;
         }
         return gradient;
     }
@@ -45,15 +43,13 @@ public:
     DofMatrix<double> Hessian0() override
     {
         DofMatrix<double> hessian0;
-        CellData cellData(mElements);
+        CellData<TIntegrand::Dim> cellData(mElement);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
+            CellIPData<TIntegrand::Dim> cellipData(mElement, ipCoords);
+            hessian0 += mIntegrandVec[iIP].Hessian0(cellData, cellipData) * cellipData.Jacobian().Det() * ipWeight;
         }
         return hessian0;
     }
@@ -69,22 +65,19 @@ public:
     {
         std::vector<std::vector<IPValue>> ipValues;
 
-        CellData cellData(mElements);
+        CellData<TIntegrand::Dim> cellData(mElement);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
+             CellIPData<TIntegrand::Dim> cellipData(mElement, ipCoords);
+            //ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
         }
         return ipValues;
     }
 
 private:
-    const ElementSimple& mCoordinateElement;
-    DofContainer<ElementSimple*> mElements;
+    const PDE_Element<TIntegrand::Dim>& mElement;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrand<TDim>> mIntegrand;
+    boost::ptr_vector<TIntegrand> mIntegrandVec;
 };
 } /* NuTo */

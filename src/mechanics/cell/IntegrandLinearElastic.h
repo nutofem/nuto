@@ -22,7 +22,7 @@ public:
         return new IntegrandLinearElastic<TDim>(mDofType, mLaw);
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData,
+    NuTo::DofVector<double> Gradient(const NuTo::CellData<TDim>& cellData,
                                      const NuTo::CellIPData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
@@ -34,7 +34,7 @@ public:
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData,
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData<TDim>& cellData,
                                      const NuTo::CellIPData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
@@ -44,7 +44,7 @@ public:
         hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(dummy) * B;
         return hessian0;
     }
-    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData& cellData,
+    std::vector<NuTo::IPValue> IPValues(const NuTo::CellData<TDim>& cellData,
                                         const NuTo::CellIPData<TDim>& cellIpData) override
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
