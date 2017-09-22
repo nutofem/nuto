@@ -12,9 +12,9 @@ namespace NuTo
 class CellInterpolationFem : public CellInterpolationBase
 {
 public:
-    CellInterpolationFem(std::vector<NuTo::NodeSimple*> rNodes, const InterpolationSimple& rInterpolation)
-        : mNodes(rNodes)
-        , mInterpolation(rInterpolation)
+    CellInterpolationFem(std::vector<NuTo::NodeSimple*> nodes, const InterpolationSimple& interpolation)
+        : mNodes(nodes)
+        , mInterpolation(interpolation)
     {
     }
 

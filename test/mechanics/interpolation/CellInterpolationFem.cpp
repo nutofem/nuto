@@ -34,8 +34,9 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues)
 
 BOOST_AUTO_TEST_CASE(Interpolation)
 {
-    auto nodeValues = TestElement().ExtractNodeValues();
-    auto N = TestElement().GetNMatrix(Eigen::Vector2d(0.5, 0.5));
-    BoostUnitTest::CheckVector(N * nodeValues, std::vector<double>{3, 4}, 2);
+    NuTo::NodeValues nodeValues = TestElement().ExtractNodeValues();
+    NuTo::NMatrix N = TestElement().GetNMatrix(Eigen::Vector2d(0.5, 0.5));
+    Eigen::Vector2d interpolatedValues = N * nodeValues;
+    BoostUnitTest::CheckVector(interpolatedValues, std::vector<double>{3, 4}, 2);
 }
 

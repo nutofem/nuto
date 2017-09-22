@@ -8,8 +8,6 @@ namespace NuTo
 
 
 //! @brief Base class for the interpolation. The derived classes provide information about the actual interpolation.
-//!        [TODO] Implement 'caching' of the results. Requests for the same local node coordinates
-//!        must be calculated only once.
 class InterpolationSimple
 {
 public:
