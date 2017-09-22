@@ -36,21 +36,26 @@ template <typename T, typename TCompare = IdSmaller<T>>
 class Group : private std::vector<T*>
 {
     friend class std::insert_iterator<Group>;
+    typedef std::vector<T*> parent;
 
 public:
-    typedef std::vector<T*> parent;
+
+    //! @brief indirect (dereferencing) iterator to provide value semantics for the iterators
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
-    //! @brief Empty group
+    //! @brief Create an empty group
     Group() = default;
 
-    //! @brief Group containing one element
+    //! @brief Create a group containing a single element
+    //! @param element single element 
     Group(T& element)
     {
         Add(element);
     }
 
-    //! @brief Group containing multiple elements
+    //! @brief Create a group containing multiple elements
+    //! @param elements vector of elements
+    //! @remark std::reference_wrapper for value semantics
     Group(std::vector<std::reference_wrapper<T>> elements)
     {
         for (auto element : elements)
@@ -58,6 +63,7 @@ public:
     }
 
     //! @brief Add element to group
+    //! @param element single element to add
     void Add(T& element)
     {
         auto it = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
@@ -66,16 +72,19 @@ public:
     }
 
     //! @brief True if element is contained in group
-    //!
-    //! Comment:
-    //! Search for element is done using Comparator,
-    //! Equality is checked by pointer equivalence.
+    //! @param element single element to check
     bool Contains(const T& element) const
     {
-        auto result = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
-        if (result == pcend())
+        auto it = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
+        if (it == pcend())
             return false;
-        return *result == &element;
+        // *it is _not less_ than &element. = !comp(*it, &element) == true
+        // So *it can either be equal (-->return true) or greater(-->return false) 
+        //
+        // Equality in the compare concept is defined as:
+        // equal(*it, &element) == !comp(*it, &element) && !comp(&element, *it)
+        // Based on std::lower_bound, we already know that the first part is true. Check for the second.
+        return !TCompare()(&element, *it);
     }
 
     //! @brief True if group is empty
