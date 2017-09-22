@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/interpolation/CellInterpolationBase.h"
+#include "mechanics/elements/ElementInterface.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Jacobian.h"
 
@@ -13,7 +13,7 @@ template <int TDim>
 class CellIpData
 {
 public:
-    CellIpData(const DofContainer<CellInterpolationBase*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
+    CellIpData(const DofContainer<ElementInterface*> cellInterpolation, const NuTo::Jacobian<TDim>& jacobian,
                const NaturalCoords& ipCoords)
         : mCellInterpolation(cellInterpolation)
         , mJacobian(jacobian)
@@ -109,7 +109,7 @@ private:
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const DofContainer<CellInterpolationBase*> mCellInterpolation;
+    const DofContainer<ElementInterface*> mCellInterpolation;
     const NuTo::Jacobian<TDim>& mJacobian;
     const NaturalCoords& mIPCoords;
 };

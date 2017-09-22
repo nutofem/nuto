@@ -19,3 +19,6 @@ add_unit_test(IPData
     mechanics/constitutive/ConstitutiveEnum.cpp
     mechanics/timeIntegration/ImplExCallback.cpp
     )
+
+add_unit_test(ElementIga)
+add_unit_test(ElementFem mechanics/elements/ElementShapeFunctions.cpp)

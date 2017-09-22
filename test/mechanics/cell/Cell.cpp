@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/cell/Cell.h"
-#include "mechanics/interpolation/CellInterpolationFem.h"
+#include "mechanics/elements/ElementFem.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/cell/IntegrandLinearElastic.h"
@@ -19,17 +19,17 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::NodeSimple nCoord1(Eigen::Vector2d({lx, 0}));
     NuTo::NodeSimple nCoord2(Eigen::Vector2d({lx, ly}));
     NuTo::NodeSimple nCoord3(Eigen::Vector2d({0, ly}));
-    NuTo::CellInterpolationFem coordinateElement({&nCoord0, &nCoord1, &nCoord2, &nCoord3}, interpolationCoordinates);
+    NuTo::ElementFem coordinateElement({&nCoord0, &nCoord1, &nCoord2, &nCoord3}, interpolationCoordinates);
 
     NuTo::InterpolationQuadLinear interpolationDisplacements(2);
     NuTo::NodeSimple nDispl0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl1(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl2(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl3(Eigen::Vector2d({0, 0}));
-    NuTo::CellInterpolationFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
+    NuTo::ElementFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
 
     NuTo::DofType dofDispl("Displacements", 2, 0);
-    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
+    NuTo::DofContainer<NuTo::ElementInterface*> elements;
     elements[dofDispl] = &displacementElement;
 
     fakeit::Mock<NuTo::IntegrationTypeBase> intType;

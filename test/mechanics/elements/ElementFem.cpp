@@ -2,21 +2,21 @@
 #include <fakeit.hpp>
 #include <type_traits>
 
-#include "mechanics/interpolation/CellInterpolationFem.h"
+#include "mechanics/elements/ElementFem.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationFem>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationFem>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::ElementFem>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::ElementFem>::value);
 }
 
 
-struct TestElement : public NuTo::CellInterpolationFem
+struct TestElement : public NuTo::ElementFem
 {
     TestElement()
-        : NuTo::CellInterpolationFem({&n0, &n1, &n2}, interpolation)
+        : NuTo::ElementFem({&n0, &n1, &n2}, interpolation)
     {
     }
 
