@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 {
     fakeit::Mock<NuTo::CellInterpolationBase> interpolation;
     Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives2D();
-    NuTo::DofType d0("dof0", 2, 0);
+    NuTo::DofType d0("dof0", 2);
 
     NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[d0] = &interpolation.get();
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 {
     fakeit::Mock<NuTo::CellInterpolationBase> interpolation;
     Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives3D();
-    NuTo::DofType d0("dof0", 3, 0);
+    NuTo::DofType d0("dof0", 3);
 
     NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[d0] = &interpolation.get();

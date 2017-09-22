@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::NodeSimple nDispl3(Eigen::Vector2d({0, 0}));
     NuTo::CellInterpolationFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
 
-    NuTo::DofType dofDispl("Displacements", 2, 0);
+    NuTo::DofType dofDispl("Displacements", 2);
     NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[dofDispl] = &displacementElement;
 

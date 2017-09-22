@@ -22,8 +22,8 @@ void CheckDofMatrix(const NuTo::DofMatrix<int>& m, const NuTo::DofType& d0, cons
 
 BOOST_AUTO_TEST_CASE(DofMatrixAdditionMultiplication)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofMatrix<int> dofMatrix0 = Get(dof0, dof1);
     NuTo::DofMatrix<int> dofMatrix1 = Get(dof0, dof1);
@@ -37,8 +37,8 @@ BOOST_AUTO_TEST_CASE(DofMatrixAdditionMultiplication)
 
 BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofMatrix<int> dofMatrix0;
     NuTo::DofMatrix<int> dofMatrix1 = Get(dof0, dof1);
@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
 
 BOOST_AUTO_TEST_CASE(DofMatrixStream)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
     NuTo::DofMatrix<int> dofMatrix = Get(dof0, dof1);
     std::stringstream ss;
     ss << dofMatrix;

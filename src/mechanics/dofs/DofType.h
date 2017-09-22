@@ -1,16 +1,16 @@
 #pragma once
 #include <string>
 #include "base/Exception.h"
+#include "base/UniqueId.h"
 
 namespace NuTo
 {
-class DofType
+class DofType : public NuTo::UniqueId<DofType>
 {
 public:
-    DofType(std::string name, int num, int id)
+    DofType(std::string name, int num)
         : mName(name)
         , mNum(num)
-        , mId(id)
     {
         if (mName.empty())
             throw Exception(__PRETTY_FUNCTION__, "Provide a name!");
@@ -28,14 +28,8 @@ public:
         return mNum;
     }
 
-    int GetId() const
-    {
-        return mId;
-    }
-
 private:
     std::string mName;
     int mNum;
-    int mId;
 };
 } /* NuTo */

@@ -4,8 +4,8 @@
 
 BOOST_AUTO_TEST_CASE(DofVectorAddition)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofVector<double> dofVector0;
     NuTo::DofVector<double> dofVector1;
@@ -24,8 +24,8 @@ BOOST_AUTO_TEST_CASE(DofVectorAddition)
 
 BOOST_AUTO_TEST_CASE(DofVectorScalarMultiplication)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofVector<double> dofVector0;
     dofVector0[dof0] = Eigen::Vector3d({1, 2, 3});
@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_CASE(DofVectorScalarMultiplication)
 
 BOOST_AUTO_TEST_CASE(DofVectorUninitializedAddition)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofVector<double> dofVector0;
     NuTo::DofVector<double> dofVector1;
@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE(DofVectorUninitializedAddition)
 
 BOOST_AUTO_TEST_CASE(DofVectorStream)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
     NuTo::DofVector<double> dofVector;
     dofVector[dof0] = Eigen::Vector3d::Zero();
     dofVector[dof1] = Eigen::Vector3d::Zero();

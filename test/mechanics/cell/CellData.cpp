@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {
     fakeit::Mock<NuTo::CellInterpolationBase> element;
     Method(element, ExtractNodeValues) = Eigen::Vector2d({42, 6174});
-    NuTo::DofType dof("dof", 1, 0);
+    NuTo::DofType dof("dof", 1);
     NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
     elements[dof] = &element.get();
 
