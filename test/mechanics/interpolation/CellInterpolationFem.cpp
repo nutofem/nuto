@@ -35,10 +35,7 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues)
 BOOST_AUTO_TEST_CASE(Interpolation)
 {
     auto nodeValues = TestElement().ExtractNodeValues();
-    Eigen::VectorXd ipCoord(2);
-    ipCoord << 0.5, 0.5;
-    //    auto N = TestElement().GetNMatrix(Eigen::Vector2d(0.5, 0.5));
-    auto N = TestElement().GetNMatrix(ipCoord);
+    auto N = TestElement().GetNMatrix(Eigen::Vector2d(0.5, 0.5));
     BoostUnitTest::CheckVector(N * nodeValues, std::vector<double>{3, 4}, 2);
 }
 
