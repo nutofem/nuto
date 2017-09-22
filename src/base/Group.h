@@ -20,6 +20,18 @@ struct IdSmaller
 
 class Utils;
 
+//! @brief Ordered container class for elements, nodes and the like. No duplicates.
+//!
+//! The group saves pointers to its members but can be iterated through
+//! by value. By default the members are sorted by id (this must be unique)
+//! that is accessed by calling Id(), e.g as provided by NuTo::UniqueId. Other
+//! methods operating on the group also use this comparator.
+//! This behaviour can be changed by providing a different comparator but the basis
+//! of the comparison has to be a unique attribute of the group member.
+//! See test file (CutomCompare).
+//!
+//! @tparam T type of group members
+//! @tparam TCompare functor representing the comparison operation used for sorting
 template <typename T, typename TCompare = IdSmaller<T>>
 class Group : private std::vector<T*>
 {
@@ -29,19 +41,23 @@ public:
     typedef std::vector<T*> parent;
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
 
+    //! @brief Empty group
     Group() = default;
 
+    //! @brief Group containing one element
     Group(T& element)
     {
         Add(element);
     }
 
+    //! @brief Group containing multiple elements
     Group(std::vector<std::reference_wrapper<T>> elements)
     {
         for (auto element : elements)
             Add(element);
     }
 
+    //! @brief Add element to group
     void Add(T& element)
     {
         auto it = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
@@ -49,6 +65,11 @@ public:
             parent::insert(it, &element);
     }
 
+    //! @brief True if element is contained in group
+    //!
+    //! Comment:
+    //! Search for element is done using Comparator,
+    //! Equality is checked by pointer equivalence.
     bool Contains(const T& element) const
     {
         auto result = std::lower_bound(pcbegin(), pcend(), &element, TCompare());
@@ -57,21 +78,25 @@ public:
         return *result == &element;
     }
 
+    //! @brief True if group is empty
     bool Empty() const
     {
         return Size() == 0;
     }
 
+    //! @brief Number of constituents
     auto Size() const
     {
         return size();
     }
 
+    //! @brief Iterate over group elements (by value not pointer)
     GroupIterator begin()
     {
         return parent::begin();
     }
 
+    //! @brief Iterate over group elements (by value not pointer)
     GroupIterator end()
     {
         return parent::end();
@@ -96,6 +121,7 @@ private:
     using parent::size;
 };
 
+//! @brief Unite two groups
 template <typename T, typename TCompare>
 static Group<T, TCompare> Unite(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
@@ -105,6 +131,7 @@ static Group<T, TCompare> Unite(const Group<T, TCompare>& one, const Group<T, TC
     return newGroup;
 }
 
+//! @brief Returns group with elements of group one that are not in group two
 template <typename T, typename TCompare>
 static Group<T, TCompare> Difference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
@@ -114,6 +141,7 @@ static Group<T, TCompare> Difference(const Group<T, TCompare>& one, const Group<
     return newGroup;
 }
 
+//! @brief Returns group with elements that are in both groups
 template <typename T, typename TCompare>
 static Group<T, TCompare> Intersection(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {
@@ -123,6 +151,7 @@ static Group<T, TCompare> Intersection(const Group<T, TCompare>& one, const Grou
     return newGroup;
 }
 
+//! @brief Returns group with elements that are only in one group not in both
 template <typename T, typename TCompare>
 static Group<T, TCompare> SymmetricDifference(const Group<T, TCompare>& one, const Group<T, TCompare>& two)
 {

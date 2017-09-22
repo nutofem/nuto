@@ -16,12 +16,16 @@ struct Foo : FooBase
 BOOST_AUTO_TEST_CASE(ContainsTest)
 {
     Groups::Group<Foo> group;
-    Foo a;
+    Foo a, b, c, d;
     BOOST_CHECK(not group.Contains(a));
     group.Add(a);
     BOOST_CHECK(group.Contains(a));
     group.Add(a);
     BOOST_CHECK(group.Contains(a));
+    group.Add(b);
+    group.Add(c);
+    group.Add(d);
+    BOOST_CHECK(group.Contains(c));
 }
 
 
