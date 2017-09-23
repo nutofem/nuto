@@ -25,13 +25,13 @@ fakeit::Mock<NuTo::CellInterface> MockCell(const NuTo::DofType& dof, Eigen::Vect
 
 NuTo::SimpleAssembler SetupAssembler(const NuTo::DofType& d)
 {
-    NuTo::DofContainer<int> numActive;
+    NuTo::DofContainer<int> numIndependent;
     NuTo::DofContainer<int> numDependent;
 
-    numActive[d] = 3;
+    numIndependent[d] = 3;
     numDependent[d] = 2;
 
-    return NuTo::SimpleAssembler(numActive, numDependent);
+    return NuTo::SimpleAssembler(numIndependent, numDependent);
 }
 
 BOOST_AUTO_TEST_CASE(AssemberGradient)

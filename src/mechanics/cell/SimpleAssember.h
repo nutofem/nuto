@@ -9,8 +9,8 @@ namespace NuTo
 class SimpleAssembler
 {
 public:
-    SimpleAssembler(const NuTo::DofContainer<int>& numActiveDofs, const NuTo::DofContainer<int>& numDependentDofs)
-        : mNumActiveDofs(numActiveDofs)
+    SimpleAssembler(const NuTo::DofContainer<int>& numIndependentDofs, const NuTo::DofContainer<int>& numDependentDofs)
+        : mNumIndependentDofs(numIndependentDofs)
         , mNumDependentDofs(numDependentDofs)
     {
     }
@@ -28,15 +28,15 @@ public:
             {
                 const Eigen::VectorXi& numberingDof = numbering[*dof];
                 const Eigen::VectorXd& cellGradientDof = cellGradient[*dof];
-                const int numActiveDofs = mNumActiveDofs[*dof];
+                const int numIndependentDofs = mNumIndependentDofs[*dof];
                 for (int i = 0; i < numberingDof.rows(); ++i)
                 {
                     int globalDofNumber = numberingDof[i];
                     double globalDofValue = cellGradientDof[i];
-                    if (globalDofNumber < numActiveDofs)
+                    if (globalDofNumber < numIndependentDofs)
                         gradient.J[*dof][globalDofNumber] += globalDofValue;
                     else
-                        gradient.K[*dof][globalDofNumber - numActiveDofs] += globalDofValue;
+                        gradient.K[*dof][globalDofNumber - numIndependentDofs] += globalDofValue;
                 }
             }
         }
@@ -61,8 +61,8 @@ public:
                     const Eigen::VectorXi& numberingDofJ = numbering[*dofJ];
                     const Eigen::MatrixXd& cellHessianDof = cellHessian(*dofI, *dofJ);
 
-                    const int numActiveDofsI = mNumActiveDofs[*dofI];
-                    const int numActiveDofsJ = mNumActiveDofs[*dofJ];
+                    const int numIndependentDofsI = mNumIndependentDofs[*dofI];
+                    const int numIndependentDofsJ = mNumIndependentDofs[*dofJ];
 
                     for (int i = 0; i < numberingDofI.rows(); ++i)
                     {
@@ -72,8 +72,8 @@ public:
                             const int globalDofNumberJ = numberingDofJ[j];
                             const double globalDofValue = cellHessianDof(i, j);
 
-                            const bool activeI = globalDofNumberI < numActiveDofsI;
-                            const bool activeJ = globalDofNumberJ < numActiveDofsJ;
+                            const bool activeI = globalDofNumberI < numIndependentDofsI;
+                            const bool activeJ = globalDofNumberJ < numIndependentDofsJ;
 
                             if (activeI)
                             {
@@ -85,7 +85,7 @@ public:
                                 else
                                 {
                                     hessian.JK(*dofI, *dofJ)
-                                            .coeffRef(globalDofNumberI, globalDofNumberJ - numActiveDofsJ) +=
+                                            .coeffRef(globalDofNumberI, globalDofNumberJ - numIndependentDofsJ) +=
                                             globalDofValue;
                                 }
                             }
@@ -94,14 +94,14 @@ public:
                                 if (activeJ)
                                 {
                                     hessian.KJ(*dofI, *dofJ)
-                                            .coeffRef(globalDofNumberI - numActiveDofsI, globalDofNumberJ) +=
+                                            .coeffRef(globalDofNumberI - numIndependentDofsI, globalDofNumberJ) +=
                                             globalDofValue;
                                 }
                                 else
                                 {
                                     hessian.KK(*dofI, *dofJ)
-                                            .coeffRef(globalDofNumberI - numActiveDofsI,
-                                                      globalDofNumberJ - numActiveDofsJ) += globalDofValue;
+                                            .coeffRef(globalDofNumberI - numIndependentDofsI,
+                                                      globalDofNumberJ - numIndependentDofsJ) += globalDofValue;
                                 }
                             } // argh. any better ideas?
                         }
@@ -118,7 +118,7 @@ private:
         GlobalDofVector v;
         for (auto* dof : dofTypes)
         {
-            v.J[*dof].setZero(mNumActiveDofs[*dof]);
+            v.J[*dof].setZero(mNumIndependentDofs[*dof]);
             v.K[*dof].setZero(mNumDependentDofs[*dof]);
         }
         return v;
@@ -130,15 +130,15 @@ private:
         for (auto* dofI : dofTypes)
             for (auto* dofJ : dofTypes)
             {
-                m.JJ(*dofI, *dofJ).resize(mNumActiveDofs[*dofI], mNumActiveDofs[*dofJ]);
-                m.JK(*dofI, *dofJ).resize(mNumActiveDofs[*dofI], mNumDependentDofs[*dofJ]);
-                m.KJ(*dofI, *dofJ).resize(mNumDependentDofs[*dofI], mNumActiveDofs[*dofJ]);
+                m.JJ(*dofI, *dofJ).resize(mNumIndependentDofs[*dofI], mNumIndependentDofs[*dofJ]);
+                m.JK(*dofI, *dofJ).resize(mNumIndependentDofs[*dofI], mNumDependentDofs[*dofJ]);
+                m.KJ(*dofI, *dofJ).resize(mNumDependentDofs[*dofI], mNumIndependentDofs[*dofJ]);
                 m.KK(*dofI, *dofJ).resize(mNumDependentDofs[*dofI], mNumDependentDofs[*dofJ]);
             }
         return m;
     }
 
-    NuTo::DofContainer<int> mNumActiveDofs;
+    NuTo::DofContainer<int> mNumIndependentDofs;
     NuTo::DofContainer<int> mNumDependentDofs;
 };
 } /* NuTo */
