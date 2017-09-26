@@ -2,7 +2,7 @@
 
 #include "mechanics/cell/CellInterface.h"
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/interpolation/CellInterpolationBase.h"
+#include "mechanics/elements/ElementInterface.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Integrand.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -13,7 +13,7 @@ template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const CellInterpolationBase& coordinateInterpolation, DofContainer<CellInterpolationBase*> cellinterpolation,
+    Cell(const ElementInterface& coordinateInterpolation, DofContainer<ElementInterface*> cellinterpolation,
          const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
         : mCoordinateInterpolation(coordinateInterpolation)
         , mCellInterpolation(cellinterpolation)
@@ -82,8 +82,8 @@ public:
     }
 
 private:
-    const CellInterpolationBase& mCoordinateInterpolation;
-    DofContainer<CellInterpolationBase*> mCellInterpolation;
+    const ElementInterface& mCoordinateInterpolation;
+    DofContainer<ElementInterface*> mCellInterpolation;
     const IntegrationTypeBase& mIntegrationType;
     boost::ptr_vector<Integrand<TDim>> mIntegrand;
 };

@@ -2,16 +2,15 @@
 #include <boost/test/output_test_stream.hpp>
 #include <type_traits>
 
-#include "mechanics/interpolation/CellInterpolationIga.h"
-#include <iostream>
+#include "mechanics/elements/ElementIga.h"
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIga<1>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIga<1>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::ElementIga<1>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::ElementIga<1>>::value);
 
-    BOOST_CHECK(std::is_copy_constructible<NuTo::CellInterpolationIga<2>>::value);
-    BOOST_CHECK(std::is_move_constructible<NuTo::CellInterpolationIga<2>>::value);
+    BOOST_CHECK(std::is_copy_constructible<NuTo::ElementIga<2>>::value);
+    BOOST_CHECK(std::is_move_constructible<NuTo::ElementIga<2>>::value);
 }
 
 
@@ -43,7 +42,7 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
     NuTo::Nurbs<1> curve(knots, controlPoints, weights, degree);
 
     std::array<int, 1> knotIDsCell = {4};
-    NuTo::CellInterpolationIga<1> iga(knotIDsCell, curve);
+    NuTo::ElementIga<1> iga(knotIDsCell, curve);
     NuTo::NodeValues nodeValues = iga.ExtractNodeValues();
 
     // ip coordinates are passed in
