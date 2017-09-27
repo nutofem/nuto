@@ -9,12 +9,11 @@
 
 namespace NuTo
 {
-template <int TDim>
 class Cell : public CellInterface
 {
 public:
     Cell(const CellInterpolationBase& coordinateInterpolation, DofContainer<CellInterpolationBase*> cellinterpolation,
-         const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
+         const IntegrationTypeBase& integrationType, const Integrand& integrand)
         : mCoordinateInterpolation(coordinateInterpolation)
         , mCellInterpolation(cellinterpolation)
         , mIntegrationType(integrationType)
@@ -33,9 +32,9 @@ public:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+            Jacobian jacobian(mCoordinateInterpolation.ExtractNodeValues(),
                                     mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            CellIpData cellipData(mCellInterpolation, jacobian, ipCoords);
             gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
@@ -50,9 +49,9 @@ public:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+            Jacobian jacobian(mCoordinateInterpolation.ExtractNodeValues(),
                                     mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            CellIpData cellipData(mCellInterpolation, jacobian, ipCoords);
             hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return hessian0;
@@ -73,9 +72,9 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
+            Jacobian jacobian(mCoordinateInterpolation.ExtractNodeValues(),
                                     mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            CellIpData cellipData(mCellInterpolation, jacobian, ipCoords);
             ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
         }
         return ipValues;
@@ -85,6 +84,6 @@ private:
     const CellInterpolationBase& mCoordinateInterpolation;
     DofContainer<CellInterpolationBase*> mCellInterpolation;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrand<TDim>> mIntegrand;
+    boost::ptr_vector<Integrand> mIntegrand;
 };
 } /* NuTo */

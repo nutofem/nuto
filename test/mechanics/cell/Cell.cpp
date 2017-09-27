@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
     NuTo::IntegrandLinearElastic<2> integrand({dofDispl}, law);
 
-    NuTo::Cell<2> cell(coordinateElement, elements, intType.get(), integrand);
+    NuTo::Cell cell(coordinateElement, elements, intType.get(), integrand);
 
     BoostUnitTest::CheckVector(cell.Gradient()[dofDispl], Eigen::VectorXd::Zero(8), 8);
 

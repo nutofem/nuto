@@ -38,7 +38,7 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi
 script:
     - make -j2 unit
-    - make -j2 && ctest --output-on-failure
+    #- make -j2 && ctest --output-on-failure
 after_success:
     - cd ..
     - ./scripts/upload_coverage.sh
