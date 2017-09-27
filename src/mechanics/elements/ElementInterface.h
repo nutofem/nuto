@@ -1,14 +1,14 @@
 #pragma once
 #include <eigen3/Eigen/Dense>
-#include "TypeDefs.h"
+#include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo
 {
 
-class CellInterpolationBase
+class ElementInterface
 {
 public:
-    virtual ~CellInterpolationBase() = default;
+    virtual ~ElementInterface() = default;
 
     //! @brief extracts all node values of this element
     virtual NodeValues ExtractNodeValues() const = 0;

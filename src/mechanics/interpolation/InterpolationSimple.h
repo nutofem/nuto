@@ -11,31 +11,25 @@ namespace NuTo
 class InterpolationSimple
 {
 public:
-    InterpolationSimple() = default;
     virtual ~InterpolationSimple() = default; // virtual destructor needed, rule of 5 below...
-    InterpolationSimple(const InterpolationSimple&) = default;
-    InterpolationSimple(InterpolationSimple&&) = default;
-    InterpolationSimple& operator=(const InterpolationSimple&) = default;
-    InterpolationSimple& operator=(InterpolationSimple&&) = default;
 
     virtual std::unique_ptr<InterpolationSimple> Clone() const = 0;
 
     //! @brief calculates the shape functions
-    //! @param rNaturalIPCoords integration point coordinates in the natural coordinate system
+    //! @param naturalIpCoords integration point coordinates in the natural coordinate system
     //! @return vector of shape functions, dimension: [GetNumNodes() x 1]
-    virtual ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const = 0;
+    virtual ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
 
     //! @brief calculates the derivative shape functions
     //! @param rNaturalPCoords integration point coordinates in the natural coordinate system
     //! @return matrix of derivate shape functions, dimension: [GetNumNodes() x local dimension]
     //! @remark 'local dimension' above is the dimension of rLocalIPCoords
-    virtual DerivativeShapeFunctionsNatural
-    GetDerivativeShapeFunctions(const NaturalCoords& rNaturalIPCoords) const = 0;
+    virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
 
     //! @brief returns the local node coordinates
-    //! @param rNodeId local node number
+    //! @param nodeId local node number
     //! @return node coordinates in the natural coordinate system
-    virtual NaturalCoords GetLocalCoords(int rNodeId) const = 0;
+    virtual NaturalCoords GetLocalCoords(int nodeId) const = 0;
 
     //! @brief returns the number of nodes
     //! @return number of nodes
@@ -45,11 +39,11 @@ public:
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself
-//! @param rLaw reference to the IPConstitutiveLawBase
-//! @return cloned owning raw pointer of rLaw
-inline NuTo::InterpolationSimple* new_clone(const NuTo::InterpolationSimple& rInterpolation)
+//! @param interpolation reference to the InterpolationSimple
+//! @return cloned owning raw pointer of interpolation
+inline NuTo::InterpolationSimple* new_clone(const NuTo::InterpolationSimple& interpolation)
 {
-    return rInterpolation.Clone().release();
+    return interpolation.Clone().release();
 }
 
 } /* NuTo */
