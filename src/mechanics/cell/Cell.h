@@ -9,14 +9,13 @@
 
 namespace NuTo
 {
-template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementInterface& coordinateInterpolation, DofContainer<ElementInterface*> cellinterpolation,
-         const IntegrationTypeBase& integrationType, const Integrand<TDim>& integrand)
-        : mCoordinateInterpolation(coordinateInterpolation)
-        , mCellInterpolation(cellinterpolation)
+    Cell(const ElementInterface& coordinateElement, DofContainer<ElementInterface*> elements,
+         const IntegrationTypeBase& integrationType, const Integrand& integrand)
+        : mCoordinateElement(coordinateElement)
+        , mElements(elements)
         , mIntegrationType(integrationType)
         , mIntegrand()
     {
@@ -28,14 +27,14 @@ public:
     DofVector<double> Gradient() override
     {
         DofVector<double> gradient;
-        CellData cellData(mCellInterpolation);
+        CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
-                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                                    mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
             gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return gradient;
@@ -45,14 +44,14 @@ public:
     DofMatrix<double> Hessian0() override
     {
         DofMatrix<double> hessian0;
-        CellData cellData(mCellInterpolation);
+        CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
-                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                                    mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
             hessian0 += mIntegrand[iIP].Hessian0(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return hessian0;
@@ -69,22 +68,22 @@ public:
     {
         std::vector<std::vector<IPValue>> ipValues;
 
-        CellData cellData(mCellInterpolation);
+        CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian<TDim> jacobian(mCoordinateInterpolation.ExtractNodeValues(),
-                                    mCoordinateInterpolation.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData<TDim> cellipData(mCellInterpolation, jacobian, ipCoords);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                                    mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
             ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
         }
         return ipValues;
     }
 
 private:
-    const ElementInterface& mCoordinateInterpolation;
-    DofContainer<ElementInterface*> mCellInterpolation;
+    const ElementInterface& mCoordinateElement;
+    DofContainer<ElementInterface*> mElements;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrand<TDim>> mIntegrand;
+    boost::ptr_vector<Integrand> mIntegrand;
 };
 } /* NuTo */
