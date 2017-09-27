@@ -7,6 +7,14 @@
 #include "mechanics/integrands/MomentumBalance.h"
 
 
+struct Volume : NuTo::ScalarOperation
+{
+    double operator()(NuTo::Integrand::Base&, const NuTo::CellData&, const NuTo::CellIpData&) const override
+    {
+        return 1.;
+    }
+};
+
 BOOST_AUTO_TEST_CASE(CellLetsSee)
 {
     const double lx = 42;
@@ -47,7 +55,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     NuTo::Cell cell(coordinateElement, elements, intType.get(), integrand);
 
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl], Eigen::VectorXd::Zero(8), 8);
+    BoostUnitTest::CheckVector(cell(TimeDependent::Gradient())[dofDispl], Eigen::VectorXd::Zero(8), 8);
 
     const double ux = 0.4;
     nDispl1.SetValue(0, ux);
@@ -56,7 +64,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     double area = ly;
     double intForce = E * ux / lx * area / 2.;
 
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl],
+    BoostUnitTest::CheckVector(cell(TimeDependent::Gradient())[dofDispl],
                                std::vector<double>({-intForce, 0, intForce, 0, intForce, 0, -intForce, 0}), 8);
 
     const double uy = 0.2;
@@ -67,14 +75,16 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     area = lx;
     intForce = E * uy / ly * area / 2;
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl],
+    BoostUnitTest::CheckVector(cell(TimeDependent::Gradient())[dofDispl],
                                std::vector<double>({0, -intForce, 0, -intForce, 0, intForce, 0, intForce}), 8);
     {
         // check hessian0
-        auto hessian = cell.Integrate(TimeDependent::Hessian0())(dofDispl, dofDispl);
-        auto gradient = cell.Integrate(TimeDependent::Gradient())[dofDispl];
+        auto hessian = cell(TimeDependent::Hessian0())(dofDispl, dofDispl);
+        auto gradient = cell(TimeDependent::Gradient())[dofDispl];
         auto u = displacementElement.ExtractNodeValues();
 
         BoostUnitTest::CheckEigenMatrix(gradient, hessian * u);
     }
+
+    BOOST_CHECK_CLOSE(cell(Volume()), lx*ly, 1.e-10);
 }

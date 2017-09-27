@@ -25,36 +25,32 @@ public:
             mIntegrands.push_back(integrand.Clone().release());
     }
 
-    DofVector<double> Integrate(const VectorOperation& op) override
+    DofVector<double> operator()(const VectorOperation& op) override
     {
-        DofVector<double> gradient;
-        CellData cellData(mElements);
-        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
-        {
-            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
-            CellIpData cellipData(mElements, jacobian, ipCoords);
-            gradient += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
-        }
-        return gradient;
+        return Integrate(op, DofVector<double>());
     }
 
-    DofMatrix<double> Integrate(const MatrixOperation& op) override
+    DofMatrix<double> operator()(const MatrixOperation& op) override
     {
-        DofMatrix<double> hessian0;
+        return Integrate(op, DofMatrix<double>());
+    }
+
+    double operator()(const ScalarOperation& op) override
+    {
+        return Integrate(op, double{0});
+    }
+
+    void operator()(const VoidOperation& op) override
+    {
         CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
             Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
+                              mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
             CellIpData cellipData(mElements, jacobian, ipCoords);
-            hessian0 += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
+            op(mIntegrands[iIP], cellData, cellipData);
         }
-        return hessian0;
     }
 
     DofVector<int> DofNumbering() override
@@ -63,6 +59,26 @@ public:
     }
 
 private:
+    //! @brief integrates various operations with various return types
+    //! @param op operation to perform
+    //! @param result result value. It is not clear how to properly initialize an arbitrary TResult to zero. Thus, the
+    //! user has to provide it with this argument.
+    template <typename TOperation, typename TReturn>
+    TReturn Integrate(TOperation&& op, TReturn result)
+    {
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
+            Jacobian jacobian(mCoordinateElement.ExtractNodeValues(),
+                              mCoordinateElement.GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
+            result += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
+        }
+        return result;
+    }
+
     const ElementInterface& mCoordinateElement;
     DofContainer<ElementInterface*> mElements;
     const IntegrationTypeBase& mIntegrationType;
