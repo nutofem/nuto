@@ -9,7 +9,7 @@
 
 struct Volume : NuTo::ScalarOperation
 {
-    double operator()(NuTo::Integrand::Base&, const NuTo::CellData&, const NuTo::CellIpData&) const override
+    double operator()(NuTo::Integrands::Base&, const NuTo::CellData&, const NuTo::CellIpData&) const override
     {
         return 1.;
     }
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(3)).AlwaysReturn(Eigen::Vector2d({-a, a}));
 
     NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
-    using namespace NuTo::Integrand;
+    using namespace NuTo::Integrands;
     TimeDependent::MomentumBalance<2> integrand({dofDispl}, law);
 
     NuTo::Cell cell(elements, intType.get(), integrand);

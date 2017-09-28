@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-namespace Integrand
+namespace Integrands
 {
 class Base
 {

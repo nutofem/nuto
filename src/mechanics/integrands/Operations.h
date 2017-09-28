@@ -12,22 +12,22 @@ class CellIpData;
 
 struct VectorOperation
 {
-    virtual DofVector<double> operator()(Integrand::Base&, const CellData&, const CellIpData&) const = 0;
+    virtual DofVector<double> operator()(Integrands::Base&, const CellData&, const CellIpData&) const = 0;
 };
 
 struct MatrixOperation
 {
-    virtual DofMatrix<double> operator()(Integrand::Base&, const CellData&, const CellIpData&) const = 0;
+    virtual DofMatrix<double> operator()(Integrands::Base&, const CellData&, const CellIpData&) const = 0;
 };
 
 struct ScalarOperation
 {
-    virtual double operator()(Integrand::Base&, const CellData&, const CellIpData&) const = 0;
+    virtual double operator()(Integrands::Base&, const CellData&, const CellIpData&) const = 0;
 };
 
 struct VoidOperation
 {
-    virtual void operator()(Integrand::Base&, const CellData&, const CellIpData&) const = 0;
+    virtual void operator()(Integrands::Base&, const CellData&, const CellIpData&) const = 0;
 };
 
 } /* NuTo */

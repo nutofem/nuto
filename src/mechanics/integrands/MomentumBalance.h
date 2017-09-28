@@ -9,7 +9,7 @@
 
 namespace NuTo
 {
-namespace Integrand
+namespace Integrands
 {
 namespace TimeDependent
 {

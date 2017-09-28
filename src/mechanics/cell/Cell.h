@@ -14,7 +14,7 @@ namespace NuTo
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const Integrand::Base& integrand)
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const Integrands::Base& integrand)
         : mElements(elements)
         , mIntegrationType(integrationType)
         , mIntegrands()
@@ -80,6 +80,6 @@ private:
 private:
     const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrand::Base> mIntegrands;
+    boost::ptr_vector<Integrands::Base> mIntegrands;
 };
 } /* NuTo */
