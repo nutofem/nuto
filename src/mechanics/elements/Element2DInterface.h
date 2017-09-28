@@ -41,7 +41,7 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
     //! includes inertia terms)
     void Evaluate(const ConstitutiveInputMap& rInput,
-                  std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+                  std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -118,7 +118,7 @@ private:
     const int mGlobalDimension;
 
     ConstitutiveOutputMap
-    GetConstitutiveOutputMap(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput);
+    GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput);
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData);
 
@@ -133,7 +133,7 @@ private:
     //! dof ordering)
     void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
 
-    void CalculateElementOutputs(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
                                  EvaluateData& rData, int rTheIP,
                                  const ConstitutiveOutputMap& constitutiveOutputMap) const;
 

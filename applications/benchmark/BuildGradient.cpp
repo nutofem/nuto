@@ -583,8 +583,8 @@ BENCHMARK(BuildGradient, NuTo, runner)
     s.ElementTotalSetSection(section);
 
     s.ElementTotalConvertToInterpolationType();
-    std::map<NuTo::ElementEnum::eOutput, std::shared_ptr<NuTo::ElementOutputBase>> elementOutputMap;
-    elementOutputMap[NuTo::ElementEnum::eOutput::INTERNAL_GRADIENT] =
+    std::map<NuTo::Element::eOutput, std::shared_ptr<NuTo::ElementOutputBase>> elementOutputMap;
+    elementOutputMap[NuTo::Element::eOutput::INTERNAL_GRADIENT] =
             std::make_shared<NuTo::ElementOutputBlockVectorDouble>(s.GetDofStatus());
 
     NuTo::ElementBase* element = s.ElementGetElementPtr(elementID);

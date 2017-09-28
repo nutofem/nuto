@@ -44,7 +44,7 @@ NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumEl
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::Evaluate(
         const ConstitutiveInputMap& rInput,
-        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
     EvaluateDataContinuumBoundary<TDim> data;
     ExtractAllNecessaryDofValues(data);
@@ -89,7 +89,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(Evaluate
 
 template <int TDim>
 NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveOutputMap(
-        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
 {
     ConstitutiveOutputMap constitutiveOutput;
 
@@ -97,40 +97,40 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
     {
         switch (it.first)
         {
-        case ElementEnum::eOutput::INTERNAL_GRADIENT:
+        case Element::eOutput::INTERNAL_GRADIENT:
             FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
             break;
 
-        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
-        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
-        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
             throw Exception(__PRETTY_FUNCTION__,
                                      "Case not handled! IMPORTANT: Everything must be set to zero here!!!");
             break;
 
-        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
+        case Element::eOutput::UPDATE_STATIC_DATA:
             constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = nullptr;
             break;
 
-        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
+        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
             constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
 
-        case ElementEnum::eOutput::IP_DATA:
+        case Element::eOutput::IP_DATA:
             FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
             break;
 
-        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
+        case Element::eOutput::GLOBAL_ROW_DOF:
             mBaseElement.CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
 
-        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
+        case Element::eOutput::GLOBAL_COLUMN_DOF:
             mBaseElement.CalculateGlobalColumnDofs(it.second->GetBlockFullVectorInt());
             break;
 
@@ -267,7 +267,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
 
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
-        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
         EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInput,
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
@@ -278,34 +278,34 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
     {
         switch (it.first)
         {
-        case ElementEnum::eOutput::INTERNAL_GRADIENT:
+        case Element::eOutput::INTERNAL_GRADIENT:
             UpdateAlphaGradientDamage(rData, constitutiveInput, constitutiveOutput);
             CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput,
                                                    constitutiveOutput, rTheIP);
             break;
 
-        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             UpdateAlphaGradientDamage(rData, constitutiveInput, constitutiveOutput);
             CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
             break;
 
-        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
             break;
 
-        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
             break;
 
-        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
             break;
 
-        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
-        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
+        case Element::eOutput::UPDATE_STATIC_DATA:
+        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
             break;
-        case ElementEnum::eOutput::IP_DATA:
+        case Element::eOutput::IP_DATA:
             CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, rTheIP);
             break;
-        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
-        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
+        case Element::eOutput::GLOBAL_ROW_DOF:
+        case Element::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");

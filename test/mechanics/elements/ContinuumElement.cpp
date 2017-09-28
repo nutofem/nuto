@@ -62,12 +62,12 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     ContinuumElement<1> element = ContinuumElement<1>(nodes, interpolationType, integrationType, dofStatus);
 
     ConstitutiveInputMap inputMap;
-    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
-    outputMap[ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
+    outputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
             std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
-    outputMap[ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
+    outputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
             std::make_shared<ElementOutputBlockMatrixDouble>(dofStatus);
-    outputMap[ElementEnum::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
+    outputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(dofStatus);
 
     auto area = SectionTruss::Create(1.0);
     element.SetSection(area);
@@ -80,19 +80,19 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
 
     element.Evaluate(inputMap, outputMap);
 
-    auto blockhessian0 = outputMap.at(ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+    auto blockhessian0 = outputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
     auto hessian0 = blockhessian0.Get("Temperature", "Temperature");
     Eigen::Matrix<double, 2, 2> expected_hessian0;
     expected_hessian0 << 1.0, -1.0, -1.0, 1.0;
     BOOST_CHECK_SMALL((hessian0 - expected_hessian0).norm(), 1e-15);
 
-    auto blockhessian1 = outputMap.at(ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+    auto blockhessian1 = outputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
     auto hessian1 = blockhessian1.Get("Temperature", "Temperature");
     Eigen::Matrix<double, 2, 2> expected_hessian1;
     expected_hessian1 << 1.0 / 3.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 3.0;
     BOOST_CHECK_SMALL((hessian1 - expected_hessian1).norm(), 1e-15);
 
-    auto blockgradient = outputMap.at(ElementEnum::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+    auto blockgradient = outputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
     auto gradient = blockgradient.Get("Temperature");
     Eigen::Matrix<double, 2, 1> expected_gradient;
     expected_gradient << 0.5, 0.5;

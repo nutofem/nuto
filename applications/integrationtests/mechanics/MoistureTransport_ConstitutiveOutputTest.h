@@ -362,7 +362,7 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof, NuTo::Interpolation::eTy
     // Test element
     // %%%%%%%%%%%%
 
-    //    std::map<NuTo::ElementEnum::eOutput, std::shared_ptr<NuTo::ElementOutputBase>> elementOutputMap;
+    //    std::map<NuTo::Element::eOutput, std::shared_ptr<NuTo::ElementOutputBase>> elementOutputMap;
 
     //    std::shared_ptr<NuTo::ElementOutputBase> internalGradient =
     //    std::make_shared<NuTo::ElementOutputBlockVectorDouble>(S.GetDofStatus());
@@ -371,9 +371,9 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof, NuTo::Interpolation::eTy
     //    std::shared_ptr<NuTo::ElementOutputBase> hessian1 =
     //    std::make_shared<NuTo::ElementOutputBlockMatrixDouble>(S.GetDofStatus());
 
-    //    elementOutputMap[NuTo::ElementEnum::eOutput::INTERNAL_GRADIENT] = internalGradient;
-    //    elementOutputMap[NuTo::ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE] = hessian0;
-    //    elementOutputMap[NuTo::ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE] = hessian1;
+    //    elementOutputMap[NuTo::Element::eOutput::INTERNAL_GRADIENT] = internalGradient;
+    //    elementOutputMap[NuTo::Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = hessian0;
+    //    elementOutputMap[NuTo::Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = hessian1;
     //    element.Evaluate(NuTo::ConstitutiveInputMap(), elementOutputMap);
 
     //    std::cout << std::endl << "internal Gradient:" << std::endl << internalGradient->GetBlockFullVectorDouble() <<

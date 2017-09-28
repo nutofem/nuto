@@ -2,7 +2,7 @@
 
 namespace NuTo
 {
-namespace ElementEnum
+namespace ElementOld
 {
 
 enum class eUpdateType

@@ -39,7 +39,7 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
     //! includes inertia terms)
     void Evaluate(const ConstitutiveInputMap& rInput,
-                  std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+                  std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -132,7 +132,7 @@ protected:
     void ExtractAllNecessaryDofValues(EvaluateDataContinuum<TDim>& data);
 
     ConstitutiveOutputMap
-    GetConstitutiveOutputMap(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
+    GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
 
     virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput,
                                                            BlockFullVector<double>& rInternalGradient) const;
@@ -165,7 +165,7 @@ protected:
 
     void CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim>& rData);
 
-    void CalculateElementOutputs(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
                                  EvaluateDataContinuum<TDim>& rData, int rTheIP,
                                  const ConstitutiveInputMap& constitutiveInput,
                                  const ConstitutiveOutputMap& constitutiveOutput) const;

@@ -312,10 +312,10 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
 
 void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::VectorXd& rNodeForce)
 {
-    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[ElementEnum::eOutput::INTERNAL_GRADIENT] =
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
             std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-    elementOutputMap[ElementEnum::eOutput::GLOBAL_ROW_DOF] =
+    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
             std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     std::vector<ElementBase*> elements;
@@ -327,9 +327,9 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     for (auto element : elements)
     {
         element->Evaluate(elementOutputMap);
-        const auto& internalGradient = elementOutputMap.at(ElementEnum::eOutput::INTERNAL_GRADIENT)
+        const auto& internalGradient = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
                                                ->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
-        const auto& globalRowDof = elementOutputMap.at(ElementEnum::eOutput::GLOBAL_ROW_DOF)
+        const auto& globalRowDof = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)
                                            ->GetBlockFullVectorInt()[Node::eDof::DISPLACEMENTS];
         assert(internalGradient.rows() == globalRowDof.rows());
 

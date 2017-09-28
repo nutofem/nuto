@@ -13,6 +13,11 @@ class Logger;
 template <typename IOEnum>
 class ConstitutiveIOMap;
 
+namespace Element
+{
+enum class eElementType;
+} // namespace Element
+
 namespace Constitutive
 {
 class DamageLaw;

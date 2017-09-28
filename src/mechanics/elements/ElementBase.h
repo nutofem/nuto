@@ -38,7 +38,7 @@ enum class eOutput;
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
 using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
-namespace ElementEnum
+namespace Element
 {
 enum class eOutput;
 } // namespace Element
@@ -198,7 +198,7 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
     //! includes inertia terms)
     virtual void Evaluate(const ConstitutiveInputMap& rInput,
-                          std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) = 0;
+                          std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) = 0;
 
     //! @brief Evaluate the constitutive law attached to an integration point.
     //! @param rConstitutiveInput Input map of the constitutive law.
@@ -212,7 +212,7 @@ public:
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which
     //! includes inertia terms)
-    void Evaluate(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
+    void Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress

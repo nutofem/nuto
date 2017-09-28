@@ -73,7 +73,7 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
 
 template <int TDim>
 void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(
-        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
         EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP, const ConstitutiveInputMap&,
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
@@ -84,23 +84,23 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputs(
     {
         switch (it.first)
         {
-        case ElementEnum::eOutput::GAP_MATRIX_MORTAR:
+        case Element::eOutput::GAP_MATRIX_MORTAR:
             CalculateElementOutputGapMatrixMortar(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput,
                                                   rTheIP);
             break;
-        case ElementEnum::eOutput::INTERNAL_GRADIENT:
-        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
-        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
-        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
+        case Element::eOutput::INTERNAL_GRADIENT:
+        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case Element::eOutput::UPDATE_STATIC_DATA:
+        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
             break;
-        case ElementEnum::eOutput::IP_DATA:
+        case Element::eOutput::IP_DATA:
             this->CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, rTheIP);
             break;
-        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
-        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
+        case Element::eOutput::GLOBAL_ROW_DOF:
+        case Element::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");

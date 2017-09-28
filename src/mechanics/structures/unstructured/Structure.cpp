@@ -93,7 +93,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
             // BEWARE (!!!) Do not perform a SetZero on the rStructureOutput here
             // since it will remove the allocation of other MIS.
 
-            std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
 
             // allocate element outputs and resize the structure outputs
             for (auto iteratorOutput : rStructureOutput)
@@ -102,37 +102,37 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                 {
                 case NuTo::eStructureOutput::HESSIAN0:
                 {
-                    elementOutputMap[ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+                    elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
                             std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
                     break;
                 }
                 case NuTo::eStructureOutput::HESSIAN1:
                 {
-                    elementOutputMap[ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
+                    elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] =
                             std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
                     break;
                 }
                 case NuTo::eStructureOutput::HESSIAN2:
                 {
-                    elementOutputMap[ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE] =
+                    elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] =
                             std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
                     break;
                 }
                 case NuTo::eStructureOutput::HESSIAN2_LUMPED:
                 {
-                    elementOutputMap[ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
+                    elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
                             std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
                     break;
                 }
                 case NuTo::eStructureOutput::INTERNAL_GRADIENT:
                 {
-                    elementOutputMap[ElementEnum::eOutput::INTERNAL_GRADIENT] =
+                    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
                             std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
                     break;
                 }
                 case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
                 {
-                    elementOutputMap[ElementEnum::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+                    elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
                     break;
                 }
                 default:
@@ -143,9 +143,9 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                 }
             }
             // calculate element contribution
-            elementOutputMap[ElementEnum::eOutput::GLOBAL_ROW_DOF] =
+            elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
                     std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
-            elementOutputMap[ElementEnum::eOutput::GLOBAL_COLUMN_DOF] =
+            elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] =
                     std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 #ifdef _OPENMP
             for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end();
@@ -172,9 +172,9 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
 #endif
 
                     const auto& elementVectorGlobalDofsRow =
-                            elementOutputMap.at(ElementEnum::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+                            elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
                     const auto& elementVectorGlobalDofsColumn =
-                            elementOutputMap.at(ElementEnum::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+                            elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 
                     for (auto& iteratorOutput : rStructureOutput)
                     {
@@ -185,7 +185,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                         case NuTo::eStructureOutput::HESSIAN0:
                         {
                             const auto& elementMatrix =
-                                    elementOutputMap.at(ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE)
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
@@ -195,7 +195,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                         case NuTo::eStructureOutput::HESSIAN1:
                         {
                             const auto& elementMatrix =
-                                    elementOutputMap.at(ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE)
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
@@ -206,7 +206,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                         case NuTo::eStructureOutput::HESSIAN2:
                         {
                             const auto& elementMatrix =
-                                    elementOutputMap.at(ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE)
+                                    elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)
                                             ->GetBlockFullMatrixDouble();
                             structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
                                     elementPtr, elementMatrix, elementVectorGlobalDofsRow,
@@ -219,7 +219,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                         case NuTo::eStructureOutput::HESSIAN2_LUMPED:
                         {
                             const auto& elementVector =
-                                    elementOutputMap.at(ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
+                                    elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
                                             ->GetBlockFullVectorDouble();
 
                             structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(
@@ -229,7 +229,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
 
                         case NuTo::eStructureOutput::INTERNAL_GRADIENT:
                         {
-                            const auto& elementVector = elementOutputMap.at(ElementEnum::eOutput::INTERNAL_GRADIENT)
+                            const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)
                                                                 ->GetBlockFullVectorDouble();
 
                             structureOutput->AsStructureOutputBlockVector().AddElementVector(

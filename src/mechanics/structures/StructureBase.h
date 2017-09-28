@@ -63,7 +63,7 @@ namespace Constraint
 class Constraints;
 }
 
-namespace ElementEnum
+namespace Element
 {
 enum class eOutput;
 } // namespace Element
@@ -493,7 +493,7 @@ public:
     //! @param rHessianType ... hessian0 hessian1 hessian2
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian(ElementEnum::eOutput rHessianType, ElementBase& rElement);
+    BlockFullMatrix<double> ElementBuildHessian(Element::eOutput rHessianType, ElementBase& rElement);
 
     //! @brief builds the element hessian0
     //! @param rElement ... element
