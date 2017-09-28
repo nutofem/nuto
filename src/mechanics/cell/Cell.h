@@ -23,22 +23,22 @@ public:
             mIntegrands.push_back(integrand.Clone().release());
     }
 
-    DofVector<double> operator()(const VectorOperation& op) override
+    DofVector<double> Integrate(const VectorOperation& op) override
     {
         return Integrate(op, DofVector<double>());
     }
 
-    DofMatrix<double> operator()(const MatrixOperation& op) override
+    DofMatrix<double> Integrate(const MatrixOperation& op) override
     {
         return Integrate(op, DofMatrix<double>());
     }
 
-    double operator()(const ScalarOperation& op) override
+    double Integrate(const ScalarOperation& op) override
     {
         return Integrate(op, double{0});
     }
 
-    void operator()(const VoidOperation& op) override
+    void Apply(const VoidOperation& op) override
     {
         CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
