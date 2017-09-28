@@ -45,9 +45,14 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
 
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     int numIterationsLumpedNoScaling = 0;
     int numIterationsLumpedMultiScaling = 0;
-    // Conjugate gradient, lumped preconditioner, no scaling
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -63,7 +68,8 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    // Conjugate gradient, lumped preconditioner, multiplicity scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -85,7 +91,9 @@ int main(int argc, char* argv[])
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     int numIterationsDirichletNoScaling = 0;
     int numIterationsDirichletMultiScaling = 0;
-    // Conjugate gradient, dirichlet preconditioner, no scaling
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, dirichlet preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -100,8 +108,9 @@ int main(int argc, char* argv[])
         numIterationsDirichletNoScaling =
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
-
-    // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
+    
+    if (rank == 0)
+        std::cout << "Conjugate gradient, dirichlet preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
