@@ -29,6 +29,11 @@ public:
         NodeValues& nodeValues = mNodeValues[dofType];
         if (nodeValues.size() == 0)
         {
+            /* The mutable member mNodeValues may be accessed by multiple threads
+             * at once - in an OpenMP context.
+             * Concurrent read access is no problem. This if branch, however,
+             * performs write access. No concurrency here.
+             */
 #ifdef _OPENMP
 #pragma omp critical
 #endif
