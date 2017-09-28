@@ -41,7 +41,7 @@ NuTo::Element2DInterface::Element2DInterface(const std::vector<NuTo::NodeBase*>&
 }
 
 NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
     ConstitutiveOutputMap constitutiveOutput;
 
@@ -49,35 +49,35 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(
     {
         switch (it.first)
         {
-        case Element::eOutput::INTERNAL_GRADIENT:
+        case ElementEnum::eOutput::INTERNAL_GRADIENT:
         {
             FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
         }
         break;
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
         {
             FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
         }
         break;
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
             break;
-        case Element::eOutput::UPDATE_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
             constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = nullptr;
             break;
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
             constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
-        case Element::eOutput::IP_DATA:
+        case ElementEnum::eOutput::IP_DATA:
         {
             FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
         }
         break;
-        case Element::eOutput::GLOBAL_ROW_DOF:
+        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
             CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
+        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
             CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
         default:
@@ -100,7 +100,7 @@ NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& r
 }
 
 void NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInput,
-                                        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+                                        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
 
     if (mSection == nullptr)
@@ -357,7 +357,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateTransformationMatrix(unsigned
 }
 
 void NuTo::Element2DInterface::CalculateElementOutputs(
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateData& rData, int rTheIP,
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateData& rData, int rTheIP,
         const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     rData.mDetJxWeightIPxSection =
@@ -367,22 +367,22 @@ void NuTo::Element2DInterface::CalculateElementOutputs(
     {
         switch (it.first)
         {
-        case Element::eOutput::INTERNAL_GRADIENT:
+        case ElementEnum::eOutput::INTERNAL_GRADIENT:
             CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP,
                                                    constitutiveOutputMap);
             break;
 
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
             break;
-        case Element::eOutput::IP_DATA:
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::UPDATE_STATIC_DATA:
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-        case Element::eOutput::GLOBAL_ROW_DOF:
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
+        case ElementEnum::eOutput::IP_DATA:
+        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
+        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
+        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");
@@ -760,9 +760,9 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
     }
 
     // determine the ipdata and determine the map
-    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
-    auto& elementIpDataMap = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
+    std::map<NuTo::ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
+    auto& elementIpDataMap = elementOutput.at(ElementEnum::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
 
     for (auto component : visualizeComponents)
     {

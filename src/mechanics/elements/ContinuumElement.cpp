@@ -43,7 +43,7 @@ NuTo::ContinuumElement<TDim>::ContinuumElement(const std::vector<NuTo::NodeBase*
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::Evaluate(
         const ConstitutiveInputMap& rInput,
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
     if ((TDim == 1 || TDim == 2) && (mSection == nullptr))
         throw Exception(__PRETTY_FUNCTION__, "No section allocated for element.");
@@ -125,7 +125,7 @@ NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMa
 
 template <int TDim>
 NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputMap(
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
 {
     ConstitutiveOutputMap constitutiveOutput;
 
@@ -134,23 +134,23 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
     {
         switch (it.first)
         {
-        case Element::eOutput::INTERNAL_GRADIENT:
+        case ElementEnum::eOutput::INTERNAL_GRADIENT:
             FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
             break;
 
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian2(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
         {
             for (auto dof : mInterpolationType->GetActiveDofs())
             {
@@ -164,23 +164,23 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
             break;
         }
 
-        case Element::eOutput::UPDATE_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
             constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = nullptr;
             break;
 
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
             constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
 
-        case Element::eOutput::IP_DATA:
+        case ElementEnum::eOutput::IP_DATA:
             FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
             break;
 
-        case Element::eOutput::GLOBAL_ROW_DOF:
+        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
             CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
 
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
+        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
             CalculateGlobalColumnDofs(it.second->GetBlockFullVectorInt());
             break;
 
@@ -769,7 +769,7 @@ NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofType, const Eigen:
 
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
         EvaluateDataContinuum<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInput,
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
@@ -780,24 +780,24 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
     {
         switch (it.first)
         {
-        case Element::eOutput::INTERNAL_GRADIENT:
+        case ElementEnum::eOutput::INTERNAL_GRADIENT:
             CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP,
                                                    constitutiveInput, constitutiveOutput);
             break;
 
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
             break;
 
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE:
             CalculateElementOutputHessian1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
             break;
 
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE:
             CalculateElementOutputHessian2(it.second->GetBlockFullMatrixDouble(), rData, rTheIP);
             break;
 
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        case ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
             for (auto dof : mInterpolationType->GetActiveDofs())
             {
                 double factor = -42.;
@@ -848,14 +848,14 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
             }
             break;
 
-        case Element::eOutput::UPDATE_STATIC_DATA:
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_STATIC_DATA:
+        case ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA:
             break;
-        case Element::eOutput::IP_DATA:
+        case ElementEnum::eOutput::IP_DATA:
             CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP, constitutiveOutput);
             break;
-        case Element::eOutput::GLOBAL_ROW_DOF:
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
+        case ElementEnum::eOutput::GLOBAL_ROW_DOF:
+        case ElementEnum::eOutput::GLOBAL_COLUMN_DOF:
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "element output not implemented.");

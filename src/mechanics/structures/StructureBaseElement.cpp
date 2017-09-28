@@ -26,24 +26,24 @@ using namespace NuTo;
 
 BlockFullVector<double> StructureBase::ElementBuildInternalGradient(ElementBase& rElement)
 {
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::INTERNAL_GRADIENT] =
             std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
 
     rElement.Evaluate(elementOutputMap);
-    return elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+    return elementOutputMap.at(ElementEnum::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
 }
 
 
-BlockFullMatrix<double> StructureBase::ElementBuildHessian(Element::eOutput rHessianType, ElementBase& rElement)
+BlockFullMatrix<double> StructureBase::ElementBuildHessian(ElementEnum::eOutput rHessianType, ElementBase& rElement)
 {
-    std::set<Element::eOutput> supportedTypes({Element::eOutput::HESSIAN_0_TIME_DERIVATIVE,
-                                               Element::eOutput::HESSIAN_1_TIME_DERIVATIVE,
-                                               Element::eOutput::HESSIAN_2_TIME_DERIVATIVE});
+    std::set<ElementEnum::eOutput> supportedTypes({ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE,
+                                               ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE,
+                                               ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE});
     if (supportedTypes.find(rHessianType) == supportedTypes.end())
         throw Exception(__PRETTY_FUNCTION__, "requested matrix type is not supported or not implemented yet.");
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
     elementOutputMap[rHessianType] = std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
 
     rElement.Evaluate(elementOutputMap);
@@ -72,42 +72,42 @@ BlockFullMatrix<double> StructureBase::ElementBuildHessian2(int rElementId)
 
 BlockFullMatrix<double> StructureBase::ElementBuildHessian0(ElementBase& rElement)
 {
-    return ElementBuildHessian(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE, rElement);
+    return ElementBuildHessian(ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE, rElement);
 }
 
 
 BlockFullMatrix<double> StructureBase::ElementBuildHessian1(ElementBase& rElement)
 {
-    return ElementBuildHessian(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE, rElement);
+    return ElementBuildHessian(ElementEnum::eOutput::HESSIAN_1_TIME_DERIVATIVE, rElement);
 }
 
 
 BlockFullMatrix<double> StructureBase::ElementBuildHessian2(ElementBase& rElement)
 {
-    return ElementBuildHessian(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE, rElement);
+    return ElementBuildHessian(ElementEnum::eOutput::HESSIAN_2_TIME_DERIVATIVE, rElement);
 }
 
 
 BlockFullVector<int> StructureBase::ElementBuildGlobalDofsRow(ElementBase& rElement)
 {
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     rElement.Evaluate(elementOutputMap);
 
-    return elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+    return elementOutputMap.at(ElementEnum::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
 }
 
 
 BlockFullVector<int> StructureBase::ElementBuildGlobalDofsColumn(ElementBase& rElement)
 {
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::GLOBAL_COLUMN_DOF] =
             std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     rElement.Evaluate(elementOutputMap);
 
-    return elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+    return elementOutputMap.at(ElementEnum::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 }
 
 
@@ -409,12 +409,12 @@ Eigen::MatrixXd StructureBase::ElementGetStaticIPData(int rElementId, IpData::eI
         throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(rType);
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(rType);
 
     elementPtr->Evaluate(elementOutputMap);
 
-    return elementOutputMap.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap().at(rType);
+    return elementOutputMap.at(ElementEnum::eOutput::IP_DATA)->GetIpData().GetIpDataMap().at(rType);
 }
 
 
@@ -443,8 +443,8 @@ double StructureBase::ElementTotalGetMaxDamage()
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
         throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::IP_DATA] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::IP_DATA] =
             std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::DAMAGE);
 
     std::vector<ElementBase*> elementVector;
@@ -455,7 +455,7 @@ double StructureBase::ElementTotalGetMaxDamage()
     for (auto element : elementVector)
     {
         element->Evaluate(elementOutputMap);
-        rIPDamage = elementOutputMap.at(Element::eOutput::IP_DATA)
+        rIPDamage = elementOutputMap.at(ElementEnum::eOutput::IP_DATA)
                             ->GetIpData()
                             .GetIpDataMap()[IpData::eIpStaticDataType::DAMAGE];
         maxDamage = std::max(maxDamage, rIPDamage.maxCoeff());
@@ -469,8 +469,8 @@ double StructureBase::ElementTotalGetStaticDataExtrapolationError()
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
         throw Exception(__PRETTY_FUNCTION__, "First update of tmp static data required.");
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::eOutput::IP_DATA] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+    elementOutputMap[ElementEnum::eOutput::IP_DATA] =
             std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::EXTRAPOLATION_ERROR);
 
     std::vector<ElementBase*> elementVector;
@@ -481,7 +481,7 @@ double StructureBase::ElementTotalGetStaticDataExtrapolationError()
     for (auto element : elementVector)
     {
         element->Evaluate(elementOutputMap);
-        ipValues = elementOutputMap.at(Element::eOutput::IP_DATA)
+        ipValues = elementOutputMap.at(ElementEnum::eOutput::IP_DATA)
                            ->GetIpData()
                            .GetIpDataMap()[IpData::eIpStaticDataType::EXTRAPOLATION_ERROR];
         maxError = std::max(maxError, ipValues.maxCoeff());
@@ -519,8 +519,8 @@ void StructureBase::ElementTotalUpdateStaticData()
     int exception(0);
     std::string exceptionStringTotal;
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
 #ifdef _OPENMP
     if (mNumProcessors != 0)
@@ -572,8 +572,8 @@ void StructureBase::ElementTotalUpdateTmpStaticData()
         int exception(0);
         std::string exceptionStringTotal;
 
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-        elementOutput[Element::eOutput::UPDATE_TMP_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+        elementOutput[ElementEnum::eOutput::UPDATE_TMP_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
 
 #ifdef _OPENMP
@@ -672,8 +672,8 @@ void StructureBase::ElementTotalExtrapolateStaticData()
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
     ConstitutiveInputMap input;
     input[Constitutive::eInput::CALCULATE_STATIC_DATA] =
@@ -830,10 +830,10 @@ double StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector
 #endif //_OPENMP
     {
 
-        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-        elementOutput[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
+        std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+        elementOutput[ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
                 std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-        elementOutput[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+        elementOutput[ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
                 std::make_shared<ElementOutputBlockMatrixDouble>(GetDofStatus());
 
         Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> eigenSolver;
@@ -848,10 +848,10 @@ double StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector
             {
                 rElementVector[countElement]->Evaluate(elementOutput);
 
-                auto lumpedMass = elementOutput.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
+                auto lumpedMass = elementOutput.at(ElementEnum::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
                                           ->GetBlockFullVectorDouble()
                                           .Export();
-                auto stiffness = elementOutput.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)
+                auto stiffness = elementOutput.at(ElementEnum::eOutput::HESSIAN_0_TIME_DERIVATIVE)
                                          ->GetBlockFullMatrixDouble()
                                          .Export();
 

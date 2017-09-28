@@ -46,7 +46,7 @@ NuTo::ElementBase::ElementBase(const InterpolationType& interpolationType, const
 }
 
 
-void NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
+void NuTo::ElementBase::Evaluate(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
 {
     ConstitutiveInputMap input;
     input[Constitutive::eInput::CALCULATE_STATIC_DATA] =
@@ -328,10 +328,10 @@ void NuTo::ElementBase::Visualize(Visualize::UnstructuredGrid& visualizer,
     }
 
     // determine the ipdata and determine the map
-    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
+    std::map<NuTo::ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
 
-    auto& elementIpDataMap = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
+    auto& elementIpDataMap = elementOutput.at(ElementEnum::eOutput::IP_DATA)->GetIpData().GetIpDataMap();
 
     bool evaluateStress(false);
 
@@ -506,9 +506,9 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
     }
 
     // determine the ipdata and determine the map
-    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
-    auto& elementIpDataMap = elementOutput[Element::eOutput::IP_DATA]->GetIpData().GetIpDataMap();
+    std::map<NuTo::ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>();
+    auto& elementIpDataMap = elementOutput[ElementEnum::eOutput::IP_DATA]->GetIpData().GetIpDataMap();
 
     for (auto component : visualizeComponents)
     {
@@ -568,13 +568,13 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
 
 void NuTo::ElementBase::GetIntegratedStress(Eigen::MatrixXd& rStress)
 {
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] =
             std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     this->Evaluate(elementOutput);
 
-    const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)
+    const auto& ipStress = elementOutput.at(ElementEnum::eOutput::IP_DATA)
                                    ->GetIpData()
                                    .GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRESS];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
@@ -589,13 +589,13 @@ void NuTo::ElementBase::GetIntegratedStress(Eigen::MatrixXd& rStress)
 
 void NuTo::ElementBase::GetIntegratedStrain(Eigen::MatrixXd& rStrain)
 {
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] =
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] =
             std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::ENGINEERING_STRAIN);
 
     this->Evaluate(elementOutput);
 
-    const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)
+    const auto& ipStress = elementOutput.at(ElementEnum::eOutput::IP_DATA)
                                    ->GetIpData()
                                    .GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRAIN];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();

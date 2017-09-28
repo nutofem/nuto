@@ -14,7 +14,7 @@ namespace NuTo
 
 class IntegrationPointBase;
 
-namespace ElementOld
+namespace ElementEnum
 {
 enum class eElementType;
 } // namespace Element

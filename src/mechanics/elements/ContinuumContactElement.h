@@ -17,7 +17,7 @@ public:
 
     void ProjectIntegrationPointOnMaster();
 
-    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+    void CalculateElementOutputs(std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
                                  EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP,
                                  const ConstitutiveInputMap& constitutiveInput,
                                  const ConstitutiveOutputMap& constitutiveOutput) const;

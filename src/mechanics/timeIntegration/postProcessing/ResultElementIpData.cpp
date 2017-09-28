@@ -39,12 +39,12 @@ void ResultElementIpData::CalculateValues(const StructureBase& rStructure,
 {
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
 
-    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(mIpDataType);
+    std::map<ElementEnum::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[ElementEnum::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(mIpDataType);
 
     const_cast<ElementBase*>(element)->Evaluate(elementOutput);
 
-    const auto& ipDataResult = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
+    const auto& ipDataResult = elementOutput.at(ElementEnum::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
 
     // iterate over all ips
     assert(ipDataResult.cols() == element->GetNumIntegrationPoints());
