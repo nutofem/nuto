@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/elements/ElementInterface.h"
+#include "mechanics/elements/Element.h"
 #include "mechanics/nodes/DofContainer.h"
 
 namespace NuTo
@@ -14,9 +14,14 @@ namespace NuTo
 class CellData
 {
 public:
-    CellData(const DofContainer<ElementInterface*>& elements)
-        : mElements(elements)
+    CellData(const Element& element)
+        : mElement(element)
     {
+    }
+
+    NodeValues GetCoordinates() const
+    {
+        return mElement.CoordinateElement().ExtractNodeValues();
     }
 
     NodeValues GetNodeValues(const DofType& dofType) const
@@ -27,13 +32,13 @@ public:
 #ifdef _OPENMP
 #pragma omp critical
 #endif
-            nodeValues = mElements[dofType]->ExtractNodeValues();
+            nodeValues = mElement.DofElement(dofType).ExtractNodeValues();
         }
         return nodeValues;
     }
 
 private:
     mutable DofContainer<NodeValues> mNodeValues;
-    const DofContainer<ElementInterface*>& mElements;
+    const Element& mElement;
 };
 } /* NuTo */

@@ -1,6 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "mechanics/elements/Element.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/nodes/NodeSimple.h"
 
@@ -52,12 +53,14 @@ NuTo::DerivativeShapeFunctionsNatural MockDerivatives3D()
 
 BOOST_AUTO_TEST_CASE(CellIPData2D)
 {
-    fakeit::Mock<NuTo::ElementInterface> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives2D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives2D();
     NuTo::DofType d0("dof0", 2, 0);
 
-    NuTo::DofContainer<NuTo::ElementInterface*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
+    elements[d0] = &mockElement.get();
+
+    NuTo::Element element(mockElement.get(), elements);
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
@@ -68,7 +71,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(elements, jac, ipCoords);
+    NuTo::CellIpData ipData(element, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
@@ -102,12 +105,14 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 
 BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 {
-    fakeit::Mock<NuTo::ElementInterface> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives3D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives3D();
     NuTo::DofType d0("dof0", 3, 0);
 
-    NuTo::DofContainer<NuTo::ElementInterface*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
+    elements[d0] = &mockElement.get();
+
+    NuTo::Element element(mockElement.get(), elements);
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector3d({1. / 3., 1. / 3., 1. / 3.});
 
@@ -118,7 +123,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(elements, jac, ipCoords);
+    NuTo::CellIpData ipData(element, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
     Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);

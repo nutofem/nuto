@@ -37,8 +37,10 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::ElementFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
 
     NuTo::DofType dofDispl("Displacements", 2, 0);
-    NuTo::DofContainer<NuTo::ElementInterface*> elements;
+    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
     elements[dofDispl] = &displacementElement;
+
+    NuTo::Element element(coordinateElement, elements);
 
     fakeit::Mock<NuTo::IntegrationTypeBase> intType;
     Method(intType, GetNumIntegrationPoints) = 4;
@@ -53,7 +55,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     using namespace NuTo::Integrand;
     TimeDependent::MomentumBalance<2> integrand({dofDispl}, law);
 
-    NuTo::Cell cell(coordinateElement, elements, intType.get(), integrand);
+    NuTo::Cell cell(element, intType.get(), integrand);
 
     BoostUnitTest::CheckVector(cell(TimeDependent::Gradient())[dofDispl], Eigen::VectorXd::Zero(8), 8);
 
