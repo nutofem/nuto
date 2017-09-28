@@ -1,18 +1,16 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/cell/CellData.h"
-#include "mechanics/elements/Element.h"
 
 BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {
     fakeit::Mock<NuTo::ElementInterface> mockElement;
     Method(mockElement, ExtractNodeValues) = Eigen::Vector2d({42, 6174});
     NuTo::DofType dof("dof", 1, 0);
-    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
-    elements[dof] = &mockElement.get();
-    NuTo::Element element(mockElement.get(), elements); 
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(dof, mockElement.get());
 
-    NuTo::CellData cell(element);
+    NuTo::CellData cell(elements);
 
     constexpr int numRuns = 10;
     for (int iRun = 0; iRun < numRuns; ++iRun)

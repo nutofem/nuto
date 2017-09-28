@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/elements/ElementShapeFunctions.h"
-#include "mechanics/elements/Element.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/nodes/NodeSimple.h"
 
@@ -57,10 +56,8 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives2D();
     NuTo::DofType d0("dof0", 2, 0);
 
-    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
-    elements[d0] = &mockElement.get();
-
-    NuTo::Element element(mockElement.get(), elements);
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
@@ -71,7 +68,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(element, jac, ipCoords);
+    NuTo::CellIpData ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
@@ -109,10 +106,8 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
     Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives3D();
     NuTo::DofType d0("dof0", 3, 0);
 
-    NuTo::DofContainer<const NuTo::ElementInterface*> elements;
-    elements[d0] = &mockElement.get();
-
-    NuTo::Element element(mockElement.get(), elements);
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector3d({1. / 3., 1. / 3., 1. / 3.});
 
@@ -123,7 +118,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(element, jac, ipCoords);
+    NuTo::CellIpData ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
     Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);

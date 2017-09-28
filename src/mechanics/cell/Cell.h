@@ -2,7 +2,7 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/cell/CellInterface.h"
-#include "mechanics/elements/Element.h"
+#include "mechanics/elements/ElementCollection.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/integrands/Base.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -14,8 +14,8 @@ namespace NuTo
 class Cell : public CellInterface
 {
 public:
-    Cell(const Element& element, const IntegrationTypeBase& integrationType, const Integrand::Base& integrand)
-        : mElement(element)
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const Integrand::Base& integrand)
+        : mElements(elements)
         , mIntegrationType(integrationType)
         , mIntegrands()
     {
@@ -40,13 +40,13 @@ public:
 
     void operator()(const VoidOperation& op) override
     {
-        CellData cellData(mElement);
+        CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mElement.CoordinateElement().ExtractNodeValues(),
-                              mElement.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
-            CellIpData cellipData(mElement, jacobian, ipCoords);
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
             op(mIntegrands[iIP], cellData, cellipData);
         }
     }
@@ -64,21 +64,21 @@ private:
     template <typename TOperation, typename TReturn>
     TReturn Integrate(TOperation&& op, TReturn result)
     {
-        CellData cellData(mElement);
+        CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian jacobian(mElement.CoordinateElement().ExtractNodeValues(),
-                              mElement.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
-            CellIpData cellipData(mElement, jacobian, ipCoords);
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
+            CellIpData cellipData(mElements, jacobian, ipCoords);
             result += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return result;
     }
 
 private:
-    const Element& mElement;
+    const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
     boost::ptr_vector<Integrand::Base> mIntegrands;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/elements/Element.h"
+#include "mechanics/elements/ElementCollection.h"
 #include "mechanics/nodes/DofContainer.h"
 #include "mechanics/cell/Jacobian.h"
 
@@ -12,9 +12,9 @@ namespace NuTo
 class CellIpData
 {
 public:
-    CellIpData(const Element& element, const NuTo::Jacobian& jacobian,
+    CellIpData(const ElementCollection& elements, const NuTo::Jacobian& jacobian,
                const NaturalCoords& ipCoords)
-        : mElement(element)
+        : mElements(elements)
         , mJacobian(jacobian)
         , mIPCoords(ipCoords)
     {
@@ -22,12 +22,12 @@ public:
 
     Eigen::VectorXd GlobalCoordinates() const
     {
-        return Interpolate(mElement.CoordinateElement(), mIPCoords);
+        return Interpolate(mElements.CoordinateElement(), mIPCoords);
     }
 
     NMatrix GetNMatrix(const DofType& dofType) const
     {
-        return mElement.DofElement(dofType).GetNMatrix(mIPCoords);
+        return mElements.DofElement(dofType).GetNMatrix(mIPCoords);
     }
 
     BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
@@ -109,11 +109,11 @@ private:
     DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
     {
         DerivativeShapeFunctionsNatural dShapeNatural =
-                mElement.DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
+                mElements.DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const Element& mElement;
+    const ElementCollection& mElements;
     const NuTo::Jacobian& mJacobian;
     const NaturalCoords& mIPCoords;
 };

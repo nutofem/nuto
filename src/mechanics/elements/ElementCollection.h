@@ -4,20 +4,20 @@
 
 namespace NuTo
 {
-class Element
+class ElementCollection
 {
 public:
-    Element(const ElementInterface& coordinateElement)
+    ElementCollection(const ElementInterface& coordinateElement)
         : mCoordinateElement(coordinateElement)
     {
     }
-    Element(const ElementInterface& coordinateElement, DofContainer<const ElementInterface*> dofElement)
+    ElementCollection(const ElementInterface& coordinateElement, DofContainer<const ElementInterface*> dofElement)
         : mCoordinateElement(coordinateElement)
         , mDofElements(dofElement)
     {
     }
 
-    void AddElement(const DofType& dofType, const ElementInterface& dofElement)
+    void AddDofElement(const DofType& dofType, const ElementInterface& dofElement)
     {
         mDofElements[dofType] = &dofElement;
     }
