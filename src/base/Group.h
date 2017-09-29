@@ -16,9 +16,8 @@ namespace Groups
 //! @tparam T type of group members
 //! @tparam TCompare functor representing the comparison operation used for sorting
 template <typename T>
-class Group : private std::vector<T*>
+class Group 
 {
-
     //! @brief Container, similar to std::set, with an underlying std::vector.
     class SortedUniqueVector
     {
@@ -49,12 +48,12 @@ class Group : private std::vector<T*>
         std::vector<const T*> mData;
     };
 
-    typedef std::vector<T*> parent;
+    typedef std::vector<T*> Data;
 
 public:
     //! @brief indirect (dereferencing) iterator to provide value semantics for the iterators
-    typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
-    typedef boost::indirect_iterator<typename parent::const_iterator> ConstGroupIterator;
+    typedef boost::indirect_iterator<typename Data::iterator> GroupIterator;
+    typedef boost::indirect_iterator<typename Data::const_iterator> ConstGroupIterator;
 
     //! @brief Create an empty group
     Group() = default;
@@ -80,7 +79,7 @@ public:
     void Add(T& element)
     {
         if (mUniqueData.Add(element))
-            parent::push_back(&element);
+            mData.push_back(&element);
     }
 
     //! @brief True if element is contained in group
@@ -99,36 +98,36 @@ public:
     //! @brief Number of constituents
     auto Size() const
     {
-        return size();
+        return mData.size();
     }
 
     //! @brief Iterate over group elements (by value not pointer)
     ConstGroupIterator begin() const
     {
-        return parent::begin();
+        return mData.begin();
     }
 
     //! @brief Iterate over group elements (by value not pointer)
     ConstGroupIterator end() const
     {
-        return parent::end();
+        return mData.end();
     }
 
     //! @brief Iterate over group elements (by value not pointer)
     GroupIterator begin()
     {
-        return parent::begin();
+        return mData.begin();
     }
 
     //! @brief Iterate over group elements (by value not pointer)
     GroupIterator end()
     {
-        return parent::end();
+        return mData.end();
     }
 
 private:
-    using parent::size;
     SortedUniqueVector mUniqueData;
+    Data mData;
 };
 
 //! @brief Unite two groups
