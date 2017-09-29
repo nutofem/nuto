@@ -62,7 +62,8 @@ BOOST_AUTO_TEST_CASE(AssemberGradient)
         }
     };
 
-    NuTo::GlobalDofVector gradient = assembler.BuildVector({&mockCell0.get(), &mockCell1.get()}, {&d}, Gradient());
+    NuTo::Groups::Group<NuTo::CellInterface> cells({mockCell0.get(), mockCell1.get()});
+    NuTo::GlobalDofVector gradient = assembler.BuildVector(cells, {&d}, Gradient());
 
     BoostUnitTest::CheckEigenMatrix(gradient.J[d], Eigen::Vector3d(11, 22, 44));
     BoostUnitTest::CheckEigenMatrix(gradient.K[d], Eigen::Vector2d(22, 33));
@@ -101,7 +102,8 @@ BOOST_AUTO_TEST_CASE(AssemberHessian)
     };
 
 
-    NuTo::GlobalDofMatrixSparse hessian = assembler.BuildMatrix({&mockCell0.get(), &mockCell1.get()}, {&d}, Hessian());
+    NuTo::Groups::Group<NuTo::CellInterface> cells({mockCell0.get(), mockCell1.get()});
+    NuTo::GlobalDofMatrixSparse hessian = assembler.BuildMatrix(cells, {&d}, Hessian());
     Eigen::Matrix3d JJ = (Eigen::Matrix3d() << 11, 12, 13, 21, 22, 23, 31, 32, 44).finished();
     Eigen::Matrix2d KK = (Eigen::Matrix2d() << 22, 23, 32, 33).finished();
     Eigen::MatrixXd JK = (Eigen::MatrixXd(3, 2) << 0, 0, 0, 0, 12, 13).finished();
