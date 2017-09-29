@@ -18,4 +18,10 @@ public:
     virtual ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const = 0;
     virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
 };
+
+Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoords ipCoords)
+{
+    return element.GetNMatrix(ipCoords) * element.ExtractNodeValues();
+}
+
 } /* NuTo */

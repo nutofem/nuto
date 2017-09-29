@@ -52,12 +52,12 @@ NuTo::DerivativeShapeFunctionsNatural MockDerivatives3D()
 
 BOOST_AUTO_TEST_CASE(CellIPData2D)
 {
-    fakeit::Mock<NuTo::ElementInterface> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives2D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives2D();
     NuTo::DofType d0("dof0", 2, 0);
 
-    NuTo::DofContainer<NuTo::ElementInterface*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
@@ -102,12 +102,12 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 
 BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 {
-    fakeit::Mock<NuTo::ElementInterface> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives3D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives3D();
     NuTo::DofType d0("dof0", 3, 0);
 
-    NuTo::DofContainer<NuTo::ElementInterface*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector3d({1. / 3., 1. / 3., 1. / 3.});
 
