@@ -144,3 +144,14 @@ BOOST_AUTO_TEST_CASE(GroupCtors)
     BOOST_CHECK(many.Contains(c));
     BOOST_CHECK_EQUAL(many.Size(), 3);
 }
+
+void BraceInitialization(const Group<Foo>& group)
+{
+    BOOST_CHECK_EQUAL(group.Size(), 2); 
+}
+
+BOOST_AUTO_TEST_CASE(GroupBraceInitialize)
+{
+    Foo a, b;
+    BraceInitialization({a, b});
+}

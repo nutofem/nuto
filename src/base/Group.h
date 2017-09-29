@@ -68,7 +68,7 @@ public:
     //! @brief Create a group containing multiple elements
     //! @param elements vector of elements
     //! @remark std::reference_wrapper for value semantics
-    Group(std::vector<std::reference_wrapper<T>> elements)
+    Group(std::initializer_list<std::reference_wrapper<T>> elements)
     {
         for (auto element : elements)
             Add(element);
