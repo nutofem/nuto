@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <set>
 #include <boost/iterator/indirect_iterator.hpp>
 
 namespace NuTo
@@ -19,9 +18,40 @@ namespace Groups
 template <typename T>
 class Group : private std::vector<T*>
 {
-    typedef std::vector<T*> parent;
-public:
 
+    //! @brief Container, similar to std::set, with an underlying std::vector.
+    class SortedUniqueVector
+    {
+    public:
+        //! @brief adds an element if it is not already in the container
+        //! @param element element to add
+        //! @return true if element was added
+        bool Add(const T& element)
+        {
+            auto it = std::lower_bound(mData.begin(), mData.end(), &element);
+            if (it == mData.end() || *it != &element)
+            {
+                mData.insert(it, &element);
+                return true;
+            }
+            return false;
+        }
+
+        bool Contains(const T& element) const
+        {
+            auto it = std::lower_bound(mData.begin(), mData.end(), &element);
+            if (it == mData.end())
+                return false;
+            return *it == &element;
+        }
+
+    private:
+        std::vector<const T*> mData;
+    };
+
+    typedef std::vector<T*> parent;
+
+public:
     //! @brief indirect (dereferencing) iterator to provide value semantics for the iterators
     typedef boost::indirect_iterator<typename parent::iterator> GroupIterator;
     typedef boost::indirect_iterator<typename parent::const_iterator> ConstGroupIterator;
@@ -30,12 +60,12 @@ public:
     Group() = default;
 
     //! @brief Create a group containing a single element
-    //! @param element single element 
+    //! @param element single element
     Group(T& element)
     {
         Add(element);
     }
-    
+
     //! @brief Create a group containing multiple elements
     //! @param elements vector of elements
     //! @remark std::reference_wrapper for value semantics
@@ -49,8 +79,7 @@ public:
     //! @param element single element to add
     void Add(T& element)
     {
-        auto it = mUniqueData.insert(&element);
-        if (it.second)
+        if (mUniqueData.Add(element))
             parent::push_back(&element);
     }
 
@@ -58,7 +87,7 @@ public:
     //! @param element single element to check
     bool Contains(const T& element) const
     {
-        return mUniqueData.find(&element) != mUniqueData.end();
+        return mUniqueData.Contains(element);
     }
 
     //! @brief True if group is empty
@@ -99,12 +128,12 @@ public:
 
 private:
     using parent::size;
-    std::set<const T*> mUniqueData;
+    SortedUniqueVector mUniqueData;
 };
 
 //! @brief Unite two groups
 template <typename T>
-static Group<T> Unite(const Group<T>& one, const Group<T>& two)
+Group<T> Unite(const Group<T>& one, const Group<T>& two)
 {
     Group<T> newGroup = one;
     for (auto& t : two)
@@ -114,7 +143,7 @@ static Group<T> Unite(const Group<T>& one, const Group<T>& two)
 
 //! @brief Returns group with elements of group one that are not in group two
 template <typename T>
-static Group<T> Difference(const Group<T>& one, const Group<T>& two)
+Group<T> Difference(const Group<T>& one, const Group<T>& two)
 {
     Group<T> newGroup;
     for (auto& t : one)
@@ -125,7 +154,7 @@ static Group<T> Difference(const Group<T>& one, const Group<T>& two)
 
 //! @brief Returns group with elements that are in both groups
 template <typename T>
-static Group<T> Intersection(const Group<T>& one, const Group<T>& two)
+Group<T> Intersection(const Group<T>& one, const Group<T>& two)
 {
     Group<T> newGroup;
     for (auto& t : one)
@@ -136,7 +165,7 @@ static Group<T> Intersection(const Group<T>& one, const Group<T>& two)
 
 //! @brief Returns group with elements that are only in one group not in both
 template <typename T>
-static Group<T> SymmetricDifference(const Group<T>& one, const Group<T>& two)
+Group<T> SymmetricDifference(const Group<T>& one, const Group<T>& two)
 {
     return Difference(Unite(one, two), Intersection(one, two));
 }
