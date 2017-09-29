@@ -2,17 +2,17 @@
 
 #include <vector>
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/interpolation/CellInterpolationBase.h"
+#include "mechanics/elements/ElementInterface.h"
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
 
-class CellInterpolationFem : public CellInterpolationBase
+class ElementFem : public ElementInterface
 {
 public:
-    CellInterpolationFem(std::vector<NuTo::NodeSimple*> nodes, const InterpolationSimple& interpolation)
+    ElementFem(std::vector<NuTo::NodeSimple*> nodes, const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
     {

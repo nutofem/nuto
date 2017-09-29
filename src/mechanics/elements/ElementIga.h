@@ -2,17 +2,17 @@
 
 #include <vector>
 #include "mechanics/nodes/NodeSimple.h"
-#include "CellInterpolationBase.h"
+#include "mechanics/elements/ElementInterface.h"
 #include "mechanics/iga/Nurbs.h"
 #include "mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
 template <int TDimParameter>
-class CellInterpolationIga : public CellInterpolationBase
+class ElementIga : public ElementInterface
 {
 public:
-    CellInterpolationIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
+    ElementIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
         : mKnotIDs(knotIDs)
         , mNurbsGeometry(NurbsGeometry)
     {

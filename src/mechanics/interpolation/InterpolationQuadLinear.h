@@ -7,8 +7,8 @@ namespace NuTo
 class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
-    InterpolationQuadLinear(int rDofDimension)
-        : mDofDimension(rDofDimension)
+    InterpolationQuadLinear(int dofDimension)
+        : mDofDimension(dofDimension)
     {
     }
 
@@ -17,19 +17,19 @@ public:
         return std::make_unique<InterpolationQuadLinear>(*this);
     }
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::ShapeFunctionsQuadOrder1(rNaturalIPCoords);
+        return ShapeFunctions2D::ShapeFunctionsQuadOrder1(naturalIpCoords);
     }
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& rNaturalIPCoords) const override
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder1(rNaturalIPCoords);
+        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder1(naturalIpCoords);
     }
 
-    NaturalCoords GetLocalCoords(int rNodeId) const override
+    NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions2D::NodeCoordinatesQuadOrder1(rNodeId);
+        return ShapeFunctions2D::NodeCoordinatesQuadOrder1(nodeId);
     }
 
     int GetNumNodes() const override

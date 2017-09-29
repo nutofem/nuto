@@ -15,14 +15,14 @@ public:
     {
     }
 
-    GlobalDofVector BuildGradient(const std::vector<NuTo::CellInterface*>& cells,
-                                  const std::vector<NuTo::DofType*>& dofTypes) const
+    GlobalDofVector BuildVector(const std::vector<NuTo::CellInterface*>& cells,
+                                const std::vector<NuTo::DofType*>& dofTypes, const VectorOperation& op) const
     {
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
         for (NuTo::CellInterface* cell : cells)
         {
             const DofVector<int> numbering = cell->DofNumbering();
-            const DofVector<double> cellGradient = cell->Gradient();
+            const DofVector<double> cellGradient = cell->Integrate(op);
 
             for (const DofType* dof : dofTypes)
             {
@@ -43,15 +43,15 @@ public:
         return gradient;
     }
 
-    GlobalDofMatrixSparse BuildHessian0(const std::vector<NuTo::CellInterface*>& cells,
-                                        const std::vector<NuTo::DofType*>& dofTypes) const
+    GlobalDofMatrixSparse BuildMatrix(const std::vector<NuTo::CellInterface*>& cells,
+                                      const std::vector<NuTo::DofType*>& dofTypes, const MatrixOperation& op) const
     {
         GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);
 
         for (NuTo::CellInterface* cell : cells)
         {
             const DofVector<int> numbering = cell->DofNumbering();
-            const DofMatrix<double> cellHessian = cell->Hessian0();
+            const DofMatrix<double> cellHessian = cell->Integrate(op);
 
             for (const DofType* dofI : dofTypes)
             {

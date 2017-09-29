@@ -52,12 +52,12 @@ NuTo::DerivativeShapeFunctionsNatural MockDerivatives3D()
 
 BOOST_AUTO_TEST_CASE(CellIPData2D)
 {
-    fakeit::Mock<NuTo::CellInterpolationBase> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives2D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives2D();
     NuTo::DofType d0("dof0", 2);
 
-    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::DerivativeShapeFunctionsNatural derivativeForJacobian =
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
-    NuTo::Jacobian<2> jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData<2> ipData(elements, jac, ipCoords);
+    NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
+    NuTo::CellIpData ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
@@ -102,12 +102,12 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 
 BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 {
-    fakeit::Mock<NuTo::CellInterpolationBase> interpolation;
-    Method(interpolation, GetDerivativeShapeFunctions) = MockDerivatives3D();
+    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives3D();
     NuTo::DofType d0("dof0", 3);
 
-    NuTo::DofContainer<NuTo::CellInterpolationBase*> elements;
-    elements[d0] = &interpolation.get();
+    NuTo::ElementCollection elements(mockElement.get());
+    elements.AddDofElement(d0, mockElement.get());
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector3d({1. / 3., 1. / 3., 1. / 3.});
 
@@ -117,8 +117,8 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
     NuTo::DerivativeShapeFunctionsNatural derivativeForJacobian =
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
-    NuTo::Jacobian<3> jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData<3> ipData(elements, jac, ipCoords);
+    NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
+    NuTo::CellIpData ipData(elements, jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
     Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);

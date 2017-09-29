@@ -1,9 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <tuple>
-#include <eigen3/Eigen/Core>
-#include "mechanics/constitutive/EngineeringStrainPDE.h"
-#include "mechanics/constitutive/EngineeringStressPDE.h"
+#include "mechanics/constitutive/laws/MechanicsInterface.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
 
 namespace NuTo
@@ -11,13 +9,11 @@ namespace NuTo
 namespace Laws
 {
 
-
-
 template <int TDim>
-class LinearElastic
+class LinearElastic : public MechanicsInterface<TDim>
 {
 public:
-    using ElasticTangent = Eigen::Matrix<double, Voigt::Dim(TDim), Voigt::Dim(TDim)>;
+    using typename MechanicsInterface<TDim>::MechanicsTangent;
 
     template <int U = TDim, typename std::enable_if<U != 2, int>::type = 0>
     LinearElastic(double E, double Nu)
@@ -35,12 +31,12 @@ public:
     {
     }
 
-    EngineeringStressPDE<TDim> Stress(EngineeringStrainPDE<TDim> strain) const
+    EngineeringStressPDE<TDim> Stress(EngineeringStrainPDE<TDim> strain, double = 0) const override
     {
         return mC * strain;
     }
 
-    const ElasticTangent& Tangent(EngineeringStrainPDE<TDim>) const
+    MechanicsTangent Tangent(EngineeringStrainPDE<TDim>, double = 0) const override
     {
         return mC;
     }
@@ -48,9 +44,9 @@ public:
 private:
     double mE;
     double mNu;
-    ElasticTangent mC;
+    MechanicsTangent mC;
 
-    static ElasticTangent CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
+    static MechanicsTangent CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
 };
 
 //! @brief calculate coefficients of the PLANE_STRESS 2D material matrix
@@ -78,13 +74,13 @@ std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
 }
 
 template <>
-LinearElastic<1>::ElasticTangent LinearElastic<1>::CalculateC(double E, double Nu, ePlaneState)
+LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double Nu, ePlaneState)
 {
-    return ElasticTangent::Constant(E);
+    return MechanicsTangent::Constant(E);
 }
 
 template <>
-LinearElastic<2>::ElasticTangent LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
+LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
 {
     double C11 = 0, C12 = 0, C33 = 0;
     if (planeState == ePlaneState::PLANE_STRESS)
@@ -92,7 +88,7 @@ LinearElastic<2>::ElasticTangent LinearElastic<2>::CalculateC(double E, double N
     else
         std::tie(C11, C12, C33) = CalculateCoefficients3D(E, Nu);
 
-    ElasticTangent C = ElasticTangent::Zero();
+    MechanicsTangent C = MechanicsTangent::Zero();
     C = Eigen::Matrix3d::Zero();
     C(0, 0) = C11;
     C(1, 0) = C12;
@@ -105,11 +101,11 @@ LinearElastic<2>::ElasticTangent LinearElastic<2>::CalculateC(double E, double N
 }
 
 template <>
-LinearElastic<3>::ElasticTangent LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
+LinearElastic<3>::MechanicsTangent LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
 {
     double C11 = 0, C12 = 0, C44 = 0;
     std::tie(C11, C12, C44) = CalculateCoefficients3D(E, Nu);
-    ElasticTangent C = ElasticTangent::Zero();
+    MechanicsTangent C = MechanicsTangent::Zero();
     // C11 diagonal:
     C(0, 0) = C11;
     C(1, 1) = C11;
