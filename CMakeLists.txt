@@ -3,8 +3,6 @@ project(NuTo)
 cmake_minimum_required(VERSION 3.5)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_ARPACK
-    "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
 option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
 option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
@@ -143,12 +141,11 @@ message(STATUS "EIGEN_VERSION_NUMBER = ${EIGEN_VERSION_NUMBER}")
 include_directories(${EIGEN_INCLUDE_DIR})
 
 # find ARPACK library for eigenvalue analysis
-if(ENABLE_ARPACK)
-    set(ARPACK_DEBUG TRUE)
-    find_package(ARPACK REQUIRED)
-    if(ARPACK_FOUND)
-        add_definitions("-DHAVE_ARPACK")
-    endif()
+find_package(ARPACK)
+if(ARPACK_FOUND)
+    add_definitions("-DHAVE_ARPACK")
+else()
+    message(WARNING "Arpack not found. NuTo::EigenSolverArpack will not be available.")
 endif()
 
 # find lapack library

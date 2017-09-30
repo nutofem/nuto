@@ -52,7 +52,7 @@ endif()
 #add_unit_test(SpatialContainer)
 #target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
 #
-#if(ENABLE_ARPACK)
+#if(ARPACK_FOUND)
 #    add_unit_test(EigenSolverArpack)
 #    target_link_libraries(EigenSolverArpack NuToMath)
 #endif()
