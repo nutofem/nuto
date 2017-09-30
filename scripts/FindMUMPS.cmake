@@ -36,7 +36,7 @@ endif()
 
 # search for header dmumps_c.h
 find_path(MUMPS_INCLUDE_DIR NAMES dmumps_c.h
-          HINTS ${_mumps_INCLUDE_SEARCH_DIRS})
+          HINTS ${_mumps_INCLUDE_SEARCH_DIRS} /usr/include/mumps-seq-shared/)
 
 if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
     set(MUMPS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -47,8 +47,8 @@ if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
         NAMES mumps_common
         HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
 else()
-    find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq)
-    find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq)
+    find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq dmumps)
+    find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq mumps_common)
 endif()
 
 if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON)

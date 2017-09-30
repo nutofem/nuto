@@ -20,6 +20,13 @@ message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
 
+# set numpy include path for generated wrapper files
+execute_process(COMMAND
+    ${CMAKE_SOURCE_DIR}/scripts/get_numpy_path.py
+    OUTPUT_VARIABLE NUMPY_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(PYTHON_CXX_FLAGS "${PYTHON_CXX_FLAGS} -I${NUMPY_PATH}")
+
 # SWIG required for interface files c++ and python
 message(STATUS "Checking for SWIG...")
 find_program(SWIG_EXECUTABLE NAMES swig3.0 swig swig2.0)
