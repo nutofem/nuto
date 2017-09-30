@@ -18,7 +18,7 @@ function(nuto_swig_module module_name interface_file)
         PROPERTIES LINK_FLAGS -Wl,-z,defs)
     # Additional build flags for module
     set_source_files_properties("${swig_generated_file_fullname}"
-        PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
+        PROPERTIES COMPILE_FLAGS "${PYTHON_CXX_FLAGS}")
 endfunction()
 
 # `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the

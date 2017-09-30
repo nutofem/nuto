@@ -35,7 +35,7 @@ endif()
 
 # check for BLAS libraries
 find_library(_Openblas_LIB_OpenBLAS
-    NAMES openblas
+    NAMES openblas blas
     HINTS ${_Openblas_LIBRARIES_SEARCH_DIRS})
 
 if(_Openblas_LIB_OpenBLAS)
