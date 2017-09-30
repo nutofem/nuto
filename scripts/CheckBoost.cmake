@@ -1,11 +1,6 @@
 message(STATUS "Checking for Boost...")
 
 set(Boost_DETAILED_FAILURE_MSG TRUE)
-if(NOT BOOST_ROOT AND NOT DEFINED $ENV{BOOST_ROOT})
-    if(NUTO_EXTERNAL_LIBRARIES_ROOT)
-        set(BOOST_ROOT ${NUTO_EXTERNAL_LIBRARIES_ROOT})
-    endif()
-endif()
 
 # collect the required boost components and versions
 set(NuToBoostComponents system filesystem)
