@@ -1,6 +1,5 @@
 add_custom_target(benchmark COMMAND ctest -V -R benchmark)
 
-if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
@@ -32,7 +31,6 @@ add_executable(LinearElasticityOPENMP LinearElasticityOPENMP.cpp)
 target_link_libraries(LinearElasticityOPENMP Mechanics Math Base)
 if(ENABLE_VISUALIZE)
     target_link_libraries(LinearElasticityOPENMP Visualize)
-endif()
 endif()
 
 if(ENABLE_GEOMETRYCONCRETE)

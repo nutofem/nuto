@@ -10,9 +10,7 @@ if(ENABLE_OPTIMIZE)
     add_subdirectory(optimize)
 endif()
 
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-endif()
+add_subdirectory(mechanics)
 
 if(ENABLE_VISUALIZE)
     add_subdirectory(visualize)
