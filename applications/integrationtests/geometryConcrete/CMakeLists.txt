@@ -33,7 +33,7 @@ endif()
 if(GMSH_PATH)
     add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)
     target_link_libraries(GeometryConcreteAPI
-        Math Base GeometryConcrete)
+        Math Base GeometryConcrete Boost::unit_test_framework)
     add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
         ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
 else()
