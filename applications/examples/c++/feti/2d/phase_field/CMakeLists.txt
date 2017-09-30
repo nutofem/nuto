@@ -16,7 +16,7 @@ foreach(file
         )
     add_executable(${file} ${file}.cpp)
     target_link_libraries(${file}
-        Mechanics Math Base FetiLib ${Boost_LIBRARIES} ${LAPACK_LIBRARIES}
+        Mechanics Math Base FetiLib ${LAPACK_LIBRARIES}
         ${ANN_LIBRARIES} ${MPI_LIBRARIES})
     if(ENABLE_VISUALIZE)
         target_link_libraries(${file} Visualize)

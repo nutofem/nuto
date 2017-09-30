@@ -1,6 +1,7 @@
 foreach(test AdditiveInput AdditiveOutput)
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base)
+    target_link_libraries(${test} Mechanics Math Base
+        Boost::unit_test_framework)
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
     endif()

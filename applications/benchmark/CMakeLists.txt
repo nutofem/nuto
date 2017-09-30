@@ -36,7 +36,7 @@ endif()
 if(ENABLE_GEOMETRYCONCRETE)
     add_executable(DenseSpherePacking DenseSpherePacking.cpp)
     target_link_libraries(DenseSpherePacking
-        Math Base GeometryConcrete ${Boost_LIBRARIES})
+        Math Base GeometryConcrete)
     add_test(benchmark::DenseSpherePacking
         ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 endif()
