@@ -2,7 +2,6 @@
 #
 # variables used by this module (can be also defined as environment variables):
 #   MUMPS_ROOT - preferred installation prefix for searching for mumps
-#   MUMPS_DEBUG - print debug messages
 #
 # variables defined by this module
 #   MUMPS_FOUND - defines whether mumps was found or not
@@ -65,8 +64,5 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MUMPS DEFAULT_MSG MUMPS_LIBRARIES
     MUMPS_INCLUDE_DIR)
 
-if(MUMPS_DEBUG)
-    message(STATUS "MUMPS_FOUND=${MUMPS_FOUND}")
-    message(STATUS "MUMPS_LIBRARIES=${MUMPS_LIBRARIES}")
-    message(STATUS "MUMPS_INCLUDE_DIR=${MUMPS_INCLUDE_DIR}")
-endif()
+message(STATUS "MUMPS_LIBRARIES=${MUMPS_LIBRARIES}")
+message(STATUS "MUMPS_INCLUDE_DIR=${MUMPS_INCLUDE_DIR}")
