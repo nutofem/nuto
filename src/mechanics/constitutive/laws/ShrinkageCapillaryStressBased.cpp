@@ -6,7 +6,7 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 #include "physics/PhysicalConstantsSI.h"
-#include "physics/PhysicalEquationsSI.h"
+#include "physics/PhysicalEquations.h"
 
 
 std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::ShrinkageCapillaryStressBased::CreateIPLaw()

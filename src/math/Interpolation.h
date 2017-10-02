@@ -16,10 +16,10 @@ public:
 
     virtual ~Interpolation() = default;
     //! return interpolated value at x; order is the order of the derivative
-    virtual double operator()(double x) = 0;
+    virtual double operator()(double x) const = 0;
 
     //! calculate first derivative at x
-    virtual double derivative(double x) = 0;
+    virtual double derivative(double x) const = 0;
 
     //! function object
     std::function<double(double)> f = [this](double x) { return operator()(x); };
@@ -32,7 +32,7 @@ protected:
 
     unsigned mNumNeighborPoints;
 
-    unsigned bisection(double x);
+    unsigned bisection(double x) const;
 };
 } // namespace Math
 } // namespace NuTo

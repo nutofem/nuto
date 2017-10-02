@@ -16,10 +16,10 @@ public:
         : Interpolation{data, 2} {};
 
     //! return interpolated value at x
-    double operator()(double x) override;
+    double operator()(double x) const override;
 
     //! calculate first derivative at x
-    double derivative(double x) override;
+    double derivative(double x) const override;
 };
 } // namespace Math
 } // namespace NuTo

@@ -15,10 +15,10 @@ public:
     CubicSplineInterpolation(std::vector<std::array<double, 2>> data);
 
     //! return interpolated value at x
-    double operator()(double x) override;
+    double operator()(double x) const override;
 
     //! calculate first derivative at x
-    double derivative(double x) override;
+    double derivative(double x) const override;
 
 private:
     std::vector<double> ddy;

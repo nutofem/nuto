@@ -7,7 +7,7 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "physics/PhysicalConstantsSI.h"
-#include "physics/PhysicalEquationsSI.h"
+#include "physics/PhysicalEquations.h"
 #include <array>
 #include <boost/foreach.hpp>
 #include "mechanics/constitutive/laws/MoistureTransport.h"
