@@ -123,6 +123,5 @@ protected:
     double mSigmaR = 0; // real shift for Spectral transformation
     double mSigmaI = 0; // imag shift for Spectral transformation
     bool mShowTime = true;
-
 };
 }

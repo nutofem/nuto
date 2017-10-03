@@ -12,8 +12,7 @@ double WaterDensity(const double temperature);
 
 
 //! \f[ p^v = p^{vs} \mathrm{e}^{- \frac{M_w}{RT} \frac{p^c}{ρ^w}} \f]
-double KelvinEquation(const double capillaryPressure,
-                      const double temperature);
+double KelvinEquation(const double capillaryPressure, const double temperature);
 
 
 //! Saturation water vapour pressure as a function of temperature.

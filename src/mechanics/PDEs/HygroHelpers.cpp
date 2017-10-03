@@ -37,7 +37,7 @@ double Hygro::KelvinEquation(const double capillaryPressure, const double temper
     const Pressure saturationPressure(SaturationPressure(temperature) * MPa);
     const Density waterDensity(WaterDensity(temperature) * si::kilogram_per_cubic_meter);
     const Pressure p_c(capillaryPressure * MPa);
-    const DimensionLess exponent = - M_w * p_c / (R * temperature * si::kelvin * waterDensity);
+    const DimensionLess exponent = -M_w * p_c / (R * temperature * si::kelvin * waterDensity);
     const Pressure p_v = saturationPressure * std::exp(exponent);
 
     return p_v.value() * 1e-6; // mega

@@ -61,7 +61,7 @@ public:
         for (auto const& data : dofMatrix.mData)
         {
             auto xy = CantorPairingFunctionReverse(data.first);
-            out << "=== " << xy.first << " " << xy.second << " ==="  << std::endl;
+            out << "=== " << xy.first << " " << xy.second << " ===" << std::endl;
             out << data.second << std::endl;
         }
         out << "====" << std::endl;

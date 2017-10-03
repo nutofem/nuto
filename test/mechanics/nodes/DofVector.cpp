@@ -67,4 +67,3 @@ BOOST_AUTO_TEST_CASE(DofVectorStream)
     std::stringstream ss;
     ss << dofVector;
 }
-

@@ -33,14 +33,17 @@ public:
         return std::pow(1 + std::pow(capillaryPressure / mA, mB / (mB - 1.0)), -1.0 / mB);
     }
 
+    // the equation is too long; reformating would introduce artifacts in the output
+    // clang-format off
     //! \f[ \frac{∂S_w}{∂p^c} = - \frac{\left(\frac{p_{c}}{a}\right)^{b/(b - 1)}}{p_{c} \left(b - 1\right)} \left[\left(\frac{p_{c}}{a}\right)^{b/(b-1)} + 1\right]^{-(b+1)/b} \f]
+    // clang-format on
     //! @param capillaryPressure Capillary pressure.
     //! @return Derivative of saturation of the pores with liquid water w.r.t. the capillary pressure.
     double DerivativeSaturation(const double capillaryPressure) const
     {
         const double ratio = capillaryPressure / mA;
         const double exp = mB / (mB - 1.0);
-        const double nom = - std::pow(ratio, exp) * std::pow(std::pow(ratio, exp) + 1.0, -(mB + 1.0)/mB);
+        const double nom = -std::pow(ratio, exp) * std::pow(std::pow(ratio, exp) + 1.0, -(mB + 1.0) / mB);
         const double den = capillaryPressure * (mB - 1.0);
         return nom / den;
     }
