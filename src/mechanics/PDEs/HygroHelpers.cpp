@@ -3,9 +3,13 @@
 
 #include "HygroHelpers.h"
 #include "physics/PhysicalConstantsSI.h"
+#include <boost/units/systems/si/codata/physico-chemical_constants.hpp>
+#include <boost/units/systems/si/prefixes.hpp>
+#include <boost/units/systems/si/mass_density.hpp>
+#include <boost/units/systems/si/dimensionless.hpp>
+#include <boost/units/systems/si/pressure.hpp>
 
 using namespace Hygro;
-
 
 double Hygro::WaterDensity(const double temperature)
 {
@@ -21,12 +25,22 @@ double Hygro::WaterDensity(const double temperature)
 
 double Hygro::KelvinEquation(const double capillaryPressure, const double temperature)
 {
-    const double saturationPressure = 0.0;
-    const double molarMassWater = 18.01528; // g/mol
-    const double R = NuTo::SI::IdealGasConstant;
-    const double waterDensity = WaterDensity(temperature);
-    const double exponent = -molarMassWater * capillaryPressure / (R * temperature * waterDensity);
-    return saturationPressure * std::exp(exponent);
+    using namespace boost::units;
+    using Pressure = quantity<si::pressure>;
+    using Density = quantity<si::mass_density>;
+    using DimensionLess = quantity<si::dimensionless>;
+    const auto MPa = si::mega * si::pascal;
+
+    const auto R = si::constants::codata::R;
+    const auto M_w = WaterMolarMass * si::kilogram / si::mole;
+
+    const Pressure saturationPressure(SaturationPressure(temperature) * MPa);
+    const Density waterDensity(WaterDensity(temperature) * si::kilogram_per_cubic_meter);
+    const Pressure p_c(capillaryPressure * MPa);
+    const DimensionLess exponent = - M_w * p_c / (R * temperature * si::kelvin * waterDensity);
+    const Pressure p_v = saturationPressure * std::exp(exponent);
+
+    return p_v.value() * 1e-6; // mega
 }
 
 

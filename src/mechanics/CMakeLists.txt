@@ -212,6 +212,7 @@ set(MechanicsTimeIntegrationSources
 set(MechanicsToolsSources
     tools/GlobalFractureEnergyIntegrator.cpp
     PDEs/HygroHelpers.cpp
+    PDEs/DryAirMassBalance.cpp
     )
 
 set(MechanicsSources

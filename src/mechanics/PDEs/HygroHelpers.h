@@ -12,7 +12,8 @@ double WaterDensity(const double temperature);
 
 
 //! \f[ p^v = p^{vs} \mathrm{e}^{- \frac{M_w}{RT} \frac{p^c}{ρ^w}} \f]
-double KelvinEquation(const double capillaryPressure, const double temperature);
+double KelvinEquation(const double capillaryPressure,
+                      const double temperature);
 
 
 //! Saturation water vapour pressure as a function of temperature.
@@ -23,4 +24,6 @@ double KelvinEquation(const double capillaryPressure, const double temperature);
 double SaturationPressure(const double temperature);
 
 
+const auto AirMolarMass = 28.971e-3; //! Molar mass of dry air in [kg / mol]
+const auto WaterMolarMass = 18.01528e-3; // Molar mass of water [kg / mol]
 } // namespace Hygro

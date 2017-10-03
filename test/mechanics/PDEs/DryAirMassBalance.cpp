@@ -19,3 +19,20 @@ BOOST_AUTO_TEST_CASE(DensityChange)
 
     BoostUnitTest::CheckEigenMatrix(result, expected);
 }
+
+BOOST_AUTO_TEST_CASE(SaturationVariation)
+{
+    Hygro::DryAirMassBalance massBalance;
+    NuTo::PorousMedium material(0.5, 20.0, 2.0);
+    
+    Eigen::Matrix<double, 1, 2> N;
+    N << 0.5, 0.5;
+
+    const Eigen::MatrixXd result = massBalance.VariationOfSaturation(material, N, 20.0, 5.0);
+
+    // manually computed result
+    const Eigen::MatrixXd expected = N.transpose() * 1.7114883834233898e-06 * N;
+    //-0.0176776695296637
+
+    BoostUnitTest::CheckEigenMatrix(result, expected);
+}

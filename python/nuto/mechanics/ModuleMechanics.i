@@ -35,6 +35,7 @@
 #include "mechanics/constraints/ConstraintCompanion.h" 
 #include "mechanics/structures/Assembler.h"
 
+#include "mechanics/PDEs/HygroHelpers.h"
 
 #include <stdexcept>
 
@@ -172,6 +173,8 @@ namespace std {
 %include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 %include "mechanics/mesh/MeshGenerator.h"
+
+%include "mechanics/PDEs/HygroHelpers.h"
 
 %template(DoubleBlockFullMatrix) NuTo::BlockFullMatrix<double>;
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
