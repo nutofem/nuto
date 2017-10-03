@@ -23,6 +23,6 @@ double KelvinEquation(const double capillaryPressure, const double temperature);
 double SaturationPressure(const double temperature);
 
 
-const auto AirMolarMass = 28.971e-3; //! Molar mass of dry air in [kg / mol]
-const auto WaterMolarMass = 18.01528e-3; // Molar mass of water [kg / mol]
+const double AirMolarMass = 28.971e-3; //! Molar mass of dry air in [kg / mol]
+const double WaterMolarMass = 18.01528e-3; // Molar mass of water [kg / mol]
 } // namespace Hygro
