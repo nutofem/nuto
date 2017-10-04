@@ -126,8 +126,11 @@ public:
     }
 
 private:
-    SortedUniqueVector mUniqueData;
+    //! @brief actual group container in chronological order
     Data mData;
+
+    //! @brief unique ptr sorted container to efficiently check for duplicates
+    SortedUniqueVector mUniqueData;
 };
 
 //! @brief Unite two groups
