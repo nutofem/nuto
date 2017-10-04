@@ -2,7 +2,7 @@
 
 #include "mechanics/integrands/TimeDependent.h"
 #include "mechanics/constitutive/laws/LinearElastic.h"
-#include "mechanics/nodes/DofType.h"
+#include "mechanics/dofs/DofType.h"
 #include "mechanics/interpolation/TypeDefs.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/cell/CellData.h"

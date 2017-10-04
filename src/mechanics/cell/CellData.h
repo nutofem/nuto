@@ -1,7 +1,7 @@
 #pragma once
 
+#include "mechanics/dofs/DofContainer.h"
 #include "mechanics/elements/ElementCollection.h"
-#include "mechanics/nodes/DofContainer.h"
 
 namespace NuTo
 {

@@ -2,7 +2,7 @@
 
 #include <map>
 #include <eigen3/Eigen/Core>
-#include "mechanics/nodes/DofType.h"
+#include "mechanics/dofs/DofType.h"
 
 namespace NuTo
 {
@@ -34,12 +34,12 @@ public:
 
     T& operator()(const DofType& d0, const DofType& d1)
     {
-        return mData[CantorParingFunction(d0.GetId(), d1.GetId())];
+        return mData[CantorParingFunction(d0.Id(), d1.Id())];
     }
 
     const T& operator()(const DofType& d0, const DofType& d1) const
     {
-        return mData.at(CantorParingFunction(d0.GetId(), d1.GetId()));
+        return mData.at(CantorParingFunction(d0.Id(), d1.Id()));
     }
 
     friend DofMatrixContainer operator+(DofMatrixContainer lhs, const DofMatrixContainer& rhs)

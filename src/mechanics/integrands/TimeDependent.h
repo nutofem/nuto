@@ -2,8 +2,8 @@
 
 #include "mechanics/integrands/Base.h"
 #include "mechanics/integrands/Operations.h"
-#include "mechanics/nodes/DofVector.h"
-#include "mechanics/nodes/DofMatrix.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 
 namespace NuTo
 {

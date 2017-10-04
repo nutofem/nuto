@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::ElementFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
 
     NuTo::ElementCollection elements(coordinateElement);
-    NuTo::DofType dofDispl("Displacements", 2, 0);
+    NuTo::DofType dofDispl("Displacements", 2);
     elements.AddDofElement(dofDispl, displacementElement);
 
     fakeit::Mock<NuTo::IntegrationTypeBase> intType;

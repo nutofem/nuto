@@ -3,7 +3,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/elements/ElementCollection.h"
-#include "mechanics/nodes/DofContainer.h"
+#include "mechanics/dofs/DofContainer.h"
 #include "mechanics/integrands/Base.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/cell/CellData.h"

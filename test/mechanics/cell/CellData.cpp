@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {
     fakeit::Mock<NuTo::ElementInterface> mockElement;
     Method(mockElement, ExtractNodeValues) = Eigen::Vector2d({42, 6174});
-    NuTo::DofType dof("dof", 1, 0);
+    NuTo::DofType dof("dof", 1);
     NuTo::ElementCollection elements(mockElement.get());
     elements.AddDofElement(dof, mockElement.get());
 

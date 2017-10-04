@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include "mechanics/nodes/DofType.h"
+#include "mechanics/dofs/DofType.h"
 
 namespace NuTo
 {
@@ -19,12 +19,12 @@ public:
 
     T& operator[](const DofType& dofType)
     {
-        return mData[dofType.GetId()];
+        return mData[dofType.Id()];
     }
 
     const T& operator[](const DofType& dofType) const
     {
-        return mData.at(dofType.GetId());
+        return mData.at(dofType.Id());
     }
 
 protected:

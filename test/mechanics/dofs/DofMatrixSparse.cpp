@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/nodes/DofMatrixSparse.h"
+#include "mechanics/dofs/DofMatrixSparse.h"
 #include <sstream>
 
 Eigen::SparseMatrix<int> Constant(int rows, int cols, int val)
@@ -38,8 +38,8 @@ void CheckDofMatrix(const NuTo::DofMatrixSparse<int>& m, const NuTo::DofType& d0
 
 BOOST_AUTO_TEST_CASE(DofMatrixAdditionMultiplication)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofMatrixSparse<int> dofMatrix0 = Get(dof0, dof1);
     NuTo::DofMatrixSparse<int> dofMatrix1 = Get(dof0, dof1);
@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE(DofMatrixAdditionMultiplication)
 
 BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
 
     NuTo::DofMatrixSparse<int> dofMatrix0;
     NuTo::DofMatrixSparse<int> dofMatrix1 = Get(dof0, dof1);
@@ -66,8 +66,8 @@ BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
 
 BOOST_AUTO_TEST_CASE(DofMatrixStream)
 {
-    NuTo::DofType dof0("foo", 1, 0);
-    NuTo::DofType dof1("bar", 1, 1);
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
     NuTo::DofMatrixSparse<int> dofMatrix = Get(dof0, dof1);
     std::stringstream ss;
     ss << dofMatrix;

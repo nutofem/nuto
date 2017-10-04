@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mechanics/nodes/DofVector.h"
-#include "mechanics/nodes/DofMatrix.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/integrands/Base.h"
 
 namespace NuTo

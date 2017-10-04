@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "TypeTraits.h"
-#include "mechanics/nodes/DofType.h"
+#include "mechanics/dofs/DofType.h"
 
 BOOST_AUTO_TEST_CASE(DofTypeCopy)
 {
