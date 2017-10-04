@@ -1,4 +1,4 @@
-set(Components system filesystem unit_test_framework)
+set(Components filesystem unit_test_framework)
 set(RequiredVersion 1.49.0)
 
 if(ENABLE_MPI)
