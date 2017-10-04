@@ -8,6 +8,6 @@ endif()
 # test the CheckStiffness method globally and locally
 add_executable(PolynomialLeastSquaresFitting PolynomialLeastSquaresFitting.cpp)
 target_link_libraries(PolynomialLeastSquaresFitting
-    Metamodel Math Base ${Boost_LIBRARIES})
+    Metamodel Math Base)
 add_test(integration::metamodel::PolynomialLeastSquaresFitting.cpp
     ${CMAKE_CURRENT_BUILD_DIR}/PolynomialLeastSquaresFitting)

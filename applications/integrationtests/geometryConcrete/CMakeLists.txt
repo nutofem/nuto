@@ -20,13 +20,10 @@ if(ENABLE_PYTHON)
     endforeach()
 
     if(GMSH_PATH)
-        if(ENABLE_MECHANICS)
-            add_test(integration::geometryConcrete::GmshExport.py
-                ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${GMSH_PATH})
-            set_property(TEST integration::geometryConcrete::GmshExport.py
-                PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-        endif()
-
+        add_test(integration::geometryConcrete::GmshExport.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${GMSH_PATH})
+        set_property(TEST integration::geometryConcrete::GmshExport.py
+            PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     else()
         message(STATUS
             "Gmsh not found. Skipping integration test GmshExport.py")
@@ -36,7 +33,7 @@ endif()
 if(GMSH_PATH)
     add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)
     target_link_libraries(GeometryConcreteAPI
-        Math Base GeometryConcrete ${Boost_LIBRARIES})
+        Math Base GeometryConcrete Boost::unit_test_framework)
     add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
         ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
 else()

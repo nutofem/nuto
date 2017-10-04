@@ -26,13 +26,6 @@ if(OpenBLAS_ROOT)
         ${_Openblas_LIBRARIES_SEARCH_DIRS})
 endif()
 
-# search for BLAS libraries
-if(UNIX AND OpenBLAS_FIND_SHARED_LIBRARY)
-    set(OpenBLAS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES
-        ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
-endif()
-
 # check for BLAS libraries
 find_library(_Openblas_LIB_OpenBLAS
     NAMES openblas blas

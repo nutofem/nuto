@@ -25,12 +25,6 @@ if(METIS_ROOT)
         ${_metis_LIBRARIES_SEARCH_DIRS})
 endif()
 
-#sufix for metis
-if(UNIX AND METIS_FIND_STATIC_LIBRARY)
-    set(METIS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-endif()
-
 # search for header metis.h
 find_path(METIS_INCLUDE_DIR PATH_SUFFIXES metis
     NAMES metis.h

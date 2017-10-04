@@ -2,8 +2,6 @@
 #
 # variables used by this module (can be also defined as environment variables):
 #   MUMPS_ROOT - preferred installation prefix for searching for mumps
-#   MUMPS_FIND_STATIC_LIBRARY - searches for static libraries (UNIX only)
-#   MUMPS_DEBUG - print debug messages
 #
 # variables defined by this module
 #   MUMPS_FOUND - defines whether mumps was found or not
@@ -38,18 +36,8 @@ endif()
 find_path(MUMPS_INCLUDE_DIR NAMES dmumps_c.h
           HINTS ${_mumps_INCLUDE_SEARCH_DIRS} /usr/include/mumps-seq-shared/)
 
-if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
-    set(MUMPS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-    find_library(_mumps_LIB_DMUMPS NAMES dmumps
-        HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
-    find_library(_mumps_LIB_MUMPS_COMMON
-        NAMES mumps_common
-        HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
-else()
-    find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq dmumps)
-    find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq mumps_common)
-endif()
+find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq dmumps)
+find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq mumps_common)
 
 if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON)
     set(MUMPS_LIBRARIES ${_mumps_LIB_DMUMPS} ${_mumps_LIB_MUMPS_COMMON})
@@ -71,17 +59,10 @@ if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON)
     set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES} ${OpenBLAS_LIBRARIES})
 endif()
 
-if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${MUMPS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
-endif()
-
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MUMPS DEFAULT_MSG MUMPS_LIBRARIES
     MUMPS_INCLUDE_DIR)
 
-if(MUMPS_DEBUG)
-    message(STATUS "MUMPS_FOUND=${MUMPS_FOUND}")
-    message(STATUS "MUMPS_LIBRARIES=${MUMPS_LIBRARIES}")
-    message(STATUS "MUMPS_INCLUDE_DIR=${MUMPS_INCLUDE_DIR}")
-endif()
+message(STATUS "MUMPS_LIBRARIES=${MUMPS_LIBRARIES}")
+message(STATUS "MUMPS_INCLUDE_DIR=${MUMPS_INCLUDE_DIR}")

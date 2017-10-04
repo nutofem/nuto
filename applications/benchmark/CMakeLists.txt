@@ -1,6 +1,5 @@
 add_custom_target(benchmark COMMAND ctest -V -R benchmark)
 
-if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
@@ -33,12 +32,11 @@ target_link_libraries(LinearElasticityOPENMP Mechanics Math Base)
 if(ENABLE_VISUALIZE)
     target_link_libraries(LinearElasticityOPENMP Visualize)
 endif()
-endif()
 
 if(ENABLE_GEOMETRYCONCRETE)
     add_executable(DenseSpherePacking DenseSpherePacking.cpp)
     target_link_libraries(DenseSpherePacking
-        Math Base GeometryConcrete ${Boost_LIBRARIES})
+        Math Base GeometryConcrete)
     add_test(benchmark::DenseSpherePacking
         ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 endif()

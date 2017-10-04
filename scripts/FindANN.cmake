@@ -2,8 +2,6 @@
 #
 # variables used by this module (can be also defined as environment variables):
 #   ANN_ROOT - preferred installation prefix for searching for ANN
-#   ANN_FIND_STATIC_LIBRARY - searches for static libraries (UNIX only)
-#   ANN_DEBUG - print debug messages
 #
 # variables defined by this module
 #   ANN_FOUND - defines whether metis was found or not
@@ -31,23 +29,11 @@ endif()
 find_path(ANN_INCLUDE_DIR NAMES ANN/ANN.h HINTS ${_ANN_INCLUDE_SEARCH_DIRS})
 
 # search for ann library
-if(UNIX AND ANN_FIND_STATIC_LIBRARY)
-    set(ANN_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-endif()
-
 find_library(ANN_LIBRARIES NAMES ANN ann HINTS ${_ANN_LIBRARIES_SEARCH_DIRS})
-
-if(UNIX AND ANN_FIND_STATIC_LIBRARY)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${ANN_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
-endif()
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ANN DEFAULT_MSG ANN_LIBRARIES ANN_INCLUDE_DIR)
 
-if(ANN_DEBUG)
-    message(STATUS "ANN_FOUND=${ANN_FOUND}")
-    message(STATUS "ANN_INCLUDE_DIR=${ANN_INCLUDE_DIR}")
-    message(STATUS "ANN_LIBRARIES=${ANN_LIBRARIES}")
-endif()
+message(STATUS "ANN_INCLUDE_DIR=${ANN_INCLUDE_DIR}")
+message(STATUS "ANN_LIBRARIES=${ANN_LIBRARIES}")

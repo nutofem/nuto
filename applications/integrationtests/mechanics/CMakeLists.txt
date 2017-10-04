@@ -57,8 +57,8 @@ foreach(test
     )
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base
-        ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base Boost::unit_test_framework
+        ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
     endif()

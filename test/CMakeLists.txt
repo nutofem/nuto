@@ -2,9 +2,7 @@ set(all_unit_tests "" CACHE INTERNAL "The names of all the unit tests")
 
 add_subdirectory(base)
 add_subdirectory(math)
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-endif()
+add_subdirectory(mechanics)
 
 if(ENABLE_VISUALIZE)
     add_subdirectory(visualize)

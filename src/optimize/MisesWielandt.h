@@ -1,22 +1,13 @@
-// $Id $
 #pragma once
 
-
-// parent
 #include "optimize/Optimizer.h"
-
 #include "base/Exception.h"
-
 
 namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
 //! @brief ... standard class for vonMises-Wielandt method
-#ifdef ENABLE_MECHANICS
-class StructureGrid;
-#endif // ENABLE_MECHANICS
-
 class MisesWielandt : public virtual Optimizer
 {
 

@@ -1,9 +1,7 @@
 add_subdirectory(base)
 add_subdirectory(math)
 
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-endif()
+add_subdirectory(mechanics)
 
 if(ENABLE_GEOMETRYCONCRETE)
     add_subdirectory(geometryConcrete)

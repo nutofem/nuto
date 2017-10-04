@@ -45,11 +45,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(base)
 add_subdirectory(math)
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-else()
-    deactivate_module(mechanics.ModuleMechanics)
-endif()
+add_subdirectory(mechanics)
 
 if(ENABLE_GEOMETRYCONCRETE)
     add_subdirectory(geometryConcrete)
