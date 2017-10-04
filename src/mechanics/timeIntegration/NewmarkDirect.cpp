@@ -303,11 +303,11 @@ std::array<StructureOutputBlockVector, 3> NuTo::NewmarkDirect::InitialState()
     const auto& constraintMatrix = mStructure->GetAssembler().GetConstraintMatrix();
     const auto residual_mod = Assembler::ApplyCMatrix(residual, constraintMatrix);
 
-    if (mToleranceResidual < residual_mod.CalculateInfNorm())
-    {
-        mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-        throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
-    }
+//    if (mToleranceResidual < residual_mod.CalculateInfNorm())
+//    {
+//        mStructure->GetLogger() << residual_mod.CalculateInfNorm();
+//        throw Exception(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+//    }
 
     mPostProcessor->PostProcess(residual);
     return dofValues;

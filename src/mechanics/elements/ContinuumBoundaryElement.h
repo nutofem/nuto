@@ -136,6 +136,7 @@ public:
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
+
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
                            const std::vector<eVisualizeWhat>& virualizeComponents) override;
@@ -166,11 +167,11 @@ protected:
                                  const ConstitutiveInputMap& constitutiveInput,
                                  const ConstitutiveOutputMap& constitutiveOutput) const;
 
-    void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
                                                 EvaluateDataContinuumBoundary<TDim>& rData,
                                                 const ConstitutiveInputMap& constitutiveInput,
                                                 const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
-    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
+    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
                                         const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
     void CalculateElementOutputIpData(ElementOutputIpData& rIpData, const ConstitutiveOutputMap& constitutiveOutput,
                                       int rTheIP) const;

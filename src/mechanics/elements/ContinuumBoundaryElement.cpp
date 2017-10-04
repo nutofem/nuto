@@ -166,13 +166,16 @@ template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(
         EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const
 {
-
+	std::cout << "CalculateNMatrixBMatrixDetJacobian: in " << std::endl;
     const InterpolationBase& interpolationTypeCoords = mInterpolationType->Get(Node::eDof::COORDINATES);
 
     Eigen::Matrix<double, TDim - 1, 1> ipCoordsSurface = CalculateIPCoordinatesSurface(rTheIP);
     Eigen::Matrix<double, TDim, 1> ipCoordsNatural =
             interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
 
+    std::cout << "--- CalculateNMatrixBMatrixDetJacobian: rTheIP, mSurfaceId" << rTheIP <<" "<< mSurfaceId << std::endl;
+    std::cout << "--- CalculateNMatrixBMatrixDetJacobian: ipCoordsSurface" << ipCoordsSurface << std::endl;
+    std::cout << "--- CalculateNMatrixBMatrixDetJacobian: ipCoordsNatural" << ipCoordsNatural << std::endl;
     // #######################################
     // ##  Calculate the surface jacobian
     // ## = || [dX / dXi] * [dXi / dAlpha] ||
@@ -205,6 +208,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(
         rData.mB[dof] = mBaseElement.CalculateMatrixB(
                 dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
     }
+    std::cout << "CalculateNMatrixBMatrixDetJacobian: out " << std::endl;
+    std::cout << "CalculateNMatrixBMatrixDetJacobian: rData pointer -> " << &rData << std::endl;
+    Eigen::MatrixXd CoordN = rData.mN[Node::eDof::DISPLACEMENTS];
+    std::cout << "rows " << CoordN.rows() << std::endl;
+    std::cout << "columns " << CoordN.cols() << std::endl;
+    std::cout << CoordN << std::endl;
 }
 
 
@@ -722,17 +731,34 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(Const
 template <int TDim>
 const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
+	std::cout<<"GetGlobalIntegrationPointCoordinates: in" << std::endl;
     Eigen::VectorXd naturalSurfaceIpCoordinates = GetIntegrationType().GetLocalIntegrationPointCoordinates(rIpNum);
 
     Eigen::VectorXd naturalIpCoordinates =
             mInterpolationType->Get(Node::eDof::COORDINATES)
                     .CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, mSurfaceId);
 
-    Eigen::VectorXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(naturalIpCoordinates);
+	std::cout<<"GetGlobalIntegrationPointCoordinates: naturalIPcoordinates " << naturalIpCoordinates.transpose() << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 1" << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: matrixN " << mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(naturalIpCoordinates) << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: nodeCoordinates " << ExtractNodeValues(0, Node::eDof::COORDINATES) << std::endl;
+
+    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(naturalIpCoordinates);
     Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 2: " << matrixN * nodeCoordinates << std::endl;
+
     Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
-    globalIntegrationPointCoordinates.segment(0, GetLocalDimension()) = matrixN * nodeCoordinates;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 22: " << GetLocalDimension() << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 222: " << globalIntegrationPointCoordinates.segment(0, GetLocalDimension()) << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 22: " << TDim << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 222: " << globalIntegrationPointCoordinates.segment(0, TDim) << std::endl;
+//    globalIntegrationPointCoordinates.segment(0, GetLocalDimension()) = matrixN * nodeCoordinates;  //==> this is the error from Thomas!!! GetLocalDimension to Tdim
+    globalIntegrationPointCoordinates.segment(0, TDim) = matrixN * nodeCoordinates;  //==> my version
+
+	std::cout<<"GetGlobalIntegrationPointCoordinates: 3" << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: " << globalIntegrationPointCoordinates << std::endl;
+	std::cout<<"GetGlobalIntegrationPointCoordinates: out" << std::endl;
 
     return globalIntegrationPointCoordinates;
 }

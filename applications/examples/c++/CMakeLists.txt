@@ -29,8 +29,8 @@ endforeach()
 if (ENABLE_MECHANICS)
 foreach(test
     CSDAPrism3D
-    ExplicitTimeIntegration
-    HeatedPlate
+#    ExplicitTimeIntegration
+#    HeatedPlate
     InsulatedPlate
     PGDPlateMeso2D
     SparseDirectSolverMUMPS

@@ -56,6 +56,7 @@ list(APPEND MechanicsElementsSources
     elements/ContinuumElement.cpp
     elements/ContinuumBoundaryElement.cpp
     elements/ContinuumBoundaryElementConstrainedControlNode.cpp
+    elements/ContinuumBoundaryElementContact.cpp
     elements/ContinuumContactElement.cpp
     elements/ElementBase.cpp
     elements/Element1DInXD.cpp

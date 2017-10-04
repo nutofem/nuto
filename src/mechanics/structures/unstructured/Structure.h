@@ -356,6 +356,11 @@ public:
     //! @return ... ids of the created boundary element group
     int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rControlNode = nullptr);
 
+    //! @brief creates boundary contact elements and add them to an element group
+    //! @param rElementGroupId ... group id including the base elements
+    //! @param rNodeGroupId ... node group id that includes the surface nodes
+    //! @return ... ids of the created boundary contact element group
+    int BoundaryElementsContactCreate(int rElementGroupId, int rNodeGroupId);
 
     //! @brief  Creates interface elements from an element group.
     //! @param  rElementGroupId: group id including the base elements
