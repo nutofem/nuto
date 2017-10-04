@@ -92,14 +92,6 @@ function(sources_to_objects Sources Objects)
     set(${Objects} ${objectList} PARENT_SCOPE)
 endfunction()
 
-function(deactivate_module ModuleName)
-    set(SEARCH_REGEX "from nuto.${ModuleName}")
-    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
-    string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.${ModuleName}"
-        MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
-        "${MODIFIED_FILE_CONTENT}")
-endfunction()
 
 # symlink a given file/directory to the build directory
 function(create_symlink pathName)
