@@ -33,13 +33,10 @@ if(ENABLE_VISUALIZE)
     target_link_libraries(LinearElasticityOPENMP Visualize)
 endif()
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_executable(DenseSpherePacking DenseSpherePacking.cpp)
-    target_link_libraries(DenseSpherePacking
-        Math Base GeometryConcrete)
-    add_test(benchmark::DenseSpherePacking
-        ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
-endif()
+add_executable(DenseSpherePacking DenseSpherePacking.cpp)
+target_link_libraries(DenseSpherePacking Math Base GeometryConcrete)
+add_test(benchmark::DenseSpherePacking
+    ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
 
 add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
 target_include_directories(NewtonRaphsonBenchmark

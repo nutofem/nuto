@@ -70,13 +70,11 @@ if(ENABLE_MKL AND MKLSolver_FOUND)
         ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
 endif()
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_executable(GeometryConcrete2D GeometryConcrete2D.cpp)
-    target_link_libraries(GeometryConcrete2D Mechanics Math Base
-        GeometryConcrete)
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(GeometryConcrete2D Visualize)
-    endif()
-    add_test(examples::cpp::GeometryConcrete2D
-        ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)
+add_executable(GeometryConcrete2D GeometryConcrete2D.cpp)
+target_link_libraries(GeometryConcrete2D Mechanics Math Base
+    GeometryConcrete)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(GeometryConcrete2D Visualize)
 endif()
+add_test(examples::cpp::GeometryConcrete2D
+    ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)

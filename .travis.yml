@@ -33,7 +33,7 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - MODULES="-DENABLE_GEOMETRYCONCRETE=TRUE -DENABLE_MPI=TRUE"
+    - MODULES="-DENABLE_MPI=TRUE"
     - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_EXAMPLES=$EXAMPLES $MODULES"
     - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi

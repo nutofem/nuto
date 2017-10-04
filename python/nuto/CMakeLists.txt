@@ -47,11 +47,7 @@ add_subdirectory(base)
 add_subdirectory(math)
 add_subdirectory(mechanics)
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(geometryConcrete)
-else()
-    deactivate_module(geometryConcrete.ModuleGeometryConcrete)
-endif()
+add_subdirectory(geometryConcrete)
 
 add_subdirectory(metamodel)
 
