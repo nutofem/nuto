@@ -2,9 +2,7 @@ if(ENABLE_GEOMETRYCONCRETE)
     add_subdirectory(geometryConcrete)
 endif()
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(metamodel)
-endif()
+add_subdirectory(metamodel)
 
 add_subdirectory(optimize)
 

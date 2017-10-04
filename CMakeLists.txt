@@ -8,7 +8,6 @@ option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_EXAMPLES "enables examples" TRUE)
 option(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
-option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES

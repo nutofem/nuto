@@ -53,11 +53,7 @@ else()
     deactivate_module(geometryConcrete.ModuleGeometryConcrete)
 endif()
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(metamodel)
-else()
-    deactivate_module(metamodel.ModuleMetamodel)
-endif()
+add_subdirectory(metamodel)
 
 add_subdirectory(optimize)
 

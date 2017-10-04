@@ -32,10 +32,7 @@ endif()
 set_property(TEST ${pythontests}
     PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
 
-if(ENABLE_METAMODEL)
-    add_test(examples::py::NeuralNetwork
-        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NeuralNetwork.py)
-    set_property(TEST examples::py::NeuralNetwork
-        PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-endif()
-
+add_test(examples::py::NeuralNetwork
+    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NeuralNetwork.py)
+set_property(TEST examples::py::NeuralNetwork
+    PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
