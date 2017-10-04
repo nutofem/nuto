@@ -3,6 +3,7 @@
 
 #include "HygroHelpers.h"
 #include "physics/PhysicalConstantsSI.h"
+#include <boost/units/systems/si/codata/typedefs.hpp>
 #include <boost/units/systems/si/codata/physico-chemical_constants.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
 #include <boost/units/systems/si/mass_density.hpp>
@@ -22,25 +23,51 @@ double Hygro::WaterDensity(const double temperature)
     return fst - 1e7 * snd;
 }
 
+using namespace boost::units;
+using Pressure = quantity<si::pressure>;
+using Density = quantity<si::mass_density>;
+using Temperature = quantity<si::temperature>;
+using Dimensionless = quantity<si::dimensionless>;
+using PressurePerTemp = divide_typeof_helper<Pressure, Temperature>::type;
 
-double Hygro::KelvinEquation(const double capillaryPressure, const double temperature)
+std::tuple<Pressure, Dimensionless, PressurePerTemp> KelvinEq(const double capillaryPressure,
+                                                                    const double temperature)
 {
-    using namespace boost::units;
-    using Pressure = quantity<si::pressure>;
-    using Density = quantity<si::mass_density>;
-    using DimensionLess = quantity<si::dimensionless>;
     const auto MPa = si::mega * si::pascal;
 
     const auto R = si::constants::codata::R;
     const auto M_w = WaterMolarMass * si::kilogram / si::mole;
-
-    const Pressure saturationPressure(SaturationPressure(temperature) * MPa);
     const Density waterDensity(WaterDensity(temperature) * si::kilogram_per_cubic_meter);
-    const Pressure p_c(capillaryPressure * MPa);
-    const DimensionLess exponent = -M_w * p_c / (R * temperature * si::kelvin * waterDensity);
-    const Pressure p_v = saturationPressure * std::exp(exponent);
+    const auto factor = M_w / (R * waterDensity);
 
-    return p_v.value() * 1e-6; // mega
+    const Temperature T = temperature * si::kelvin;
+    const Pressure saturationPressure(SaturationPressure(temperature) * MPa);
+    const Pressure p_c(capillaryPressure * MPa);
+
+    const Dimensionless exponent = -factor * p_c / T;
+    const Pressure p_v = saturationPressure * std::exp(exponent);
+    const Dimensionless dpv_dpc = -factor * saturationPressure * std::exp(exponent) / T;
+    const PressurePerTemp dpv_dt = factor * saturationPressure * p_c * std::exp(exponent) / (T * T);
+
+    return {p_v, dpv_dpc, dpv_dt};
+}
+
+
+double Hygro::KelvinEquation::VapourPressure(const double capillaryPressure, const double temperature)
+{
+    return std::get<0>(KelvinEq(capillaryPressure, temperature)).value() * 1e-6; // MPa
+}
+
+
+double Hygro::KelvinEquation::dCapillaryPressure(const double capillaryPressure, const double temperature)
+{
+    return std::get<1>(KelvinEq(capillaryPressure, temperature));
+}
+
+
+double Hygro::KelvinEquation::dTemperature(const double capillaryPressure, const double temperature)
+{
+    return std::get<2>(KelvinEq(capillaryPressure, temperature)).value() * 1e-6; // MPa
 }
 
 
@@ -54,4 +81,22 @@ double Hygro::SaturationPressure(const double temperature)
                               a[4] * pow(tau, 4.0) + a[5] * pow(tau, 7.5);
     const double exponent = criticalPointTemperature * polynomial / temperature;
     return criticalPointPressure * std::exp(exponent);
+}
+
+
+double Hygro::DynamicViscosityOfAir(const double airPressure, const double gasPressure, const double temperature)
+{
+    const double T0 = 273.15;
+
+    const double alpha_v = 3.53e-8;
+    const double mu_v0 = 8.85e-6;
+    const double mu_v = mu_v0 + alpha_v * (temperature - T0);
+
+    const double mu_a0 = 17.17e-6;
+    const double alpha_a = 4.73e-8;
+    const double beta_a = 2.22e-11;
+    const double mu_a = mu_a0 + alpha_a * (temperature - T0) + beta_a * std::pow(temperature - T0, 2);
+
+    const double moleFraction = airPressure / gasPressure;
+    return mu_v + (mu_a - mu_v) * std::pow(moleFraction, 0.608);
 }

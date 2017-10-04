@@ -13,6 +13,8 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
 
     ${mechanicsDir}/elements/ElementEnum.h
 
+    ${mechanicsDir}/PDEs/HygroHelpers.h
+
     ${mechanicsDir}/nodes/NodeBase.h
 
     ${mechanicsDir}/timeIntegration/TimeIntegrationBase.h
