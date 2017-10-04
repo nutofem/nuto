@@ -14,7 +14,6 @@ option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
-option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
 option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
@@ -32,15 +31,6 @@ configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake
 include_directories(SYSTEM external/)
 
 include(CheckForDependencies)
-
-if(ENABLE_METAMODEL)
-    set(ENABLE_OPTIMIZE TRUE)
-endif()
-
-if(ENABLE_OPTIMIZE)
-    add_definitions("-DENABLE_OPTIMIZE")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_OPTIMIZE")
-endif()
 
 if(ENABLE_VISUALIZE)
     add_definitions("-DENABLE_VISUALIZE")

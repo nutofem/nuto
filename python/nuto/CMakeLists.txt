@@ -59,11 +59,7 @@ else()
     deactivate_module(metamodel.ModuleMetamodel)
 endif()
 
-if(ENABLE_OPTIMIZE)
-    add_subdirectory(optimize)
-else()
-    deactivate_module(optimize.ModuleOptimize)
-endif()
+add_subdirectory(optimize)
 
 # support for strongly typed enums was introduced in 3.0.3
 if(SWIG_VERSION VERSION_LESS "3.0.3")
