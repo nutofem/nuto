@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -46,6 +47,23 @@ public:
         const double nom = -std::pow(ratio, exp) * std::pow(std::pow(ratio, exp) + 1.0, -(mB + 1.0) / mB);
         const double den = capillaryPressure * (mB - 1.0);
         return nom / den;
+    }
+
+    //! Intrinsic permeability in m².
+    //! @param gasPressure Gas pressure in MPa.
+    //! @remark Source: Gawin et al. "What physical phenomena can be neglected wehn modeling concrete at high
+    //!                 temperature? A compartive study. Part 1", 2011, DOI:
+    //!                 [10.1016/j.ijsolstr.2011.03.004](https://dx.doi.org/10.1016/j.ijsolstr.2011.03.004)
+    template <int TDim>
+    Eigen::Matrix<double, TDim, TDim> IntrinsicPermeability(const double gasPressure)
+    {
+        // TODO: add effects of dehydration and damage
+        const auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
+        const double k0 = 2e-19;
+        const double Ap = 0.36848;
+        const double pg0 = 0.1; // MPa
+        const double k = k0 * std::pow(gasPressure / pg0, Ap);
+        return k * eye;
     }
 
 private:

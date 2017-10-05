@@ -8,6 +8,7 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
+#include "mechanics/constitutive/laws/PorousMedium.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -100,6 +101,11 @@ namespace std {
 %include "mechanics/DamageLaws.i"
 
 %include "base/CallbackInterface.h"
+
+%include "mechanics/constitutive/laws/PorousMedium.h"
+%template(IntrinsicPermeability1D) NuTo::PorousMedium::IntrinsicPermeability<1>;
+%template(IntrinsicPermeability2D) NuTo::PorousMedium::IntrinsicPermeability<2>;
+%template(IntrinsicPermeability3D) NuTo::PorousMedium::IntrinsicPermeability<3>;
 
 %include "mechanics/structures/StructureBase.h"
 %include "mechanics/structures/unstructured/Structure.h"
