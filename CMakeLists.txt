@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES
@@ -30,10 +29,6 @@ include(CheckForDependencies)
 if(ENABLE_VISUALIZE)
     add_definitions("-DENABLE_VISUALIZE")
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VISUALIZE")
-endif()
-
-if(ENABLE_COVERAGE)
-    include(Coverage)
 endif()
 
 if(ENABLE_PYTHON)

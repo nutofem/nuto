@@ -12,15 +12,15 @@ compiler:
     - clang
     - gcc
 env:
-    - BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Release OPENMP=FALSE COVERAGE=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
+    - BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
+    - BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
+    - BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
 matrix:
     exclude:
         - compiler: clang
-          env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
+          env: BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
         - compiler: clang
-          env: BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
+          env: BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
@@ -33,9 +33,9 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_MPI=TRUE"
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi
+    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE -DENABLE_MPI=TRUE"
+    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
 script:
     - make -j2 unit
     - make -j2 integrationtests
