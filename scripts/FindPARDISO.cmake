@@ -30,7 +30,7 @@ find_library(_pardiso_LIB_PARDISO
     HINTS ${_pardiso_LIBRARIES_SEARCH_DIRS})
 
 if(_pardiso_LIB_PARDISO)
-    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${OpenBLAS_LIBRARIES})
+    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${BLAS_LIBRARIES})
 endif()
 
 # handle the QUIETLY and REQUIRED arguments

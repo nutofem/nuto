@@ -35,9 +35,8 @@ endif()
 
 include(CheckBoost)
 
-# find OpenBLAS
 if(ENABLE_MUMPS OR ENABLE_PARDISO)
-    find_package(OPENBLAS REQUIRED)
+    find_package(BLAS REQUIRED)
 endif()
 
 # find mumps solver

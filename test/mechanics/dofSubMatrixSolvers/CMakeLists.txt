@@ -27,5 +27,5 @@ if(PARDISO_FOUND)
         ${solverSources}
         )
     target_link_libraries(SolverPardiso ${PARDISO_LIBRARIES}
-        ${OpenBLAS_LIBRARIES})
+        ${BLAS_LIBRARIES})
 endif()

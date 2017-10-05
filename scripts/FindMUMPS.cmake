@@ -56,7 +56,7 @@ if(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON)
         set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES} ${_mumps_LIB_METIS})
     endif()
 
-    set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES} ${OpenBLAS_LIBRARIES})
+    set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
 
 # handle the QUIETLY and REQUIRED arguments

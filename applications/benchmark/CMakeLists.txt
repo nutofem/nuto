@@ -22,7 +22,7 @@ foreach(test
 endforeach()
 
 if(PARDISO_FOUND)
-    target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${OpenBLAS_LIBRARIES})
+    target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
 
 
