@@ -134,3 +134,8 @@ function(append_to_benchmarks Benchmark)
     set(all_benchmarks "${all_benchmarks};${Benchmark}"
         CACHE INTERNAL "The names of all the benchmarks")
 endfunction()
+
+function(append_to_examples Example)
+    set(all_examples "${all_examples};${Example}"
+        CACHE INTERNAL "The names of all the examples")
+endfunction()

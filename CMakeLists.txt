@@ -4,7 +4,6 @@ project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
-option(ENABLE_EXAMPLES "enables examples" TRUE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES
@@ -49,11 +48,7 @@ include(CTest)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
 add_subdirectory(test)
 add_subdirectory(applications/integrationtests)
-
-if(ENABLE_EXAMPLES)
-    add_subdirectory(applications/examples)
-endif()
-
+add_subdirectory(applications/examples)
 add_subdirectory(applications/benchmark)
 
 # Custom examples are applications you don't want to add to the repository, but

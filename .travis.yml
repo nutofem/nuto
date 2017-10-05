@@ -33,13 +33,13 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - MODULES="-DENABLE_MPI=TRUE"
-    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_EXAMPLES=$EXAMPLES $MODULES"
+    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_MPI=TRUE"
     - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi
 script:
     - make -j2 unit
     - make -j2 integrationtests
+    - if [[ "$EXAMPLES" == "TRUE" ]] then make -j2 examples; fi
 after_success:
     - cd ..
     - ./scripts/upload_coverage.sh
