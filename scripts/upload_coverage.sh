@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ev
-if [[ "$COVERAGE" == "TRUE" ]]; then
+if [[ "$COVERAGE" == "--coverage" ]]; then
     # get coverage information
     lcov --capture --directory build --output-file coverage.info 2> /dev/null
     # filter out system stuff that we don't control

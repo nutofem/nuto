@@ -38,8 +38,8 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
 script:
     - make -j2 unit
-    - make -j2 integrationtests
-    - if [[ "$EXAMPLES" == "TRUE" ]] then make -j2 examples; fi
+    - make -j2 && make -j2 integrationtests # need to make python modules before integrationtests
+    - if [[ "$EXAMPLES" == "TRUE" ]]; then make -j2 examples; fi
 after_success:
     - cd ..
     - ./scripts/upload_coverage.sh
