@@ -27,10 +27,15 @@ create_symlink("meshes")
 
 # generate tests
 foreach(test
+    AdditiveInput
+    AdditiveOutput
     BlockMatrices
     CoefficientChecks
     MoistureTransport
     ConstraintsNodeToElement
+    ConstraintNodeToElement2D
+    ConstraintNodeToElement3D
+    ContinuumElement
     CreepUniaxial
     CSDAInterface
     GradientDamage
@@ -40,6 +45,7 @@ foreach(test
     InterfaceElements
     IntegrationPointVoronoiCells
     InterpolationTypes
+    MeshCompanion
     MisesPlasticity
     MultipleConstitutiveLaws
     NewmarkPlane2D4N
