@@ -1,5 +1,3 @@
-add_custom_target(benchmark COMMAND ctest -V -R benchmark)
-
 foreach(test
     BuildGradient
     LinearElasticity
@@ -10,7 +8,7 @@ foreach(test
     Solvers
     )
 
-    add_executable(${test} ${test}.cpp)
+    add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base)
     if(MUMPS_FOUND)
         target_link_libraries(${test}
@@ -20,6 +18,7 @@ foreach(test
         target_link_libraries(${test} Visualize)
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    append_to_benchmarks(${test})
 endforeach()
 
 if(PARDISO_FOUND)
@@ -27,17 +26,24 @@ if(PARDISO_FOUND)
 endif()
 
 
-add_executable(LinearElasticityOPENMP LinearElasticityOPENMP.cpp)
+add_executable(LinearElasticityOPENMP
+    EXCLUDE_FROM_ALL LinearElasticityOPENMP.cpp)
 target_link_libraries(LinearElasticityOPENMP Mechanics Math Base)
 if(ENABLE_VISUALIZE)
     target_link_libraries(LinearElasticityOPENMP Visualize)
 endif()
+append_to_benchmarks(LinearElasticityOPENMP)
 
-add_executable(DenseSpherePacking DenseSpherePacking.cpp)
+add_executable(DenseSpherePacking EXCLUDE_FROM_ALL DenseSpherePacking.cpp)
 target_link_libraries(DenseSpherePacking Math Base GeometryConcrete)
 add_test(benchmark::DenseSpherePacking
     ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
+append_to_benchmarks(DenseSpherePacking)
 
-add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
+add_executable(NewtonRaphsonBenchmark
+    EXCLUDE_FROM_ALL NewtonRaphsonBenchmark.cpp)
 target_include_directories(NewtonRaphsonBenchmark
     PUBLIC ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(NewtonRaphsonBenchmark)
+
+add_custom_target(benchmarks DEPENDS ${all_benchmarks})

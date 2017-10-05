@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_EXAMPLES "enables examples" TRUE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
@@ -55,9 +54,7 @@ if(ENABLE_EXAMPLES)
     add_subdirectory(applications/examples)
 endif()
 
-if(ENABLE_BENCHMARKS)
-    add_subdirectory(applications/benchmark)
-endif()
+add_subdirectory(applications/benchmark)
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing

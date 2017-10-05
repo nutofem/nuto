@@ -129,3 +129,8 @@ function(append_to_tests TestName)
     set(all_integration_tests "${all_integration_tests};${TestName}"
         CACHE INTERNAL "The names of all the integration tests")
 endfunction()
+
+function(append_to_benchmarks Benchmark)
+    set(all_benchmarks "${all_benchmarks};${Benchmark}"
+        CACHE INTERNAL "The names of all the benchmarks")
+endfunction()
