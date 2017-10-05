@@ -1,10 +1,9 @@
-project(NuTo)
-
 cmake_minimum_required(VERSION 3.5)
+
+project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
-option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_EXAMPLES "enables examples" TRUE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
@@ -48,12 +47,9 @@ add_subdirectory(src)
 
 #test Environment
 include(CTest)
-
-if(ENABLE_TESTS)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
-    add_subdirectory(test)
-    add_subdirectory(applications/integrationtests)
-endif()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
+add_subdirectory(test)
+add_subdirectory(applications/integrationtests)
 
 if(ENABLE_EXAMPLES)
     add_subdirectory(applications/examples)

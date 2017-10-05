@@ -45,10 +45,11 @@ function(add_unit_test ClassName)
     set(srcObject "${relpath}.${ClassName}")
     # if there is an object (the class is not "header-only"), link it as well
     if(TARGET "${srcObject}")
-        add_executable(${ClassName} ${ClassName}.cpp
+        add_executable(${ClassName} EXCLUDE_FROM_ALL ${ClassName}.cpp
             $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
     else()
-        add_executable(${ClassName} ${ClassName}.cpp ${AdditionalObjects})
+        add_executable(${ClassName} EXCLUDE_FROM_ALL ${ClassName}.cpp
+            ${AdditionalObjects})
     endif()
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
@@ -56,8 +57,7 @@ function(add_unit_test ClassName)
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})
-    add_test(unit::${testname}::${ClassName}
-        ${CMAKE_CURRENT_BUILD_DIR}/${ClassName} --log_level=message)
+    add_test(unit::${testname}::${ClassName} ${ClassName} --log_level=message)
     set(all_unit_tests "${all_unit_tests};${ClassName}"
         CACHE INTERNAL "The names of all the unit tests")
 endfunction()
@@ -123,4 +123,9 @@ function(warning)
     set(ColourReset "${Esc}[m")
     set(Red         "${Esc}[31m")
     message(STATUS "${Red}${ARGV}${ColourReset}")
+endfunction()
+
+function(append_to_tests TestName)
+    set(all_integration_tests "${all_integration_tests};${TestName}"
+        CACHE INTERNAL "The names of all the integration tests")
 endfunction()

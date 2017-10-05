@@ -56,7 +56,7 @@ foreach(test
     TrussIn3D
     )
 
-    add_executable(${test} ${test}.cpp)
+    add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Boost::unit_test_framework
         ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
     if(ENABLE_VISUALIZE)
@@ -66,14 +66,14 @@ foreach(test
         target_link_libraries(${test}
             ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
-    add_test(integration::mechanics::${test}.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    add_test(integration::mechanics::${test}.cpp ${test})
+    append_to_tests(${test})
 endforeach()
 
 
 
 if(ENABLE_MPI)
-    add_executable(MPI MPI.cpp)
+    add_executable(MPI EXCLUDE_FROM_ALL MPI.cpp)
     target_link_libraries(MPI ${MPI_LIBRARIES})
     set(MPIEXEC_NUMPROC_FLAG -np 4)
     set(MPIEXEC mpirun)
@@ -81,4 +81,5 @@ if(ENABLE_MPI)
     add_test(NAME integration::mechanics::MPI
         COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}
         ${CMAKE_CURRENT_BINARY_DIR}/MPI)
+    append_to_tests(MPI)
 endif()

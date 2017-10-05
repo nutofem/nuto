@@ -6,8 +6,10 @@ if(ENABLE_PYTHON)
 endif()
 
 # test the CheckStiffness method globally and locally
-add_executable(PolynomialLeastSquaresFitting PolynomialLeastSquaresFitting.cpp)
+add_executable(PolynomialLeastSquaresFitting
+    EXCLUDE_FROM_ALL PolynomialLeastSquaresFitting.cpp)
 target_link_libraries(PolynomialLeastSquaresFitting
     Metamodel Math Base)
 add_test(integration::metamodel::PolynomialLeastSquaresFitting.cpp
     ${CMAKE_CURRENT_BUILD_DIR}/PolynomialLeastSquaresFitting)
+append_to_tests(PolynomialLeastSquaresFitting)

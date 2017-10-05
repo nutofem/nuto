@@ -11,4 +11,5 @@ endif()
 add_custom_target(unit
     COMMAND ctest -R unit
     DEPENDS ${all_unit_tests}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )

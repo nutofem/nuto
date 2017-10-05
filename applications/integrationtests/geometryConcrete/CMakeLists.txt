@@ -31,11 +31,12 @@ if(ENABLE_PYTHON)
 endif()
 
 if(GMSH_PATH)
-    add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)
+    add_executable(GeometryConcreteAPI EXCLUDE_FROM_ALL GeometryConcreteAPI.cpp)
     target_link_libraries(GeometryConcreteAPI
         Math Base GeometryConcrete Boost::unit_test_framework)
     add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
-        ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcreteAPI ${GMSH_PATH})
+        GeometryConcreteAPI ${GMSH_PATH})
+    append_to_tests(GeometryConcreteAPI)
 else()
     message(STATUS
         "Gmsh not found. Skipping integration test GeometryConcreteAPI.cpp")
