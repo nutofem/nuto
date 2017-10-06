@@ -1,4 +1,4 @@
-set(all_unit_tests "" CACHE INTERNAL "The names of all the unit tests")
+unset(all_unit_tests CACHE)
 
 add_subdirectory(base)
 add_subdirectory(math)

@@ -1,3 +1,5 @@
+unset(all_examples CACHE)
+
 add_subdirectory(c++)
 add_subdirectory(python)
 

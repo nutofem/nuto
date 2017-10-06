@@ -1,3 +1,5 @@
+unset(all_integration_tests CACHE)
+
 add_subdirectory(geometryConcrete)
 add_subdirectory(metamodel)
 add_subdirectory(optimize)

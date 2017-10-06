@@ -1,3 +1,5 @@
+unset(all_benchmarks CACHE)
+
 foreach(test
     BuildGradient
     LinearElasticity
