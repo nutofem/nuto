@@ -21,9 +21,8 @@ get_git_head_revision(git_refspec commit_nr)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake
     ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
-include_directories(SYSTEM external/)
-
 include(CheckForDependencies)
+add_subdirectory(external)
 
 if(ENABLE_PYTHON)
     add_subdirectory(python/nuto)

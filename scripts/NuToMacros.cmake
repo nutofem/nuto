@@ -7,6 +7,7 @@
 function(nuto_swig_module module_name interface_file)
     set(libraries ${ARGN})
 
+    include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/external)
     set_source_files_properties(${interface_file} PROPERTIES CPLUSPLUS ON)
     set_source_files_properties(${interface_file}
         PROPERTIES SWIG_FLAGS "${NuTo_SWIG_FLAGS}")
@@ -53,7 +54,8 @@ function(add_unit_test ClassName)
     endif()
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-    target_include_directories(${ClassName} PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    target_include_directories(${ClassName} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_link_libraries(${ClassName} Fakeit)
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})
