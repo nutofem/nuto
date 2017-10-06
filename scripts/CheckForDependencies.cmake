@@ -35,16 +35,11 @@ endif()
 
 include(CheckBoost)
 
-if(ENABLE_MUMPS OR ENABLE_PARDISO)
-    find_package(BLAS REQUIRED)
-endif()
-
 # find mumps solver
 if(ENABLE_MUMPS)
     find_package(MUMPS REQUIRED)
     add_definitions("-DHAVE_MUMPS")
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DHAVE_MUMPS")
-    include_directories(${MUMPS_INCLUDE_DIR})
 endif()
 
 # find pardiso solver

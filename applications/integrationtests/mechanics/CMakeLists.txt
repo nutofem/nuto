@@ -69,8 +69,7 @@ foreach(test
         target_link_libraries(${test} Visualize)
     endif()
     if(MUMPS_FOUND)
-        target_link_libraries(${test}
-            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        target_link_libraries(${test} Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
     endif()
     add_test(integration::mechanics::${test}.cpp ${test})
     append_to_tests(${test})

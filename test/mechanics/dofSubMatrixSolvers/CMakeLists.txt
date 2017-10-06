@@ -11,15 +11,13 @@ set(solverSources
     math/SparseMatrixCSR.cpp
     )
 
-add_unit_test(SolverEigen
-    ${solverSources}
-    )
+add_unit_test(SolverEigen ${solverSources})
 
 add_unit_test(SolverMUMPS
     math/SparseDirectSolverMUMPS.cpp
     ${solverSources}
     )
-target_link_libraries(SolverMUMPS ${MUMPS_LIBRARIES})
+target_link_libraries(SolverMUMPS Mumps::Mumps)
 
 if(PARDISO_FOUND)
     add_unit_test(SolverPardiso

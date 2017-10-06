@@ -23,7 +23,7 @@ foreach(test
         ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
     if(MUMPS_FOUND)
         target_link_libraries(${test}
-            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+            Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
     endif()
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_examples(${test})
@@ -49,7 +49,7 @@ foreach(test
     endif()
     if(MUMPS_FOUND)
         target_link_libraries(${test}
-            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+            Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
     endif()
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_examples(${test})

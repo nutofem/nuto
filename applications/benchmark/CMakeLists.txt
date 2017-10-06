@@ -12,7 +12,7 @@ foreach(test
     target_link_libraries(${test} Mechanics Math Base)
     if(MUMPS_FOUND)
         target_link_libraries(${test}
-            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+            Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
     endif()
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
