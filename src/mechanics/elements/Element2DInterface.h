@@ -149,7 +149,6 @@ private:
     //! @brief calculates the transformation matrix, which contains the rotation matrices on the diagonal
     Eigen::MatrixXd CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes);
 
-#ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                std::vector<double>& VisualizationPointLocalCoordinates,
                                unsigned int& NumVisualizationCells,
@@ -159,7 +158,6 @@ private:
 
     void Visualize(Visualize::UnstructuredGrid& visualizer,
                    const std::vector<eVisualizeWhat>& visualizeComponents) override;
-#endif // ENABLE_VISUALIZE
 };
 
 } /* namespace NuTo */

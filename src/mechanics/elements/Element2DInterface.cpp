@@ -23,10 +23,8 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/ComponentName.h"
 #include "visualize/UnstructuredGrid.h"
-#endif // ENABLE_VISUALIZE
 
 using namespace NuTo;
 
@@ -531,7 +529,6 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
     }
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                      std::vector<double>& VisualizationPointLocalCoordinates,
                                                      unsigned int& NumVisualizationCells,
@@ -828,7 +825,8 @@ void NuTo::Element2DInterface::Visualize(Visualize::UnstructuredGrid& visualizer
         }
     }
 }
-#endif // ENABLE_VISUALIZE
+
+
 void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
                                                                ElementOutputIpData& rIpData) const
 {

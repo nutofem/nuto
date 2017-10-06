@@ -1,9 +1,6 @@
-#ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
 #include "math/DelaunayVoronoi.h"
+#include "visualize/VisualizeEnum.h"
 
 //! @brief constructor
 NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
@@ -45,7 +42,6 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
     mIntegrationPointWeights.push_back(g);
     mIntegrationPointWeights.push_back(g);
 
-#ifdef ENABLE_VISUALIZE
     DelaunayVoronoi voronoi(mIntegrationPointCoordinates, true);
 
     std::vector<Eigen::Vector2d> boundaryPoints(3);
@@ -82,8 +78,6 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
         std::cout << std::endl;
         mIpCellInfo.cells.push_back({-1, polyInt, eCellTypes::POLYGON, id});
     }
-
-#endif // ENABLE_VISUALIZE
 }
 
 //! @brief returns the local coordinates of an integration point

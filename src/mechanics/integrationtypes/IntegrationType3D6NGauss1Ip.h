@@ -25,10 +25,6 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-#ifdef ENABLE_VISUALIZE
     IntegrationTypeBase::IpCellInfo GetVisualizationCells() const override;
-#endif // ENABLE_VISUALIZE
-
-protected:
 };
 }

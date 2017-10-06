@@ -41,12 +41,8 @@ foreach(test
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base
-        Boost::unit_test_framework
-        ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(${test} Visualize)
-    endif()
+    target_link_libraries(${test} Mechanics Math Base Visualize
+        Boost::unit_test_framework ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
     if(MUMPS_FOUND)
         target_link_libraries(${test}
             Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
@@ -75,11 +71,8 @@ if(ENABLE_MKL AND MKLSolver_FOUND)
 endif()
 
 add_executable(GeometryConcrete2D GeometryConcrete2D.cpp)
-target_link_libraries(GeometryConcrete2D Mechanics Math Base
+target_link_libraries(GeometryConcrete2D Mechanics Math Base Visualize
     GeometryConcrete)
-if(ENABLE_VISUALIZE)
-    target_link_libraries(GeometryConcrete2D Visualize)
-endif()
 add_test(examples::cpp::GeometryConcrete2D
     ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)
 append_to_examples(GeometryConcrete2D)

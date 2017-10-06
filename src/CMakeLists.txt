@@ -1,14 +1,7 @@
 add_subdirectory(base)
 add_subdirectory(math)
-
 add_subdirectory(mechanics)
-
 add_subdirectory(geometryConcrete)
-
 add_subdirectory(metamodel)
-
 add_subdirectory(optimize)
-
-if(ENABLE_VISUALIZE)
-    add_subdirectory(visualize)
-endif()
+add_subdirectory(visualize)

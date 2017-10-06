@@ -1,14 +1,8 @@
 add_subdirectory(geometryConcrete)
-
 add_subdirectory(metamodel)
-
 add_subdirectory(optimize)
-
 add_subdirectory(mechanics)
-
-if(ENABLE_VISUALIZE)
-    add_subdirectory(visualize)
-endif()
+add_subdirectory(visualize)
 
 
 add_executable(SparseMatrixTests EXCLUDE_FROM_ALL SparseMatrixTests.cpp)

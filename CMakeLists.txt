@@ -10,7 +10,6 @@ option(ENABLE_CUSTOM_EXAMPLES
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
-option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
@@ -25,11 +24,6 @@ configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake
 include_directories(SYSTEM external/)
 
 include(CheckForDependencies)
-
-if(ENABLE_VISUALIZE)
-    add_definitions("-DENABLE_VISUALIZE")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VISUALIZE")
-endif()
 
 if(ENABLE_PYTHON)
     add_subdirectory(python/nuto)

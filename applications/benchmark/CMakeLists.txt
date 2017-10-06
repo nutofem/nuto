@@ -9,13 +9,10 @@ foreach(test
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base)
+    target_link_libraries(${test} Mechanics Math Base Visualize)
     if(MUMPS_FOUND)
         target_link_libraries(${test}
             Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(${test} Visualize)
     endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_benchmarks(${test})
@@ -28,10 +25,7 @@ endif()
 
 add_executable(LinearElasticityOPENMP
     EXCLUDE_FROM_ALL LinearElasticityOPENMP.cpp)
-target_link_libraries(LinearElasticityOPENMP Mechanics Math Base)
-if(ENABLE_VISUALIZE)
-    target_link_libraries(LinearElasticityOPENMP Visualize)
-endif()
+target_link_libraries(LinearElasticityOPENMP Mechanics Math Base Visualize)
 append_to_benchmarks(LinearElasticityOPENMP)
 
 add_executable(DenseSpherePacking EXCLUDE_FROM_ALL DenseSpherePacking.cpp)
