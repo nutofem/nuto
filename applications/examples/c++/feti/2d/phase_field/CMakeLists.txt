@@ -17,7 +17,7 @@ foreach(file
     add_executable(${file} ${file}.cpp)
     target_link_libraries(${file}
         Mechanics Math Base Visualize FetiLib ${LAPACK_LIBRARIES}
-        Boost::mpi ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+        Boost::mpi ${MPI_LIBRARIES})
     set(MPIEXEC_NUMPROC_FLAG -np 2)
     set(MPIEXEC mpirun)
     add_test(NAME examples::cpp::feti::${file}

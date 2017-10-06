@@ -18,7 +18,7 @@ target_link_libraries(NewtonRaphson Mumps::Mumps)
 
 add_unit_test(Gmres)
 add_unit_test(SpatialContainer)
-target_link_libraries(SpatialContainer ${ANN_LIBRARIES})
+target_link_libraries(SpatialContainer Ann::Ann)
 
 if(ARPACK_FOUND)
     add_unit_test(EigenSolverArpack)

@@ -49,9 +49,7 @@ if(ENABLE_PARDISO)
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DHAVE_PARDISO")
 endif()
 
-# find ANN library for nearest neighbor search
 find_package(ANN REQUIRED)
-include_directories(${ANN_INCLUDE_DIR})
 
 # find Eigen header files (Linear Algebra)
 find_package(EIGEN 3.2 REQUIRED)
