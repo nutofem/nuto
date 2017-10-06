@@ -102,7 +102,10 @@ Eigen::MatrixXd PermeabilityMatrix(const NuTo::PorousMedium& medium, const Eigen
     return dN.transpose() * airDensity * relPermability * intrinsicPermeability / viscosity * dN;
 }
 
-Eigen::MatrixXd DiffusionMatrix(const Eigen::MatrixXd& dN, const double capillaryPressure, const double gasPressure)
+
+//! Corresponds to the second term of \f$ \mathbf{K}_{gg} \f$ in Gawin et al.
+//! Contribution of diffusive air flow.
+Eigen::MatrixXd DiffusionGasPressure(const Eigen::MatrixXd& dN, const double capillaryPressure, const double gasPressure)
 {
     const double temperature = 273.15; // TODO: get temperature from element
     const double R = NuTo::SI::IdealGasConstant;
@@ -122,6 +125,29 @@ Eigen::MatrixXd DiffusionMatrix(const Eigen::MatrixXd& dN, const double capillar
     // TODO: diffusionTensor
     //return dN.transpose() * gasDensity * molarRatio * diffusionTensor * pressureRatio * dN;
 }
+
+
+//! Corresponds to \f$ \mathbf{K}_{gc} \f$ in Gawin et al.
+Eigen::MatrixXd DiffusionCapillaryPressure(const Eigen::MatrixXd& dN, const double capillaryPressure, const double gasPressure)
+{
+    const double temperature = 273.15; // TODO: get temperature from element
+    const double R = NuTo::SI::IdealGasConstant;
+    const double M_a = Hygro::AirMolarMass;
+    const double M_w = Hygro::WaterMolarMass;
+
+    const double vapourPressure = KelvinEquation::VapourPressure(capillaryPressure, temperature);
+    const double vapourDensity = vapourPressure * M_w / (R * temperature);
+    const double airPressure = gasPressure - vapourPressure;
+    const double airDensity = airPressure * Hygro::AirMolarMass / (R * temperature);
+    const double gasDensity = airDensity + vapourDensity;
+    const double M_g = 1.0 / (vapourDensity / (gasDensity * M_w) + airDensity / (gasDensity * M_a));
+
+    const double molarRatio = M_a * M_w / std::pow(M_g, 2);
+    const double dpv_dpc = KelvinEquation::dCapillaryPressure(capillaryPressure, temperature);
+
+    //return dN.transpose() * gasDensity * molarRatio * diffusionTensor * dpv_dpc / gasPressure * dN;
+}
+
 
 } // namespace DryAirMassBalance
 
