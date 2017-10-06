@@ -65,9 +65,6 @@ foreach(test
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Visualize
         Boost::unit_test_framework ${LAPACK_LIBRARIES})
-    if(MUMPS_FOUND)
-        target_link_libraries(${test} Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
-    endif()
     add_test(integration::mechanics::${test}.cpp ${test})
     append_to_tests(${test})
 endforeach()

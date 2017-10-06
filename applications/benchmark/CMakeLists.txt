@@ -10,10 +10,6 @@ foreach(test
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Visualize)
-    if(MUMPS_FOUND)
-        target_link_libraries(${test}
-            Mumps::Mumps ${CMAKE_THREAD_LIBS_INIT})
-    endif()
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_benchmarks(${test})
 endforeach()
