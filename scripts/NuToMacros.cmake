@@ -55,6 +55,8 @@ function(add_unit_test ClassName)
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     target_include_directories(${ClassName} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_include_directories(${ClassName}
+        PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     target_link_libraries(${ClassName} Fakeit)
 
     # generate a ctest name for the test

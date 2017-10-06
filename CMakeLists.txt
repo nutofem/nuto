@@ -33,7 +33,6 @@ add_subdirectory(src)
 
 #test Environment
 include(CTest)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
 add_subdirectory(test)
 add_subdirectory(applications/integrationtests)
 add_subdirectory(applications/examples)

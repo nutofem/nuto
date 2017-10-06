@@ -34,6 +34,8 @@ if(GMSH_PATH)
     add_executable(GeometryConcreteAPI EXCLUDE_FROM_ALL GeometryConcreteAPI.cpp)
     target_link_libraries(GeometryConcreteAPI
         Math Base GeometryConcrete Boost::unit_test_framework)
+    target_include_directories(GeometryConcreteAPI
+        PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
         GeometryConcreteAPI ${GMSH_PATH})
     append_to_tests(GeometryConcreteAPI)

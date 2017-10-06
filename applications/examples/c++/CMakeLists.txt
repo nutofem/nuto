@@ -39,6 +39,7 @@ foreach(test
     target_link_libraries(${test} Mechanics Math Base Visualize
         Boost::unit_test_framework ${LAPACK_LIBRARIES})
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    target_include_directories(${test} PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     append_to_examples(${test})
 endforeach()
 
