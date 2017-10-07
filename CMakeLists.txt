@@ -13,15 +13,16 @@ option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts/cmake ${CMAKE_MODULE_PATH})
 include(NuToMacros)
-include(CompilerFlags)
-include(GetGitRevisionDescription)
+
+set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
-configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake
+check_for_dependencies()
+
+configure_file(${CMAKE_SOURCE_DIR}/scripts/cmake/CTestCustom.cmake
     ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
-include(CheckForDependencies)
 add_subdirectory(external)
 
 if(ENABLE_PYTHON)
