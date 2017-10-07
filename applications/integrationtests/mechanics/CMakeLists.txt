@@ -26,49 +26,39 @@ endif()
 create_symlink("meshes")
 
 # generate tests
-foreach(test
-    AdditiveInput
-    AdditiveOutput
-    BlockMatrices
-    CoefficientChecks
-    MoistureTransport
-    ConstraintsNodeToElement
-    ConstraintNodeToElement2D
-    ConstraintNodeToElement3D
-    ContinuumElement
-    CreepUniaxial
-    CSDAInterface
-    GradientDamage
-    IGA
-    ImplEx
-    InhomogeneousMaterial
-    InterfaceElements
-    IntegrationPointVoronoiCells
-    InterpolationTypes
-    MeshCompanion
-    MisesPlasticity
-    MultipleConstitutiveLaws
-    NewmarkPlane2D4N
-    ParallelAssembly
-    PiezoelectricLaw
-    PlateWithHole
-    RestartFiles
-    Shrinkage
-    SpringDamperCombination
-    StructureNodeTest
-    SurfaceLoad
-    ThermoElasticity1D
-    TrussIn2D
-    TrussIn3D
-    )
-
-    add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base Visualize
-        Boost::unit_test_framework ${LAPACK_LIBRARIES})
-    target_include_directories(${test} PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
-    add_test(integration::mechanics::${test}.cpp ${test})
-    append_to_tests(${test})
-endforeach()
+add_integrationtest(AdditiveInput)
+add_integrationtest(AdditiveOutput)
+add_integrationtest(BlockMatrices)
+add_integrationtest(CoefficientChecks)
+add_integrationtest(MoistureTransport)
+add_integrationtest(ConstraintsNodeToElement)
+add_integrationtest(ConstraintNodeToElement2D)
+add_integrationtest(ConstraintNodeToElement3D)
+add_integrationtest(ContinuumElement)
+add_integrationtest(CreepUniaxial)
+add_integrationtest(CSDAInterface)
+add_integrationtest(GradientDamage)
+add_integrationtest(IGA)
+add_integrationtest(ImplEx)
+add_integrationtest(InhomogeneousMaterial)
+add_integrationtest(InterfaceElements)
+add_integrationtest(IntegrationPointVoronoiCells)
+add_integrationtest(InterpolationTypes)
+add_integrationtest(MeshCompanion)
+add_integrationtest(MisesPlasticity)
+add_integrationtest(MultipleConstitutiveLaws)
+add_integrationtest(NewmarkPlane2D4N)
+add_integrationtest(ParallelAssembly)
+add_integrationtest(PiezoelectricLaw)
+add_integrationtest(PlateWithHole)
+add_integrationtest(RestartFiles)
+add_integrationtest(Shrinkage)
+add_integrationtest(SpringDamperCombination)
+add_integrationtest(StructureNodeTest)
+add_integrationtest(SurfaceLoad)
+add_integrationtest(ThermoElasticity1D)
+add_integrationtest(TrussIn2D)
+add_integrationtest(TrussIn3D)
 
 
 
