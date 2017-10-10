@@ -54,10 +54,10 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
 {
     fakeit::Mock<NuTo::ElementInterface> mockElement;
     Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives2D();
-    NuTo::DofType d0("dof0", 2);
 
-    NuTo::ElementCollection elements(mockElement.get());
-    elements.AddDofElement(d0, mockElement.get());
+    fakeit::Mock<NuTo::ElementCollection> elements;
+    Method(elements, DofElement) = mockElement.get(); 
+
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(elements, jac, ipCoords);
+    NuTo::CellIpData ipData(elements.get(), jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
 
@@ -79,6 +79,8 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     correctGradient(1, 0) = dN0dY;
     correctGradient(1, 1) = dN1dY;
     correctGradient(1, 2) = dN2dY;
+    
+    NuTo::DofType d0("dof0", 2);
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixGradient(d0), correctGradient);
 
 
@@ -97,6 +99,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     correctStrain(1, 5) = dN2dY;
     correctStrain(2, 4) = dN2dY;
     correctStrain(2, 5) = dN2dX;
+
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixStrain(d0), correctStrain);
 }
 
@@ -104,10 +107,9 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
 {
     fakeit::Mock<NuTo::ElementInterface> mockElement;
     Method(mockElement, GetDerivativeShapeFunctions) = MockDerivatives3D();
-    NuTo::DofType d0("dof0", 3);
 
-    NuTo::ElementCollection elements(mockElement.get());
-    elements.AddDofElement(d0, mockElement.get());
+    fakeit::Mock<NuTo::ElementCollection> elements;
+    Method(elements, DofElement) = mockElement.get(); 
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector3d({1. / 3., 1. / 3., 1. / 3.});
 
@@ -118,7 +120,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
     NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
-    NuTo::CellIpData ipData(elements, jac, ipCoords);
+    NuTo::CellIpData ipData(elements.get(), jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
     Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(6, 9);
@@ -152,5 +154,6 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
     expected(5, 6) = dN2dY;
     expected(5, 7) = dN2dX;
 
+    NuTo::DofType d0("dof0", 3);
     BoostUnitTest::CheckEigenMatrix(ipData.GetBMatrixStrain(d0), expected);
 }

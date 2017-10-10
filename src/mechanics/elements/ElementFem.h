@@ -16,45 +16,53 @@ public:
         : mNodes(nodes)
         , mInterpolation(interpolation)
     {
+        assert(nodes.size() == interpolation.GetNumNodes());
+        assert(nodes.front()->GetNumValues() == interpolation.GetDofDimension());
     }
 
     virtual NodeValues ExtractNodeValues() const override
     {
-        int dim = mNodes[0]->GetNumValues();
-        Eigen::VectorXd nodeValues(mNodes.size() * dim);
-        for (size_t i = 0; i < mNodes.size(); ++i)
+        const int dim = GetDofDimension();
+        Eigen::VectorXd nodeValues(GetNumNodes() * dim);
+        for (size_t i = 0; i < GetNumNodes(); ++i)
             nodeValues.segment(dim * i, dim) = mNodes[i]->GetValues();
         return nodeValues;
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
     {
-        return Matrix::N(mInterpolation.GetShapeFunctions(ipCoords), mInterpolation.GetNumNodes(),
-                         mInterpolation.GetDofDimension());
+        return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(),
+                         Interpolation().GetDofDimension());
     }
 
-    Eigen::VectorXd GetShapeFunctions(Eigen::VectorXd ipCoords) const override
+    ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return mInterpolation.GetShapeFunctions(ipCoords);
+        return Interpolation().GetShapeFunctions(ipCoords);
     }
 
-    Eigen::MatrixXd GetDerivativeShapeFunctions(Eigen::VectorXd ipCoords) const override
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return mInterpolation.GetDerivativeShapeFunctions(ipCoords);
+        return Interpolation().GetDerivativeShapeFunctions(ipCoords);
     }
 
     int GetDofDimension() const override
     {
-        return mInterpolation.GetDofDimension();
+        return Interpolation().GetDofDimension();
     }
 
     int GetNumNodes() const override
     {
-        return mInterpolation.GetNumNodes();
+        return mNodes.size(); 
+    }
+
+    const InterpolationSimple& Interpolation() const
+    {
+        return mInterpolation;
     }
 
 private:
+
     std::vector<NuTo::NodeSimple*> mNodes;
-    const InterpolationSimple& mInterpolation;
+    std::reference_wrapper<const InterpolationSimple> mInterpolation;
 };
 } /* NuTo */

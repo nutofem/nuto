@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/cell/Cell.h"
-#include "mechanics/elements/ElementFem.h"
+#include "mechanics/elements/ElementCollection.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/integrands/MomentumBalance.h"
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     NuTo::NodeSimple nDispl3(Eigen::Vector2d({0, 0}));
     NuTo::ElementFem displacementElement({&nDispl0, &nDispl1, &nDispl2, &nDispl3}, interpolationDisplacements);
 
-    NuTo::ElementCollection elements(coordinateElement);
+    NuTo::ElementCollectionFem elements(coordinateElement);
     NuTo::DofType dofDispl("Displacements", 2);
     elements.AddDofElement(dofDispl, displacementElement);
 

@@ -22,7 +22,7 @@ public:
     Eigen::Matrix<double, TDimParameter, 1> Transformation(Eigen::VectorXd ipCoords) const
     {
         Eigen::Matrix<double, TDimParameter, 1> coordinateTransformed;
-        std::array<Eigen::Vector2d, TDimParameter> knots = mNurbsGeometry.GetKnotVectorElement(mKnotIDs);
+        std::array<Eigen::Vector2d, TDimParameter> knots = NurbsGeometry().GetKnotVectorElement(mKnotIDs);
         for (int i = 0; i < TDimParameter; i++)
         {
             coordinateTransformed[i] = (knots[i](0) + 0.5 * (ipCoords(i) + 1) * (knots[i](1) - knots[i](0)));
@@ -34,7 +34,7 @@ public:
     //! @remark virtual to make it testable
     virtual NodeValues ExtractNodeValues() const override
     {
-        return mNurbsGeometry.GetControlPointsElement(mKnotIDs);
+        return NurbsGeometry().GetControlPointsElement(mKnotIDs);
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
@@ -42,28 +42,34 @@ public:
         return NuTo::Matrix::N(GetShapeFunctions(ipCoords), GetNumNodes(), GetDofDimension());
     }
 
-    Eigen::VectorXd GetShapeFunctions(Eigen::VectorXd ipCoords) const override
+    ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return mNurbsGeometry.BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords));
+        return NurbsGeometry().BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords));
     }
 
-    Eigen::MatrixXd GetDerivativeShapeFunctions(Eigen::VectorXd ipCoords) const override
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return mNurbsGeometry.BasisFunctionsAndDerivativesRational(1, Transformation(ipCoords));
+        return NurbsGeometry().BasisFunctionsAndDerivativesRational(1, Transformation(ipCoords));
     }
 
     int GetDofDimension() const override
     {
-        return mNurbsGeometry.GetDimension();
+        return NurbsGeometry().GetDimension();
     }
 
     int GetNumNodes() const override
     {
-        return mNurbsGeometry.GetNumControlPointsElement();
+        return NurbsGeometry().GetNumControlPointsElement();
     }
 
 private:
+
+    const Nurbs<TDimParameter>& NurbsGeometry() const
+    {
+        return mNurbsGeometry;
+    }
+
     std::array<int, TDimParameter> mKnotIDs;
-    const Nurbs<TDimParameter>& mNurbsGeometry;
+    std::reference_wrapper<const Nurbs<TDimParameter>> mNurbsGeometry;
 };
 } /* NuTo */

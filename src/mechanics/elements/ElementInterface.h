@@ -8,7 +8,7 @@ namespace NuTo
 class ElementInterface
 {
 public:
-    virtual ~ElementInterface() = default;
+    virtual ~ElementInterface() noexcept = default;
 
     //! @brief extracts all node values of this element
     virtual NodeValues ExtractNodeValues() const = 0;

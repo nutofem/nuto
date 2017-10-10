@@ -22,3 +22,4 @@ add_unit_test(IPData
 
 add_unit_test(ElementIga)
 add_unit_test(ElementFem mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(ElementCollection mechanics/elements/ElementShapeFunctions.cpp)
