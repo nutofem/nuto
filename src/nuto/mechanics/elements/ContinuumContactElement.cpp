@@ -320,10 +320,10 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarTying(
 
         for(int i = 0; i < indicesNodesSlave.rows(); i++)
             for(int j = 0; j < indicesNodesMaster.rows(); j++)
-                M(indicesNodesSlave(i), indicesNodesMaster(j)) += NContactMaster(i,j);
+                M(indicesNodesSlave(i), indicesNodesMaster(j))+= NContactMaster(i,j);
 
         for(int i = 0; i < indicesNodesSlave.rows(); i++)
-            mSlaveShapeFunctionsWeight(indicesNodesSlave(i)) += shapeFunsSlave(i)*jacobianByWeight;
+            mSlaveShapeFunctionsWeight(indicesNodesSlave(i))  += shapeFunsSlave(i)*jacobianByWeight;
     }
 }
 
@@ -453,9 +453,11 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 {
     // **** Get the starting point for iteration **** //
 
-    int numStartingPointsOneDir = 5;
+    int numStartingPointsOneDir = 7;
     Eigen::VectorXd coords(numStartingPointsOneDir);
-    coords << -1., -0.5, 0., 0.5, 1.;
+    coords(0) = -0.95;
+    double length = 1.9;
+    for(int i = 1; i < numStartingPointsOneDir; i++) coords(i) = coords(i-1) + length/(numStartingPointsOneDir-1);
 
     int numStartingPointsElement = std::pow(numStartingPointsOneDir, TDimMaster);
     std::vector<Eigen::Matrix<double, TDimMaster, 1>> referenceCoordinates(numStartingPointsElement);
@@ -469,6 +471,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::Vector2d indexMasterElement(0.,0.);
+    Eigen::Matrix<double, TDimMaster, 1> localParameter;
     for(int i = 0; i < mElementsMaster.rows(); i++)
     {
         for(int j = 0; j < mElementsMaster.cols(); j++)
@@ -487,6 +490,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
                 double distance = (coordinatesMaster - coordinatesIPSlave).norm();
                 if(minDistance > distance)
                 {
+                    localParameter = it;
                     minDistance = distance;
                     rParameterMinMaster = parameter;
                     indexMasterElement(0) = i;
@@ -556,7 +560,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         numIter++;
     }
 
-    if(numIter >= maxNumIter) std::cout << "!!!!!!ContinuumContactElement: Maximum number of Newton iterations exceeded!" << std::endl;
+    if(numIter >= maxNumIter) std::cout << "!!!!!!ContinuumContactElement: Maximum number of Newton iterations exceeded! (error = "<< error << ")"  << std::endl;
 
     return masterElement;
 }
@@ -823,6 +827,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
 //                Eigen::VectorXd force = gapMatrixScaled*mGlobalNodalPressure;
                 rInternalGradient[dofRow] = gapMatrixScaled*mGlobalNodalPressure;
+//                std::cout << rInternalGradient[dofRow].Norm() << std::endl;
             }
             else if(mContactType == 1)
             {
@@ -974,7 +979,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ComputeMeshTyingMatri
 
     for (const auto &it : mElementsSlave)
     {
-        EvaluateDataContinuumBoundary<TDimSlave> data;//!!REFACTOR
+        EvaluateDataContinuumBoundary<TDimSlave> data; //!!REFACTOR
         ExtractAllNecessaryDofValues(data, it); //!!REFACTOR
 
         // *** calculate gap mortrar mesh tying matrices *** //
@@ -1093,6 +1098,7 @@ template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillMappingGlobalLocalSlaveNodes()
 {
     mNumSlaveNodes = 0;
+    int numElements = 0;
     for(auto &it : mElementsSlave)
     {
         auto activeDofs = it.first->GetInterpolationType()->GetActiveDofs();
@@ -1105,6 +1111,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillMappingGlobalLoca
         const InterpolationBase &interpolationDof = interpolationType->Get(dof);
         const int numNodes = interpolationDof.GetNumNodes();
 
+        numElements++;
+
         for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
         {
             const NodeBase* nodePtr = it.first->GetNode(interpolationDof.GetNodeIndex(iNodeDof));
@@ -1113,7 +1121,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillMappingGlobalLoca
             std::unordered_map<int,int>::const_iterator got = mMappingGlobal2LocalSlaveNodes.find(globalNodeId);
             if (got == mMappingGlobal2LocalSlaveNodes.end()) // not found => insert a new one
             {
-                mMappingGlobal2LocalSlaveNodes.insert( std::make_pair(globalNodeId , mNumSlaveNodes) );
+                mMappingGlobal2LocalSlaveNodes.insert( std::make_pair(globalNodeId , mNumSlaveNodes));
                 mNumSlaveNodes++;
             }
         }

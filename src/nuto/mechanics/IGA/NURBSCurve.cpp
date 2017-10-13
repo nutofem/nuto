@@ -24,12 +24,9 @@ NuTo::NURBSCurve::NURBSCurve(const Eigen::VectorXd &rKnots,
     mWeights = rWeights;
 }
 
-NuTo::NURBSCurve::NURBSCurve(int                    rDegree,
-                             const Eigen::MatrixXd &rPoints,
-                             Eigen::MatrixXd       &A,
-                             NuTo::NURBSCurve::mParametrization rParametrizationMethod)
+NuTo::NURBSCurve::NURBSCurve(int rDegree, const Eigen::MatrixXd &rPoints, Eigen::MatrixXd &A, NuTo::NURBSCurve::mParametrization rParametrizationMethod)
 {
-    assert(rDegree > 0);    
+    assert(rDegree > 0);
     mDegree = rDegree;
     int numPoints = rPoints.rows();
     assert(numPoints >= mDegree);
@@ -180,6 +177,12 @@ int NuTo::NURBSCurve::GetMultiplicityOfKnot(double rKnot)
         else                             break;
 
     return count;
+}
+
+int NuTo::NURBSCurve::GetBasisFunctionIndexNotVanishing(double rParameter) const
+{
+    int spanIdx = ShapeFunctionsIGA::FindSpan(rParameter, mDegree, mKnots);
+    return spanIdx-mDegree;
 }
 
 const Eigen::MatrixXd& NuTo::NURBSCurve::GetBezierExtraction(int rElementID) const
@@ -393,7 +396,9 @@ void NuTo::NURBSCurve::InsertKnot(double rKnotToInsert, int rMultiplicity)
 {
     int k = ShapeFunctionsIGA::FindSpan(rKnotToInsert, mDegree, mKnots);
     int initialMultiplicity = GetMultiplicityOfKnot(rKnotToInsert);
-    assert(initialMultiplicity + rMultiplicity <= mDegree);
+
+    assert(initialMultiplicity + rMultiplicity <= 1);
+    //assert(initialMultiplicity + rMultiplicity <= mDegree);
 
     // new knot vector
     Eigen::VectorXd newKnots(GetNumKnots() + rMultiplicity);
@@ -521,12 +526,17 @@ void NuTo::NURBSCurve::DuplicateKnots()
     RefineKnots(knotsToInsert);
 }
 
-void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster)
+void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster) const
 {
     double tol = 1.e-10;
     double error = 1.;
     int maxNumIter = 100;
     int numIter = 0;
+
+    if((rCoordinatesSlave - mControlPoints.block(GetNumControlPoints()-1, 0, 1, 2).transpose()).norm()< 1.e-10 )
+        rParameterStartMaster = 1.;
+    if((rCoordinatesSlave - mControlPoints.block(0, 0, 1, 2).transpose()).norm()< 1.e-10 )
+        rParameterStartMaster = 0.;
     while(error > tol && numIter < maxNumIter)
     {
         // ==> function (dprime)

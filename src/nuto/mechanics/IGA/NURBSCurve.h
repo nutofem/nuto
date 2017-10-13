@@ -49,7 +49,7 @@ public:
     //! @param rParametrizationMethod ... the method of parametrization (by default chord length method)
     NURBSCurve(int rDegree,
                const Eigen::MatrixXd &rPoints,
-               Eigen::MatrixXd       &A,
+               Eigen::MatrixXd &A,
                mParametrization rParametrizationMethod=chord);
 
     /** Getter **/
@@ -139,6 +139,11 @@ public:
     //! @return ... multiplicity
     int GetMultiplicityOfKnot(double rKnot);
 
+    //! @return ... there are mDegree+1 basis functions (i-mDegree, i-mDegree+1, ... ,i) not vanishing at a given rParameter
+    //! @param ... rParameter
+    //! @return ... the starting index i-mDegree is returned
+    int GetBasisFunctionIndexNotVanishing(double rParameter) const;
+
     //! @brief ... returns the Bézier extraction operator for the element with ID rElementID
     //! @param rElementID ... element ID
     //! @return ... matrix representing the Bézier extraction operator
@@ -148,13 +153,17 @@ public:
     //! @return ... vector of matrices representing the Bézier extraction operators
     const std::vector<Eigen::MatrixXd> &GetBezierExtraction() const;
 
+
     /** Basis Functions **/
 
-    //! @brief ... find span of a parameter (rParameter) in the knot vector
+    //! @brief ... basis functions according to the rParameter
     //! @param rParameter ... parameter to find the span of
-    //! @return ... the span index
+    //! @return ... basis functions
     Eigen::VectorXd BasisFunctions(double rParameter) const;
 
+    //! @brief ... basis functions and derivatives according to the rParameter
+    //! @param rParameter ... parameter to find the span of
+    //! @return ... basis functions and derivatives up to order der
     Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int der) const;
 
     /** Parametrization **/
@@ -199,7 +208,7 @@ public:
     void RefineKnots(const Eigen::VectorXd &rKnotsToInsert);
     void DuplicateKnots();
 
-    void  findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster);
+    void  findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster) const;
 
     /** Build NuTo structure **/
     Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> buildIGAStructure(NuTo::Structure &rStructure,
