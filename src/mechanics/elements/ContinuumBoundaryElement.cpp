@@ -731,13 +731,11 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
 }
 
 
-#ifdef ENABLE_VISUALIZE
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::Visualize(Visualize::UnstructuredGrid&, const std::vector<eVisualizeWhat>&)
 {
     std::cout << __PRETTY_FUNCTION__ << "Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }
-#endif
 
 
 namespace NuTo

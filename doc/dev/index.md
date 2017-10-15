@@ -8,10 +8,6 @@
 
 - @ref BuildLocalDocumentation
 
-### continuous integration
-
-- @ref Coverage
-
 ### C++ related documentation
 
 - @ref BoostPtrContainer

@@ -4,10 +4,7 @@
 #include <eigen3/Eigen/Core>
 #include "base/Exception.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
 
 namespace NuTo
 {
@@ -61,8 +58,6 @@ public:
     void Info(int rVerboseLevel) const;
 
 
-#ifdef ENABLE_VISUALIZE
-
     struct CellInfo
     {
         int visualizeCellId = -1; // global visualize id, set later by visualizer
@@ -88,7 +83,5 @@ public:
     virtual void GetVisualizationCells(unsigned int&, std::vector<double>&, unsigned int&,
                                        std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
                                        std::vector<unsigned int>&) const {};
-#endif // ENABLE_VISUALIZE
-protected:
 };
 } // namespace NuTo

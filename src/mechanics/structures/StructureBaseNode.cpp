@@ -14,10 +14,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupEnum.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
 #include "visualize/ComponentName.h"
-#endif
 
 void NuTo::StructureBase::NodeSetDisplacements(int rNode, const Eigen::VectorXd& rDisplacements)
 {
@@ -418,7 +416,6 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::StructureBase::NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
                                                   const std::vector<eVisualizeWhat>& visualizeComponents) const
 {
@@ -493,4 +490,3 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(Visualize::UnstructuredGrid& 
         }
     }
 }
-#endif // ENABLE_VISUALIZE

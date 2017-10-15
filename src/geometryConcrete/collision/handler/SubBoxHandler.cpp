@@ -334,7 +334,6 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 
 void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 {
-#ifdef ENABLE_VISUALIZE
     NuTo::Visualize::UnstructuredGrid visuBorders;
     visuBorders.DefineCellData("Direction");
     for (auto& box : mSubBoxes)
@@ -342,7 +341,6 @@ void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
             wall->VisualizationStatic(visuBorders);
 
     visuBorders.ExportVtuDataFile(rFile);
-#endif
 }
 
 double NuTo::SubBoxHandler::GetVolume() const

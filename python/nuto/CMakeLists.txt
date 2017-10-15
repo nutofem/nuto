@@ -47,23 +47,11 @@ add_subdirectory(base)
 add_subdirectory(math)
 add_subdirectory(mechanics)
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(geometryConcrete)
-else()
-    deactivate_module(geometryConcrete.ModuleGeometryConcrete)
-endif()
+add_subdirectory(geometryConcrete)
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(metamodel)
-else()
-    deactivate_module(metamodel.ModuleMetamodel)
-endif()
+add_subdirectory(metamodel)
 
-if(ENABLE_OPTIMIZE)
-    add_subdirectory(optimize)
-else()
-    deactivate_module(optimize.ModuleOptimize)
-endif()
+add_subdirectory(optimize)
 
 # support for strongly typed enums was introduced in 3.0.3
 if(SWIG_VERSION VERSION_LESS "3.0.3")

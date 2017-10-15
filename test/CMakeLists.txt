@@ -1,14 +1,12 @@
-set(all_unit_tests "" CACHE INTERNAL "The names of all the unit tests")
+unset(all_unit_tests CACHE)
 
 add_subdirectory(base)
 add_subdirectory(math)
 add_subdirectory(mechanics)
-
-if(ENABLE_VISUALIZE)
-    add_subdirectory(visualize)
-endif()
+add_subdirectory(visualize)
 
 add_custom_target(unit
-    COMMAND ctest -R unit
+    COMMAND ctest -R unit --output-on-failure
     DEPENDS ${all_unit_tests}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )

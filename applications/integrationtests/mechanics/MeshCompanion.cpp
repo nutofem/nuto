@@ -8,7 +8,7 @@
 BOOST_AUTO_TEST_CASE(ImportFromGmshBinary)
 {
     NuTo::Structure s(3);
-    BOOST_CHECK_NO_THROW(NuTo::MeshCompanion::ImportFromGmsh(s, "MeshCompanionGmsh.msh"));
+    BOOST_CHECK_NO_THROW(NuTo::MeshCompanion::ImportFromGmsh(s, "meshes/MeshCompanionGmsh.msh"));
 }
 
 void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
@@ -133,5 +133,5 @@ BOOST_AUTO_TEST_CASE(CreatePrismGmsh)
 
 BOOST_AUTO_TEST_CASE(CreatePrismGmshFine)
 {
-    CheckPrismGmsh("MeshCompanionGmshFine.msh");
+    CheckPrismGmsh("meshes/MeshCompanionGmshFine.msh");
 }

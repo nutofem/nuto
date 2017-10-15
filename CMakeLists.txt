@@ -1,55 +1,29 @@
-project(NuTo)
-
 cmake_minimum_required(VERSION 3.5)
 
+project(NuTo)
+
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
-option(ENABLE_TESTS "create makefiles for c++ tests" TRUE)
-option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
-option(ENABLE_EXAMPLES "enables examples" TRUE)
-option(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
-option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
-option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
-option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts/cmake ${CMAKE_MODULE_PATH})
 include(NuToMacros)
-include(CompilerFlags)
-include(GetGitRevisionDescription)
+
+set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
-configure_file(${CMAKE_SOURCE_DIR}/scripts/CTestCustom.cmake
+check_for_dependencies()
+
+configure_file(${CMAKE_SOURCE_DIR}/scripts/cmake/CTestCustom.cmake
     ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
-include_directories(SYSTEM external/)
-
-include(CheckForDependencies)
-
-if(ENABLE_METAMODEL)
-    set(ENABLE_OPTIMIZE TRUE)
-endif()
-
-if(ENABLE_OPTIMIZE)
-    add_definitions("-DENABLE_OPTIMIZE")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_OPTIMIZE")
-endif()
-
-if(ENABLE_VISUALIZE)
-    add_definitions("-DENABLE_VISUALIZE")
-    set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VISUALIZE")
-endif()
-
-if(ENABLE_COVERAGE)
-    include(Coverage)
-endif()
+add_subdirectory(external)
 
 if(ENABLE_PYTHON)
     add_subdirectory(python/nuto)
@@ -60,20 +34,10 @@ add_subdirectory(src)
 
 #test Environment
 include(CTest)
-
-if(ENABLE_TESTS)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/tools)
-    add_subdirectory(test)
-    add_subdirectory(applications/integrationtests)
-endif()
-
-if(ENABLE_EXAMPLES)
-    add_subdirectory(applications/examples)
-endif()
-
-if(ENABLE_BENCHMARKS)
-    add_subdirectory(applications/benchmark)
-endif()
+add_subdirectory(test)
+add_subdirectory(applications/integrationtests)
+add_subdirectory(applications/examples)
+add_subdirectory(applications/benchmark)
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing

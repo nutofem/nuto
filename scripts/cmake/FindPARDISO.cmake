@@ -12,6 +12,8 @@ set(PARDISO_LIBRARIES)
 
 message(STATUS "Checking for PARDISO Solver package ...")
 
+find_package(BLAS REQUIRED)
+
 # check if PARDISO_ROOT is set
 if(NOT PARDISO_ROOT AND NOT $ENV{PARDISO_ROOT} STREQUAL "")
     set(PARDISO_ROOT $ENV{PARDISO_ROOT})
@@ -30,7 +32,7 @@ find_library(_pardiso_LIB_PARDISO
     HINTS ${_pardiso_LIBRARIES_SEARCH_DIRS})
 
 if(_pardiso_LIB_PARDISO)
-    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${OpenBLAS_LIBRARIES})
+    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${BLAS_LIBRARIES})
 endif()
 
 # handle the QUIETLY and REQUIRED arguments

@@ -93,11 +93,9 @@ public:
     //! @return ... 1x4-matrix, [posX, posY, posZ, radius/radius0]
     Eigen::MatrixXd ExportRow(bool rInitialRadius = false) const;
 
-#ifdef ENABLE_VISUALIZE
     //! @brief ... visualize all moving collidables
     //! @param rVisualizer ... NuTo object for ascii-export
     void VisualizationDynamic(Visualize::UnstructuredGrid& rVisualizer, bool rFinal) const;
-#endif
 
     //! @brief ... resets the sphere velocity to 0.0
     void ResetVelocity();
