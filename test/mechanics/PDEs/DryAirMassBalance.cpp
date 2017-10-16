@@ -27,7 +27,8 @@ BOOST_AUTO_TEST_CASE(SaturationVariation)
     Eigen::Matrix<double, 1, 2> N;
     N << 0.5, 0.5;
 
-    const Eigen::MatrixXd result = Hygro::DryAirMassBalance::VariationOfSaturation(material, N, 20.0, 5.0);
+    const Hygro::PoreState state(20.0, 5.0, 273.15);
+    const Eigen::MatrixXd result = Hygro::DryAirMassBalance::VariationOfSaturation(material, N, 20.0, state);
 
     // manually computed result
     const Eigen::MatrixXd expected = N.transpose() * 5.63699763427398e-7 * N;
