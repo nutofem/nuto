@@ -7,7 +7,6 @@
 #    mechanics/constitutive/ConstitutiveBase.cpp
 #    mechanics/constitutive/ConstitutiveEnum.cpp
 #    )
-add_unit_test(TimeControl
-
-    )
+add_unit_test(TimeControl)
+add_unit_test(RK4)
 
