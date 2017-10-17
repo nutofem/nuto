@@ -61,6 +61,12 @@ public:
         return mInterpolation;
     }
 
+    const NodeSimple& GetNode(int i) const
+    {
+        assert(i < mNodes.size());
+        return *mNodes[i];
+    }
+
 private:
 
     std::vector<NuTo::NodeSimple*> mNodes;
