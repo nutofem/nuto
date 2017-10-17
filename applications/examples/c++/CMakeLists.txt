@@ -33,6 +33,7 @@ foreach(test
     SparseDirectSolverMUMPS
     Temperature1D
     Truss1D2N
+    WaveEquation1D
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
