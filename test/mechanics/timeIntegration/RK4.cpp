@@ -49,8 +49,8 @@ BOOST_AUTO_TEST_CASE(DampedHarmonicOscillator)
     for (int i = 0; i < numSteps; i++)
     {
         double computed = y(0);
-        double expected = eq.exactSolution(y0, i * stepSize);
+        double expected = eq.ExactSolution(y0, i * stepSize);
         BOOST_CHECK_CLOSE(computed, expected, 1e-3);
-        y = ti.doStep(eq, y, 0., stepSize);
+        y = ti.DoStep(eq, y, 0., stepSize);
     }
 }
