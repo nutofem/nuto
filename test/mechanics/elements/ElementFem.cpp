@@ -19,7 +19,7 @@ NuTo::InterpolationTriangleLinear interpolation = NuTo::InterpolationTriangleLin
 
 NuTo::ElementFem TestElement()
 {
-    return NuTo::ElementFem({&n0, &n1, &n2}, interpolation);
+    return NuTo::ElementFem({n0, n1, n2}, interpolation);
 }
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValues)

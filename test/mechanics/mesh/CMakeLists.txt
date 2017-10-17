@@ -8,5 +8,5 @@ if(ENABLE_VISUALIZE)
 endif()
 add_test(almost::mechanics::mesh::MeshCompanion ${CMAKE_CURRENT_BINARY_DIR}/MeshCompanion)
 
-add_unit_test(Mesh
+add_unit_test(MeshFem
     mechanics/elements/ElementShapeFunctions)
