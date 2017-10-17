@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include <iostream>
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 #include "mechanics/timeIntegration/RK4.h"
 
 class HarmonicOscillator
@@ -25,7 +24,7 @@ public:
 
     //! Solution for damped harmonic oscillator at time t
     //! Initial conditions [displacement, velocity] w0
-    double exactSolution(const Eigen::Vector2d& w0, double t)
+    double ExactSolution(const Eigen::Vector2d& w0, double t)
     {
         double om1 = sqrt(1. - m_gam * m_gam);
         double C1 = w0[0];

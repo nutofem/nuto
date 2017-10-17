@@ -13,41 +13,37 @@ class ExplicitRungeKutta
 public:
     //! @brief Initialization with method specific parameters (butcher tableau)
     ExplicitRungeKutta(std::vector<std::vector<double>> aa, std::vector<double> bb, std::vector<double> cc)
+        : a(aa)
+        , b(bb)
+        , c(cc)
     {
-        for (auto elm : aa)
-        {
-            a.push_back(elm);
-        }
-        for (auto elm : bb)
-        {
-            b.push_back(elm);
-        }
-        for (auto elm : cc)
-        {
-            c.push_back(elm);
-        }
     }
 
     //! @brief Performs one RungeKutta step
+    //! @param f A functor that returns the right hand side of the differential equation
+    //!
+    //! The signature of its call operator must be:
+    //! operator()(const state& w, state& dwdt, double t)
+    //! The return value is stored in dwdt
+    //!
+    //! @param w0 initial value
+    //! @param t0 start time
+    //! @param h step size (t-t0)
+    //! @return value after one RungeKutta step
     template <typename F>
-    state doStep(F f, state w0, double t0, double h)
+    state DoStep(F f, state w0, double t0, double h)
     {
-        std::vector<state> k;
-        for (size_t i = 0; i < c.size(); i++)
-        {
-            k.push_back(state(w0));
-        }
+        std::vector<state> k(c.size(), w0);
         state result = w0;
-        state wni = w0;
-        double t;
 
         for (std::size_t i = 0; i < c.size(); i++)
         {
-            t = t0 + c[i] * h;
-            wni = w0;
+            double t = t0 + c[i] * h;
+            state wni = w0;
             for (std::size_t j = 0; j < i; j++)
             {
-                wni += h * a[i][j] * k[j];
+                if (a[i][j] != 0)
+                    wni += h * a[i][j] * k[j];
             }
             f(wni, k[i], t);
             result += h * b[i] * k[i];
