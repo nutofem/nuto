@@ -1,5 +1,6 @@
 #pragma once
 #include <boost/ptr_container/ptr_vector.hpp>
+#include "base/Group.h"
 #include "base/ValueVector.h"
 #include "mechanics/DirectionEnum.h"
 #include "mechanics/nodes/NodeSimple.h"
@@ -18,7 +19,12 @@ public:
         return *mInterpolations.rbegin();
     }
 
-    NodeSimple& NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol = 1.e-10) 
+    //! @brief selects a node of type \p dofType at given \p coords
+    //! @param coords global coordinates
+    //! @param dofType dof type
+    //! @param tol selection tolerance
+    //! @return reference to the selected node, throws, if no node is found
+    NodeSimple& NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol = 1.e-10)
     {
         for (auto& element : this->Elements)
         {
@@ -37,7 +43,33 @@ public:
         throw NuTo::Exception(__PRETTY_FUNCTION__,
                               "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
     }
-    
+
+    //! @brief selects all nodes of type \p dofType where the \p coord in \p direction is within \tol
+    //! @param direction ::X, ::Y, or ::Z
+    //! @param coord coordinate value on the axis
+    //! @param dofType dof type
+    //! @param tol selection tolerance
+    //! @return group with selected nodes, the group may be empty if no nodes were found
+    Groups::Group<NodeSimple> NodeAtAxis(eDirection direction, double coord, DofType dofType, double tol = 1.e-10)
+    {
+        Groups::Group<NodeSimple> group;
+        const int directionComponent = ToComponentIndex(direction);
+        for (auto& element : this->Elements)
+        {
+            auto& dofElement = element.DofElement(dofType);
+            const auto& dofInterpolation = dofElement.Interpolation();
+            for (int iNode = 0; iNode < dofInterpolation.GetNumNodes(); ++iNode)
+            {
+                NaturalCoords dofNodeCoords = dofInterpolation.GetLocalCoords(iNode);
+                Eigen::VectorXd globalNodeCoords = Interpolate(element.CoordinateElement(), dofNodeCoords);
+                
+                if (std::abs(globalNodeCoords[directionComponent] - coord) < tol)
+                    group.Add(dofElement.GetNode(iNode));
+            }
+        }
+        return group;
+    }
+
 public:
     ValueVector<NodeSimple> Nodes;
     ValueVector<ElementCollectionFem> Elements;
