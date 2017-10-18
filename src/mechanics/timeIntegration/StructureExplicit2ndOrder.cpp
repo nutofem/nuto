@@ -14,9 +14,9 @@ NuTo::TimeIntegration::StructureRhsExplicit2ndOrder::StructureRhsExplicit2ndOrde
 void NuTo::TimeIntegration::StructureRhsExplicit2ndOrder::
 operator()(const StructureStateExplicit2ndOrder& x, StructureStateExplicit2ndOrder& dxdt, const double t)
 {
-    // ----------------------
-    // merge x with structure
-    // ----------------------
+    // ------------------------------------------------------------------
+    // merge x with structure, update dependent dofs including velocities
+    // ------------------------------------------------------------------
     auto cmat = mS.GetAssembler().GetConstraintMatrix();
     mS.GetAssembler().ConstraintUpdateRhs(t);
     auto dof0K = mS.NodeCalculateDependentDofValues(x.dof0);
@@ -26,8 +26,7 @@ operator()(const StructureStateExplicit2ndOrder& x, StructureStateExplicit2ndOrd
     // -----------------------
     // compute right hand side
     // -----------------------
-    NuTo::StructureOutputBlockVector Fext = NuTo::StructureOutputBlockVector(mS.GetDofStatus(), true);
-    Fext.SetZero();
+    NuTo::StructureOutputBlockVector Fext = mS.BuildGlobalExternalLoadVector();
     NuTo::StructureOutputBlockVector Fint = mS.BuildGlobalInternalGradient();
     NuTo::StructureOutputBlockVector Ftotal = Fext - Fint;
     NuTo::BlockFullVector<double> Fmod = NuTo::Assembler::ApplyCMatrix(Ftotal, cmat);
