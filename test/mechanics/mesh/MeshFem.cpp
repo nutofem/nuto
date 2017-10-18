@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelection)
     NuTo::DofType d("Dof", 1);
     NuTo::MeshFem mesh = DummyMesh(d);
 
-    const auto& n = NuTo::GetNodeAt(mesh.Elements, Eigen::Vector2d(0, 3), d);
+    const auto& n = mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3), d);
     BOOST_CHECK_CLOSE(n.GetValues()[0], 6174, 1.e-10);
-    BOOST_CHECK_THROW(NuTo::GetNodeAt(mesh.Elements, Eigen::Vector2d(0, 0), d), NuTo::Exception);
+    BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), d), NuTo::Exception);
 }
