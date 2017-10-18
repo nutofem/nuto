@@ -40,7 +40,7 @@ public:
         return mData.at(dofType.Id());
     }
 
-    //! @brief copies a \p t into the container
+    //! @brief copies a `t` into the container
     //! @param dofType dof type
     //! @param t value to insert
     void Insert(const DofType& dofType, T t)

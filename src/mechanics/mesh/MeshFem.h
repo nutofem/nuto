@@ -19,7 +19,7 @@ public:
         return *mInterpolations.rbegin();
     }
 
-    //! @brief selects a node of type \p dofType at given \p coords
+    //! @brief selects a node of type `dofType` at given `coords`
     //! @param coords global coordinates
     //! @param dofType dof type
     //! @param tol selection tolerance
@@ -44,13 +44,13 @@ public:
                               "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
     }
 
-    //! @brief selects all nodes of type \p dofType where the \p coord in \p direction is within \tol
+    //! @brief selects all nodes of type `dofType` where the `coord` in `direction` is within `tol`
     //! @param direction ::X, ::Y, or ::Z
-    //! @param coord coordinate value on the axis
     //! @param dofType dof type
+    //! @param axisOffset distance of the node to the axis
     //! @param tol selection tolerance
     //! @return group with selected nodes, the group may be empty if no nodes were found
-    Groups::Group<NodeSimple> NodeAtAxis(eDirection direction, double coord, DofType dofType, double tol = 1.e-10)
+    Groups::Group<NodeSimple> NodesAtAxis(eDirection direction, DofType dofType, double axisOffset = 0., double tol = 1.e-10)
     {
         Groups::Group<NodeSimple> group;
         const int directionComponent = ToComponentIndex(direction);
@@ -63,7 +63,7 @@ public:
                 NaturalCoords dofNodeCoords = dofInterpolation.GetLocalCoords(iNode);
                 Eigen::VectorXd globalNodeCoords = Interpolate(element.CoordinateElement(), dofNodeCoords);
                 
-                if (std::abs(globalNodeCoords[directionComponent] - coord) < tol)
+                if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
                     group.Add(dofElement.GetNode(iNode));
             }
         }

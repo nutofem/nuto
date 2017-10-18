@@ -11,7 +11,7 @@ class NodeSimple
 {
 public:
 
-    //! @brief initizalizes the node values with \p values and initializes the dof numbers to zero
+    //! @brief initizalizes the node values with `values` and initializes the dof numbers to zero
     //! @param values inititial node values
     NodeSimple(Eigen::VectorXd values)
         : mValues(values)
@@ -19,7 +19,7 @@ public:
     {
     }
    
-    //! @brief initializes a 1D node with \p value and a dof number 0
+    //! @brief initializes a 1D node with `value` and a dof number 0
     //! @param value initial node value
     NodeSimple(double value)
         : mValues(Eigen::VectorXd::Constant(1, value))
