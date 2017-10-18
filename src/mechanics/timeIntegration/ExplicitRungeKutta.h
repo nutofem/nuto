@@ -6,7 +6,7 @@ namespace NuTo
 {
 namespace TimeIntegration
 {
-template <typename Tstate>
+template <typename TState>
 class ExplicitRungeKutta
 {
 
@@ -23,23 +23,23 @@ public:
     //! @param f A functor that returns the right hand side of the differential equation
     //!
     //! The signature of its call operator must be:
-    //! operator()(const Tstate& w, Tstate& dwdt, double t)
+    //! operator()(const TState& w, TState& dwdt, double t)
     //! The return value is stored in dwdt
     //!
     //! @param w0 initial value
     //! @param t0 start time
     //! @param h step size (t-t0)
     //! @return value after one RungeKutta step
-    template <typename F>
-    Tstate DoStep(F f, Tstate w0, double t0, double h)
+    template <typename TFunctor>
+    TState DoStep(TFunctor f, TState w0, double t0, double h)
     {
-        std::vector<Tstate> k(c.size(), w0);
-        Tstate result = w0;
+        std::vector<TState> k(c.size(), w0);
+        TState result = w0;
 
         for (std::size_t i = 0; i < c.size(); i++)
         {
             double t = t0 + c[i] * h;
-            Tstate wni = w0;
+            TState wni = w0;
             for (std::size_t j = 0; j < i; j++)
             {
                 if (a[i][j] != 0)
