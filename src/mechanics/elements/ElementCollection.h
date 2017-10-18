@@ -69,6 +69,15 @@ public:
         return mDofElements[dofType];
     }
 
+    //! @brief nonconst Getter for DofElements
+    //! @param dofType dof type
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    TElement& DofElement(DofType dofType)
+    {
+        return mDofElements.At(dofType);
+    }
+
 private:
     TElement mCoordinateElement;
     DofContainer<TElement> mDofElements;

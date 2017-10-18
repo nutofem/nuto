@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "base/ValueVector.h"
+#include "mechanics/DirectionEnum.h"
 #include "mechanics/nodes/NodeSimple.h"
 #include "mechanics/elements/ElementCollection.h"
 
@@ -17,11 +18,11 @@ public:
         return *mInterpolations.rbegin();
     }
 
-    const NodeSimple& NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol = 1.e-10) const
+    NodeSimple& NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol = 1.e-10) 
     {
-        for (const auto& element : this->Elements)
+        for (auto& element : this->Elements)
         {
-            const auto& dofElement = element.DofElement(dofType);
+            auto& dofElement = element.DofElement(dofType);
             const auto& dofInterpolation = dofElement.Interpolation();
             for (int iNode = 0; iNode < dofInterpolation.GetNumNodes(); ++iNode)
             {
@@ -36,7 +37,7 @@ public:
         throw NuTo::Exception(__PRETTY_FUNCTION__,
                               "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
     }
-
+    
 public:
     ValueVector<NodeSimple> Nodes;
     ValueVector<ElementCollectionFem> Elements;

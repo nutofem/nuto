@@ -12,7 +12,8 @@ namespace NuTo
 class ElementFem : public ElementInterface
 {
 public:
-    ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes, const InterpolationSimple& interpolation)
+    ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
+               const InterpolationSimple& interpolation)
         : mInterpolation(interpolation)
     {
         for (NuTo::NodeSimple& node : nodes)
@@ -53,13 +54,20 @@ public:
 
     int GetNumNodes() const override
     {
-        return mNodes.size(); 
+        return mNodes.size();
     }
 
     const InterpolationSimple& Interpolation() const
     {
         return mInterpolation;
     }
+
+    NodeSimple& GetNode(int i)
+    {
+        assert(i < mNodes.size());
+        return *mNodes[i];
+    }
+
 
     const NodeSimple& GetNode(int i) const
     {
@@ -68,7 +76,6 @@ public:
     }
 
 private:
-
     std::vector<NuTo::NodeSimple*> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
 };
