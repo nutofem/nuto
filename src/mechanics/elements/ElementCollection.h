@@ -60,6 +60,14 @@ public:
         return mCoordinateElement;
     }
 
+    //! @brief nonconst Getter for CoordinateElement
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    TElement& CoordinateElement()
+    {
+        return mCoordinateElement;
+    }
+
     //! @brief Getter for DofElements
     //! @param dofType dof type
     //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via

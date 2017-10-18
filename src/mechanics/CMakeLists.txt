@@ -142,6 +142,7 @@ set(MechanicsMeshSources
     mesh/ImportFromGmsh.cpp
     mesh/MeshCompanion.cpp
     mesh/MeshGenerator.cpp
+    mesh/MeshFem.cpp
     )
 
 set(MechanicsNodesSources

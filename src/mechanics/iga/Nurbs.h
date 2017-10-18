@@ -337,7 +337,7 @@ private:
 };
 
 template <>
-Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
+inline Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
 {
     assert(knotID[0] >= mDegree[0]);
     int dim = GetDimension();
@@ -353,7 +353,7 @@ Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knot
 }
 
 template <>
-Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
+inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
 {
     assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
     int dim = GetDimension();
@@ -376,7 +376,7 @@ Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knot
 }
 
 template <>
-Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
+inline Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 1, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
@@ -426,7 +426,7 @@ Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
 }
 
 template <>
-Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
+inline Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
                                                                const Eigen::Matrix<double, 2, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);

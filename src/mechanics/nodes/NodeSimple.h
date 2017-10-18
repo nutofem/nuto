@@ -38,6 +38,12 @@ public:
         assert(component < mDofNumbers.rows());
         return mDofNumbers[component];
     }
+    
+    void SetValues(Eigen::VectorXd values)
+    {
+        assert(values.size() == mValues.size());
+        mValues = values;
+    }
 
     void SetValue(int component, double value)
     {
