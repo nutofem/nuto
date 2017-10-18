@@ -3,7 +3,7 @@
 #include <eigen3/Eigen/Core>
 
 #include "PoreState.h"
-#include "mechanics/constitutive/laws/PorousMedium.h"
+#include "PorousMedium.h"
 
 namespace Hygro
 {
@@ -12,7 +12,7 @@ namespace WaterMassBalance
 {
 
 //! Corresponds to second term in \f$ \mathbf{C}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const PorousMedium& medium,
                                       const Eigen::MatrixXd& N)
 {
     const double n = medium.Porosity();
@@ -24,7 +24,7 @@ Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const NuTo::Po
 }
 
 //! Corresponds to first term in \f$ \mathbf{C}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const PorousMedium& medium,
                                       const Eigen::MatrixXd& N)
 {
     const double n = medium.Porosity();
@@ -38,7 +38,7 @@ Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const NuTo::Po
 }
 
 //! Corresponds to first term in \f$ \mathbf{K}_{cg} \f$ in Gawin et al.
-Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                      const Eigen::MatrixXd& dN)
 {
     const double airDensity = poreState.AirDensity;
@@ -60,7 +60,7 @@ Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const NuTo::Por
 }
 
 //! Corresponds to first term in \f$ \mathbf{K}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd DiffusionCapillaryPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DiffusionCapillaryPressure(const PoreState& poreState, const PorousMedium& medium,
                                            const Eigen::MatrixXd& dN)
 {
     const double gasDensity = poreState.GasDensity;
@@ -81,7 +81,7 @@ Eigen::MatrixXd DiffusionCapillaryPressure(const PoreState& poreState, const NuT
 }
 
 //! Corresponds to second term in \f$ \mathbf{K}_{cg} \f$ in Gawin et al.
-Eigen::MatrixXd AdvectionVapourGasPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd AdvectionVapourGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                            const Eigen::MatrixXd& dN)
 {
     const double vapourDensity = poreState.VapourDensity;
@@ -96,7 +96,7 @@ Eigen::MatrixXd AdvectionVapourGasPressure(const PoreState& poreState, const NuT
 
 
 //! Corresponds to third term in \f$ \mathbf{K}_{cg} \f$ in Gawin et al.
-Eigen::MatrixXd AdvectionWaterGasPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd AdvectionWaterGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                           const Eigen::MatrixXd& dN)
 {
     const double waterDensity = poreState.WaterDensity;
@@ -111,7 +111,7 @@ Eigen::MatrixXd AdvectionWaterGasPressure(const PoreState& poreState, const NuTo
 
 
 //! Corresponds to second term in \f$ \mathbf{K}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd AdvectionWaterCapillaryPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd AdvectionWaterCapillaryPressure(const PoreState& poreState, const PorousMedium& medium,
                                                 const Eigen::MatrixXd& dN)
 {
     const double waterDensity = poreState.WaterDensity;

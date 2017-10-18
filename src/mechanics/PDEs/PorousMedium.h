@@ -3,9 +3,6 @@
 #include <cmath>
 #include <eigen3/Eigen/Core>
 
-namespace NuTo
-{
-
 class PorousMedium
 {
 public:
@@ -99,5 +96,3 @@ private:
     double mB = 0.0;
     double mFs = 0.0;
 };
-
-} // namespace NuTo

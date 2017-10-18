@@ -2,11 +2,11 @@
 
 #include "BoostUnitTest.h"
 #include "mechanics/PDEs/DryAirMassBalance.h"
-#include "mechanics/constitutive/laws/PorousMedium.h"
+#include "mechanics/PDEs/PorousMedium.h"
 
 BOOST_AUTO_TEST_CASE(DensityChange)
 {
-    NuTo::PorousMedium material(0.5, 20.0, 2.0, 0.1);
+    PorousMedium material(0.5, 20.0, 2.0, 0.1);
 
     Eigen::Matrix<double, 1, 2> N;
     N << 0.5, 0.5;
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(DensityChange)
 
 BOOST_AUTO_TEST_CASE(SaturationVariation)
 {
-    NuTo::PorousMedium material(0.5, 20.0, 2.0, 0.1);
+    PorousMedium material(0.5, 20.0, 2.0, 0.1);
 
     Eigen::Matrix<double, 1, 2> N;
     N << 0.5, 0.5;

@@ -28,6 +28,10 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
+#include "mechanics/constitutive/laws/PorousMediaAdapter.h"
+#include "mechanics/PDEs/PoreState.h"
+#include "mechanics/PDEs/WaterMassBalance.h"
+
 using namespace NuTo;
 
 template <int TDim>
@@ -345,6 +349,12 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::ELECTRICPOTENTIAL):
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ELECTRIC_FIELD];
+                break;
+
+            case Node::CombineDofs(Node::eDof::CAPILLARY_PRESSURE, Node::eDof::CAPILLARY_PRESSURE):
+            case Node::CombineDofs(Node::eDof::CAPILLARY_PRESSURE, Node::eDof::GAS_PRESSURE):
+            case Node::CombineDofs(Node::eDof::GAS_PRESSURE, Node::eDof::CAPILLARY_PRESSURE):
+            case Node::CombineDofs(Node::eDof::GAS_PRESSURE, Node::eDof::GAS_PRESSURE):
                 break;
 
             default:
@@ -1162,6 +1172,32 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                             ((G / l + 2 * kappa) * N.transpose() * N + G * l * B.transpose() * B);
                 break;
             }
+
+            case Node::CombineDofs(Node::eDof::CAPILLARY_PRESSURE, Node::eDof::CAPILLARY_PRESSURE):
+            {
+                const auto& dN = rData.mB.at(Node::eDof::CAPILLARY_PRESSURE);
+
+                const auto& mediumAdapter = dynamic_cast<const PorousMediaAdapter&>(GetConstitutiveLaw(rTheIP));
+                const auto& medium = mediumAdapter.GetProperLaw();
+
+                const auto& N_c = *(rData.GetNMatrix(Node::eDof::CAPILLARY_PRESSURE));
+                const double capillaryPressure = (N_c * rData.mNodalValues.at(Node::eDof::CAPILLARY_PRESSURE))(0, 0);
+                const auto& N_g = *(rData.GetNMatrix(Node::eDof::GAS_PRESSURE));
+                const double gasPressure = (N_g * rData.mNodalValues.at(Node::eDof::GAS_PRESSURE))(0, 0);
+                const double temperature = 273.15;
+                const Hygro::PoreState poreState(capillaryPressure, gasPressure, temperature);
+
+                hessian0 += rData.mDetJxWeightIPxSection *
+                            Hygro::WaterMassBalance::DiffusionCapillaryPressure(poreState, medium, dN);
+
+                hessian0 += rData.mDetJxWeightIPxSection *
+                            Hygro::WaterMassBalance::AdvectionWaterCapillaryPressure(poreState, medium, dN);
+            }
+            // TODO
+            case Node::CombineDofs(Node::eDof::CAPILLARY_PRESSURE, Node::eDof::GAS_PRESSURE):
+            case Node::CombineDofs(Node::eDof::GAS_PRESSURE, Node::eDof::CAPILLARY_PRESSURE):
+            case Node::CombineDofs(Node::eDof::GAS_PRESSURE, Node::eDof::GAS_PRESSURE):
+                break;
             /*******************************************************\
             |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
             \*******************************************************/

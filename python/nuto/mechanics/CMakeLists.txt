@@ -14,7 +14,7 @@ set(SWIG_MODULE_ModuleMechanics_EXTRA_DEPS
     ${mechanicsDir}/elements/ElementEnum.h
 
     ${mechanicsDir}/PDEs/HygroHelpers.h
-    ${mechanicsDir}/constitutive/laws/PorousMedium.h
+    ${mechanicsDir}/PDEs/PorousMedium.h
 
     ${mechanicsDir}/nodes/NodeBase.h
 

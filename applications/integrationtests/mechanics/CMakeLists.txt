@@ -34,6 +34,7 @@ foreach(test
     CreepUniaxial
     CSDAInterface
     GradientDamage
+    Hygro1D
     IGA
     ImplEx
     InhomogeneousMaterial

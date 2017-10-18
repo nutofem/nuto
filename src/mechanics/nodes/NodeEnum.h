@@ -18,7 +18,9 @@ enum class eDof : unsigned char
     WATERVOLUMEFRACTION,
     RELATIVEHUMIDITY,
     ELECTRICPOTENTIAL,
-    CRACKPHASEFIELD
+    CRACKPHASEFIELD,
+    CAPILLARY_PRESSURE,
+    GAS_PRESSURE
 };
 
 //! @brief Gets a set of all Dofs

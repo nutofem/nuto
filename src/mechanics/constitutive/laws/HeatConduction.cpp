@@ -22,7 +22,7 @@ HeatConduction::HeatConduction()
 }
 
 ConstitutiveInputMap HeatConduction::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput) const
-{
+{ 
     ConstitutiveInputMap constitutiveInputMap;
 
     for (const auto& itOutput : rConstitutiveOutput)

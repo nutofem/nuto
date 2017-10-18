@@ -3,7 +3,7 @@
 #include <eigen3/Eigen/Core>
 
 #include "PoreState.h"
-#include "mechanics/constitutive/laws/PorousMedium.h"
+#include "PorousMedium.h"
 
 namespace Hygro
 {
@@ -12,7 +12,7 @@ namespace DryAirMassBalance
 {
 //! Corresponds to \f$ \mathbf{C}_{gg} \f$ in Gawin et al.
 //! If the density of the air increases, naturally the mass of air in the pores increases.
-Eigen::MatrixXd DensityChangeDueToGasPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DensityChangeDueToGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                               const Eigen::MatrixXd& N)
 {
     const double T = poreState.Temperature;
@@ -32,7 +32,7 @@ Eigen::MatrixXd DensityChangeDueToGasPressure(const PoreState& poreState, const 
 
 //! Corresponds to the first term of \f$ \mathbf{C}_{gc} \f$ in Gawin et al.
 //! If the saturation increases, air is being displaced by liquid water.
-Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const PorousMedium& medium,
                                       const Eigen::MatrixXd& N)
 {
     const double n = medium.Porosity();
@@ -46,7 +46,7 @@ Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const NuTo::Po
 
 //! Corresponds to the second term of \f$ \mathbf{C}_{gc} \f$ in Gawin et al.
 //! If the density of the air increases, naturally the mass of air in the pores increases.
-Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, const PorousMedium& medium,
                                                     const Eigen::MatrixXd& N)
 {
     const double T = poreState.Temperature;
@@ -65,7 +65,7 @@ Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, 
 
 //! Corresponds to first term of \f$ \mathbf{K}_{gg} \f$ in Gawin et al.
 //! Contribution of advective air flow.
-Eigen::MatrixXd PermeabilityMatrix(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd PermeabilityMatrix(const PoreState& poreState, const PorousMedium& medium,
                                    const Eigen::MatrixXd& dN)
 {
     const double airDensity = poreState.AirDensity;
@@ -83,7 +83,7 @@ Eigen::MatrixXd PermeabilityMatrix(const PoreState& poreState, const NuTo::Porou
 
 //! Corresponds to the second term of \f$ \mathbf{K}_{gg} \f$ in Gawin et al.
 //! Contribution of diffusive air flow.
-Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                      const Eigen::MatrixXd& dN)
 {
     const double gasDensity = poreState.GasDensity;
@@ -106,7 +106,7 @@ Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const NuTo::Por
 
 
 //! Corresponds to \f$ \mathbf{K}_{gc} \f$ in Gawin et al.
-Eigen::MatrixXd DiffusionCapillaryPressure(const PoreState& poreState, const NuTo::PorousMedium& medium,
+Eigen::MatrixXd DiffusionCapillaryPressure(const PoreState& poreState, const PorousMedium& medium,
                                            const Eigen::MatrixXd& dN)
 {
     const double gasDensity = poreState.GasDensity;

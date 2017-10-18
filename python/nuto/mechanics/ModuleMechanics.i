@@ -8,7 +8,6 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
-#include "mechanics/constitutive/laws/PorousMedium.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -37,6 +36,7 @@
 #include "mechanics/structures/Assembler.h"
 
 #include "mechanics/PDEs/HygroHelpers.h"
+#include "mechanics/PDEs/PorousMedium.h"
 
 #include <stdexcept>
 
@@ -102,7 +102,7 @@ namespace std {
 
 %include "base/CallbackInterface.h"
 
-%include "mechanics/constitutive/laws/PorousMedium.h"
+%include "mechanics/PDEs/PorousMedium.h"
 
 %include "mechanics/structures/StructureBase.h"
 %include "mechanics/structures/unstructured/Structure.h"
