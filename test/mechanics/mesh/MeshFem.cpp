@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include "mechanics/mesh/MeshFem.h"
+#include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
@@ -100,7 +101,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     const auto& interpolationLinear = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(1));
     NuTo::DofType dof0("linear", 1);
-    mesh.AddDofInterpolation(dof0, interpolationLinear);
+    NuTo::AddDofInterpolation(&mesh, dof0, interpolationLinear);
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
@@ -122,7 +123,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
      */
     NuTo::DofType dof1("quadratic", 1);
     const auto& interpolationQuadratic = mesh.CreateInterpolation(NuTo::InterpolationTriangleQuadratic(1));
-    mesh.AddDofInterpolation(dof1, interpolationQuadratic);
+    NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;
     BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);

@@ -49,10 +49,7 @@ public:
     //! @return group containing all selected nodes
     Groups::Group<NodeSimple> NodesTotal();
 
-    //! @brief add a new _layer_ of nodes for `dofType`
-    //! @param dofType dof type
-    //! @param interpolation interpolation type for the dof type
-    void AddDofInterpolation(DofType dofType, const InterpolationSimple& interpolation);
+
 
 public:
     ValueVector<NodeSimple> Nodes;
