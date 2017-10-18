@@ -1,6 +1,7 @@
 #include "BoostUnitTest.h"
 #include "mechanics/mesh/MeshFem.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
 NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 {
@@ -109,4 +110,42 @@ BOOST_AUTO_TEST_CASE(MeshTriangle)
     auto mesh = NuTo::UnitMeshFem::CreateTriangles(2, 7);
     BOOST_CHECK_EQUAL(mesh.Elements.size(), 2 * 7 * 2);
     Check2DMesh(mesh);
+}
+
+
+BOOST_AUTO_TEST_CASE(MeshConvert)
+{
+    auto mesh = NuTo::UnitMeshFem::CreateTriangles(1, 1);
+    NuTo::DofType dof0("linear", 1);
+
+    int expectedNumCoordinateNodes = 2 * 2;
+    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes);
+
+    const auto& interpolationLinear = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(1));
+    mesh.AddDofInterpolation(dof0, interpolationLinear);
+
+    int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
+
+    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
+
+
+    NuTo::DofType dof1("quadratic", 1);
+    const auto& interpolationQuadratic = mesh.CreateInterpolation(NuTo::InterpolationTriangleQuadratic(1));
+    mesh.AddDofInterpolation(dof1, interpolationQuadratic);
+
+    /* 3--9--7
+     * |\    |
+     * | \   |
+     * 6  5  8
+     * |   \ |
+     * |    \|
+     * 1--4--2
+     *
+     * the numbering is not correct, but the number of points is.
+     *
+     */
+
+    int expectedNumDof1Nodes = 9;
+    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
 }

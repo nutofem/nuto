@@ -1,6 +1,7 @@
 #include "mechanics/mesh/MeshFem.h"
 
 #include <sstream>
+#include "math/SpatialContainer.h"
 #include "base/Exception.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
@@ -89,7 +90,68 @@ Groups::Group<NodeSimple> MeshFem::NodesTotal(DofType d)
     return group;
 }
 
-// anonymous helper functions for mesh creation and transformation 
+void MeshFem::AddDofInterpolation(DofType dofType, const InterpolationSimple& interpolation)
+{
+    // We will build a spatial container containing many duplicate DummyNodes at a 
+    // given coordinate. If those dummynodes have _NO_ existingNodePtr, a new node 
+    // is added to the this->Nodes container. A reference to this newly created node
+    // is saved at all of those duplicate dummy nodes. 
+    struct DummyNode
+    {
+        Eigen::VectorXd coords;
+        NodeSimple* existingNodePtr = nullptr;
+    };
+
+    struct DummyNodeCoordinate
+    {
+        Eigen::VectorXd operator()(const DummyNode& node) const
+        {
+            return node.coords;
+        }
+    };
+
+    // create a vector containing all coordinates of the new nodes. This contains a lot of duplicate dummy nodes.
+    std::vector<DummyNode> dummyNodes;
+    for (auto& elementCollection : this->Elements)
+    {
+        const auto& coordinateElement = elementCollection.CoordinateElement();
+        for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
+        {
+            DummyNode n;
+            n.coords = Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode));
+            dummyNodes.push_back(n);
+        }
+    }
+
+    NuTo::SpatialContainer<DummyNode, DummyNodeCoordinate> dummyNodesSpatial(dummyNodes);
+    for (auto& elementCollection : this->Elements)
+    {
+        const auto& coordinateElement = elementCollection.CoordinateElement();
+        std::vector<NodeSimple*> dofNodes;
+        for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
+        {
+            Eigen::VectorXd coord = Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode));
+            auto idsAtCoord = dummyNodesSpatial.FindIDsWithinRadius(coord, 1.e-6);
+
+            // Either _ALL_ dummy nodes at this coordinate have an existingNodePtr or _NONE_. So pick one.
+            NodeSimple* existingNode = dummyNodes[idsAtCoord.front()].existingNodePtr;
+            if (existingNode == nullptr)
+            {
+                // create new node and ...
+                existingNode = &this->Nodes.Add(Eigen::VectorXd::Zero(dofType.GetNum()));
+
+                // ... put it at _ALL_ dummy node at that coordinate
+                for (int id : idsAtCoord)
+                    dummyNodes[id].existingNodePtr = existingNode;
+            }
+            dofNodes.push_back(existingNode);
+        }
+        elementCollection.AddDofElement(dofType, ElementFem(dofNodes, interpolation));
+    }
+}
+
+
+// anonymous helper functions for mesh creation and transformation
 
 MeshFem CreateNodes2D(int numX, int numY)
 {
@@ -110,7 +172,7 @@ void TransformNodes(Groups::Group<NodeSimple> nodes, std::function<Eigen::Vector
         node.SetValues(f(node.GetValues()));
 }
 
-// UnitMeshFem functions 
+// UnitMeshFem functions
 
 MeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
 {

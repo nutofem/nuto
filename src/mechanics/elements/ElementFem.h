@@ -12,6 +12,14 @@ namespace NuTo
 class ElementFem : public ElementInterface
 {
 public:
+    ElementFem(std::vector<NodeSimple*> nodes, const InterpolationSimple& interpolation)
+        : mNodes(nodes)
+        , mInterpolation(interpolation)
+    {
+        assert(mNodes.size() == interpolation.GetNumNodes());
+        assert(mNodes.front()->GetNumValues() == interpolation.GetDofDimension());
+    }
+
     ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
                const InterpolationSimple& interpolation)
         : mInterpolation(interpolation)
