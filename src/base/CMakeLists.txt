@@ -6,6 +6,9 @@ set(BaseSources
     serializeStream/SerializeStreamBase.cpp
     serializeStream/SerializeStreamIn.cpp
     serializeStream/SerializeStreamOut.cpp
+    tools/GNUPlot.cpp
+    tools/PlotData.cpp
+    tools/PlotEnum.cpp
     Timer.cpp
     )
 

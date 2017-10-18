@@ -15,6 +15,7 @@ enum class eError;
 namespace Constitutive
 {
 class IPAdditiveOutput;
+class IPAdditiveInputExplicit;
 template <typename TLaw>
 class IPConstitutiveLaw;
 namespace StaticData
@@ -27,7 +28,7 @@ class DataContainer;
 class IPConstitutiveLawBase
 {
     friend class Constitutive::IPAdditiveOutput;
-
+    friend class Constitutive::IPAdditiveInputExplicit;
 
 public:
     //! @brief virtual destructor

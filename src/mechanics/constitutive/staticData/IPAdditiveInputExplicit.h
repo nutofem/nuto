@@ -43,6 +43,11 @@ public:
     virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override;
 
 protected:
+    //! @brief Searches for a specific IP constitutive law and returns it
+    //! @param rCLPtr The constitutive law of the IP constitutive law that is requested
+    //! @return Searched IP constitutive law - nullptr if law is not found
+    virtual IPConstitutiveLawBase* GetSublawIP(ConstitutiveBase* rCLPtr) override;
+
     template <int TDim>
     void AdditiveInputExplicitEvaluate(const ConstitutiveInputMap& rConstitutiveInput,
                                        const ConstitutiveOutputMap& rConstitutiveOutput);

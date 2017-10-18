@@ -15,14 +15,24 @@
 #include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 #include "visualize/VisualizeEnum.h"
 
+
 #include <cmath>
 #include <boost/filesystem.hpp>
+
+
+#define USEGNUPLOT
+
+#ifdef USEGNUPLOT
+#include "base/tools/GNUPlot.h"
+#include "base/tools/PlotEnum.h"
+#endif
+
 
 #define NUMELEMENTSPERDIRECTION 3
 
 #define INITIALTIMESTEP 1.e-9
-#define TIMESTEP 20000.0
-#define SIMULATIONTIME 100000.0
+#define TIMESTEP 1000.0
+#define SIMULATIONTIME 50000.0
 
 #define NUMERICALTOLERANCE 1.e-2
 #define MAXITERATION 20
@@ -76,6 +86,37 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     NewmarkDirect NM(&S);
 
     S.SetShowTime(false);
+
+
+    // Calculate theoretical Solution
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
+    const int numTimesteps = std::ceil(SIMULATIONTIME / TIMESTEP) + 1; // std::ceil is jet not constexpr on clang
+
+
+    Eigen::MatrixXd theoreticalStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
+    Eigen::VectorXd theoreticalTime = Eigen::VectorXd::Zero(numTimesteps);
+    Eigen::VectorXd theoreticalMainStrain = Eigen::VectorXd::Zero(numTimesteps);
+
+    for (unsigned int i = 0; i < numTimesteps; ++i)
+    {
+        double theoreticalStrain1D = CalculateTheoreticalKelvinChainStrain(YoungsModulus, kelvinChainStiffness,
+                                                                           kelvinChainRetardationTimes, i * TIMESTEP);
+        theoreticalMainStrain[i] = theoreticalStrain1D;
+        theoreticalTime[i] = i * TIMESTEP;
+
+        theoreticalStrains(ToComponentIndex(directions[0]), i) = theoreticalStrain1D;
+        if (TDim > 1)
+        {
+            theoreticalStrains(ToComponentIndex(directions[1]), i) = -theoreticalStrain1D * poissonRatio;
+            if (TDim > 2)
+                theoreticalStrains(ToComponentIndex(directions[2]), i) = -theoreticalStrain1D * poissonRatio;
+            else
+                // this is necessary in 2D because of plane stress state which produces sheer stresses
+                theoreticalStrains(2, i) = -theoreticalStrain1D * poissonRatio;
+        }
+    }
 
     // Mesh
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -249,16 +290,19 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
             });
     NM.GetTimeControl().AdjustTimestep(0, 1, true);
 
-    // Setup custom postprocessing
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Setup custom postprocessing
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+#ifdef USEGNUPLOT
+    Plot::GNUPlot gnuplot;
+#endif
 
-    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
-    const int numTimesteps = std::ceil(SIMULATIONTIME / TIMESTEP) + 1; // std::ceil is jet not constexpr on clang
     int lastCallbackTime = -1;
 
     Eigen::MatrixXd timeDependentStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
     Eigen::VectorXd timeVector = Eigen::VectorXd::Zero(numTimesteps);
+    Eigen::VectorXd timeMainStrainVector = Eigen::VectorXd::Zero(numTimesteps);
+
 
     // Set postprocessing callback function
     NM.PostProcessing().SetCallback([&](const StructureBase& Structure, const TimeControl& timeControl) {
@@ -285,6 +329,7 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
                     if (i == 0 && j == 0)
                     {
                         timeDependentStrains.block<VoigtDim, 1>(0, index) = IPStrains.block<VoigtDim, 1>(0, 0);
+                        timeMainStrainVector[index] = timeDependentStrains(ToComponentIndex(directions[0]), index);
                     }
                     else
                     {
@@ -297,6 +342,15 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
                     }
                 }
             }
+#ifdef USEGNUPLOT
+            gnuplot.Clear();
+            //            auto test = timeDependentStrains.block(ToComponentIndex(directions[0]), 0, index, 0);
+            gnuplot.AddPlot(theoreticalTime, theoreticalMainStrain * -1, {0, 255, 0}, Plot::eLineType::LINES,
+                            "theoretical Solution");
+            gnuplot.AddPlot(timeVector.head(index), timeMainStrainVector.head(index) * -1, {255, 0, 0},
+                            Plot::eLineType::LINES, "numerical solution");
+            gnuplot.Show();
+#endif
         }
     });
 
@@ -313,25 +367,26 @@ void TestCreepModel(std::string testName, const std::array<eDirection, TDim> dir
     // CheckResults
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    Eigen::MatrixXd theoreticalStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
-    for (unsigned int i = 0; i < numTimesteps; ++i)
-    {
-        double theoreticalStrain1D = CalculateTheoreticalKelvinChainStrain(YoungsModulus, kelvinChainStiffness,
-                                                                           kelvinChainRetardationTimes, timeVector[i]);
-        theoreticalStrains(ToComponentIndex(directions[0]), i) = theoreticalStrain1D;
-        if (TDim > 1)
-        {
-            theoreticalStrains(ToComponentIndex(directions[1]), i) = -theoreticalStrain1D * poissonRatio;
-            if (TDim > 2)
-                theoreticalStrains(ToComponentIndex(directions[2]), i) = -theoreticalStrain1D * poissonRatio;
-            else
-                // this is necessary in 2D because of plane stress state which produces sheer stresses
-                theoreticalStrains(2, i) = -theoreticalStrain1D * poissonRatio;
-        }
-    }
+    //    Eigen::MatrixXd theoreticalStrains = Eigen::MatrixXd::Zero(VoigtDim, numTimesteps);
+    //    for (unsigned int i = 0; i < numTimesteps; ++i)
+    //    {
+    //        double theoreticalStrain1D = CalculateTheoreticalKelvinChainStrain(YoungsModulus, kelvinChainStiffness,
+    //                                                                           kelvinChainRetardationTimes,
+    //                                                                           timeVector[i]);
+    //        theoreticalStrains(ToComponentIndex(directions[0]), i) = theoreticalStrain1D;
+    //        if (TDim > 1)
+    //        {
+    //            theoreticalStrains(ToComponentIndex(directions[1]), i) = -theoreticalStrain1D * poissonRatio;
+    //            if (TDim > 2)
+    //                theoreticalStrains(ToComponentIndex(directions[2]), i) = -theoreticalStrain1D * poissonRatio;
+    //            else
+    //                // this is necessary in 2D because of plane stress state which produces sheer stresses
+    //                theoreticalStrains(2, i) = -theoreticalStrain1D * poissonRatio;
+    //        }
+    //    }
 
     Eigen::MatrixXd diff = theoreticalStrains - timeDependentStrains;
-    if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-5)
+    if (std::abs(diff.lpNorm<Eigen::Infinity>()) > 1.e-4)
         throw Exception(__PRETTY_FUNCTION__, "Solution differs too much from theoretical solution");
 }
 

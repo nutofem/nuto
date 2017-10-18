@@ -460,7 +460,6 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
         converged = residualNorm < mToleranceResidual;
         if (converged)
         {
-            mStructure->ElementTotalUpdateStaticData();
 
             auto prevResidual = residual;
 
@@ -490,7 +489,12 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
 
     // store converged dofs after each staggered step is done
     if (converged)
+    {
+        // static data update must be outside of staggered calculation, otherwise some static data might be updated
+        // multiple times. This is specifically problematic for the creep-shrinkage coupling.
+        mStructure->ElementTotalUpdateStaticData();
         lastConverged_dof_dt = ExtractDofValues();
+    }
 }
 
 

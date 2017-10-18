@@ -81,7 +81,7 @@ NuTo::ShrinkageCapillaryStrainBased::GetParameterDouble(NuTo::Constitutive::eCon
 
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -104,7 +104,7 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -156,7 +156,7 @@ void NuTo::ShrinkageCapillaryStrainBased::Evaluate(const NuTo::ConstitutiveInput
                                              -waterVolumeFraction * NuTo::SI::DensityLiquidWater(mTemperature) *
                                              NuTo::SI::IdealGasConstant * mTemperature / NuTo::SI::MolarMassWater *
                                              log(relativeHumidity)) *
-                                     bulkFactor;
+                                     bulkFactor / 0.25;
 
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor
             // form and adding the result to the engeneering stress

@@ -84,6 +84,31 @@ void IPAdditiveInputExplicit::NuToSerializeLoad(SerializeStreamIn& rStream)
     }
 }
 
+IPConstitutiveLawBase* IPAdditiveInputExplicit::GetSublawIP(ConstitutiveBase* rCLPtr)
+{
+    for (auto& sublawIP : mSublawIPs)
+    {
+        ConstitutiveBase& sublaw = sublawIP.GetConstitutiveLaw();
+        if ((&sublaw) == rCLPtr)
+            return (&sublawIP);
+        switch (sublaw.GetType())
+        {
+        case Constitutive::eConstitutiveType::ADDITIVE_INPUT_EXPLICIT:
+        case Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT:
+        case Constitutive::eConstitutiveType::ADDITIVE_OUTPUT:
+        {
+            IPConstitutiveLawBase* additiveSublawOutput = sublawIP.GetSublawIP(rCLPtr);
+            if (additiveSublawOutput != nullptr)
+                return additiveSublawOutput;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return nullptr;
+}
+
 
 template <int TDim>
 void IPAdditiveInputExplicit::AdditiveInputExplicitEvaluate(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
@@ -148,12 +173,11 @@ void IPAdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputMap& 
                         assert(itOutput.second->GetIsCalculated() == false &&
                                "Currently, it is not supported that multiple sublaws write to the same derivative.");
                         if (sublawOutput->second->GetIsCalculated() == false)
-                            throw Exception(
-                                    __PRETTY_FUNCTION__,
-                                    "The value " + Constitutive::OutputToString(sublawOutput->first) +
-                                            ", which is necessary to determine " +
-                                            Constitutive::OutputToString(itOutput.first) +
-                                            " was requested from a sublaw but has not been calculated!");
+                            throw Exception(__PRETTY_FUNCTION__,
+                                            "The value " + Constitutive::OutputToString(sublawOutput->first) +
+                                                    ", which is necessary to determine " +
+                                                    Constitutive::OutputToString(itOutput.first) +
+                                                    " was requested from a sublaw but has not been calculated!");
                         const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(
                                 rConstitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)
                                         .get());
