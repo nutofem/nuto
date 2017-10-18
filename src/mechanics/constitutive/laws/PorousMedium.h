@@ -13,8 +13,9 @@ public:
     //! @param porosity Porosity of the medium.
     //! @param a Parameter for Saturation(), common values range from 18.6MPa for ordinary concrete to 46.9MPa for HPC.
     //! @param b Parameter for Saturation(), common values range from 2.27 for ordinary concrete to 2.06 for HPC.
+    // clang-format off
     //! @param fs Structure factor, see [Gawin et al., 1999](https://dx.doi.org/10.1002%2F(SICI)1099-1484(199901)4%3A1%3C37%3A%3AAID-CFM58%3E3.0.CO%3B2-S)
-    //! @remark Values
+    // clang-format on
     PorousMedium(double porosity, double a, double b, double fs)
         : mPorosity(porosity)
         , mA(a)
@@ -23,7 +24,7 @@ public:
     {
     }
 
-    double GetPorosity() const
+    double Porosity() const
     {
         return mPorosity;
     }
@@ -56,19 +57,17 @@ public:
     //! @remark Source: Gawin et al. "What physical phenomena can be neglected when modeling concrete at high
     //!                 temperature? A compartive study. Part 1", 2011, DOI:
     //!                 [10.1016/j.ijsolstr.2011.03.004](https://dx.doi.org/10.1016/j.ijsolstr.2011.03.004)
-    template <int TDim>
-    Eigen::Matrix<double, TDim, TDim> IntrinsicPermeability(const double gasPressure)
+    double IntrinsicPermeability(const double gasPressure) const
     {
         // TODO: add effects of dehydration and damage
-        const auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
         const double k0 = 2e-19;
         const double Ap = 0.36848;
         const double pg0 = 0.1; // MPa
-        const double k = k0 * std::pow(gasPressure / pg0, Ap);
-        return k * eye;
+        return k0 * std::pow(gasPressure / pg0, Ap);
     }
 
-    double EffectiveDiffusivity(const double capillaryPressure, const double gasPressure, const double temperature) const
+    double EffectiveDiffusivity(const double capillaryPressure, const double gasPressure,
+                                const double temperature) const
     {
         const double T0 = 273.15;
         const double D_v0 = 2.58e-5;
@@ -77,6 +76,21 @@ public:
         const double p_0 = 0.1;
         const double S_w = Saturation(capillaryPressure);
         return mPorosity * std::pow(1.0 - S_w, A_v) * mFs * D_v0 * std::pow(temperature / T0, B_v) * p_0 / gasPressure;
+    }
+
+    double GasRelativePermeability(const double capillaryPressure) const
+    {
+        // TODO: this is an empirical relation, could be very different
+        const double S_w = Saturation(capillaryPressure);
+        return 1.0 - S_w;
+    }
+
+
+    double WaterRelativePermeability(const double capillaryPressure) const
+    {
+        // TODO: this is an empirical relation, could be very different
+        const double S_w = Saturation(capillaryPressure);
+        return std::pow(S_w, 6);
     }
 
 private:

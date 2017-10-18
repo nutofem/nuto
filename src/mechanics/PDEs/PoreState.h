@@ -21,6 +21,8 @@ public:
         , GasMolarMass(1.0 / (VapourDensity / (GasDensity * Hygro::WaterMolarMass) +
                               AirDensity / (GasDensity * Hygro::AirMolarMass)))
         , AirDynamicViscosity(DynamicViscosityOfAir(AirPressure, GasPressure, Temperature))
+        , WaterDensity(DensityOfWater(Temperature))
+        , WaterDynamicViscosity(DynamicViscosityOfWater(Temperature))
     {
     }
 
@@ -35,9 +37,11 @@ public:
     const double GasDensity;
     const double GasMolarMass;
     const double AirDynamicViscosity;
+    const double WaterDensity;
+    const double WaterDynamicViscosity;
 
 private:
-    static constexpr double R = NuTo::SI::IdealGasConstant;
+    static constexpr double R = Hygro::MolarGasConstant;
 };
 
 } // namespace Hygro

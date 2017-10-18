@@ -7,9 +7,9 @@ const double eps = 1e-9;
 BOOST_AUTO_TEST_CASE(water_density)
 {
     // Tested againts it's own result, seemed reasonable. Guards against regressions.
-    BOOST_CHECK_CLOSE(Hygro::WaterDensity(273.15), 1015.11, eps);
-    BOOST_CHECK_CLOSE(Hygro::WaterDensity(373.15), 962.707, eps);
-    BOOST_CHECK_CLOSE(Hygro::WaterDensity(473.15), 867.442, eps);
+    BOOST_CHECK_CLOSE(Hygro::DensityOfWater(273.15), 1015.11, eps);
+    BOOST_CHECK_CLOSE(Hygro::DensityOfWater(373.15), 962.707, eps);
+    BOOST_CHECK_CLOSE(Hygro::DensityOfWater(473.15), 867.442, eps);
 }
 
 

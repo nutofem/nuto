@@ -103,9 +103,6 @@ namespace std {
 %include "base/CallbackInterface.h"
 
 %include "mechanics/constitutive/laws/PorousMedium.h"
-%template(IntrinsicPermeability1D) NuTo::PorousMedium::IntrinsicPermeability<1>;
-%template(IntrinsicPermeability2D) NuTo::PorousMedium::IntrinsicPermeability<2>;
-%template(IntrinsicPermeability3D) NuTo::PorousMedium::IntrinsicPermeability<3>;
 
 %include "mechanics/structures/StructureBase.h"
 %include "mechanics/structures/unstructured/Structure.h"

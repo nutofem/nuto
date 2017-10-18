@@ -1,13 +1,9 @@
 #pragma once
 
-#include "eigen3/Eigen/Core"
-
-#include "physics/PhysicalConstantsSI.h"
-#include "physics/PhysicalEquations.h"
-
-#include "mechanics/constitutive/laws/PorousMedium.h"
+#include <eigen3/Eigen/Core>
 
 #include "PoreState.h"
+#include "mechanics/constitutive/laws/PorousMedium.h"
 
 namespace Hygro
 {
@@ -22,11 +18,11 @@ Eigen::MatrixXd DensityChangeDueToGasPressure(const PoreState& poreState, const 
     const double T = poreState.Temperature;
 
     // state of dry air
-    const double R = NuTo::SI::IdealGasConstant;
+    const double R = Hygro::MolarGasConstant;
     const double M_a = Hygro::AirMolarMass;
 
     // Pores and saturation
-    const double n = medium.GetPorosity();
+    const double n = medium.Porosity();
     const double S_w = medium.Saturation(poreState.CapillaryPressure);
 
     // weak form
@@ -39,7 +35,7 @@ Eigen::MatrixXd DensityChangeDueToGasPressure(const PoreState& poreState, const 
 Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const NuTo::PorousMedium& medium,
                                       const Eigen::MatrixXd& N)
 {
-    const double n = medium.GetPorosity();
+    const double n = medium.Porosity();
     const double airDensity = poreState.AirDensity;
     const double dSw_dpc = medium.DerivativeSaturation(poreState.CapillaryPressure);
 
@@ -54,10 +50,10 @@ Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, 
                                                     const Eigen::MatrixXd& N)
 {
     const double T = poreState.Temperature;
-    const double R = NuTo::SI::IdealGasConstant;
+    const double R = Hygro::MolarGasConstant;
     const double M_a = Hygro::AirMolarMass;
 
-    const double n = medium.GetPorosity();
+    const double n = medium.Porosity();
     const double S_w = medium.Saturation(poreState.CapillaryPressure);
 
     const double dpv_dpc = poreState.dVapourPressure_dCapillaryPressure;
@@ -69,21 +65,19 @@ Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, 
 
 //! Corresponds to first term of \f$ \mathbf{K}_{gg} \f$ in Gawin et al.
 //! Contribution of advective air flow.
-template <int TDim>
 Eigen::MatrixXd PermeabilityMatrix(const PoreState& poreState, const NuTo::PorousMedium& medium,
                                    const Eigen::MatrixXd& dN)
 {
     const double airDensity = poreState.AirDensity;
 
-    const double S_w = medium.Saturation(poreState.CapillaryPressure);
-    const double relPermability = 1.0 - S_w;
+    const double relPermeability = medium.GasRelativePermeability(poreState.CapillaryPressure);
 
     const double gasPressure = poreState.GasPressure;
-    const Eigen::Matrix<double, TDim, TDim> intrinsicPermeability = medium.IntrinsicPermeability<TDim>(gasPressure);
+    const double intrinsicPermeability = medium.IntrinsicPermeability(gasPressure);
 
     const double viscosity = poreState.AirDynamicViscosity;
 
-    return dN.transpose() * airDensity * relPermability * intrinsicPermeability / viscosity * dN;
+    return dN.transpose() * airDensity * relPermeability * intrinsicPermeability / viscosity * dN;
 }
 
 

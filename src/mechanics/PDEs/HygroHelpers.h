@@ -6,7 +6,7 @@ namespace Hygro
 //! @param temperature Temperature in Kelvin.
 //! @return Density of water in kg/m³
 //! @remark Taken from David Jon Furbish, "Fluid Physics in Geology", 1997
-double WaterDensity(const double temperature);
+double DensityOfWater(const double temperature);
 
 namespace KelvinEquation
 {
@@ -50,7 +50,15 @@ double SaturationPressure(const double temperature);
 //! [10.1002/(SICI)1099-1484(199901)4:1<37::AID-CFM58>3.0.CO;2-S](https://dx.doi.org/10.1002/(SICI)1099-1484(199901)4:1<37::AID-CFM58>3.0.CO;2-S)
 double DynamicViscosityOfAir(const double airPressure, const double gasPressure, const double temperature);
 
+//! Dynamic viscosity \f$ μ_w \f$ of liquid water as a function temperature.
+//! @param temperature Temperature in Kelvin.
+//! @return Dynamic viscosity in [Pa s].
+//! @remark Source: Gawin et al.; "Numerical analysis of hygro-thermal behaviour and damage of concrete at
+//!                 high temperature", 1999, DOI:
+//! [10.1002/(SICI)1099-1484(199901)4:1<37::AID-CFM58>3.0.CO;2-S](https://dx.doi.org/10.1002/(SICI)1099-1484(199901)4:1<37::AID-CFM58>3.0.CO;2-S)
+double DynamicViscosityOfWater(const double temperature);
 
-const double AirMolarMass = 28.971e-3; //!< Molar mass of dry air in [kg / mol]
-const double WaterMolarMass = 18.01528e-3; //!< Molar mass of water [kg / mol]
+constexpr double AirMolarMass = 28.971e-3; //!< Molar mass of dry air in [kg / mol]
+constexpr double WaterMolarMass = 18.01528e-3; //!< Molar mass of water [kg / mol]
+constexpr double MolarGasConstant = 8.3144598; //!< Molar gas constant in [J / (mol K)]
 } // namespace Hygro

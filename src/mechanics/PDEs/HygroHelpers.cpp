@@ -12,7 +12,7 @@
 
 using namespace Hygro;
 
-double Hygro::WaterDensity(const double temperature)
+double Hygro::DensityOfWater(const double temperature)
 {
     using std::pow;
     const double t = temperature - 273.15; // celsisus temperature
@@ -37,7 +37,7 @@ std::tuple<Pressure, Dimensionless, PressurePerTemp> KelvinEq(const double capil
 
     const auto R = si::constants::codata::R;
     const auto M_w = WaterMolarMass * si::kilogram / si::mole;
-    const Density waterDensity(WaterDensity(temperature) * si::kilogram_per_cubic_meter);
+    const Density waterDensity(DensityOfWater(temperature) * si::kilogram_per_cubic_meter);
     const auto factor = M_w / (R * waterDensity);
 
     const Temperature T = temperature * si::kelvin;
@@ -99,4 +99,12 @@ double Hygro::DynamicViscosityOfAir(const double airPressure, const double gasPr
 
     const double moleFraction = airPressure / gasPressure;
     return mu_v + (mu_a - mu_v) * std::pow(moleFraction, 0.608);
+}
+
+double Hygro::DynamicViscosityOfWater(const double temperature)
+{
+    const double T_offset = 229.0;
+    const double exponent = -1.562;
+    const double factor = 0.6612;
+    return factor * std::pow(temperature - T_offset, exponent);
 }
