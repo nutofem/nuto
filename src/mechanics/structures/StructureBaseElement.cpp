@@ -918,7 +918,6 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void StructureBase::ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
                                                const std::vector<eVisualizeWhat>& visualizeComponents)
 {
@@ -973,4 +972,3 @@ void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& vis
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Visualization type not implemented.");
     }
 }
-#endif // VISUALIZE

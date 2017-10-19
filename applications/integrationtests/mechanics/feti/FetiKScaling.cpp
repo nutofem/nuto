@@ -45,10 +45,15 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
 
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     int numIterationsLumpedNoScaling = 0;
     int numIterationsLumpedSuperlumpedScaling = 0;
+    int numIterationsLumpedMultiplicityScaling = 0;
 
-    // Conjugate gradient, lumped preconditioner, no scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -64,14 +69,29 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-
-    // Conjugate gradient, lumped preconditioner, superlumped scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
 
-        if (structure.mRank == 0)
-            std::cout << "K-scaling *************************** \n";
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsLumpedMultiplicityScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+
+    }
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, k scaling." << std::endl;
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
 
         NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
         InitializeNewmarkFeti(newmarkFeti);
@@ -83,8 +103,6 @@ int main(int argc, char* argv[])
         numIterationsLumpedSuperlumpedScaling =
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
 
-        if (structure.mRank == 0)
-            std::cout << "K-scaling *************************** \n";
     }
 
     if (numIterationsLumpedSuperlumpedScaling >= numIterationsLumpedNoScaling)
@@ -95,8 +113,10 @@ int main(int argc, char* argv[])
 
     int numIterationsDirichletNoScaling = 0;
     int numIterationsDirichletSuperlumpedScaling = 0;
+    int numIterationsDirichletMultiplicityScaling = 0;
 
-    // Conjugate gradient, lumped preconditioner, no scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, Dirichlet preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -113,13 +133,29 @@ int main(int argc, char* argv[])
     }
 
 
-    // Conjugate gradient, lumped preconditioner, superlumped scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, Dirichlet preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
 
-        if (structure.mRank == 0)
-            std::cout << "K-scaling *************************** \n";
+        NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
+        InitializeNewmarkFeti(newmarkFeti);
+        newmarkFeti.SetFetiPreconditioner(std::make_unique<NuTo::FetiLumpedPreconditioner>());
+        newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
+
+        newmarkFeti.Solve(simulationTime);
+
+        numIterationsDirichletMultiplicityScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+
+    }
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, Dirichlet preconditioner, k scaling." << std::endl;
+    {
+        NuTo::StructureFeti structure(dim);
+        InitializeStructure(structure);
 
         NuTo::NewmarkFeti<EigenSolver> newmarkFeti(&structure);
         InitializeNewmarkFeti(newmarkFeti);
@@ -131,8 +167,6 @@ int main(int argc, char* argv[])
         numIterationsDirichletSuperlumpedScaling =
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
 
-        if (structure.mRank == 0)
-            std::cout << "K-scaling *************************** \n";
     }
 
     if (numIterationsDirichletSuperlumpedScaling >= numIterationsDirichletNoScaling)

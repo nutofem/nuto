@@ -35,7 +35,6 @@ int IntegrationType0DBoundary::GetDimension() const
     return 0;
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType0DBoundary::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>&,
                                                             unsigned int& NumVisualizationCells,
                                                             std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
@@ -45,5 +44,3 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(unsigned int& NumVis
     NumVisualizationPoints = 0;
     NumVisualizationCells = 0;
 }
-
-#endif // ENABLE_VISUALIZE

@@ -27,9 +27,4 @@ set(GeometryConcreteSources
     )
 
 create_nuto_module(GeometryConcrete "${GeometryConcreteSources}")
-if(ENABLE_VISUALIZE)
-    target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math
-        Visualize)
-else()
-    target_link_libraries(GeometryConcrete ${Boost_LIBRARIES} Base Math)
-endif()
+target_link_libraries(GeometryConcrete Base Math Visualize)

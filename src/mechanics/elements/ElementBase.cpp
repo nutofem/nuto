@@ -22,11 +22,9 @@
 
 #include <eigen3/Eigen/Core>
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/Point.h"
 #include "visualize/Cell.h"
 #include "visualize/UnstructuredGrid.h"
-#endif
 
 using namespace NuTo;
 
@@ -228,7 +226,6 @@ NuTo::NodeBase* NuTo::ElementBase::GetBoundaryControlNode() const
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::ElementBase::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                               std::vector<double>& VisualizationPointLocalCoordinates,
                                               unsigned int& NumVisualizationCells,
@@ -559,7 +556,6 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(Visualize::UnstructuredGri
         }
     }
 }
-#endif // ENABLE_VISUALIZE
 
 
 void NuTo::ElementBase::GetIntegratedStress(Eigen::MatrixXd& rStress)

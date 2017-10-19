@@ -61,7 +61,6 @@ void NuTo::CollidableWallBase::Print(std::ostream& rReturnStream) const
                   << ")";
 }
 
-#ifdef ENABLE_VISUALIZE
 
 void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::UnstructuredGrid& rVisualizer) const
 {
@@ -105,7 +104,7 @@ void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::Unstructured
 
     rVisualizer.SetCellData(insertIndex, "Direction", mDirection);
 }
-#endif
+
 
 void NuTo::CollidableWallBase::SetBoxes(SubBox& rInsideBox, SubBox& rOutsideBox)
 {

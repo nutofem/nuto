@@ -2,7 +2,6 @@
 #
 # variables used by this module (can be also defined as environment variables):
 #   PARDISO_ROOT - preferred installation prefix for searching for mumps
-#   PARDISO_DEBUG - print debug messages
 #
 # variables defined by this module
 #   PARDISO_FOUND - defines whether mumps was found or not
@@ -12,6 +11,8 @@
 set(PARDISO_LIBRARIES)
 
 message(STATUS "Checking for PARDISO Solver package ...")
+
+find_package(BLAS REQUIRED)
 
 # check if PARDISO_ROOT is set
 if(NOT PARDISO_ROOT AND NOT $ENV{PARDISO_ROOT} STREQUAL "")
@@ -25,26 +26,18 @@ if(PARDISO_ROOT)
         ${_pardiso_LIBRARIES_SEARCH_DIRS})
 endif()
 
-# search for pardiso libraries
-if(UNIX AND PARDISO_FIND_SHARED_LIBRARY)
-    set(PARDISO_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
-endif()
-
 # check for pardiso libraries
 find_library(_pardiso_LIB_PARDISO
     NAMES pardiso
     HINTS ${_pardiso_LIBRARIES_SEARCH_DIRS})
 
 if(_pardiso_LIB_PARDISO)
-    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${OpenBLAS_LIBRARIES})
+    set(PARDISO_LIBRARIES ${_pardiso_LIB_PARDISO} ${BLAS_LIBRARIES})
 endif()
 
 # handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PARDISO DEFAULT_MSG PARDISO_LIBRARIES)
 
-if(PARDISO_DEBUG)
-    message(STATUS "PARDISO_FOUND=${PARDISO_FOUND}")
-    message(STATUS "PARDISO_LIBRARIES=${PARDISO_LIBRARIES}")
-endif()
+message(STATUS "PARDISO_FOUND=${PARDISO_FOUND}")
+message(STATUS "PARDISO_LIBRARIES=${PARDISO_LIBRARIES}")

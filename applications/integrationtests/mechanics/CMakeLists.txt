@@ -26,55 +26,44 @@ endif()
 create_symlink("meshes")
 
 # generate tests
-foreach(test
-    BlockMatrices
-    CoefficientChecks
-    MoistureTransport
-    ConstraintsNodeToElement
-    CreepUniaxial
-    CSDAInterface
-    GradientDamage
-    Hygro1D
-    IGA
-    ImplEx
-    InhomogeneousMaterial
-    InterfaceElements
-    IntegrationPointVoronoiCells
-    InterpolationTypes
-    MisesPlasticity
-    MultipleConstitutiveLaws
-    NewmarkPlane2D4N
-    ParallelAssembly
-    PiezoelectricLaw
-    PlateWithHole
-    RestartFiles
-    Shrinkage
-    SpringDamperCombination
-    StructureNodeTest
-    SurfaceLoad
-    ThermoElasticity1D
-    TrussIn2D
-    TrussIn3D
-    )
-
-    add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base
-        ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(${test} Visualize)
-    endif()
-    if(MUMPS_FOUND)
-        target_link_libraries(${test}
-            ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-    add_test(integration::mechanics::${test}.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/${test})
-endforeach()
-
+add_integrationtest(AdditiveInput)
+add_integrationtest(AdditiveOutput)
+add_integrationtest(BlockMatrices)
+add_integrationtest(CoefficientChecks)
+add_integrationtest(MoistureTransport)
+add_integrationtest(ConstraintsNodeToElement)
+add_integrationtest(ConstraintNodeToElement2D)
+add_integrationtest(ConstraintNodeToElement3D)
+add_integrationtest(ContinuumElement)
+add_integrationtest(CreepUniaxial)
+add_integrationtest(CSDAInterface)
+add_integrationtest(GradientDamage)
+add_integrationtest(Hygro1D)
+add_integrationtest(IGA)
+add_integrationtest(ImplEx)
+add_integrationtest(InhomogeneousMaterial)
+add_integrationtest(InterfaceElements)
+add_integrationtest(IntegrationPointVoronoiCells)
+add_integrationtest(InterpolationTypes)
+add_integrationtest(MeshCompanion)
+add_integrationtest(MisesPlasticity)
+add_integrationtest(MultipleConstitutiveLaws)
+add_integrationtest(NewmarkPlane2D4N)
+add_integrationtest(ParallelAssembly)
+add_integrationtest(PiezoelectricLaw)
+add_integrationtest(PlateWithHole)
+add_integrationtest(RestartFiles)
+add_integrationtest(Shrinkage)
+add_integrationtest(SpringDamperCombination)
+add_integrationtest(StructureNodeTest)
+add_integrationtest(SurfaceLoad)
+add_integrationtest(ThermoElasticity1D)
+add_integrationtest(TrussIn2D)
+add_integrationtest(TrussIn3D)
 
 
 if(ENABLE_MPI)
-    add_executable(MPI MPI.cpp)
+    add_executable(MPI EXCLUDE_FROM_ALL MPI.cpp)
     target_link_libraries(MPI ${MPI_LIBRARIES})
     set(MPIEXEC_NUMPROC_FLAG -np 4)
     set(MPIEXEC mpirun)
@@ -82,4 +71,5 @@ if(ENABLE_MPI)
     add_test(NAME integration::mechanics::MPI
         COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}
         ${CMAKE_CURRENT_BINARY_DIR}/MPI)
+    append_to_tests(MPI)
 endif()

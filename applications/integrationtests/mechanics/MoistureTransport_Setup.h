@@ -375,11 +375,9 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
 
 inline void SetupVisualize(NuTo::Structure& rS)
 {
-#ifdef ENABLE_VISUALIZE
     int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
     rS.GroupAddElementsTotal(visGrp);
 
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
-#endif // ENABLE_VISUALIZE
 }

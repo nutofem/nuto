@@ -20,6 +20,13 @@ message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
 
+# set numpy include path for generated wrapper files
+execute_process(COMMAND
+    ${CMAKE_SOURCE_DIR}/scripts/get_numpy_path.py
+    OUTPUT_VARIABLE NUMPY_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(PYTHON_CXX_FLAGS "${PYTHON_CXX_FLAGS} -I${NUMPY_PATH}")
+
 # SWIG required for interface files c++ and python
 message(STATUS "Checking for SWIG...")
 find_program(SWIG_EXECUTABLE NAMES swig3.0 swig swig2.0)
@@ -38,29 +45,13 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(base)
 add_subdirectory(math)
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-else()
-    deactivate_module(mechanics.ModuleMechanics)
-endif()
+add_subdirectory(mechanics)
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(geometryConcrete)
-else()
-    deactivate_module(geometryConcrete.ModuleGeometryConcrete)
-endif()
+add_subdirectory(geometryConcrete)
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(metamodel)
-else()
-    deactivate_module(metamodel.ModuleMetamodel)
-endif()
+add_subdirectory(metamodel)
 
-if(ENABLE_OPTIMIZE)
-    add_subdirectory(optimize)
-else()
-    deactivate_module(optimize.ModuleOptimize)
-endif()
+add_subdirectory(optimize)
 
 # support for strongly typed enums was introduced in 3.0.3
 if(SWIG_VERSION VERSION_LESS "3.0.3")

@@ -1,7 +1,4 @@
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "math/Legendre.h"
 
@@ -105,7 +102,6 @@ double NuTo::IntegrationTypeTensorProduct<TDim>::GetIntegrationPointWeight(int r
     throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 }
 
-#ifdef ENABLE_VISUALIZE
 template <int TDim>
 void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(
         unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
@@ -237,8 +233,6 @@ void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(
 }
 
 } // namespace NuTo
-
-#endif // ENABLE_VISUALIZE
 
 template class NuTo::IntegrationTypeTensorProduct<1>;
 template class NuTo::IntegrationTypeTensorProduct<2>;
