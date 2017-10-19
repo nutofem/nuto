@@ -1386,6 +1386,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
 
                 hessian1 += rData.mDetJxWeightIPxSection *
                             Hygro::DryAirMassBalance::VariationOfSaturation(poreState, medium, N_g);
+
+                hessian1 += rData.mDetJacobian *
+                    Hygro::DryAirMassBalance::DensityChangeDueToCapillaryPressure(poreState, medium, N_g);
                 break;
             }
 

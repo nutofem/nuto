@@ -19,7 +19,7 @@ int main()
                                    Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.ElementTotalConvertToInterpolationType();
 
-    PorousMediaAdapter porousMedium(0.5, 20.0, 2.0, 0.1);
+    PorousMediaAdapter porousMedium(0.0512, 18.6, 2.27, 0.1);
 
     for (int id : structure.GroupGetMemberIds(group))
         structure.ElementSetConstitutiveLaw(structure.ElementGetElementPtr(id), &porousMedium);
@@ -28,10 +28,10 @@ int main()
     structure.ElementTotalSetSection(someSection);
 
     NodeBase* nodePtr = structure.NodeGetNodePtr(0);
-    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 1.0);
+    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
     nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
     nodePtr = structure.NodeGetNodePtr(1);
-    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 1.0);
+    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
     nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
 
     auto hessian0 = structure.BuildGlobalHessian0();
