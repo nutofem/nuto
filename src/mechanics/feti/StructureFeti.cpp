@@ -777,7 +777,7 @@ void NuTo::StructureFeti::AddSuperlumpedScalingForInterfaceDofs(const NuTo::Stru
                 {
                     const size_t lagrangeMultiplierId = globalDofId + index + offsetRows;
                     scalingVector[lagrangeMultiplierId] =
-                            interfaceStiffness[lagrangeMultiplierId] / sumOfInterfaceStiffnesses[lagrangeMultiplierId];
+                            (sumOfInterfaceStiffnesses[lagrangeMultiplierId] - interfaceStiffness[lagrangeMultiplierId]) / sumOfInterfaceStiffnesses[lagrangeMultiplierId];
                 }
             }
         }

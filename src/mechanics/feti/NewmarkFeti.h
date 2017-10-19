@@ -713,21 +713,6 @@ public:
                     "Continuity of the displacement field is not satisfied, i.e. B*u = 0 not satisfied. Norm is: " +
                             std::to_string(zeroVec.head(numLagrangeMultipliersDisplacement).norm()));
         }
-
-        //        const int numLagrangeMultipliersCrack = numInterfaceNodesTotal;
-        //
-        //        if (not(zeroVec.segment(numLagrangeMultipliersDisplacement, numLagrangeMultipliersCrack)
-        //                        .isMuchSmallerThan(1.e-2, 1.e-1)))
-        //        {
-        //            throw Exception(
-        //                    __PRETTY_FUNCTION__,
-        //                    "Continuity of the crack phase-field is not satisfied, i.e. B*d = 0 not satisfied. Norm
-        //                    is: " +
-        //                            std::to_string(
-        //                                    zeroVec.segment(numLagrangeMultipliersDisplacement,
-        //                                    numLagrangeMultipliersCrack)
-        //                                            .norm()));
-        //        }
     }
 
     //! \brief Check the rank of a BlockSparseMatrix using a QR factorization
@@ -829,7 +814,7 @@ public:
         }
         case eFetiScaling::Superlumped:
         {
-            mScalingMatrix = mStructureFeti->MultiplicityScaling();
+            // superlumoed scaling matrix is calculated during NR
             break;
         }
         default:
@@ -996,7 +981,9 @@ public:
                 // ******************************************************
 
                 if (mFetiScaling == eFetiScaling::Superlumped)
+                {
                     mScalingMatrix = mStructureFeti->SuperlumpedScaling(hessian0);
+                }
 
                 BuildAndFactorizeMatrix(hessian0, hessian1);
 
