@@ -35,7 +35,9 @@ int main()
     nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
 
     auto hessian0 = structure.BuildGlobalHessian0();
+    auto hessian1 = structure.BuildGlobalHessian1();
 
     std::cout << hessian0 << std::endl;
+    std::cout << hessian1 << std::endl;
     return 0;
 }

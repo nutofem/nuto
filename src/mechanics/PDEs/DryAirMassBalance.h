@@ -65,7 +65,7 @@ Eigen::MatrixXd DensityChangeDueToCapillaryPressure(const PoreState& poreState, 
 
 //! Corresponds to first term of \f$ \mathbf{K}_{gg} \f$ in Gawin et al.
 //! Contribution of advective air flow.
-Eigen::MatrixXd PermeabilityMatrix(const PoreState& poreState, const PorousMedium& medium,
+Eigen::MatrixXd AdvectionGasPressure(const PoreState& poreState, const PorousMedium& medium,
                                    const Eigen::MatrixXd& dN)
 {
     const double airDensity = poreState.AirDensity;
