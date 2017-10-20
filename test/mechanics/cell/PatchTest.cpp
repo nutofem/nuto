@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include <eigen3/Eigen/SparseLU>
+#include <eigen3/Eigen/Dense>
 
 #include "base/Group.h"
 
@@ -160,8 +160,7 @@ BOOST_AUTO_TEST_CASE(PatchTest)
     auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
-    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver(hessian.JJ(displ, displ));
-    Eigen::VectorXd newDisplacements = solver.solve(gradient.J[displ]);
+    Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ]);
 
     // merge dof values
     int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
