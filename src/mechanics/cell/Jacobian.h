@@ -33,6 +33,7 @@ public:
         }
         else
         {
+            assert (globalDimension = interpolationDimension + 1);
             switch (globalDimension)
             {
             case 2:
