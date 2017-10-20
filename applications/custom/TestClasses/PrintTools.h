@@ -12,6 +12,11 @@ public:
 //    template<typename T>
     void printVector(std::vector<int> rVector, std::string rTitle, int rPID);
 
+    void printVector(std::vector<double> rVector, std::string rTitle, int rPID);
+
+//    template<typename T, typename U>
+//    void printMap(std::map<T, U> rMap, std::string rTitle, int rPID);
+
     void printMap_int_int(std::map<int, int> rMap, std::string rTitle, int rPID);
 
 

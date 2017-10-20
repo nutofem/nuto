@@ -243,68 +243,6 @@ Epetra_MultiVector solveSystem(Epetra_CrsMatrix rA, Epetra_MultiVector rLhs, Epe
 }
 
 
-void visualizeResults(NuTo::Structure* rS, const std::string& rResultDir, double rTime, int rTimeStep)
-{
-    //plot the solution vtk file
-    std::stringstream ssTimeStepVTK;
-    ssTimeStepVTK << rTimeStep;
-    boost::filesystem::path resultFile(rResultDir);
-
-//    if (mExportDataFileNodes==true)
-//    {
-//        resultFile /= std::string("Nodes") + ssTimeStepVTK.str() + std::string(".vtu");
-//        rS->ExportVtkDataFileNodes(resultFile.string(), true);
-//    }
-
-    std::stringstream timeFormatted;
-    timeFormatted.width(15);
-    timeFormatted.precision(12);
-    timeFormatted << rTime;
-
-    //plot all groups separately
-    for (auto const & iVisualizePair : rS->GetGroupVisualizeComponentsMap())
-    {
-        //plot all elements
-        resultFile = rResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") + ssTimeStepVTK.str() + std::string(".vtu");
-        rS->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string());
-
-        //write an additional pvd file
-        resultFile = rResultDir;
-        resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_ElementsAll") + std::string(".pvd");
-
-        std::fstream file;
-        if (rTimeStep == 0)
-        {
-            file.open(resultFile.string(), std::fstream::out);
-        } else
-        {
-            file.open(resultFile.string(), std::fstream::out | std::fstream::in | std::ios_base::ate);
-        }
-        if (!file.is_open())
-        {
-            throw NuTo::Exception(std::string("[NuTo::TimeIntegrationBase::ExportVisualizationFiles] Error opening file ") + resultFile.string());
-        }
-        std::stringstream endOfXML;
-        endOfXML << "</Collection>" << std::endl;
-        endOfXML << "</VTKFile>" << std::endl;
-        if (rTimeStep == 0)
-        {
-            // header /////////////////////////////////////////////////////////////////
-            file << "<?xml version=\"1.0\"?>" << std::endl;
-            file << "<VTKFile type=\"Collection\">" << std::endl;
-            file << "<Collection>" << std::endl;
-        } else
-        {
-            //delete the last part of the xml file
-            file.seekp(-endOfXML.str().length(), std::ios_base::end);
-        }
-        file << "<DataSet timestep=\"" << timeFormatted.str() << "\" file=\"Group" << iVisualizePair.first << "_Elements" << rTimeStep << ".vtu\"/>" << std::endl;
-        file << endOfXML.str();
-        file.close();
-    }
-}
-
 void run_Test_2D_GivenMesh()
 {
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
@@ -1751,6 +1689,8 @@ void run_Test_2D(Epetra_MpiComm rComm, double rTotalLength_X, double rTotalLengt
     //DEFINE MAPS FOR LOCAL OWNED DOFS AND OVERLAPPING DOFS
     Epetra_Map owningMap(-1, ownedNumActiveDOFs, 0, Comm);
     Epetra_Map overlappingMap(-1, localNumActiveDOFs, local2GlobalMapping, 0, Comm);
+    owningMap.Print(std::cout);
+    overlappingMap.Print(std::cout);
 //    Epetra_Map owningMap = TrilinosUtils::createLinearMap(Comm, ownedNumActiveDOFs, 0);
 //    Epetra_Map overlappingMap = TrilinosUtils::createSpecificMap(Comm, localNumActiveDOFs, 0, local2GlobalMapping);
     Epetra_Export exporter(overlappingMap, owningMap);
@@ -1940,9 +1880,9 @@ int main(int argc, char** argv)
 {
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
-    run_Test_2D_GivenMesh();
+//    run_Test_2D_GivenMesh();
 
-//    run_Test_2D(argc, argv);
+    run_Test_2D(argc, argv);
 
     return 0;
 }

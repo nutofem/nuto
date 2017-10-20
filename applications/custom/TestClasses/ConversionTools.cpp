@@ -220,6 +220,43 @@ Epetra_Vector ConversionTools::convertEigen2EpetraVector(Eigen::Matrix<double, E
 
 }
 
+std::vector<double> ConversionTools::convertEpetraVector2StdVector(Epetra_Vector rVector)
+{
+    int n = rVector.MyLength();
+    std::vector<double> convertedVector(n);
+
+    for (int i = 0; i < n; ++i)
+    {
+        convertedVector[i] = rVector[i];
+    }
+
+    return convertedVector;
+}
+
+std::vector<double> ConversionTools::convertEpetraMultiVector2StdVector(Epetra_MultiVector rMultiVector, int rVectorIndex, bool rWrtMap)
+{
+    int local_n = rMultiVector.MyLength();
+    int global_n = rMultiVector.GlobalLength();
+    int* globalIDs = rMultiVector.Map().MyGlobalElements();
+    std::vector<double> convertedVector;
+    if (rWrtMap)
+        convertedVector.resize(global_n);
+    else
+        convertedVector.resize(local_n);
+
+    double* vals = rMultiVector[rVectorIndex];
+    for (int i = 0; i < local_n; ++i)
+    {
+        if (rWrtMap)
+            convertedVector[globalIDs[i]] = vals[i];
+        else
+            convertedVector[i] = vals[i];
+
+    }
+
+    return convertedVector;
+}
+
 
 int* ConversionTools::map2Array_Int(std::map<int, int> rMap)
 {

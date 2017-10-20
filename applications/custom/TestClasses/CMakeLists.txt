@@ -15,7 +15,6 @@ foreach(mesh jsonMesh_Test)
     endforeach()
 endforeach()
 
-
 foreach(myTestFiles
     nuto_trilinos
     1D_Test
@@ -24,7 +23,6 @@ foreach(myTestFiles
 #    LoadBalancing)
 
     add_executable(${myTestFiles} ${myTestFiles}.cpp)
-    target_link_libraries(${myTestFiles} NuToMechanics NuToMath NuToVisualize ${MPI_Libraries})
 #    target_link_libraries(${myTestFiles} NuToMechanics NuToVisualize ${MPI_Libraries})
 
 endforeach()
@@ -44,16 +42,18 @@ foreach(myTestFiles
     MeshJson_Test)
 #    LoadBalancing)
 
+    target_link_libraries(${myTestFiles} Mechanics Math Visualize ${MPI_Libraries})
     target_link_libraries(${myTestFiles} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
 
 endforeach()
 
+#add_library(StructureMesh StructureMesh.cpp)
+#target_link_libraries(StructureMesh Mechanics Math Visualize)
 
 add_library(ConversionTools ConversionTools.cpp)
-
 add_library(PrintTools PrintTools.cpp)
 add_library(TrilinosUtils TrilinosUtils.cpp)
 target_link_libraries(1D_Test ConversionTools PrintTools)
 target_link_libraries(2D_Test ConversionTools PrintTools TrilinosUtils)
 
-target_link_libraries(MeshJson_Test FetiLib)
+target_link_libraries(MeshJson_Test ConversionTools PrintTools FetiLib)

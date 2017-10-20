@@ -32,6 +32,10 @@ public:
 
     Epetra_Vector convertEigen2EpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Epetra_Map rMap);
 
+    std::vector<double> convertEpetraVector2StdVector(Epetra_Vector rVector);
+
+    std::vector<double> convertEpetraMultiVector2StdVector(Epetra_MultiVector rMultiVector, int rVectorIndex = 0, bool rWrtMap = true);
+
 private:
     int* map2Array_Int(std::map<int, int> rMap);
 
