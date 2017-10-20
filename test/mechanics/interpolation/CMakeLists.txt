@@ -1,3 +1,5 @@
+add_unit_test(InterpolationTrussLinear
+    mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationTriangleLinear
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationTriangleQuadratic
