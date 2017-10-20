@@ -1,5 +1,7 @@
 add_unit_test(InterpolationTriangleLinear
     mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(InterpolationTriangleQuadratic
+    mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationQuadLinear
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationQuadSerendipity

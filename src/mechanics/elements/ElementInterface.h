@@ -8,7 +8,7 @@ namespace NuTo
 class ElementInterface
 {
 public:
-    virtual ~ElementInterface() = default;
+    virtual ~ElementInterface() noexcept = default;
 
     //! @brief extracts all node values of this element
     virtual NodeValues ExtractNodeValues() const = 0;
@@ -19,7 +19,7 @@ public:
     virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
 };
 
-Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoords ipCoords)
+inline Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoords ipCoords)
 {
     return element.GetNMatrix(ipCoords) * element.ExtractNodeValues();
 }

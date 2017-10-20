@@ -1,39 +1,99 @@
 #pragma once
 #include "mechanics/elements/ElementInterface.h"
 #include "mechanics/dofs/DofContainer.h"
+#include "mechanics/elements/ElementFem.h"
+#include "mechanics/elements/ElementIga.h"
 
 namespace NuTo
 {
+//! @brief interface for all the cell operations, simply forwarding the corresponding element interfaces
+//! @remark two benefits: a) avoids forwarding all the methods of ElementInterface for _both_ the 
+//                           coordinate element and the dof elements.
+//                        b) allows storing elements (implementations of ElementInterface) by value
+//                           in the class ElementCollectionImpl.
 class ElementCollection
 {
 public:
-    ElementCollection(const ElementInterface& coordinateElement)
+    virtual ~ElementCollection() = default;
+    virtual const ElementInterface& CoordinateElement() const = 0;
+    virtual const ElementInterface& DofElement(DofType) const = 0;
+};
+
+//! @brief implementation of the interface ElementCollection for arbitrary element types that are derived from
+//! ElementInterface
+//! @tparam TElement element type stored by value
+//! @remark This class stores elements by value. This is nice since it allows the copy/move operations, value
+//! semantics. Additionally, the compiler is free to eliminate all the copies (whenever that is the right thing to do).
+//! The access to the underlying elements is provided via const-reference. This reference is implicitly casted to the
+//! base class ElementInterface.
+template <typename TElement>
+class ElementCollectionImpl : public ElementCollection
+{
+public:
+    static_assert(std::is_base_of<ElementInterface, TElement>::value,
+                  "TElement must be a descendant of ElementInterface");
+
+    ElementCollectionImpl(TElement coordinateElement)
         : mCoordinateElement(coordinateElement)
     {
     }
-    ElementCollection(const ElementInterface& coordinateElement, DofContainer<const ElementInterface*> dofElement)
-        : mCoordinateElement(coordinateElement)
-        , mDofElements(dofElement)
+
+    //! @brief adds a dof element to the collection
+    //! @param dofType dof type
+    //! @param dofElement element to add
+    void AddDofElement(DofType dofType, TElement dofElement)
     {
+        mDofElements.Insert(dofType, dofElement);
+        // The alternative implementation with
+        //        mDofElements[dofType] = dofElement
+        // will fail. The operator[] must be able default construct a new TElement, if it does not exist. It would then
+        // return a reference to it and dofElement can be copied/moved into it. Our elements are not default
+        // constructable (may require nodes, interpolations, ...). Thus, use Insert here, that copies/moves the entity
+        // into the DofContainer without a temporary, default constructed TElement.
     }
 
-    void AddDofElement(const DofType& dofType, const ElementInterface& dofElement)
-    {
-        mDofElements[dofType] = &dofElement;
-    }
-
-    const ElementInterface& CoordinateElement() const
+    //! @brief Getter for CoordinateElement
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    const TElement& CoordinateElement() const override
     {
         return mCoordinateElement;
     }
 
-    const ElementInterface& DofElement(const DofType& dofType) const
+    //! @brief nonconst Getter for CoordinateElement
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    TElement& CoordinateElement()
     {
-        return *mDofElements[dofType];
+        return mCoordinateElement;
+    }
+
+    //! @brief Getter for DofElements
+    //! @param dofType dof type
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    const TElement& DofElement(DofType dofType) const override
+    {
+        return mDofElements[dofType];
+    }
+
+    //! @brief nonconst Getter for DofElements
+    //! @param dofType dof type
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    TElement& DofElement(DofType dofType)
+    {
+        return mDofElements.At(dofType);
     }
 
 private:
-    std::reference_wrapper<const ElementInterface> mCoordinateElement;
-    DofContainer<const ElementInterface*> mDofElements;
+    TElement mCoordinateElement;
+    DofContainer<TElement> mDofElements;
 };
+
+using ElementCollectionFem = ElementCollectionImpl<NuTo::ElementFem>;
+
+template <int TDimParameter>
+using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParameter>>;
+
 } /* NuTo */

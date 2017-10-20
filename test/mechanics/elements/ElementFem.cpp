@@ -1,5 +1,4 @@
 #include "BoostUnitTest.h"
-#include <fakeit.hpp>
 #include <type_traits>
 
 #include "mechanics/elements/ElementFem.h"
@@ -13,18 +12,15 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 }
 
 
-struct TestElement : public NuTo::ElementFem
-{
-    TestElement()
-        : NuTo::ElementFem({&n0, &n1, &n2}, interpolation)
-    {
-    }
+NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
+NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
+NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
+NuTo::InterpolationTriangleLinear interpolation = NuTo::InterpolationTriangleLinear(2);
 
-    NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-    NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
-    NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
-    NuTo::InterpolationTriangleLinear interpolation = NuTo::InterpolationTriangleLinear(2);
-};
+NuTo::ElementFem TestElement()
+{
+    return NuTo::ElementFem({n0, n1, n2}, interpolation);
+}
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValues)
 {
@@ -39,4 +35,3 @@ BOOST_AUTO_TEST_CASE(Interpolation)
     Eigen::Vector2d interpolatedValues = N * nodeValues;
     BoostUnitTest::CheckVector(interpolatedValues, std::vector<double>{3, 4}, 2);
 }
-

@@ -39,7 +39,7 @@ void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const 
             pointDelta[iDim] += rDelta;
             cdf.col(iDim) = (r.GetShapeFunctions(pointDelta) - shapeFunctions) / rDelta;
         }
-        BoostUnitTest::CheckEigenMatrix(cdf, derivativeShapeFunctions, 1.e-6);
+        BoostUnitTest::CheckEigenMatrix(cdf, derivativeShapeFunctions, 1.e-5);
     }
 }
 

@@ -11,20 +11,41 @@ class DofContainer
 public:
     virtual ~DofContainer() = default;
 
-    DofContainer() = default;
-    DofContainer(const DofContainer&) = default;
-    DofContainer(DofContainer&&) = default;
-    DofContainer& operator=(const DofContainer&) = default;
-    DofContainer& operator=(DofContainer&&) = default;
-
+    //! @brief nonconst access, similar to map::operator[]()
+    //! @param dofType dof type
+    //! @return reference to either
+    //          an existing value
+    //          an newly default constructed value
+    //! @remark This requires T to be default constructable.
     T& operator[](const DofType& dofType)
     {
         return mData[dofType.Id()];
     }
 
+    //! @brief nonconst access, similar to map::at()
+    //! @param dofType dof type
+    //! @return reference to an existing value, throws if there is no value
+    //! @remark This does not default construct a new T and thus does not
+    //          require T to be default constructable.
+    T& At(const DofType& dofType)
+    {
+        return mData.at(dofType.Id());
+    }
+
+    //! @brief const access
+    //! @param dofType dof type
+    //! @return const reference to existing value, throws if there is no value
     const T& operator[](const DofType& dofType) const
     {
         return mData.at(dofType.Id());
+    }
+
+    //! @brief copies a `t` into the container
+    //! @param dofType dof type
+    //! @param t value to insert
+    void Insert(const DofType& dofType, T t)
+    {
+        mData.emplace(dofType.Id(), t);
     }
 
 protected:
