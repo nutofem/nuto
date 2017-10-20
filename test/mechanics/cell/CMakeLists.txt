@@ -17,6 +17,9 @@ add_unit_test(CellIpData
 
 
 add_unit_test(PatchTest
+    mechanics/integrationtypes/IntegrationTypeBase.cpp
+    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
+    math/Legendre.cpp # oh WHY? I do gauss... #SomeoneTODO
     mechanics/mesh/MeshFem.cpp
     mechanics/mesh/MeshFemDofConvert.cpp
     mechanics/elements/ElementShapeFunctions.cpp)
