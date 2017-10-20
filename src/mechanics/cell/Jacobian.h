@@ -11,20 +11,48 @@ class Jacobian
 public:
     using Dynamic3by3 = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 3>;
 
-    Jacobian(const NodeValues& nodeValues, const DerivativeShapeFunctionsNatural& derivativeShapeFunctions)
+    Jacobian(const NodeValues& nodeValues, const DerivativeShapeFunctionsNatural& derivativeShapeFunctions,
+             int globalDimension)
     {
-        const int dim = nodeValues.rows() / derivativeShapeFunctions.rows();
-        switch (dim)
+        const int interpolationDimension = derivativeShapeFunctions.cols();
+        // case 1: global dimension ( node dimension ) matches the interpolation dimension.
+        if (interpolationDimension == globalDimension)
         {
-        case 1:
-            std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<1>(nodeValues, derivativeShapeFunctions);
-            break;
-        case 2:
-            std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<2>(nodeValues, derivativeShapeFunctions);
-            break;
-        case 3:
-            std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<3>(nodeValues, derivativeShapeFunctions);
-            break;
+            switch (globalDimension)
+            {
+            case 1:
+                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<1>(nodeValues, derivativeShapeFunctions);
+                break;
+            case 2:
+                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<2>(nodeValues, derivativeShapeFunctions);
+                break;
+            case 3:
+                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<3>(nodeValues, derivativeShapeFunctions);
+                break;
+            }
+        }
+        else
+        {
+            switch (globalDimension)
+            {
+            case 2:
+            {
+                const int numCols = derivativeShapeFunctions.rows();
+                NodeValues nodeCopy = nodeValues;
+                auto nodeBlockCoordinates =
+                        Eigen::Map<Eigen::Matrix<double, 2, Eigen::Dynamic>>(nodeCopy.data(), 2, numCols);
+                mDetJacobian = (nodeBlockCoordinates * derivativeShapeFunctions).norm();
+                break;
+            }
+            case 3:
+            {
+                break;
+            }
+            default:
+            {
+                throw;
+            }
+            }
         }
     }
 
