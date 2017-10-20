@@ -12,11 +12,11 @@ namespace NuTo
 class CellIpData
 {
 public:
-    CellIpData(const ElementCollection& elements, const NuTo::Jacobian& jacobian,
-               const NaturalCoords& ipCoords)
+    CellIpData(const ElementCollection& elements, NuTo::Jacobian jacobian,
+               NaturalCoords ipCoords)
         : mElements(elements)
-        , mJacobian(jacobian)
-        , mIPCoords(ipCoords)
+        , mJacobian(std::move(jacobian))
+        , mIPCoords(std::move(ipCoords))
     {
     }
 
@@ -114,7 +114,7 @@ private:
     }
 
     const ElementCollection& mElements;
-    const NuTo::Jacobian& mJacobian;
-    const NaturalCoords& mIPCoords;
+    NuTo::Jacobian mJacobian;
+    NaturalCoords mIPCoords;
 };
 } /* NuTo */

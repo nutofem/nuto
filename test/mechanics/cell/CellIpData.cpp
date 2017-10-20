@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(CellIPData2D)
     NuTo::DerivativeShapeFunctionsNatural derivativeForJacobian =
             NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(ipCoords);
 
-    NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
+    NuTo::Jacobian jac(nodalValues, derivativeForJacobian, 2);
     NuTo::CellIpData ipData(elements.get(), jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix2d::Identity());
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(InterpolationBStrain3D)
     NuTo::DerivativeShapeFunctionsNatural derivativeForJacobian =
             NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder1();
 
-    NuTo::Jacobian jac(nodalValues, derivativeForJacobian);
+    NuTo::Jacobian jac(nodalValues, derivativeForJacobian, 3);
     NuTo::CellIpData ipData(elements.get(), jac, ipCoords);
 
     BoostUnitTest::CheckEigenMatrix(jac.Inv(), Eigen::Matrix3d::Identity());
