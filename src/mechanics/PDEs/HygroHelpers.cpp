@@ -28,7 +28,7 @@ std::tuple<double, double, double> KelvinEq(const double capillaryPressure, cons
     const double T = temperature;
     const double saturationPressure= SaturationPressure(temperature);
 
-    const double exponent = -factor * capillaryPressure / T;
+    const double exponent = - 1e6 * factor * capillaryPressure / T;
     const double p_v = saturationPressure * std::exp(exponent);
     const double dpv_dpc = -factor * saturationPressure * std::exp(exponent) / T;
     const double dpv_dt = factor * saturationPressure * capillaryPressure * std::exp(exponent) / (T * T);

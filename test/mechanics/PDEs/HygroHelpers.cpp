@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE(kelvin_eq)
     BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(0.0, 473.15), 1.5549392220497635, eps);
     BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(0.0, 573.15), 8.587867486373652, eps);
 
-    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(1.0, 573.15), 8.542592568927079, eps);
-    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(10.0, 573.15), 8.145709639477523, eps);
-    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(100.0, 573.15), 5.061989521725555, eps);
+    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(1.0, 573.15), 8.5425925026695655, eps);
+    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(10.0, 573.15), 8.1457090076851948, eps);
+    BOOST_CHECK_CLOSE(Hygro::KelvinEquation::VapourPressure(100.0, 573.15), 5.0619855955789381, eps);
 
     // TODO: check derivatives
 }
