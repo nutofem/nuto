@@ -34,8 +34,8 @@ NuTo::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() co
         return NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                              std::to_string(std::max(mDegree(0), mDegree(1))) +
-                                                              " IGA not implemented");
+                                                     std::to_string(std::max(mDegree(0), mDegree(1))) +
+                                                     " IGA not implemented");
     }
 }
 
@@ -235,7 +235,7 @@ NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinatesIGA(const Eigen::Vec
         return Eigen::Vector2d(rKnots(0, 0), rNaturalSurfaceCoordinates(0));
     default:
         throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
 }
 
@@ -255,7 +255,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeNaturalSurfaceCoord
         return Eigen::Vector2d(0, -1);
     default:
         throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
 }
 
@@ -302,7 +302,7 @@ Eigen::VectorXi NuTo::Interpolation2DIGA::GetSurfaceNodeIndices(int rSurface) co
     }
     default:
         throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
 }
 
@@ -320,7 +320,7 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
         return mDegree(1);
     default:
         throw Exception(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " +
-                                                              std::to_string(rSurface) + ".");
+                                                     std::to_string(rSurface) + ".");
     }
 }
 

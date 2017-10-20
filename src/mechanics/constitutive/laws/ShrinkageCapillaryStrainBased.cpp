@@ -81,7 +81,7 @@ NuTo::ShrinkageCapillaryStrainBased::GetParameterDouble(NuTo::Constitutive::eCon
 
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -104,7 +104,7 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 

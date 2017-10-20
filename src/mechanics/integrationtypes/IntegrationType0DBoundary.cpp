@@ -4,8 +4,7 @@ using namespace NuTo;
 
 Eigen::VectorXd NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates(int) const
 {
-    throw Exception(
-            "[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+    throw Exception("[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
@@ -26,8 +25,7 @@ double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum) co
     case 0:
         return 1;
     default:
-        throw Exception(
-                "[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 
@@ -37,17 +35,12 @@ int IntegrationType0DBoundary::GetDimension() const
     return 0;
 }
 
-#ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType0DBoundary::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                            std::vector<double>&,
+void NuTo::IntegrationType0DBoundary::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>&,
                                                             unsigned int& NumVisualizationCells,
-                                                            std::vector<NuTo::eCellTypes>&,
-                                                            std::vector<unsigned int>&,
+                                                            std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
                                                             std::vector<unsigned int>&) const
 {
     // no visualisation since its a 0D element
     NumVisualizationPoints = 0;
     NumVisualizationCells = 0;
 }
-
-#endif // ENABLE_VISUALIZE

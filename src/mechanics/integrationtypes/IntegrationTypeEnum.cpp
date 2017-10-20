@@ -68,7 +68,7 @@ eIntegrationType IntegrationTypeToEnum(std::string rIntegrationType)
             return entry.first;
 
     throw Exception(__PRETTY_FUNCTION__,
-                             "IntegrationType " + rIntegrationType + " has no enum equivalent or is not implemented.");
+                    "IntegrationType " + rIntegrationType + " has no enum equivalent or is not implemented.");
 }
 
 } // namespace NuTo

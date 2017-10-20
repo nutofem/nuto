@@ -10,7 +10,7 @@ LoadNodeForces2D::LoadNodeForces2D(const NodeBase* rNode, const Eigen::MatrixXd&
 {
     if (rDirection.cols() != 1 || rDirection.rows() != 2)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "Dimension of the direction matrix must be equal to the dimension of the structure.");
+                        "Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection, rDirection.data(), 2 * sizeof(double));
     // normalize the direction

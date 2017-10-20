@@ -68,8 +68,7 @@ public:
                                                     Eigen::MatrixXd& rOutputCoordinatesMin,
                                                     Eigen::MatrixXd& rOutputCoordinatesMax) const
     {
-        throw Exception(
-                "Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
+        throw Exception("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
 
     //! @brief calculate the sample mean for each support point using original support point coordinates

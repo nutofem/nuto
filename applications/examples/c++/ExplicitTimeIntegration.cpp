@@ -129,10 +129,11 @@ void Run(NuTo::Structure& s, NuTo::TimeIntegrationBase& timeIntegrationScheme)
     s.SetVerboseLevel(0);
 
     timeIntegrationScheme.PostProcessing().AddResultTime("Time");
-    timeIntegrationScheme.PostProcessing().AddResultNodeDisplacements("DisplacementsNodeRight", s.NodeGetId(&nodeRight));
+    timeIntegrationScheme.PostProcessing().AddResultNodeDisplacements("DisplacementsNodeRight",
+                                                                      s.NodeGetId(&nodeRight));
     int plotElement = s.GetNumElements() / 2;
     timeIntegrationScheme.PostProcessing().AddResultElementIpData("StressCenterElement", plotElement,
-                                                 NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+                                                                  NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     // only plot at every 5%
     timeIntegrationScheme.PostProcessing().SetMinTimeStepPlot(simulationTime * 0.05);

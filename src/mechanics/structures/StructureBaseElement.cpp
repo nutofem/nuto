@@ -356,7 +356,7 @@ void StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rInterpol
             mInterpolationTypeMap.find(rInterpolationTypeId);
     if (itInterpolationType == mInterpolationTypeMap.end())
         throw Exception("[StructureBase::ElementGroupSetConstitutiveLaw] Interpolation type with the given "
-                                 "identifier does not exist.");
+                        "identifier does not exist.");
 
     for (auto& element : elementGroup)
     {
@@ -918,7 +918,6 @@ double StructureBase::ElementGroupGetVolume(int rGroupId)
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void StructureBase::ElementTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
                                                const std::vector<eVisualizeWhat>& visualizeComponents)
 {
@@ -973,4 +972,3 @@ void StructureBase::ElementVectorAddToVisualize(Visualize::UnstructuredGrid& vis
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Visualization type not implemented.");
     }
 }
-#endif // VISUALIZE

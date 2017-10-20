@@ -205,7 +205,6 @@ private:
 
     void Visualize(NuTo::Structure& s, const std::string& rVisualizationDirectory)
     {
-#ifdef ENABLE_VISUALIZE
         if (rVisualizationDirectory == "")
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Provide a valid visualization directory!");
 
@@ -227,7 +226,6 @@ private:
         s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
         s.ExportVtkDataFileElements(directory.string());
-#endif
     }
 };
 } // namespace NuToTest

@@ -64,8 +64,7 @@ public:
     }
 
 private:
-    Eigen::MatrixXd CalculateTangentCDF(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue,
-                                        eOutput)
+    Eigen::MatrixXd CalculateTangentCDF(ConstitutiveInputMap rInput, eInput rParameter, eOutput rValue, eOutput)
     {
         auto value = CalculateOutput(rInput, rValue);
         auto& input = *rInput[rParameter];

@@ -74,9 +74,8 @@ double NuTo::GradientDamageEngineeringStress::EvaluateStaticData(const Constitut
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
 
         case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
@@ -514,7 +513,7 @@ double NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(Data& rStatic
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw Exception(__PRETTY_FUNCTION__,
-                                 "You need to specify the way the static data should be calculated (input list).");
+                        "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
             *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());

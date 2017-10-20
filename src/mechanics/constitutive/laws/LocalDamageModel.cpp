@@ -225,9 +225,8 @@ void NuTo::LocalDamageModel::Evaluate<1>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
         case eOutput::UPDATE_STATIC_DATA:
@@ -355,9 +354,8 @@ void NuTo::LocalDamageModel::Evaluate<2>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
         case eOutput::UPDATE_STATIC_DATA:
@@ -499,9 +497,8 @@ void NuTo::LocalDamageModel::Evaluate<3>(const ConstitutiveInputMap& rConstituti
         }
         case eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
         case eOutput::UPDATE_STATIC_DATA:
         {
@@ -536,7 +533,7 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw Exception(__PRETTY_FUNCTION__,
-                                 "You need to specify the way the static data should be calculated (input list).");
+                        "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
             *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());

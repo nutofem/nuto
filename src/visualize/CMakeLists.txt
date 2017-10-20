@@ -3,7 +3,7 @@ set(VisualizeSources
     ComponentName.cpp
     Point.cpp
     UnstructuredGrid.cpp
-    XMLWriter.cpp 
+    XMLWriter.cpp
     DataArray.cpp
 )
 

@@ -19,8 +19,7 @@ public:
 
     virtual void SetParameters(const Eigen::MatrixXd& rParameters)
     {
-        throw Exception(__PRETTY_FUNCTION__,
-                                "SetParameters function not implemented in CallbackHandler object.");
+        throw Exception(__PRETTY_FUNCTION__, "SetParameters function not implemented in CallbackHandler object.");
     }
 
     virtual double Objective() const

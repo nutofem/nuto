@@ -89,7 +89,7 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
         if (detJacobian <= 0)
         {
             throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                     "] Determinant of the Jacobian <= zero, no inversion possible.");
+                            "] Determinant of the Jacobian <= zero, no inversion possible.");
         }
         size += this->GetIntegrationPointWeight(iIP) * detJacobian;
     }
@@ -125,7 +125,7 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
 
     if (rData.mDetJacobian == 0)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                 "] Determinant of the Jacobian is zero, no inversion possible.");
+                        "] Determinant of the Jacobian is zero, no inversion possible.");
 
     Eigen::Matrix<double, TDim, TDim> invJacobian = jacobian.inverse();
 

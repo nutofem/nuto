@@ -16,14 +16,14 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    SparseMatrixType B(1,1);
+    SparseMatrixType B(1, 1);
 
     NuTo::DofStatus dofStatus;
     NuTo::StructureOutputBlockMatrix hessian(dofStatus);
 
     NuTo::FetiIdentityPreconditioner identityPreconditioner;
 
-    std::map<int,int> lagrangeMultiplierDofIds;
+    std::map<int, int> lagrangeMultiplierDofIds;
     identityPreconditioner.Compute(hessian, B, lagrangeMultiplierDofIds);
 
     if (not vec.isApprox(identityPreconditioner.ApplyOnTheLeft(vec)))

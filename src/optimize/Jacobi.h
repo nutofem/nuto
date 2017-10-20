@@ -9,10 +9,6 @@ namespace NuTo
 //! @author Andrea Keszler, ISM
 //! @date July 2010
 //! @brief ... standard class for jacobi method
-#ifdef ENABLE_MECHANICS
-class StructureGrid;
-#endif // ENABLE_MECHANICS
-
 class Jacobi : public virtual Optimizer
 {
 

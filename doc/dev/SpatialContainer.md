@@ -3,14 +3,13 @@
 # About
 
 - convenient wrapper for ANN
-    - [*A Library for Approximate Nearest Neighbor Searching*](https://www.cs.umd.edu/~mount/ANN/)
-    - `annkSearch()` - find $k$ nearest neighbors
-    - `annKFRSearch()` - find nearest neighbors within a radius
-
+  - [*A Library for Approximate Nearest Neighbor Searching*](https://www.cs.umd.edu/~mount/ANN/)
+  - `annkSearch()` - find $k$ nearest neighbors
+  - `annKFRSearch()` - find nearest neighbors within a radius
 
 # Example: find duplicate nodes
 
-~~~{.cpp}
+```{.cpp}
 // vector of relevant objects
 std::vector<NuTo::NodeBase*> nodes = GetNodes();
 
@@ -30,4 +29,4 @@ std::vector<std::vector<NuTo::NodeBase*>> duplicates =  tree.GetAllDuplicateValu
 
 for (std::vector<NuTo::NodeBase*>& nodesAtSameCoordinate : duplicates)
     // do stuff...
-~~~
+```

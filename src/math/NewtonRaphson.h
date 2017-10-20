@@ -57,10 +57,10 @@ auto DefineProblem(TR residual, TDR derivative, TNorm norm, TTol tolerance, TInf
 //! @param solver solver that provides a TX = solver.Solve(TNonlinearProblem::DR, TNonlinearProblem::R)
 //! @param maxIterations default = 20
 //! @param lineSearch line search algorithm, default = NoLineSearch, alternatively use NuTo::LineSearch()
-//! @param numIterations optionally returns the number of iterations required 
+//! @param numIterations optionally returns the number of iterations required
 template <typename TNonlinearProblem, typename TX, typename TSolver, typename TLineSearchAlgorithm = NoLineSearch>
 auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterations = 20,
-            TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
+           TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
 {
     auto x = x0;
     auto r = problem.ResidualFunction(x);

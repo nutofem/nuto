@@ -64,7 +64,8 @@ public:
 
 protected:
     double mTime = 0.;
-    double mTimeStep =0.;
+    double mTimeStep = 0.;
+
 private:
     // use diagonal mass matrix (standard is true, only for test cases use false)
     bool mUseDiagonalMassMatrix;

@@ -561,8 +561,6 @@ int main()
 // Time Integration
 // %%%%%%%%%%%%%%%%
 
-#ifdef ENABLE_VISUALIZE
-
         int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
 
@@ -571,9 +569,6 @@ int main()
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-
-#endif // ENABLE_VISUALIZE
-
 
         NuTo::CrankNicolsonEvaluate myTimeIntegrationScheme(&myStructure);
 

@@ -82,7 +82,6 @@ double NuTo::CollidableWallCylinder::PredictCollision(CollidableParticleSphere& 
     return Event::EVENTNULL;
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::CollidableWallCylinder::VisualizationStatic(Visualize::UnstructuredGrid& rVisualizer) const
 {
     // =========================================
@@ -170,7 +169,7 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(Visualize::UnstructuredGr
         rVisualizer.SetCellData(insertIndex, "Direction", dir);
     }
 }
-#endif
+
 
 bool NuTo::CollidableWallCylinder::IsInside(const CollidableParticleSphere& rSphere) const
 {

@@ -34,8 +34,8 @@ class EngineeringStress : public ConstitutiveVector<ConstitutiveIOBase::GetVoigt
 public:
     EngineeringStress() = default;
     EngineeringStress(std::initializer_list<double> initList);
-    //EngineeringStress(const EngineeringStress&) = default;
-    //EngineeringStress(EngineeringStress&&) = default;
+    // EngineeringStress(const EngineeringStress&) = default;
+    // EngineeringStress(EngineeringStress&&) = default;
 
     EngineeringStress<3> As3D(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 

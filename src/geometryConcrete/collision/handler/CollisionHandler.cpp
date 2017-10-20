@@ -121,8 +121,8 @@ double NuTo::CollisionHandler::Simulate(const long rNumEventsMax, const double r
             wallTimeOfBarrierReset = timer.GetTimeDifference();
         }
 
-        //		mSpheres->Sync(globalTime);
-        //		VisualizeSpheres(numEvents, globalTime, false);
+        //      mSpheres->Sync(globalTime);
+        //      VisualizeSpheres(numEvents, globalTime, false);
 
         // print a status update
         bool statusPrintOut = rTimePrintOut != 0 && timer.GetTimeDifference() > timePrintOut;

@@ -1,8 +1,5 @@
 #include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
 
 // constructor
 NuTo::IntegrationType1D2NBoundaryGauss3Ip::IntegrationType1D2NBoundaryGauss3Ip()
@@ -27,7 +24,7 @@ Eigen::VectorXd NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPo
         return Eigen::Matrix<double, 1, 1>::Constant(0.774596669241483); // sqr(3/5)
     default:
         throw Exception("[NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetLocalIntegrationPointCoordinates] Ip "
-                                 "number out of range.");
+                        "number out of range.");
     }
 }
 
@@ -60,7 +57,6 @@ double NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetIntegrationPointWeight(int 
     }
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetVisualizationCells(
         unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
@@ -85,4 +81,3 @@ void NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(2);
     VisualizationCellsIP.push_back(3);
 }
-#endif // ENABLE_VISUALIZE

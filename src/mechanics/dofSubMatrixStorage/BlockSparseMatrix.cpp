@@ -78,7 +78,7 @@ void NuTo::BlockSparseMatrix::FixOffDiagonalDimensions()
                 continue;
             if ((*this)(dofRow, dofCol).GetNumEntries() != 0)
                 throw Exception(__PRETTY_FUNCTION__,
-                                         "You're about to resize a matrix with values inside. This should be wrong.");
+                                "You're about to resize a matrix with values inside. This should be wrong.");
 
             int numRows = (*this)(dofRow, dofRow).GetNumRows();
             int numCols = (*this)(dofCol, dofCol).GetNumColumns();

@@ -452,7 +452,6 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
 
 inline void SetupVisualize(NuTo::Structure& rS, bool rVisualizeShrinkageStrains = false)
 {
-#ifdef ENABLE_VISUALIZE
     int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
     rS.GroupAddElementsTotal(visGrp);
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
@@ -463,7 +462,6 @@ inline void SetupVisualize(NuTo::Structure& rS, bool rVisualizeShrinkageStrains 
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
     if (rVisualizeShrinkageStrains)
         rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::SHRINKAGE_STRAIN);
-#endif // ENABLE_VISUALIZE
 }
 
 
@@ -510,7 +508,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int>, std::v
 
 
     constexpr double tolerance = 0.00001; // Tolerance because not all necessary value (sorption curve) are given in the
-                                          // paper and must be approximated
+    // paper and must be approximated
     unsigned int numMismatchingValues = 0;
 
 
