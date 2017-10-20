@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
                       element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd()), 2);
 
 
-    // Gradient. what should happen here?
+    // Gradient. What should happen here?
     //
     // We are only dealing with N, dof values do not matter.
     // We want a result vector of length 4 containing ( if we speak in forces f )
@@ -67,4 +67,12 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
+
+
+    // Hessian. What should happen here?
+    // Zeros in the right dimension
+    
+    CellIpData cellIpData(element, dummyJac, Eigen::VectorXd::Constant(1,0));
+    auto hessian0 = neumannIntegrand.Hessian0(cellData, cellIpData);
+    BoostUnitTest::CheckEigenMatrix(hessian0(dof, dof), Eigen::MatrixXd::Zero(4,4));
 }

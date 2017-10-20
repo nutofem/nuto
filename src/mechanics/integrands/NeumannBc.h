@@ -41,10 +41,13 @@ public:
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData&, const NuTo::CellIpData&, double,
-                                     double) override
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData&, const NuTo::CellIpData& cellIpData, double = 0,
+                                     double = 0) override
     {
-        throw;
+        const int size = cellIpData.GetNMatrix(mDofType).cols();
+        DofMatrix<double> hessian0;
+        hessian0(mDofType, mDofType) = Eigen::MatrixXd::Zero(size, size);
+        return hessian0;
     }
 
 private:
