@@ -198,7 +198,7 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
             }
             default:
                 throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                         "[ Invalid type of 2D section behavior found!!!");
+                                "[ Invalid type of 2D section behavior found!!!");
             }
 
             break;

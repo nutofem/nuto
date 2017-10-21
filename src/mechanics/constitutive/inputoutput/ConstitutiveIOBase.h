@@ -94,7 +94,7 @@ public:
         bool isNotVector = dynamic_cast<const ConstitutiveVector<TRows>*>(this) == nullptr;
         if (isNotVector)
             throw Exception(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
-                                                          " is not a ConstitutiveVector<>.");
+                                                 " is not a ConstitutiveVector<>.");
 #endif
     }
 
@@ -106,7 +106,7 @@ public:
         bool isNotMatrix = dynamic_cast<const ConstitutiveMatrix<TRows, TCols>*>(this) == nullptr;
         if (isNotMatrix)
             throw Exception(rMethodName, "Constitutive output " + Constitutive::OutputToString(rOutputEnum) +
-                                                          " is not a ConstitutiveMatrix<>.");
+                                                 " is not a ConstitutiveMatrix<>.");
 #endif
     }
 

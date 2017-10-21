@@ -18,8 +18,7 @@ double NuTo::EmptyTransferFunction::derivative(double x)
 
 double NuTo::EmptyTransferFunction::second_derivative(double x)
 {
-    throw Exception(
-            "EmptyTransferFunction::second_derivative : trying to evaluate empty activation function.");
+    throw Exception("EmptyTransferFunction::second_derivative : trying to evaluate empty activation function.");
 }
 
 NuTo::TransferFunction* NuTo::EmptyTransferFunction::clone() const

@@ -4,6 +4,6 @@
 
 ### Documentation
 
-* @ref UserInfo
+- @ref UserInfo
 
-* @ref DeveloperInfo
+- @ref DeveloperInfo

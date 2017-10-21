@@ -43,8 +43,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "one based indexing of sparse rMatrix is required for this solver.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse rMatrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -136,7 +135,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     if (error != 0)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
+                              "Analysis and reordering phase: " + this->GetErrorString(error) + ".");
     }
 
     timer.Reset(std::string("PARDISO ") + __FUNCTION__ + " numerical factorization");

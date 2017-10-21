@@ -73,11 +73,9 @@ public:
     //! @brief ... ture for physical walls
     virtual bool IsPhysical() const = 0;
 
-#ifdef ENABLE_VISUALIZE
     //! @brief ... visualize all non-moving collidables
     //! @param rVisualizer ... NuTo object for ascii-export
     virtual void VisualizationStatic(Visualize::UnstructuredGrid& rVisualizer) const;
-#endif
 
     //! @brief ... does nothing as all other wall events are still legal
     void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const override;

@@ -1,9 +1,6 @@
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include <cassert>
-
-#ifdef ENABLE_VISUALIZE
+#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
 
 //! @brief constructor
 NuTo::IntegrationType3D4NGauss1Ip::IntegrationType3D4NGauss1Ip()
@@ -35,7 +32,6 @@ double NuTo::IntegrationType3D4NGauss1Ip::GetIntegrationPointWeight(int) const
     return 1 / 6.;
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType3D4NGauss1Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                               std::vector<double>& VisualizationPointLocalCoordinates,
                                                               unsigned int& NumVisualizationCells,
@@ -75,4 +71,3 @@ void NuTo::IntegrationType3D4NGauss1Ip::GetVisualizationCells(unsigned int& NumV
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIP.push_back(0);
 }
-#endif // ENABLE_VISUALIZE

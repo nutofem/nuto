@@ -11,8 +11,7 @@ NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputImplicit::GetType() con
 NuTo::ConstitutiveInputMap
 NuTo::AdditiveInputImplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInputMap =
-            AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput);
+    ConstitutiveInputMap constitutiveInputMap = AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput);
 
     for (const auto& itOutput : rConstitutiveOutput)
     {

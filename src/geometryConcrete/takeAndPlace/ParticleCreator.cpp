@@ -202,7 +202,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(Eigen::MatrixXd& rParticles, const
                             (rParticles(countParticle, count) - mSpecimen.GetBoundingBox()(count, 0)) / lSubBox[count];
                 }
 
-                //				check for overlapping with the boundary
+                //              check for overlapping with the boundary
                 if (not mSpecimen.IsBox())
                     if (CollidesWithBoundary(rParticles.row(countParticle).transpose(), rRelativeDistance,
                                              rAbsoluteDistance))

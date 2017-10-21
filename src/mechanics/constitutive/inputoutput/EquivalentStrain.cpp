@@ -39,7 +39,7 @@ ConstitutiveVector<1> EquivalentStrainModifiedMises<1>::GetDerivative() const
     double dI1dexx = (1 - 2 * mNu);
 
     if (mA == 0)
-        tangent[0] = mK1 * dI1dexx; 
+        tangent[0] = mK1 * dI1dexx;
     else
         tangent[0] = mK1 * dI1dexx + 1. / (2 * mA) * (2 * mK1 * mK1 * mI1 * dI1dexx + mK2 * dJ2dexx);
 
@@ -96,8 +96,7 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         return tangent;
     }
 
-    throw Exception(__PRETTY_FUNCTION__,
-                             "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
+    throw Exception(__PRETTY_FUNCTION__, "Section type undefined. Choose either PLANE_STRAIN or PLANE_STRESS.");
 }
 
 template <>

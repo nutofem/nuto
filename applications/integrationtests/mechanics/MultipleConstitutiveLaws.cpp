@@ -505,7 +505,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS, std::vector<int> rN, std
 
 
     constexpr const double tolerance = 0.005; // Tolerance because not all necessary value (sorption curve) are given in
-                                              // the paper and must be approximated
+    // the paper and must be approximated
     double deltaL = rL[0] / rN[0];
     unsigned int numMismatchingValues = 0;
 
@@ -869,12 +869,10 @@ void AdditiveInputImplicitTest(std::vector<int> rN, std::vector<double> rL,
 
     SetupMultiProcessor(S);
 
-#ifdef ENABLE_VISUALIZE
     int visGrp = S.GroupCreate(NuTo::eGroupId::Elements);
     S.GroupAddElementsTotal(visGrp);
     S.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
     S.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-#endif // ENABLE_VISUALIZE
 
     SetupTimeIntegration(TI, tCtrl, resultDir, rStaggered);
     TI.Solve(tCtrl.t_final);

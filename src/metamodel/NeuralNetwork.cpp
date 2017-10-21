@@ -264,7 +264,7 @@ void NuTo::NeuralNetwork::HessianFull(Eigen::MatrixXd& rHessian) const
     std::vector<double> pO(
             numNeurons); // store the current value of each neuron after having applied the transfer function
     Eigen::MatrixXd pM(numNeurons, mSupportPoints.GetDimOutput()); // store the derivative of the output with respect to
-                                                                   // A of the current Neuron
+    // A of the current Neuron
 
     for (int cntSample = 0; cntSample < mSupportPoints.GetNumSupportPoints(); cntSample++)
     {
@@ -306,7 +306,7 @@ void NuTo::NeuralNetwork::HessianDiag(Eigen::MatrixXd& rHessian) const
     std::vector<double> pO(
             numNeurons); // store the current value of each neuron after having applied the transfer function
     Eigen::MatrixXd pM(numNeurons, mSupportPoints.GetDimOutput()); // store the derivative of the output with respect to
-                                                                   // A of the current Neuron
+    // A of the current Neuron
 
     Eigen::MatrixXd tmpMat;
     for (int cntSample = 0; cntSample < mSupportPoints.GetNumSupportPoints(); cntSample++)
@@ -364,7 +364,7 @@ void NuTo::NeuralNetwork::Jacobian(Eigen::MatrixXd& rJacobian, std::vector<doubl
 
     int numParameters = mNumWeights + mNumBiases;
     rJacobian.resize(dimOutput, numParameters); // store first the gradient wrt all the weights (starting from first
-                                                // hiddenlayer, and then the biases
+    // hiddenlayer, and then the biases
 
     int prevNeuron, curNeuron, nextNeuron, firstNeuronPrevLayer, firstNeuronCurrentLayer, firstNeuronNextLayer;
     int numNeurons(0);
@@ -477,8 +477,7 @@ void NuTo::NeuralNetwork::BuildDerived()
         mNumBiases += mvNumNeurons[currentLayer + 1];
         // check if all transfer functions are set
         if (mvTransferFunction[currentLayer] == nullptr)
-            throw Exception(
-                    "NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
+            throw Exception("NuTo::NeuralNetwork::BuildDerived - Transferfunction not correctly set for all layers.");
     }
 
     int numParameters(mNumWeights + mNumBiases);
@@ -531,7 +530,7 @@ void NuTo::NeuralNetwork::BuildDerived()
     std::vector<double> pO(
             numNeurons); // store the current value of each neuron after having applied the transfer function
     Eigen::MatrixXd pM(numNeurons, mSupportPoints.GetDimOutput()); // store the derivative of the output with respect to
-                                                                   // A of the current Neuron
+    // A of the current Neuron
 
     // help arrays for the update of the hyperparameters
     std::vector<double> gammas;
@@ -974,7 +973,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
     if (!mBayesian)
     {
         throw Exception("Metamodel::SolveConfidenceIntervalTransformed - A prediction of the confidence "
-                                 "interval is only possible with Bayesian neural networks.");
+                        "interval is only possible with Bayesian neural networks.");
     }
     int dimInput = mSupportPoints.GetDimInput(), dimOutput = mSupportPoints.GetDimOutput();
 
@@ -990,7 +989,7 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::Matrix
     std::vector<double> pA(numNeurons); // store the current value of each neuron before the transfer function
     std::vector<double> pO(numNeurons); // store the current value of each neuron after the transfer function
     Eigen::MatrixXd pM(numNeurons, mSupportPoints.GetDimOutput()); // store the derivative of the output with respect to
-                                                                   // A of the current Neuron
+    // A of the current Neuron
     pM.setZero();
     Eigen::MatrixXd tmpCovariance(
             dimOutput, dimOutput); // store the derivative of the output with respect to A of the current Neuron
@@ -1062,8 +1061,7 @@ void NuTo::NeuralNetwork::GetAlphas(Eigen::VectorXd& rAlpha) const
 
     if (mNumLayers == 1)
     {
-        throw Exception(
-                "Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
+        throw Exception("Metamodel::GetAlphas - without hidden layer the definition of alpha is not implemented.");
     }
     // for the first layer, each input has its own alpha
     for (int cntCurrentNeuron = 0; cntCurrentNeuron < mvNumNeurons[1]; cntCurrentNeuron++, curBias++)

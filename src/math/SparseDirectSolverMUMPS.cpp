@@ -7,6 +7,7 @@
 
 NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS()
     : SparseDirectSolver()
+    , mSolver(DMUMPS_STRUC_C())
 {
 #ifdef HAVE_MUMPS
 // set default solver parameters
@@ -41,8 +42,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -120,7 +120,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
     if (mSolver.info[0] < 0)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+                              "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
     timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
@@ -139,7 +139,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
             break;
         }
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+                              "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 #else // HAVE_MUMPS
     throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
@@ -176,7 +176,7 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const Eigen::VectorXd& rRhs, Eigen:
         if (mSolver.info[0] < 0)
         {
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                      "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+                                  "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
         }
     }
 #else // HAVE_MUMPS
@@ -195,8 +195,7 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 #else // HAVE_MUMPS
     throw NuTo::Exception(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
@@ -213,8 +212,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
@@ -304,7 +302,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(
     if (mSolver.info[0] < 0)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+                              "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
     timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
@@ -316,7 +314,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(
     {
         std::cout << "mSolver info " << mSolver.info[0] << "\n";
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                  "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+                              "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
 

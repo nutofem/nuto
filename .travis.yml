@@ -12,33 +12,34 @@ compiler:
     - clang
     - gcc
 env:
-    - BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Release OPENMP=FALSE COVERAGE=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
+    - BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
+    - BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
+    - BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
 matrix:
     exclude:
         - compiler: clang
-          env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=TRUE  EXAMPLES=FALSE
+          env: BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
         - compiler: clang
-          env: BUILD_TYPE=Release OPENMP=TRUE  COVERAGE=FALSE EXAMPLES=TRUE
+          env: BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
     - ./scripts/install_gmsh.sh
+    - ./scripts/install_cmake.sh
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python3-dev python3-numpy libboost-system1.55-dev libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev
-    - sudo apt-get install -y lcov curl texlive-font-utils libglu1-mesa-dev
+    - sudo apt-get install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev
+    - sudo apt-get install -y lcov curl libglu1-mesa-dev
 before_script:
     - mkdir build
     - cd build
-    - MODULES="-DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE -DENABLE_ARPACK=TRUE -DENABLE_GEOMETRYCONCRETE=TRUE -DENABLE_MPI=TRUE"
-    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_COVERAGE=$COVERAGE -DENABLE_EXAMPLES=$EXAMPLES $MODULES"
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS $OPTIONS ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS $OPTIONS ..; fi
+    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE -DENABLE_MPI=TRUE"
+    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
 script:
     - make -j2 unit
-    #- make -j2 && ctest --output-on-failure
+    #- make -j2 && make -j2 integrationtests # need to make python modules before integrationtests
+    #- if [[ "$EXAMPLES" == "TRUE" ]]; then make -j2 examples; fi
 after_success:
     - cd ..
     - ./scripts/upload_coverage.sh

@@ -115,6 +115,6 @@ void NuTo::Specimen::CheckBoundingBox()
     if (mBoundingBox.rows() != 3 && mBoundingBox.cols() != 2)
         throw Exception(__PRETTY_FUNCTION__, "bounding box has to have the dimension [3,2]");
 
-    //	if (rBoundingBox.GetValue(0, 0) != 0. || rBoundingBox.GetValue(1, 0) != 0. || rBoundingBox.GetValue(2, 0) != 0.)
-    //		throw Exception("[NuTo::ParticleCreator::CheckBoundingBox] bounding box has to start at (0.,0.,0.)");
+    //  if (rBoundingBox.GetValue(0, 0) != 0. || rBoundingBox.GetValue(1, 0) != 0. || rBoundingBox.GetValue(2, 0) != 0.)
+    //      throw Exception("[NuTo::ParticleCreator::CheckBoundingBox] bounding box has to start at (0.,0.,0.)");
 }

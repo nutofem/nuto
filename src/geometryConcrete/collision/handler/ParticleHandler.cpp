@@ -18,9 +18,7 @@
 #include "geometryConcrete/Specimen.h"
 
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
-#endif
 
 NuTo::ParticleHandler::ParticleHandler(int rNumParticles, Eigen::MatrixXd rParticleBoundingBox, double rVelocityRange,
                                        double rGrowthRate, int rSeed)
@@ -84,7 +82,6 @@ void NuTo::ParticleHandler::ExportParticlesToFile(const std::string& rExportFile
 void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory, int rTimeStep, double rGlobalTime,
                                                    bool rFinal) const
 {
-#ifdef ENABLE_VISUALIZE
     // modify rGlobalTime slightly to resolve every event
     rGlobalTime += rTimeStep * 1.e-10;
 
@@ -130,13 +127,10 @@ void NuTo::ParticleHandler::ExportParticlesToVTU3D(std::string rOutputDirectory,
 
     file << endOfXML.str();
     file.close();
-#endif
 }
 
 void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, double rZCoord) const
 {
-#ifdef ENABLE_VISUALIZE
-
     NuTo::Visualize::UnstructuredGrid visuSpheres;
     visuSpheres.DefinePointData("Radius");
 
@@ -154,8 +148,6 @@ void NuTo::ParticleHandler::ExportParticlesToVTU2D(std::string rOutputFile, doub
         visuSpheres.SetPointData(index, "Radius", radius);
     }
     visuSpheres.ExportVtuDataFile(rOutputFile);
-
-#endif
 }
 
 void NuTo::ParticleHandler::Sync(const double rTime)

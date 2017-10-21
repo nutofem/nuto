@@ -47,7 +47,7 @@ const NuTo::InterpolationBase& NuTo::InterpolationType::Get(const Node::eDof& rD
     {
         std::cout << e.what() << std::endl;
         throw NuTo::Exception("[NuTo::InterpolationType::Get] Dof " + Node::DofToString(rDofType) +
-                                       " is not a member of this interpolation type. Add it first.");
+                              " is not a member of this interpolation type. Add it first.");
     }
 }
 
@@ -57,7 +57,7 @@ NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eDof rDofTyp
 
     if (interpolationTypeIterator == mInterpolations.end())
         throw NuTo::Exception("[NuTo::InterpolationType::Get] Dof " + Node::DofToString(rDofType) +
-                                       " is not a member of this interpolation type. Add it first.");
+                              " is not a member of this interpolation type. Add it first.");
 
     return *(interpolationTypeIterator->second);
 }
@@ -69,7 +69,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
 {
     if (IsDof(rDofType))
         throw NuTo::Exception("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " +
-                                       NuTo::Node::DofToString(rDofType) + " exists.");
+                              NuTo::Node::DofToString(rDofType) + " exists.");
 
     InterpolationBase* newType;
     switch (mShapeType)
@@ -83,8 +83,8 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     case Interpolation::eShapeType::BRICK3D:
     case Interpolation::eShapeType::INTERFACE:
         throw NuTo::Exception("[NuTo::InterpolationTypeBase::AddDofInterpolation] This method is for IG "
-                                       "interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, "
-                                       "NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
+                              "interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, "
+                              "NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
         break;
     case Interpolation::eShapeType::IGA1D:
         newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension, rDegree(0), rKnots[0], rWeights);
@@ -94,7 +94,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         break;
     default:
         throw NuTo::Exception("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " +
-                                       NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
+                              NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
     }
 
     mInterpolations.insert(rDofType, newType);
@@ -139,7 +139,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
 {
     if (IsDof(rDofType))
         throw NuTo::Exception("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " +
-                                       NuTo::Node::DofToString(rDofType) + " exists.");
+                              NuTo::Node::DofToString(rDofType) + " exists.");
 
     InterpolationBase* newType;
     switch (mShapeType)
@@ -169,7 +169,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         break;
     default:
         throw NuTo::Exception("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " +
-                                       NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
+                              NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
     }
 
     mInterpolations.insert(rDofType, newType);
@@ -307,8 +307,8 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
         break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Standard integration type for " +
-                                                                        Interpolation::TypeOrderToString(order) +
-                                                                        " is not implemented.");
+                                                               Interpolation::TypeOrderToString(order) +
+                                                               " is not implemented.");
         }
 
         if (currentOrder > maxOrder)
@@ -368,8 +368,8 @@ void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eDof rDofType
 {
     if (not IsDof(rDofType))
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                       "Dof " + Node::DofToString(rDofType) +
-                                               " is not a member of this interpolation type. Add it first.");
+                              "Dof " + Node::DofToString(rDofType) +
+                                      " is not a member of this interpolation type. Add it first.");
 
     if (rIsActiveDof)
         mActiveDofs.insert(rDofType);
@@ -555,9 +555,8 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
             break;
 
         default:
-            throw NuTo::Exception(
-                    "[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " +
-                    Interpolation::ShapeTypeToString(mShapeType));
+            throw NuTo::Exception("[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " +
+                                  Interpolation::ShapeTypeToString(mShapeType));
         }
 
         // find a point j != i with x_j == x_i'

@@ -298,7 +298,10 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
     if (not file.is_open())
     {
         std::cout << fileName << std::endl;
-        throw Exception(__PRETTY_FUNCTION__, "Error opening input file """ + fileName + """ for read access.");
+        throw Exception(__PRETTY_FUNCTION__, "Error opening input file "
+                                             "" + fileName +
+                                                     ""
+                                                     " for read access.");
     }
 
 
@@ -341,7 +344,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
 
         switch (element.type)
         {
-        case 1: // 	2-node line in 2d/3d
+        case 1: //  2-node line in 2d/3d
             shapeType = Interpolation::eShapeType::TRUSSXD;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
@@ -365,9 +368,9 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
-        //    	case 6: // 6-node prism.
+        //      case 6: // 6-node prism.
 
-        //    	case 7: // 5-node pyramid.
+        //      case 7: // 5-node pyramid.
 
         case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
             shapeType = Interpolation::eShapeType::TRUSSXD;
@@ -381,71 +384,71 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             break;
 
         case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with
-                 // the face).
-        {
-            shapeType = Interpolation::eShapeType::QUAD2D;
-            typeOrder = Interpolation::eTypeOrder::LOBATTO2;
-            // ordering is different than in gmsh, fix this first
-            std::vector<int> nodeNumbersGmsh(nodeNumbers);
-            nodeNumbers[0] = nodeNumbersGmsh[0];
-            nodeNumbers[1] = nodeNumbersGmsh[4];
-            nodeNumbers[2] = nodeNumbersGmsh[1];
-            nodeNumbers[3] = nodeNumbersGmsh[7];
-            nodeNumbers[4] = nodeNumbersGmsh[8];
-            nodeNumbers[5] = nodeNumbersGmsh[5];
-            nodeNumbers[6] = nodeNumbersGmsh[3];
-            nodeNumbers[7] = nodeNumbersGmsh[6];
-            nodeNumbers[8] = nodeNumbersGmsh[2];
-            break;
-        }
+            // the face).
+            {
+                shapeType = Interpolation::eShapeType::QUAD2D;
+                typeOrder = Interpolation::eTypeOrder::LOBATTO2;
+                // ordering is different than in gmsh, fix this first
+                std::vector<int> nodeNumbersGmsh(nodeNumbers);
+                nodeNumbers[0] = nodeNumbersGmsh[0];
+                nodeNumbers[1] = nodeNumbersGmsh[4];
+                nodeNumbers[2] = nodeNumbersGmsh[1];
+                nodeNumbers[3] = nodeNumbersGmsh[7];
+                nodeNumbers[4] = nodeNumbersGmsh[8];
+                nodeNumbers[5] = nodeNumbersGmsh[5];
+                nodeNumbers[6] = nodeNumbersGmsh[3];
+                nodeNumbers[7] = nodeNumbersGmsh[6];
+                nodeNumbers[8] = nodeNumbersGmsh[2];
+                break;
+            }
         case 11: // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
             shapeType = Interpolation::eShapeType::TETRAHEDRON3D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
         case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the
-                 // faces and 1 with the volume).
-        {
-            shapeType = Interpolation::eShapeType::BRICK3D;
-            typeOrder = Interpolation::eTypeOrder::LOBATTO2;
-            // ordering is different than in gmsh, fix this first
-            std::vector<int> nodeNumbersGmsh = nodeNumbers;
-            nodeNumbers[0] = nodeNumbersGmsh[4];
-            nodeNumbers[1] = nodeNumbersGmsh[16];
-            nodeNumbers[2] = nodeNumbersGmsh[5];
-            nodeNumbers[3] = nodeNumbersGmsh[10];
-            nodeNumbers[4] = nodeNumbersGmsh[21];
-            nodeNumbers[5] = nodeNumbersGmsh[12];
-            nodeNumbers[6] = nodeNumbersGmsh[0];
-            nodeNumbers[7] = nodeNumbersGmsh[8];
-            nodeNumbers[8] = nodeNumbersGmsh[1];
-            nodeNumbers[9] = nodeNumbersGmsh[17];
-            nodeNumbers[10] = nodeNumbersGmsh[25];
-            nodeNumbers[11] = nodeNumbersGmsh[18];
-            nodeNumbers[12] = nodeNumbersGmsh[22];
-            nodeNumbers[13] = nodeNumbersGmsh[26];
-            nodeNumbers[14] = nodeNumbersGmsh[23];
-            nodeNumbers[15] = nodeNumbersGmsh[9];
-            nodeNumbers[16] = nodeNumbersGmsh[20];
-            nodeNumbers[17] = nodeNumbersGmsh[11];
-            nodeNumbers[18] = nodeNumbersGmsh[7];
-            nodeNumbers[19] = nodeNumbersGmsh[19];
-            nodeNumbers[20] = nodeNumbersGmsh[6];
-            nodeNumbers[21] = nodeNumbersGmsh[15];
-            nodeNumbers[22] = nodeNumbersGmsh[24];
-            nodeNumbers[23] = nodeNumbersGmsh[14];
-            nodeNumbers[24] = nodeNumbersGmsh[3];
-            nodeNumbers[25] = nodeNumbersGmsh[13];
-            nodeNumbers[26] = nodeNumbersGmsh[2];
-            break;
-        }
-        //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3
+            // faces and 1 with the volume).
+            {
+                shapeType = Interpolation::eShapeType::BRICK3D;
+                typeOrder = Interpolation::eTypeOrder::LOBATTO2;
+                // ordering is different than in gmsh, fix this first
+                std::vector<int> nodeNumbersGmsh = nodeNumbers;
+                nodeNumbers[0] = nodeNumbersGmsh[4];
+                nodeNumbers[1] = nodeNumbersGmsh[16];
+                nodeNumbers[2] = nodeNumbersGmsh[5];
+                nodeNumbers[3] = nodeNumbersGmsh[10];
+                nodeNumbers[4] = nodeNumbersGmsh[21];
+                nodeNumbers[5] = nodeNumbersGmsh[12];
+                nodeNumbers[6] = nodeNumbersGmsh[0];
+                nodeNumbers[7] = nodeNumbersGmsh[8];
+                nodeNumbers[8] = nodeNumbersGmsh[1];
+                nodeNumbers[9] = nodeNumbersGmsh[17];
+                nodeNumbers[10] = nodeNumbersGmsh[25];
+                nodeNumbers[11] = nodeNumbersGmsh[18];
+                nodeNumbers[12] = nodeNumbersGmsh[22];
+                nodeNumbers[13] = nodeNumbersGmsh[26];
+                nodeNumbers[14] = nodeNumbersGmsh[23];
+                nodeNumbers[15] = nodeNumbersGmsh[9];
+                nodeNumbers[16] = nodeNumbersGmsh[20];
+                nodeNumbers[17] = nodeNumbersGmsh[11];
+                nodeNumbers[18] = nodeNumbersGmsh[7];
+                nodeNumbers[19] = nodeNumbersGmsh[19];
+                nodeNumbers[20] = nodeNumbersGmsh[6];
+                nodeNumbers[21] = nodeNumbersGmsh[15];
+                nodeNumbers[22] = nodeNumbersGmsh[24];
+                nodeNumbers[23] = nodeNumbersGmsh[14];
+                nodeNumbers[24] = nodeNumbersGmsh[3];
+                nodeNumbers[25] = nodeNumbersGmsh[13];
+                nodeNumbers[26] = nodeNumbersGmsh[2];
+                break;
+            }
+        //      case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3
         //    with the quadrangular faces).
 
-        //    	case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1
+        //      case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1
         //    with the quadrangular face).
 
-        //    	case 15: // 1-node point.
+        //      case 15: // 1-node point.
 
         case 16: // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
             shapeType = Interpolation::eShapeType::QUAD2D;
@@ -488,53 +491,53 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
             break;
         }
 
-        //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
+        //      case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
 
-        //    	case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
+        //      case 19: // 13-node second order pyramid (5 nodes associated with the vertices and 8 with the edges).
 
-        //    	case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the
+        //      case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the
         //    edges)
 
         case 21: // 10-node third order triangle (3 nodes associated with the vertices, 6 with the edges, 1 with the
-                 // face)
+            // face)
             shapeType = Interpolation::eShapeType::TRIANGLE2D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT3;
             break;
 
-        //    	case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the
+        //      case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the
         //    edges)
 
         case 23: // 15-node fourth order triangle (3 nodes associated with the vertices, 9 with the edges, 3 with the
-                 // face)
+            // face)
             shapeType = Interpolation::eShapeType::TRIANGLE2D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT4;
             break;
 
-        //    	case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the
+        //      case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the
         //    edges)
 
-        //    	case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the
+        //      case 25: // 21-node fifth order complete triangle (3 nodes associated with the vertices, 12 with the
         //    edges, 6 with the face)
 
-        //    	case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
+        //      case 26: // 4-node third order edge (2 nodes associated with the vertices, 2 internal to the edge)
 
-        //    	case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
+        //      case 27: // 5-node fourth order edge (2 nodes associated with the vertices, 3 internal to the edge)
 
-        //    	case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
+        //      case 28: // 6-node fifth order edge (2 nodes associated with the vertices, 4 internal to the edge)
 
-        //    	case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4
+        //      case 29: // 20-node third order tetrahedron (4 nodes associated with the vertices, 12 with the edges, 4
         //    with the faces)
 
-        //    	case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges,
+        //      case 30: // 35-node fourth order tetrahedron (4 nodes associated with the vertices, 18 with the edges,
         //    12 with the faces, 1 in the volume)
 
-        //    	case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24
+        //      case 31: // 56-node fifth order tetrahedron (4 nodes associated with the vertices, 24 with the edges, 24
         //    with the faces, 4 in the volume)
 
-        //    	case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24
+        //      case 92: // 64-node third order hexahedron (8 nodes associated with the vertices, 24 with the edges, 24
         //    with the faces, 8 in the volume)
 
-        //    	case 93: //	125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges,
+        //      case 93: // 125-node fourth order hexahedron (8 nodes associated with the vertices, 36 with the edges,
         //    54 with the faces, 27 in the volume)
 
         default:
@@ -544,7 +547,7 @@ std::vector<std::pair<int, int>> NuTo::MeshCompanion::ImportFromGmsh(Structure& 
 
         // get gmsh group id and create a corresponding nuto group if needed
         int groupId = element.tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist
-                                       // before the gmsh import.
+        // before the gmsh import.
 
         // there is one interpolation type for each group. Else: throw
         TmpGroup& tmpGroup = groups[groupId];

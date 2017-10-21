@@ -28,9 +28,6 @@ public:
     //! @brief ... constructor
     SparseMatrix()
     {
-        this->mOneBasedIndexing = false;
-        this->mPositiveDefinite = false;
-        mVerboseLevel = 0;
     }
 
     SparseMatrix(const SparseMatrix<T>& rOther)
@@ -144,7 +141,7 @@ public:
     virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRSymmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T> rMatrix)] not "
-                            "implemented for this matrix type.");
+                        "implemented for this matrix type.");
     }
 
     //! @brief ... add sparse matrix
@@ -153,7 +150,7 @@ public:
     virtual NuTo::SparseMatrix<T>& operator+=(const SparseMatrixCSRVector2Symmetric<T>&)
     {
         throw Exception("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] "
-                            "not implemented for this matrix type.");
+                        "not implemented for this matrix type.");
     }
 
     virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertToFullMatrix() const = 0;
@@ -173,13 +170,13 @@ public:
     virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2General.");
+                        "SparseMatrixCSRVector2General.");
     }
 
     virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2Symmetric.");
+                        "SparseMatrixCSRVector2Symmetric.");
     }
 
 #ifndef SWIG
@@ -199,13 +196,13 @@ public:
     virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General() const
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2General.");
+                        "SparseMatrixCSRVector2General.");
     }
 
     virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric() const
     {
         throw Exception("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type "
-                            "SparseMatrixCSRVector2Symmetric.");
+                        "SparseMatrixCSRVector2Symmetric.");
     }
 #endif // SWIG
 
@@ -270,11 +267,11 @@ public:
 
 protected:
     //! @brief ... internal indexing of the matrix (true if one based indexing / false if zero based indexing)
-    bool mOneBasedIndexing;
+    bool mOneBasedIndexing = false;
     //! @brief ... definiteness of the matrix (true if positive definite / false if indefinite)
-    bool mPositiveDefinite;
+    bool mPositiveDefinite = false;
 
-    unsigned short mVerboseLevel;
+    int mVerboseLevel = 0;
 
     //! @brief ... resizes and fills the matrix rMatrix with rNumValues random values
     //! @param rMatrix ... Matrix<T>

@@ -132,7 +132,7 @@ void NuTo::ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParamet
         return;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Constitutive law does not have the parameter " +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 

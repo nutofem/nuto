@@ -5,8 +5,6 @@
 
 namespace NuTo
 {
-//! @author , ISM
-//! @date December 2009
 //! @brief ... integration types in 3D with 4 nodes Gauss integration and 1 integration points
 class IntegrationType3D4NGauss4Ip : public IntegrationType3D
 {
@@ -29,15 +27,12 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-#ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                std::vector<double>& VisualizationPointLocalCoordinates,
                                unsigned int& NumVisualizationCells,
                                std::vector<NuTo::eCellTypes>& VisualizationCellType,
                                std::vector<unsigned int>& VisualizationCellsIncidence,
                                std::vector<unsigned int>& VisualizationCellsIP) const override;
-#endif // ENABLE_VISUALIZE
-
 protected:
     std::array<Eigen::Vector3d, 4> mCoordinates;
 };
