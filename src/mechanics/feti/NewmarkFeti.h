@@ -997,7 +997,7 @@ public:
 
                 if (mFetiScaling == eFetiScaling::Superlumped)
                     mScalingMatrix = mStructureFeti->SuperlumpedScaling(hessian0);
-                    
+
                 BuildAndFactorizeMatrix(hessian0, hessian1);
 
                 VectorXd residual = CalculateResidual(extForce, intForce);

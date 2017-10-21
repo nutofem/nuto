@@ -170,17 +170,16 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
             break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
-                                                              "(" + Node::DofToString(dofRow) +
-                                                                      "," + Node::DofToString(dofCol) +
-                                                                      ") not implemented.");
+                                                     "(" + Node::DofToString(dofRow) +
+                                                             "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
 }
 
 void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(
-        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int,
-        const ConstitutiveInputMap&, const ConstitutiveOutputMap& constitutiveOutputMap) const
+        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int, const ConstitutiveInputMap&,
+        const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -207,8 +206,8 @@ void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(
         }
         break;
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }

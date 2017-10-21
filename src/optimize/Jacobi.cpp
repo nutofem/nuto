@@ -41,7 +41,7 @@ int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
     bool converged(false);
 
     int localMaxGradientCalls = (int)mNumParameters;
-    //	int localMaxGradientCalls=2*mNumParameters;
+    //  int localMaxGradientCalls=2*mNumParameters;
     if (localMaxGradientCalls < mMaxGradientCalls)
         SetMaxGradientCalls(localMaxGradientCalls);
 

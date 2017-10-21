@@ -26,24 +26,24 @@ public:
     virtual std::vector<double>& GetParameters()
     {
         throw Exception("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in "
-                                "CallbackHandlerGrid object.");
+                        "CallbackHandlerGrid object.");
     }
 
     virtual std::vector<double>& GetRightHandSide()
     {
         throw Exception("[CallbackHandlerGrid::GetRightHandSide] GetRightHandSide function not implemented in "
-                                "CallbackHandlerGrid object.");
+                        "CallbackHandlerGrid object.");
     }
     virtual void SetParameters(std::vector<double>& rParameters)
     {
         throw Exception("[CallbackHandlerGrid::SetParameters] SetParameters function not implemented in "
-                                "CallbackHandlerGrid object.");
+                        "CallbackHandlerGrid object.");
     }
 
     virtual void SetRightHandSide(std::vector<double>& rRightHandSide)
     {
         throw Exception("[CallbackHandlerGrid::SetRightHandSide] SetRightHandSide function not implemented in "
-                                "CallbackHandlerGrid object.");
+                        "CallbackHandlerGrid object.");
     }
 
     virtual void Gradient(std::vector<double>& rValue, std::vector<double>& rGradient)
@@ -63,7 +63,7 @@ public:
     virtual const boost::dynamic_bitset<> GetDisplacementConstaints()
     {
         throw Exception("[CallbackHandlerGrid::GetDisplacementConstaints] GetDisplacementConstaints function "
-                                "not implemented in CallbackHandlerGrid object.");
+                        "not implemented in CallbackHandlerGrid object.");
     }
 
     //! @brief correct solution for hanging nodes
@@ -71,24 +71,24 @@ public:
     virtual void HangingNodesCorrection(std::vector<double>& u)
     {
         throw Exception("[CallbackHandlerGrid::HangingNodesCorrection] HangingNodesCorrection function not "
-                                "implemented in CallbackHandlerGrid object.");
+                        "implemented in CallbackHandlerGrid object.");
     }
 
 
     virtual void SetMisesWielandt(bool rMisesWielandt)
     {
         throw Exception("[CallbackHandlerGrid::SetMisesWielandt] SetMisesWielandt function not implemented in "
-                                "CallbackHandlerGrid object.");
+                        "CallbackHandlerGrid object.");
     }
     virtual double GetWeightingFactor()
     {
         throw Exception("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented "
-                                "in CallbackHandlerGrid object.");
+                        "in CallbackHandlerGrid object.");
     }
     virtual void SetWeightingFactor(double rWeight)
     {
         throw Exception("[CallbackHandlerGrid::GetWeightingFactor] GetWeightingFactor function not implemented "
-                                "in CallbackHandlerGrid object.");
+                        "in CallbackHandlerGrid object.");
     }
 
 private:

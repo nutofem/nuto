@@ -1,5 +1,5 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include <eigen3/Eigen/Eigenvalues> 
+#include <eigen3/Eigen/Eigenvalues>
 
 template <int TDim>
 NuTo::EngineeringStress<TDim>::EngineeringStress(std::initializer_list<double> initList)

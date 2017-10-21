@@ -5,7 +5,7 @@ namespace NuTo
 namespace NewtonRaphson
 {
 
-//! @brief takes any argument and does nothing... 
+//! @brief takes any argument and does nothing...
 struct VoidInfo
 {
     template <typename... TAny>
@@ -88,5 +88,5 @@ public:
     }
 };
 
-}  /* NewtonRaphson */
-}  /* NuTo */
+} /* NewtonRaphson */
+} /* NuTo */

@@ -1,9 +1,6 @@
-#include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include <cassert>
-
-#ifdef ENABLE_VISUALIZE
+#include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
 
 //! @brief constructor
 NuTo::IntegrationType3D6NGauss2x3Ip::IntegrationType3D6NGauss2x3Ip()
@@ -53,7 +50,6 @@ double NuTo::IntegrationType3D6NGauss2x3Ip::GetIntegrationPointWeight(int) const
     return 1 / 6.;
 }
 
-#ifdef ENABLE_VISUALIZE
 NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationType3D6NGauss2x3Ip::GetVisualizationCells() const
 {
     IpCellInfo ipCellInfo;
@@ -113,4 +109,3 @@ NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationType3D6NGauss2x3Ip::GetVi
 
     return ipCellInfo;
 }
-#endif // ENABLE_VISUALIZE

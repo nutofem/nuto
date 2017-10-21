@@ -30,18 +30,14 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-#ifdef ENABLE_VISUALIZE
     IpCellInfo GetVisualizationCells() const override
     {
         return mIpCellInfo;
     }
-#endif // ENABLE_VISUALIZE
 
 protected:
     std::vector<Eigen::Vector2d> mIntegrationPointCoordinates;
     std::vector<double> mIntegrationPointWeights;
-#ifdef ENABLE_VISUALIZE
     IntegrationTypeBase::IpCellInfo mIpCellInfo;
-#endif // ENABLE_VISUALIZE
 };
 }

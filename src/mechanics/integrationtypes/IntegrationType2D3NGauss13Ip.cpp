@@ -1,9 +1,6 @@
-#ifdef ENABLE_VISUALIZE
-#include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include <cassert>
+#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "visualize/VisualizeEnum.h"
 
 
 //! @brief constructor
@@ -113,7 +110,6 @@ double NuTo::IntegrationType2D3NGauss13Ip::GetIntegrationPointWeight(int rIpNum)
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType2D3NGauss13Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                                std::vector<double>& VisualizationPointLocalCoordinates,
                                                                unsigned int& NumVisualizationCells,
@@ -177,4 +173,3 @@ void NuTo::IntegrationType2D3NGauss13Ip::GetVisualizationCells(unsigned int& Num
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIP.push_back(6);
 }
-#endif // ENABLE_VISUALIZE

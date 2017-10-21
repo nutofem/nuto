@@ -242,7 +242,7 @@ NuTo::Interpolation::eTypeOrder GetCoordinateInterpolation(NuTo::Structure& s, i
         auto type = e->GetInterpolationType().Get(NuTo::Node::eDof::COORDINATES).GetTypeOrder();
         if (type != coordinateInterpolation)
             throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                           "All elements in the groups must have the same coordinate interpolation.");
+                                  "All elements in the groups must have the same coordinate interpolation.");
     }
     return coordinateInterpolation;
 }
@@ -404,7 +404,8 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& s,
     int gPrism = s.GroupCreate(NuTo::eGroupId::Elements);
 
 
-    NuTo::Interpolation::eTypeOrder coordinateInterpolation = GetCoordinateInterpolation(s, groupIdMaster, groupIdSlave);
+    NuTo::Interpolation::eTypeOrder coordinateInterpolation =
+            GetCoordinateInterpolation(s, groupIdMaster, groupIdSlave);
     int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::PRISM3D);
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, coordinateInterpolation);
 
@@ -422,8 +423,8 @@ std::pair<int, int> NuTo::MeshCompanion::ElementPrismsCreate(NuTo::Structure& s,
         }
         else
         {
-            throw NuTo::Exception(
-                    __PRETTY_FUNCTION__, "Only implemented for EQUIDISTANT1 and EQUIDISTANT2 coordinate interpolation");
+            throw NuTo::Exception(__PRETTY_FUNCTION__,
+                                  "Only implemented for EQUIDISTANT1 and EQUIDISTANT2 coordinate interpolation");
         }
     }
     return std::make_pair(gPrism, it);

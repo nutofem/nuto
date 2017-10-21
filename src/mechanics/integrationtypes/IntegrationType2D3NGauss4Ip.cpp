@@ -1,7 +1,4 @@
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.h"
 #include <cassert>
 
@@ -56,12 +53,10 @@ double NuTo::IntegrationType2D3NGauss4Ip::GetIntegrationPointWeight(int rIpNum) 
     case 3:
         return 25. / 96.;
     default:
-        throw Exception(
-                "[NuTo::IntegrationType2D3NGauss4Ip::GetIntegrationPointWeight] Ip number out of range.");
+        throw Exception("[NuTo::IntegrationType2D3NGauss4Ip::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType2D3NGauss4Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
                                                               std::vector<double>& VisualizationPointLocalCoordinates,
                                                               unsigned int& NumVisualizationCells,
@@ -129,4 +124,3 @@ void NuTo::IntegrationType2D3NGauss4Ip::GetVisualizationCells(unsigned int& NumV
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIP.push_back(3);
 }
-#endif // ENABLE_VISUALIZE

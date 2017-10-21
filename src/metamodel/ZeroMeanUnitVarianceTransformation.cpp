@@ -27,12 +27,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const Eigen::MatrixXd& rCoo
     if (rCoordinates.cols() < 2)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::Build] number of points must be greater "
-                                 "than one - check the number of columns of your matrix.");
+                        "than one - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::Build] coordinate to be transformed is "
-                                 "out of range - check the number of rows of your Matrix.");
+                        "out of range - check the number of rows of your Matrix.");
     }
 
     // calculate mean
@@ -58,8 +58,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const Eigen::MatrixXd& rCoo
     this->mStandardDeviation = sqrt(variance);
     if (this->mStandardDeviation < 1e-12)
     {
-        throw Exception(
-                "[NuTo::ZeroMeanUnitVarianceTransformation::Build] the standard deviation is almost zero");
+        throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::Build] the standard deviation is almost zero");
     }
 }
 
@@ -70,12 +69,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(Eigen::MatrixXd&
     if (rCoordinates.cols() == 0)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] number of points must "
-                                 "be greater than zero - check the number of columns of your matrix.");
+                        "be greater than zero - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] coordinate to be "
-                                 "transformed is out of range - check the number of rows of your Matrix.");
+                        "transformed is out of range - check the number of rows of your Matrix.");
     }
 
     // transform coordinates
@@ -94,12 +93,12 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(Eigen::MatrixXd
     if (rCoordinates.cols() == 0)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] number of points must "
-                                 "be greater than zero - check the number of columns of your matrix.");
+                        "be greater than zero - check the number of columns of your matrix.");
     }
     if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw Exception("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] coordinate to be "
-                                 "transformed is out of range - check the number of rows of your Matrix.");
+                        "transformed is out of range - check the number of rows of your Matrix.");
     }
 
     // transform coordinates

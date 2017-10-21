@@ -1,6 +1,5 @@
 #include <limits> // std::numeric_limits
 #include "math/EigenSolverArpack.h"
-#include "math/EigenSolverArpackEnum.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -10,14 +9,7 @@
 
 NuTo::EigenSolverArpack::EigenSolverArpack()
 {
-#ifdef HAVE_ARPACK
-    mDriver = NuTo::EIGEN_SOLVER_ARPACK::eDriver::DSDRV1;
-    mWhich = NuTo::EIGEN_SOLVER_ARPACK::eWhich::LM;
-    mTolerance = std::numeric_limits<double>::epsilon(); // machine precision
-    mSigmaR = 0.; // real shift used for spectral transformations
-    mSigmaI = 0.; // imag shift used for spectral transformations
-    mShowTime = true;
-#else
+#ifndef HAVE_ARPACK
     throw Exception(__PRETTY_FUNCTION__, "NuTo wasn't compiled with ARPACK.");
 #endif
 }
@@ -56,7 +48,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__,
-                                "which type not implemented for symmetric matrices (LA, SA, LM, SM, BE.");
+                            "which type not implemented for symmetric matrices (LA, SA, LM, SM, BE.");
         }
     }
     else
@@ -90,7 +82,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__,
-                                "which type not implemented for general matrices (LM, SM, LR, SR, LI, SI).");
+                            "which type not implemented for general matrices (LM, SM, LR, SR, LI, SI).");
         }
     }
 
@@ -102,9 +94,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
     // mWhichEigenValue[2];  //LA SA SM BE w
     int nev = rNumEigenValues;
     if (rNumEigenValues >= n - 1)
-        throw Exception(
-                __PRETTY_FUNCTION__,
-                "the number of extracted eigenvalues must be less smaller than n-1 (n:dimension of matrix)");
+        throw Exception(__PRETTY_FUNCTION__,
+                        "the number of extracted eigenvalues must be less smaller than n-1 (n:dimension of matrix)");
 
     double tol_err = mTolerance; // solution tolerance (stopping criterion)
     std::vector<double> resid(n); // residual vector
@@ -117,7 +108,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
     iParam[0] = 1; // 1: exact shifts  0: given by the user via reverse communication
     iParam[1] = 0; // not used
     iParam[2] = 500; // input: maximum number of Arnoldi update iterations, output: actual number used (dimension of
-                     // Krylow subspace)
+    // Krylow subspace)
     iParam[3] = 1; // blocksize, has to be set to 1
     iParam[4] = 0; // number of converged Ritz values (eigenvalues) that fulfill the convergence property)
     iParam[5] = 0; // not used
@@ -159,14 +150,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not possible.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not possible.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(rK.AsSparseMatrixCSRSymmetric());
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not possible.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not possible.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(
@@ -191,7 +182,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 solveMatrix =
@@ -199,7 +190,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(
@@ -220,14 +211,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(rK.AsSparseMatrixCSRSymmetric());
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(
@@ -241,14 +232,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRSymmetric() * (-mSigmaR);
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric() * (-mSigmaR);
@@ -268,14 +259,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(rK.AsSparseMatrixCSRSymmetric());
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(
@@ -289,14 +280,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRSymmetric() * (-mSigmaR);
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric() * (-mSigmaR);
@@ -316,14 +307,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(rK.AsSparseMatrixCSRSymmetric());
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 solveMatrix = std::make_unique<NuTo::SparseMatrixCSRSymmetric<double>>(
@@ -337,14 +328,14 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
             {
             case eSparseMatrixType::CSRGENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRSymmetric() * (-mSigmaR);
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
+                                "Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 (*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric() * (-mSigmaR);
@@ -378,7 +369,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
                 break;
             case eSparseMatrixType::CSRSYMMETRIC:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRSYMMETRIC to SparseMatrixCSRGeneral not possible.");
+                                "Conversion from CSRSYMMETRIC to SparseMatrixCSRGeneral not possible.");
                 break;
             case eSparseMatrixType::CSRVECTOR2GENERAL:
                 solveMatrix =
@@ -386,7 +377,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
                 break;
             case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Conversion from CSRVECTOR2SYMMETRIC to SparseMatrixCSRGeneral not possible.");
+                                "Conversion from CSRVECTOR2SYMMETRIC to SparseMatrixCSRGeneral not possible.");
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "matrix type not implemented.");
@@ -456,13 +447,12 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
                 std::cout << "Ritz values\n real:"
                           << Eigen::Map<Eigen::VectorXd>(&(workl[iPntr[5] - 1]), iParam[4]).transpose() << std::endl;
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Error calling dnaupd_ (1) maximum number of iterations performed.");
+                                "Error calling dnaupd_ (1) maximum number of iterations performed.");
 
                 break;
             case -3:
-                throw Exception(
-                        __PRETTY_FUNCTION__,
-                        "Error calling dnaupd_ (-3) NCV must be greater than NEW and less then or equal to N.");
+                throw Exception(__PRETTY_FUNCTION__,
+                                "Error calling dnaupd_ (-3) NCV must be greater than NEW and less then or equal to N.");
                 break;
             case -4:
                 throw Exception(
@@ -471,7 +461,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK, const 
                 break;
             case -5:
                 throw Exception(__PRETTY_FUNCTION__,
-                                    "Error calling dnaupd_ (-5) which must be eitehr LM SM, LA SA or BE.");
+                                "Error calling dnaupd_ (-5) which must be eitehr LM SM, LA SA or BE.");
                 break;
 
             default:

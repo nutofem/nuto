@@ -48,7 +48,8 @@ BOOST_AUTO_TEST_CASE(NewtonScalarLineSearch)
 BOOST_AUTO_TEST_CASE(NewtonScalarInvalid)
 {
     int numIterations = 0;
-    BOOST_CHECK_THROW(Solve(InvalidProblem<double>(), 0., DoubleSolver(), 100, NoLineSearch(), &numIterations), NoConvergence);
+    BOOST_CHECK_THROW(Solve(InvalidProblem<double>(), 0., DoubleSolver(), 100, NoLineSearch(), &numIterations),
+                      NoConvergence);
     BOOST_CHECK_EQUAL(numIterations, 100);
 }
 
@@ -72,10 +73,10 @@ struct ComplexSolver
 BOOST_AUTO_TEST_CASE(NewtonScalarComplex)
 {
     auto root1 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, .1), ComplexSolver(), 100);
-    BOOST_CHECK_SMALL(std::abs(root1 - std::complex<double>(0.,1.)), tolerance);
-    
+    BOOST_CHECK_SMALL(std::abs(root1 - std::complex<double>(0., 1.)), tolerance);
+
     auto root2 = Solve(InvalidProblem<std::complex<double>>(), std::complex<double>(0, -.1), ComplexSolver(), 100);
-    BOOST_CHECK_SMALL(std::abs(root2 - std::complex<double>(0.,-1.)), tolerance);
+    BOOST_CHECK_SMALL(std::abs(root2 - std::complex<double>(0., -1.)), tolerance);
 }
 
 /* ##################################################

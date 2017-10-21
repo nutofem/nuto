@@ -10,7 +10,7 @@ struct Average
 
     void operator()(int x)
     {
-        mCurrentAverage = (x + mNum * mCurrentAverage)/(mNum + 1);
+        mCurrentAverage = (x + mNum * mCurrentAverage) / (mNum + 1);
         mNum++;
     }
 };

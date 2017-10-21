@@ -71,9 +71,8 @@ int NodeDof::GetDof(Node::eDof rDof, int rComponent) const
         throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rComponent >= it->second.size())
-        throw Exception(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) +
-                                                              ". Component " + std::to_string(it->second.size()) +
-                                                              " was requested.");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) + ". Component " +
+                                                     std::to_string(it->second.size()) + " was requested.");
 
     return it->second[rComponent];
 }
@@ -85,9 +84,8 @@ const Eigen::VectorXd& NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
         throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "Cannot access time derivative " + std::to_string(rTimeDerivative) +
-                                         ". This node only has " + std::to_string(it->second.size()) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access time derivative " + std::to_string(rTimeDerivative) +
+                                                     ". This node only has " + std::to_string(it->second.size()) + ".");
 
     return it->second[rTimeDerivative];
 }
@@ -99,9 +97,8 @@ void NodeDof::Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& r
         throw Exception(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
     if (rTimeDerivative >= (int)it->second.size())
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "Cannot access time derivative " + std::to_string(rTimeDerivative) +
-                                         ". This node only has " + std::to_string(it->second.size()) + ".");
+        throw Exception(__PRETTY_FUNCTION__, "Cannot access time derivative " + std::to_string(rTimeDerivative) +
+                                                     ". This node only has " + std::to_string(it->second.size()) + ".");
 
     it->second[rTimeDerivative] = rValue;
 }

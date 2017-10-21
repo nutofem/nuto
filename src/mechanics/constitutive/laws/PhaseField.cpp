@@ -346,9 +346,8 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const double oldEnergyDensity,
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
@@ -464,13 +463,13 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
             throw Exception(__PRETTY_FUNCTION__,
-                                     "Visualization of stress not implemented for the anisotropic phase-field model!");
+                            "Visualization of stress not implemented for the anisotropic phase-field model!");
         }
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             throw Exception(__PRETTY_FUNCTION__,
-                                     "Visualization of strain not implemented for the anisotropic phase-field model!");
+                            "Visualization of strain not implemented for the anisotropic phase-field model!");
         }
 
         case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:
@@ -519,9 +518,8 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
 
         case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "tmp_static_data has to be updated without any other outputs, call it separately.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
@@ -570,7 +568,7 @@ void NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInpu
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw Exception(__PRETTY_FUNCTION__,
-                                 "You need to specify the way the static data should be calculated (input list).");
+                        "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
             dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);

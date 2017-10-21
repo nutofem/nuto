@@ -42,8 +42,7 @@ double NuTo::FibreMatrixBondStressSlip::GetParameterDouble(NuTo::Constitutive::e
     case Constitutive::eConstitutiveParameter::SLIP_AT_RESIDUAL_BOND_STRESS:
         return this->mSlipAtResidualBondStress;
     default:
-        throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                 ":\t Constitutive law does not have the requested variable");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + ":\t Constitutive law does not have the requested variable");
     }
 }
 
@@ -84,8 +83,7 @@ void NuTo::FibreMatrixBondStressSlip::SetParameterDouble(NuTo::Constitutive::eCo
         break;
     }
     default:
-        throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                 ":\t Constitutive law does not have the requested variable");
+        throw Exception(std::string(__PRETTY_FUNCTION__) + ":\t Constitutive law does not have the requested variable");
     }
 }
 
@@ -202,7 +200,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 else
                 {
                     throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                             ":\t Check if clause. This branch should never be executed!");
+                                    ":\t Check if clause. This branch should never be executed!");
                 }
 
                 // second the adjusted bond stress-slip relationship is evaluated
@@ -268,7 +266,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
             else
             {
                 throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                         ":\t Check if clause. This branch should never be executed!");
+                                ":\t Check if clause. This branch should never be executed!");
             }
 
             // the bond stress-slip relationship needs to be adjusted if unloading occurs
@@ -305,7 +303,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 else
                 {
                     throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                             ":\t Check if clause. This branch should never be executed!");
+                                    ":\t Check if clause. This branch should never be executed!");
                 }
 
                 // second the adjusted bond stress-slip relationship is evaluated
@@ -336,7 +334,7 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
                 else
                 {
                     throw Exception(std::string(__PRETTY_FUNCTION__) +
-                                             ":\t Check if clause. This branch should never be executed!");
+                                    ":\t Check if clause. This branch should never be executed!");
                 }
             }
 
@@ -353,10 +351,9 @@ void NuTo::FibreMatrixBondStressSlip::Evaluate<2>(const ConstitutiveInputMap& rC
         }
         break;
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Output object " +
-                                                                  NuTo::Constitutive::OutputToString(itOutput.first) +
-                                                                  " could not be calculated, check the "
-                                                                  "allocated material law and the section behavior.");
+            throw Exception(__PRETTY_FUNCTION__, "Output object " + NuTo::Constitutive::OutputToString(itOutput.first) +
+                                                         " could not be calculated, check the "
+                                                         "allocated material law and the section behavior.");
         }
         if (itOutput.second != nullptr)
             itOutput.second->SetIsCalculated(true);
@@ -387,7 +384,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw Exception(__PRETTY_FUNCTION__,
-                                 "You need to specify the way the static data should be calculated (input list).");
+                        "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData =
             *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());

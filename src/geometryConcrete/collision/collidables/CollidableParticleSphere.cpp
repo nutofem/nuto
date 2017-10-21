@@ -221,7 +221,6 @@ void NuTo::CollidableParticleSphere::GetLocalEventsToDelete(Event::LocalEvents& 
     }
 }
 
-#ifdef ENABLE_VISUALIZE
 
 void NuTo::CollidableParticleSphere::VisualizationDynamic(NuTo::Visualize::UnstructuredGrid& rVisualizer,
                                                           bool rFinal) const
@@ -231,7 +230,7 @@ void NuTo::CollidableParticleSphere::VisualizationDynamic(NuTo::Visualize::Unstr
     rVisualizer.SetPointData(index, "Radius", radius);
     rVisualizer.SetPointData(index, "Velocity", mVelocity);
 }
-#endif
+
 
 double NuTo::CollidableParticleSphere::GetKineticEnergy() const
 {

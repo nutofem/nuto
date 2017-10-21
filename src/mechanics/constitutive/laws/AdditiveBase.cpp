@@ -26,7 +26,7 @@ void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiv
 
     if (mStaticDataAllocated)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "All constitutive laws have to be attached before static data is allocated!");
+                        "All constitutive laws have to be attached before static data is allocated!");
 
     mSublaws.push_back(&rConstitutiveLaw);
     AddCalculableDofCombinations(rConstitutiveLaw);

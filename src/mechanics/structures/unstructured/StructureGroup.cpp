@@ -22,8 +22,7 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
     boost::ptr_map<int, InterpolationType>::iterator itInterpolationType =
             mInterpolationTypeMap.find(rInterpolationType);
     if (itInterpolationType == mInterpolationTypeMap.end())
-        throw Exception(__PRETTY_FUNCTION__,
-                                 "InterpolationType with the given identifier does not exist.");
+        throw Exception(__PRETTY_FUNCTION__, "InterpolationType with the given identifier does not exist.");
 
     InterpolationType* interpolationType = itInterpolationType->second;
 

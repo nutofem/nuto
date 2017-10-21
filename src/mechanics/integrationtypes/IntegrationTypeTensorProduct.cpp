@@ -1,12 +1,9 @@
-#ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"
-#endif // ENABLE_VISUALIZE
-
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "math/Legendre.h"
 
-//! @brief computes points and weights for Lobatto quadrature in 1D		
-//! @param numIPs number of integration points		
+//! @brief computes points and weights for Lobatto quadrature in 1D
+//! @param numIPs number of integration points
 //! @return pair of quadrature weights and points range [-1,1] including boundary points
 std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLobatto(int nIps)
 {
@@ -28,8 +25,8 @@ std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLob
     return std::make_pair(weights, points);
 }
 
-//! @brief computes points and weights for Gauss quadrature in 1D		
-//! @param numIPs number of integration points		
+//! @brief computes points and weights for Gauss quadrature in 1D
+//! @param numIPs number of integration points
 //! @return pair of quadrature weights and points range (-1,1)
 std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGauss(int nIps)
 {
@@ -46,7 +43,8 @@ std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGau
     return std::make_pair(weights, points);
 }
 
-std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1D(size_t nIps, NuTo::eIntegrationMethod method)
+std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1D(size_t nIps,
+                                                                              NuTo::eIntegrationMethod method)
 {
     if (method == NuTo::eIntegrationMethod::GAUSS)
         return ComputeWeightsAndPoints1DGauss(nIps);
@@ -104,7 +102,6 @@ double NuTo::IntegrationTypeTensorProduct<TDim>::GetIntegrationPointWeight(int r
     throw Exception(__PRETTY_FUNCTION__, "Ip number out of range.");
 }
 
-#ifdef ENABLE_VISUALIZE
 template <int TDim>
 void NuTo::IntegrationTypeTensorProduct<TDim>::GetVisualizationPoints(
         unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates) const
@@ -217,7 +214,7 @@ void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(
 
                 VisualizationCellsIncidence.push_back(start);
                 VisualizationCellsIncidence.push_back(start + 1);
-                VisualizationCellsIncidence.push_back(start + numIPs1D + 2); 
+                VisualizationCellsIncidence.push_back(start + numIPs1D + 2);
                 VisualizationCellsIncidence.push_back(start + numIPs1D + 1);
 
                 start = row * (numIPs1D + 1) + col + (height + 1) * ((numIPs1D + 1) * (numIPs1D + 1));
@@ -236,8 +233,6 @@ void NuTo::IntegrationTypeTensorProduct<3>::GetVisualizationCells(
 }
 
 } // namespace NuTo
-
-#endif // ENABLE_VISUALIZE
 
 template class NuTo::IntegrationTypeTensorProduct<1>;
 template class NuTo::IntegrationTypeTensorProduct<2>;

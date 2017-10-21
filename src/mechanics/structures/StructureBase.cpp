@@ -37,9 +37,7 @@
 #include "mechanics/structures/Assembler.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
-#endif // ENABLE_VISUALIZE
 #include "visualize/ComponentName.h"
 
 using namespace NuTo;
@@ -130,7 +128,6 @@ NuTo::Constraint::Constraints& NuTo::StructureBase::Constraints()
 
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualizeWhat visualizeComponent)
 {
-#ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     // check if the element group exists
@@ -154,7 +151,6 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
             }
         }
     }
-#endif // ENABLE_VISUALIZE
 }
 
 
@@ -180,17 +176,12 @@ void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eV
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
-#ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
     mGroupVisualizeComponentsMap.clear();
-
-#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileName)
 {
-#ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     for (auto const& it : mGroupVisualizeComponentsMap)
@@ -201,13 +192,11 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
 
         visualize.ExportVtuDataFile(rResultFileName);
     }
-#endif // ENABLE_VISUALIZE
 }
 
 
 void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool asBinary)
 {
-#ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     for (auto const& it : mGroupVisualizeComponentsMap)
@@ -219,13 +208,10 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFi
 
         visualize.ExportVtuDataFile(rResultFileName, asBinary);
     }
-
-#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName)
 {
-#ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     Visualize::UnstructuredGrid visualizer;
@@ -233,15 +219,13 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     ElementGroupAddToVisualize(rGroupIdent, visualizer, mGroupVisualizeComponentsMap.at(rGroupIdent));
 
     visualizer.ExportVtuDataFile(rResultFileName);
-
-#endif // ENABLE_VISUALIZE
 }
 
 
 std::vector<int> StructureBase::GetVisualizationGroups()
 {
     std::vector<int> vec;
-    for(const auto& entry : mGroupVisualizeComponentsMap)
+    for (const auto& entry : mGroupVisualizeComponentsMap)
         vec.push_back(entry.first);
     return vec;
 }
@@ -254,8 +238,6 @@ void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase&)
 void NuTo::StructureBase::DefineVisualizeElementData(Visualize::UnstructuredGrid& visualizer,
                                                      const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
-#ifdef ENABLE_VISUALIZE
-
     for (auto component : visualizeComponents)
     {
         switch (component)
@@ -304,14 +286,11 @@ void NuTo::StructureBase::DefineVisualizeElementData(Visualize::UnstructuredGrid
             throw Exception(__PRETTY_FUNCTION__, "undefined visualize component " + GetComponentName(component));
         }
     }
-#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::DefineVisualizeNodeData(Visualize::UnstructuredGrid& visualizer,
                                                   const std::vector<NuTo::eVisualizeWhat>& visualizeComponents) const
 {
-#ifdef ENABLE_VISUALIZE
-
     for (auto component : visualizeComponents)
     {
         switch (component)
@@ -319,14 +298,6 @@ void NuTo::StructureBase::DefineVisualizeNodeData(Visualize::UnstructuredGrid& v
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ROTATION:
         case NuTo::eVisualizeWhat::VELOCITY:
-            // case NuTo::eVisualizeWhat::ACCELERATION:
-            // case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
-            // case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
-            // case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
-            // case NuTo::eVisualizeWhat::TEMPERATURE:
-            // case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
-            // case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
-            // case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
             visualizer.DefinePointData(GetComponentName(component));
 
         default:
@@ -335,7 +306,6 @@ void NuTo::StructureBase::DefineVisualizeNodeData(Visualize::UnstructuredGrid& v
             break;
         }
     }
-#endif // ENABLE_VISUALIZE
 }
 
 
@@ -584,8 +554,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
-                                                                      NuTo::Node::eDof,
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof,
                                                                       const double rTolerance,
                                                                       Eigen::Vector3d rNodeCoordOffset)
 {

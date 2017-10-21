@@ -2215,7 +2215,7 @@ Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int 
 {
     if (der < 0 || der > 2)
         throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) +
-                                       ":\t der greater than 2 not implemented, possible values 0,1,2!");
+                              ":\t der greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, rParameter, spanIdx, rDegree, rKnots);
 
@@ -2298,7 +2298,7 @@ Eigen::MatrixXd BasisFunctionsAndDerivatives2DRat(int der, const Eigen::VectorXd
 {
     if (der < 0 || der > 2)
         throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) +
-                                       ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
+                              ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd xBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(0), rSpanIdx(0), rDegree(0), rKnotsX);
     Eigen::MatrixXd yBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(1), rSpanIdx(1), rDegree(1), rKnotsY);

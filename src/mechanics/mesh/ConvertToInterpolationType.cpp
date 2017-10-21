@@ -143,8 +143,7 @@ int FindPreviousNodeId(const std::vector<TmpNode>& sameCoordinateNodes)
     return NOT_SET;
 }
 
-void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& s, int elementGroup,
-                                                            double nodeMergeDistance)
+void NuTo::MeshCompanion::ElementConvertToInterpolationType(Structure& s, int elementGroup, double nodeMergeDistance)
 {
     Timer timer(__FUNCTION__, s.GetShowTime(), s.GetLogger());
 

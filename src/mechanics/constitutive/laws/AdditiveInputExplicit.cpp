@@ -29,8 +29,7 @@ NuTo::ConstitutiveInputMap
 NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // Get Inputs for output returning constitutive law
-    ConstitutiveInputMap mainLawConstitutiveInputMap(
-            mMainLaw->GetConstitutiveInputs(rConstitutiveOutput));
+    ConstitutiveInputMap mainLawConstitutiveInputMap(mMainLaw->GetConstitutiveInputs(rConstitutiveOutput));
 
     // Get Inputs for input modifying constitutive laws
     ConstitutiveInputMap sublawsConstitutiveInputMap;
@@ -80,15 +79,14 @@ NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::eOutput
             return Constitutive::eOutput::D_STRAIN_D_TEMPERATURE;
 
         default:
-            throw Exception(__PRETTY_FUNCTION__, "No partial derivative defined for parameter " +
-                                                                  Constitutive::OutputToString(rParameter) +
-                                                                  " and global derivative " +
-                                                                  Constitutive::OutputToString(rMainDerivative));
+            throw Exception(__PRETTY_FUNCTION__,
+                            "No partial derivative defined for parameter " + Constitutive::OutputToString(rParameter) +
+                                    " and global derivative " + Constitutive::OutputToString(rMainDerivative));
         }
         break;
     default:
-        throw Exception(__PRETTY_FUNCTION__, "No partial derivatives defined for parameter " +
-                                                              Constitutive::OutputToString(rParameter));
+        throw Exception(__PRETTY_FUNCTION__,
+                        "No partial derivatives defined for parameter " + Constitutive::OutputToString(rParameter));
     }
 }
 

@@ -1,4 +1,5 @@
 add_library(FetiLib FetiSolver.cpp StructureFeti.cpp NewmarkFeti.cpp)
+target_link_libraries(FetiLib PRIVATE Json)
 set_target_properties(FetiLib PROPERTIES
     OUTPUT_NAME NuToFeti
     )

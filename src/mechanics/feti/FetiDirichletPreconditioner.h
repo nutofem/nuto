@@ -16,7 +16,7 @@ class FetiDirichletPreconditioner : public FetiPreconditioner
 {
 public:
     virtual void Compute(const StructureOutputBlockMatrix& hessian, const SparseMatrixType& B,
-                         const std::map<int,int>& lagrangeMultipliersGlobalIdToLocalId) override
+                         const std::map<int, int>& lagrangeMultipliersGlobalIdToLocalId) override
     {
         const int numTotalDofs = B.cols();
 

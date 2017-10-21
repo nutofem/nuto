@@ -13,7 +13,7 @@ NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D(const Group<NodeBase>* rGroup
 {
     if (rDirection.rows() != 2)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "Dimension of the direction matrix must be equal to the dimension of the structure.");
+                        "Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection, rDirection.data(), 2 * sizeof(double));
     // normalize the direction
