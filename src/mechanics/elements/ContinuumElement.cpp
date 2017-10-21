@@ -242,7 +242,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+                                                         Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -349,8 +349,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for (" +
-                                                                      Node::DofToString(dofRow) + "," +
-                                                                      Node::DofToString(dofCol) + ") not implemented.");
+                                                             Node::DofToString(dofRow) + "," +
+                                                             Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -406,8 +406,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for (" +
-                                                                      Node::DofToString(dofRow) + "," +
-                                                                      Node::DofToString(dofCol) + ") not implemented.");
+                                                             Node::DofToString(dofRow) + "," +
+                                                             Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -445,8 +445,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(Constitutiv
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_2_TIME_DERIVATIVE for (" +
-                                                                      Node::DofToString(dofRow) + "," +
-                                                                      Node::DofToString(dofCol) + ") not implemented.");
+                                                             Node::DofToString(dofRow) + "," +
+                                                             Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -676,9 +676,8 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         case Constitutive::eInput::PLANE_STATE:
             break;
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Constitutive input for " +
-                                                                  Constitutive::InputToString(it.first) +
-                                                                  " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");
         }
     }
 }
@@ -814,7 +813,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     break;
                 default:
                     throw Exception(__PRETTY_FUNCTION__,
-                                             "LUMPED_HESSIAN_2 not implemented for " + Node::DofToString(dof));
+                                    "LUMPED_HESSIAN_2 not implemented for " + Node::DofToString(dof));
                 }
 
                 // calculate local mass matrix (the nonlocal terms are zero)
@@ -960,8 +959,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             break;
         }
         default:
-            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
-                                                                  Node::DofToString(dofRow) + " not implemented.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
@@ -1172,8 +1171,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for (" +
-                                                                      Node::DofToString(dofRow) + "," +
-                                                                      Node::DofToString(dofCol) + ") not implemented.");
+                                                             Node::DofToString(dofRow) + "," +
+                                                             Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -1258,10 +1257,10 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
                 break;
             default:
-                throw Exception(
-                        std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_1_TIME_DERIVATIVE for "
-                                                                 "(" +
-                        Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
+                throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
+                                "] Element output HESSIAN_1_TIME_DERIVATIVE for "
+                                "(" +
+                                Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -1302,10 +1301,10 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
                 break;
             }
             default:
-                throw Exception(
-                        std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_2_TIME_DERIVATIVE for "
-                                                                 "(" +
-                        Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
+                throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
+                                "] Element output HESSIAN_2_TIME_DERIVATIVE for "
+                                "(" +
+                                Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -1439,7 +1438,7 @@ void NuTo::ContinuumElement<TDim>::ResizeNodes(int rNewNumNodes)
     else
     {
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                 "] Resize that reduces the number of nodes is not implemented yet.");
+                        "] Resize that reduces the number of nodes is not implemented yet.");
     }
 }
 
@@ -1509,7 +1508,7 @@ void NuTo::ContinuumElement<TDim>::CheckElement()
         if (detJacobian <= 0)
         {
             throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                     "] Determinant of the Jacobian <= zero, no inversion possible.");
+                            "] Determinant of the Jacobian <= zero, no inversion possible.");
         }
         size += this->GetIntegrationPointWeight(iIP) * detJacobian;
     }

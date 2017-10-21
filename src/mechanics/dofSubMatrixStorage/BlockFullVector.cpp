@@ -59,7 +59,7 @@ void NuTo::BlockFullVector<T>::AllocateSubvectors()
 template <typename T>
 NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(const BlockFullVector<T>& rOther)
 {
-    //mData = rOther.mData;
+    // mData = rOther.mData;
     for (auto dof : mDofStatus.GetActiveDofTypes())
         mData[dof] = rOther[dof];
     return *this;
@@ -218,7 +218,7 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateNormL2()
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
         dofWiseNorm[dof] = mData[dof].norm();
-   
+
     return dofWiseNorm;
 }
 
@@ -228,7 +228,7 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm() const
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
         dofWiseNorm[dof] = (*this)[dof].cwiseAbs().maxCoeff();
-    
+
     return dofWiseNorm;
 }
 

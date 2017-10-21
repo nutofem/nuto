@@ -32,7 +32,7 @@ void NuTo::MinMaxTransformation::Build(const Eigen::MatrixXd& rCoordinates)
     if (rCoordinates.rows() <= mCoordinate)
     {
         throw Exception("MinMaxTransformation::build - coordinate to be transformed is out of range - check "
-                                 "the dimension of your Matrix.");
+                        "the dimension of your Matrix.");
     }
     const double* theptr = &rCoordinates.data()[mCoordinate];
     mMin = *theptr;
@@ -59,7 +59,7 @@ void NuTo::MinMaxTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)
     if (rCoordinates.rows() <= mCoordinate)
     {
         throw Exception("MinMaxTransformation::TransformForward - coordinate to be transformed is out of "
-                                 "range - check the dimension of your Matrix.");
+                        "range - check the dimension of your Matrix.");
     }
     double* theptr = &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
@@ -73,7 +73,7 @@ void NuTo::MinMaxTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)
     if (deltaValue == 0)
     {
         throw Exception("MinMaxTransformation::TransformForward - interval between min and max value of given "
-                                 "points has size zero");
+                        "points has size zero");
     }
 
     for (int count = 0; count < rCoordinates.cols(); count++, theptr += rCoordinates.rows())
@@ -91,7 +91,7 @@ void NuTo::MinMaxTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates
     if (rCoordinates.rows() <= mCoordinate)
     {
         throw Exception("MinMaxTransformation::TransformBackward - coordinate to be transformed is out of "
-                                 "range - check the dimension of your Matrix.");
+                        "range - check the dimension of your Matrix.");
     }
     double* theptr = &rCoordinates.data()[mCoordinate];
     double deltaBound = mUb - mLb;
@@ -105,7 +105,7 @@ void NuTo::MinMaxTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates
     if (deltaValue == 0)
     {
         throw Exception("MinMaxTransformation::TransformBackward - interval between min and max value of "
-                                 "given points has size zero");
+                        "given points has size zero");
     }
 
     for (int count = 0; count < rCoordinates.cols(); count++, theptr += rCoordinates.rows())

@@ -585,8 +585,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::Add_TransA_B_C_Scal(const SparseMat
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] wrong matrix dimensions for (A.T * B) * C");
 
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
-        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] matrix dimension mismatch of *this and A.T * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] matrix dimension mismatch of *this and A.T * B");
 
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] all matrices must have zero based indexing.");
@@ -643,8 +642,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::Sub_TransA_B_Plus_C_D_Scal(const Sp
 
 
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
-        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] matrix dimension mismatch of *this and A.T * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] matrix dimension mismatch of *this and A.T * B");
 
 
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing() or
@@ -805,10 +803,8 @@ T NuTo::SparseMatrixCSRVector2General<T>::Sum() const
 }
 
 template <class T>
-void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&,
-                                                   std::vector<int>&,
-                                                   std::vector<int>&,
-                                                   double)
+void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&, std::vector<int>&,
+                                                   std::vector<int>&, double)
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] : to be implemented");
 }
@@ -881,7 +877,7 @@ void NuTo::SparseMatrixCSRVector2General<T>::RemoveLastColumns(unsigned int rNum
 {
     if (this->HasOneBasedIndexing())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] zero based indexing required. Fixing that (if you need it) should be trivial.");
+                        "] zero based indexing required. Fixing that (if you need it) should be trivial.");
 
     this->mNumColumns -= rNumColumns;
 
@@ -914,10 +910,10 @@ void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateColumns(const SparseMatr
     */
     if (this->mOneBasedIndexing != rOther.mOneBasedIndexing)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] index base (0 or 1) should be identical for both matrices");
+                        "] index base (0 or 1) should be identical for both matrices");
     if (this->mValues.size() != rOther.mValues.size())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] number of rows has to be identical for both matrices.");
+                        "] number of rows has to be identical for both matrices.");
 
     for (unsigned int theRow = 0; theRow < this->mValues.size(); theRow++)
     {
@@ -942,10 +938,10 @@ void NuTo::SparseMatrixCSRVector2General<T>::ConcatenateRows(const SparseMatrixC
 {
     if (this->mOneBasedIndexing != rOther.mOneBasedIndexing)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] index base (0 or 1) should be identical for both matrices");
+                        "] index base (0 or 1) should be identical for both matrices");
     if (this->mNumColumns != rOther.mNumColumns)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] number of columns has to be identical for both matrices.");
+                        "] number of columns has to be identical for both matrices.");
 
     this->mValues.insert(this->mValues.end(), rOther.mValues.begin(), rOther.mValues.end());
     this->mColumns.insert(this->mColumns.end(), rOther.mColumns.begin(), rOther.mColumns.end());

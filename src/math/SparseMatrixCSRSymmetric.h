@@ -230,7 +230,7 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Resize(int rNumRows_, int rNumColumns_)
     assert(rNumColumns_ >= 0);
     if (rNumRows_ != rNumColumns_)
         throw Exception("[SparseMatrixCSRSymmetric::Resize] number of rows and column has to be identical for "
-                            "symmetric matrices.");
+                        "symmetric matrices.");
 
     // resize
     SparseMatrixCSR<T>::Resize(rNumRows_);

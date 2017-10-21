@@ -105,8 +105,10 @@ BOOST_AUTO_TEST_CASE(NewmarkPlane2D4N)
     myIntegrationScheme.SetMaxTimeStep(10);
     myIntegrationScheme.SetMinTimeStep(0.001 * myIntegrationScheme.GetMaxTimeStep());
     myIntegrationScheme.PostProcessing().AddResultTime("Time");
-    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Left", myStructure.GroupGetId(&grpNodes_Left));
-    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Right", myStructure.GroupGetId(&grpNodes_Right));
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Left",
+                                                                 myStructure.GroupGetId(&grpNodes_Left));
+    myIntegrationScheme.PostProcessing().AddResultGroupNodeForce("Forces_GroupNodes_Right",
+                                                                 myStructure.GroupGetId(&grpNodes_Right));
     myIntegrationScheme.PostProcessing().SetResultDirectory(resultDir, true);
     myIntegrationScheme.SetToleranceForce(1.e-10);
     myIntegrationScheme.Solve(simulationTime);

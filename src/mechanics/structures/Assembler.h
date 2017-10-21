@@ -9,7 +9,7 @@ namespace NuTo
 {
 class NodeBase;
 
-template<typename T>
+template <typename T>
 class BlockFullVector;
 class StructureOutputBlockVector;
 
@@ -79,6 +79,7 @@ public:
     //! @param vec Vector to which to apply the constraint matrix
     //! @param cMat Constraint matrix
     static BlockFullVector<double> ApplyCMatrix(const StructureOutputBlockVector& vec, const BlockSparseMatrix& cMat);
+
 private:
     //! @brief builds the constraint rhs vector before the gauss elimination evaluated at time
     //! @param time global time

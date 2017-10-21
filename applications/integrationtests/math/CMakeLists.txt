@@ -1,0 +1,1 @@
+add_integrationtest(SparseMatrixTests)

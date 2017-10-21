@@ -141,13 +141,13 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Interpolation for exact integration of " +
-                                                                      std::to_string(degree) + " IGA not implemented");
+                                                             std::to_string(degree) + " IGA not implemented");
             }
             break;
         }
         default:
             throw Exception(__PRETTY_FUNCTION__,
-                                     "Integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
+                            "Integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
 
         Eigen::VectorXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);

@@ -136,10 +136,8 @@ public:
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
-#ifdef ENABLE_VISUALIZE
     virtual void Visualize(Visualize::UnstructuredGrid& visualizer,
                            const std::vector<eVisualizeWhat>& virualizeComponents) override;
-#endif // ENABLE_VISUALIZE
 
 protected:
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim>& rData);

@@ -54,6 +54,6 @@ public:
 
 protected:
     double mTime = 0.;
-    double mTimeStep =0.;
+    double mTimeStep = 0.;
 };
 } // namespace NuTo

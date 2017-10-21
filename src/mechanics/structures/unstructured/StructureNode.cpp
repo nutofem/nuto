@@ -161,7 +161,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen
 
     if (rCoordinates.rows() != mDimension)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "Dimension of the coordinate vector does not fit the dimension of the structure");
+                        "Dimension of the coordinate vector does not fit the dimension of the structure");
 
     NodeBase* nodePtr = nullptr;
 
@@ -341,8 +341,8 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
                         std::stringstream outNode, outElement;
                         outNode << rNodeNumber;
                         outElement << (elemIt->first);
-                        throw Exception("[NuTo::Structure::NodeDelete] Node " + outNode.str() +
-                                                 " is used by element " + outElement.str() + ", delete element first");
+                        throw Exception("[NuTo::Structure::NodeDelete] Node " + outNode.str() + " is used by element " +
+                                        outElement.str() + ", delete element first");
                     }
                 }
             }
@@ -424,11 +424,11 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
     {
         if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
             throw Exception(__PRETTY_FUNCTION__,
-                                     "invalid dimension of active dof vector for " + Node::DofToString(dofType));
+                            "invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
         if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
             throw Exception(__PRETTY_FUNCTION__,
-                                     "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
+                            "invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
         auto& actDofValues = rActiveDofValues[dofType];
         auto& depDofValues = rDependentDofValues[dofType];

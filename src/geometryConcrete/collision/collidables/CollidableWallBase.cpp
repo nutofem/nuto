@@ -61,7 +61,6 @@ void NuTo::CollidableWallBase::Print(std::ostream& rReturnStream) const
                   << ")";
 }
 
-#ifdef ENABLE_VISUALIZE
 
 void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::UnstructuredGrid& rVisualizer) const
 {
@@ -83,7 +82,7 @@ void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::Unstructured
     Eigen::Vector3d transversal = random.cross(mDirection);
     Eigen::Vector3d transversal2 = transversal.cross(mDirection);
 
-    //	 normalize to size/2;
+    //   normalize to size/2;
     transversal.normalize();
     transversal2.normalize();
 
@@ -105,7 +104,7 @@ void NuTo::CollidableWallBase::VisualizationStatic(NuTo::Visualize::Unstructured
 
     rVisualizer.SetCellData(insertIndex, "Direction", mDirection);
 }
-#endif
+
 
 void NuTo::CollidableWallBase::SetBoxes(SubBox& rInsideBox, SubBox& rOutsideBox)
 {

@@ -54,20 +54,18 @@ public:
 
     // --- IGA interpolation--- //
 
-    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd&,
-                                              const Eigen::VectorXi&) const override
+    virtual Eigen::VectorXd ShapeFunctionsIGA(const Eigen::VectorXd&, const Eigen::VectorXi&) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd&,
-                                       const Eigen::VectorXi&) const override
+    virtual Eigen::MatrixXd MatrixNIGA(const Eigen::VectorXd&, const Eigen::VectorXi&) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd&, const Eigen::VectorXi&,
-                                                 int, int) const override
+    virtual Eigen::MatrixXd MatrixNDerivativeIGA(const Eigen::VectorXd&, const Eigen::VectorXi&, int,
+                                                 int) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
     }
@@ -93,8 +91,8 @@ public:
     virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates,
                                                                int rSurface) const override = 0;
 
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd&,
-                                                          int, const Eigen::MatrixXd&) const override
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd&, int,
+                                                          const Eigen::MatrixXd&) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "IGA specific function!");
     }

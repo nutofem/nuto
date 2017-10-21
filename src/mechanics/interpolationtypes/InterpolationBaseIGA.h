@@ -49,24 +49,23 @@ public:
     virtual const Eigen::VectorXd& ShapeFunctions(const Eigen::VectorXd&) const override
     {
         throw Exception(__PRETTY_FUNCTION__,
-                                 "The shape functions are calculated on the fly, use 'GetShapeFunctions' routine!");
+                        "The shape functions are calculated on the fly, use 'GetShapeFunctions' routine!");
     }
 
     virtual const Eigen::MatrixXd& MatrixN(const Eigen::VectorXd&) const override
     {
         throw Exception(__PRETTY_FUNCTION__,
-                                 "The shape functions are calculated on the fly, use 'GetMatrixN' routine!");
+                        "The shape functions are calculated on the fly, use 'GetMatrixN' routine!");
     }
 
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************
 
-    virtual const Eigen::MatrixXd&
-    DerivativeShapeFunctionsNatural(const Eigen::VectorXd&) const override
+    virtual const Eigen::MatrixXd& DerivativeShapeFunctionsNatural(const Eigen::VectorXd&) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "Since the shape functions are calculated on the fly, just use "
-                                                      "'GetDerivativeShapeFunctionsNatural' routine!");
+                                             "'GetDerivativeShapeFunctionsNatural' routine!");
     }
 
     virtual Eigen::MatrixXd
@@ -76,12 +75,11 @@ public:
     //       SURFACE PARAMETRIZATION
     //********************************************
 
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd&,
-                                                               int) const override
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd&, int) const override
     {
         throw Exception(__PRETTY_FUNCTION__, "Use the function "
-                                                      "'CalculateNaturalSurfaceCoordinates(rNaturalSurfaceCoordinates, "
-                                                      "rSurface, rKnots)' instead!");
+                                             "'CalculateNaturalSurfaceCoordinates(rNaturalSurfaceCoordinates, "
+                                             "rSurface, rKnots)' instead!");
     }
 
     virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinatesIGA(const Eigen::VectorXd& rNaturalSurfaceCoordinates,

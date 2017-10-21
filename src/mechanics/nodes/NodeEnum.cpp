@@ -52,8 +52,7 @@ eDof DofToEnum(std::string dof)
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                   "DofType " + dof + " has no enum equivalent or is not implemented.");
+    throw NuTo::Exception(__PRETTY_FUNCTION__, "DofType " + dof + " has no enum equivalent or is not implemented.");
 }
 
 

@@ -90,7 +90,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
     else
     {
         // get full mass matrix
-        //        	StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2();
+        //          StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2();
         std::cout << "ONLY LUMPED MASS MATRIX implemented" << std::endl;
     }
 
@@ -110,8 +110,8 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 
         auto dof_dt0_new = dof_dt0 + dof_dt1 * mTimeStep;
         auto dof_dt1_new = dof_dt1;
-        //        	std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
-        //        	std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
+        //          std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
+        //          std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
 
         double prevTime(mTime);
         double prevCurTime(curTime);
@@ -119,7 +119,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
         {
             double deltaTimeStage = this->GetStageTimeFactor(countStage) * mTimeStep;
             this->GetStageDerivativeFactor(stageDerivativeFactor, countStage);
-            //				std::cout << "countStage "<< countStage << std::endl;
+            //              std::cout << "countStage "<< countStage << std::endl;
             auto dof_dt0_tmp = dof_dt0 + dof_dt1 * deltaTimeStage;
             for (int countStage2 = 0; countStage2 < countStage; countStage2++)
             {
@@ -129,7 +129,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
                             dof_dt2_tmp[countStage2] * (stageDerivativeFactor[countStage2] * mTimeStep * mTimeStep);
                 }
             }
-            //				std::cout << "dof_dt0_tmp "<< dof_dt0_tmp << std::endl;
+            //              std::cout << "dof_dt0_tmp "<< dof_dt0_tmp << std::endl;
 
             if (this->HasTimeChanged(countStage) == true)
             {
@@ -148,27 +148,27 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
 
             // calculate internal force (with update of history variables = true)
             intForce = mStructure->BuildGlobalInternalGradient();
-            //				std::cout << "F-R " << (extLoad-intForce) << std::endl;
+            //              std::cout << "F-R " << (extLoad-intForce) << std::endl;
 
             if (mUseDiagonalMassMatrix)
             {
                 // no system has to be solved
                 dof_dt2_tmp[countStage] = hessian2 * (extLoad - intForce);
-                //					std::cout << "dof_dt2_tmp "<< dof_dt2_tmp[countStage] <<
+                //                  std::cout << "dof_dt2_tmp "<< dof_dt2_tmp[countStage] <<
                 // std::endl;
             }
             else
             {
                 // system of equations has to be solved
-                //					mySolver.Solve(fullMassMatrix, extLoad-intForce,
+                //                  mySolver.Solve(fullMassMatrix, extLoad-intForce,
                 // dof_dt2_tmp[countStage]);
                 std::cout << "ONLY LUMPED MASS MATRIX implemented" << std::endl;
             }
 
             dof_dt0_new += dof_dt2_tmp[countStage] * (GetStageWeights1(countStage) * mTimeStep * mTimeStep);
             dof_dt1_new += dof_dt2_tmp[countStage] * (GetStageWeights2(countStage) * mTimeStep);
-            //				std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
-            //				std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
+            //              std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
+            //              std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
         }
 
         mTime = prevTime + mTimeStep;
@@ -188,7 +188,7 @@ void NuTo::NystroemBase::Solve(double rTimeDelta)
             mStructure->NodeMergeDofValues(2, dof_dt2_new);
         }
 
-        //			mStructure->ElementTotalUpdateTmpStaticData();
+        //          mStructure->ElementTotalUpdateTmpStaticData();
         mStructure->ElementTotalUpdateStaticData();
 
         dof_dt0 = dof_dt0_new;

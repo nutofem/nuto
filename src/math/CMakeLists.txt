@@ -14,4 +14,8 @@ set(MathSources
 )
 
 create_nuto_module(Math "${MathSources}")
-target_link_libraries(Math Base ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
+target_link_libraries(Math Base ${LAPACK_LIBRARIES} Mumps::Mumps
+    ${PARDISO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
+if(ARPACK_FOUND)
+    target_link_libraries(Math Arpack::Arpack)
+endif()
