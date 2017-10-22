@@ -2,6 +2,7 @@
 
 #include "base/Group.h"
 #include "mechanics/cell/CellInterface.h"
+#include "mechanics/dofs/DofContainer.h"
 #include "mechanics/dofs/GlobalDofVector.h"
 #include "mechanics/dofs/GlobalDofMatrixSparse.h"
 
