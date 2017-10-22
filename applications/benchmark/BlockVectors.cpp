@@ -55,6 +55,23 @@ BENCHMARK(BlockTypes, NuToDofVector, runner)
     }
 }
 
+BENCHMARK(BlockTypes, NuToDofVectorAddScaled, runner)
+{
+    while (runner.KeepRunningIterations(1000))
+    {
+        NuTo::DofVector<double> v;
+        for (int i = 0; i < numIp; ++i)
+        {
+            NuTo::DofVector<double> gradient;
+            gradient[d0] = randomGradient;
+            gradient[d1] = randomGradient;
+            gradient[d2] = randomGradient;
+            v.AddScaled(gradient, 0.3);
+        }
+        if (v[d2][0] == -12)
+            throw;
+    }
+}
 BENCHMARK(BlockTypes, MapVector, runner)
 {
     while (runner.KeepRunningIterations(1000))

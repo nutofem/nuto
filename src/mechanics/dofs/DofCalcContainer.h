@@ -35,6 +35,18 @@ public:
         return *this;
     }
 
+    void AddScaled(const DofCalcContainer& rhs, double scalar)
+    {
+        for (int i = 0; i < rhs.mData.size(); ++i)
+        {
+            auto& thisData = ResizingIdAccess(i);
+            if (thisData.size() == 0)
+                thisData = rhs.mData[i] * scalar;
+            else
+                thisData += rhs.mData[i] * scalar;
+        }
+    }
+
     DofCalcContainer& operator*=(double scalar)
     {
         for (auto& data : this->mData)
