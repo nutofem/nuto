@@ -38,4 +38,11 @@ target_include_directories(NewtonRaphsonBenchmark
     PUBLIC ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
 
+add_executable(BlockVectors
+    EXCLUDE_FROM_ALL BlockVectors.cpp)
+target_include_directories(BlockVectors
+    PUBLIC ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(BlockVectors)
+
+
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
