@@ -1,6 +1,7 @@
 add_subdirectory(cell)
 add_subdirectory(constitutive)
 add_subdirectory(constraints)
+add_subdirectory(dofs)
 add_subdirectory(dofSubMatrixSolvers)
 add_subdirectory(elements)
 add_subdirectory(groups)

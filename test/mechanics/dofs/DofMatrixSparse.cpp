@@ -71,12 +71,7 @@ BOOST_AUTO_TEST_CASE(DofMatrixStream)
     NuTo::DofMatrixSparse<int> dofMatrix = Get(dof0, dof1);
     std::stringstream ss;
     ss << dofMatrix;
-    // header:
-    BOOST_CHECK(ss.str().find("=== 0 0 ===") != std::string::npos);
-    BOOST_CHECK(ss.str().find("=== 0 1 ===") != std::string::npos);
-    BOOST_CHECK(ss.str().find("=== 1 0 ===") != std::string::npos);
-    BOOST_CHECK(ss.str().find("=== 1 1 ===") != std::string::npos);
-    // values:
+
     BOOST_CHECK(ss.str().find("22") != std::string::npos);
     BOOST_CHECK(ss.str().find("23") != std::string::npos);
     BOOST_CHECK(ss.str().find("32") != std::string::npos);
