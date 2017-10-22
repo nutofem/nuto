@@ -48,7 +48,7 @@ BENCHMARK(BlockTypes, NuToDofVector, runner)
             gradient[d0] = randomGradient;
             gradient[d1] = randomGradient;
             gradient[d2] = randomGradient;
-            v += gradient * 0.3;
+            v += std::move(gradient) * 0.3;
         }
         if (v[d2][0] == -12)
             throw;

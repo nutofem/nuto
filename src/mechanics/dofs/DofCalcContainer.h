@@ -54,7 +54,7 @@ public:
         return *this;
     }
 
-    friend DofCalcContainer operator+(DofCalcContainer lhs, const DofCalcContainer& rhs)
+    friend DofCalcContainer operator+(DofCalcContainer lhs, DofCalcContainer&& rhs)
     {
         lhs += rhs;
         return lhs;
