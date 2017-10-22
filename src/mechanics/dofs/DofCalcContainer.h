@@ -67,7 +67,6 @@ public:
 protected:
     std::vector<T> mData;
 
-private:
     //! @brief access to `i`-th entry of the data. Default constructs data up to `i`, if needed.
     //! @param i data index
     //! @return nonconst reference to `i`-th data entry
