@@ -6,13 +6,13 @@
 class MapVector : public NuTo::DofContainer<Eigen::VectorXd>
 {
 public:
-    MapVector& operator+=(const MapVector& rhs)
+    MapVector& operator+=(MapVector&& rhs)
     {
         for (const auto& it : rhs.mData)
         {
             auto& thisData = this->mData[it.first];
             if (thisData.rows() == 0)
-                thisData = it.second;
+                thisData = std::move(it.second);
             else
                 thisData += it.second;
         }
@@ -31,50 +31,47 @@ NuTo::DofType d0("zero", 2);
 NuTo::DofType d1("one", 2);
 NuTo::DofType d2("two", 2);
 
-constexpr int numDofs = 125; // e.g. for linear brick
-constexpr int numIp = 25;
+constexpr int numDofs = 60; // e.g. for quadratic brick
+constexpr int numIp = 8;
+constexpr int numRuns = 10000;
 
 Eigen::VectorXd randomGradient = Eigen::VectorXd::Random(numDofs);
 
 
 BENCHMARK(BlockTypes, NuToDofVector, runner)
 {
-    while (runner.KeepRunningIterations(1000))
+    while (runner.KeepRunningIterations(numRuns))
     {
         NuTo::DofVector<double> v;
         for (int i = 0; i < numIp; ++i)
         {
-            NuTo::DofVector<double> gradient;
+            NuTo::DofVector<double> gradient(3);
             gradient[d0] = randomGradient;
             gradient[d1] = randomGradient;
             gradient[d2] = randomGradient;
             v += std::move(gradient) * 0.3;
         }
-        if (v[d2][0] == -12)
-            throw;
     }
 }
 
 BENCHMARK(BlockTypes, NuToDofVectorAddScaled, runner)
 {
-    while (runner.KeepRunningIterations(1000))
+    while (runner.KeepRunningIterations(numRuns))
     {
         NuTo::DofVector<double> v;
         for (int i = 0; i < numIp; ++i)
         {
-            NuTo::DofVector<double> gradient;
+            NuTo::DofVector<double> gradient(3);
             gradient[d0] = randomGradient;
             gradient[d1] = randomGradient;
             gradient[d2] = randomGradient;
             v.AddScaled(gradient, 0.3);
         }
-        if (v[d2][0] == -12)
-            throw;
     }
 }
 BENCHMARK(BlockTypes, MapVector, runner)
 {
-    while (runner.KeepRunningIterations(1000))
+    while (runner.KeepRunningIterations(numRuns))
     {
         MapVector v;
         for (int i = 0; i < numIp; ++i)
@@ -85,15 +82,13 @@ BENCHMARK(BlockTypes, MapVector, runner)
             gradient[d2] = randomGradient;
             v += gradient * 0.3;
         }
-        if (v[d2][0] == -12)
-            throw;
     }
 }
 
 
 BENCHMARK(BlockTypes, EigenVectorPotential, runner)
 {
-    while (runner.KeepRunningIterations(1000))
+    while (runner.KeepRunningIterations(numRuns))
     {
         Eigen::VectorXd v;
         for (int i = 0; i < numIp; ++i)
@@ -107,7 +102,5 @@ BENCHMARK(BlockTypes, EigenVectorPotential, runner)
             gradient.segment(2 * numDofs, numDofs) = randomGradient;
             v += gradient * 0.3;
         }
-        if (v.segment(2 * numDofs, numDofs)[0] == -12)
-            throw;
     }
 }
