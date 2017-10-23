@@ -60,6 +60,21 @@ public:
         return Interpolation().GetDofDimension();
     }
 
+    Eigen::VectorXi GetDofNumbering() const override
+    {
+        Eigen::VectorXi dofNumbering(GetNumNodes() * GetDofDimension());
+        int i = 0;
+        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+        {
+            const auto& node = GetNode(iNode);
+            for (int iDof = 0; iDof < GetDofDimension(); ++iDof)
+            {
+                dofNumbering[i++] = node.GetDofNumber(iDof);
+            }
+        }
+        return dofNumbering;
+    }
+
     int GetNumNodes() const override
     {
         return mNodes.size();

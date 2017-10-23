@@ -15,6 +15,6 @@ public:
     virtual DofMatrix<double> Integrate(const MatrixOperation&) = 0;
     virtual double Integrate(const ScalarOperation&) = 0;
     virtual void Apply(const VoidOperation&) = 0;
-    virtual DofVector<int> DofNumbering() = 0;
+    virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
 };
 } /* NuTo */

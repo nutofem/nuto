@@ -58,16 +58,30 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionAxis)
     NuTo::DofType d("Dof", 1);
     NuTo::MeshFem mesh = DummyMesh(d);
 
-    auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0), d);
-    auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0), d);
+    {
+        auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0), d);
+        auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0), d);
 
-    auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y, d);
-    BOOST_CHECK_EQUAL(group0.Size(), 2);
-    BOOST_CHECK(group0.Contains(nd0));
-    BOOST_CHECK(group0.Contains(nd1));
+        auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y, d);
+        BOOST_CHECK_EQUAL(group0.Size(), 2);
+        BOOST_CHECK(group0.Contains(nd0));
+        BOOST_CHECK(group0.Contains(nd1));
 
-    auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, d, 2.);
-    BOOST_CHECK(group1.Empty());
+        auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, d, 2.);
+        BOOST_CHECK(group1.Empty());
+    }
+    {
+        auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0));
+        auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0));
+
+        auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y);
+        BOOST_CHECK_EQUAL(group0.Size(), 2);
+        BOOST_CHECK(group0.Contains(nd0));
+        BOOST_CHECK(group0.Contains(nd1));
+
+        auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, 2.);
+        BOOST_CHECK(group1.Empty());
+    }
 }
 
 BOOST_AUTO_TEST_CASE(MeshConvert)

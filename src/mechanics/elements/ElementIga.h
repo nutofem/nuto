@@ -57,6 +57,11 @@ public:
         return NurbsGeometry().GetDimension();
     }
 
+    Eigen::VectorXi GetDofNumbering() const override
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "I honestly have no idea. Sorry.");
+    }
+
     int GetNumNodes() const override
     {
         return NurbsGeometry().GetNumControlPointsElement();

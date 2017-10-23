@@ -22,12 +22,11 @@ public:
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
         for (NuTo::CellInterface& cell : cells)
         {
-            const DofVector<int> numbering = cell.DofNumbering();
             const DofVector<double> cellGradient = cell.Integrate(op);
 
             for (const DofType* dof : dofTypes)
             {
-                const Eigen::VectorXi& numberingDof = numbering[*dof];
+                Eigen::VectorXi numberingDof = cell.DofNumbering(*dof);
                 const Eigen::VectorXd& cellGradientDof = cellGradient[*dof];
                 const int numIndependentDofs = mNumIndependentDofs[*dof];
                 for (int i = 0; i < numberingDof.rows(); ++i)
@@ -51,15 +50,14 @@ public:
 
         for (NuTo::CellInterface& cell : cells)
         {
-            const DofVector<int> numbering = cell.DofNumbering();
             const DofMatrix<double> cellHessian = cell.Integrate(op);
 
             for (const DofType* dofI : dofTypes)
             {
+                Eigen::VectorXi numberingDofI = cell.DofNumbering(*dofI);
                 for (const DofType* dofJ : dofTypes)
                 {
-                    const Eigen::VectorXi& numberingDofI = numbering[*dofI];
-                    const Eigen::VectorXi& numberingDofJ = numbering[*dofJ];
+                    Eigen::VectorXi numberingDofJ = cell.DofNumbering(*dofJ);
                     const Eigen::MatrixXd& cellHessianDof = cellHessian(*dofI, *dofJ);
 
                     const int numIndependentDofsI = mNumIndependentDofs[*dofI];
