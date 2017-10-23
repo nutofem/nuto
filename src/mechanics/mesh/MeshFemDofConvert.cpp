@@ -148,7 +148,7 @@ void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const Interpolat
 {
     // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on 
     // the dimensions of the mesh.
-    SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/100, /*eps=*/1.e-10));
+    SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
 
     for (auto& elementCollection : rMesh->Elements)
     {

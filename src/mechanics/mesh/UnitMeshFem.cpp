@@ -60,6 +60,8 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
 
 void UnitMeshFem::Transform(MeshFem* rMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
 {
-    auto nodes = rMesh->NodesTotal();
+    // Build a group to avoid duplicates. Otherwise, the transformation is applied multiple times.
+    // This is, however, a bit of a bottleneck for big meshes. 
+    Groups::Group<NodeSimple> nodes = rMesh->NodesTotal();
     TransformNodes(nodes, f);
 }

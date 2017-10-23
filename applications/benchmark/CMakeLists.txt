@@ -8,6 +8,7 @@ foreach(test
     AssembleSparseMatrix
     ShapeFunctionMemoization
     Solvers
+    MeshFemBenchmark
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
@@ -37,5 +38,6 @@ add_executable(NewtonRaphsonBenchmark
 target_include_directories(NewtonRaphsonBenchmark
     PUBLIC ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
+
 
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
