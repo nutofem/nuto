@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/mesh/MeshGenerator.h"
@@ -11,6 +12,7 @@ using namespace NuTo;
 int main()
 {
     Structure structure(2);
+    structure.SetNumTimeDerivatives(1);
 
     int group, interpolationType;
     std::tie(group, interpolationType) = MeshGenerator::Grid(structure, {1.0, 1.0}, {1, 1});
@@ -28,12 +30,12 @@ int main()
     auto someSection = SectionPlane::Create(1.0, false);
     structure.ElementTotalSetSection(someSection);
 
-    NodeBase* nodePtr = structure.NodeGetNodePtr(0);
-    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
-    nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
-    nodePtr = structure.NodeGetNodePtr(1);
-    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
-    nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
+    for (int i = 0; i < structure.GetNumNodes(); ++i)
+    {
+        NodeBase* nodePtr = structure.NodeGetNodePtr(i);
+        nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
+        nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
+    }
 
     auto hessian0 = structure.BuildGlobalHessian0();
     auto hessian1 = structure.BuildGlobalHessian1();
@@ -42,5 +44,6 @@ int main()
     std::cout << hessian0 << std::endl;
     std::cout << hessian1 << std::endl;
     std::cout << f_int << std::endl;
+
     return 0;
 }

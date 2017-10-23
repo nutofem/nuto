@@ -990,8 +990,38 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const double temperature = 273.15;
             const Hygro::PoreState poreState(capillaryPressure, gasPressure, temperature);
 
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+            // external loads
+            rInternalGradient[dofRow] -= rData.mDetJxWeightIPxSection *
                                          Hygro::DryAirMassBalance::AdvectiveGravityLoad(poreState, medium, dN);
+            // internal loads
+            // C_gg dp^g/dt
+            const auto& dpgdt = rData.mNodalValues_dt1.at(Node::eDof::GAS_PRESSURE);
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection *
+                    Hygro::DryAirMassBalance::DensityChangeDueToGasPressure(poreState, medium, N_g) * dpgdt;
+
+            // C_gc dp^c/dt
+            const auto& dpcdt = rData.mNodalValues_dt1.at(Node::eDof::CAPILLARY_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::DryAirMassBalance::VariationOfSaturation(poreState, medium, N_g) *
+                                         dpcdt;
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection *
+                    Hygro::DryAirMassBalance::DensityChangeDueToCapillaryPressure(poreState, medium, N_g) * dpcdt;
+
+            // K_gg p^g
+            const auto& p_g = rData.mNodalValues.at(Node::eDof::GAS_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::DryAirMassBalance::AdvectionGasPressure(poreState, medium, dN) * p_g;
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::DryAirMassBalance::DiffusionGasPressure(poreState, medium, dN) * p_g;
+
+            // K_gc p^c
+            const auto& p_c = rData.mNodalValues.at(Node::eDof::CAPILLARY_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::DryAirMassBalance::DiffusionCapillaryPressure(poreState, medium, dN) *
+                                         p_c;
+
             break;
         }
 
@@ -1009,8 +1039,39 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const double temperature = 273.15;
             const Hygro::PoreState poreState(capillaryPressure, gasPressure, temperature);
 
-            rInternalGradient[dofRow] +=
+            // external loads
+            rInternalGradient[dofRow] -=
                     rData.mDetJxWeightIPxSection * Hygro::WaterMassBalance::AdvectiveGravityLoad(poreState, medium, dN);
+
+            // internal loads
+            // C_cc dp^c/dt
+            const auto& dpcdt = rData.mNodalValues_dt1.at(Node::eDof::CAPILLARY_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::VariationOfSaturation(poreState, medium, N_g) * dpcdt;
+
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::ChangeOfVapourDensity(poreState, medium, N_g) * dpcdt;
+            // K_cc p^c
+            const auto& p_c = rData.mNodalValues.at(Node::eDof::CAPILLARY_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::DiffusionCapillaryPressure(poreState, medium, dN) *
+                                         p_c;
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection *
+                    Hygro::WaterMassBalance::AdvectionWaterCapillaryPressure(poreState, medium, dN) * p_c;
+            // K_cg p^g
+            const auto& p_g = rData.mNodalValues.at(Node::eDof::GAS_PRESSURE);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::DiffusionGasPressure(poreState, medium, dN) * p_g;
+
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::AdvectionVapourGasPressure(poreState, medium, dN) *
+                                         p_g;
+
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::WaterMassBalance::AdvectionWaterGasPressure(poreState, medium, dN) *
+                                         p_g;
+
             break;
         }
         default:
