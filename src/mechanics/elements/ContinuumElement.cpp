@@ -245,6 +245,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
         case Node::eDof::CRACKPHASEFIELD:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART];
             break;
+        case Node::eDof::CAPILLARY_PRESSURE:
+        case Node::eDof::GAS_PRESSURE:
+            break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
                                                          Node::DofToString(dofRow) + " not implemented.");
@@ -973,6 +976,43 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
                                           2. * kappa * N.transpose() + N.transpose() * N * d_dt * visco);
             break;
         }
+        case Node::eDof::GAS_PRESSURE:
+        {
+            const auto& dN = rData.mB.at(Node::eDof::GAS_PRESSURE);
+
+            const auto& mediumAdapter = dynamic_cast<const PorousMediaAdapter&>(GetConstitutiveLaw(rTheIP));
+            const auto& medium = mediumAdapter.GetProperLaw();
+
+            const auto& N_c = *(rData.GetNMatrix(Node::eDof::CAPILLARY_PRESSURE));
+            const auto& N_g = *(rData.GetNMatrix(Node::eDof::GAS_PRESSURE));
+            const double capillaryPressure = (N_c * rData.mNodalValues.at(Node::eDof::CAPILLARY_PRESSURE))(0, 0);
+            const double gasPressure = (N_g * rData.mNodalValues.at(Node::eDof::GAS_PRESSURE))(0, 0);
+            const double temperature = 273.15;
+            const Hygro::PoreState poreState(capillaryPressure, gasPressure, temperature);
+
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         Hygro::DryAirMassBalance::AdvectiveGravityLoad(poreState, medium, dN);
+            break;
+        }
+
+        case Node::eDof::CAPILLARY_PRESSURE:
+        {
+            const auto& dN = rData.mB.at(Node::eDof::CAPILLARY_PRESSURE);
+
+            const auto& mediumAdapter = dynamic_cast<const PorousMediaAdapter&>(GetConstitutiveLaw(rTheIP));
+            const auto& medium = mediumAdapter.GetProperLaw();
+
+            const auto& N_c = *(rData.GetNMatrix(Node::eDof::CAPILLARY_PRESSURE));
+            const auto& N_g = *(rData.GetNMatrix(Node::eDof::GAS_PRESSURE));
+            const double capillaryPressure = (N_c * rData.mNodalValues.at(Node::eDof::CAPILLARY_PRESSURE))(0, 0);
+            const double gasPressure = (N_g * rData.mNodalValues.at(Node::eDof::GAS_PRESSURE))(0, 0);
+            const double temperature = 273.15;
+            const Hygro::PoreState poreState(capillaryPressure, gasPressure, temperature);
+
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection * Hygro::WaterMassBalance::AdvectiveGravityLoad(poreState, medium, dN);
+            break;
+        }
         default:
             throw Exception(__PRETTY_FUNCTION__,
                             "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
@@ -1388,7 +1428,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                             Hygro::DryAirMassBalance::VariationOfSaturation(poreState, medium, N_g);
 
                 hessian1 += rData.mDetJacobian *
-                    Hygro::DryAirMassBalance::DensityChangeDueToCapillaryPressure(poreState, medium, N_g);
+                            Hygro::DryAirMassBalance::DensityChangeDueToCapillaryPressure(poreState, medium, N_g);
                 break;
             }
 

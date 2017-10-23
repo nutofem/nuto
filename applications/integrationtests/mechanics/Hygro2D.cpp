@@ -2,17 +2,18 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/laws/PorousMediaAdapter.h"
-#include "mechanics/sections/SectionTruss.h"
+#include "mechanics/sections/SectionPlane.h"
 #include "mechanics/nodes/NodeBase.h"
+#include "mechanics/elements/ContinuumBoundaryElement.h"
 
 using namespace NuTo;
 
 int main()
 {
-    Structure structure(1);
+    Structure structure(2);
 
     int group, interpolationType;
-    std::tie(group, interpolationType) = MeshGenerator::Grid(structure, {1.0}, {1});
+    std::tie(group, interpolationType) = MeshGenerator::Grid(structure, {1.0, 1.0}, {1, 1});
     structure.InterpolationTypeAdd(interpolationType, Node::eDof::CAPILLARY_PRESSURE,
                                    Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeAdd(interpolationType, Node::eDof::GAS_PRESSURE,
@@ -24,7 +25,7 @@ int main()
     for (int id : structure.GroupGetMemberIds(group))
         structure.ElementSetConstitutiveLaw(structure.ElementGetElementPtr(id), &porousMedium);
 
-    auto someSection = SectionTruss::Create(1.0);
+    auto someSection = SectionPlane::Create(1.0, false);
     structure.ElementTotalSetSection(someSection);
 
     NodeBase* nodePtr = structure.NodeGetNodePtr(0);
@@ -36,8 +37,10 @@ int main()
 
     auto hessian0 = structure.BuildGlobalHessian0();
     auto hessian1 = structure.BuildGlobalHessian1();
+    auto f_int = structure.BuildGlobalInternalGradient();
 
     std::cout << hessian0 << std::endl;
     std::cout << hessian1 << std::endl;
+    std::cout << f_int << std::endl;
     return 0;
 }

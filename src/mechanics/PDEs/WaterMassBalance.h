@@ -8,12 +8,14 @@
 namespace Hygro
 {
 
+//! The discretized weak forms are based on those of Gawin et al.
+//! @see Gawin et al, 2006: [10.1002/nme.1615](https://dx.doi.org/10.1002/nme.1615)
+//! @see Gawin et al, 2003: [10.1016/S0045-7825(03)00200-7](https://dx.doi.org/10.1016/S0045-7825(03)00200-7)
 namespace WaterMassBalance
 {
 
 //! Corresponds to second term in \f$ \mathbf{C}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const PorousMedium& medium,
-                                      const Eigen::MatrixXd& N)
+Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const PorousMedium& medium, const Eigen::MatrixXd& N)
 {
     const double n = medium.Porosity();
     const double waterDensity = poreState.WaterDensity;
@@ -24,8 +26,7 @@ Eigen::MatrixXd VariationOfSaturation(const PoreState& poreState, const PorousMe
 }
 
 //! Corresponds to first term in \f$ \mathbf{C}_{cc} \f$ in Gawin et al.
-Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const PorousMedium& medium,
-                                      const Eigen::MatrixXd& N)
+Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const PorousMedium& medium, const Eigen::MatrixXd& N)
 {
     const double n = medium.Porosity();
     const double S_w = medium.Saturation(poreState.CapillaryPressure);
@@ -38,8 +39,7 @@ Eigen::MatrixXd ChangeOfVapourDensity(const PoreState& poreState, const PorousMe
 }
 
 //! Corresponds to first term in \f$ \mathbf{K}_{cg} \f$ in Gawin et al.
-Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const PorousMedium& medium,
-                                     const Eigen::MatrixXd& dN)
+Eigen::MatrixXd DiffusionGasPressure(const PoreState& poreState, const PorousMedium& medium, const Eigen::MatrixXd& dN)
 {
     const double airDensity = poreState.AirDensity;
 
@@ -123,6 +123,34 @@ Eigen::MatrixXd AdvectionWaterCapillaryPressure(const PoreState& poreState, cons
 
 
     return -dN.transpose() * waterDensity * relPermeability * intrinsicPermeability * dN / waterViscosity;
+}
+
+
+//! Corresponds to \f$ \mathbf{f}_c \f$ in Gawin et al.
+Eigen::VectorXd AdvectiveGravityLoad(const PoreState& poreState, const PorousMedium& medium, const Eigen::MatrixXd& dN)
+{
+    const double vapourDensity = poreState.VapourDensity;
+    const double waterDensity = poreState.WaterDensity;
+    const double gasDensity = poreState.GasDensity;
+
+    const double relGasPermeability = medium.GasRelativePermeability(poreState.CapillaryPressure);
+    const double relWaterPermeability = medium.WaterRelativePermeability(poreState.CapillaryPressure);
+
+    const double gasPressure = poreState.GasPressure;
+    const double intrinsicPermeability = medium.IntrinsicPermeability(gasPressure);
+
+    const double gasViscosity = poreState.AirDynamicViscosity;
+    const double waterViscosity = poreState.WaterDynamicViscosity;
+
+    const int dimension = dN.rows();
+    Eigen::VectorXd g = Eigen::VectorXd::Zero(dimension);
+    g.tail(1) = 9.80665 * Eigen::VectorXd::Ones(1);
+
+    const auto vapourTerm = vapourDensity * relGasPermeability * intrinsicPermeability / gasViscosity * gasDensity * g;
+    const auto liquidTerm =
+            waterDensity * relWaterPermeability * intrinsicPermeability / waterViscosity * waterDensity * g;
+    return dN.transpose() * (vapourTerm + liquidTerm);
+    // TOOD: boundary terms
 }
 
 } // namespace WaterMassBalance
