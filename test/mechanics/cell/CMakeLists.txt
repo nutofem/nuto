@@ -23,4 +23,3 @@ add_unit_test(PatchTest
     mechanics/mesh/MeshFem.cpp
     mechanics/mesh/MeshFemDofConvert.cpp
     mechanics/elements/ElementShapeFunctions.cpp)
-target_link_libraries(PatchTest ${ANN_LIBRARIES})
