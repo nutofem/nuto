@@ -51,10 +51,6 @@ install(DIRECTORY src/
     FILES_MATCHING PATTERN "*.h"
     )
 
-install(FILES scripts/NuToMacros.cmake
-    DESTINATION lib/cmake/NuTo
-    )
-
 install(EXPORT NuToTargets
     FILE NuToConfig.cmake
     NAMESPACE NuTo::
