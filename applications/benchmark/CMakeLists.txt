@@ -35,7 +35,14 @@ append_to_benchmarks(DenseSpherePacking)
 add_executable(NewtonRaphsonBenchmark
     EXCLUDE_FROM_ALL NewtonRaphsonBenchmark.cpp)
 target_include_directories(NewtonRaphsonBenchmark
-    PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
+
+add_executable(BlockVectors
+    EXCLUDE_FROM_ALL BlockVectors.cpp)
+target_include_directories(BlockVectors
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(BlockVectors)
+
 
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
