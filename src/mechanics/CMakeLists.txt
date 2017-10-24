@@ -40,6 +40,7 @@ set(MechanicsConstitutiveSources
 
 set(MechanicsConstraintSources
     constraints/Constraints.cpp
+    constraintsPde/Constraints.cpp
     constraints/ConstraintCompanion.cpp
     )
 

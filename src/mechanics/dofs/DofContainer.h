@@ -17,7 +17,7 @@ public:
     //          an existing value
     //          an newly default constructed value
     //! @remark This requires T to be default constructable.
-    T& operator[](const DofType& dofType)
+    T& operator[](DofType dofType)
     {
         return mData[dofType.Id()];
     }
@@ -27,7 +27,7 @@ public:
     //! @return reference to an existing value, throws if there is no value
     //! @remark This does not default construct a new T and thus does not
     //          require T to be default constructable.
-    T& At(const DofType& dofType)
+    T& At(DofType dofType)
     {
         return mData.at(dofType.Id());
     }
@@ -35,7 +35,7 @@ public:
     //! @brief const access
     //! @param dofType dof type
     //! @return const reference to existing value, throws if there is no value
-    const T& operator[](const DofType& dofType) const
+    const T& operator[](DofType dofType) const
     {
         return mData.at(dofType.Id());
     }
@@ -43,9 +43,14 @@ public:
     //! @brief copies a `t` into the container
     //! @param dofType dof type
     //! @param t value to insert
-    void Insert(const DofType& dofType, T t)
+    void Insert(DofType dofType, T t)
     {
         mData.emplace(dofType.Id(), t);
+    }
+
+    bool Has(DofType dof) const
+    {
+        return mData.find(dof.Id()) != mData.end();
     }
 
 protected:
