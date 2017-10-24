@@ -30,8 +30,8 @@ public:
     //! @brief nonconst access
     //! @param dofType dof type
     //! @return reference to either
-    //          an existing value
-    //          an newly default constructed value
+    //!         an existing value
+    //!         an newly default constructed value
     //! @remark This requires T to be default constructable.
     T& operator[](const DofType& dofType)
     {
