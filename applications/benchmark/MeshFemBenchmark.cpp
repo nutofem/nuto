@@ -1,5 +1,7 @@
 #include "Benchmark.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
+#include "mechanics/mesh/UnitMeshFem.h"
+#include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
 BENCHMARK(Mesh, CreateTriangles10x10, runner)
 {
