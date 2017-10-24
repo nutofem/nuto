@@ -7,11 +7,11 @@ fakeit::Mock<NuTo::CellInterface> MockCell(const NuTo::DofType& dof, Eigen::Vect
 {
     fakeit::Mock<NuTo::CellInterface> cell;
 
-    NuTo::DofVector<int> mockNumbering;
+    Eigen::VectorXi mockNumbering;
     NuTo::DofVector<double> mockGradient;
     NuTo::DofMatrix<double> mockHessian;
 
-    mockNumbering[dof] = numbering;
+    mockNumbering = numbering;
     mockGradient[dof] = Eigen::Vector3d(11, 22, 33);
     mockHessian(dof, dof).resize(3, 3);
     mockHessian(dof, dof) << 11, 12, 13, 21, 22, 23, 31, 32, 33;
