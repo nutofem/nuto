@@ -20,9 +20,6 @@ set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
 check_for_dependencies()
 
-configure_file(${CMAKE_SOURCE_DIR}/scripts/cmake/CTestCustom.cmake
-    ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
-
 add_subdirectory(external)
 
 if(ENABLE_PYTHON)

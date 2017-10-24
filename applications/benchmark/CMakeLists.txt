@@ -38,4 +38,10 @@ target_include_directories(NewtonRaphsonBenchmark
     PUBLIC ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
 
+add_executable(ParallelAssembly EXCLUDE_FROM_ALL ParallelAssembly.cpp)
+target_link_libraries(ParallelAssembly
+    Mechanics Visualize Boost::unit_test_framework)
+target_include_directories(ParallelAssembly
+    PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
+
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
