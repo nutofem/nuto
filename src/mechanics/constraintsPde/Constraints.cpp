@@ -69,4 +69,8 @@ int Constraints::GetNumEquations(DofType dof) const
         return 0;
     return mEquations[dof].size(); 
 }
-
+    
+const Equation& Constraints::GetEquation(DofType dof, int equationNumber) const
+{
+    return mEquations[dof].at(equationNumber);
+}

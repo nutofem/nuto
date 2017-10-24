@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 
+#include <numeric>
 #include <eigen3/Eigen/Dense>
 
 #include "base/Group.h"
@@ -10,6 +11,8 @@
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+
+#include "mechanics/constraintsPde/Constraints.h"
 
 #include "mechanics/constitutive/laws/LinearElastic.h"
 
@@ -96,6 +99,72 @@ DofInfo ManualDofNumbering(MeshFem* rMesh, DofType dof)
     return dofInfo;
 }
 
+ConstraintPde::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
+{
+    ConstraintPde::Constraints constraints;
+
+    Group<NodeSimple> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
+    Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
+
+    auto zero = [](double) { return 0; };
+
+    for (auto& node : nodesConstrainedInX)
+        constraints.Add(dof, {node, 0, zero});
+
+    for (auto& node : nodesConstrainedInY)
+        constraints.Add(dof, {node, 1, zero});
+
+    return constraints;
+}
+
+//! @brief build dof numbering, starting at 0, for all `nodes` regardless of constraints 
+//! @return total number of dofs in `nodes`
+int InitialUnconstrainedNumbering(const Groups::Group<NodeSimple>& nodes)
+{
+    int dofNumber = 0;
+    for (auto& node : nodes)
+        for (int iComponent = 0; iComponent < node.GetNumValues(); ++iComponent)
+            node.SetDofNumber(iComponent, dofNumber++);
+    return dofNumber;
+}
+
+std::vector<bool> FindConstrainedDofs(const ConstraintPde::Constraints& constraints, DofType dof, int numDofs)
+{
+    std::vector<bool> isConstrained(numDofs, false);
+    for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
+    {
+        int dependentDofNumber = constraints.GetEquation(dof, iEquation).GetDependentDofNumber();
+        isConstrained[dependentDofNumber] = true;
+    }
+    return isConstrained;
+}
+
+DofInfo AutomaticDofNumbering(Groups::Group<NodeSimple> dofNodes, DofType dof, const ConstraintPde::Constraints& constraints)
+{
+    int numDependentDofs = constraints.GetNumEquations(dof);
+
+    const int numDofs = InitialUnconstrainedNumbering(dofNodes);
+      
+    std::vector<bool> isConstrained = FindConstrainedDofs(constraints, dof, numDofs);
+   
+    int countIndependentDofs = 0;
+    int countDependentDofs = numDofs - numDependentDofs;
+    for (auto& node : dofNodes)
+        for (int iComponent = 0; iComponent < node.GetNumValues(); ++iComponent)
+        {
+            int dofNumber = node.GetDofNumber(iComponent);
+            if (isConstrained[dofNumber])
+                node.SetDofNumber(iComponent, countDependentDofs++);
+            else
+                node.SetDofNumber(iComponent, countIndependentDofs++);
+        }
+
+    DofInfo dofInfo;
+    dofInfo.numDependentDofs[dof] = numDependentDofs;
+    dofInfo.numIndependentDofs[dof] = numDofs - numDependentDofs;
+    return dofInfo;
+}
+
 BOOST_AUTO_TEST_CASE(PatchTest)
 {
     MeshFem mesh = QuadPatchTestMesh();
@@ -103,7 +172,9 @@ BOOST_AUTO_TEST_CASE(PatchTest)
     const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
 
     AddDofInterpolation(&mesh, displ, interpolation);
-    DofInfo dofInfo = ManualDofNumbering(&mesh, displ);
+
+    auto constraints = DefineConstraints(&mesh, displ);
+    DofInfo dofInfo = AutomaticDofNumbering(mesh.NodesTotal(displ), displ, constraints);
 
 
     // ************************************************************************

@@ -40,6 +40,12 @@ public:
     //! @param dof dof type
     //! @return number of constraint equations
     int GetNumEquations(DofType dof) const;
+    
+    //!@brief gets the specified equation
+    //! @param dof ... doftype of the equation
+    //! @param equationNumber ... number of the equation
+    //! @return selected equation
+    const Equation& GetEquation(DofType dof, int equationNumber) const;
 
     //! @brief getter for mConstraintsChanged
     //! @return true if constraints changed
@@ -49,7 +55,7 @@ public:
     void SetHaveChanged(bool value);
 
 private:
-    //! @brief dof-wise storage of constraint equatiosn
+    //! @brief dof-wise storage of constraint equations
     DofContainer<Equations> mEquations;
 
     //! @brief flag that indiciates whether or not new constraints were added
