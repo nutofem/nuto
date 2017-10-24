@@ -1,66 +1,32 @@
 #pragma once
 
-#include <map>
-#include <eigen3/Eigen/Core>
-#include "mechanics/dofs/DofType.h"
+#include "mechanics/dofs/DofCalcContainer.h"
 
 namespace NuTo
 {
 
 //! @brief dof container that is also capable of performing calculations.
 template <typename T>
-class DofMatrixContainer
+class DofMatrixContainer : public DofCalcContainer<T>
 {
 public:
-    DofMatrixContainer& operator+=(const DofMatrixContainer& rhs)
-    {
-        for (const auto& it : rhs.mData)
-        {
-            auto& thisData = mData[it.first];
-            if (thisData.size() == 0)
-                thisData = it.second;
-            else
-                thisData += it.second;
-        }
-        return *this;
-    }
-
-    DofMatrixContainer& operator*=(double scalar)
-    {
-        for (auto& it : mData)
-            it.second *= scalar;
-        return *this;
-    }
-
     T& operator()(const DofType& d0, const DofType& d1)
     {
-        return mData[CantorParingFunction(d0.Id(), d1.Id())];
+        return this->ResizingIdAccess(CantorParingFunction(d0.Id(), d1.Id()));
     }
 
     const T& operator()(const DofType& d0, const DofType& d1) const
     {
-        return mData.at(CantorParingFunction(d0.Id(), d1.Id()));
-    }
-
-    friend DofMatrixContainer operator+(DofMatrixContainer lhs, const DofMatrixContainer& rhs)
-    {
-        lhs += rhs;
-        return lhs;
-    }
-
-    friend DofMatrixContainer operator*(DofMatrixContainer lhs, double scalar)
-    {
-        lhs *= scalar;
-        return lhs;
+        return this->mData[CantorParingFunction(d0.Id(), d1.Id())];
     }
 
     friend std::ostream& operator<<(std::ostream& out, const DofMatrixContainer<T>& dofMatrix)
     {
-        for (auto const& data : dofMatrix.mData)
+        for (int i = 0; i < dofMatrix.mData.size(); ++i)
         {
-            auto xy = CantorPairingFunctionReverse(data.first);
-            out << "=== " << xy.first << " " << xy.second << " ==="  << std::endl;
-            out << data.second << std::endl;
+            auto xy = CantorPairingFunctionReverse(i);
+            out << "=== " << xy.first << " " << xy.second << " ===" << std::endl;
+            out << dofMatrix.mData[i] << std::endl;
         }
         out << "====" << std::endl;
         return out;
@@ -80,7 +46,5 @@ private:
         int t = (w * w + w) / 2;
         return std::make_pair(z - t, w - z + t);
     }
-
-    std::map<int, T> mData;
 };
 } /* NuTo */
