@@ -17,6 +17,7 @@ add_unit_test(CellIpData
 
 
 add_unit_test(PatchTest
+    mechanics/dofs/DofNumbering.cpp
     mechanics/integrationtypes/IntegrationTypeBase.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
     math/Legendre.cpp

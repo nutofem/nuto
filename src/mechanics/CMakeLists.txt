@@ -53,6 +53,10 @@ set(MechanicsDofSubMatrixStorageSources
     dofSubMatrixStorage/BlockFullMatrix.cpp
     )
 
+set(MechanicsDofsSources
+    dofs/DofNumbering.cpp
+    )
+
 list(APPEND MechanicsElementsSources
     elements/ContinuumElement.cpp
     elements/ContinuumBoundaryElement.cpp
@@ -221,6 +225,7 @@ set(MechanicsSources
     ${MechanicsConstitutiveSources}
     ${MechanicsConstraintSources}
     ${MechanicsCrackSources}
+    ${MechanicsDofsSources}
     ${MechanicsDofSubMatrixStorageSources}
     ${MechanicsElementsSources}
     ${MechanicsGroupsSources}
