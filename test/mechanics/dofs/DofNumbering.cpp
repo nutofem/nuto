@@ -23,8 +23,8 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
 
     Groups::Group<NodeSimple> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
 
-    constraints.Add(d, {nodeConstrained, 0, rhs});
     constraints.Add(d, {nodeConstrained, 1, rhs});
+    constraints.Add(d, {nodeConstrained, 0, rhs});
 
     auto dofInfo = DofNumbering::Build(group, d, constraints);
     BOOST_CHECK_EQUAL(dofInfo.numDependentDofs[d], 2);
@@ -39,6 +39,10 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
     dofNumbers.insert(nodeConstrained.GetDofNumber(1));
     BOOST_CHECK_EQUAL(dofNumbers.size(), 6);
     BOOST_CHECK_EQUAL(*dofNumbers.rbegin(), 5);
+
+    auto cmat = constraints.BuildConstraintMatrix(d, 6);
+    Eigen::MatrixXd identityBlock = cmat.block(0, 4, 2, 2);
+    BoostUnitTest::CheckEigenMatrix(identityBlock, Eigen::Matrix2d::Identity());
 }
 
 BOOST_AUTO_TEST_CASE(DoubleConstrained)
