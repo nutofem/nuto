@@ -3,40 +3,13 @@
 using namespace NuTo;
 using namespace NuTo::ConstraintPde;
 
+
 void Constraints::Add(DofType dof, Equation equation)
 {
-    // The new dependent term must not constrain the same dof as any existing terms
-    Term newDependentTerm = equation.GetTerms()[0];
-    for (int iExistingEq = 0; iExistingEq < GetNumEquations(dof); ++iExistingEq)
-    {
-        for (Term existingTerm : GetEquation(dof, iExistingEq).GetTerms())
-        {
-            if (&newDependentTerm.GetNode() == &existingTerm.GetNode() &&
-                newDependentTerm.GetComponent() == existingTerm.GetComponent())
-                throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
-                                                     "is already constrained by equation " +
-                                                             std::to_string(iExistingEq) + ".");
-        }
-    }
-
-
-    // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
-    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
-    for (int iNewTerm = 1; iNewTerm < equation.GetTerms().size(); ++iNewTerm)
-    {
-        Term newTerm = equation.GetTerms()[iNewTerm];
-        for (int iExistingEq = 0; iExistingEq < GetNumEquations(dof); ++iExistingEq)
-        {
-            Term existingDependentTerm = GetEquation(dof, iExistingEq).GetTerms()[0];
-            if (&newTerm.GetNode() == &existingDependentTerm.GetNode() &&
-                newTerm.GetComponent() == existingDependentTerm.GetComponent())
-                throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
-                                                     "as a dependent dof in equation " +
-                                                             std::to_string(iExistingEq) + ".");
-        }
-    }
+    mTermChecker.CheckEquation(equation);
 
     mEquations[dof].push_back(equation);
+
     mConstraintsChanged = true;
 }
 
@@ -118,4 +91,46 @@ int Constraints::GetNumEquations(DofType dof) const
 const Equation& Constraints::GetEquation(DofType dof, int equationNumber) const
 {
     return mEquations[dof].at(equationNumber);
+}
+
+template <typename T>
+bool Contains(const T& container, NuTo::ConstraintPde::Term t)
+{
+    return container.find(t) != container.end();
+}
+
+bool Constraints::TermChecker::TermCompare::operator()(const Term& lhs, const Term& rhs) const
+{
+    if (&lhs.GetNode() != &rhs.GetNode())
+        return &lhs.GetNode() < &rhs.GetNode();
+    return lhs.GetComponent() < rhs.GetComponent();
+}
+
+void Constraints::TermChecker::CheckEquation(Equation e)
+{
+    // The new dependent term must not constrain the same dof as any existing terms
+    Term newDependentTerm = e.GetTerms()[0];
+
+    if (Contains(mDependentTerms, newDependentTerm))
+        throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
+                                             "is already constrained as a dependent dof in another equation.");
+
+    if (Contains(mOtherTerms, newDependentTerm))
+        throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
+                                             "is already constrained in another equation.");
+
+
+    // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
+    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
+    for (int iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+    {
+        Term newTerm = e.GetTerms()[iNewTerm];
+        if (Contains(mDependentTerms, newTerm))
+            throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
+                                                 "as a dependent dof in another equation");
+    }
+
+    mDependentTerms.insert(e.GetTerms()[0]);
+    for (int iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+        mOtherTerms.insert(e.GetTerms()[iNewTerm]);
 }

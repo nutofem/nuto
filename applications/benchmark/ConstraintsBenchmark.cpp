@@ -11,7 +11,7 @@ void Run(BenchmarkInternal::Runner& runner, int size)
     for (int i = 0; i < nodes.size(); ++i)
         nodes[i].SetDofNumber(0, i);
 
-    while (runner.KeepRunningTime(1))
+    while (runner.KeepRunningTime(0.1))
     {
         NuTo::ConstraintPde::Constraints c;
         for (int i = 0; i < nodes.size(); ++i)
@@ -38,3 +38,9 @@ BENCHMARK(Constraints, c100000, runner)
 {
     Run(runner, 100000);
 };
+
+BENCHMARK(Constraints, c1000000, runner)
+{
+    Run(runner, 1000000);
+};
+

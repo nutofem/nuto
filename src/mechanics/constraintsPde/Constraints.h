@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 #include <eigen3/Eigen/Sparse>
 #include "mechanics/dofs/DofContainer.h"
 #include "mechanics/constraintsPde/Equation.h"
@@ -59,6 +60,30 @@ private:
     //! @brief dof-wise storage of constraint equations
     DofContainer<Equations> mEquations;
 
+
+    //! @brief stores the terms of all existing equations in ordered containers
+    //! @remark A naive check of all existing terms in mEquations is O(N^2) since we have to traverse them whenever an
+    //! equation is added. Adding >10000 equations this way is not feasible. This class performs those checks in O(N log
+    //! N) and everything is fine again.
+    class TermChecker
+    {
+    public:
+        //! @brief Check if the `e` collides with existing terms.
+        //! @remark throws if
+        //          - the dependent term of `e` is in any existing equation
+        //          - any term of `e` is in the depenend terms of any existing equation
+        void CheckEquation(Equation e);
+
+    private:
+        struct TermCompare
+        {
+            bool operator()(const Term& lhs, const Term& rhs) const;
+        };
+
+        std::set<Term, TermCompare> mDependentTerms;
+        std::set<Term, TermCompare> mOtherTerms;
+    } mTermChecker;
+
     //! @brief flag that indiciates whether or not new constraints were added
     //! @remark the global dof numbering needs a rebuild, if this flag is true.
     //! And it has to be set to false after rebuilding.
@@ -71,6 +96,7 @@ private:
     //!       = mConstraints is a const member at mAssembler
     bool mConstraintsChanged = false;
 };
+
 
 } /* Constaint */
 } /* NuTo */
