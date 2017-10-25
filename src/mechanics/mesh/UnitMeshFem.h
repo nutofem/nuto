@@ -19,9 +19,9 @@ MeshFem CreateTriangles(int numX, int numY);
 MeshFem CreateQuads(int numX, int numY);
 
 //! @brief transforms a mesh with a given transformation function f
-//! @param rMesh mesh that is modified (return argument! pointer syntax to make it clear)
+//! @param oldMesh mesh that is transformed. Call with an xvalue of mesh.  
 //! @param f transformation function
-void Transform(MeshFem* rMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f);
+MeshFem Transform(MeshFem&& oldMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f);
 
 } /* UnitMeshFem */
 } /* NuTo */

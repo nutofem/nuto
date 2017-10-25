@@ -20,7 +20,7 @@ void Check2DMesh(NuTo::MeshFem mesh)
         return newCoords;
     };
 
-    NuTo::UnitMeshFem::Transform(&mesh, f);
+    NuTo::MeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
 
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(42., 4.)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(44., 11.)));
