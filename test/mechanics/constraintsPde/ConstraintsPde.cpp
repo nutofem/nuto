@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
     Constraints c;
     c.Add(dof, Equation(node0, 0, rhs));
     c.Add(dof, Equation(node3, 0, rhs));
-   
+
     // unconstrained
     node1.SetDofNumber(0, 0);
     node2.SetDofNumber(0, 1);
@@ -54,6 +54,47 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
     // 1  0
     // which is wrong.
     BOOST_CHECK_THROW(c.BuildConstraintMatrix(dof, 2), Exception);
+}
+
+BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
+{
+    NodeSimple node0(0);
+    NodeSimple node1(0);
+    NodeSimple node2(0);
+    NodeSimple node3(0);
+    NodeSimple node4(0);
+
+    /*
+     *     n0 ---- n1 ---- n2 ---- n3 --- n4
+     *         n3(dep)           = rhs;
+     *    with n4(dep) + 42 * n0 = rhs;
+     *
+     *              (n0)
+     *  [ 0  0  0 ] (n1) + [ 1  0 ] (n3) = rhs;
+     *  [42  0  0 ] (n2) + [ 0  1 ] (n4) = rhs;
+     *
+     */
+    Eigen::MatrixXd cmatExpected = Eigen::MatrixXd::Zero(2, 3);
+    cmatExpected(1,0) = 42;
+
+    node0.SetDofNumber(0, 0);
+    node1.SetDofNumber(0, 1);
+    node2.SetDofNumber(0, 2);
+    node3.SetDofNumber(0, 3);
+    node4.SetDofNumber(0, 4);
+
+    Equation noninteractingEquation(node3, 0, rhs);
+
+    Equation interactingEquation(node4, 0, rhs);
+    interactingEquation.AddTerm({node0, 0, 42});
+
+    Constraints c;
+    c.Add(dof, noninteractingEquation);
+    c.Add(dof, interactingEquation);
+    
+    Eigen::MatrixXd cmat = c.BuildConstraintMatrix(dof, 3);
+
+    BoostUnitTest::CheckEigenMatrix(cmat, cmatExpected);
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintRhs)
