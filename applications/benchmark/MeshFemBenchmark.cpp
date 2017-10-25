@@ -56,18 +56,18 @@ BENCHMARK(Mesh, Transform10x10, runner)
 {
     NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
     while (runner.KeepRunningTime(1))
-        NuTo::UnitMeshFem::Transform(&mesh, f);
+        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
 }
 BENCHMARK(Mesh, Transform100x100, runner)
 {
     NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
     while (runner.KeepRunningTime(1))
-        NuTo::UnitMeshFem::Transform(&mesh, f);
+        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
 }
 
 BENCHMARK(Mesh, Transform1000x1000, runner)
 {
     NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
     while (runner.KeepRunningTime(1))
-        NuTo::UnitMeshFem::Transform(&mesh, f);
+        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
 }
