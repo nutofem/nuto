@@ -69,8 +69,8 @@ public:
                         if ((entry - coords).squaredNorm() < mDomain.searchRadiusSquared)
                             return &entry;
                 }
-        return nullptr; // this is a classic case for the c++17 feature std::optional<T>. Here we have to introduce
-        // pointers to our precious interface.
+        return nullptr; // TODO17:  This is a classic case for the c++17 feature std::optional<T>. Here we have to
+                        // introduce pointers to our precious interface.
     }
 
 private:
@@ -129,7 +129,7 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
         }
     }
     const int dimension = start.rows();
-    
+
     SubBoxes<NodePoint>::Domain d;
     d.start = To3D(start) - Eigen::Vector3d::Constant(eps);
     d.end = To3D(end) + Eigen::Vector3d::Constant(eps);
@@ -146,7 +146,7 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
 
 void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const InterpolationSimple& interpolation)
 {
-    // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on 
+    // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on
     // the dimensions of the mesh.
     SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
 
