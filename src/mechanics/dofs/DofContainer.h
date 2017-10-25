@@ -40,12 +40,15 @@ public:
         return mData.at(dofType.Id());
     }
 
-    //! @brief copies a `t` into the container
+    //! @brief copies a `t` into the container, throws, if there already is an entry at `dofType`
     //! @param dofType dof type
     //! @param t value to insert
     void Insert(const DofType& dofType, T t)
     {
-        mData.emplace(dofType.Id(), t);
+        auto it = mData.emplace(dofType.Id(), t); // it = pair<iterator, bool>
+        if (not it.second)
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Insert failed. Container already contains an entry for " + dofType.GetName() + ".");
     }
 
 protected:
