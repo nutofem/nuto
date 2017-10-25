@@ -9,24 +9,12 @@ void Constraints::Add(DofType dof, Equation equation)
     mTermChecker.CheckEquation(equation);
 
     mEquations[dof].push_back(equation);
-
-    mConstraintsChanged = true;
 }
 
 void Constraints::Add(DofType dof, std::vector<Equation> equations)
 {
     for (auto equation : equations)
         Add(dof, equation);
-}
-
-void Constraints::SetHaveChanged(bool value)
-{
-    mConstraintsChanged = value;
-}
-
-bool Constraints::HaveChanged() const
-{
-    return mConstraintsChanged;
 }
 
 Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const

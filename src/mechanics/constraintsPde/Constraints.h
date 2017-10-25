@@ -49,13 +49,6 @@ public:
     //! @return selected equation
     const Equation& GetEquation(DofType dof, int equationNumber) const;
 
-    //! @brief getter for mConstraintsChanged
-    //! @return true if constraints changed
-    bool HaveChanged() const;
-
-    //! @brief setter for mConstraintsChanged
-    void SetHaveChanged(bool value);
-
 private:
     //! @brief dof-wise storage of constraint equations
     DofContainer<Equations> mEquations;
@@ -83,18 +76,6 @@ private:
         std::set<Term, TermCompare> mDependentTerms;
         std::set<Term, TermCompare> mOtherTerms;
     } mTermChecker;
-
-    //! @brief flag that indiciates whether or not new constraints were added
-    //! @remark the global dof numbering needs a rebuild, if this flag is true.
-    //! And it has to be set to false after rebuilding.
-    //! Problems with this approach: The behavior of this class is not influenced
-    //! by this state variable, currently only NuTo::Assembler is. Thus, it should
-    //! be solved in a different approach. Maybe:
-    //!  - Assembler keeps track of NumConstraints
-    //!  - Assembler keeps track of std::hash(mEquations)
-    //!  - Not allowed to add constraints after building the global dof numbering
-    //!       = mConstraints is a const member at mAssembler
-    bool mConstraintsChanged = false;
 };
 
 
