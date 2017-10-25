@@ -5,15 +5,45 @@ using namespace NuTo::ConstraintPde;
 
 void Constraints::Add(DofType dof, Equation equation)
 {
+    // The new dependent term must not constrain the same dof as any existing terms
+    Term newDependentTerm = equation.GetTerms()[0];
+    for (int iExistingEq = 0; iExistingEq < GetNumEquations(dof); ++iExistingEq)
+    {
+        for (Term existingTerm : GetEquation(dof, iExistingEq).GetTerms())
+        {
+            if (&newDependentTerm.GetNode() == &existingTerm.GetNode() &&
+                newDependentTerm.GetComponent() == existingTerm.GetComponent())
+                throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
+                                                     "is already constrained by equation " +
+                                                             std::to_string(iExistingEq) + ".");
+        }
+    }
+
+
+    // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
+    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
+    for (int iNewTerm = 1; iNewTerm < equation.GetTerms().size(); ++iNewTerm)
+    {
+        Term newTerm = equation.GetTerms()[iNewTerm];
+        for (int iExistingEq = 0; iExistingEq < GetNumEquations(dof); ++iExistingEq)
+        {
+            Term existingDependentTerm = GetEquation(dof, iExistingEq).GetTerms()[0];
+            if (&newTerm.GetNode() == &existingDependentTerm.GetNode() &&
+                newTerm.GetComponent() == existingDependentTerm.GetComponent())
+                throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
+                                                     "as a dependent dof in equation " +
+                                                             std::to_string(iExistingEq) + ".");
+        }
+    }
+
     mEquations[dof].push_back(equation);
     mConstraintsChanged = true;
 }
 
 void Constraints::Add(DofType dof, std::vector<Equation> equations)
 {
-    Equations& dofEquations = mEquations[dof];
-    dofEquations.insert(dofEquations.begin(), equations.begin(), equations.end());
-    mConstraintsChanged = true;
+    for (auto equation : equations)
+        Add(dof, equation);
 }
 
 void Constraints::SetHaveChanged(bool value)
@@ -44,7 +74,7 @@ Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int 
     if (not mEquations.Has(dof))
         return Eigen::SparseMatrix<double>(0, nDofs); // no equations for this dof type
 
-    const Equations& equations = mEquations[dof]; 
+    const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
 
     Eigen::SparseMatrix<double> matrix(numEquations, nDofs);
@@ -67,9 +97,9 @@ int Constraints::GetNumEquations(DofType dof) const
 {
     if (not mEquations.Has(dof))
         return 0;
-    return mEquations[dof].size(); 
+    return mEquations[dof].size();
 }
-    
+
 const Equation& Constraints::GetEquation(DofType dof, int equationNumber) const
 {
     return mEquations[dof].at(equationNumber);

@@ -45,31 +45,4 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
     BoostUnitTest::CheckEigenMatrix(identityBlock, Eigen::Matrix2d::Identity());
 }
 
-BOOST_AUTO_TEST_CASE(DoubleConstrained)
-{
-    ConstraintPde::Constraints constraints;
-    NodeSimple node(Eigen::Vector2d::Zero());
 
-    Groups::Group<NodeSimple> group(node);
-
-    constraints.Add(d, {node, 0, rhs});
-    constraints.Add(d, {node, 0, rhs});
-
-    BOOST_CHECK_THROW(DofNumbering::Build(group, d, constraints), Exception);
-}
-
-BOOST_AUTO_TEST_CASE(TwoDependentDofsInOneEquation)
-{
-    ConstraintPde::Constraints constraints;
-    NodeSimple node(Eigen::Vector2d::Zero());
-
-    Groups::Group<NodeSimple> group(node);
-
-    constraints.Add(d, {node, 0, rhs}); // node.dof0 * 1.0 = rhs
-
-    ConstraintPde::Equation equation(node, 1, rhs);
-    equation.AddTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
-    constraints.Add(d, equation);
-
-    BOOST_CHECK_THROW(DofNumbering::Build(group, d, constraints), Exception);
-}
