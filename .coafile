@@ -18,10 +18,11 @@ no_orig = True
 [CMake]
 files = **/CMakeLists.txt, **.cmake
 bears = CMakeLintBear
-ignore = *build*/**
+ignore = *build*/**, external/**
 
 [cpp]
-files = src/**.cpp
+enable = all
+files = **/*.cpp
 bears = CPPCheckBear
 
 [filename]

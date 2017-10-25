@@ -1,49 +1,45 @@
-#include <iostream>
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/mesh/MeshGenerator.h"
 #include "mechanics/constitutive/laws/PorousMediaAdapter.h"
-#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/sections/SectionTruss.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "mechanics/elements/ContinuumBoundaryElement.h"
+#include "mechanics/PDEs/ConcreteMedium.h"
 
 using namespace NuTo;
 
 int main()
 {
-    Structure structure(2);
-    structure.SetNumTimeDerivatives(1);
+    Structure structure(1);
 
     int group, interpolationType;
-    std::tie(group, interpolationType) = MeshGenerator::Grid(structure, {1.0, 1.0}, {1, 1});
+    std::tie(group, interpolationType) = MeshGenerator::Grid(structure, {1.0}, {1});
     structure.InterpolationTypeAdd(interpolationType, Node::eDof::CAPILLARY_PRESSURE,
                                    Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.InterpolationTypeAdd(interpolationType, Node::eDof::GAS_PRESSURE,
                                    Interpolation::eTypeOrder::EQUIDISTANT1);
     structure.ElementTotalConvertToInterpolationType();
 
-    PorousMediaAdapter porousMedium(0.0512, 18.6, 2.27, 0.1);
+    ConcreteMedium concrete(0.0512, 18.6, 2.27, 0.1);
+    PorousMediaAdapter porousMedium(concrete);
 
     for (int id : structure.GroupGetMemberIds(group))
         structure.ElementSetConstitutiveLaw(structure.ElementGetElementPtr(id), &porousMedium);
 
-    auto someSection = SectionPlane::Create(1.0, false);
+    auto someSection = SectionTruss::Create(1.0);
     structure.ElementTotalSetSection(someSection);
 
-    for (int i = 0; i < structure.GetNumNodes(); ++i)
-    {
-        NodeBase* nodePtr = structure.NodeGetNodePtr(i);
-        nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
-        nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
-    }
+    NodeBase* nodePtr = structure.NodeGetNodePtr(0);
+    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
+    nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
+    nodePtr = structure.NodeGetNodePtr(1);
+    nodePtr->Set(Node::eDof::CAPILLARY_PRESSURE, 0, 20.0);
+    nodePtr->Set(Node::eDof::GAS_PRESSURE, 0, 1.0);
 
     auto hessian0 = structure.BuildGlobalHessian0();
     auto hessian1 = structure.BuildGlobalHessian1();
-    auto f_int = structure.BuildGlobalInternalGradient();
 
     std::cout << hessian0 << std::endl;
     std::cout << hessian1 << std::endl;
-    std::cout << f_int << std::endl;
-
     return 0;
 }

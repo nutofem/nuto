@@ -2,7 +2,7 @@
 
 #include "mechanics/PDEs/HygroHelpers.h"
 #include "mechanics/PDEs/PoreState.h"
-#include "mechanics/PDEs/PorousMedium.h"
+#include "mechanics/PDEs/ConcreteMedium.h"
 
 namespace py = pybind11;
 
@@ -42,14 +42,14 @@ PYBIND11_MODULE(hygro_helpers, m)
             .def_readonly("WaterDensity", &PoreState::WaterDensity)
             .def_readonly("WaterDynamicViscosity", &PoreState::WaterDynamicViscosity);
 
-    py::class_<PorousMedium>(m, "PorousMedium")
+    py::class_<ConcreteMedium>(m, "ConcreteMedium")
             .def(py::init<double, double, double, double>())
-            .def("Porosity", &PorousMedium::Porosity)
-            .def("Saturation", &PorousMedium::Saturation, "Saturation of pores with liquid water.")
-            .def("DerivativeSaturation", &PorousMedium::DerivativeSaturation,
+            .def("Porosity", &ConcreteMedium::Porosity)
+            .def("Saturation", &ConcreteMedium::Saturation, "Saturation of pores with liquid water.")
+            .def("DerivativeSaturation", &ConcreteMedium::DerivativeSaturation,
                  "Derivative of saturation of the pores with liquid water w.r.t. the capillary pressure.")
-            .def("IntrinsicPermeability", &PorousMedium::IntrinsicPermeability, "Intrinsic permeability in m².")
-            .def("EffectiveDiffusivity", &PorousMedium::EffectiveDiffusivity)
-            .def("GasRelativePermeability", &PorousMedium::GasRelativePermeability)
-            .def("WaterRelativePermeability", &PorousMedium::WaterRelativePermeability);
+            .def("IntrinsicPermeability", &ConcreteMedium::IntrinsicPermeability, "Intrinsic permeability in m².")
+            .def("EffectiveDiffusivity", &ConcreteMedium::EffectiveDiffusivity)
+            .def("GasRelativePermeability", &ConcreteMedium::GasRelativePermeability)
+            .def("WaterRelativePermeability", &ConcreteMedium::WaterRelativePermeability);
 }

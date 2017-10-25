@@ -12,8 +12,8 @@ namespace NuTo
 class PorousMediaAdapter : public ConstitutiveBase
 {
 public:
-    PorousMediaAdapter(double a, double b, double c, double d)
-        : mProperLaw(a, b, c, d)
+    PorousMediaAdapter(const PorousMedium& medium)
+        : mProperLaw(medium)
     {
     }
 
@@ -66,6 +66,6 @@ public:
     void CheckParameters() const override {}
 
 private:
-    PorousMedium mProperLaw;
+    const PorousMedium& mProperLaw;
 };
 }
