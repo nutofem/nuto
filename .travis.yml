@@ -38,8 +38,8 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
 script:
     - make -j2 unit
-    - make -j2 && make -j2 integrationtests # need to make python modules before integrationtests
-    - if [[ "$EXAMPLES" == "TRUE" ]]; then make -j2 examples; fi
+    - make -j2 && make -j2 integrationtests && ctest -R integration --output-on-failure # need to make python modules before integrationtests
+    - if [[ "$EXAMPLES" == "TRUE" ]]; then make -j2 examples && ctest -R examples --output-on-failure; fi
     - sudo make install
     - cd ..
     - ./scripts/check_install.sh

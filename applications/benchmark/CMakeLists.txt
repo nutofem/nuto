@@ -4,6 +4,7 @@ foreach(test
     BuildGradient
     LinearElasticity
     LinearElasticityExplicit
+    LinearElasticityOPENMP
     LinearElasticityVisualize
     AssembleSparseMatrix
     ShapeFunctionMemoization
@@ -12,19 +13,12 @@ foreach(test
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Visualize)
-    add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_benchmarks(${test})
 endforeach()
 
 if(PARDISO_FOUND)
     target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
-
-
-add_executable(LinearElasticityOPENMP
-    EXCLUDE_FROM_ALL LinearElasticityOPENMP.cpp)
-target_link_libraries(LinearElasticityOPENMP Mechanics Math Base Visualize)
-append_to_benchmarks(LinearElasticityOPENMP)
 
 add_executable(DenseSpherePacking EXCLUDE_FROM_ALL DenseSpherePacking.cpp)
 target_link_libraries(DenseSpherePacking Math Base GeometryConcrete)
