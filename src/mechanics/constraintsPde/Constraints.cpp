@@ -69,23 +69,38 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
     return rhs;
 }
 
-Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int nDofs) const
+Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int numIndependentDofs) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseMatrix<double>(0, nDofs); // no equations for this dof type
+        return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
 
-    Eigen::SparseMatrix<double> matrix(numEquations, nDofs);
+    Eigen::SparseMatrix<double> matrix(numEquations, numIndependentDofs);
 
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
         const auto& equation = equations[iEquation];
-        for (const auto& term : equation.GetTerms())
+        for (Term term : equation.GetTerms())
         {
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetConstrainedDofNumber();
+            if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
+                throw Exception(__PRETTY_FUNCTION__,
+                                "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
+
+            if (globalDofNumber >= numIndependentDofs)
+            {
+                // This corresponds to the last block of size numDependentDofs x numDependentDofs that should be an
+                // identity matrix
+                int transformedDof = globalDofNumber - numIndependentDofs;
+                if (transformedDof != iEquation)
+                    throw Exception(__PRETTY_FUNCTION__, "The numbering of the dependent dofs "
+                                                         "is not in accordance to the equation numbering.");
+                continue; // Do not put the value into the matrix.
+            }
+
             if (std::abs(coefficient) > 1.e-18)
                 matrix.coeffRef(iEquation, globalDofNumber) = coefficient;
         }

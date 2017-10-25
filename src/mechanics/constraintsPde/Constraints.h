@@ -31,16 +31,17 @@ public:
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type
     //! @param dof dof type
-    //! @param nDofs total number of dofs for the dof type dof, required for a proper resize
+    //! @param nIndependentDofs number of independent dofs for the dof type dof, required for a proper resize
     //!        of the sparse matrix
-    //! @return sparse matrix containing the constraint terms
-    Eigen::SparseMatrix<double> BuildConstraintMatrix(DofType dof, int nDofs) const;
+    //! @return sparse matrix containing the constraint terms where the last block with size (numDependent x
+    //! numDependent is removed)
+    Eigen::SparseMatrix<double> BuildConstraintMatrix(DofType dof, int numIndependentDofs) const;
 
     //! @brief calculates the number of constraint equations for a specific dof type
     //! @param dof dof type
     //! @return number of constraint equations
     int GetNumEquations(DofType dof) const;
-    
+
     //!@brief gets the specified equation
     //! @param dof ... doftype of the equation
     //! @param equationNumber ... number of the equation

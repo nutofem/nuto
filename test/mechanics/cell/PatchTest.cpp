@@ -204,10 +204,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
     const int numDepDofs = dofInfo.numDependentDofs[displ];
-    Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs).block(0,0, numDepDofs, numDofs-numDepDofs);
+    Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
     
-    Eigen::MatrixXd CMatIdentity = constraints.BuildConstraintMatrix(displ, numDofs).block(0, numDofs-numDepDofs, numDepDofs, numDepDofs);
-    BoostUnitTest::CheckEigenMatrix(CMatIdentity, Eigen::MatrixXd::Identity(numDepDofs, numDepDofs));
 
     BOOST_TEST_MESSAGE("CMat \n" << CMat);
 

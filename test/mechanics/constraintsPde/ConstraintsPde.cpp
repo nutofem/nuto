@@ -9,34 +9,51 @@ using namespace ConstraintPde;
 const DofType dof("Erdös", 4);
 auto rhs = [](double) { return 42; };
 
+BOOST_AUTO_TEST_CASE(ConstraintUnnumbered)
+{
+    NodeSimple node(Eigen::Vector2d::Zero());
+    Constraints c;
+    c.Add(dof, Equation(node, 0, rhs));
+    // the dofs are not numbered.
+    BOOST_CHECK_THROW(c.BuildConstraintMatrix(dof, 1), Exception);
+}
+
 BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
 {
-    constexpr int numDofsTotal = 5;
+    NodeSimple node0(0);
+    NodeSimple node1(0);
+    NodeSimple node2(0);
+    NodeSimple node3(0);
 
-    NodeSimple node(Eigen::Vector2d::Zero());
-    node.SetDofNumber(0, 3);
-    node.SetDofNumber(1, 1);
+    /*
+     *  n0 ---- n1 ---- n2 ---- n3
+     *  //                      //
+     * (fix, eq0)          (also fix, eq1)
+     */
 
     Constraints c;
+    c.Add(dof, Equation(node0, 0, rhs));
+    c.Add(dof, Equation(node3, 0, rhs));
+   
+    // unconstrained
+    node1.SetDofNumber(0, 0);
+    node2.SetDofNumber(0, 1);
 
-    // 0th component of node --> dof = 3
-    c.Add(dof, Equation(node, 0, [](double) { return 0; })); // Dof0 (3) * 1 = 0;
-    BOOST_CHECK(c.HaveChanged());
-    BOOST_CHECK_EQUAL(c.GetNumEquations(dof), 1);
+    // constrained, order 2,3 matters.
+    node0.SetDofNumber(0, 2);
+    node3.SetDofNumber(0, 3);
 
-    auto m = Eigen::MatrixXd(c.BuildConstraintMatrix(dof, numDofsTotal));
-    Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(1, numDofsTotal);
-    expected(0, 3) = 1;
-    BoostUnitTest::CheckEigenMatrix(m, expected);
+    BOOST_CHECK_NO_THROW(c.BuildConstraintMatrix(dof, 2));
 
-    // 1st component of node --> dof = 1
-    c.Add(dof, Equation(node, 1, [](double) { return 42; })); // Dof1 (1) * 1 = 42;
-    BOOST_CHECK_EQUAL(c.GetNumEquations(dof), 2);
-    expected.setZero(2, numDofsTotal);
-    expected(0, 3) = 1;
-    expected(1, 1) = 1;
-    m = Eigen::MatrixXd(c.BuildConstraintMatrix(dof, numDofsTotal));
-    BoostUnitTest::CheckEigenMatrix(m, expected);
+    // provide invalid numbering of dependent dofs
+    node0.SetDofNumber(0, 3);
+    node3.SetDofNumber(0, 2);
+
+    // this will not build an identity matrix at the end of CMat but
+    // 0  1
+    // 1  0
+    // which is wrong.
+    BOOST_CHECK_THROW(c.BuildConstraintMatrix(dof, 2), Exception);
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintRhs)
