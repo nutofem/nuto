@@ -3,7 +3,7 @@
 
 void Check2DMesh(NuTo::MeshFem& mesh)
 {
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), 3 * 8);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8);
 
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0., 0.)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1., 1.)));
@@ -31,14 +31,14 @@ void Check2DMesh(NuTo::MeshFem& mesh)
 BOOST_AUTO_TEST_CASE(MeshQuad)
 {
     auto mesh = NuTo::UnitMeshFem::CreateQuads(2, 7);
-    BOOST_CHECK_EQUAL(mesh.Elements.size(), 2 * 7);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7);
     Check2DMesh(mesh);
 }
 
 BOOST_AUTO_TEST_CASE(MeshTriangle)
 {
     auto mesh = NuTo::UnitMeshFem::CreateTriangles(2, 7);
-    BOOST_CHECK_EQUAL(mesh.Elements.size(), 2 * 7 * 2);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 2);
     Check2DMesh(mesh);
 }
 
@@ -57,8 +57,6 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     auto& transformedCoordinateElement = transformedMesh.Elements[0].CoordinateElement();
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
-
-    mesh.Nodes[0].SetValue(0, -121751);
 
     transformedMesh.Nodes[0].SetValue(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;

@@ -8,6 +8,9 @@
 
 namespace NuTo
 {
+//! @brief contains the nodes, elements and interpolations for a classic finite element mesh
+//! @remark Elements contain references to nodes. Thus, a copy of MeshFem is not trivially possible and only move is
+//! allowed
 class MeshFem
 {
 public:
@@ -19,8 +22,10 @@ public:
     MeshFem(MeshFem&&) = default;
     MeshFem& operator=(MeshFem&&) = default;
 
+    //! @brief adds a clone of `interpolation` to the mesh (prototype pattern)
+    //! @param interpolation interpolation that is cloned and added
+    //! @return reference to the cloned object
     InterpolationSimple& CreateInterpolation(const InterpolationSimple& interpolation);
-
 
     //! @brief selects a coordinate at given `coords`
     //! @param coords global coordinates

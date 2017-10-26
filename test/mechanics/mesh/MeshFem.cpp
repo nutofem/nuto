@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     NuTo::DofType d("Dof", 1);
     NuTo::MeshFem mesh = DummyMesh(d);
 
-    auto& e0 = mesh.Elements.front();
+    auto& e0 = mesh.Elements[0];
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
     mesh.Nodes[0].SetValue(0, 4);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
 
     NuTo::MeshFem meshMoved = std::move(mesh);
     meshMoved.Nodes[0].SetValue(0, 42);
-    auto& e0FromMove = meshMoved.Elements.front();
+    auto& e0FromMove = meshMoved.Elements[0];
     BoostUnitTest::CheckVector(e0FromMove.CoordinateElement().ExtractNodeValues(),
                                std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     mesh.Elements.Add({{{n1, n3, n2}, interpolationCoords}});
 
     int expectedNumCoordinateNodes = 4;
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 
 
@@ -154,5 +154,5 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
 }

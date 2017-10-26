@@ -9,19 +9,16 @@ BOOST_AUTO_TEST_CASE(ValueVectorValidReferences)
     for (int i = 0; i < 1e6; ++i)
         v.Add(i);
 
-    int& lastElement = v.Add(4);
-    v.erase_if([](int a) { return a >= 100; });
-    BOOST_CHECK_EQUAL(v.size(), 102); // 100 remaining elements + first(42) + last(4)
-
     BOOST_CHECK_EQUAL(firstElement, 42);
-    BOOST_CHECK_EQUAL(lastElement, 4);
 }
 
 BOOST_AUTO_TEST_CASE(ValueVectorForwarding)
 {
     struct Bar
     {
-        Bar(int) {}
+        Bar(int)
+        {
+        }
     };
 
     struct Foo
@@ -36,7 +33,7 @@ BOOST_AUTO_TEST_CASE(ValueVectorForwarding)
     NuTo::ValueVector<Foo> v;
     v.Add(4, Bar(42));
 
-    BOOST_CHECK_EQUAL(v.front().m, 4); 
+    BOOST_CHECK_EQUAL(v[0].m, 4);
 }
 
 BOOST_AUTO_TEST_CASE(ValueVectorRangeLoop)
