@@ -54,11 +54,10 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
 
 MeshFem UnitMeshFem::Transform(MeshFem&& oldMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
 {
-    MeshFem newMesh = std::move(oldMesh);
-    // Build a group to avoid duplicates. Otherwise, the transformation is applied multiple times.
-    // This is, however, a bit of a bottleneck for big meshes.
-    for (auto& node : newMesh.NodesTotal())
+    // Build a group (MeshFem::NodesTotal() selects all coordinate nodes) to avoid duplicates. Otherwise, the
+    // transformation is applied multiple times. This is, however, a bit of a bottleneck for big meshes.
+    for (auto& node : oldMesh.NodesTotal())
         node.SetValues(f(node.GetValues()));
 
-    return newMesh;
+    return std::move(oldMesh);
 }

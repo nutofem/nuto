@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE(ValueVectorForwarding)
 
     NuTo::ValueVector<Foo> v;
     v.Add(4, Bar(42));
+    v.Add(4, 42);
 
     BOOST_CHECK_EQUAL(v[0].m, 4);
 }
