@@ -238,7 +238,7 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
                 NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
                 mySolver.Solution(((extLoad.J - intForce.J) * mTimeStep).Export(), resultForSolver);
                 d_dof_dt1_tmp[countStage].J = BlockFullVector<double>(
-                        -resultForSolver, this->mStructure->GetDofStatus()); // ?? true as parameter
+                        resultForSolver, this->mStructure->GetDofStatus()); // ?? true as parameter
 #endif
                 // d_dof_dt1_tmp[countStage].J = -1*mStructure->SolveBlockSystem(hessian2.JJ, (extLoad.J -
                 // intForce.J)*mTimeStep);
