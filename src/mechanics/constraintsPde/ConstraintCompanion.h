@@ -63,30 +63,29 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
                                 RhsFunction rhs);
 
-////! @param node ... node reference
-////! @param direction ... directions (X, Y, Z)
-////! @param rhs ... time dependent constraint function (double time) --> double
-////! @return ... constraint equation
-// Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs);
+//! @param node ... node reference
+//! @param direction ... directions (X, Y, Z)
+//! @param rhs ... time dependent constraint function (double time) --> double
+//! @return ... constraint equation
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs);
 
-////! @param node ... node reference
-////! @param direction ... directions (X, Y, Z)
-////! @param value ... constant value
-////! @return ... constraint equation
-// Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value = 0.0);
+//! @param node ... node reference
+//! @param direction ... directions (X, Y, Z)
+//! @param value ... constant value
+//! @return ... constraint equation
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value = 0.0);
 
-////! @param nodes ... group of nodes
-////! @param direction ... directions (X, Y, Z)
-////! @param rhs ... time dependent constraint function (double time) --> double
-////! @return ... vector of constraint equations
-// std::vector<Equation> Direction(constGroups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
+//! @param nodes ... group of nodes
+//! @param direction ... directions (X, Y, Z)
+//! @param rhs ... time dependent constraint function (double time) --> double
+//! @return ... vector of constraint equations
+std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
 
-////! @param nodes ... group of nodes
-////! @param direction ... directions (X, Y, Z)
-////! @param value ... constant value
-////! @return vector of constraint equations
-// std::vector<Equation> Direction(constGroups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value =
-// 0.0);
+//! @param nodes ... group of nodes
+//! @param direction ... directions (X, Y, Z)
+//! @param value ... constant value
+//! @return vector of constraint equations
+std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value = 0.0);
 
 ////! @param node ... node reference
 ////! @param value ... constant value
