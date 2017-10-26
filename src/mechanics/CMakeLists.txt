@@ -42,6 +42,7 @@ set(MechanicsConstraintSources
     constraints/Constraints.cpp
     constraintsPde/Constraints.cpp
     constraints/ConstraintCompanion.cpp
+    constraintsPde/ConstraintCompanion.cpp
     )
 
 set(MechanicsDofSubMatrixStorageSources
