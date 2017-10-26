@@ -11,6 +11,14 @@ namespace NuTo
 class MeshFem
 {
 public:
+    MeshFem() = default;
+
+    MeshFem(const MeshFem&) = delete;
+    MeshFem& operator=(const MeshFem&) = delete;
+
+    MeshFem(MeshFem&&) = default;
+    MeshFem& operator=(MeshFem&&) = default;
+
     InterpolationSimple& CreateInterpolation(const InterpolationSimple& interpolation);
 
 
@@ -41,9 +49,8 @@ public:
     //! @param axisOffset distance of the node to the axis
     //! @param tol selection tolerance
     //! @return group with selected nodes, the group may be empty if no nodes were found
-    Groups::Group<NodeSimple> NodesAtAxis(eDirection direction, double axisOffset = 0.,
-                                          double tol = 1.e-10); 
-    
+    Groups::Group<NodeSimple> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
+
     //! @brief selects all nodes of `dofType`
     //! @return group containing all selected nodes
     Groups::Group<NodeSimple> NodesTotal(DofType dofType);

@@ -13,21 +13,21 @@ class ElementFem : public ElementInterface
 {
 public:
     ElementFem(std::vector<NodeSimple*> nodes, const InterpolationSimple& interpolation)
-        : mNodes(nodes)
-        , mInterpolation(interpolation)
+        : mInterpolation(interpolation)
     {
+        for (NodeSimple* node : nodes)
+            mNodes.push_back(*node);
         assert(mNodes.size() == interpolation.GetNumNodes());
-        assert(mNodes.front()->GetNumValues() == interpolation.GetDofDimension());
+        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
     ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
                const InterpolationSimple& interpolation)
-        : mInterpolation(interpolation)
+        : mNodes(nodes)
+        , mInterpolation(interpolation)
     {
-        for (NuTo::NodeSimple& node : nodes)
-            mNodes.push_back(&node);
         assert(mNodes.size() == interpolation.GetNumNodes());
-        assert(mNodes.front()->GetNumValues() == interpolation.GetDofDimension());
+        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
     virtual NodeValues ExtractNodeValues() const override
@@ -35,7 +35,7 @@ public:
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
         for (size_t i = 0; i < GetNumNodes(); ++i)
-            nodeValues.segment(dim * i, dim) = mNodes[i]->GetValues();
+            nodeValues.segment(dim * i, dim) = GetNode(i).GetValues();
         return nodeValues;
     }
 
@@ -88,18 +88,18 @@ public:
     NodeSimple& GetNode(int i)
     {
         assert(i < mNodes.size());
-        return *mNodes[i];
+        return mNodes[i];
     }
 
 
     const NodeSimple& GetNode(int i) const
     {
         assert(i < mNodes.size());
-        return *mNodes[i];
+        return mNodes[i];
     }
 
 private:
-    std::vector<NuTo::NodeSimple*> mNodes;
+    std::vector<std::reference_wrapper<NodeSimple>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
 };
 } /* NuTo */

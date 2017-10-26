@@ -4,6 +4,11 @@
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
+void SetStuff(NuTo::MeshFem& m)
+{
+    m.Nodes[0].SetValue(0, 0);
+}
+
 NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 {
     NuTo::MeshFem mesh;
@@ -30,6 +35,15 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
 
     auto& e0 = mesh.Elements.front();
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
+
+    mesh.Nodes[0].SetValue(0, 4);
+    BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
+
+    NuTo::MeshFem meshMoved = std::move(mesh);
+    meshMoved.Nodes[0].SetValue(0, 42);
+    auto& e0FromMove = meshMoved.Elements.front();
+    BoostUnitTest::CheckVector(e0FromMove.CoordinateElement().ExtractNodeValues(),
+                               std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
 
 BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
