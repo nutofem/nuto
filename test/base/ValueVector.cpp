@@ -9,7 +9,17 @@ BOOST_AUTO_TEST_CASE(ValueVectorValidReferences)
     for (int i = 0; i < 1e6; ++i)
         v.Add(i);
 
+    int& lastElement = v.Add(4);
+
+    v.Erase(v.begin() + 100, v.end() - 2);
+
+    BOOST_CHECK_EQUAL(v.Size(), 102);
+
     BOOST_CHECK_EQUAL(firstElement, 42);
+    BOOST_CHECK_EQUAL(lastElement, 4);
+
+    v.Erase(std::find(v.begin(), v.end(), firstElement));
+    BOOST_CHECK_EQUAL(v.Size(), 101);
 }
 
 BOOST_AUTO_TEST_CASE(ValueVectorForwarding)

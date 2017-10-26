@@ -62,11 +62,21 @@ public:
 
     const T& operator[](int i) const
     {
-        return *(mData[i]);
+        return *mData[i];
     }
     T& operator[](int i)
     {
-        return *(mData[i]);
+        return *mData[i];
+    }
+
+    IndirectIterator Erase(IndirectIterator it)
+    {
+        return mData.erase(it.base());
+    }
+
+    IndirectIterator Erase(IndirectIterator from, IndirectIterator to)
+    {
+        return mData.erase(from.base(), to.base());
     }
 
 private:
