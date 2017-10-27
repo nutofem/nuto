@@ -125,7 +125,7 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     Eigen::Vector3d someDirection;
     someDirection << 1, 1, 1;
 
-    // with constant RHS
+    // single equation with constant RHS
     auto eq = ConstraintPde::Direction(node1, someDirection);
     auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(0.0));
     expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 
     BOOST_CHECK(eq == expectedEquation);
 
-    // with lambda RHS
+    // single equation with lambda RHS
     eq = ConstraintPde::Direction(node1, someDirection, sinFunction);
     expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueAdjustedFunc(sinFunction, 1. / reciprocalNorm));
     expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
@@ -141,58 +141,59 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 
     BOOST_CHECK(eq == expectedEquation);
 
-    //    // with Group
-    //    std::vector<Constraint::Equation> expectedEquations;
-    //    auto eqs = Constraint::Direction(nodes, someDirection);
-    //    for (auto& node : nodes)
-    //    {
-    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, reciprocalNorm),
-    //                                                          Constraint::Term(*node.second, 1, reciprocalNorm),
-    //                                                          Constraint::Term(*node.second, 2, reciprocalNorm)}));
-    //    }
-    //    BOOST_CHECK(eqs == expectedEquations);
+    // group with constant RHS
+    std::vector<ConstraintPde::Equation> expectedEquations;
+    auto eqs = ConstraintPde::Direction(nodes, someDirection);
+    for (auto& node : nodes)
+    {
+        expectedEquation = ConstraintPde::Equation(node, 0, rhsValueFunc(0.0));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, -1.));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 2, -1.));
+        expectedEquations.push_back(expectedEquation);
+    }
+    BOOST_CHECK(eqs == expectedEquations);
 
-    //    // with Group and lambda
-    //    expectedEquations.clear();
-    //    eqs = Constraint::Direction(nodes, someDirection, sinFunction);
-    //    for (auto& node : nodes)
-    //    {
-    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, reciprocalNorm),
-    //                                                          Constraint::Term(*node.second, 1, reciprocalNorm),
-    //                                                          Constraint::Term(*node.second, 2, reciprocalNorm)},
-    //                                                         sinFunction));
-    //    }
-    //    BOOST_CHECK(eqs == expectedEquations);
+    // group with lambda RHS
+    expectedEquations.clear();
+    eqs = ConstraintPde::Direction(nodes, someDirection, sinFunction);
+    for (auto& node : nodes)
+    {
+        expectedEquation = ConstraintPde::Equation(node, 0, rhsValueAdjustedFunc(sinFunction, 1. / reciprocalNorm));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, -1.));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 2, -1.));
+        expectedEquations.push_back(expectedEquation);
+    }
+    BOOST_CHECK(eqs == expectedEquations);
 }
 
 
-// BOOST_FIXTURE_TEST_CASE(Value, Helpers)
-//{
-//    // with constant RHS
-//    auto eq = Constraint::Value(node);
-//    auto expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)});
-//    BOOST_CHECK(eq == expectedEquation);
+BOOST_FIXTURE_TEST_CASE(Value, Helpers)
+{
+    //    // with constant RHS
+    //    auto eq = Constraint::Value(node);
+    //    auto expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)});
+    //    BOOST_CHECK(eq == expectedEquation);
 
-//    // with lamdba RHS
-//    eq = Constraint::Value(node, sinFunction);
-//    expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)}, sinFunction);
-//    BOOST_CHECK(eq == expectedEquation);
+    //    // with lamdba RHS
+    //    eq = Constraint::Value(node, sinFunction);
+    //    expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)}, sinFunction);
+    //    BOOST_CHECK(eq == expectedEquation);
 
-//    // with Group
-//    auto eqs = Constraint::Value(nodes);
-//    std::vector<Constraint::Equation> expectedEquations;
-//    for (auto& node : nodes)
-//    {
-//        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}));
-//    }
-//    BOOST_CHECK(eqs == expectedEquations);
+    //    // with Group
+    //    auto eqs = Constraint::Value(nodes);
+    //    std::vector<Constraint::Equation> expectedEquations;
+    //    for (auto& node : nodes)
+    //    {
+    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}));
+    //    }
+    //    BOOST_CHECK(eqs == expectedEquations);
 
-//    // with Group
-//    eqs = Constraint::Value(nodes, sinFunction);
-//    expectedEquations.clear();
-//    for (auto& node : nodes)
-//    {
-//        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}, sinFunction));
-//    }
-//    BOOST_CHECK(eqs == expectedEquations);
-//}
+    //    // with Group
+    //    eqs = Constraint::Value(nodes, sinFunction);
+    //    expectedEquations.clear();
+    //    for (auto& node : nodes)
+    //    {
+    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}, sinFunction));
+    //    }
+    //    BOOST_CHECK(eqs == expectedEquations);
+}
