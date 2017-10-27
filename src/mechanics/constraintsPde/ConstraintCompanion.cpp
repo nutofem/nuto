@@ -19,7 +19,7 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
     for (auto direction : directions)
     {
         int component = ToComponentIndex(direction);
-        eqs.push_back(Equation(node, component, rhs));
+        eqs.emplace_back(node, component, rhs);
     }
     return eqs;
 }
@@ -63,7 +63,6 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunctio
         }
     }
 
-
     // first nonzero direction component defines the dependent dof
     // Lambda corrects original rhs funtion
     Equation e(node, firstNonZeroComp, [=](double time) -> double { return rhs(time) / direction[firstNonZeroComp]; });
@@ -95,25 +94,32 @@ std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::V
     return Direction(nodes, direction, RhsConstant(value));
 }
 
-// Equation Value(const NodeSimple& node, double value)
-//{
-//    return Value(node, [=](double) { return value; });
-//}
+Equation Value(const NodeSimple& node, double value)
+{
+    return Value(node, [=](double) { return value; });
+}
 
-// Equation Value(const NodeSimple& node, RhsFunction rhs)
-//{
-//    return Direction(node, Eigen::VectorXd::Ones(1), rhs);
-//}
+Equation Value(const NodeSimple& node, RhsFunction rhs)
+{
+    assert(node.GetNumValues() == 1 && "This function is ment to be used with single value nodes only");
+    return Component(node, {eDirection::X}, rhs)[0];
+}
 
-// std::vector<Equation> Value(constGroups::Group<NodeSimple>& nodes, double value)
-//{
-//    return Direction(nodes, Eigen::VectorXd::Ones(1), RhsConstant(value));
-//}
+std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, double value)
+{
+    std::vector<Equation> eqs;
+    for (auto& node : nodes)
+        eqs.push_back(Value(node, value));
+    return eqs;
+}
 
-// std::vector<Equation> Value(constGroups::Group<NodeSimple>& nodes, RhsFunction rhs)
-//{
-//    return Direction(nodes, Eigen::VectorXd::Ones(1), rhs);
-//}
+std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, RhsFunction rhs)
+{
+    std::vector<Equation> eqs;
+    for (auto& node : nodes)
+        eqs.push_back(Value(node, rhs));
+    return eqs;
+}
 
 } /* ConstraintPde */
 } /* NuTo */

@@ -63,49 +63,58 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
                                 RhsFunction rhs);
 
+
+//! @brief creates a constraint equation for constraints that are not axes aligned
 //! @param node ... node reference
 //! @param direction ... directions (X, Y, Z)
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... constraint equation
 Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs);
 
+//! @brief creates a constraint equation for constraints that are not axes aligned
 //! @param node ... node reference
 //! @param direction ... directions (X, Y, Z)
 //! @param value ... constant value
 //! @return ... constraint equation
 Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value = 0.0);
 
+//! @brief creates multiple constraint equations for constraints that are not axes aligned
 //! @param nodes ... group of nodes
 //! @param direction ... directions (X, Y, Z)
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... vector of constraint equations
 std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
 
+//! @brief creates multiple constraint equations for constraints that are not axes aligned
 //! @param nodes ... group of nodes
 //! @param direction ... directions (X, Y, Z)
 //! @param value ... constant value
 //! @return vector of constraint equations
 std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value = 0.0);
 
-////! @param node ... node reference
-////! @param value ... constant value
-////! @return ... constraint equation
-// Equation Value(const NodeSimple& node, double value = 0.0);
+//! @brief Constraint single value node
+//! @param node ... node reference
+//! @param value ... constant value
+//! @return ... constraint equation
+Equation Value(const NodeSimple& node, double value = 0.0);
 
-////! @param node ... node reference
-////! @param rhs ... time dependent constraint function (double time) --> double
-////! @return ... constraint equation
-// Equation Value(const NodeSimple& node, RhsFunction rhs);
+//! @brief Constraint single value node
+//! @param node ... node reference
+//! @param rhs ... time dependent constraint function (double time) --> double
+//! @return ... constraint equation
+Equation Value(const NodeSimple& node, RhsFunction rhs);
 
-////! @param nodes ... group of nodes
-////! @param value ... constant value
-////! @return ... vector of constraint equations
-// std::vector<Equation> Value(constGroups::Group<NodeSimple>& nodes, double value = 0.0);
+//! @brief Constraint group of single value nodes
+//! @param nodes ... group of nodes
+//! @param value ... constant value
+//! @return ... vector of constraint equations
+std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, double value = 0.0);
 
-////! @param nodes ... group of nodes
-////! @param rhs ... time dependent constraint function (double time) --> double
-////! @return ... vector of constraint equations
-// std::vector<Equation> Value(constGroups::Group<NodeSimple>& nodes, RhsFunction rhs);
+//! @brief Constraint group of single value nodes
+//! @param nodes ... group of nodes
+//! @param rhs ... time dependent constraint function (double time) --> double
+//! @return ... vector of constraint equations
+std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, RhsFunction rhs);
 
 } /* Constraint */
 } /* NuTo */

@@ -53,22 +53,14 @@ BOOST_AUTO_TEST_CASE(PredefinedFunctions)
 }
 
 
-// Mock<NuTo::NodeSimple> nodeMock;
-
-
-NuTo::NodeSimple Node1((Eigen::VectorXd(3) << 0, 1, 2).finished());
-NuTo::NodeSimple Node2((Eigen::VectorXd(3) << 0, 1, 2).finished());
-
 // mock node, nodegroup, direction vector and lamdba function
 class Helpers
 {
 public:
     Helpers()
-        : node1(Node1)
-        , node2(Node2)
     {
-        nodes.Add(Node1);
-        nodes.Add(Node2);
+        nodes.Add(node1);
+        nodes.Add(node2);
     }
 
     std::function<double(double)> rhsValueFunc(double value)
@@ -82,8 +74,8 @@ public:
 
     std::function<double(double)> sinFunction = [](double time) { return std::sin(time); };
     Groups::Group<NodeSimple> nodes;
-    NodeSimple& node1;
-    NodeSimple& node2;
+    NodeSimple node1 = NodeSimple(Eigen::VectorXd::Ones(3));
+    NodeSimple node2 = NodeSimple(Eigen::VectorXd::Ones(3));
     double reciprocalNorm = 1.0 / std::sqrt(3.0);
 };
 
@@ -105,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
     eqs = ConstraintPde::Component(nodes, {eDirection::X}, 1.);
     for (auto& node : nodes)
     {
-        expectedEquations.push_back(ConstraintPde::Equation(node, 0, rhsValueFunc(1.)));
+        expectedEquations.emplace_back(node, 0, rhsValueFunc(1.));
     }
     BOOST_CHECK(eqs == expectedEquations);
 
@@ -114,7 +106,7 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
     eqs = ConstraintPde::Component(nodes, {eDirection::X}, sinFunction);
     for (auto& node : nodes)
     {
-        expectedEquations.push_back(ConstraintPde::Equation(node, 0, sinFunction));
+        expectedEquations.emplace_back(node, 0, sinFunction);
     }
     BOOST_CHECK(eqs == expectedEquations);
 }
@@ -167,33 +159,37 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 }
 
 
-BOOST_FIXTURE_TEST_CASE(Value, Helpers)
+BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
 {
-    //    // with constant RHS
-    //    auto eq = Constraint::Value(node);
-    //    auto expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)});
-    //    BOOST_CHECK(eq == expectedEquation);
+    node1 = NodeSimple(Eigen::VectorXd::Ones(1));
+    node2 = NodeSimple(Eigen::VectorXd::Ones(1));
 
-    //    // with lamdba RHS
-    //    eq = Constraint::Value(node, sinFunction);
-    //    expectedEquation = Constraint::Equation({Constraint::Term(node, 0, 1.0)}, sinFunction);
-    //    BOOST_CHECK(eq == expectedEquation);
 
-    //    // with Group
-    //    auto eqs = Constraint::Value(nodes);
-    //    std::vector<Constraint::Equation> expectedEquations;
-    //    for (auto& node : nodes)
-    //    {
-    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}));
-    //    }
-    //    BOOST_CHECK(eqs == expectedEquations);
+    // with constant RHS
+    auto eq = ConstraintPde::Value(node1, 42.);
+    auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(42.0));
+    BOOST_CHECK(eq == expectedEquation);
 
-    //    // with Group
-    //    eqs = Constraint::Value(nodes, sinFunction);
-    //    expectedEquations.clear();
-    //    for (auto& node : nodes)
-    //    {
-    //        expectedEquations.push_back(Constraint::Equation({Constraint::Term(*node.second, 0, 1.0)}, sinFunction));
-    //    }
-    //    BOOST_CHECK(eqs == expectedEquations);
+    // with lamdba RHS
+    eq = ConstraintPde::Value(node1, sinFunction);
+    expectedEquation = ConstraintPde::Equation(node1, 0, sinFunction);
+    BOOST_CHECK(eq == expectedEquation);
+
+    // with Group
+    auto eqs = ConstraintPde::Value(nodes, 42.0);
+    std::vector<ConstraintPde::Equation> expectedEquations;
+    for (auto& node : nodes)
+    {
+        expectedEquations.emplace_back(node, 0, rhsValueFunc(42.0));
+    }
+    BOOST_CHECK(eqs == expectedEquations);
+
+    // with Group
+    eqs = ConstraintPde::Value(nodes, sinFunction);
+    expectedEquations.clear();
+    for (auto& node : nodes)
+    {
+        expectedEquations.emplace_back(node, 0, sinFunction);
+    }
+    BOOST_CHECK(eqs == expectedEquations);
 }
