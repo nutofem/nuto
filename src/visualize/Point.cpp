@@ -8,6 +8,13 @@ Point::Point(Eigen::Vector3d coordinates)
 {
 }
 
+Point::Point(Eigen::VectorXd coordinates)
+    : mCoordinates(Eigen::Vector3d::Zero())
+{
+    const int dim = coordinates.rows();
+    mCoordinates.segment(0, dim) = coordinates;
+}
+
 void Point::SetData(int dataIndex, Eigen::VectorXd data)
 {
     if (dataIndex >= static_cast<int>(mData.size()))
