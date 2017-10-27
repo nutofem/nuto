@@ -58,6 +58,11 @@ public:
         return mElements.DofElement(dof).GetDofNumbering();
     }
 
+    const ElementCollection& GetElementCollection() const override
+    {
+        return mElements;
+    }
+
 private:
     //! @brief integrates various operations with various return types
     //! @param op operation to perform

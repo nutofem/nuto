@@ -6,6 +6,9 @@
 
 namespace NuTo
 {
+
+class ElementCollection;
+
 class CellInterface
 {
 public:
@@ -16,5 +19,7 @@ public:
     virtual double Integrate(const ScalarOperation&) = 0;
     virtual void Apply(const VoidOperation&) = 0;
     virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
+
+    virtual const ElementCollection& GetElementCollection() const = 0;
 };
 } /* NuTo */
