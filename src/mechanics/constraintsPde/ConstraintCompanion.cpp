@@ -94,7 +94,7 @@ std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::V
 
 Equation Value(const NodeSimple& node, double value)
 {
-    return Value(node, [=](double) { return value; });
+    return Value(node, RhsConstant(value));
 }
 
 Equation Value(const NodeSimple& node, RhsFunction rhs)
