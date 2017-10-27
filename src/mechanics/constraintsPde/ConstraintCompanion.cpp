@@ -47,6 +47,10 @@ std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vec
 
 Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
 {
+
+    assert(direction != Eigen::VectorXd::Zero(direction.rows()) && "the direction vector contains only zeros");
+
+    // Normalization necessary, otherwise rhs depends on length of the direction vector
     direction.normalize();
 
     int firstNonZeroComp = -1;
@@ -58,19 +62,16 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunctio
             break;
         }
     }
-    assert(firstNonZeroComp > -1 && "the direction vector contains only zeros");
 
-
-    double factor = 1. / direction[firstNonZeroComp];
 
     // first nonzero direction component defines the dependent dof
     // Lambda corrects original rhs funtion
-    Equation e(node, firstNonZeroComp, [&](double time) -> double { return rhs(time) * factor; });
+    Equation e(node, firstNonZeroComp, [=](double time) -> double { return rhs(time) / direction[firstNonZeroComp]; });
 
     // add terms for all non zero direction components
     for (int iComponent = firstNonZeroComp + 1; iComponent < direction.rows(); ++iComponent)
         if (std::abs(direction[iComponent]) > 0)
-            e.AddTerm(Term(node, iComponent, direction[iComponent] * factor));
+            e.AddTerm(Term(node, iComponent, -direction[iComponent] / direction[firstNonZeroComp]));
 
 
     return e;
@@ -81,18 +82,18 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double val
     return Direction(node, direction, RhsConstant(value));
 }
 
-// std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
-//{
-//    std::vector<Equation> eqs;
-//    for (auto& nodePair : nodes)
-//        eqs.push_back(Direction(*nodePair.second, direction, rhs));
-//    return eqs;
-//}
+std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
+{
+    std::vector<Equation> eqs;
+    for (auto& node : nodes)
+        eqs.push_back(Direction(node, direction, rhs));
+    return eqs;
+}
 
-// std::vector<Equation> Direction(constGroups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
-//{
-//    return Direction(nodes, direction, RhsConstant(value));
-//}
+std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
+{
+    return Direction(nodes, direction, RhsConstant(value));
+}
 
 // Equation Value(const NodeSimple& node, double value)
 //{

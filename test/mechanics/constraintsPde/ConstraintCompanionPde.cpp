@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(PredefinedFunctions)
 // Mock<NuTo::NodeSimple> nodeMock;
 
 
-NuTo::NodeSimple Node1(3);
-NuTo::NodeSimple Node2(3);
+NuTo::NodeSimple Node1((Eigen::VectorXd(3) << 0, 1, 2).finished());
+NuTo::NodeSimple Node2((Eigen::VectorXd(3) << 0, 1, 2).finished());
 
 // mock node, nodegroup, direction vector and lamdba function
 class Helpers
@@ -75,9 +75,12 @@ public:
     {
         return [value](double) { return value; };
     }
+    std::function<double(double)> rhsValueAdjustedFunc(std::function<double(double)> f, double value)
+    {
+        return [f, value](double time) { return f(time) * value; };
+    }
 
     std::function<double(double)> sinFunction = [](double time) { return std::sin(time); };
-    // std::function<double(double)> rhsOne = [](double) { return 1.; };
     Groups::Group<NodeSimple> nodes;
     NodeSimple& node1;
     NodeSimple& node2;
@@ -124,20 +127,19 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 
     // with constant RHS
     auto eq = ConstraintPde::Direction(node1, someDirection);
-    auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(reciprocalNorm));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, reciprocalNorm));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, reciprocalNorm));
+    auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(0.0));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, -1.));
 
     BOOST_CHECK(eq == expectedEquation);
 
-    //    // with lambda RHS
-    //    eq = Constraint::Direction(node, someDirection, sinFunction);
-    //    expectedEquation =
-    //            Constraint::Equation({Constraint::Term(node, 0, reciprocalNorm), Constraint::Term(node, 1,
-    //            reciprocalNorm),
-    //                                  Constraint::Term(node, 2, reciprocalNorm)},
-    //                                 sinFunction);
-    //    BOOST_CHECK(eq == expectedEquation);
+    // with lambda RHS
+    eq = ConstraintPde::Direction(node1, someDirection, sinFunction);
+    expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueAdjustedFunc(sinFunction, 1. / reciprocalNorm));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, -1.));
+
+    BOOST_CHECK(eq == expectedEquation);
 
     //    // with Group
     //    std::vector<Constraint::Equation> expectedEquations;
