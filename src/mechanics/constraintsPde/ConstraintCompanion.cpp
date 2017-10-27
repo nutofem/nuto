@@ -1,5 +1,6 @@
 #include "mechanics/constraintsPde/ConstraintCompanion.h"
-
+#include "mechanics/nodes/NodeSimple.h"
+#include "mechanics/constraintsPde/Equation.h"
 
 namespace NuTo
 {
@@ -44,26 +45,41 @@ std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vec
 }
 
 
-// Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
-//{
-//    if (node.GetNumDofs() < direction.rows())
-//        // TODO This check is not meaningful at the moment, since this method returns the
-//        // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
-//        // if you try to constrain the Z component of the temperature. Which would be wrong.
-//        throw Exception(__PRETTY_FUNCTION__, "Dimension mismatch");
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
+{
+    direction.normalize();
 
-//    direction.normalize();
-//    Equation e(rhs);
-//    for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
-//        e.AddTerm(Term(node, iComponent, direction[iComponent]));
+    int firstNonZeroComp = -1;
+    for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
+    {
+        if (std::abs(direction[iComponent]) > 0)
+        {
+            firstNonZeroComp = iComponent;
+            break;
+        }
+    }
+    assert(firstNonZeroComp > -1 && "the direction vector contains only zeros");
 
-//    return e;
-//}
 
-// Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value)
-//{
-//    return Direction(node, direction, RhsConstant(value));
-//}
+    double factor = 1. / direction[firstNonZeroComp];
+
+    // first nonzero direction component defines the dependent dof
+    // Lambda corrects original rhs funtion
+    Equation e(node, firstNonZeroComp, [&](double time) -> double { return rhs(time) * factor; });
+
+    // add terms for all non zero direction components
+    for (int iComponent = firstNonZeroComp + 1; iComponent < direction.rows(); ++iComponent)
+        if (std::abs(direction[iComponent]) > 0)
+            e.AddTerm(Term(node, iComponent, direction[iComponent] * factor));
+
+
+    return e;
+}
+
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value)
+{
+    return Direction(node, direction, RhsConstant(value));
+}
 
 // std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 //{

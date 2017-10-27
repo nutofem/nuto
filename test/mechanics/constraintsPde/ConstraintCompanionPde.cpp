@@ -69,7 +69,6 @@ public:
     {
         nodes.Add(Node1);
         nodes.Add(Node2);
-        someDirection << 1, 1, 1;
     }
 
     std::function<double(double)> rhsValueFunc(double value)
@@ -82,8 +81,7 @@ public:
     Groups::Group<NodeSimple> nodes;
     NodeSimple& node1;
     NodeSimple& node2;
-    Eigen::Vector3d someDirection;
-    //    double reciprocalNorm = 1.0 / std::sqrt(3.0);
+    double reciprocalNorm = 1.0 / std::sqrt(3.0);
 };
 
 
@@ -121,13 +119,16 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
 
 BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 {
-    //    // with constant RHS
-    //    auto eq = Constraint::Direction(node, someDirection);
-    //    auto expectedEquation =
-    //            Constraint::Equation({Constraint::Term(node, 0, reciprocalNorm), Constraint::Term(node, 1,
-    //            reciprocalNorm),
-    //                                  Constraint::Term(node, 2, reciprocalNorm)});
-    //    BOOST_CHECK(eq == expectedEquation);
+    Eigen::Vector3d someDirection;
+    someDirection << 1, 1, 1;
+
+    // with constant RHS
+    auto eq = ConstraintPde::Direction(node1, someDirection);
+    auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(reciprocalNorm));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, reciprocalNorm));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, reciprocalNorm));
+
+    BOOST_CHECK(eq == expectedEquation);
 
     //    // with lambda RHS
     //    eq = Constraint::Direction(node, someDirection, sinFunction);
