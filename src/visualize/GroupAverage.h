@@ -33,17 +33,16 @@ public:
         for (auto& cell : mCells)
         {
             const auto& coordinateElement = cell.GetElementCollection().CoordinateElement();
-            NodeValues coordinates = coordinateElement.ExtractNodeValues();
 
+            // register all corner points of the cell
             std::vector<int> cornerIndices;
             for (auto naturalCornerCoordinate : mCellGeometry.mCornerCoords)
             {
-                auto N = coordinateElement.GetNMatrix(naturalCornerCoordinate);
-                int newPointId = mGrid.AddPoint(N * coordinates);
+                int newPointId = mGrid.AddPoint(Interpolate(coordinateElement, naturalCornerCoordinate));
                 cornerIndices.push_back(newPointId);
             }
 
-            // the cell
+            // register the cell
             mGrid.AddCell(cornerIndices, mCellGeometry.mCellType);
         }
     }
@@ -51,11 +50,24 @@ public:
     void Visualize(std::string file, Group<DofType> dofs, bool asBinary)
     {
         // register dof type names at the grid
-        for (auto& dof : dofs)
-            mGrid.DefineCellData(dof.GetName());
+        for (auto dof : dofs)
+            mGrid.DefinePointData(dof.GetName());
 
+        int currentPointId = 0;
         for (auto& cell : mCells)
         {
+            for (auto dof : dofs)
+            {
+                const auto& element = cell.GetElementCollection().DofElement(dof);
+                int cornerId = 0;
+                for (auto naturalCornerCoordinate : mCellGeometry.mCornerCoords)
+                {
+                    mGrid.SetPointData(currentPointId + cornerId, dof.GetName(),
+                                       Interpolate(element, naturalCornerCoordinate));
+                    cornerId++;
+                }
+            }
+            currentPointId += mCellGeometry.mCornerCoords.size();
         }
         mGrid.ExportVtuDataFile(file, asBinary);
     }
