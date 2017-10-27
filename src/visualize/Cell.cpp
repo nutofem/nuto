@@ -3,11 +3,10 @@
 
 using namespace NuTo::Visualize;
 
-Cell::Cell(std::vector<int> pointIds, eCellTypes cellType, int numData)
+Cell::Cell(std::vector<int> pointIds, eCellTypes cellType)
     : mPointIds(pointIds)
     , mCellType(cellType)
 {
-    mData.resize(numData);
 }
 
 int Cell::GetNumPoints() const
@@ -32,14 +31,14 @@ NuTo::eCellTypes Cell::GetCellType() const
 
 const Eigen::VectorXd& Cell::GetData(int dataIndex) const
 {
-    if (dataIndex >= static_cast<int>(this->mData.size()))
+    if (dataIndex >= static_cast<int>(mData.size()))
         throw Exception(__PRETTY_FUNCTION__, "invalid data index.");
     return mData[dataIndex];
 }
 
 void Cell::SetData(int dataIndex, Eigen::VectorXd data)
 {
-    if (dataIndex >= static_cast<int>(this->mData.size()))
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid data index.");
+    if (dataIndex >= static_cast<int>(mData.size()))
+        mData.resize(dataIndex + 1);
     mData[dataIndex] = data;
 }

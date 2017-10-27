@@ -13,8 +13,7 @@ class Point
 public:
     //! @brief ... constructor
     //! @param coordinates ... point coordinates
-    //! @param numData ... number of different point data fields
-    Point(Eigen::Vector3d coordinates, int numData);
+    Point(Eigen::Vector3d coordinates);
 
     //! @brief ... set data
     //! @param dataIndex ... data index

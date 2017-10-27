@@ -13,14 +13,14 @@ void UnstructuredGrid::ExportVtuDataFile(const std::string& filename, bool asBin
 
 int UnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
 {
-    mPoints.push_back(Point(coordinates, mPointDataNames.size()));
+    mPoints.push_back(Point(coordinates));
     return mPoints.size() - 1;
 }
 
 int UnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 {
     CheckPoints(pointIds);
-    mCells.push_back(Cell(pointIds, cellType, mCellDataNames.size()));
+    mCells.push_back(Cell(pointIds, cellType));
     return mCells.size() - 1;
 }
 
