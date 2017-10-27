@@ -3,23 +3,6 @@
 #include "visualize/UnstructuredGrid.h"
 #include "base/Exception.h"
 
-BOOST_AUTO_TEST_CASE(DefinitionOrder)
-{
-    NuTo::Visualize::UnstructuredGrid visu;
-    visu.DefinePointData("Stuff");
-    visu.DefineCellData("Stuff");
-    int pointId = visu.AddPoint(Eigen::Vector3d::Zero());
-    int cellId = visu.AddCell({pointId}, NuTo::eCellTypes::VERTEX);
-
-    // add data to undefined data field
-    BOOST_CHECK_THROW(visu.SetPointData(pointId, "OtherStuff", 42.), NuTo::Exception);
-    BOOST_CHECK_THROW(visu.SetCellData(cellId, "OtherStuff", 42.), NuTo::Exception);
-
-    // definine data after adding points/cells
-    BOOST_CHECK_THROW(visu.DefinePointData("OtherStuff"), NuTo::Exception);
-    BOOST_CHECK_THROW(visu.DefineCellData("OtherStuff"), NuTo::Exception);
-}
-
 BOOST_AUTO_TEST_CASE(Export)
 {
     NuTo::Visualize::UnstructuredGrid visu;

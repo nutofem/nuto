@@ -50,9 +50,13 @@ public:
 
     void Visualize(std::string file, Group<DofType> dofs, bool asBinary)
     {
-        // for (cell : mCells)
-        //{
-        //}
+        // register dof type names at the grid
+        for (auto& dof : dofs)
+            mGrid.DefineCellData(dof.GetName());
+
+        for (auto& cell : mCells)
+        {
+        }
         mGrid.ExportVtuDataFile(file, asBinary);
     }
 
