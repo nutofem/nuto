@@ -1,6 +1,8 @@
+#include "base/Exception.h"
 #include "mechanics/constraintsPde/ConstraintCompanion.h"
 #include "mechanics/nodes/NodeSimple.h"
 #include "mechanics/constraintsPde/Equation.h"
+
 
 namespace NuTo
 {
@@ -48,29 +50,25 @@ std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vec
 Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
 {
 
-    assert(direction != Eigen::VectorXd::Zero(direction.rows()) && "the direction vector contains only zeros");
+    int maxComponentIndex = -1;
+    if (direction.cwiseAbs().maxCoeff(&maxComponentIndex) < 1.e-6)
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Your direction vector is composed of zeros only! The direction is unspecified!");
+
+    assert(maxComponentIndex > -1 && maxComponentIndex < direction.rows());
 
     // Normalization necessary, otherwise rhs depends on length of the direction vector
     direction.normalize();
 
-    int firstNonZeroComp = -1;
-    for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
-    {
-        if (std::abs(direction[iComponent]) > 0)
-        {
-            firstNonZeroComp = iComponent;
-            break;
-        }
-    }
-
     // first nonzero direction component defines the dependent dof
     // Lambda corrects original rhs funtion
-    Equation e(node, firstNonZeroComp, [=](double time) -> double { return rhs(time) / direction[firstNonZeroComp]; });
+    Equation e(node, maxComponentIndex,
+               [=](double time) -> double { return rhs(time) / direction[maxComponentIndex]; });
 
     // add terms for all non zero direction components
-    for (int iComponent = firstNonZeroComp + 1; iComponent < direction.rows(); ++iComponent)
-        if (std::abs(direction[iComponent]) > 0)
-            e.AddTerm(Term(node, iComponent, -direction[iComponent] / direction[firstNonZeroComp]));
+    for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
+        if (std::abs(direction[iComponent]) > 0 && iComponent != maxComponentIndex)
+            e.AddTerm(Term(node, iComponent, -direction[iComponent] / direction[maxComponentIndex]));
 
 
     return e;
