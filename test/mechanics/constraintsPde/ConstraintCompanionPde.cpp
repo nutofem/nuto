@@ -161,6 +161,8 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 
 BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
 {
+
+    BOOST_CHECK_THROW(ConstraintPde::Value(node1, 42.), Exception);
     node1 = NodeSimple(Eigen::VectorXd::Ones(1));
     node2 = NodeSimple(Eigen::VectorXd::Ones(1));
 
