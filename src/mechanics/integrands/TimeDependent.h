@@ -46,6 +46,7 @@ struct Hessian0 : MatrixOperation
     {
         return base.As<Interface>().Hessian0(cellData, cellIpData, mT, mDeltaT);
     }
+
 private:
     double mT;
     double mDeltaT;

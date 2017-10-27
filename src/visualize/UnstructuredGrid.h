@@ -26,7 +26,7 @@ public:
     //! @brief ... add Point to unstructured grid
     //! @param rCoordinates ... point coordinates
     //! @return ... point id
-    int AddPoint(Eigen::Vector3d coordinates);
+    int AddPoint(Eigen::VectorXd coordinates);
 
     //! @brief ... add cell
     //! @param rPoints ... point id's (zero based indexing)

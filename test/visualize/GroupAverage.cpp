@@ -46,6 +46,14 @@ BOOST_AUTO_TEST_CASE(Visualize)
     Method(cell0, GetElementCollection) = elements0;
     Method(cell1, GetElementCollection) = elements1;
 
+    // say, we have 2 integration points per cell, each has "Stress" and "Strain".
+    NuTo::IpValues ip00 = {{Eigen::Vector3d(1, 1, 1), "Stress"}, {Eigen::Vector3d(10, 10, 10), "Strain"}};
+    NuTo::IpValues ip01 = {{Eigen::Vector3d(2, 2, 2), "Stress"}, {Eigen::Vector3d(20, 20, 20), "Strain"}};
+    Method(cell0, GetIpValues) = {ip00, ip01};
+
+    NuTo::IpValues ip10 = {{Eigen::Vector3d(3, 3, 3), "Stress"}, {Eigen::Vector3d(30, 30, 30), "Strain"}};
+    NuTo::IpValues ip11 = {{Eigen::Vector3d(4, 4, 4), "Stress"}, {Eigen::Vector3d(40, 40, 40), "Strain"}};
+    Method(cell1, GetIpValues) = {ip10, ip11};
 
     /*
      *  Actual visualize stuff begins here.

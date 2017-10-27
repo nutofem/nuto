@@ -58,6 +58,11 @@ public:
         return mElements.DofElement(dof).GetDofNumbering();
     }
 
+    std::vector<IpValues> GetIpValues() override
+    {
+        throw;
+    }
+
     const ElementCollection& GetElementCollection() const override
     {
         return mElements;

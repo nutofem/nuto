@@ -11,7 +11,7 @@ void UnstructuredGrid::ExportVtuDataFile(const std::string& filename, bool asBin
     XMLWriter::Export(filename, *this, asBinary);
 }
 
-int UnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
+int UnstructuredGrid::AddPoint(Eigen::VectorXd coordinates)
 {
     mPoints.push_back(Point(coordinates));
     return mPoints.size() - 1;

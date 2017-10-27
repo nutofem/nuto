@@ -53,9 +53,16 @@ public:
         for (auto dof : dofs)
             mGrid.DefinePointData(dof.GetName());
 
+        // register ip value names at the grid
+        IpValues ipValuesForName = mCells.begin()->GetIpValues()[0];
+        for (IpValue ipValue : ipValuesForName) // first cell, first integration pointipValues)
+            mGrid.DefineCellData(ipValue.name);
+
         int currentPointId = 0;
+        int currentCellId = 0;
         for (auto& cell : mCells)
         {
+            // add dof interpolations for all points
             for (auto dof : dofs)
             {
                 const auto& element = cell.GetElementCollection().DofElement(dof);
@@ -68,6 +75,21 @@ public:
                 }
             }
             currentPointId += mCellGeometry.mCornerCoords.size();
+
+            // add average cell values
+            std::vector<IpValues> vals = cell.GetIpValues();
+            int numIps = vals.size();
+
+            for (int iType = 0; iType < vals[0].size(); ++iType)
+            {
+                std::string name = vals[0][iType].name;
+                Eigen::VectorXd data = vals[0][iType].data;
+                for (int iIp = 1; iIp < numIps; ++iIp) // first one is in average
+                    data += vals[iIp][iType].data;
+
+                mGrid.SetCellData(currentCellId, name, data / numIps);
+            }
+            currentCellId++;
         }
         mGrid.ExportVtuDataFile(file, asBinary);
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mechanics/cell/IpValues.h"
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/integrands/Operations.h"
@@ -19,6 +20,8 @@ public:
     virtual double Integrate(const ScalarOperation&) = 0;
     virtual void Apply(const VoidOperation&) = 0;
     virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
+
+    virtual std::vector<IpValues> GetIpValues() = 0;
 
     virtual const ElementCollection& GetElementCollection() const = 0;
 };
