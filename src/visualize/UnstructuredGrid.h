@@ -7,6 +7,8 @@
 #include "visualize/Cell.h"
 #include "visualize/Point.h"
 
+struct UnstructuredGridCheck;
+
 namespace NuTo
 {
 namespace Visualize
@@ -16,6 +18,7 @@ namespace Visualize
 class UnstructuredGrid
 {
     friend class XMLWriter;
+    friend struct ::UnstructuredGridCheck;
 
 public:
     //! @brief ... export to Vtu datafile

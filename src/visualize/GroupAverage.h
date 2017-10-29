@@ -14,6 +14,7 @@ namespace NuTo
 namespace Visualize
 {
 
+
 using namespace NuTo::Groups;
 
 class GroupAverage
@@ -28,7 +29,7 @@ public:
     // @brief defines the point and cell geometries of the averaged cells
     // @param We define loop through the cells and its geometry entries in the same fassion, as we do in Visualize
     // below. So there is no need to store ids in the UnstructuredGrid
-    void ExtractGeometry()
+    void GeometryToGrid()
     {
         for (auto& cell : mCells)
         {
@@ -47,22 +48,14 @@ public:
         }
     }
 
-    void Visualize(std::string file, Group<DofType> dofs, bool asBinary)
+    void DofsToGrid(Group<DofType> dofs)
     {
         // register dof type names at the grid
         for (auto dof : dofs)
             mGrid.DefinePointData(dof.GetName());
-
-        // register ip value names at the grid
-        IpValues ipValuesForName = mCells.begin()->GetIpValues()[0];
-        for (IpValue ipValue : ipValuesForName) // first cell, first integration pointipValues)
-            mGrid.DefineCellData(ipValue.name);
-
         int currentPointId = 0;
-        int currentCellId = 0;
         for (auto& cell : mCells)
         {
-            // add dof interpolations for all points
             for (auto dof : dofs)
             {
                 const auto& element = cell.GetElementCollection().DofElement(dof);
@@ -75,7 +68,19 @@ public:
                 }
             }
             currentPointId += mCellGeometry.mCornerCoords.size();
+        }
+    }
 
+    void IpValuesToGrid()
+    {
+        // register ip value names at the grid
+        IpValues ipValuesForName = mCells.begin()->GetIpValues()[0];
+        for (IpValue ipValue : ipValuesForName) // first cell, first integration pointipValues)
+            mGrid.DefineCellData(ipValue.name);
+
+        int currentCellId = 0;
+        for (auto& cell : mCells)
+        {
             // add average cell values
             std::vector<IpValues> vals = cell.GetIpValues();
             int numIps = vals.size();
@@ -91,7 +96,11 @@ public:
             }
             currentCellId++;
         }
-        mGrid.ExportVtuDataFile(file, asBinary);
+    }
+
+    const UnstructuredGrid& GetUnstructuredGrid() const
+    {
+        return mGrid;
     }
 
 private:
