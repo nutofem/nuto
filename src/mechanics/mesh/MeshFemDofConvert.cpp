@@ -70,7 +70,7 @@ public:
                             return &entry;
                 }
         return nullptr; // TODO17:  This is a classic case for the c++17 feature std::optional<T>. Here we have to
-                        // introduce pointers to our precious interface.
+        // introduce pointers to our precious interface.
     }
 
 private:
@@ -112,7 +112,7 @@ struct NodePoint : Eigen::Vector3d // to inherit operator[]
 
 SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int numBoxesPerDirection, double eps)
 {
-    Eigen::VectorXd start = mesh.Elements.front().CoordinateElement().GetNode(0).GetValues();
+    Eigen::VectorXd start = mesh.Elements[0].CoordinateElement().GetNode(0).GetValues();
     Eigen::VectorXd end = start;
 
     unsigned long numNodesTotal = 0;

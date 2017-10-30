@@ -8,11 +8,24 @@
 
 namespace NuTo
 {
+//! @brief contains the nodes, elements and interpolations for a classic finite element mesh
+//! @remark Elements contain references to nodes. Thus, a copy of MeshFem is not trivially possible and only move is
+//! allowed
 class MeshFem
 {
 public:
-    InterpolationSimple& CreateInterpolation(const InterpolationSimple& interpolation);
+    MeshFem() = default;
 
+    MeshFem(const MeshFem&) = delete;
+    MeshFem& operator=(const MeshFem&) = delete;
+
+    MeshFem(MeshFem&&) = default;
+    MeshFem& operator=(MeshFem&&) = default;
+
+    //! @brief adds a clone of `interpolation` to the mesh (prototype pattern)
+    //! @param interpolation interpolation that is cloned and added
+    //! @return reference to the cloned object
+    InterpolationSimple& CreateInterpolation(const InterpolationSimple& interpolation);
 
     //! @brief selects a coordinate at given `coords`
     //! @param coords global coordinates
@@ -41,9 +54,8 @@ public:
     //! @param axisOffset distance of the node to the axis
     //! @param tol selection tolerance
     //! @return group with selected nodes, the group may be empty if no nodes were found
-    Groups::Group<NodeSimple> NodesAtAxis(eDirection direction, double axisOffset = 0.,
-                                          double tol = 1.e-10); 
-    
+    Groups::Group<NodeSimple> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
+
     //! @brief selects all nodes of `dofType`
     //! @return group containing all selected nodes
     Groups::Group<NodeSimple> NodesTotal(DofType dofType);
