@@ -48,13 +48,6 @@ public:
         return mTerms.front().GetConstrainedDofNumber();
     }
 
-    //! @brief nonconst getter for mTerms
-    //! @remark IMO only used for ExchangeNodePtr which is very questionable...
-    std::vector<Term>& GetTerms()
-    {
-        return mTerms;
-    }
-
 private:
     //! @brief rhs function
     RhsFunction mRhs;

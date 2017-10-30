@@ -1,13 +1,8 @@
 #include "BoostUnitTest.h"
-#include <fakeit.hpp>
-//#include <cmath>
-//#include "mechanics/groups/Group.h"
 #include "mechanics/constraintsPde/ConstraintCompanion.h"
 
-using namespace fakeit;
 using namespace NuTo;
 using namespace NuTo::ConstraintPde;
-
 
 //// Helper functions for comparisons
 namespace NuTo

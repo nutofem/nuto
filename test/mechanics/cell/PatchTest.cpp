@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include <numeric>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Dense> // for solve
 
 #include "base/Group.h"
 

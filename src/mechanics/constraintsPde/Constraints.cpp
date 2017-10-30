@@ -58,7 +58,7 @@ Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int 
                 int transformedDof = globalDofNumber - numIndependentDofs;
                 if (transformedDof != iEquation)
                     throw Exception(__PRETTY_FUNCTION__, "The numbering of the dependent dofs "
-                                                         "is not in accordance to the equation numbering.");
+                                                         "should be in accordance to the equation numbering.");
                 continue; // Do not put the value into the matrix.
             }
 

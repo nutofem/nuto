@@ -32,7 +32,7 @@ public:
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type
     //! @param dof dof type
-    //! @param nIndependentDofs number of independent dofs for the dof type dof, required for a proper resize
+    //! @param numIndepdententDofs number of independent dofs for the dof type dof, required for a proper resize
     //!        of the sparse matrix
     //! @return sparse matrix containing the constraint terms where the last block with size (numDependent x
     //! numDependent is removed)

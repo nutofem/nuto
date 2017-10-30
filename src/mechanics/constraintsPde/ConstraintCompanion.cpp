@@ -100,7 +100,7 @@ Equation Value(const NodeSimple& node, double value)
 Equation Value(const NodeSimple& node, RhsFunction rhs)
 {
     if (node.GetNumValues() != 1)
-        throw Exception(__PRETTY_FUNCTION__, "This function is ment to be used with single value nodes only");
+        throw Exception(__PRETTY_FUNCTION__, "This function is meant to be used with single value nodes only");
     return Component(node, {eDirection::X}, rhs)[0];
 }
 
