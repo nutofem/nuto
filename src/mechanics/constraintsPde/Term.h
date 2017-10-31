@@ -51,8 +51,9 @@ public:
     }
 
 private:
-    //! @brief node reference, std::reference_wrapper is neat since it provides copy
-    //! ctor and assignment
+    //! @brief node reference
+    //! @remark `std::reference_wrapper` is used instead of a reference to
+    //! make `Term` default CopyAssignable
     std::reference_wrapper<const NodeSimple> mNode;
 
     //! @brief component component in the dof vector of the node
