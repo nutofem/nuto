@@ -13,7 +13,7 @@ bool operator==(const Term& a, const Term& b)
 {
     if (&(a.GetNode()) != &(b.GetNode()))
         return false;
-    if (a.GetCoefficient() != b.GetCoefficient())
+    if (std::abs(a.GetCoefficient() - b.GetCoefficient()) > 1.e-6)
         return false;
     if (a.GetComponent() != b.GetComponent())
         return false;
@@ -22,9 +22,9 @@ bool operator==(const Term& a, const Term& b)
 
 bool operator==(const Equation& a, const Equation& b)
 {
-    if (a.GetRhs(0.0) != b.GetRhs(0.0))
+    if (std::abs(a.GetRhs(0.0) - b.GetRhs(0.0)) > 1.e-6)
         return false;
-    if (a.GetRhs(42.0) != b.GetRhs(42.0))
+    if (std::abs(a.GetRhs(42.0) - b.GetRhs(42.0)) > 1.e-6)
         return false;
     if (a.GetTerms() != b.GetTerms())
         return false;
@@ -110,21 +110,21 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
 BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 {
     Eigen::Vector3d someDirection;
-    someDirection << 1, 1, 1;
+    someDirection << 2, -3, 4;
 
     // single equation with constant RHS
     auto eq = ConstraintPde::Direction(node1, someDirection);
-    auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(0.0));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, -1.));
+    auto expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueFunc(0.0));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 0, -0.5));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, 0.75));
 
     BOOST_CHECK(eq == expectedEquation);
 
     // single equation with lambda RHS
     eq = ConstraintPde::Direction(node1, someDirection, sinFunction);
-    expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueAdjustedFunc(sinFunction, 1. / reciprocalNorm));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, -1.));
-    expectedEquation.AddTerm(ConstraintPde::Term(node1, 2, -1.));
+    expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, std::sqrt(29.) / 4.));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 0, -0.5));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, 0.75));
 
     BOOST_CHECK(eq == expectedEquation);
 
@@ -133,9 +133,9 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     auto eqs = ConstraintPde::Direction(nodes, someDirection);
     for (auto& node : nodes)
     {
-        expectedEquation = ConstraintPde::Equation(node, 0, rhsValueFunc(0.0));
-        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, -1.));
-        expectedEquation.AddTerm(ConstraintPde::Term(node, 2, -1.));
+        expectedEquation = ConstraintPde::Equation(node, 2, rhsValueFunc(0.0));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 0, -0.5));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, 0.75));
         expectedEquations.push_back(expectedEquation);
     }
     BOOST_CHECK(eqs == expectedEquations);
@@ -145,12 +145,36 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     eqs = ConstraintPde::Direction(nodes, someDirection, sinFunction);
     for (auto& node : nodes)
     {
-        expectedEquation = ConstraintPde::Equation(node, 0, rhsValueAdjustedFunc(sinFunction, 1. / reciprocalNorm));
-        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, -1.));
-        expectedEquation.AddTerm(ConstraintPde::Term(node, 2, -1.));
+        expectedEquation = ConstraintPde::Equation(node, 2, rhsValueAdjustedFunc(sinFunction, std::sqrt(29.) / 4.));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 0, -0.5));
+        expectedEquation.AddTerm(ConstraintPde::Term(node, 1, 0.75));
         expectedEquations.push_back(expectedEquation);
     }
     BOOST_CHECK(eqs == expectedEquations);
+
+
+    // Tests if terms with a coefficient of 0 are ignored correctly
+
+    someDirection << 0., 3., -4.;
+    eq = ConstraintPde::Direction(node1, someDirection, sinFunction);
+    expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, 0.75));
+
+    BOOST_CHECK(eq == expectedEquation);
+    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+
+
+    someDirection << 3., 0., -4.;
+    eq = ConstraintPde::Direction(node1, someDirection, sinFunction);
+    expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
+    expectedEquation.AddTerm(ConstraintPde::Term(node1, 0, 0.75));
+
+    BOOST_CHECK(eq == expectedEquation);
+    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+
+
+    someDirection << 0., 0., 0.;
+    BOOST_CHECK_THROW(ConstraintPde::Direction(node1, someDirection, sinFunction), Exception);
 }
 
 
