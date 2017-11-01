@@ -5,6 +5,7 @@
 #include "mechanics/interpolation/TypeDefs.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/cell/CellData.h"
+#include <iostream>
 
 namespace NuTo
 {
@@ -36,7 +37,7 @@ public:
     {
         NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);
         NuTo::DofVector<double> gradient;
-        
+
         gradient[mDofType] = N.transpose() * mFactor;
         return gradient;
     }

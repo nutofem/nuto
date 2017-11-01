@@ -2,6 +2,7 @@
 
 #include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolation/TypeDefs.h"
+#include <iostream>
 
 namespace NuTo
 {
@@ -33,20 +34,34 @@ public:
         }
         else
         {
-            assert (globalDimension = interpolationDimension + 1);
+            assert(globalDimension = interpolationDimension + 1);
             switch (globalDimension)
             {
             case 2:
             {
-                const int numCols = derivativeShapeFunctions.rows();
+                const int numRows = derivativeShapeFunctions.rows();
                 NodeValues nodeCopy = nodeValues;
+                // see CalculateFixedSize(...) for the Eigen::Map functionality
                 auto nodeBlockCoordinates =
-                        Eigen::Map<Eigen::Matrix<double, 2, Eigen::Dynamic>>(nodeCopy.data(), 2, numCols);
+                        Eigen::Map<Eigen::Matrix<double, 2, Eigen::Dynamic>>(nodeCopy.data(), 2, numRows);
                 mDetJacobian = (nodeBlockCoordinates * derivativeShapeFunctions).norm();
                 break;
             }
             case 3:
             {
+                const int numRows = derivativeShapeFunctions.rows();
+                NodeValues nodeCopy = nodeValues;
+                // see CalculateFixedSize(...) for the Eigen::Map functionality
+                auto nodeBlockCoordinatesMap =
+                        Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>>(nodeCopy.data(), 3, numRows);
+
+                Eigen::MatrixXd nodeBlockCoordinates = nodeBlockCoordinatesMap;
+
+                Eigen::Matrix<double, 3, 2> jacobian = nodeBlockCoordinates * derivativeShapeFunctions;
+                Eigen::Vector3d derivativeXi = jacobian.col(0);
+                Eigen::Vector3d derivativeMu = jacobian.col(1);
+
+                mDetJacobian = (derivativeXi.cross(derivativeMu)).norm();
                 break;
             }
             default:
