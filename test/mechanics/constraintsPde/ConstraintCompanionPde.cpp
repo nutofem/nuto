@@ -35,7 +35,6 @@ bool operator==(const Equation& a, const Equation& b)
 } // NuTo
 
 
-// quite the stupid tests, but oh well...
 BOOST_AUTO_TEST_CASE(PredefinedFunctions)
 {
     auto ramp = ConstraintPde::RhsRamp(42.0, 6174.0);
