@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(PredefinedFunctions)
 }
 
 
-// mock node, nodegroup, direction vector and lamdba function
+//! @brief Stuff that is needed in nearly every test and is added as fixture to every test
 class Helpers
 {
 public:
@@ -73,17 +73,21 @@ public:
     double reciprocalNorm = 1.0 / std::sqrt(3.0);
 };
 
-
+//! @brief Tests the Component functions of the constraint companion
 BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
 {
     // with constant RHS
     auto eqs = ConstraintPde::Component(node1, {eDirection::X}, 1.0);
     auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(1.));
+    // The first check is also done by the second, but it gives you an extra hint, why the terms aren't equal
+    BOOST_CHECK_EQUAL(eqs[0].GetTerms().size(), 1);
     BOOST_CHECK(eqs[0] == expectedEquation);
+
 
     // with lambda RHS
     eqs = ConstraintPde::Component(node1, {eDirection::X}, sinFunction);
     expectedEquation = ConstraintPde::Equation(node1, 0, sinFunction);
+    BOOST_CHECK_EQUAL(eqs[0].GetTerms().size(), 1);
     BOOST_CHECK(eqs[0] == expectedEquation);
 
     // with Group
@@ -106,6 +110,7 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
 }
 
 
+//! @brief Tests the Direction functions of the constraint companion
 BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
 {
     Eigen::Vector3d someDirection;
@@ -159,8 +164,8 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
     expectedEquation.AddTerm(ConstraintPde::Term(node1, 1, 0.75));
 
-    BOOST_CHECK(eq == expectedEquation);
     BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+    BOOST_CHECK(eq == expectedEquation);
 
 
     someDirection << 3., 0., -4.;
@@ -168,19 +173,21 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     expectedEquation = ConstraintPde::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
     expectedEquation.AddTerm(ConstraintPde::Term(node1, 0, 0.75));
 
-    BOOST_CHECK(eq == expectedEquation);
     BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+    BOOST_CHECK(eq == expectedEquation);
 
 
     someDirection << 0., 0., 0.;
     BOOST_CHECK_THROW(ConstraintPde::Direction(node1, someDirection, sinFunction), Exception);
 }
 
-
+//! @brief Tests the Value functions of the constraint companion
 BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
 {
 
     BOOST_CHECK_THROW(ConstraintPde::Value(node1, 42.), Exception);
+    BOOST_CHECK_THROW(ConstraintPde::Value(node1, sinFunction), Exception);
+
     node1 = NodeSimple(Eigen::VectorXd::Ones(1));
     node2 = NodeSimple(Eigen::VectorXd::Ones(1));
 
@@ -188,11 +195,13 @@ BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
     // with constant RHS
     auto eq = ConstraintPde::Value(node1, 42.);
     auto expectedEquation = ConstraintPde::Equation(node1, 0, rhsValueFunc(42.0));
+    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 1);
     BOOST_CHECK(eq == expectedEquation);
 
     // with lamdba RHS
     eq = ConstraintPde::Value(node1, sinFunction);
     expectedEquation = ConstraintPde::Equation(node1, 0, sinFunction);
+    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 1);
     BOOST_CHECK(eq == expectedEquation);
 
     // with Group
