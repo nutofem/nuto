@@ -55,8 +55,6 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunctio
         throw Exception(__PRETTY_FUNCTION__,
                         "Your direction vector is composed of zeros only! The direction is unspecified!");
 
-    assert(maxComponentIndex > -1 && maxComponentIndex < direction.rows());
-
     // Normalization necessary, otherwise rhs depends on length of the direction vector
     direction.normalize();
 
