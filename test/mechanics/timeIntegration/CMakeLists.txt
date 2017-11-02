@@ -9,5 +9,5 @@
 #    )
 add_unit_test(TimeControl)
 add_unit_test(RK4)
-add_unit_test(NY4)
+add_unit_test(Nystroem)
 

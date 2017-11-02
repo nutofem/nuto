@@ -7,7 +7,7 @@ namespace NuTo
 namespace TimeIntegration
 {
 template <typename TState>
-class ExplicitRungeKutta
+class ExplicitNystroem
 {
 
 public:
