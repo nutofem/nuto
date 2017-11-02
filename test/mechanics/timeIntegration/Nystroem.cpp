@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include <iostream>
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 #include "mechanics/timeIntegration/NY4.h"
 #include "mechanics/timeIntegration/NY5.h"
 #include "mechanics/timeIntegration/NYVelocityVerlet.h"
