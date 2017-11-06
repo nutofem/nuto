@@ -46,17 +46,17 @@ MeshFem QuadPatchTestMesh()
      *              (c) ttitsche :)
      */
     MeshFem mesh;
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(10, 0));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(10, 10));
-    auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(0, 10));
+    NodeSimple& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    NodeSimple& n1 = mesh.Nodes.Add(Eigen::Vector2d(10, 0));
+    NodeSimple& n2 = mesh.Nodes.Add(Eigen::Vector2d(10, 10));
+    NodeSimple& n3 = mesh.Nodes.Add(Eigen::Vector2d(0, 10));
 
-    auto& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 2));
-    auto& n5 = mesh.Nodes.Add(Eigen::Vector2d(8, 3));
-    auto& n6 = mesh.Nodes.Add(Eigen::Vector2d(8, 7));
-    auto& n7 = mesh.Nodes.Add(Eigen::Vector2d(4, 7));
+    NodeSimple& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 2));
+    NodeSimple& n5 = mesh.Nodes.Add(Eigen::Vector2d(8, 3));
+    NodeSimple& n6 = mesh.Nodes.Add(Eigen::Vector2d(8, 7));
+    NodeSimple& n7 = mesh.Nodes.Add(Eigen::Vector2d(4, 7));
 
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
 
     mesh.Elements.Add({{{n0, n1, n5, n4}, interpolation}});
     mesh.Elements.Add({{{n1, n2, n6, n5}, interpolation}});
@@ -84,11 +84,11 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 {
     MeshFem mesh = QuadPatchTestMesh();
     DofType displ("displacements", 2);
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
 
     AddDofInterpolation(&mesh, displ, interpolation);
 
-    auto constraints = DefineConstraints(&mesh, displ);
+    ConstraintPde::Constraints constraints = DefineConstraints(&mesh, displ);
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
     Group<CellInterface> cellGroup;
-    for (auto& element : mesh.Elements)
+    for (ElementCollection& element : mesh.Elements)
     {
         cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
         cellGroup.Add(cellContainer.back());
@@ -115,19 +115,19 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
 
     // manually add the boundary element
-    const auto& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear(2));
+    const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear(2));
 
     // extract existing nodes
-    auto boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
+    Group<NodeSimple> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
     NodeSimple& nc1 = *boundaryCoordNodes.begin();
     NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
 
-    auto boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
+    Group<NodeSimple> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
     NodeSimple& nd1 = *boundaryDisplNodes.begin();
     NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
-    auto& boundaryElement = mesh.Elements.Add({{{nc1, nc2}, interpolationBc}});
+    ElementCollectionFem& boundaryElement = mesh.Elements.Add({{{nc1, nc2}, interpolationBc}});
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
@@ -142,8 +142,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
 
-    auto gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
-    auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
+    GlobalDofVector gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
+    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
     Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ]);
@@ -166,12 +166,12 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (auto& node : mesh.NodesTotal())
+    for (NodeSimple& node : mesh.NodesTotal())
     {
-        auto coord = node.GetValues();
-        auto& displNode = mesh.NodeAtCoordinate(coord, displ);
+        Eigen::VectorXd coord = node.GetValues();
+        NodeSimple& displNode = mesh.NodeAtCoordinate(coord, displ);
 
-        auto analyticSolution = analyticDisplacementField(coord);
+        Eigen::VectorXd analyticSolution = analyticDisplacementField(coord);
 
         BOOST_TEST_MESSAGE("Node at " << coord.transpose() << " with dofs " << displNode.GetDofNumber(0) << ","
                                       << displNode.GetDofNumber(1));
