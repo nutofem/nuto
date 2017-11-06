@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(Jacobian2Din3D_TetrahedronQuadratic)
 void CheckJacobian2Din3D(Eigen::Vector3d a, Eigen::Vector3d b, Eigen::Vector3d c, double correctArea)
 {
     Eigen::MatrixXd B = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(Eigen::Vector2d::Zero());
-    Eigen::VectorXd coordinates = Eigen::VectorXd(12);
+    Eigen::VectorXd coordinates = Eigen::VectorXd(9);
     coordinates << a.x(), a.y(), a.z(), b.x(), b.y(), b.z(), c.x(), c.y(), c.z();
 
     NuTo::Jacobian jacobian(coordinates, B, 3);
