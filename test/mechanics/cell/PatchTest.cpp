@@ -14,6 +14,7 @@
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 #include "mechanics/constraintsPde/Constraints.h"
+#include "mechanics/constraintsPde/ConstraintCompanion.h"
 
 #include "mechanics/constitutive/laws/LinearElastic.h"
 
@@ -73,13 +74,8 @@ ConstraintPde::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
     Group<NodeSimple> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
     Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
 
-    auto zero = [](double) { return 0; };
-
-    for (auto& node : nodesConstrainedInX)
-        constraints.Add(dof, {node, 0, zero});
-
-    for (auto& node : nodesConstrainedInY)
-        constraints.Add(dof, {node, 1, zero});
+    constraints.Add(dof, ConstraintPde::Component(nodesConstrainedInX, {eDirection::X}));
+    constraints.Add(dof, ConstraintPde::Component(nodesConstrainedInY, {eDirection::Y}));
 
     return constraints;
 }
@@ -195,21 +191,19 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     auto constraints = DefineConstraints(&mesh, displ); // fixed boundary conditions
     Group<NodeSimple> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
-    auto one = [](double) { return 1; };
+    const double boundaryDisplacement = 1.;
+    constraints.Add(displ, ConstraintPde::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
-    for (auto& node : rightBoundary)
-        constraints.Add(displ, {node, 0, one});
- 
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
     const int numDepDofs = dofInfo.numDependentDofs[displ];
     Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
-    
+
 
     BOOST_TEST_MESSAGE("CMat \n" << CMat);
 
     // ************************************************************************
-    //   add continuum cells - TODO function to create cells 
+    //   add continuum cells - TODO function to create cells
     // ************************************************************************
     constexpr double E = 20000;
     constexpr double nu = 0.0;
@@ -242,7 +236,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     BOOST_TEST_MESSAGE("hessian JK \n" << kJK);
     BOOST_TEST_MESSAGE("hessian KJ \n" << kKJ);
     BOOST_TEST_MESSAGE("hessian KK \n" << kKK);
-    
+
 
     BOOST_TEST_MESSAGE("GradientJ \n" << gradient.J);
     BOOST_TEST_MESSAGE("GradientK \n" << gradient.K);
@@ -253,8 +247,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     Eigen::VectorXd RmodConstrained = (kJK - CMat.transpose() * kKK) * (-constraints.GetRhs(displ, 0));
 
     Eigen::VectorXd newDisplacementsJ = Kmod.ldlt().solve(Rmod + RmodConstrained);
-    Eigen::VectorXd newDisplacementsK = - CMat * newDisplacementsJ + constraints.GetRhs(displ, 0); 
-    
+    Eigen::VectorXd newDisplacementsK = -CMat * newDisplacementsJ + constraints.GetRhs(displ, 0);
+
     BOOST_TEST_MESSAGE("DeltaD J \n" << newDisplacementsJ);
     BOOST_TEST_MESSAGE("DeltaD K \n" << newDisplacementsK);
 
@@ -279,13 +273,11 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    
+
     // ************************************************************************
-    //             check solution 
+    //             check solution
     // ************************************************************************
-    auto analyticDisplacementField = [=](Eigen::Vector2d coord) {
-        return Eigen::Vector2d(coord[0] * 0.1, 0);
-    };
+    auto analyticDisplacementField = [=](Eigen::Vector2d coord) { return Eigen::Vector2d(coord[0] * 0.1, 0); };
 
     for (auto& node : mesh.NodesTotal())
     {

@@ -8,8 +8,6 @@
 
 namespace NuTo
 {
-template <typename T>
-class Group;
 
 namespace ConstraintPde
 {

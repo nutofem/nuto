@@ -22,6 +22,7 @@ add_unit_test(PatchTest
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
     math/Legendre.cpp
     mechanics/constraintsPde/Constraints.cpp
+    mechanics/constraintsPde/ConstraintCompanion.cpp
     mechanics/mesh/MeshFem.cpp
     mechanics/mesh/MeshFemDofConvert.cpp
     mechanics/elements/ElementShapeFunctions.cpp)
