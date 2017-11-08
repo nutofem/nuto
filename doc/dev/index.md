@@ -28,6 +28,8 @@
 
 - @ref FETI
 
+- @ref Mpi
+
 - @ref NuToSerializeStream
 
 - @ref Constraints
