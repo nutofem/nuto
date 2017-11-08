@@ -24,3 +24,6 @@ if(ARPACK_FOUND)
     add_unit_test(EigenSolverArpack)
     target_link_libraries(EigenSolverArpack Math Base)
 endif()
+
+add_unit_test(EpetraHelloWorld)
+target_link_libraries(EpetraHelloWorld ${Trilinos_LIBRARIES})
