@@ -21,6 +21,7 @@ macro(check_for_dependencies)
         message(STATUS "MPIEXEC_POSTFLAG:           ${MPIEXEC_POSTFLAG}")
 
         find_package(Epetra)
+        find_package(Tpetra)
         set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
     endif()
 

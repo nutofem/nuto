@@ -29,4 +29,8 @@ if(ENABLE_MPI)
     add_unit_test(EpetraHelloWorld)
     target_link_libraries(EpetraHelloWorld trilinos_epetra)
     target_include_directories(EpetraHelloWorld SYSTEM PRIVATE ${Epetra_INCLUDE_DIRS})
+    
+    add_unit_test(TpetraHelloWorld)
+    target_link_libraries(TpetraHelloWorld trilinos_tpetra)
+    target_include_directories(TpetraHelloWorld SYSTEM PRIVATE ${Tpetra_INCLUDE_DIRS})
 endif()
