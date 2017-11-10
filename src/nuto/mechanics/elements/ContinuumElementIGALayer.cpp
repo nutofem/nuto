@@ -48,7 +48,7 @@ NuTo::ContinuumElementIGALayer<TDim>::ContinuumElementIGALayer(
 ////! @brief calculates output data for the element
 ////! @param rInput ... constitutive input map for the constitutive law
 ////! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes
-///inertia terms)
+/// inertia terms)
 template <int TDim>
 NuTo::eError NuTo::ContinuumElementIGALayer<TDim>::Evaluate(
         const ConstitutiveInputMap& rInput,
@@ -212,7 +212,7 @@ Eigen::VectorXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobianSurface(c
             CalculateJacobian(derivativeShapeFunctionsNaturalSlave, rNodalCoordinates); // = [dX / dXi]
     // in case of non IGA - just an identity matrix
     const Eigen::MatrixXd jacobianIGA = CalculateJacobianParametricSpaceIGA(); // = [dXi / d\tilde{Xi}]
-    Eigen::VectorXd ipCoordsSurface(1);
+    Eigen::VectorXd ipCoordsSurface(TDim);
     Eigen::MatrixXd derivativeNaturalSurfaceCoordinates =
             interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface,
                                                                                  rSurfaceId); // = [dXi / dAlpha]

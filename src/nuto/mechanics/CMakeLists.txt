@@ -143,6 +143,7 @@ integrationtypes/IntegrationType3D4NGauss4Ip.cpp
 integrationtypes/IntegrationType3D8NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
 integrationtypes/IntegrationTypeBase.cpp
+integrationtypes/IntegrationTypeTensorProduct.cpp
 )
 
 SET(NuToMechanicsInterpolationtypes_SOURCE

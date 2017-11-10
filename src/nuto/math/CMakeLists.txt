@@ -18,6 +18,7 @@ SET(NuToMath_SOURCES
   SparseDirectSolverMKLPardiso.cpp
   SparseDirectSolverPardiso.cpp
   SparseDirectSolverMUMPS.cpp
+  Legendre.cpp
 )
 
 SET(NuToMath_SWIG_MODULES

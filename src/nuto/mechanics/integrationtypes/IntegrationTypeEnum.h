@@ -1,4 +1,4 @@
-// $Id$ 
+// $Id$
 #pragma once
 
 namespace NuTo
@@ -7,6 +7,12 @@ namespace NuTo
 //! @author Joerg F. Unger
 //! @date May 2, 2010
 //! @brief ...
+
+enum class eIntegrationMethod
+{
+    GAUSS,
+    LOBATTO
+};
 
 enum class eIntegrationType
 {
@@ -48,6 +54,13 @@ enum class eIntegrationType
     IntegrationType2D4NGauss1Ip,
     IntegrationType2D4NGauss4Ip,
     IntegrationType2D4NGauss9Ip,
+    IntegrationTypeTensorProduct2D4N4,
+    IntegrationTypeTensorProduct2D4N5,
+    IntegrationTypeTensorProduct2D4N6,
+    IntegrationTypeTensorProduct2D4N7,
+    IntegrationTypeTensorProduct2D4N8,
+    IntegrationTypeTensorProduct2D4N9,
+    IntegrationTypeTensorProduct2D4N10,
     IntegrationType2D4NLobatto9Ip,
     IntegrationType2D4NLobatto16Ip,
     IntegrationType2D4NLobatto25Ip,
@@ -62,4 +75,4 @@ enum class eIntegrationType
     NotSet
 };
 
-}// namespace NuTo
+} // namespace NuTo

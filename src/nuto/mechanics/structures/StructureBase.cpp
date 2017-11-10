@@ -16,9 +16,9 @@
 #include <boost/ptr_container/ptr_list.hpp>
 
 
-# ifdef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
-# endif
+#endif
 
 #include <algorithm>
 #include <sstream>
@@ -93,12 +93,13 @@
 #include "nuto/visualize/VisualizeEnum.h"
 
 
-NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject(),
-        mConstraintMatrix(mDofStatus, false),
-        mConstraintMappingRHS(mDofStatus, false),
-        mConstraintRHS(mDofStatus)
+NuTo::StructureBase::StructureBase(int rDimension)
+    : NuTo::NuToObject::NuToObject()
+    , mConstraintMatrix(mDofStatus, false)
+    , mConstraintMappingRHS(mDofStatus, false)
+    , mConstraintRHS(mDofStatus)
 {
-    if (rDimension!=1 && rDimension!=2 && rDimension!=3)
+    if (rDimension != 1 && rDimension != 2 && rDimension != 3)
     {
         throw MechanicsException("[StructureBase::StructureBase] The dimension of a structure is either 1, 2 or 3.");
     }
@@ -109,100 +110,114 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mNumExtrapolatedCycles = 0;
 
     mMappingIntEnum2String.resize(static_cast<unsigned int>(NuTo::eIntegrationType::NumIntegrationTypes));
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)]=
-        NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip)]=
-        NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip)]=
-        NuTo::IntegrationType1D2NGauss3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip)]=
-        NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)]=
-        NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss6Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<6>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss7Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<7>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss8Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<8>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss9Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<9>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss10Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<10>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss11Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<11>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<12>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss13Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<13>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss14Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<14>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss15Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<15>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss16Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<16>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss17Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<17>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss18Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<18>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss19Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<19>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss20Ip)]=
-        NuTo::IntegrationType1D2NGaussNIp<20>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)]=
-        NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)]=
-        NuTo::IntegrationType1D2NLobatto4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip)]=
-        NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip)]=
-        NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip)]=
-        NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip)]=
-        NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip)]=
-        NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip)]=
-        NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip)]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)] =
+            NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip)] =
+            NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip)] =
+            NuTo::IntegrationType1D2NGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip)] =
+            NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)] =
+            NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss6Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<6>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss7Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<7>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss8Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<8>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss9Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<9>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss10Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<10>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss11Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<11>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<12>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss13Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<13>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss14Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<14>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss15Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<15>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss16Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<16>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss17Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<17>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss18Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<18>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss19Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<19>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss20Ip)] =
+            NuTo::IntegrationType1D2NGaussNIp<20>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)] =
+            NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)] =
+            NuTo::IntegrationType1D2NLobatto4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip)] =
+            NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip)] =
+            NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip)] =
+            NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip)] =
+            NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip)] =
+            NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip)] =
+            NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip)] =
             NuTo::IntegrationType2D3NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip)]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip)] =
             NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip)]=
-                NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail)]=
-                NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip)]=
-        NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip)]=
-        NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip)]=
-        NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip)]=
-        NuTo::IntegrationType2D4NLobatto9Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip)]=
-        NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip)]=
-        NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip)]=
-        NuTo::IntegrationType3D4NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip)]=
-        NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip)]=
-        NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip)]=
-        NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip)]=
-        NuTo::IntegrationType3D8NLobatto<3>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip)]=
-        NuTo::IntegrationType3D8NLobatto<4>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip)]=
-        NuTo::IntegrationType3D8NLobatto<5>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip)] =
+            NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail)] =
+            NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip)] =
+            NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip)] =
+            NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip)] =
+            NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip)] =
+            NuTo::IntegrationType2D4NLobatto9Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip)] =
+            NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip)] =
+            NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip)] =
+            NuTo::IntegrationType3D4NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip)] =
+            NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip)] =
+            NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip)] =
+            NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip)] =
+            NuTo::IntegrationType3D8NLobatto<3>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip)] =
+            NuTo::IntegrationType3D8NLobatto<4>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip)] =
+            NuTo::IntegrationType3D8NLobatto<5>::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip)] =
-        NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic();
+            NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType0DBoundary)] =
-        NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic();
+            NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N4)] =
+            std::string("2D4NGAUSS16IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N5)] =
+            std::string("2D4NGAUSS25IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N6)] =
+            std::string("2D4NGAUSS36IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N7)] =
+            std::string("2D4NGAUSS49IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N8)] =
+            std::string("2D4NGAUSS64IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N9)] =
+            std::string("2D4NGAUSS81IP");
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationTypeTensorProduct2D4N10)] =
+            std::string("2D4NGAUSS100IP");
 
     mNumLoadCases = 1;
 
@@ -216,71 +231,73 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     // then the environment variable is used
     mNumProcessors = 1;
 #endif // _OPENMP
-
 }
 
 NuTo::StructureBase::~StructureBase()
-{}
+{
+}
 
-int NuTo::StructureBase::GetDimension()const
+int NuTo::StructureBase::GetDimension() const
 {
     return mDimension;
 }
 
 #ifdef ENABLE_SERIALIZATION
-template void NuTo::StructureBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::StructureBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
+template void NuTo::StructureBase::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
+template void NuTo::StructureBase::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
+template void NuTo::StructureBase::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
+template void NuTo::StructureBase::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
+template void NuTo::StructureBase::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
+template void NuTo::StructureBase::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
+template <class Archive>
+void NuTo::StructureBase::serialize(Archive& ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
-    mLogger << "start serialization of structure base" << "\n";
+    mLogger << "start serialization of structure base"
+            << "\n";
 #endif
 
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
-    ar & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
-    ar & BOOST_SERIALIZATION_NVP(mPrevTime);
-    ar & BOOST_SERIALIZATION_NVP(mTime);
-    ar & BOOST_SERIALIZATION_NVP(mDimension);
-    ar & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
-    ar & BOOST_SERIALIZATION_NVP(mConstraintMap);
-    ar & BOOST_SERIALIZATION_NVP(mNumLoadCases);
-    ar & BOOST_SERIALIZATION_NVP(mLoadMap);
-    ar & BOOST_SERIALIZATION_NVP(mGroupMap);
-    ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
-    ar & BOOST_SERIALIZATION_NVP(mSectionMap);
-    ar & BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
-    ar & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
+    ar& BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
+    ar& BOOST_SERIALIZATION_NVP(mPrevTime);
+    ar& BOOST_SERIALIZATION_NVP(mTime);
+    ar& BOOST_SERIALIZATION_NVP(mDimension);
+    ar& BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
+    ar& BOOST_SERIALIZATION_NVP(mConstraintMap);
+    ar& BOOST_SERIALIZATION_NVP(mNumLoadCases);
+    ar& BOOST_SERIALIZATION_NVP(mLoadMap);
+    ar& BOOST_SERIALIZATION_NVP(mGroupMap);
+    ar& BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
+    ar& BOOST_SERIALIZATION_NVP(mSectionMap);
+    ar& BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
+    ar& BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
 #ifdef ENABLE_VISUALIZE
-//    ar & BOOST_SERIALIZATION_NVP(mGroupVisualizeComponentsMap);
+    //    ar & BOOST_SERIALIZATION_NVP(mGroupVisualizeComponentsMap);
     std::cout << "WARNING: Visualization components are not serialized!\n";
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mDofStatus);
-    ar & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
-    ar & BOOST_SERIALIZATION_NVP(mConstraintMatrix);
-    ar & BOOST_SERIALIZATION_NVP(mConstraintMappingRHS);
-    ar & BOOST_SERIALIZATION_NVP(mConstraintRHS);
-    ar & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
-    ar & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
-    ar & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
+    ar& BOOST_SERIALIZATION_NVP(mDofStatus);
+    ar& BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
+    ar& BOOST_SERIALIZATION_NVP(mConstraintMatrix);
+    ar& BOOST_SERIALIZATION_NVP(mConstraintMappingRHS);
+    ar& BOOST_SERIALIZATION_NVP(mConstraintRHS);
+    ar& BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
+    ar& BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
+    ar& BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
 #ifdef _OPENMP
     // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them afterwards
     // see Structure::loadImplement and Structure::saveImplement
-    ar & BOOST_SERIALIZATION_NVP(mNumProcessors);
+    ar& BOOST_SERIALIZATION_NVP(mNumProcessors);
 #endif // _OPENMP
-    ar & boost::serialization::make_nvp("mLogger", mLogger);
+    ar& boost::serialization::make_nvp("mLogger", mLogger);
 #ifdef DEBUG_SERIALIZATION
-    mLogger << "finish serialization of structure base" << "\n";
+    mLogger << "finish serialization of structure base"
+            << "\n";
 #endif
 }
-#endif  // ENABLE_SERIALIZATION
+#endif // ENABLE_SERIALIZATION
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::StructureBase::Info()const
+void NuTo::StructureBase::Info() const
 {
     mLogger << "dimension : " << mDimension << "\n";
 
@@ -298,40 +315,41 @@ void NuTo::StructureBase::Info()const
 //! @brief ... number of time derivatives for the nodes (0 : static, 1: velocities, 2: accelerations)
 void NuTo::StructureBase::SetNumTimeDerivatives(int rNumTimeDerivatives)
 {
-	if (rNumTimeDerivatives<0 || rNumTimeDerivatives>2)
-        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumTimeDerivatives] number of time derivatives is either 0, 1 or 2.");
+    if (rNumTimeDerivatives < 0 || rNumTimeDerivatives > 2)
+        throw NuTo::MechanicsException(
+                "[NuTo::StructureBase::SetNumTimeDerivatives] number of time derivatives is either 0, 1 or 2.");
 
-	mNumTimeDerivatives = rNumTimeDerivatives;
+    mNumTimeDerivatives = rNumTimeDerivatives;
 }
 
 //! @brief ... return number of time derivatives (0 : static, 1: velocities, 2: accelerations)
-int NuTo::StructureBase::GetNumTimeDerivatives()const
+int NuTo::StructureBase::GetNumTimeDerivatives() const
 {
-	return mNumTimeDerivatives;
+    return mNumTimeDerivatives;
 }
 
 //! @brief set the beginning of the time increment to the structure
 void NuTo::StructureBase::SetPrevTime(double rPrevTime)
 {
-	mPrevTime = rPrevTime;
+    mPrevTime = rPrevTime;
 }
 
 //! @brief get the beginning of the time increment of the structure
 double NuTo::StructureBase::GetPrevTime() const
 {
-	return mPrevTime;
+    return mPrevTime;
 }
 
 //! @brief set the end of the time increment to the structure (current time)
 void NuTo::StructureBase::SetTime(double rTime)
 {
-	mTime = rTime;
+    mTime = rTime;
 }
 
 //! @brief get the end of the time increment of the structure (current time)
 double NuTo::StructureBase::GetTime() const
 {
-	return mTime;
+    return mTime;
 }
 
 //! @brief set number of cycles to be extrapolated in the cycle jump routine
@@ -339,21 +357,26 @@ double NuTo::StructureBase::GetTime() const
 //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
 //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
 //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
+void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double, Eigen::Dynamic> rNumber)
 {
-	if (rNumber.size()<3)
-	        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of extrapolation cycles and weighting coefficient for explicit and implicit terms are required.");
+    if (rNumber.size() < 3)
+        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of "
+                                       "extrapolation cycles and weighting coefficient for explicit and implicit terms "
+                                       "are required.");
 
-	// check the number of extrapolation cycles
-	if (rNumber[0] < 0)
-			throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] number of extrapolation cycles is negative.");
+    // check the number of extrapolation cycles
+    if (rNumber[0] < 0)
+        throw NuTo::MechanicsException(
+                "[NuTo::StructureBase::SetNumExtrapolatedCycles] number of extrapolation cycles is negative.");
 
-	// check the weighting coefficients
-	for (int i = 1; i < rNumber.size(); ++i) {
-		if (rNumber[i] < 0 || rNumber[i]>1)
-				throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] the " + std::to_string(i) + " weighting coefficient is out of the [0,1] range.");
-	}
-	mNumExtrapolatedCycles = rNumber;
+    // check the weighting coefficients
+    for (int i = 1; i < rNumber.size(); ++i)
+    {
+        if (rNumber[i] < 0 || rNumber[i] > 1)
+            throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] the " + std::to_string(i) +
+                                           " weighting coefficient is out of the [0,1] range.");
+    }
+    mNumExtrapolatedCycles = rNumber;
 }
 
 //! @brief get the number of cycles to be extrapolated. Returns
@@ -361,13 +384,14 @@ void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen
 //! @brief ... [1] is the weighting coefficient of the implicit term
 //! @brief ... [2] is the weighting coefficient of the explicit term
 //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::GetNumExtrapolatedCycles() const
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::GetNumExtrapolatedCycles() const
 {
-	return mNumExtrapolatedCycles;
+    return mNumExtrapolatedCycles;
 }
 
 // store all elements of a group in a vector
-void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup, std::vector<const ElementBase*>& rElements) const
+void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementGroup,
+                                             std::vector<const ElementBase*>& rElements) const
 {
     Group<ElementBase>::const_iterator ElementIter = rElementGroup->begin();
     while (ElementIter != rElementGroup->end())
@@ -378,7 +402,7 @@ void NuTo::StructureBase::GetElementsByGroup(const Group<ElementBase>* rElementG
 }
 
 // store all elements of a group in a vector
-void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements)
+void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector<ElementBase*>& rElements)
 {
     Group<ElementBase>::iterator ElementIter = rElementGroup->begin();
     while (ElementIter != rElementGroup->end())
@@ -389,7 +413,8 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
 }
 
 // store all elements of a group in a vector
-void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector<std::pair<int, ElementBase*> >& rElements) const
+void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup,
+                                             std::vector<std::pair<int, ElementBase*>>& rElements) const
 {
     Group<ElementBase>::iterator ElementIter = rElementGroup->begin();
     while (ElementIter != rElementGroup->end())
@@ -416,22 +441,28 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualiz
         std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
         visualizationPtrList.push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
 
-        mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
-        // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
+        mGroupVisualizeComponentsMap.insert(
+                std::pair<int, std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
+        // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc
+        // version 4.9 or higher!
 
-        mGroupVisualizationType.insert(std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
-        // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
-    } else
+        mGroupVisualizationType.insert(
+                std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
+        // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc
+        // version 4.9 or higher!
+    }
+    else
     {
-        mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
+        mGroupVisualizeComponentsMap.at(rElementGroup)
+                .push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
     }
 
     if (mVerboseLevel > 5)
     {
-        for (auto const &iPair : mGroupVisualizeComponentsMap)
+        for (auto const& iPair : mGroupVisualizeComponentsMap)
         {
             std::cout << "ele group: \t" << iPair.first << std::endl;
-            for (auto const &iComponentPtr : iPair.second)
+            for (auto const& iComponentPtr : iPair.second)
             {
                 std::cout << "components: \t " << iComponentPtr->GetComponentName() << std::endl;
             }
@@ -501,9 +532,6 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::WATER_VOLUME_FRACTION);
     else
         throw MechanicsException(__PRETTY_FUNCTION__, "Visualization component not implemented or misspelled.");
-
-
-
 }
 void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp)
 {
@@ -514,7 +542,7 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
-    const ElementBase *elementBase = ElementGetElementPtr(rElementId);
+    const ElementBase* elementBase = ElementGetElementPtr(rElementId);
     int numIp = elementBase->GetNumIntegrationPoints();
 
     if (rIp < 0 or rIp >= numIp)
@@ -526,30 +554,35 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
         if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
         {
             std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
-            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
+            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(
+                    VisualizeComponentNonlocalWeight(rElementId, rIp)));
 
-            mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
-            // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
+            mGroupVisualizeComponentsMap.insert(std::pair<int, std::list<std::shared_ptr<VisualizeComponent>>>(
+                    rElementGroup, visualizationPtrList));
+            // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc
+            // version 4.9 or higher!
 
-            mGroupVisualizationType.insert(std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
-            // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
-
-
-        } else
-        {
-            mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
+            mGroupVisualizationType.insert(
+                    std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
+            // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc
+            // version 4.9 or higher!
         }
-
+        else
+        {
+            mGroupVisualizeComponentsMap.at(rElementGroup)
+                    .push_back(std::make_shared<VisualizeComponentNonlocalWeight>(
+                            VisualizeComponentNonlocalWeight(rElementId, rIp)));
+        }
     }
-    catch (NuTo::MechanicsException &e)
-     {
+    catch (NuTo::MechanicsException& e)
+    {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting element and local ip number.");
         throw e;
-     }
-    catch(...)
-     {
+    }
+    catch (...)
+    {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "error setting element and local ip number.");
-     }
+    }
 #endif // ENABLE_VISUALIZE
 }
 
@@ -562,7 +595,8 @@ void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eV
 
     // check if the element group exists
     if (mGroupVisualizationType.find(rElementGroup) == mGroupVisualizationType.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Please add a visualization component first before setting the visualization type.");
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                                 "Please add a visualization component first before setting the visualization type.");
 
     mGroupVisualizationType.at(rElementGroup) = rVisualizationType;
 }
@@ -583,7 +617,7 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    for (auto const &it : mGroupVisualizeComponentsMap)
+    for (auto const& it : mGroupVisualizeComponentsMap)
     {
         VisualizeUnstructuredGrid visualize;
         this->DefineVisualizeNodeData(visualize, it.second);
@@ -598,13 +632,12 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
 }
 
 
-
 void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    for (auto const &it : mGroupVisualizeComponentsMap)
+    for (auto const& it : mGroupVisualizeComponentsMap)
     {
         VisualizeUnstructuredGrid visualize;
 
@@ -626,8 +659,8 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeElementData(visualize,mGroupVisualizeComponentsMap.at(rGroupIdent));
-    this->ElementGroupAddToVisualize(rGroupIdent,visualize,mGroupVisualizeComponentsMap.at(rGroupIdent));
+    this->DefineVisualizeElementData(visualize, mGroupVisualizeComponentsMap.at(rGroupIdent));
+    this->ElementGroupAddToVisualize(rGroupIdent, visualize, mGroupVisualizeComponentsMap.at(rGroupIdent));
 
     if (rXML)
         visualize.ExportVtuDataFile(rResultFileName);
@@ -637,16 +670,19 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
+std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>&
+NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
     return mGroupVisualizeComponentsMap;
 }
 
-void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
+void NuTo::StructureBase::DefineVisualizeElementData(
+        VisualizeUnstructuredGrid& rVisualize,
+        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const &it : rVisualizationList)
+    for (auto const& it : rVisualizationList)
     {
         switch (it.get()->GetComponentEnum())
         {
@@ -688,7 +724,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             break;
 
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
-//        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN: // this is a test
+        //        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN: // this is a test
         case NuTo::eVisualizeWhat::VELOCITY:
         case NuTo::eVisualizeWhat::ACCELERATION:
             rVisualize.DefinePointDataVector(it.get()->GetComponentName());
@@ -698,22 +734,23 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::eVisualizeWhat::ROTATION:
         case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
-            //do nothing;
+            // do nothing;
             break;
 
         default:
-        	throw MechanicsException(__PRETTY_FUNCTION__, "undefined visualize components.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "undefined visualize components.");
         }
-
     }
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
+void NuTo::StructureBase::DefineVisualizeNodeData(
+        VisualizeUnstructuredGrid& rVisualize,
+        const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
 {
 #ifdef ENABLE_VISUALIZE
 
-    for (auto const &it : rVisualizationList)
+    for (auto const& it : rVisualizationList)
     {
         switch (it.get()->GetComponentEnum())
         {
@@ -733,20 +770,18 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
         default:
-            // do nothing for integration point data in the visualization list. However, the visualization of new dofs needs to be added here!
-        	break;
-         }
-
+            // do nothing for integration point data in the visualization list. However, the visualization of new dofs
+            // needs to be added here!
+            break;
+        }
     }
 #endif // ENABLE_VISUALIZE
 }
 
 
-
-
-
 //! @brief ... evaluates the structure
-void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase *> &rStructureOutput)
+void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput,
+                                   std::map<eStructureOutput, StructureOutputBase*>& rStructureOutput)
 {
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }
@@ -754,20 +789,23 @@ void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStructureOutput rOutput)
 {
     Timer timer(std::string(__FUNCTION__) + ": " + StructureOutputToString(rOutput), GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    if (mNodeNumberingRequired)
+        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    std::set<eStructureOutput> supportedTypes({eStructureOutput::HESSIAN0, eStructureOutput::HESSIAN1, eStructureOutput::HESSIAN2, eStructureOutput::HESSIAN2_LUMPED});
+    std::set<eStructureOutput> supportedTypes({eStructureOutput::HESSIAN0, eStructureOutput::HESSIAN1,
+                                               eStructureOutput::HESSIAN2, eStructureOutput::HESSIAN2_LUMPED});
     if (supportedTypes.find(rOutput) == supportedTypes.end())
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureOutputToString(rOutput) + " is not a matrix type or is not supported right now.");
+        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureOutputToString(rOutput) +
+                                 " is not a matrix type or is not supported right now.");
 
     StructureOutputBlockMatrix hessian(mDofStatus, true);
 
-    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
+    std::map<eStructureOutput, StructureOutputBase*> evaluateMap;
     evaluateMap[rOutput] = &hessian;
 
     ConstitutiveInputMap input;
-    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            eCalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] =
+            std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
@@ -798,16 +836,17 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian2Lumped(
 NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradient()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    if (mNodeNumberingRequired)
+        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     StructureOutputBlockVector internalGradient(mDofStatus, true);
 
-    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
+    std::map<eStructureOutput, StructureOutputBase*> evaluateMap;
     evaluateMap[eStructureOutput::INTERNAL_GRADIENT] = &internalGradient;
 
     ConstitutiveInputMap input;
-    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            eCalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] =
+            std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
@@ -844,20 +883,20 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
             NodeMergeDofValues(0, dofValues);
             auto internalGradient1 = BuildGlobalInternalGradient();
 
-            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1/rDelta);
+            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1 / rDelta);
             for (auto dofRow : GetDofStatus().GetActiveDofTypes())
             {
                 // set JJ entries
                 auto& colJ = column.J[dofRow];
                 auto& matrixJJ = hessian0_CDF.JJ(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJJ.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJJ.AddValue(i, iCol, colJ.at(i, 0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKJ = hessian0_CDF.KJ(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKJ.AddValue(i, iCol, colK.at(i,0));
+                    matrixKJ.AddValue(i, iCol, colK.at(i, 0));
             }
             columnDofValues[iCol] -= rDelta;
         }
@@ -872,27 +911,25 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
             NodeMergeDofValues(0, dofValues);
             auto internalGradient1 = BuildGlobalInternalGradient();
 
-            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1/rDelta);
+            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1 / rDelta);
             for (auto dofRow : GetDofStatus().GetActiveDofTypes())
             {
                 // set JK entries
                 auto& colJ = column.J[dofRow];
                 auto& matrixJK = hessian0_CDF.JK(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJK.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJK.AddValue(i, iCol, colJ.at(i, 0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKK = hessian0_CDF.KK(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKK.AddValue(i, iCol, colK.at(i,0));
+                    matrixKK.AddValue(i, iCol, colK.at(i, 0));
             }
             rowDofValues[iCol] -= rDelta;
         }
     }
     NodeMergeDofValues(0, dofValues);
-
-
 
 
     SetShowTime(showTime);
@@ -907,23 +944,29 @@ bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance
     NodeBuildGlobalDofs(__FUNCTION__);
 
     bool hasInteractingConstraints = mDofStatus.HasInteractingConstraints();
-    mDofStatus.SetHasInteractingConstraints(true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
+    mDofStatus.SetHasInteractingConstraints(
+            true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
 
 
     auto hessian0 = BuildGlobalHessian0();
     auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
 
-    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.JJ, hessian0_CDF.JJ, rRelativeTolerance, rPrintWrongMatrices);
-    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.JK, hessian0_CDF.JK, rRelativeTolerance, rPrintWrongMatrices);
-    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.KJ, hessian0_CDF.KJ, rRelativeTolerance, rPrintWrongMatrices);
-    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect &&
+                       CheckHessian0_Submatrix(hessian0.JJ, hessian0_CDF.JJ, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect &&
+                       CheckHessian0_Submatrix(hessian0.JK, hessian0_CDF.JK, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect &&
+                       CheckHessian0_Submatrix(hessian0.KJ, hessian0_CDF.KJ, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect &&
+                       CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
 
     mDofStatus.SetHasInteractingConstraints(hasInteractingConstraints);
 
     return isHessianCorrect;
 }
 
-bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rHessian0_CDF, double rRelativeTolerance, bool rPrintWrongMatrices)
+bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rHessian0_CDF,
+                                                  double rRelativeTolerance, bool rPrintWrongMatrices)
 {
     int row, col;
     assert(rHessian0.GetNumRows() == rHessian0_CDF.GetNumRows());
@@ -940,7 +983,7 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
         {
             FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessian0_CDF_Full(rHessian0_CDF(dofRow, dofCol));
 
-            double scaling = 1./rHessian0_CDF(dofRow, dofCol).AbsMax();
+            double scaling = 1. / rHessian0_CDF(dofRow, dofCol).AbsMax();
 
             auto& diff = rHessian0_CDF(dofRow, dofCol);
             diff.AddScal(rHessian0(dofRow, dofCol), -1.);
@@ -949,17 +992,23 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
             double error = diff.AbsMax(row, col);
             if (error > rRelativeTolerance)
             {
-                GetLogger() << "[" << __FUNCTION__ << "] max error in (" << Node::DofToString(dofRow)<< "," << Node::DofToString(dofCol) << ") "
-                        << error << " at entry (" << row << "," << col << ")\n";
-                GetLogger() << "hessian0(" << row << "," << col <<") = " << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol))(row, col) << "\n";
-                GetLogger() << "hessian0_CDF(" << row << "," << col <<") = " << hessian0_CDF_Full(row, col) << "\n";
+                GetLogger() << "[" << __FUNCTION__ << "] max error in (" << Node::DofToString(dofRow) << ","
+                            << Node::DofToString(dofCol) << ") " << error << " at entry (" << row << "," << col
+                            << ")\n";
+                GetLogger() << "hessian0(" << row << "," << col << ") = "
+                            << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol))(row, col)
+                            << "\n";
+                GetLogger() << "hessian0_CDF(" << row << "," << col << ") = " << hessian0_CDF_Full(row, col) << "\n";
                 isSubmatrixCorrect = false;
                 if (rPrintWrongMatrices)
                 {
                     FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> diffPrint(diff);
                     diffPrint.SetSmallEntriesZero(1.e-10);
                     GetLogger() << "####### relative difference\n" << diffPrint.format(fmt) << "\n";
-                    GetLogger() << "####### hessian0\n" << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol)).format(fmt) << "\n";
+                    GetLogger()
+                            << "####### hessian0\n"
+                            << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol)).format(fmt)
+                            << "\n";
                     GetLogger() << "####### hessian0_CDF\n" << hessian0_CDF_Full.format(fmt) << "\n";
                 }
             }
@@ -969,15 +1018,16 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
 }
 
 
-
 void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     if (GetNumTimeDerivatives() > 0)
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Only use this method for a system with 0 time derivatives.");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                       "] Only use this method for a system with 0 time derivatives.");
 
-    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    if (mNodeNumberingRequired)
+        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
 
     StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
@@ -999,38 +1049,42 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, int rMaxNumIter, int rLoadCase)
+void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& tol, int rMaxNumIter, int rLoadCase)
 {
     if (GetNumTimeDerivatives() > 0)
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Only use this method for a system with 0 time derivatives.");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
+                                       "] Only use this method for a system with 0 time derivatives.");
 
     NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     const DofStatus& dofStatus = GetDofStatus();
 
-    StructureOutputBlockVector  extForce(dofStatus, true);
-    StructureOutputBlockVector  intForce(dofStatus, true);
+    StructureOutputBlockVector extForce(dofStatus, true);
+    StructureOutputBlockVector intForce(dofStatus, true);
 
-    StructureOutputBlockVector  residual(dofStatus, true);
-    BlockFullVector<double>     residual_mod(dofStatus);
+    StructureOutputBlockVector residual(dofStatus, true);
+    BlockFullVector<double> residual_mod(dofStatus);
 
-    StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
-    StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
-    StructureOutputBlockVector  trial_dof_dt0(dofStatus, true);
+    StructureOutputBlockVector dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector delta_dof_dt0(dofStatus, true);
+    StructureOutputBlockVector trial_dof_dt0(dofStatus, true);
 
-    StructureOutputBlockMatrix  hessian0(dofStatus, true);
+    StructureOutputBlockMatrix hessian0(dofStatus, true);
 
     const auto& cmat = this->GetConstraintMatrix();
 
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0;
-    evaluate_InternalGradient_Hessian0      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
-    evaluate_InternalGradient_Hessian0      [eStructureOutput::HESSIAN0] = &hessian0;
+    evaluate_InternalGradient_Hessian0[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    evaluate_InternalGradient_Hessian0[eStructureOutput::HESSIAN0] = &hessian0;
 
     std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
-    evaluate_InternalGradient               [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    evaluate_InternalGradient[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
 
     ConstitutiveInputMap inputMap;
-    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
+    //    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] =
+    //            std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
+
+    //    inputMap[Constitutive::eInput::NONE];
 
     Evaluate(inputMap, evaluate_InternalGradient);
 
@@ -1045,16 +1099,18 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScala
     BlockScalar normResidual = residual_mod.CalculateInfNorm();
 
     int iteration = 0;
-    while(!(normResidual < tol) && iteration < rMaxNumIter)
+    while (!(normResidual < tol) && iteration < rMaxNumIter)
     {
         Evaluate(inputMap, evaluate_InternalGradient_Hessian0);
 
         // solve
         hessian0.ApplyCMatrix(cmat);
+        //        std::cout << "Solve - start\n" << std::flush;
         delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
-        delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
+        //        std::cout << "Solve - end\n" << std::flush;
+        delta_dof_dt0.K = cmat * delta_dof_dt0.J * (-1.);
 
-        //calculate line search trial state
+        // calculate line search trial state
         trial_dof_dt0 = dof_dt0 + delta_dof_dt0;
         NodeMergeDofValues(0, trial_dof_dt0.J, trial_dof_dt0.K);
         ElementTotalUpdateTmpStaticData();
@@ -1068,19 +1124,21 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScala
 
         dof_dt0 = trial_dof_dt0;
 
-        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << normResidual << std::endl;
+        std::cout << "Iteration: " << iteration
+                  << ", StructureBase::SolveGlobalSystemStaticElasticContact Error: " << normResidual << std::endl;
 
         iteration++;
     }
 }
 
-NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
+NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix,
+                                                                    const BlockFullVector<double>& rVector) const
 {
     NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
-    NuTo::SparseMatrixCSRGeneral<double>     matrixForSolver = rMatrix.ExportToCSRGeneral();
+    NuTo::SparseMatrixCSRGeneral<double> matrixForSolver = rMatrix.ExportToCSRGeneral();
     matrixForSolver.SetOneBasedIndexing();
 
-    //allocate solver
+// allocate solver
 #if defined(HAVE_PARDISO) && defined(_OPENMP)
     NuTo::SparseDirectSolverPardiso mySolver(GetNumProcessors(), GetVerboseLevel()); // note: not the MKL version
 #else
@@ -1100,7 +1158,8 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVector(int rLoadCase)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    if (mNodeNumberingRequired)
+        NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
     StructureOutputBlockVector externalLoad(GetDofStatus(), true);
 
@@ -1111,7 +1170,7 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
 
 
         // loop over all loads
-        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+        boost::ptr_map<int, LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
         while (loadIter != this->mLoadMap.end())
         {
             loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
@@ -1124,7 +1183,7 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
         auto& vectorK = externalLoad.K[Node::eDof::TEMPERATURE];
 
         // loop over all loads
-        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+        boost::ptr_map<int, LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
         while (loadIter != this->mLoadMap.end())
         {
             loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
@@ -1143,7 +1202,7 @@ void NuTo::StructureBase::SetToleranceStiffnessEntries(double rToleranceStiffnes
 
 //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
 //! values smaller than that one will not be added to the global matrix
-double NuTo::StructureBase::GetToleranceStiffnessEntries()const
+double NuTo::StructureBase::GetToleranceStiffnessEntries() const
 {
     return mToleranceStiffnessEntries;
 }
@@ -1169,7 +1228,7 @@ void NuTo::StructureBase::DofTypeActivateAll()
 
 void NuTo::StructureBase::DofTypeSetIsActive(Node::eDof rDofType, bool rIsActive)
 {
-    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    BOOST_FOREACH (auto interpolationTypePair, mInterpolationTypeMap)
     {
         auto& interpolationType = interpolationTypePair.second;
         if (interpolationType->IsDof(rDofType))
@@ -1187,13 +1246,13 @@ void NuTo::StructureBase::DofTypeSetIsActive(const std::set<Node::eDof>& rActive
 
 bool NuTo::StructureBase::DofTypeIsActive(Node::eDof rDofType) const
 {
-	const auto& activeDofTypes = DofTypesGetActive();
-	return activeDofTypes.find(rDofType) != activeDofTypes.end();
+    const auto& activeDofTypes = DofTypesGetActive();
+    return activeDofTypes.find(rDofType) != activeDofTypes.end();
 }
 
 void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, bool rIsConstitutiveInput)
 {
-    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    BOOST_FOREACH (auto interpolationTypePair, mInterpolationTypeMap)
     {
         auto& interpolationType = interpolationTypePair.second;
         if (interpolationType->IsDof(rDofType))
@@ -1220,14 +1279,13 @@ void NuTo::StructureBase::UpdateDofStatus()
 {
     std::set<Node::eDof> dofTypes;
     std::set<Node::eDof> activeDofTypes;
-    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    BOOST_FOREACH (auto interpolationTypePair, mInterpolationTypeMap)
     {
         const std::set<Node::eDof>& dofs = interpolationTypePair.second->GetDofs();
         dofTypes.insert(dofs.begin(), dofs.end());
 
         const std::set<Node::eDof>& activeDofs = interpolationTypePair.second->GetActiveDofs();
         activeDofTypes.insert(activeDofs.begin(), activeDofs.end());
-
     }
     dofTypes.erase(Node::eDof::COORDINATES);
     activeDofTypes.erase(Node::eDof::COORDINATES);
@@ -1235,10 +1293,10 @@ void NuTo::StructureBase::UpdateDofStatus()
     mDofStatus.SetDofTypes(dofTypes);
     mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-//    std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
-    //std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
+    //    std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
+    // std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
     mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
-//    mDofStatus.SetHasInteractingConstraints(true);
+    //    mDofStatus.SetHasInteractingConstraints(true);
 }
 
 int NuTo::StructureBase::GetNumTotalDofs() const
@@ -1277,7 +1335,8 @@ int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
 {
     auto it = mDofStatus.GetNumActiveDofsMap().find(rDofType);
     if (it == mDofStatus.GetNumActiveDofsMap().end())
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " + Node::DofToString(rDofType) + " dofs.");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
+                                       Node::DofToString(rDofType) + " dofs.");
 
     return it->second;
 }
@@ -1286,7 +1345,8 @@ int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
 {
     auto it = mDofStatus.GetNumDependentDofsMap().find(rDofType);
     if (it == mDofStatus.GetNumDependentDofsMap().end())
-        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " + Node::DofToString(rDofType) + " dofs.");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " +
+                                       Node::DofToString(rDofType) + " dofs.");
 
     return it->second;
 }
@@ -1323,7 +1383,6 @@ void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(std::string rDofType, bo
 }
 
 
-
 #ifdef _OPENMP
 //@brief determines the maximum independent sets and stores it at the structure
 void NuTo::StructureBase::CalculateMaximumIndependentSets()
@@ -1332,8 +1391,8 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 #define SELECTED 2
 #define DELETED 3
 #ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
+    std::clock_t start, end;
+    start = clock();
 #endif
     try
     {
@@ -1342,33 +1401,34 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
         GetElementsTotal(elementVector);
 
         /*    //for test purpose
-        	mMIS.resize(elementVector.size());
-        	for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
-        	{
-        		mMIS[elementCount].resize(1);
-        		mMIS[elementCount][0] = elementVector[elementCount];
-        	}
-        	return;
-        	*/
+                mMIS.resize(elementVector.size());
+                for (unsigned int elementCount = 0; elementCount< mMIS.size(); elementCount++)
+                {
+                        mMIS[elementCount].resize(1);
+                        mMIS[elementCount][0] = elementVector[elementCount];
+                }
+                return;
+                */
 
-        //Build the connectivity graph
-        //First get for all nodes all the elements
-        std::map<const NodeBase*, std::vector<unsigned int> > elementsPerNode;
-        for (unsigned int elementCount = 0; elementCount< elementVector.size(); elementCount++)
+        // Build the connectivity graph
+        // First get for all nodes all the elements
+        std::map<const NodeBase*, std::vector<unsigned int>> elementsPerNode;
+        for (unsigned int elementCount = 0; elementCount < elementVector.size(); elementCount++)
         {
-            for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumInfluenceNodes(); nodeCount++)
+            for (int nodeCount = 0; nodeCount < elementVector[elementCount]->GetNumInfluenceNodes(); nodeCount++)
             {
                 elementsPerNode[elementVector[elementCount]->GetInfluenceNode(nodeCount)].push_back(elementCount);
             }
         }
 
-        //Get the neighboring elements (always referring to the location in the vector elementVector)
-        std::vector< std::vector<int> > NeighborElements(elementVector.size());
-        for (auto itNode = elementsPerNode.begin(); itNode!=elementsPerNode.end(); itNode++)
+        // Get the neighboring elements (always referring to the location in the vector elementVector)
+        std::vector<std::vector<int>> NeighborElements(elementVector.size());
+        for (auto itNode = elementsPerNode.begin(); itNode != elementsPerNode.end(); itNode++)
         {
             for (unsigned int elementCount1 = 0; elementCount1 < itNode->second.size(); elementCount1++)
             {
-                for (unsigned int elementCount2 = elementCount1+1; elementCount2 < itNode->second.size(); elementCount2++)
+                for (unsigned int elementCount2 = elementCount1 + 1; elementCount2 < itNode->second.size();
+                     elementCount2++)
                 {
                     NeighborElements[itNode->second[elementCount1]].push_back(itNode->second[elementCount2]);
                     NeighborElements[itNode->second[elementCount2]].push_back(itNode->second[elementCount1]);
@@ -1376,69 +1436,73 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
             }
         }
 
-        //build the maximum independent sets
+        // build the maximum independent sets
         std::vector<int> elementState(elementVector.size());
-        for (unsigned int count=0; count<elementState.size(); count++)
+        for (unsigned int count = 0; count < elementState.size(); count++)
             elementState[count] = UNDONE;
 
-        unsigned int numDeleted=0;
+        unsigned int numDeleted = 0;
         unsigned int curMIS = 0;
         mMIS.resize(10);
-        while (numDeleted<elementVector.size())
+        while (numDeleted < elementVector.size())
         {
-            if (mMIS.size()<=curMIS)
-                mMIS.resize(curMIS+1);
-            for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+            if (mMIS.size() <= curMIS)
+                mMIS.resize(curMIS + 1);
+            for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
             {
-                if (elementState[countElement]!=UNDONE)
+                if (elementState[countElement] != UNDONE)
                     continue;
 
-                //add element to the set
-                //std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS << std::endl;
+                // add element to the set
+                // std::cout << "add element " << ElementGetId(elementVector[countElement]) << " to set " << curMIS <<
+                // std::endl;
                 (mMIS[curMIS]).push_back(elementVector[countElement]);
                 elementState[countElement] = DELETED;
                 numDeleted++;
 
-                //mark all the neighboring elements as selected, which prevents them to being added to this set
-                for (unsigned int theNeighborCount=0; theNeighborCount<NeighborElements[countElement].size(); theNeighborCount++)
+                // mark all the neighboring elements as selected, which prevents them to being added to this set
+                for (unsigned int theNeighborCount = 0; theNeighborCount < NeighborElements[countElement].size();
+                     theNeighborCount++)
                 {
-                    if (elementState[NeighborElements[countElement][theNeighborCount]]==UNDONE)
+                    if (elementState[NeighborElements[countElement][theNeighborCount]] == UNDONE)
                         elementState[NeighborElements[countElement][theNeighborCount]] = SELECTED;
                 }
             }
-            //reset the selected elements to be undone
-            for (unsigned int countElement=0; countElement<elementVector.size(); countElement++)
+            // reset the selected elements to be undone
+            for (unsigned int countElement = 0; countElement < elementVector.size(); countElement++)
             {
-                if (elementState[countElement]==SELECTED)
-                    elementState[countElement]=UNDONE;
-
+                if (elementState[countElement] == SELECTED)
+                    elementState[countElement] = UNDONE;
             }
             curMIS++;
         }
         mMIS.resize(curMIS);
-//            std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
-//            for (unsigned int count=0; count<mMIS.size(); count++)
-//            {
-//            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
-//            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
-//            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
-//            	std::cout << std::endl;
-//            }
-
+        //            std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
+        //            for (unsigned int count=0; count<mMIS.size(); count++)
+        //            {
+        //            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
+        //            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
+        //            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
+        //            	std::cout << std::endl;
+        //            }
     }
     catch (MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
+        e.AddMessage(
+                "[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
         throw e;
     }
 #ifdef SHOW_TIME
-    end=clock();
+    end = clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::CalculateMaximumIndependentSets] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger << "[NuTo::StructureBase::CalculateMaximumIndependentSets] " << difftime(end, start) / CLOCKS_PER_SEC
+                << "sec"
+                << "\n";
 #endif
 }
 #else
-//@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without openmp
+//@brief determines the maximum independent sets and stores it at the structure, do nothing for applications without
+// openmp
 void NuTo::StructureBase::CalculateMaximumIndependentSets()
 {
 }
@@ -1448,7 +1512,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 void NuTo::StructureBase::SetNumProcessors(int rNumProcessors)
 {
 #ifdef _OPENMP
-	mNumProcessors = rNumProcessors;
+    mNumProcessors = rNumProcessors;
 #endif //_OPENMP
 }
 //@brief get the number of processors for openmp parallelization
@@ -1463,18 +1527,21 @@ int NuTo::StructureBase::GetNumProcessors() const
 void NuTo::StructureBase::SetOMPNested(bool rNested)
 {
 #ifdef _OPENMP
-	omp_set_nested(rNested);
+    omp_set_nested(rNested);
 #endif //_OPENMP
 }
 
 bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType)
 {
-	InterpolationType* interpolationType;
-    for (auto interpolation = mInterpolationTypeMap.begin(); interpolation != mInterpolationTypeMap.end(); interpolation++){
-    	interpolationType = interpolation->second;
-    	if(interpolationType->IsConstitutiveInput(rDofType)){
-    		return true;
-    	}
+    InterpolationType* interpolationType;
+    for (auto interpolation = mInterpolationTypeMap.begin(); interpolation != mInterpolationTypeMap.end();
+         interpolation++)
+    {
+        interpolationType = interpolation->second;
+        if (interpolationType->IsConstitutiveInput(rDofType))
+        {
+            return true;
+        }
     }
 
     return false;

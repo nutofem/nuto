@@ -2,6 +2,7 @@
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/math/FullMatrix.h"
 
 NuTo::NURBSSurface::NURBSSurface(const Eigen::Vector2i& rDegree, const Eigen::VectorXd& rKnotsX,
                                  const Eigen::VectorXd& rKnotsY,
@@ -473,10 +474,12 @@ void NuTo::NURBSSurface::DuplicateKnots(int dir)
     RefineKnots(knotsToInsert, dir);
 }
 
-void NuTo::NURBSSurface::buildIGAStructure(NuTo::Structure& rStructure, const std::set<NuTo::Node::eDof>& rSetOfDOFS,
-                                           int rGroupElements, int rGroupNodes)
+Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>
+NuTo::NURBSSurface::buildIGAStructure(NuTo::Structure& rStructure, const std::set<NuTo::Node::eDof>& rSetOfDOFS,
+                                      int rGroupElements, int rGroupNodes, const std::string& rInterpolation)
 {
-    assert(rStructure.GetDimension() == 2);
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elements(GetNumIGAElements(1),
+                                                                                GetNumIGAElements(0));
 
     Eigen::MatrixXi nodeIDs(GetNumControlPoints(1), GetNumControlPoints(0));
 
@@ -489,7 +492,7 @@ void NuTo::NURBSSurface::buildIGAStructure(NuTo::Structure& rStructure, const st
             rStructure.GroupAddNode(rGroupNodes, id);
         }
 
-    int rNewInterpolation = rStructure.InterpolationTypeCreate("IGA2D");
+    int rNewInterpolation = rStructure.InterpolationTypeCreate(rInterpolation);
     std::vector<Eigen::VectorXd> vecKnots;
     vecKnots.push_back(GetKnotVector(0));
     vecKnots.push_back(GetKnotVector(1));
@@ -507,6 +510,9 @@ void NuTo::NURBSSurface::buildIGAStructure(NuTo::Structure& rStructure, const st
             int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(elementX, elementY),
                                               GetElementKnotIDs(elementX, elementY));
             rStructure.GroupAddElement(rGroupElements, id);
+            elements(elementY, elementX) = std::pair<int, int>(id, -1);
         }
     }
+
+    return elements;
 }
