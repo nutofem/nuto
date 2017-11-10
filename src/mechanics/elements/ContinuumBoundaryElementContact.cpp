@@ -45,7 +45,6 @@ void NuTo::ContinuumBoundaryElementContact<TDim>::CalculateNmatrixNormal(
 {
 	std::cout << "Bin here: CalculateNmatrixNormal" << std::endl;
 	Eigen::VectorXd GlobalCoordinateTheIP;
-	Eigen::Vector3d GlobalCoordinateTheIP3D;
 
 	rNmatrixNormal.setZero(TDim, rData.mN.at(Node::eDof::DISPLACEMENTS).cols());
 
@@ -56,8 +55,7 @@ void NuTo::ContinuumBoundaryElementContact<TDim>::CalculateNmatrixNormal(
 	// GlobalCoordinateTheIP = rData.mN.at(Node::eDof::COORDINATES) * rData.mNodalValues.at(Node::eDof::COORDINATES);
 	//==> check above calculation of the globals slave coordinate of rTheIp
 	// no, it is wrong cause rData does not contains mN for eDof::COORDINATES
-	GlobalCoordinateTheIP3D = this->ContinuumBoundaryElement<TDim>::GetGlobalIntegrationPointCoordinates(rTheIP);
-	GlobalCoordinateTheIP = GlobalCoordinateTheIP3D.segment(0, TDim);
+	GlobalCoordinateTheIP = GetGlobalIntegrationPointCoordinatesAfterDeformation(rData, rTheIP);
 
 	std::cout << "--- CalculateNmatrixNormal: " << GlobalCoordinateTheIP << std::endl;
 
@@ -422,6 +420,22 @@ Eigen::VectorXd NuTo::ContinuumBoundaryElementContact<TDim>::ProjectionToRigidBo
 	std::cout << "- - - : out of ProjectionToRigidBody " << coordinatesMaster.transpose() << std::endl;
 
 	return coordinatesMaster;
+}
+
+template <int TDim>
+Eigen::VectorXd NuTo::ContinuumBoundaryElementContact<TDim>::GetGlobalIntegrationPointCoordinatesAfterDeformation(EvaluateDataContinuumBoundary<TDim>& rData, int rIpNum) const
+{
+	// get the global coordinate (in initial configuration) of the integration point rIpNum
+	Eigen::Vector3d GlobalIpCoordinate3D = this->ContinuumBoundaryElement<TDim>::GetGlobalIntegrationPointCoordinates(rIpNum);
+	Eigen::VectorXd GlobalIpCoordinate   = GlobalIpCoordinate3D.segment(0, TDim);
+
+	// calculate the displacements in the
+	Eigen::VectorXd GlobalIpDsiplacement = rData.mN.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
+
+	// calculate the global coordinate in the actual configuration
+	GlobalIpCoordinate += GlobalIpDsiplacement;
+
+	return GlobalIpCoordinate;
 }
 
 template class NuTo::ContinuumBoundaryElementContact<1>;

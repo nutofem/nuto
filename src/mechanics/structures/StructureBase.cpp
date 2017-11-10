@@ -27,6 +27,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "base/Exception.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
@@ -583,6 +584,97 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic()
     deltaDof_dt0.K = NodeCalculateDependentDofValues(deltaDof_dt0.J);
     NodeMergeDofValues(0, deltaDof_dt0);
 }
+
+
+
+void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, int rMaxNumIter)
+{
+    if (GetNumTimeDerivatives() > 0)
+        throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ + "] Only use this method for a system with 0 time derivatives.");
+
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    const DofStatus& dofStatus = GetDofStatus();
+
+    BlockScalar normResidual(dofStatus);												// my variant
+
+    StructureOutputBlockVector  extForce(dofStatus, true);
+    StructureOutputBlockVector  intForce(dofStatus, true);
+
+    StructureOutputBlockVector  residual(dofStatus, true);
+    BlockFullVector<double>     residual_mod(dofStatus);
+
+    StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
+    StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
+    StructureOutputBlockVector  trial_dof_dt0(dofStatus, true);
+
+    StructureOutputBlockMatrix  hessian0(dofStatus, true);
+
+    const auto& cmat = GetAssembler().GetConstraintMatrix();
+
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0;
+    evaluate_InternalGradient_Hessian0      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    evaluate_InternalGradient_Hessian0      [eStructureOutput::HESSIAN0] = &hessian0;
+
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
+    evaluate_InternalGradient               [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+
+    ConstitutiveInputMap inputMap;
+    inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
+
+    Evaluate(inputMap, evaluate_InternalGradient);
+
+    extForce = BuildGlobalExternalLoadVector();
+
+    dof_dt0 = NodeExtractDofValues(0);
+    dof_dt0.K = NodeCalculateDependentDofValues(dof_dt0.J);
+
+    auto rhs = intForce - extForce;
+//    rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());							// original from Peter
+    residual_mod = Assembler::ApplyCMatrix(rhs, GetAssembler().GetConstraintMatrix());	// my variant
+
+//  BlockScalar normResidual = residual_mod.CalculateInfNorm();							// original from Peter
+    normResidual = residual_mod.CalculateInfNorm();										// my variant
+
+    int iteration = 0;
+    while(!(normResidual < tol) && iteration < rMaxNumIter)
+    {
+        Evaluate(inputMap, evaluate_InternalGradient_Hessian0);
+
+        // solve
+        hessian0.ApplyCMatrix(GetAssembler().GetConstraintMatrix());
+        delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
+        delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
+
+        //calculate line search trial state
+        trial_dof_dt0 = dof_dt0 + delta_dof_dt0;
+        NodeMergeDofValues(0, trial_dof_dt0.J, trial_dof_dt0.K);
+        ElementTotalUpdateTmpStaticData();
+
+        Evaluate(inputMap, evaluate_InternalGradient);
+
+        residual = intForce - extForce;
+//      residual.ApplyCMatrix(residual_mod, cmat);												// original from Peter
+        residual_mod = Assembler::ApplyCMatrix(residual, GetAssembler().GetConstraintMatrix());	// my variant
+
+        normResidual = residual_mod.CalculateInfNorm();
+
+        dof_dt0 = trial_dof_dt0;
+
+        std::cout << "Iteration: " << iteration << std::endl;
+        for (const auto dof : GetDofStatus().GetActiveDofTypes())
+        {
+        	std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Residual: " << Node::DofToString(dof) << ": " << normResidual[dof] << std::endl;
+        }
+        std::cout << "--------------------------\n" << std::endl;
+
+        iteration++;
+    }
+}
+
+
+
+
 
 void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup,
                                                                       NuTo::Node::eDof,

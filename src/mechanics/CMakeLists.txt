@@ -116,6 +116,7 @@ set(MechanicsInterpolationtypesSources
 set(MechanicsIGASources
     IGA/BSplineCurve.cpp
     IGA/BSplineSurface.cpp
+    IGA/NURBSCurve.cpp
     )
 
 set(MechanicsLoadsSources

@@ -217,6 +217,8 @@ public:
 
     void SolveGlobalSystemStaticElastic();
 
+    void SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, int rMaxNumIter);
+
     void Contact(const std::vector<int>& rElementGroups);
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);

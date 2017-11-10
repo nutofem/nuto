@@ -80,6 +80,8 @@ protected:
 
     Eigen::VectorXd ProjectionToRigidBody(Eigen::VectorXd &rSlaveCoordinates) const;
 
+    Eigen::VectorXd GetGlobalIntegrationPointCoordinatesAfterDeformation(EvaluateDataContinuumBoundary<TDim>& rData, int rIpNum) const;
+
     ContactGap mGapProblem;
 
 };
