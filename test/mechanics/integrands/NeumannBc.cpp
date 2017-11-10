@@ -95,11 +95,13 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
     std::vector<NodeSimple*> nodePtrs;
     std::vector<NodeSimple*> nodesDispPtrs;
 
-    for (NodeSimple node : nodes)
-        nodePtrs.push_back(&node);
+    nodePtrs.push_back(&nodes[0]);
+    nodePtrs.push_back(&nodes[1]);
+    nodePtrs.push_back(&nodes[2]);
 
-    for (NodeSimple node : nodesDisp)
-        nodesDispPtrs.push_back(&node);
+    nodesDispPtrs.push_back(&nodesDisp[0]);
+    nodesDispPtrs.push_back(&nodesDisp[1]);
+    nodesDispPtrs.push_back(&nodesDisp[2]);
 
     // coordinate element
     InterpolationTriangleLinear coordinateInterpolation(3);
@@ -125,9 +127,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     for (int ip = 0; ip < 3; ip++)
     {
-
         CellIpData cellIpData(element, dummyJac, points[ip]);
-
 
         auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
 
