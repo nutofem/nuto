@@ -39,6 +39,7 @@ public:
         NuTo::DofVector<double> gradient;
 
         gradient[mDofType] = N.transpose() * mFactor;
+
         return gradient;
     }
 
