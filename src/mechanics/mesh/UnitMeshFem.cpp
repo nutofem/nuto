@@ -19,12 +19,6 @@ MeshFem CreateNodes2D(int numX, int numY)
     return mesh;
 }
 
-void TransformNodes(Groups::Group<NodeSimple> nodes, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
-{
-    for (auto& node : nodes)
-        node.SetValues(f(node.GetValues()));
-}
-
 MeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
 {
     MeshFem mesh = CreateNodes2D(numX, numY);
@@ -58,8 +52,12 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
     return mesh;
 }
 
-void UnitMeshFem::Transform(MeshFem* rMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
+MeshFem UnitMeshFem::Transform(MeshFem&& oldMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
 {
-    auto nodes = rMesh->NodesTotal();
-    TransformNodes(nodes, f);
+    // Build a group (MeshFem::NodesTotal() selects all coordinate nodes) to avoid duplicates. Otherwise, the
+    // transformation is applied multiple times. This is, however, a bit of a bottleneck for big meshes.
+    for (auto& node : oldMesh.NodesTotal())
+        node.SetValues(f(node.GetValues()));
+
+    return std::move(oldMesh);
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/TypeDefs.h"
 
 namespace NuTo
@@ -12,7 +12,12 @@ public:
 
     //! @brief extracts all node values of this element
     virtual NodeValues ExtractNodeValues() const = 0;
+
     virtual int GetDofDimension() const = 0;
+    
+    //! @brief extract the dof numbers from its nodes.
+    //! @remark They have to be in the same order as defined in ExtractNodeValues()
+    virtual Eigen::VectorXi GetDofNumbering() const = 0;
     virtual int GetNumNodes() const = 0;
     virtual NMatrix GetNMatrix(NaturalCoords ipCoords) const = 0;
     virtual ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const = 0;
@@ -23,5 +28,6 @@ inline Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoord
 {
     return element.GetNMatrix(ipCoords) * element.ExtractNodeValues();
 }
+
 
 } /* NuTo */

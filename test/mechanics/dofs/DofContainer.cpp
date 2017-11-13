@@ -25,11 +25,12 @@ BOOST_AUTO_TEST_CASE(DofContainerAccess)
 BOOST_AUTO_TEST_CASE(DofContainerInsert)
 {
     NuTo::DofContainer<int> container;
-    NuTo::DofType dof0("0", 1);
-    container.Insert(dof0, 42);
-    BOOST_CHECK_EQUAL(container[dof0], 42);
-    container.Insert(dof0, 6174);
-    BOOST_CHECK_EQUAL(container[dof0], 6174);
+    NuTo::DofType dof("0", 1);
+    container.Insert(dof, 42);
+    BOOST_CHECK_EQUAL(container[dof], 42);
+    BOOST_CHECK_THROW(container.Insert(dof, 6174), NuTo::Exception);
+    container[dof] = 6174;
+    BOOST_CHECK_EQUAL(container[dof], 6174);
 }
 
 BOOST_AUTO_TEST_CASE(DofContainerAccessMany)

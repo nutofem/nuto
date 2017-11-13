@@ -53,9 +53,9 @@ public:
         }
     }
 
-    DofVector<int> DofNumbering() override
+    Eigen::VectorXi DofNumbering(DofType dof) override
     {
-        return DofVector<int>();
+        return mElements.DofElement(dof).GetDofNumbering();
     }
 
 private:
