@@ -110,7 +110,7 @@ void Constraints::TermChecker::CheckEquation(Equation e)
 
     // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
     // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
-    for (int iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
     {
         Term newTerm = e.GetTerms()[iNewTerm];
         if (Contains(mDependentTerms, newTerm))
@@ -119,6 +119,6 @@ void Constraints::TermChecker::CheckEquation(Equation e)
     }
 
     mDependentTerms.insert(e.GetTerms()[0]);
-    for (int iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
         mOtherTerms.insert(e.GetTerms()[iNewTerm]);
 }

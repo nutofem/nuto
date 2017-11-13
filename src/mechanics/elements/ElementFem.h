@@ -17,7 +17,7 @@ public:
     {
         for (NodeSimple* node : nodes)
             mNodes.push_back(*node);
-        assert(mNodes.size() == interpolation.GetNumNodes());
+        assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
         assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
@@ -26,7 +26,7 @@ public:
         : mNodes(nodes)
         , mInterpolation(interpolation)
     {
-        assert(mNodes.size() == interpolation.GetNumNodes());
+        assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
         assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
@@ -34,7 +34,7 @@ public:
     {
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
-        for (size_t i = 0; i < GetNumNodes(); ++i)
+        for (int i = 0; i < GetNumNodes(); ++i)
             nodeValues.segment(dim * i, dim) = GetNode(i).GetValues();
         return nodeValues;
     }
@@ -87,14 +87,14 @@ public:
 
     NodeSimple& GetNode(int i)
     {
-        assert(i < mNodes.size());
+        assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
 
     const NodeSimple& GetNode(int i) const
     {
-        assert(i < mNodes.size());
+        assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
