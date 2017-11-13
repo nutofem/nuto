@@ -20,6 +20,11 @@ public:
         return this->mData[CantorParingFunction(d0.Id(), d1.Id())];
     }
 
+    const T& operator[](const DofType& dofType) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "This method is for vectors only, not for matrices.");
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const DofMatrixContainer<T>& dofMatrix)
     {
         for (int i = 0; i < dofMatrix.mData.size(); ++i)

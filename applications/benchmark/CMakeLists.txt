@@ -46,4 +46,13 @@ target_include_directories(BlockVectors
     PRIVATE ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(BlockVectors)
 
+
+add_executable(ConstraintsBenchmark
+    EXCLUDE_FROM_ALL ConstraintsBenchmark.cpp
+    ${CMAKE_SOURCE_DIR}/src/mechanics/constraintsPde/Constraints.cpp)
+target_include_directories(ConstraintsBenchmark
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(ConstraintsBenchmark)
+
+
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
