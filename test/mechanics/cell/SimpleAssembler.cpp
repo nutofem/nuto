@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(AssemberGradient)
     struct Gradient : NuTo::VectorOperation
     {
         NuTo::DofVector<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const
+                                           const NuTo::CellIpData&) const override
         {
             throw;
         }
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(AssemberHessian)
     struct Hessian : NuTo::MatrixOperation
     {
         NuTo::DofMatrix<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const
+                                           const NuTo::CellIpData&) const override
         {
             throw;
         }

@@ -27,7 +27,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const DofMatrixContainer<T>& dofMatrix)
     {
-        for (int i = 0; i < dofMatrix.mData.size(); ++i)
+        for (size_t i = 0; i < dofMatrix.mData.size(); ++i)
         {
             auto xy = CantorPairingFunctionReverse(i);
             out << "=== " << xy.first << " " << xy.second << " ===" << std::endl;
