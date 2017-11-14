@@ -22,13 +22,16 @@ if(EIGEN_ROOT)
         ${_eigen_INCLUDE_SEARCH_DIRS})
 endif()
 
-# search for header dSFMT.h
 find_path(EIGEN_INCLUDE_DIR
     NAMES eigen3/Eigen/Core
     HINTS ${_eigen_INCLUDE_SEARCH_DIRS})
 
+# I cannot make cmake find EIGEN_INCLUDE_DIR directly. For 
+# debian, it returns a path without "eigen3". Add that.
+set(EIGEN_INCLUDE_DIR "${EIGEN_INCLUDE_DIR}/eigen3")
+
 # automatically parse the version number
-file(READ "${EIGEN_INCLUDE_DIR}/eigen3/Eigen/src/Core/util/Macros.h"
+file(READ "${EIGEN_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h"
     _eigen_version_header)
 string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)"
     _eigen_world_version_match "${_eigen_version_header}")
