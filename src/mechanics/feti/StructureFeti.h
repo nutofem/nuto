@@ -5,7 +5,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 #include <cstring>
 #include <fstream>
 #include <set>

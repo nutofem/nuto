@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include <eigen3/Eigen/Dense> // for ::determinant()
+#include <Eigen/Dense> // for ::determinant()
 
 using namespace NuTo;
 

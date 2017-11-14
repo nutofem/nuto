@@ -3,7 +3,7 @@
 
 #include "base/Exception.h"
 #include <memory>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace NuTo
 {

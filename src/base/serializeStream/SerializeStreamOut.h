@@ -1,7 +1,7 @@
 #pragma once
 #include "base/serializeStream/SerializeStreamBase.h"
 #include <typeinfo>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace Eigen
 {
