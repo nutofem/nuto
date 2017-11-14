@@ -34,6 +34,7 @@ function(add_unit_test ClassName)
     target_include_directories(${ClassName}
         PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     target_link_libraries(${ClassName} Fakeit)
+    target_link_libraries(${ClassName} Eigen3::Eigen)
 
     # generate a ctest name for the test
     string(REPLACE "." "::" testname ${relpath})

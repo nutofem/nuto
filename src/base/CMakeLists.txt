@@ -11,3 +11,5 @@ set(BaseSources
 
 create_nuto_module(Base "${BaseSources}"
     ${CMAKE_CURRENT_BINARY_DIR}/Version.cpp)
+
+target_link_libraries(Base Eigen3::Eigen)
