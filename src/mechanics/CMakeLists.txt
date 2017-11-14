@@ -233,7 +233,7 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics Base Math Boost::filesystem Ann::Ann Eigen3::Eigen)
+target_link_libraries(Mechanics Base Math Boost::filesystem Ann::Ann)
 
 if(ENABLE_MPI)
     message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")
