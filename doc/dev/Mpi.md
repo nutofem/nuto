@@ -40,35 +40,94 @@ Process 0 (domain 0) shares a node with process 1 (domain 1). In process 0, it h
 ~~~
 GlobalDofNumber(process 0, 1) == GlobalDofNumber(process 1, 0) = 2;
 ~~~
-We will call this mapping **LocalToGlobalMapping** and its calculation probably the main issue. 
+We will call this mapping **LocalToGlobalMapping** and its calculation is the main issue. 
 
 # Calculate **LocalToGlobalMapping**
 
-## Hardcode
+__Assumption:__ The meshes we want to solve fit on one core. So on only one core, we can
 
-- (This is what Bernd did in [here](https://github.com/nutofem/nuto/blob/2bb2e0ed78d6e8187b7cc0b65d15e6e0275f99a9/applications/custom/TestClasses/2D_Test.cpp))
-- Build it manually with knowledge of your mesh files.
-- mainly for test purposes.
+- import/create a geometry mesh
+- create as many "dof layers" as we want
+- perform the numbering
+- split the mesh into `nProc` smaller meshes (external mesh partitioning lib)
+- via `boost::serialize` either
+    - MPI communicate mesh to other processes
+    - write meshes to disk and read them with other processes
 
-## Use a mesh file
+Translated into a `main.cpp`, this could look like:
 
-- The mesh file contains a node numbering for each domain. The nodes are numbered such that shared nodes have the same node number. Problems arise when constraints require a renumbering. This renumbering has to be communicated with other processes.
-- This file should _not_ contain constraints.
-- ...
+~~~cpp
+MeshFem meshForThisRank;
 
-## Calculate internally with 3D data structure
+if (rank == 0)
+{
+    MeshFem mesh = Mesh::ReadFromGmsh(pathToWholeGmshMesh);
+    Mesh::AddDofInterpolation(&mesh, ...);
+    Constraints dummyConstraintsForNumbering = Main::ApplyConstraints(mesh);
+    DofNumbering::Build(&mesh, dummyConstraintsForNumbering);
+    // Each node now has a _global_ dof number.
+   
+    std::vector<MeshFem> meshes = Mesh::Partition(mesh, nProcs);
 
-- Have something like a 3D subbox structure.
-- ...
+    meshForThisRank = meshes[0];
+    for (int iRank = 1; iRank < nProcs; ++iRank)
+        boostMpiCommunicator.send(iRank, meshes[iRank]); // requires boost::serialize for MeshFem (!)
+}
+else
+{
+    boostMpiCommunicator.recieve(&meshForThisRank);
+}
+
+Constraints constraints = Main::ApplyConstraints(meshForThisRank);
+auto localToGlobalMapping = DofNumbering::BuildMpi(&meshForThisRank, constraints);
+
+auto cells = Main::CreateIntegrationCells(meshForThisRank);
+
+auto domainMatrix = SimpleAssembler::BuildMatrix(cells, ...);
+auto domainRhs = SimpleAssembler::BuildVector(cells, ...);
+// apply constraint-matrix ...
+
+MpiSolver solver(localToGlobalMapping);
+auto domainSolution = solver.Solve(domainMatrix.JJ, domainRhs.J);
+//...
+~~~
+
+## Some key functions
+
+create the partitioned mesh
+
+~~~cpp
+std::vector<MeshFem> Mesh::Partition(MeshFem mesh, int nProcs)
+{
+    auto graph = Mesh::BuildGraph(mesh);
+    std::vector<SomePartitionInfo> partitioningOutput = External::Partitioning(graph, nProcs);
+    std::vector<Group<ElementFem>> partitionedElements = Mesh::PartitionPostprocess(partitioningOutput);
+    return Mesh::SplitMesh(mesh, partitionedElements);
+}
+~~~
 
 
-# Implementation
+Building an mpi dof numbering
 
-Say, we have this LocalToGlobalMapping. We can implement the `MpiSolver` according to the stuff Bernd did. No problem here.
+~~~cpp
+std::vector<int> DofNumbering::BuildMpi(MeshFem* rMesh, Constraints constraints);
+{
+    // 1) extract global dof numbers (= current dof numbers at the nodes)
+    // 2) perform DofNumbering::Build() to create a local numbering at the nodes
+    // 3) compare both numberings to
+    return localToGlobal;
+}
+~~~
 
-- build a graph that contains the mapping
-- convert the Eigen::SparseMatrix from the assembler to a Epetra_CsrMatrix with this mapping
-- solve using some solver provided by trilinos 
-- return the solution
+mpi solver
 
+~~~cpp
+Eigen::VectorXd MpiSolver::Solve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b)
+{
+    MpiHelper::AssembleLocalToGlobal(A, &mTpetraMatrix);
+    MpiHelper::AssembleLocalToGlobal(b, &mTpetraVector);
+    auto solution = mSomeTrilinosSolver.Solve(mTpetraMatrix, mTpetraVector);
+    return MpiHelper::ToEigen(solution.GetContributionForThisRank());
+}
+~~~
 
