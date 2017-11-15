@@ -91,5 +91,5 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
         BoostUnitTest::CheckEigenMatrix(gradient, hessian * u);
     }
 
-    BOOST_CHECK_CLOSE(cell.Integrate(NuTo::CellInterface::ScalarFunction(VolumeF)), lx * ly, 1.e-10);
+    BOOST_CHECK_CLOSE(cell.Integrate(VolumeF), lx * ly, 1.e-10);
 }
