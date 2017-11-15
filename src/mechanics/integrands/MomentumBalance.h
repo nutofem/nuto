@@ -23,8 +23,7 @@ public:
     {
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT)
+    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
@@ -35,8 +34,7 @@ public:
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT)
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
