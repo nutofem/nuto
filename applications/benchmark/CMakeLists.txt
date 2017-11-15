@@ -38,4 +38,7 @@ target_link_libraries(ParallelAssembly
 target_include_directories(ParallelAssembly
     PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
 
+add_executable(GoogleBenchmarkExample GoogleBenchmarkExample.cpp)
+target_link_libraries(GoogleBenchmarkExample benchmark)
+
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
