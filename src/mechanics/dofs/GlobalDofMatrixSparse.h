@@ -11,5 +11,14 @@ public:
     DofMatrixSparse<double> JK;
     DofMatrixSparse<double> KJ;
     DofMatrixSparse<double> KK;
+
+    GlobalDofMatrixSparse& operator+=(const GlobalDofMatrixSparse& rhs)
+    {
+        this->JJ += rhs.JJ;
+        this->JK += rhs.JK;
+        this->KJ += rhs.KJ;
+        this->KK += rhs.KK;
+        return *this;
+    }
 };
 } /* NuTo */

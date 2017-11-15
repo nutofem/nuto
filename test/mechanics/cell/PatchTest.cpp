@@ -27,6 +27,26 @@
 using namespace NuTo;
 using namespace NuTo::Groups;
 
+//! @brief automatically create the lambda
+//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
+template <typename TObject, typename TReturn>
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
+{
+    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
+    };
+}
+//! @brief automatically create the lambda
+//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
+template <typename TObject, typename TReturn>
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
+{
+    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return (object.*f)(cellData, cellIpData);
+    };
+}
+
+
 MeshFem QuadPatchTestMesh()
 {
     /* Something like this:
@@ -98,16 +118,18 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     constexpr double E = 20000;
     constexpr double nu = 0.2;
     Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
-    Integrands::TimeDependent::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    Integrands::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    auto MomentumGradientF = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
+    auto MomentumHessian0F = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
 
     boost::ptr_vector<CellInterface> cellContainer;
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
-    Group<CellInterface> cellGroup;
+    Group<CellInterface> momentumBalanceCells;
     for (ElementCollection& element : mesh.Elements)
     {
-        cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
-        cellGroup.Add(cellContainer.back());
+        cellContainer.push_back(new Cell(element, integrationType));
+        momentumBalanceCells.Add(cellContainer.back());
     }
 
     // ************************************************************************
@@ -132,18 +154,23 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
     Eigen::Vector2d pressureBC(1, 0);
-    Integrands::TimeDependent::NeumannBc<2> neumannBc(displ, pressureBC);
+    Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
+    auto NeumannGradientF = Bind(neumannBc, &Integrands::NeumannBc<2>::Gradient);
+    auto NeumannHessian0F = Bind(neumannBc, &Integrands::NeumannBc<2>::Hessian0);
 
-    cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, neumannBc));
-    cellGroup.Add(cellContainer.back());
+    cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc));
+    auto& neumannCell = cellContainer.back();
 
     // ************************************************************************
     //                  assemble and solve
     // ************************************************************************
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
 
-    GlobalDofVector gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
-    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
+    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannGradientF);
+
+    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+    hessian += assembler.BuildMatrix({neumannCell}, {displ}, NeumannHessian0F);
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
     Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ]);
@@ -208,7 +235,9 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     constexpr double E = 20000;
     constexpr double nu = 0.0;
     Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
-    Integrands::TimeDependent::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    Integrands::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    auto GradientF = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
+    auto Hessian0F = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
 
     boost::ptr_vector<CellInterface> cellContainer;
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
@@ -216,7 +245,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     Group<CellInterface> cellGroup;
     for (auto& element : mesh.Elements)
     {
-        cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
+        cellContainer.push_back(new Cell(element, integrationType));
         cellGroup.Add(cellContainer.back());
     }
 
@@ -225,8 +254,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
 
-    auto gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
-    auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
+    auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
+    auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
 
     Eigen::MatrixXd kJJ = Eigen::MatrixXd(hessian.JJ(displ, displ));
     Eigen::MatrixXd kJK = Eigen::MatrixXd(hessian.JK(displ, displ));
