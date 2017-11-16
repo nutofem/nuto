@@ -23,7 +23,14 @@ libann-dev libarpack2-dev libomp-dev gmsh
 Then, you need to check out the source code
 
 ```
-git clone https://github.com/nutofem/nuto.git
+git clone --recursive https://github.com/nutofem/nuto.git
+```
+
+If you forgot the '--recursive' execute 
+
+```
+git submodule init
+git submodule update
 ```
 
 Create a build directory and switch to it
