@@ -8,6 +8,7 @@ foreach(test
     AssembleSparseMatrix
     ShapeFunctionMemoization
     Solvers
+    MeshFemBenchmark
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
@@ -35,7 +36,23 @@ append_to_benchmarks(DenseSpherePacking)
 add_executable(NewtonRaphsonBenchmark
     EXCLUDE_FROM_ALL NewtonRaphsonBenchmark.cpp)
 target_include_directories(NewtonRaphsonBenchmark
-    PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
+
+
+add_executable(BlockVectors
+    EXCLUDE_FROM_ALL BlockVectors.cpp)
+target_include_directories(BlockVectors
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(BlockVectors)
+
+
+add_executable(ConstraintsBenchmark
+    EXCLUDE_FROM_ALL ConstraintsBenchmark.cpp
+    ${CMAKE_SOURCE_DIR}/src/mechanics/constraintsPde/Constraints.cpp)
+target_include_directories(ConstraintsBenchmark
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(ConstraintsBenchmark)
+
 
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})

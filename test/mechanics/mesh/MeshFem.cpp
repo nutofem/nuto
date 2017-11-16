@@ -4,6 +4,11 @@
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
+void SetStuff(NuTo::MeshFem& m)
+{
+    m.Nodes[0].SetValue(0, 0);
+}
+
 NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 {
     NuTo::MeshFem mesh;
@@ -28,8 +33,17 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     NuTo::DofType d("Dof", 1);
     NuTo::MeshFem mesh = DummyMesh(d);
 
-    auto& e0 = mesh.Elements.front();
+    auto& e0 = mesh.Elements[0];
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
+
+    mesh.Nodes[0].SetValue(0, 4);
+    BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
+
+    NuTo::MeshFem meshMoved = std::move(mesh);
+    meshMoved.Nodes[0].SetValue(0, 42);
+    auto& e0FromMove = meshMoved.Elements[0];
+    BoostUnitTest::CheckVector(e0FromMove.CoordinateElement().ExtractNodeValues(),
+                               std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
 
 BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
@@ -58,16 +72,30 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionAxis)
     NuTo::DofType d("Dof", 1);
     NuTo::MeshFem mesh = DummyMesh(d);
 
-    auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0), d);
-    auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0), d);
+    {
+        auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0), d);
+        auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0), d);
 
-    auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y, d);
-    BOOST_CHECK_EQUAL(group0.Size(), 2);
-    BOOST_CHECK(group0.Contains(nd0));
-    BOOST_CHECK(group0.Contains(nd1));
+        auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y, d);
+        BOOST_CHECK_EQUAL(group0.Size(), 2);
+        BOOST_CHECK(group0.Contains(nd0));
+        BOOST_CHECK(group0.Contains(nd1));
 
-    auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, d, 2.);
-    BOOST_CHECK(group1.Empty());
+        auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, d, 2.);
+        BOOST_CHECK(group1.Empty());
+    }
+    {
+        auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0));
+        auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0));
+
+        auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y);
+        BOOST_CHECK_EQUAL(group0.Size(), 2);
+        BOOST_CHECK(group0.Contains(nd0));
+        BOOST_CHECK(group0.Contains(nd1));
+
+        auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, 2.);
+        BOOST_CHECK(group1.Empty());
+    }
 }
 
 BOOST_AUTO_TEST_CASE(MeshConvert)
@@ -94,7 +122,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     mesh.Elements.Add({{{n1, n3, n2}, interpolationCoords}});
 
     int expectedNumCoordinateNodes = 4;
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -105,7 +133,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 
 
@@ -126,5 +154,5 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;
-    BOOST_CHECK_EQUAL(mesh.Nodes.size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
 }

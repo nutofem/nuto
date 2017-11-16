@@ -7,11 +7,11 @@ fakeit::Mock<NuTo::CellInterface> MockCell(const NuTo::DofType& dof, Eigen::Vect
 {
     fakeit::Mock<NuTo::CellInterface> cell;
 
-    NuTo::DofVector<int> mockNumbering;
+    Eigen::VectorXi mockNumbering;
     NuTo::DofVector<double> mockGradient;
     NuTo::DofMatrix<double> mockHessian;
 
-    mockNumbering[dof] = numbering;
+    mockNumbering = numbering;
     mockGradient[dof] = Eigen::Vector3d(11, 22, 33);
     mockHessian(dof, dof).resize(3, 3);
     mockHessian(dof, dof) << 11, 12, 13, 21, 22, 23, 31, 32, 33;
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(AssemberGradient)
     struct Gradient : NuTo::VectorOperation
     {
         NuTo::DofVector<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const
+                                           const NuTo::CellIpData&) const override
         {
             throw;
         }
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(AssemberHessian)
     struct Hessian : NuTo::MatrixOperation
     {
         NuTo::DofMatrix<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const
+                                           const NuTo::CellIpData&) const override
         {
             throw;
         }

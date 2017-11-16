@@ -40,7 +40,9 @@ set(MechanicsConstitutiveSources
 
 set(MechanicsConstraintSources
     constraints/Constraints.cpp
+    constraintsPde/Constraints.cpp
     constraints/ConstraintCompanion.cpp
+    constraintsPde/ConstraintCompanion.cpp
     )
 
 set(MechanicsDofSubMatrixStorageSources
@@ -50,6 +52,10 @@ set(MechanicsDofSubMatrixStorageSources
     dofSubMatrixStorage/BlockScalar.cpp
     dofSubMatrixStorage/BlockFullVector.cpp
     dofSubMatrixStorage/BlockFullMatrix.cpp
+    )
+
+set(MechanicsDofsSources
+    dofs/DofNumbering.cpp
     )
 
 list(APPEND MechanicsElementsSources
@@ -220,6 +226,7 @@ set(MechanicsSources
     ${MechanicsConstitutiveSources}
     ${MechanicsConstraintSources}
     ${MechanicsCrackSources}
+    ${MechanicsDofsSources}
     ${MechanicsDofSubMatrixStorageSources}
     ${MechanicsElementsSources}
     ${MechanicsGroupsSources}
