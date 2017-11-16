@@ -23,6 +23,8 @@ public:
 
     virtual std::vector<IpValues> GetIpValues() = 0;
 
+    virtual std::vector<Eigen::VectorXd> GetIpCoordinates() = 0;
+
     virtual const ElementCollection& GetElementCollection() const = 0;
 };
 } /* NuTo */

@@ -63,6 +63,11 @@ public:
         throw;
     }
 
+    std::vector<Eigen::VectorXd> GetIpCoordinates() override
+    {
+        throw;
+    }
+
     const ElementCollection& GetElementCollection() const override
     {
         return mElements;

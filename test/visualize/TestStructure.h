@@ -62,7 +62,6 @@ public:
 
     NuTo::Groups::Group<NuTo::CellInterface> Cells()
     {
-
         Method(cell0, GetElementCollection) = elements0;
         Method(cell0, GetIpValues) = {ip00, ip01};
         Method(cell1, GetElementCollection) = elements1;
