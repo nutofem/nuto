@@ -2,7 +2,6 @@
 
 #include <eigen3/Eigen/Dense> // for determinant
 #include "mechanics/interpolation/TypeDefs.h"
-#include <iostream>
 
 namespace NuTo
 {
@@ -34,7 +33,7 @@ public:
         }
         else
         {
-            assert(globalDimension = interpolationDimension + 1);
+            assert(globalDimension == interpolationDimension + 1);
             switch (globalDimension)
             {
             case 2:
