@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "visualize/GroupAverage.h"
+#include "visualize/AverageVisualizer.h"
 #include "visualize/XMLWriter.h"
 #include "TestStructure.h"
 
@@ -12,7 +12,6 @@ public:
         BOOST_CHECK_EQUAL(grid.mCells.size(), 2);
     }
 };
-
 
 
 BOOST_AUTO_TEST_CASE(GroupAverage)

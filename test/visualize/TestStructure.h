@@ -46,9 +46,13 @@ class VisualizeTestStructure
 
     NuTo::IpValues ip00 = {{Eigen::Vector3d(1, 1, 1), "Stress"}, {Eigen::Vector3d(10, 10, 10), "Strain"}};
     NuTo::IpValues ip01 = {{Eigen::Vector3d(2, 2, 2), "Stress"}, {Eigen::Vector3d(20, 20, 20), "Strain"}};
+    NuTo::IpValues ip02 = {{Eigen::Vector3d(3, 3, 3), "Stress"}, {Eigen::Vector3d(30, 30, 30), "Strain"}};
+    NuTo::IpValues ip03 = {{Eigen::Vector3d(4, 4, 4), "Stress"}, {Eigen::Vector3d(40, 40, 40), "Strain"}};
 
-    NuTo::IpValues ip10 = {{Eigen::Vector3d(3, 3, 3), "Stress"}, {Eigen::Vector3d(30, 30, 30), "Strain"}};
-    NuTo::IpValues ip11 = {{Eigen::Vector3d(4, 4, 4), "Stress"}, {Eigen::Vector3d(40, 40, 40), "Strain"}};
+    NuTo::IpValues ip10 = {{Eigen::Vector3d(5, 5, 5), "Stress"}, {Eigen::Vector3d(50, 50, 50), "Strain"}};
+    NuTo::IpValues ip11 = {{Eigen::Vector3d(6, 6, 6), "Stress"}, {Eigen::Vector3d(60, 60, 60), "Strain"}};
+    NuTo::IpValues ip12 = {{Eigen::Vector3d(7, 7, 7), "Stress"}, {Eigen::Vector3d(70, 70, 70), "Strain"}};
+    NuTo::IpValues ip13 = {{Eigen::Vector3d(8, 8, 8), "Stress"}, {Eigen::Vector3d(80, 80, 80), "Strain"}};
 
     fakeit::Mock<NuTo::CellInterface> cell0;
     fakeit::Mock<NuTo::CellInterface> cell1;
@@ -63,9 +67,9 @@ public:
     NuTo::Groups::Group<NuTo::CellInterface> Cells()
     {
         Method(cell0, GetElementCollection) = elements0;
-        Method(cell0, GetIpValues) = {ip00, ip01};
+        Method(cell0, GetIpValues) = {ip00, ip01, ip02, ip03};
         Method(cell1, GetElementCollection) = elements1;
-        Method(cell1, GetIpValues) = {ip10, ip11};
+        Method(cell1, GetIpValues) = {ip10, ip11, ip12, ip13};
 
         return {cell0.get(), cell1.get()};
     }
