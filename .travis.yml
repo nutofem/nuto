@@ -12,13 +12,13 @@ notifications:
 jobs:
     include:
         - stage: normal builds
-          env: BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
+          env: BUILD_TYPE=Release OPENMP=FALSE
           compiler: clang
-        - env: BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
+        - env: BUILD_TYPE=Release OPENMP=TRUE
           compiler: gcc
-        - env: BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
+        - env: BUILD_TYPE=Release OPENMP=FALSE
           compiler: gcc
-        - env: BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=--coverage
           compiler: gcc
         - stage: compiler warnings
           env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
@@ -36,8 +36,7 @@ before_install:
     - ./scripts/install_cmake.sh
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev
-    - sudo apt-get install -y lcov curl libglu1-mesa-dev
+    - sudo apt-get -qq install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev lcov curl libglu1-mesa-dev
 before_script:
     - mkdir build
     - cd build
