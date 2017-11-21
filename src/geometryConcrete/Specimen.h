@@ -31,7 +31,7 @@ public:
     //! @brief ... copy constructor
     Specimen(const NuTo::Specimen& rOther);
 
-    const bool IsBox() const;
+    bool IsBox() const;
 
     //! @brief ... getter for mBoundingBox
     const Eigen::MatrixXd& GetBoundingBox() const;
@@ -40,13 +40,13 @@ public:
     const Eigen::VectorXd& GetLength() const;
 
     //! @brief ... getter for specific element mLength[rIndex]
-    const double GetLength(const int rIndex) const;
+    double GetLength(const int rIndex) const;
 
     //! @brief ... getter of mTypeOfSpecimen
-    const eSpecimenType GetTypeOfSpecimen() const;
+    eSpecimenType GetTypeOfSpecimen() const;
 
     //! @brief ... calculates and returns specimen volume
-    const double GetVolume() const;
+    double GetVolume() const;
 
 private:
     Eigen::MatrixXd mBoundingBox;

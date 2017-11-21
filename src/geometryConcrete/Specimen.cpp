@@ -23,7 +23,7 @@ NuTo::Specimen::Specimen(const Specimen& rOther)
     CalculateLength();
 }
 
-const double NuTo::Specimen::GetVolume() const
+double NuTo::Specimen::GetVolume() const
 {
     if (mTypeOfSpecimen != 0 && mTypeOfSpecimen != 2)
         throw Exception(__PRETTY_FUNCTION__, "specimen type not implemented.");
@@ -95,17 +95,17 @@ const Eigen::VectorXd& NuTo::Specimen::GetLength() const
     return mLength;
 }
 
-const NuTo::Specimen::eSpecimenType NuTo::Specimen::GetTypeOfSpecimen() const
+NuTo::Specimen::eSpecimenType NuTo::Specimen::GetTypeOfSpecimen() const
 {
     return mTypeOfSpecimen;
 }
 
-const bool NuTo::Specimen::IsBox() const
+bool NuTo::Specimen::IsBox() const
 {
     return mTypeOfSpecimen == eSpecimenType::Box;
 }
 
-const double NuTo::Specimen::GetLength(const int rIndex) const
+double NuTo::Specimen::GetLength(const int rIndex) const
 {
     return mLength[rIndex];
 }

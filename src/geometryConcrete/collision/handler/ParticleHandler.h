@@ -45,10 +45,10 @@ public:
     void Sync(const double rTime);
 
     //! @brief ... getter for the kinetic energy of all particles
-    const double GetKineticEnergy() const;
+    double GetKineticEnergy() const;
 
     //! @brief ... getter for the volume of all particles
-    const double GetVolume() const;
+    double GetVolume() const;
 
     //! @brief ... writes a sphere visualization file
     //! @param rOutputDirectory ... workdir

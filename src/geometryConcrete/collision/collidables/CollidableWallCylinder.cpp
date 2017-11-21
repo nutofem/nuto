@@ -180,7 +180,7 @@ bool NuTo::CollidableWallCylinder::IsInside(const CollidableParticleSphere& rSph
 }
 
 
-void NuTo::CollidableWallCylinder::Print(std::ostream& rReturnStream) const
+void NuTo::CollidableWallCylinder::Print(std::ostream&) const
 {
     // TODO: NuTo::CollidableWallCylinder::Print
 }
