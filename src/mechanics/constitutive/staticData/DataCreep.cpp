@@ -8,7 +8,7 @@ using namespace NuTo::Constitutive::StaticData;
 
 
 template <typename TStream>
-void NuTo::Constitutive::StaticData::DataCreep::SerializeDataCreep(TStream& rStream)
+void NuTo::Constitutive::StaticData::DataCreep::SerializeDataCreep(TStream&)
 {
 }
 

@@ -32,7 +32,7 @@ public:
         return std::make_unique<NeumannBc<TDim>>(*this);
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double = 0,
+    NuTo::DofVector<double> Gradient(const NuTo::CellData&, const NuTo::CellIpData& cellIpData, double = 0,
                                      double = 0) override
     {
         NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);

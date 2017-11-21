@@ -27,7 +27,7 @@ Eigen::Matrix3d ToTensor(const NuTo::EngineeringStress<3>& stress)
 }
 
 template <int TDim>
-double NuTo::EngineeringStress<TDim>::SmoothRankine(ePlaneState planeState) const
+double NuTo::EngineeringStress<TDim>::SmoothRankine(ePlaneState) const
 {
     Eigen::Matrix3d stressTensor = ToTensor(As3D());
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensolver;

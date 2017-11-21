@@ -144,7 +144,7 @@ protected:
 
 #ifndef SWIG
     std::function<double(TimeControl&, int, int, bool)> mTimeStepFunction =
-            [](TimeControl& timeControl, int iterations, int maxIterations, bool converged) -> double {
+            [](TimeControl& timeControl, int /*iterations*/, int /*maxIterations*/, bool /*converged*/) -> double {
         return timeControl.GetTimeStep();
     };
 #endif

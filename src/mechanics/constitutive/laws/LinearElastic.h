@@ -74,7 +74,7 @@ std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
 }
 
 template <>
-LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double Nu, ePlaneState)
+LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double, ePlaneState)
 {
     return MechanicsTangent::Constant(E);
 }

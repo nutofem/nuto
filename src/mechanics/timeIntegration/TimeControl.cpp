@@ -68,9 +68,7 @@ void NuTo::TimeControl::UseDefaultAutomaticTimestepping()
 
 void NuTo::TimeControl::UseEquidistantTimestepping()
 {
-    SetTimeStepFunction([](TimeControl& rTimeControl, int iterations, int maxIterations, bool converged) -> double {
-        return rTimeControl.GetTimeStep();
-    });
+    SetTimeStepFunction([](TimeControl& rTimeControl, int, int, bool) -> double { return rTimeControl.GetTimeStep(); });
 }
 
 void NuTo::TimeControl::SetMaxTimeStep(double rMaxTimeStep)
