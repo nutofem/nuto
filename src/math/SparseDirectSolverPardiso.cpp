@@ -29,6 +29,7 @@ NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads, int 
             -1; // enable maximum weighted matching algorithm only for unsymmetric matrices (MKL default)
     this->mSolver = 0; // 0: use direct solver, 1: use iterative solver
 #else // HAVE_PARDISO
+    (void)rNumThreads; // fix -Wunused-parameter
     throw NuTo::Exception("Pardiso-solver was not found on your system (check cmake)");
 #endif // HAVE_PARDISO
 }

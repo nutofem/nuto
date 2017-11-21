@@ -252,7 +252,7 @@ operator+=(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther)
 //! @return Symmetric sparse matrix stored in the CSR format
 template <class T>
 NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T>::
-operator*(const NuTo::SparseMatrixCSRVector2Symmetric<T>& rOther) const
+operator*(const NuTo::SparseMatrixCSRVector2Symmetric<T>&)const
 {
     throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
     /*  this is just copied from the general matrix (no symmtry)
