@@ -11,8 +11,8 @@
 #include "base/Exception.h"
 
 #include <Epetra_MpiComm.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Map.h>
+//#include <Epetra_CrsMatrix.h>
+//#include <Epetra_Map.h>
 #include <Epetra_Export.h>
 #include <Epetra_LinearProblem.h>
 
@@ -561,7 +561,7 @@ public:
     }
 
 
-    void gatherNodeToDofMapping(int rNumProc)
+    void gatherNodeToDofMapping_allProcesses(int rNumProc)
     {
         boost::mpi::communicator world;
         std::vector<std::vector<dofNode>> allNodes(rNumProc);
@@ -711,7 +711,6 @@ public:
 
             for (int i = rRank; i < rNumProc; ++i)
             {
-                std::cout << "Rank(" << rRank << ") " << allDofsData[i][dofType].numberMasterActiveDofs << std::endl;
                 numberMasterActiveDofs_complete[dofType] += allDofsData[i][dofType].numberMasterActiveDofs;
             }
         }
@@ -830,7 +829,7 @@ public:
     }
 
 
-    void gatherNodeToDofMapping_new(int rNumProc, int rRank)
+    void gatherNodeToDofMapping(int rNumProc, int rRank)
     {
         gatherNodeToMasterDofMapping(rNumProc, rRank);
         gatherNodeToSlaveDofMapping(rNumProc, rRank);
@@ -1464,9 +1463,9 @@ void run_mesh_test(Epetra_MpiComm rComm)
     //******************************************
     //*            define loads                *
     //******************************************
-    auto& groupNodesRightBoundary = structure.GroupGetNodesAtCoordinate(eDirection::X, lengthX);
-    auto& nodesMiddleLowerBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX/2., 0));
-    auto& nodesMiddleUpperBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX/2., lengthY));
+//    auto& groupNodesRightBoundary = structure.GroupGetNodesAtCoordinate(eDirection::X, lengthX);
+//    auto& nodesMiddleLowerBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX/2., 0));
+//    auto& nodesMiddleUpperBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX/2., lengthY));
     auto& nodesRightUpperBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX, lengthY));
     auto& nodesRightLowerBoundary = structure.GroupGetNodeRadiusRange(Eigen::Vector2d(lengthX, 0));
 //    structure.LoadCreateNodeGroupForce(&groupNodesRightBoundary, Eigen::Vector2d::UnitX(), forceValue);
@@ -1492,8 +1491,8 @@ void run_mesh_test(Epetra_MpiComm rComm)
     //******************************************
     structure.generateNodeToDofMapping();
     structure.generateDofClassification();
-//    structure.gatherNodeToDofMapping(numProc);
-    structure.gatherNodeToDofMapping_new(numProc, rank);
+//    structure.gatherNodeToDofMapping_allProcesses(numProc);
+    structure.gatherNodeToDofMapping(numProc, rank);
 
 
     //******************************************
@@ -1523,8 +1522,6 @@ void run_mesh_test(Epetra_MpiComm rComm)
     Epetra_Map owningMap(-1, myOwningGlobalActiveDofIDs.size(), myOwningGlobalActiveDofIDs_arr, 0, rComm);
 
 
-    owningMap.Print(std::cout);
-    overlappingMap.Print(std::cout);
     //******************************************
     //*         create index graphs            *
     //******************************************
@@ -1603,13 +1600,6 @@ int main(int argc, char **argv)
     Epetra_MpiComm comm(MPI_COMM_WORLD);
 
     run_mesh_test(comm);
-
-
-
-
-
-
-
 
 
 

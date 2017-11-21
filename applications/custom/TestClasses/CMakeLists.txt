@@ -47,8 +47,8 @@ foreach(myTestFiles
 
 endforeach()
 
-#add_library(StructureMesh StructureMesh.cpp)
-#target_link_libraries(StructureMesh Mechanics Math Visualize)
+add_library(StructureMesh STATIC StructureMesh.cpp)
+target_link_libraries(StructureMesh Mechanics Math Visualize ${Trilinos_LIBRARIES})
 
 add_library(ConversionTools ConversionTools.cpp)
 add_library(PrintTools PrintTools.cpp)

@@ -4,10 +4,10 @@
 #include <eigen3/Eigen/Core>
 #include <boost/filesystem.hpp>
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
+//#include <Epetra_CrsMatrix.h>
+//#include <Epetra_MultiVector.h>
+//#include <Epetra_Vector.h>
+//#include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Export.h>
@@ -369,8 +369,8 @@ int main(int argc, char** argv)
     Epetra_Export exporter(overlappingMap, owningMap);
 
     //CREATE CORRESPONDING GRAPHS (FOR MATRIX STRUCTURE)
-    Epetra_CrsGraph overlappingGraph(Copy, overlappingMap, 0);
-    Epetra_CrsGraph owningGraph(Copy, owningMap, 0);
+    Epetra_CrsGraph overlappingGraph(Epetra_DataAccess::Copy, overlappingMap, 0);
+    Epetra_CrsGraph owningGraph(Epetra_DataAccess::Copy, owningMap, 0);
 
     for (int i = 0; i < localNumActiveDOFs; ++i)
     {
@@ -381,11 +381,11 @@ int main(int argc, char** argv)
     }
 
     overlappingGraph.FillComplete();
-    owningGraph.Export(overlappingGraph, exporter, Insert); //inter-process communication of matrix structure
+    owningGraph.Export(overlappingGraph, exporter, Epetra_CombineMode::Insert); //inter-process communication of matrix structure
     owningGraph.FillComplete();
 
     //CREATE (GLOBAL) MATRIX AND VECTOR WITH KNOWN GRAPH STRUCTURE
-    Epetra_CrsMatrix globalMatrix(Copy, owningGraph);
+    Epetra_CrsMatrix globalMatrix(Epetra_DataAccess::Copy, owningGraph);
     globalMatrix.FillComplete();
     Epetra_Vector globalRhsVector(owningMap);
     globalRhsVector.PutScalar(0.0);
@@ -395,8 +395,8 @@ int main(int argc, char** argv)
     Epetra_CrsMatrix localMatrix = converter.convertEigen2EpetraCrsMatrix(hessian0_eigen, overlappingGraph);
     Epetra_Vector localRhsVector = converter.convertEigen2EpetraVector(residual_eigen, overlappingMap);
     globalMatrix.PutScalar(0.0);
-    globalMatrix.Export(localMatrix, exporter, Add);    //inter-process communication of matrix entries
-    globalRhsVector.Export(localRhsVector, exporter, Add);    //inter-process communication of vector entries
+    globalMatrix.Export(localMatrix, exporter, Epetra_CombineMode::Add);    //inter-process communication of matrix entries
+    globalRhsVector.Export(localRhsVector, exporter, Epetra_CombineMode::Add);    //inter-process communication of vector entries
 #ifdef SHOW_INTERMEDIATE_RESULTS
     //PRINT SOME INTERMEDIATE RESULTS
     std::ostream& os = std::cout;
