@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     Eigen::Vector3d p(1., 1., 1.);
 
-    Integrands::TimeDependent::NeumannBc<3> neumannIntegrand(dof, p);
+    Integrands::NeumannBc<3> neumannIntegrand(dof, p);
 
     CellData cellData(element);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
