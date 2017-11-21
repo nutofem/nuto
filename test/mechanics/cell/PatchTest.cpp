@@ -155,8 +155,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
     Eigen::Vector2d pressureBC(1, 0);
     Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
-    auto NeumannGradientF = Bind(neumannBc, &Integrands::NeumannBc<2>::Gradient);
-    auto NeumannHessian0F = Bind(neumannBc, &Integrands::NeumannBc<2>::Hessian0);
+    auto NeumannLoad = Bind(neumannBc, &Integrands::NeumannBc<2>::ExternalLoad);
 
     cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc));
     auto& neumannCell = cellContainer.back();
@@ -167,10 +166,10 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
 
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannGradientF);
+    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
     GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
-    hessian += assembler.BuildMatrix({neumannCell}, {displ}, NeumannHessian0F);
+    // no hessian for the neumann bc integrand (external load)
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
     Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ]);

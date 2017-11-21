@@ -25,21 +25,13 @@ public:
     {
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData)
+    NuTo::DofVector<double> ExternalLoad(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData)
     {
         NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);
         NuTo::DofVector<double> gradient;
 
         gradient[mDofType] = N.transpose() * mFactor;
         return gradient;
-    }
-
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData&, const NuTo::CellIpData& cellIpData)
-    {
-        const int size = cellIpData.GetNMatrix(mDofType).cols();
-        DofMatrix<double> hessian0;
-        hessian0(mDofType, mDofType) = Eigen::MatrixXd::Zero(size, size);
-        return hessian0;
     }
 
 private:

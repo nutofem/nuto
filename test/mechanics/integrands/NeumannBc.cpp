@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(p[0], p[1], 0, 0);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(0, 0, p[0], p[1]);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
@@ -64,15 +64,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(p[0] / 2, p[1] / 2, p[0] / 2, p[1] / 2);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
-
-
-    // Hessian. What should happen here?
-    // Zeros in the right dimension
-
-    CellIpData cellIpData(element, dummyJac, Eigen::VectorXd::Constant(1, 0));
-    auto hessian0 = neumannIntegrand.Hessian0(cellData, cellIpData);
-    BoostUnitTest::CheckEigenMatrix(hessian0(dof, dof), Eigen::MatrixXd::Zero(4, 4));
 }
