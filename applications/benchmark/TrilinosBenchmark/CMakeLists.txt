@@ -12,9 +12,9 @@ foreach(test
     )
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} NuToMechanics NuToMath NuToBase ConversionTools ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base ConversionTools ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
     if(ENABLE_VISUALIZE)
-        target_link_libraries(${test} NuToVisualize)
+        target_link_libraries(${test} Visualize)
     endif()
     add_test(NAME benchmark::Trilinos::${test}.cpp COMMAND mpirun -np 4 ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()

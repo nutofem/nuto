@@ -29,9 +29,9 @@ foreach(test
         IterativeSolver)
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} NuToMechanics NuToMath NuToBase ConversionTools ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base ConversionTools ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
     if (ENABLE_VISUALIZE)
-        target_link_libraries(${test} NuToVisualize)
+        target_link_libraries(${test} Visualize)
     endif()
     if(MUMPS_FOUND)
         target_link_libraries(${test} ${MUMPS_LIBRARIES})

@@ -42,14 +42,11 @@ if(ENABLE_GEOMETRYCONCRETE)
 endif()
 
 add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
-<<<<<<< HEAD
+
 if(MPI_FOUND)
     target_link_libraries(NewtonRaphsonBenchmark ${MPI_LIBRARIES})
 endif()
 
-
-add_subdirectory(TrilinosBenchmark)
-=======
 target_include_directories(NewtonRaphsonBenchmark PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
->>>>>>> master
+add_subdirectory(TrilinosBenchmark)
