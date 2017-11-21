@@ -11,13 +11,13 @@ namespace NuTo
 class SimpleAssembler
 {
 public:
-    SimpleAssembler(NuTo::DofContainer<int> numIndependentDofs, NuTo::DofContainer<int> numDependentDofs)
+    SimpleAssembler(DofContainer<int> numIndependentDofs, DofContainer<int> numDependentDofs)
         : mNumIndependentDofs(numIndependentDofs)
         , mNumDependentDofs(numDependentDofs)
     {
     }
 
-    GlobalDofVector BuildVector(const Groups::Group<NuTo::CellInterface>& cells, Groups::Group<NuTo::DofType> dofTypes,
+    GlobalDofVector BuildVector(const Groups::Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                 CellInterface::VectorFunction f) const
     {
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
@@ -44,8 +44,8 @@ public:
         return gradient;
     }
 
-    GlobalDofMatrixSparse BuildMatrix(const Groups::Group<NuTo::CellInterface>& cells,
-                                      Groups::Group<NuTo::DofType> dofTypes, CellInterface::MatrixFunction f) const
+    GlobalDofMatrixSparse BuildMatrix(const Groups::Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+                                      CellInterface::MatrixFunction f) const
     {
         GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);
 
@@ -113,7 +113,7 @@ public:
     }
 
 private:
-    GlobalDofVector ProperlyResizedGlobalVector(Groups::Group<NuTo::DofType> dofTypes) const
+    GlobalDofVector ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const
     {
         GlobalDofVector v;
         for (auto dof : dofTypes)
@@ -124,7 +124,7 @@ private:
         return v;
     }
 
-    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(Groups::Group<NuTo::DofType> dofTypes) const
+    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const
     {
         GlobalDofMatrixSparse m;
         for (auto dofI : dofTypes)
