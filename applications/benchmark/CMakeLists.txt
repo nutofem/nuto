@@ -38,13 +38,7 @@ target_link_libraries(ParallelAssembly
 target_include_directories(ParallelAssembly
     PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
 
-add_executable(GoogleBenchmarkExample GoogleBenchmarkExample.cpp)
-target_link_libraries(GoogleBenchmarkExample benchmark)
 
-add_executable(SolversGB SolversGB.cpp)
-target_include_directories(SolversGB
-    PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(SolversGB
-    benchmark Mechanics Math Base Visualize)
+add_benchmark(SolversGB)
 
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})
