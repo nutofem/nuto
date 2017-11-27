@@ -23,14 +23,7 @@ libann-dev libarpack2-dev libomp-dev gmsh
 Then, you need to check out the source code
 
 ```
-git clone --recursive https://github.com/nutofem/nuto.git
-```
-
-If you forgot the '--recursive' execute 
-
-```
-git submodule init
-git submodule update
+git clone https://github.com/nutofem/nuto.git
 ```
 
 Create a build directory and switch to it
@@ -63,6 +56,17 @@ In the end, run the test suite to see if all went well
 ```
 make test
 ```
+
+If you want to use the benchmarks, checkout google benchmark from github, build and 
+install it:
+
+```
+make -j4
+make install
+``` 
+
+Check the NuTo CMake output, if the library was found.
+
 
 # Requirements
 
