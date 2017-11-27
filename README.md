@@ -56,18 +56,6 @@ In the end, run the test suite to see if all went well
 ```
 make test
 ```
-
-If you want to use the benchmarks, checkout google benchmark from github, build and 
-install it:
-
-```
-make -j4
-make install
-``` 
-
-Check the NuTo CMake output, if the library was found.
-
-
 # Requirements
 
 | Name     | Version | Description                                                 |

@@ -19,7 +19,6 @@ include(NuToMacros)
 set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
 check_for_dependencies()
-#setup_google_benchmark()
 
 add_subdirectory(external)
 
