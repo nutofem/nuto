@@ -87,7 +87,7 @@ BENCHMARK_F(fixture, Solver_MUMPS)(benchmark::State& state)
 
 
 #ifdef HAVE_PARDISO
-BENCHMARK_F(fixture, Solver_Pardiso)(Solver_Pardiso)
+BENCHMARK_F(fixture, Solver_Pardiso)(benchmark::State& state)
 {
     SolverBenchmark<NuTo::SolverPardiso>(state, 1, false);
 }
