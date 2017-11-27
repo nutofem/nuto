@@ -9,7 +9,6 @@ include(GetGitRevisionDescription)
 include(GetTargetFromSource)
 include(NutoSwigModule)
 include(SetCompilerFlags)
-include(SetupGoogleBenchmark)
 include(SourcesToObjects)
 include(Warning)
 
