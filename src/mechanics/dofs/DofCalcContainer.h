@@ -14,7 +14,8 @@ class DofCalcContainer
 {
 public:
     //! @brief initializes the data container zu the most common size 1
-    DofCalcContainer(int size = 1)
+    //! @remark explicit to avoid construction with `double` type that caused ambiguities in some overloaded methods
+    explicit DofCalcContainer(int size = 1)
         : mData(size)
     {
     }

@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 
     Eigen::Vector2d p(4, 42);
 
-    Integrands::TimeDependent::NeumannBc<2> neumannIntegrand(dof, p);
+    Integrands::NeumannBc<2> neumannIntegrand(dof, p);
 
     CellData cellData(element);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(p[0], p[1], 0, 0);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(0, 0, p[0], p[1]);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
@@ -68,16 +68,9 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
         CellIpData cellIpData(element, dummyJac, ip);
 
         Eigen::Vector4d expected(p[0] / 2, p[1] / 2, p[0] / 2, p[1] / 2);
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
-
-    // Hessian. What should happen here?
-    // Zeros in the right dimension
-
-    CellIpData cellIpData(element, dummyJac, Eigen::VectorXd::Constant(1, 0));
-    auto hessian0 = neumannIntegrand.Hessian0(cellData, cellIpData);
-    BoostUnitTest::CheckEigenMatrix(hessian0(dof, dof), Eigen::MatrixXd::Zero(4, 4));
 }
 
 
@@ -114,7 +107,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     Eigen::Vector3d p(1., 1., 1.);
 
-    Integrands::TimeDependent::NeumannBc<3> neumannIntegrand(dof, p);
+    Integrands::NeumannBc<3> neumannIntegrand(dof, p);
 
     CellData cellData(element);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
@@ -129,7 +122,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
     {
         CellIpData cellIpData(element, dummyJac, points[ip]);
 
-        auto gradient = neumannIntegrand.Gradient(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
 
         Eigen::VectorXd referenceResultOnIP = (1. / 6.) * Eigen::VectorXd::Ones(9);
         referenceResultOnIP.block(3 * ip, 0, 3, 1) = (2. / 3.) * Eigen::VectorXd::Ones(3);
