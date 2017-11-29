@@ -16,7 +16,9 @@
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/nodes/NodeSimple.h"
 
+#include <map>
 #include <functional>
+#include <vector>
 
 using namespace NuTo;
 using namespace NuTo::Groups;
@@ -27,6 +29,7 @@ class CreepLaw : public Laws::MechanicsInterface<1>
 
     double mE;
     double mNu;
+    std::map<int, std::vector<float>> mIPdata;
 
 public:
     using typename Laws::MechanicsInterface<1>::MechanicsTangent;
@@ -38,12 +41,25 @@ public:
     {
     }
 
-    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double, int, int) const override
+    void InitializeIPData(const Groups::Group<CellInterface>& cells, DofType dof)
+    {
+        for (CellInterface& cell : cells)
+        {
+
+            cell.Apply([this](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+                if (mIPdata.find(cellData.Id()) == mIPdata.end())
+                    mIPdata.emplace(cellData.Id(), std::vector<float>(cellData.GetNumIntegrationPoints()));
+            });
+        }
+    }
+
+    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double delta_t, int cellNum,
+                                   int ipNum) const override
     {
         return mE * strain;
     }
 
-    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double, int, int) const override
+    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double delta_t, int cellNum, int ipNum) const override
     {
         return MechanicsTangent::Constant(mE);
     }
@@ -114,10 +130,15 @@ BOOST_AUTO_TEST_CASE(IP_data)
         momentumBalanceCells.Add(cellContainer.back());
     }
 
+    // Initialize IP data %%%%%%%%%%%%%%%%%%%%%%%
+    creepLaw.InitializeIPData(momentumBalanceCells, displ);
+
+
     // Assemble system %%%%%%%%%%%%%%%%%%%%%%%%%%
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
     GlobalDofVector extF;
@@ -126,9 +147,8 @@ BOOST_AUTO_TEST_CASE(IP_data)
     NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * 10, displ);
     extF.J[displ][nodeRight.GetDofNumber(0)] = 2000.;
 
+
     // Solve system %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
     Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ] - extF.J[displ]);
-
-    int a = 0;
 }

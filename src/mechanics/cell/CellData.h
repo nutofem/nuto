@@ -15,9 +15,15 @@ namespace NuTo
 class CellData : public UniqueId<CellData>
 {
 public:
-    CellData(const ElementCollection& elements)
+    CellData(const ElementCollection& elements, int numIntegrationPoints)
         : mElements(elements)
+        , mNumIntegrationPoints(numIntegrationPoints)
     {
+    }
+
+    int GetNumIntegrationPoints() const
+    {
+        return mNumIntegrationPoints;
     }
 
     NodeValues GetCoordinates() const
@@ -37,5 +43,6 @@ public:
 private:
     mutable DofContainer<NodeValues> mNodeValues;
     const ElementCollection& mElements;
+    int mNumIntegrationPoints;
 };
 } /* NuTo */
