@@ -2,7 +2,7 @@
 #include "metamodel/NeuralNetwork.h"
 #include "optimize/ConjugateGradientNonLinear.h"
 #include "metamodel/TransferFunction.h"
-#include <eigen3/Eigen/LU>
+#include <Eigen/LU>
 
 
 // constructor

@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "math/SparseMatrixCSRVector2General.h"
 
 using namespace NuTo;

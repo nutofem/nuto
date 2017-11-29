@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "visualize/UnstructuredGrid.h"
 
 BOOST_AUTO_TEST_CASE(TriangleAndQuad)

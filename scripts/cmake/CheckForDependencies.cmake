@@ -55,7 +55,7 @@ macro(check_for_dependencies)
     # find Eigen header files (Linear Algebra)
     find_package(EIGEN 3.2 REQUIRED)
     message(STATUS "EIGEN_VERSION_NUMBER = ${EIGEN_VERSION_NUMBER}")
-    include_directories(${EIGEN_INCLUDE_DIR})
+    include_directories(SYSTEM ${EIGEN_INCLUDE_DIR})
 
     # find ARPACK library for eigenvalue analysis
     find_package(ARPACK)

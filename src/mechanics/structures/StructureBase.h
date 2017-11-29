@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
