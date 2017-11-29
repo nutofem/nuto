@@ -5,6 +5,7 @@
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/cell/SimpleAssember.h"
 #include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/laws/MechanicsInterface.h"
 #include "mechanics/constraintsPde/Constraints.h"
 #include "mechanics/constraintsPde/ConstraintCompanion.h"
 #include "mechanics/dofs/DofNumbering.h"
@@ -19,6 +20,35 @@
 
 using namespace NuTo;
 using namespace NuTo::Groups;
+
+
+class CreepLaw : public Laws::MechanicsInterface<1>
+{
+
+    double mE;
+    double mNu;
+
+public:
+    using typename Laws::MechanicsInterface<1>::MechanicsTangent;
+
+
+    CreepLaw(double E, double Nu)
+        : mE(E)
+        , mNu(Nu)
+    {
+    }
+
+    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double, int, int) const override
+    {
+        return mE * strain;
+    }
+
+    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double, int, int) const override
+    {
+        return MechanicsTangent::Constant(mE);
+    }
+};
+
 
 MeshFem Mesh1D()
 {
@@ -62,10 +92,11 @@ BOOST_AUTO_TEST_CASE(IP_data)
     constexpr double E = 20000;
     constexpr double nu = 0.2;
     Laws::LinearElastic<1> linearElasticLaw(E, nu);
+    CreepLaw creepLaw(E, nu);
 
 
     // Create integrand %%%%%%%%%%%%%%%%%%%%%%%%%
-    Integrands::MomentumBalance<1> momentumBalance(displ, linearElasticLaw);
+    Integrands::MomentumBalance<1> momentumBalance(displ, creepLaw);
     auto MomentumGradientF = std::bind(&Integrands::MomentumBalance<1>::Gradient, momentumBalance, _1, _2, 0.);
     auto MomentumHessian0F = std::bind(&Integrands::MomentumBalance<1>::Hessian0, momentumBalance, _1, _2, 0.);
 

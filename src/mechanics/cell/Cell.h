@@ -42,7 +42,7 @@ public:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
             f(cellData, cellipData);
         }
     }
@@ -68,7 +68,7 @@ private:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
             result += f(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return result;

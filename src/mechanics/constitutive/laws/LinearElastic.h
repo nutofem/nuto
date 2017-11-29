@@ -31,12 +31,12 @@ public:
     {
     }
 
-    EngineeringStressPDE<TDim> Stress(EngineeringStrainPDE<TDim> strain, double = 0) const override
+    EngineeringStressPDE<TDim> Stress(EngineeringStrainPDE<TDim> strain, double = 0, int = 0, int = 0) const override
     {
         return mC * strain;
     }
 
-    MechanicsTangent Tangent(EngineeringStrainPDE<TDim>, double = 0) const override
+    MechanicsTangent Tangent(EngineeringStrainPDE<TDim>, double = 0, int = 0, int = 0) const override
     {
         return mC;
     }

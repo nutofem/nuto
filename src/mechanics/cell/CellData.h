@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/UniqueId.h"
 #include "mechanics/dofs/DofContainer.h"
 #include "mechanics/elements/ElementCollection.h"
 
@@ -11,7 +12,7 @@ namespace NuTo
 //! @remark The life time of objects of this class is limited to the evaluation of one NuTo::Cell. This class will
 //! calculate (and cache) all the information that are required once per cell. Classic example: NodeValues. Even if
 //! `GetNodeValues()` is called 42 times, they should only be extracted once.
-class CellData
+class CellData : public UniqueId<CellData>
 {
 public:
     CellData(const ElementCollection& elements)
