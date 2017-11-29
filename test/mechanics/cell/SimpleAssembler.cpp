@@ -17,9 +17,9 @@ fakeit::Mock<NuTo::CellInterface> MockCell(const NuTo::DofType& dof, Eigen::Vect
     mockHessian(dof, dof) << 11, 12, 13, 21, 22, 23, 31, 32, 33;
 
     Method(cell, DofNumbering) = mockNumbering;
-    fakeit::When(OverloadedMethod(cell, Integrate, NuTo::DofVector<double>(const NuTo::VectorOperation&)))
+    fakeit::When(OverloadedMethod(cell, Integrate, NuTo::DofVector<double>(NuTo::CellInterface::VectorFunction)))
             .Return(mockGradient);
-    fakeit::When(OverloadedMethod(cell, Integrate, NuTo::DofMatrix<double>(const NuTo::MatrixOperation&)))
+    fakeit::When(OverloadedMethod(cell, Integrate, NuTo::DofMatrix<double>(NuTo::CellInterface::MatrixFunction)))
             .Return(mockHessian);
 
     return cell;
@@ -53,16 +53,8 @@ BOOST_AUTO_TEST_CASE(AssemberGradient)
      *      active       ||  dependent
      */
 
-    struct Gradient : NuTo::VectorOperation
-    {
-        NuTo::DofVector<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const override
-        {
-            throw;
-        }
-    };
-
-    NuTo::GlobalDofVector gradient = assembler.BuildVector({mockCell0.get(), mockCell1.get()}, {&d}, Gradient());
+    NuTo::GlobalDofVector gradient =
+            assembler.BuildVector({mockCell0.get(), mockCell1.get()}, {d}, NuTo::CellInterface::VectorFunction());
 
     BoostUnitTest::CheckEigenMatrix(gradient.J[d], Eigen::Vector3d(11, 22, 44));
     BoostUnitTest::CheckEigenMatrix(gradient.K[d], Eigen::Vector2d(22, 33));
@@ -91,16 +83,8 @@ BOOST_AUTO_TEST_CASE(AssemberHessian)
      *     active J         dependent K
      */
 
-    struct Hessian : NuTo::MatrixOperation
-    {
-        NuTo::DofMatrix<double> operator()(NuTo::Integrands::Base&, const NuTo::CellData&,
-                                           const NuTo::CellIpData&) const override
-        {
-            throw;
-        }
-    };
-
-    NuTo::GlobalDofMatrixSparse hessian = assembler.BuildMatrix({mockCell0.get(), mockCell1.get()}, {&d}, Hessian());
+    NuTo::GlobalDofMatrixSparse hessian =
+            assembler.BuildMatrix({mockCell0.get(), mockCell1.get()}, {d}, NuTo::CellInterface::MatrixFunction());
     Eigen::Matrix3d JJ = (Eigen::Matrix3d() << 11, 12, 13, 21, 22, 23, 31, 32, 44).finished();
     Eigen::Matrix2d KK = (Eigen::Matrix2d() << 22, 23, 32, 33).finished();
     Eigen::MatrixXd JK = (Eigen::MatrixXd(3, 2) << 0, 0, 0, 0, 12, 13).finished();

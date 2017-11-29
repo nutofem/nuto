@@ -1,8 +1,9 @@
 #pragma once
 
-#include "mechanics/integrands/TimeDependent.h"
 #include "mechanics/constitutive/laws/LinearElastic.h"
 #include "mechanics/dofs/DofType.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/interpolation/TypeDefs.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/cell/CellData.h"
@@ -11,26 +12,18 @@ namespace NuTo
 {
 namespace Integrands
 {
-namespace TimeDependent
-{
 
 template <int TDim>
-class MomentumBalance : public Interface
+class MomentumBalance
 {
 public:
-    MomentumBalance(const NuTo::DofType& dofType, const Laws::MechanicsInterface<TDim>& law)
+    MomentumBalance(NuTo::DofType dofType, const Laws::MechanicsInterface<TDim>& law)
         : mDofType(dofType)
         , mLaw(law)
     {
     }
 
-    std::unique_ptr<Base> Clone() const override
-    {
-        return std::make_unique<MomentumBalance<TDim>>(*this);
-    }
-
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT) override
+    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
@@ -41,8 +34,7 @@ public:
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT) override
+    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
     {
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
         NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
@@ -54,10 +46,8 @@ public:
     }
 
 private:
-    const NuTo::DofType& mDofType;
+    NuTo::DofType mDofType;
     const Laws::MechanicsInterface<TDim>& mLaw;
 };
-
-} /* TimeDependent */
 } /* Integrand */
 } /* NuTo */
