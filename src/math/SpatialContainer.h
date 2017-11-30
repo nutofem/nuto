@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ANN/ANN.h>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <set>
 

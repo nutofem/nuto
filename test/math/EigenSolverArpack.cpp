@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include <eigen3/Eigen/Eigenvalues>
+#include <Eigen/Eigenvalues>
 
 #include "base/Timer.h"
 #include "math/SparseMatrixCSRVector2General.h"

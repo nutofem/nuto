@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <map>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "base/Exception.h"
 #include "mechanics/elements/IPData.h"
 #include <memory>

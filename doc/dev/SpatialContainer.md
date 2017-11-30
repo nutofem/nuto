@@ -4,7 +4,7 @@
 
 - convenient wrapper for ANN
   - [*A Library for Approximate Nearest Neighbor Searching*](https://www.cs.umd.edu/~mount/ANN/)
-  - `annkSearch()` - find $k$ nearest neighbors
+  - `annkSearch()` - find \f$k\f$ nearest neighbors
   - `annKFRSearch()` - find nearest neighbors within a radius
 
 # Example: find duplicate nodes
