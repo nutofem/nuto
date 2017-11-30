@@ -30,7 +30,7 @@ public:
         NuTo::DofVector<double> gradient;
 
         NuTo::EngineeringStrainPDE<TDim> strain = B * u;
-        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT, cellData.Id(), cellIpData.GetIPNum());
+        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT, cellData.GetCellId(), cellIpData.GetIPNum());
         return gradient;
     }
 
@@ -42,7 +42,7 @@ public:
 
         NuTo::EngineeringStrainPDE<TDim> strain = B * u;
         hessian0(mDofType, mDofType) =
-                B.transpose() * mLaw.Tangent(strain, deltaT, cellData.Id(), cellIpData.GetIPNum()) * B;
+                B.transpose() * mLaw.Tangent(strain, deltaT, cellData.GetCellId(), cellIpData.GetIPNum()) * B;
         return hessian0;
     }
 

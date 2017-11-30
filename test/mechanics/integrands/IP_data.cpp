@@ -47,8 +47,8 @@ public:
         {
 
             cell.Apply([this](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-                if (mIPdata.find(cellData.Id()) == mIPdata.end())
-                    mIPdata.emplace(cellData.Id(), std::vector<float>(cellData.GetNumIntegrationPoints()));
+                if (mIPdata.find(cellData.GetCellId()) == mIPdata.end())
+                    mIPdata.emplace(cellData.GetCellId(), std::vector<float>(cellData.GetNumIntegrationPoints()));
             });
         }
     }

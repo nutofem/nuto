@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/UniqueId.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/elements/ElementCollection.h"
 #include "mechanics/dofs/DofContainer.h"
@@ -9,7 +10,7 @@
 
 namespace NuTo
 {
-class Cell : public CellInterface
+class Cell : public CellInterface, UniqueId<Cell>
 {
 public:
     Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType)
@@ -35,7 +36,7 @@ public:
 
     void Apply(VoidFunction f) override
     {
-        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints());
+        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints(), Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
@@ -60,7 +61,7 @@ private:
     template <typename TOperation, typename TReturn>
     TReturn IntegrateGeneric(TOperation&& f, TReturn result)
     {
-        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints());
+        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints(), Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
