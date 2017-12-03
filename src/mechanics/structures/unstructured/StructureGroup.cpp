@@ -7,7 +7,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 
 void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolationType)
 {

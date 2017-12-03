@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/ptr_container/ptr_list.hpp>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include <vector>
 
 namespace NuTo

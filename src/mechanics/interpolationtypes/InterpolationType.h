@@ -8,7 +8,7 @@
 #pragma once
 
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 #include <vector>

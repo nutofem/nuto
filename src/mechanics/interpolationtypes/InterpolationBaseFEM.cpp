@@ -6,7 +6,7 @@
  *      Author: ttitsche
  */
 
-#include <eigen3/Eigen/Dense> // for determinant
+#include <Eigen/Dense> // for determinant
 #include "mechanics/interpolationtypes/InterpolationBaseFEM.h"
 #include "mechanics/nodes/NodeEnum.h"
 

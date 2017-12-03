@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include <eigen3/Eigen/Dense> // for cross product
+#include <Eigen/Dense> // for cross product
 
 #include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"

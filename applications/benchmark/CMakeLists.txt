@@ -4,6 +4,7 @@ foreach(test
     BuildGradient
     LinearElasticity
     LinearElasticityExplicit
+    LinearElasticityOPENMP
     LinearElasticityVisualize
     AssembleSparseMatrix
     ShapeFunctionMemoization
@@ -13,19 +14,12 @@ foreach(test
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Visualize)
-    add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     append_to_benchmarks(${test})
 endforeach()
 
 if(PARDISO_FOUND)
     target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
-
-
-add_executable(LinearElasticityOPENMP
-    EXCLUDE_FROM_ALL LinearElasticityOPENMP.cpp)
-target_link_libraries(LinearElasticityOPENMP Mechanics Math Base Visualize)
-append_to_benchmarks(LinearElasticityOPENMP)
 
 add_executable(DenseSpherePacking EXCLUDE_FROM_ALL DenseSpherePacking.cpp)
 target_link_libraries(DenseSpherePacking Math Base GeometryConcrete)
@@ -38,7 +32,6 @@ add_executable(NewtonRaphsonBenchmark
 target_include_directories(NewtonRaphsonBenchmark
     PRIVATE ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(NewtonRaphsonBenchmark)
-
 
 add_executable(BlockVectors
     EXCLUDE_FROM_ALL BlockVectors.cpp)
@@ -54,5 +47,13 @@ target_include_directories(ConstraintsBenchmark
     PRIVATE ${CMAKE_SOURCE_DIR}/src)
 append_to_benchmarks(ConstraintsBenchmark)
 
+add_executable(ParallelAssembly EXCLUDE_FROM_ALL ParallelAssembly.cpp)
+target_link_libraries(ParallelAssembly
+    Mechanics Visualize Boost::unit_test_framework)
+target_include_directories(ParallelAssembly
+    PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
+
+
+add_benchmark(SolversGB)
 
 add_custom_target(benchmarks DEPENDS ${all_benchmarks})

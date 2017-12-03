@@ -19,16 +19,16 @@
 
 #include "base/CallbackInterface.h"
 #include "math/SparseMatrixCSRGeneral.h"
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "FetiSolver.h"
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 
 #include "mechanics/feti/FetiLumpedPreconditioner.h"
 #include <cmath>

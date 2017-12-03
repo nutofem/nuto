@@ -3,8 +3,8 @@
 #include "base/Timer.h"
 #include <iostream>
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 
 #include "math/SparseMatrixCSRVector2General.h"

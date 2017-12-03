@@ -25,6 +25,10 @@ It is certainly convenient to add a keybinding for it (settings, keybinding, sea
 
 (not much experience myself, but I found promising instructions [here](http://stackoverflow.com/a/40174996))
 
+# Commit messages
+
+[Read this](https://chris.beams.io/posts/git-commit/)
+
 # other
 
 - member variables start with `m`
