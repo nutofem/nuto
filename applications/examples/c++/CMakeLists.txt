@@ -1,6 +1,3 @@
-if(ENABLE_MPI)
-    add_subdirectory(feti)
-endif()
 
 
 # copy meshes
