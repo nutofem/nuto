@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "visualize/Cell.h"
 #include "visualize/Point.h"

@@ -1,3 +1,4 @@
+include(AddBenchmark)
 include(AddUnitTest)
 include(AddIntegrationtest)
 include(CheckForDependencies)

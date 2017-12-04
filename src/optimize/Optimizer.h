@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cfloat>
 #include <string>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "optimize/CallbackHandler.h"
 #include "optimize/CallbackHandlerGrid.h"

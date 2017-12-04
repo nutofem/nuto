@@ -6,7 +6,7 @@
  *      Author: ttitsche
  */
 
-#include <eigen3/Eigen/Dense> // for ::determinant()
+#include <Eigen/Dense> // for ::determinant()
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 
 NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder,

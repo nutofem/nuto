@@ -2,7 +2,7 @@
 
 
 #include <functional>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include <vector>
 

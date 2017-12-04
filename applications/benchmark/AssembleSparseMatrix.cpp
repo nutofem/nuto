@@ -3,8 +3,8 @@
 //
 
 #include "Benchmark.h"
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Core>
+#include <Eigen/Sparse>
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixCSRGeneral.h"
 

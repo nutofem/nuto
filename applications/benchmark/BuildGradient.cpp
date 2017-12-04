@@ -1,5 +1,5 @@
 #include "Benchmark.h"
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/MechanicsEnums.h"

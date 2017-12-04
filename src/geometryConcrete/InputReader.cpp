@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 #include <iostream>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "geometryConcrete/InputReader.h"
 #include "base/Exception.h"
 #include <sstream>

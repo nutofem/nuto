@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <iostream>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "base/Exception.h" // base/Exception is wrapped for python, Exception not.
 
 namespace NuTo

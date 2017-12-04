@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/nodes/DofType.h"
 
 namespace NuTo

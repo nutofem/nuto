@@ -6,7 +6,7 @@
 
 #include <mpi.h>
 
-#include "eigen3/Eigen/Sparse"
+#include "Eigen/Sparse"
 
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 
