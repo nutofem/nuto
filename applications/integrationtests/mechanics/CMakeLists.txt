@@ -1,9 +1,5 @@
 add_subdirectory(uniaxial)
 
-if(ENABLE_MPI)
-    add_subdirectory(feti)
-endif()
-
 if(ENABLE_PYTHON)
     foreach(test
         Brick8N
