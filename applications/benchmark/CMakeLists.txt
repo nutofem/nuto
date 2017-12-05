@@ -1,14 +1,14 @@
 unset(all_benchmarks CACHE)
 
 foreach(test
-    BuildGradient
-    LinearElasticity
-    LinearElasticityExplicit
-    LinearElasticityOPENMP
-    LinearElasticityVisualize
-    AssembleSparseMatrix
-    ShapeFunctionMemoization
-    Solvers
+    #BuildGradient
+    #LinearElasticity
+    #LinearElasticityExplicit
+    #LinearElasticityOPENMP
+    #LinearElasticityVisualize
+    #AssembleSparseMatrix
+    #ShapeFunctionMemoization
+    #Solvers
     MeshFemBenchmark
     )
 
