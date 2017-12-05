@@ -61,31 +61,7 @@ set(MechanicsStructuresSources
 
 
 set(MechanicsTimeIntegrationSources
-    timeIntegration/NewmarkDirect.cpp
-    timeIntegration/NystroemBase.cpp
-    timeIntegration/NystroemQinZhu.cpp
-    timeIntegration/RungeKutta2.cpp
-    timeIntegration/RungeKutta3.cpp
-    timeIntegration/RungeKutta38.cpp
-    timeIntegration/RungeKutta4.cpp
-    timeIntegration/RungeKuttaCashKarp.cpp
-    timeIntegration/RungeKuttaDormandPrince.cpp
-    timeIntegration/RungeKuttaBase.cpp
     timeIntegration/TimeControl.cpp
-    timeIntegration/TimeIntegrationBase.cpp
-    timeIntegration/ImplicitExplicitBase.cpp
-    timeIntegration/ImplEx.cpp
-    timeIntegration/ImplExCallback.cpp
-    timeIntegration/VelocityVerlet.cpp
-    timeIntegration/postProcessing/PostProcessor.cpp
-    timeIntegration/postProcessing/ResultBase.cpp
-    timeIntegration/postProcessing/ResultElementIpData.cpp
-    timeIntegration/postProcessing/ResultGroupNodeForce.cpp
-    timeIntegration/postProcessing/ResultGroupNodeDof.cpp
-    timeIntegration/postProcessing/ResultNodeAcceleration.cpp
-    timeIntegration/postProcessing/ResultNodeDisp.cpp
-    timeIntegration/postProcessing/ResultNodeDof.cpp
-    timeIntegration/postProcessing/ResultTime.cpp
     )
 
 set(MechanicsToolsSources
