@@ -1,18 +1,6 @@
-
 set(MechanicsConstraintSources
-    constraints/Constraints.cpp
     constraintsPde/Constraints.cpp
-    constraints/ConstraintCompanion.cpp
     constraintsPde/ConstraintCompanion.cpp
-    )
-
-set(MechanicsDofSubMatrixStorageSources
-    dofSubMatrixStorage/DofStatus.cpp
-    dofSubMatrixStorage/BlockStorageBase.cpp
-    dofSubMatrixStorage/BlockSparseMatrix.cpp
-    dofSubMatrixStorage/BlockScalar.cpp
-    dofSubMatrixStorage/BlockFullVector.cpp
-    dofSubMatrixStorage/BlockFullMatrix.cpp
     )
 
 set(MechanicsDofsSources
@@ -20,23 +8,7 @@ set(MechanicsDofsSources
     )
 
 list(APPEND MechanicsElementsSources
-    elements/ContinuumElement.cpp
-    elements/ContinuumBoundaryElement.cpp
-    elements/ContinuumBoundaryElementConstrainedControlNode.cpp
-    elements/ContinuumContactElement.cpp
-    elements/ElementBase.cpp
-    elements/Element1DInXD.cpp
-    elements/Element2DInterface.cpp
-    elements/ContinuumElementIGA.cpp
-    elements/ElementOutputBase.cpp
     elements/ElementShapeFunctions.cpp
-    elements/IpDataEnum.cpp
-    elements/IPData.cpp
-    )
-
-set(MechanicsGroupsSources
-    groups/Group.cpp
-    groups/GroupBase.cpp
     )
 
 set(MechanicsIntegrationtypesSources
@@ -59,48 +31,9 @@ set(MechanicsIntegrationtypesSources
     integrationtypes/IntegrationTypeEnum.cpp
     )
 
-set(MechanicsInterpolationtypesSources
-    interpolationtypes/InterpolationBase.cpp
-    interpolationtypes/InterpolationBaseFEM.cpp
-    interpolationtypes/InterpolationBaseIGA.cpp
-    interpolationtypes/InterpolationType.cpp
-    interpolationtypes/InterpolationTypeEnum.cpp
-    interpolationtypes/Interpolation1D.cpp
-    interpolationtypes/Interpolation1DTruss.cpp
-    interpolationtypes/Interpolation1DInterface.cpp
-    interpolationtypes/Interpolation2D.cpp
-    interpolationtypes/Interpolation2DTriangle.cpp
-    interpolationtypes/Interpolation2DQuad.cpp
-    interpolationtypes/Interpolation3D.cpp
-    interpolationtypes/Interpolation3DTetrahedron.cpp
-    interpolationtypes/Interpolation3DBrick.cpp
-    interpolationtypes/Interpolation3DPrism.cpp
-    interpolationtypes/Interpolation1DIGA.cpp
-    interpolationtypes/Interpolation2DIGA.cpp
-    )
-
 set(MechanicsIGASources
     iga/BSplineCurve.cpp
     iga/BSplineSurface.cpp
-    )
-
-set(MechanicsLoadsSources
-    loads/LoadNode.cpp
-    loads/LoadNodeGroup.cpp
-    loads/LoadNodeForces1D.cpp
-    loads/LoadNodeForces2D.cpp
-    loads/LoadNodeForces3D.cpp
-    loads/LoadNodeScalarSource.cpp
-    loads/LoadNodeGroupForces1D.cpp
-    loads/LoadNodeGroupForces2D.cpp
-    loads/LoadNodeGroupForces3D.cpp
-    loads/LoadSurfaceBase2D.cpp
-    loads/LoadSurfaceBase3D.cpp
-    loads/LoadSurfaceConstDirection2D.cpp
-    loads/LoadSurfaceConstDirection3D.cpp
-    loads/LoadSurfacePressure2D.cpp
-    loads/LoadSurfacePressure3D.cpp
-    loads/LoadSurfacePressureFunction2D.cpp
     )
 
 set(MechanicsMeshSources
@@ -118,14 +51,6 @@ set(MechanicsNodesSources
     nodes/NodeBase.cpp
     nodes/NodeDof.cpp
     nodes/NodeEnum.cpp
-    )
-
-set(MechanicsSectionSources
-    sections/Section.cpp
-    sections/SectionTruss.cpp
-    sections/SectionVariableTruss.cpp
-    sections/SectionPlane.cpp
-    sections/SectionFibreMatrixBond.cpp
     )
 
 set(MechanicsStructuresSources
@@ -186,18 +111,12 @@ set(MechanicsToolsSources
 set(MechanicsSources
     ${MechanicsConstitutiveSources}
     ${MechanicsConstraintSources}
-    ${MechanicsCrackSources}
     ${MechanicsDofsSources}
-    ${MechanicsDofSubMatrixStorageSources}
     ${MechanicsElementsSources}
-    ${MechanicsGroupsSources}
     ${MechanicsIntegrationtypesSources}
-    ${MechanicsInterpolationtypesSources}
     ${MechanicsIGASources}
-    ${MechanicsLoadsSources}
     ${MechanicsMeshSources}
     ${MechanicsNodesSources}
-    ${MechanicsSectionSources}
     ${MechanicsStructuresSources}
     ${MechanicsTimeIntegrationSources}
     ${MechanicsToolsSources}
