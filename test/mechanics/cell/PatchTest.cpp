@@ -16,7 +16,7 @@
 #include "mechanics/constraintsPde/Constraints.h"
 #include "mechanics/constraintsPde/ConstraintCompanion.h"
 
-#include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"

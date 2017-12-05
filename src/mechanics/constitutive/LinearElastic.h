@@ -1,8 +1,8 @@
 #pragma once
 #include <type_traits>
 #include <tuple>
-#include "mechanics/constitutive/laws/MechanicsInterface.h"
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
+#include "mechanics/constitutive/MechanicsInterface.h"
+#include "mechanics/constitutive/ConstitutivePlaneStateEnum.h"
 
 namespace NuTo
 {

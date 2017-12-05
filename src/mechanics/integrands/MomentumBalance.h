@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/MechanicsInterface.h"
 #include "mechanics/dofs/DofType.h"
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"

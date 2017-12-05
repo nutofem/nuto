@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
 constexpr double E = 6174;
 constexpr double nu = 0.36;
