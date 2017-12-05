@@ -31,26 +31,10 @@ set(MechanicsIntegrationtypesSources
     integrationtypes/IntegrationTypeEnum.cpp
     )
 
-set(MechanicsIGASources
-    iga/BSplineCurve.cpp
-    iga/BSplineSurface.cpp
-    )
-
 set(MechanicsMeshSources
-    mesh/ConvertToInterpolationType.cpp
-    mesh/ElementPrismCreate.cpp
-    mesh/ImportFromGmsh.cpp
-    mesh/MeshCompanion.cpp
-    mesh/MeshGenerator.cpp
     mesh/MeshFem.cpp
     mesh/MeshFemDofConvert.cpp
     mesh/UnitMeshFem.cpp
-    )
-
-set(MechanicsNodesSources
-    nodes/NodeBase.cpp
-    nodes/NodeDof.cpp
-    nodes/NodeEnum.cpp
     )
 
 set(MechanicsStructuresSources
@@ -114,9 +98,7 @@ set(MechanicsSources
     ${MechanicsDofsSources}
     ${MechanicsElementsSources}
     ${MechanicsIntegrationtypesSources}
-    ${MechanicsIGASources}
     ${MechanicsMeshSources}
-    ${MechanicsNodesSources}
     ${MechanicsStructuresSources}
     ${MechanicsTimeIntegrationSources}
     ${MechanicsToolsSources}
