@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include "base/Group.h"
 
-using namespace NuTo::Groups;
+using namespace NuTo;
 
 struct Foo
 {
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(GroupCtors)
 
 void BraceInitialization(const Group<Foo>& group)
 {
-    BOOST_CHECK_EQUAL(group.Size(), 2); 
+    BOOST_CHECK_EQUAL(group.Size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(GroupBraceInitialize)

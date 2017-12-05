@@ -67,7 +67,7 @@ public:
     }
 
     std::function<double(double)> sinFunction = [](double time) { return std::sin(time); };
-    Groups::Group<NodeSimple> nodes;
+    Group<NodeSimple> nodes;
     NodeSimple node1 = NodeSimple(Eigen::VectorXd::Ones(3));
     NodeSimple node2 = NodeSimple(Eigen::VectorXd::Ones(3));
     double reciprocalNorm = 1.0 / std::sqrt(3.0);

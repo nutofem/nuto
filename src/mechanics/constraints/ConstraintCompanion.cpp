@@ -27,15 +27,13 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 }
 
 
-std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
-                                double value)
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, double value)
 {
     return Component(nodes, directions, RhsConstant(value));
 }
 
 
-std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
-                                RhsFunction rhs)
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (const auto& node : nodes)
@@ -77,7 +75,7 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double val
     return Direction(node, direction, RhsConstant(value));
 }
 
-std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)
@@ -85,7 +83,7 @@ std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::V
     return eqs;
 }
 
-std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
 {
     return Direction(nodes, direction, RhsConstant(value));
 }
@@ -102,7 +100,7 @@ Equation Value(const NodeSimple& node, RhsFunction rhs)
     return Component(node, {eDirection::X}, rhs)[0];
 }
 
-std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, double value)
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, double value)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)
@@ -110,7 +108,7 @@ std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, double value
     return eqs;
 }
 
-std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, RhsFunction rhs)
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)

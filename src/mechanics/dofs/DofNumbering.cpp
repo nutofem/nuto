@@ -4,7 +4,7 @@ using namespace NuTo;
 
 //! @brief build dof numbering, starting at 0, for all `nodes` regardless of constraints
 //! @return total number of dofs in `nodes`
-int InitialUnconstrainedNumbering(const Groups::Group<NodeSimple>& nodes)
+int InitialUnconstrainedNumbering(const Group<NodeSimple>& nodes)
 {
     int dofNumber = 0;
     for (auto& node : nodes)
@@ -29,7 +29,7 @@ std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints
     return dofStatus;
 }
 
-DofNumbering::DofInfo DofNumbering::Build(const Groups::Group<NodeSimple>& dofNodes, DofType dof,
+DofNumbering::DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof,
                                           const Constraint::Constraints& constraints)
 {
     int numDependentDofs = constraints.GetNumEquations(dof);

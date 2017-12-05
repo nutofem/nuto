@@ -43,8 +43,7 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 //! @param directions ... vector of directions (X, Y, Z)
 //! @param value ... constant value
 //! @return ... vector of constraint equations
-std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
-                                double value = 0.0);
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, double value = 0.0);
 
 //! @brief constraints components of vector valued nodes in X and/or Y and/or Z
 //! @param node ... node reference
@@ -58,8 +57,7 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 //! @param directions ... vector of directions (X, Y, Z)
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... vector of constraint equations
-std::vector<Equation> Component(const Groups::Group<NodeSimple>& nodes, std::vector<eDirection> directions,
-                                RhsFunction rhs);
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, RhsFunction rhs);
 
 
 //! @brief creates a constraint equation for constraints that are not axes aligned
@@ -81,14 +79,14 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double val
 //! @param direction ... directions (X, Y, Z)
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... vector of constraint equations
-std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs);
 
 //! @brief creates multiple constraint equations for constraints that are not axes aligned
 //! @param nodes ... group of nodes
 //! @param direction ... directions (X, Y, Z)
 //! @param value ... constant value
 //! @return vector of constraint equations
-std::vector<Equation> Direction(const Groups::Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value = 0.0);
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value = 0.0);
 
 //! @brief Constraint single value node
 //! @param node ... node reference
@@ -106,13 +104,13 @@ Equation Value(const NodeSimple& node, RhsFunction rhs);
 //! @param nodes ... group of nodes
 //! @param value ... constant value
 //! @return ... vector of constraint equations
-std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, double value = 0.0);
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, double value = 0.0);
 
 //! @brief Constraint group of single value nodes
 //! @param nodes ... group of nodes
 //! @param rhs ... time dependent constraint function (double time) --> double
 //! @return ... vector of constraint equations
-std::vector<Equation> Value(const Groups::Group<NodeSimple>& nodes, RhsFunction rhs);
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, RhsFunction rhs);
 
 } /* Constraint */
 } /* NuTo */

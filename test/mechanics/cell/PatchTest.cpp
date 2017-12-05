@@ -25,7 +25,6 @@
 #include "mechanics/cell/SimpleAssember.h"
 
 using namespace NuTo;
-using namespace NuTo::Groups;
 
 //! @brief automatically create the lambda
 //! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }

@@ -24,7 +24,7 @@ struct DofInfo
     }
 };
 
-DofInfo Build(const Groups::Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints);
+DofInfo Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints);
 
 } /* DofNumbering */
 } /* NuTo */
