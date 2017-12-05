@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include "mechanics/constraintsPde/Term.h"
+#include "mechanics/constraints/Term.h"
 
 namespace NuTo
 {
-namespace ConstraintPde
+namespace Constraint
 {
 typedef std::function<double(double)> RhsFunction;
 

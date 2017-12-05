@@ -1,0 +1,2 @@
+add_unit_test(ConstraintCompanion)
+add_unit_test(Constraints)

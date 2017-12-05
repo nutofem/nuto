@@ -1,6 +1,6 @@
 set(MechanicsSources
-    constraintsPde/Constraints.cpp
-    constraintsPde/ConstraintCompanion.cpp
+    constraints/Constraints.cpp
+    constraints/ConstraintCompanion.cpp
     dofs/DofNumbering.cpp
     elements/ElementShapeFunctions.cpp
     mesh/MeshFemDofConvert.cpp

@@ -18,7 +18,7 @@ constexpr int INDEPENDENT = -1;
 //! @brief Find the status (INDEPENDENT or dependent) for all dof numbers.
 //! @return The status vector contains two information. Value INDEPENDENT means, well..., independent. Any value other
 //! than that is the index of the equation where this dof is the dependent one.
-std::vector<int> GetStatusOfDofNumber(const ConstraintPde::Constraints& constraints, DofType dof, int numDofs)
+std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints, DofType dof, int numDofs)
 {
     std::vector<int> dofStatus(numDofs, INDEPENDENT); // initialize as INDEPENDENT
     for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
@@ -30,7 +30,7 @@ std::vector<int> GetStatusOfDofNumber(const ConstraintPde::Constraints& constrai
 }
 
 DofNumbering::DofInfo DofNumbering::Build(const Groups::Group<NodeSimple>& dofNodes, DofType dof,
-                                          const ConstraintPde::Constraints& constraints)
+                                          const Constraint::Constraints& constraints)
 {
     int numDependentDofs = constraints.GetNumEquations(dof);
 

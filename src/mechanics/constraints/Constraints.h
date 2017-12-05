@@ -2,11 +2,11 @@
 #include <set>
 #include <eigen3/Eigen/Sparse>
 #include "mechanics/dofs/DofContainer.h"
-#include "mechanics/constraintsPde/Equation.h"
+#include "mechanics/constraints/Equation.h"
 
 namespace NuTo
 {
-namespace ConstraintPde
+namespace Constraint
 {
 //! @brief stores constraint equations, separated by their dof type
 class Constraints

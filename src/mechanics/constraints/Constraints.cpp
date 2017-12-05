@@ -1,7 +1,7 @@
-#include "mechanics/constraintsPde/Constraints.h"
+#include "mechanics/constraints/Constraints.h"
 
 using namespace NuTo;
-using namespace NuTo::ConstraintPde;
+using namespace NuTo::Constraint;
 
 
 void Constraints::Add(DofType dof, Equation equation)
@@ -82,7 +82,7 @@ const Equation& Constraints::GetEquation(DofType dof, int equationNumber) const
 }
 
 template <typename T>
-bool Contains(const T& container, NuTo::ConstraintPde::Term t)
+bool Contains(const T& container, NuTo::Constraint::Term t)
 {
     return container.find(t) != container.end();
 }

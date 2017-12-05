@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-namespace ConstraintPde
+namespace Constraint
 {
 //! @brief stores constraint equation terms
 class Term

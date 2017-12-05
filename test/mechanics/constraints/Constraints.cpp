@@ -1,10 +1,10 @@
 #include "BoostUnitTest.h"
 #include "base/Exception.h"
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/constraintsPde/Constraints.h"
+#include "mechanics/constraints/Constraints.h"
 
 using namespace NuTo;
-using namespace ConstraintPde;
+using namespace Constraint;
 
 const DofType dof("Erdös", 4);
 auto rhs = [](double) { return 42; };
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
      *
      */
     Eigen::MatrixXd cmatExpected = Eigen::MatrixXd::Zero(2, 3);
-    cmatExpected(1,0) = 42;
+    cmatExpected(1, 0) = 42;
 
     node0.SetDofNumber(0, 0);
     node1.SetDofNumber(0, 1);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     Constraints c;
     c.Add(dof, noninteractingEquation);
     c.Add(dof, interactingEquation);
-    
+
     Eigen::MatrixXd cmat = c.BuildConstraintMatrix(dof, 3);
 
     BoostUnitTest::CheckEigenMatrix(cmat, cmatExpected);
@@ -128,12 +128,12 @@ BOOST_AUTO_TEST_CASE(ConstraintDoubleConstrained)
 
 BOOST_AUTO_TEST_CASE(ConstraintTwoDependentDofsInOneEquation)
 {
-    ConstraintPde::Constraints constraints;
+    Constraint::Constraints constraints;
     NodeSimple node(Eigen::Vector2d::Zero());
 
     constraints.Add(dof, {node, 0, rhs}); // node.dof0 * 1.0 = rhs
 
-    ConstraintPde::Equation equation(node, 1, rhs);
+    Constraint::Equation equation(node, 1, rhs);
     equation.AddTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
     BOOST_CHECK_THROW(constraints.Add(dof, equation), Exception);
 }

@@ -1,15 +1,15 @@
 #pragma once
 
 #include "base/Group.h"
-#include "mechanics/constraintsPde/Constraints.h"
-#include "mechanics/constraintsPde/Equation.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/Equation.h"
 #include "mechanics/DirectionEnum.h"
 #include "mechanics/nodes/NodeSimple.h"
 
 namespace NuTo
 {
 
-namespace ConstraintPde
+namespace Constraint
 {
 
 //! @brief linear function

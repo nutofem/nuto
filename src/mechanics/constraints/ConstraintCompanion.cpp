@@ -1,12 +1,12 @@
 #include "base/Exception.h"
-#include "mechanics/constraintsPde/ConstraintCompanion.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/constraintsPde/Equation.h"
+#include "mechanics/constraints/Equation.h"
 
 
 namespace NuTo
 {
-namespace ConstraintPde
+namespace Constraint
 {
 
 std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, double value)

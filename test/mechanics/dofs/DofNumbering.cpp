@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
     NodeSimple nodeUnconstrained1(Eigen::Vector2d::Zero());
     NodeSimple nodeConstrained(Eigen::Vector2d::Zero());
 
-    ConstraintPde::Constraints constraints;
+    Constraint::Constraints constraints;
 
     Groups::Group<NodeSimple> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
 

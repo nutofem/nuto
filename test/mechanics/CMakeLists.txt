@@ -1,6 +1,6 @@
 add_subdirectory(cell)
 add_subdirectory(constitutive)
-add_subdirectory(constraintsPde)
+add_subdirectory(constraints)
 add_subdirectory(dofs)
 add_subdirectory(elements)
 add_subdirectory(integrands)
