@@ -16,64 +16,193 @@
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/nodes/NodeSimple.h"
 
-#include <map>
+#include <cassert>
 #include <functional>
+#include <map>
 #include <vector>
 
+using namespace Eigen;
 using namespace NuTo;
 using namespace NuTo::Groups;
 
 
-class CreepLaw : public Laws::MechanicsInterface<1>
+template <typename T>
+class HistoryData
 {
-
-    double mE;
-    double mNu;
-    std::map<int, std::vector<float>> mIPdata;
+    std::map<int, std::vector<T>> mHisData;
 
 public:
-    using typename Laws::MechanicsInterface<1>::MechanicsTangent;
-
-
-    CreepLaw(double E, double Nu)
-        : mE(E)
-        , mNu(Nu)
+    const T& GetIPHistoryData(int cellNum, int ipNum) const
     {
+        auto ipVecIt = mHisData.find(cellNum);
+        if (ipVecIt == mHisData.end())
+            throw Exception(__PRETTY_FUNCTION__, "Cell data not found");
+        return (*ipVecIt).second[ipNum];
     }
 
-    void InitializeIPData(const Groups::Group<CellInterface>& cells, DofType dof)
+    T& GetIPHistoryData(int cellNum, int ipNum)
+    {
+        auto ipVecIt = mHisData.find(cellNum);
+        if (ipVecIt == mHisData.end())
+            throw Exception(__PRETTY_FUNCTION__, "Cell data not found");
+        return (*ipVecIt).second[ipNum];
+    }
+
+    void InitializeHistoryData(const Groups::Group<CellInterface>& cells, DofType dof)
     {
         for (CellInterface& cell : cells)
         {
 
             cell.Apply([this](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-                if (mIPdata.find(cellData.GetCellId()) == mIPdata.end())
-                    mIPdata.emplace(cellData.GetCellId(), std::vector<float>(cellData.GetNumIntegrationPoints()));
+                if (mHisData.find(cellData.GetCellId()) == mHisData.end())
+                    mHisData.emplace(cellData.GetCellId(), std::vector<T>(cellData.GetNumIntegrationPoints()));
             });
         }
     }
+};
 
-    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double delta_t, int cellNum,
-                                   int ipNum) const override
-    {
-        return mE * strain;
-    }
 
-    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double delta_t, int cellNum, int ipNum) const override
+// %%% Custom law with history data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+struct CreepHistoryData
+{
+    EngineeringStrainPDE<1> prevStrain;
+    EngineeringStressPDE<1> prevStress;
+    VectorXd gamma = Eigen::VectorXd::Zero(2);
+
+    CreepHistoryData()
     {
-        return MechanicsTangent::Constant(mE);
+        prevStrain[0] = 0.;
+        prevStress[0] = 0.;
     }
 };
 
+//! @brief Creep law using the exponential algorithm
+class CreepLaw : public Laws::MechanicsInterface<1>, public HistoryData<CreepHistoryData>
+{
+
+    double mE; //!< Youngs modulus
+    VectorXd mE_KC; //!< Kelvin chain stiffness
+    VectorXd mT_KC; //!< Kelvin chain retardation time
+
+
+public:
+    using typename Laws::MechanicsInterface<1>::MechanicsTangent;
+
+
+    //! @brief Ctor
+    //! @param E: Youngs modulus
+    //! @param E_KC: Kelvin chain stiffness
+    //! @param T_KC: Kelvin chain retardation time
+    CreepLaw(double E, VectorXd E_KC, VectorXd T_KC)
+        : mE(E)
+        , mE_KC(E_KC)
+        , mT_KC(T_KC)
+    {
+        assert(mE_KC.rows() == mT_KC.rows());
+    }
+
+    //! @brief Calculates the stress at an integration point
+    //! @param strain: Strain at integration point
+    //! @param delta_t: Time increment
+    //! @param cellNum: Number of currently evaluated cell
+    //! @param ipNum: Number of currently evaluated integration point
+    //! @return Stress at integration point
+    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double delta_t, int cellNum,
+                                   int ipNum) const override
+    {
+        // Get history data
+        auto& hisData = GetIPHistoryData(cellNum, ipNum);
+
+        // Calc strain increment
+        EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
+
+        // Calc creep strain increment
+        EngineeringStrainPDE<1> deltaCreep{DeltaCreep(hisData, delta_t)};
+
+
+        // Calc Stress
+        auto deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
+        return hisData.prevStress + deltaStress;
+    }
+
+    //! @brief Calculates the mechanical tangent(stiffness) at an integration point
+    //! @param strain: Strain at integration point
+    //! @param delta_t: Time increment
+    //! @param cellNum: Number of currently evaluated cell
+    //! @param ipNum: Number of currently evaluated integration point
+    //! @return Mechanical tangent(stiffness) at an integration point
+    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double delta_t, int cellNum, int ipNum) const override
+    {
+        // Calc Kelvin Chain compliance
+        double chainCompliance = 1. / mE;
+        for (unsigned int i = 0; i < mE_KC.rows(); ++i)
+            chainCompliance += (1. - Lambda(delta_t, i)) / mE_KC[i];
+
+        // Calc Kelvin Chain stiffness
+        return MechanicsTangent::Constant(1. / chainCompliance);
+    }
+
+    void UpdateHistoryData(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, DofType dofType,
+                           double delta_t)
+    {
+        // Get history data
+        auto& hisData = GetIPHistoryData(cellData.GetCellId(), cellIpData.GetIPNum());
+
+        // Calculate necessary values for update
+        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
+        NuTo::NodeValues u = cellData.GetNodeValues(dofType);
+        EngineeringStrainPDE<1> deltaCreep{DeltaCreep(hisData, delta_t)};
+        NuTo::EngineeringStrainPDE<1> strain = B * u;
+        NuTo::EngineeringStressPDE<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIPNum());
+        MechanicsTangent E = Tangent(strain, delta_t, cellData.GetCellId(), cellIpData.GetIPNum());
+        NuTo::EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
+
+        // The actual update
+        hisData.prevStrain = strain;
+        hisData.prevStress = stress;
+
+        for (unsigned int i = 0; i < mE_KC.rows(); ++i)
+        {
+            hisData.gamma[i] = Lambda(delta_t, i) * E / mE_KC[i] * (deltaStrain - deltaCreep) +
+                               Beta(delta_t, i) * hisData.gamma[i];
+        }
+    }
+
+private:
+    double Beta(double delta_t, unsigned int index) const
+    {
+        assert(index < mT_KC.rows());
+        return std::exp(-delta_t / mT_KC[index]);
+    }
+
+    double Lambda(double delta_t, unsigned int index) const
+    {
+        assert(index < mT_KC.rows());
+        return mT_KC[index] / delta_t * (1 - Beta(delta_t, index));
+    }
+
+    EngineeringStrainPDE<1> DeltaCreep(const CreepHistoryData& hisData, double delta_t) const
+    {
+        EngineeringStrainPDE<1> deltaCreep;
+        deltaCreep[0] = 0.;
+        for (unsigned int i = 0; i < mE_KC.rows(); ++i)
+            deltaCreep[0] += (1. - Beta(delta_t, i)) * hisData.gamma[i];
+        return deltaCreep;
+    }
+};
+
+
+// %%% Mesh generation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 MeshFem Mesh1D()
 {
     MeshFem mesh;
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
     NodeSimple* nr = nullptr;
-    for (unsigned int i = 0; i < 21; ++i)
+    for (unsigned int i = 0; i < 3; ++i)
     {
-        NodeSimple& nl = mesh.Nodes.Add({i * 0.5});
+        NodeSimple& nl = mesh.Nodes.Add({i * 5.});
         if (i > 0)
             mesh.Elements.Add({{{nl, *nr}, interpolation}});
         nr = &nl;
@@ -82,6 +211,9 @@ MeshFem Mesh1D()
 
     return mesh;
 }
+
+
+// %%% Main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 using namespace std::placeholders;
 
@@ -105,17 +237,21 @@ BOOST_AUTO_TEST_CASE(IP_data)
 
 
     // Create law %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    constexpr double E = 20000;
-    constexpr double nu = 0.2;
-    Laws::LinearElastic<1> linearElasticLaw(E, nu);
-    CreepLaw creepLaw(E, nu);
+    constexpr double E = 40000;
+    const Vector2d E_KC(60000., 120000.);
+    const Vector2d D_KC(1., 2.);
+    CreepLaw creepLaw(E, E_KC, D_KC);
 
 
     // Create integrand %%%%%%%%%%%%%%%%%%%%%%%%%
     Integrands::MomentumBalance<1> momentumBalance(displ, creepLaw);
-    auto MomentumGradientF = std::bind(&Integrands::MomentumBalance<1>::Gradient, momentumBalance, _1, _2, 0.);
-    auto MomentumHessian0F = std::bind(&Integrands::MomentumBalance<1>::Hessian0, momentumBalance, _1, _2, 0.);
-
+    double delta_t = 0.1;
+    auto MomentumGradientF =
+            std::bind(&Integrands::MomentumBalance<1>::Gradient, momentumBalance, _1, _2, std::ref(delta_t));
+    auto MomentumHessian0F =
+            std::bind(&Integrands::MomentumBalance<1>::Hessian0, momentumBalance, _1, _2, std::ref(delta_t));
+    auto MomentumUpdateHistoryDataF =
+            std::bind(&CreepLaw::UpdateHistoryData, std::ref(creepLaw), _1, _2, displ, std::ref(delta_t));
 
     // Create integration type %%%%%%%%%%%%%%%%%%
     IntegrationTypeTensorProduct<1> integrationType(2, eIntegrationMethod::GAUSS);
@@ -131,24 +267,96 @@ BOOST_AUTO_TEST_CASE(IP_data)
     }
 
     // Initialize IP data %%%%%%%%%%%%%%%%%%%%%%%
-    creepLaw.InitializeIPData(momentumBalanceCells, displ);
+    creepLaw.InitializeHistoryData(momentumBalanceCells, displ);
 
 
-    // Assemble system %%%%%%%%%%%%%%%%%%%%%%%%%%
+    // Get gradient %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
-    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
-
+    VectorXd displacements = VectorXd::Zero(dofInfo.numIndependentDofs[displ]);
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
+    constexpr double rhsForce = 2000.;
     GlobalDofVector extF;
     extF.J[displ].setZero(dofInfo.numIndependentDofs[displ]);
     extF.K[displ].setZero(dofInfo.numDependentDofs[displ]);
     NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * 10, displ);
-    extF.J[displ][nodeRight.GetDofNumber(0)] = 2000.;
+    extF.J[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
+    // Post processing stuff %%%%%%%%%%%%%%%%%%%%
+    std::vector<double> rhsDispNumerical;
 
-    // Solve system %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
-    Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ] - extF.J[displ]);
+    // Time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    constexpr double timeFinal = 10.;
+    constexpr unsigned int maxIter = 10;
+    double time = 0.;
+    delta_t = 0.01;
+
+    while (time < timeFinal)
+    {
+        unsigned int numIter = 0;
+        time += delta_t;
+
+        // Calculate residual %%%%%%%%%%%%%%%%%%%
+        GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+        Eigen::VectorXd residual = gradient.J[displ] + extF.J[displ];
+
+        // Iterate for equilibrium %%%%%%%%%%%%%%
+        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-12)
+        {
+            numIter++;
+            // Build and solve system %%%%%%%%%%%
+            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+            Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
+            Eigen::VectorXd deltaDisplacements = hessianDense.ldlt().solve(residual);
+            displacements -= deltaDisplacements;
+
+            // Merge dof values %%%%%%%%%%%%%%%%%
+            int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
+            for (auto& node : mesh.NodesTotal(displ))
+            {
+                int dofNumber = node.GetDofNumber(0);
+                if (dofNumber < numUnconstrainedDofs)
+                    node.SetValue(0, displacements[dofNumber]);
+            }
+
+            // Calculate new residual %%%%%%%%%%%
+            gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+            residual = gradient.J[displ] + extF.J[displ];
+        }
+        if (numIter >= maxIter)
+            throw Exception(__PRETTY_FUNCTION__, "No convergence");
+
+        // Update history data %%%%%%%%%%%%%%%%%%
+        for (auto& cell : momentumBalanceCells)
+            cell.Apply(MomentumUpdateHistoryDataF);
+
+        // Store rhs displacement %%%%%%%%%%%%%%%
+        if (std::abs(time - std::round(time)) < delta_t / 2.) // <--- store only if time is an integer
+            rhsDispNumerical.push_back(displacements[displacements.rows() - 1]);
+    }
+
+    // Theoretical solution %%%%%%%%%%%%%%%%%%%%%
+    delta_t = 1.;
+    std::vector<double> rhsDispTheoretical;
+    for (float time = delta_t; time <= timeFinal; time += delta_t)
+    {
+        double totalStrain = 0.0;
+        totalStrain += rhsForce / E;
+        for (unsigned int i = 0; i < E_KC.rows(); ++i)
+            totalStrain += rhsForce / E_KC[i] * (1. - std::exp(-time / D_KC[i]));
+        rhsDispTheoretical.push_back((totalStrain)*10.);
+    }
+
+    // Compare results %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    assert(rhsDispNumerical.size() == rhsDispTheoretical.size());
+    double maxDeviation = 0.;
+    for (unsigned int i = 0; i < rhsDispNumerical.size(); ++i)
+    {
+        double deviation = std::abs((rhsDispNumerical[i] - rhsDispTheoretical[i]) / rhsDispTheoretical[i]);
+        if (deviation > maxDeviation)
+            maxDeviation = deviation;
+    }
+    if (maxDeviation > 0.01)
+        throw Exception(__PRETTY_FUNCTION__, "Difference between theoretical and numerical solution is too high.");
 }
