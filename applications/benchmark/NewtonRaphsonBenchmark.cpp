@@ -1,6 +1,7 @@
-#include "Benchmark.h"
-#include "math/NewtonRaphson.h"
 #include <cmath>
+#include <benchmark/benchmark.h>
+
+#include "math/NewtonRaphson.h"
 
 constexpr double tolerance = 1.e-10;
 constexpr double runtime = .1;
@@ -13,15 +14,6 @@ auto ValidProblem()
     return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance);
 }
 
-auto InfoProblem()
-{
-    auto R = [](double x) { return x * x * x - x + 6; };
-    auto DR = [](double x) { return 3. * x * x - 1; };
-    auto Norm = [](double x) { return std::abs(x); };
-    auto Info = [](int i, double x, double r) { std::cout << "NewtonStep: " << i << '\t' << x << '\t' << r << '\n'; };
-    return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance, Info);
-}
-
 void Check(double x)
 {
     if (std::fabs(x + 2) > 1.e-10)
@@ -30,41 +22,32 @@ void Check(double x)
     }
 }
 
-BENCHMARK(Newton, NuToFunction, runner)
+static void Function(benchmark::State& state)
 {
     auto problem = ValidProblem();
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
         Check(x);
     }
 }
+BENCHMARK(Function);
 
-BENCHMARK(Newton, NuToFunctionWithInfoToCout, runner)
-{
-    auto problem = InfoProblem();
-    while (runner.KeepRunningTime(runtime))
-    {
-        auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
-        Check(x);
-    }
-}
-
-
-BENCHMARK(Newton, NuToFunctionLineSearch, runner)
+static void FunctionLineSearch(benchmark::State& state)
 {
     auto problem = ValidProblem();
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100,
                                             NuTo::NewtonRaphson::LineSearch());
         Check(x);
     }
 }
+BENCHMARK(FunctionLineSearch);
 
-BENCHMARK(Newton, hardcode, runner)
+static void Hardcode(benchmark::State& state)
 {
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         double x = 0;
         double r = x * x * x - x + 6;
@@ -83,3 +66,6 @@ BENCHMARK(Newton, hardcode, runner)
         Check(x);
     }
 }
+BENCHMARK(Hardcode);
+
+BENCHMARK_MAIN();

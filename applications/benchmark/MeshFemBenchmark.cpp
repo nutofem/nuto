@@ -1,73 +1,46 @@
-#include "Benchmark.h"
+#include <benchmark/benchmark.h>
+
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
-BENCHMARK(Mesh, CreateTriangles10x10, runner)
+static void Create(benchmark::State& state)
 {
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
-}
-BENCHMARK(Mesh, CreateTriangles100x100, runner)
-{
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
-}
-BENCHMARK(Mesh, CreateTriangles1000x1000, runner)
-{
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
+    const int n = state.range(0);
+    for (auto _ : state)
+        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(n, n);
+    state.SetComplexityN(n * n);
 }
 
-BENCHMARK(Mesh, Convert10x10, runner)
+static void Convert(benchmark::State& state)
 {
+    const int n = state.range(0);
     NuTo::InterpolationTriangleLinear interpolation(2);
-    while (runner.KeepRunningTime(1))
+    for (auto _ : state)
     {
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
+        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(n, n);
         NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
     }
+    state.SetComplexityN(n * n);
 }
-BENCHMARK(Mesh, Convert100x100, runner)
+
+static void Transform(benchmark::State& state)
 {
-    NuTo::InterpolationTriangleLinear interpolation(2);
-    while (runner.KeepRunningTime(1))
+    const int n = state.range(0);
+
+    auto f = [](Eigen::VectorXd oldCoords) -> Eigen::VectorXd {
+        return Eigen::Vector2d(oldCoords[0] * 12 + 1, oldCoords[1] * 4 - 6174);
+    };
+
+    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(n, n);
+    for (auto _ : state)
     {
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
-        NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
+        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
     }
+    state.SetComplexityN(n * n);
 }
-BENCHMARK(Mesh, Convert1000x1000, runner)
-{
-    NuTo::InterpolationTriangleLinear interpolation(2);
-    while (runner.KeepRunningTime(1))
-    {
-        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
-        NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
-    }
-}
+BENCHMARK(Create)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
+BENCHMARK(Convert)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
+BENCHMARK(Transform)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
 
-
-auto f = [](Eigen::VectorXd oldCoords) -> Eigen::VectorXd {
-    return Eigen::Vector2d(oldCoords[0] * 12 + 1, oldCoords[1] * 4 - 6174);
-};
-
-BENCHMARK(Mesh, Transform10x10, runner)
-{
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
-}
-BENCHMARK(Mesh, Transform100x100, runner)
-{
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
-}
-
-BENCHMARK(Mesh, Transform1000x1000, runner)
-{
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
-    while (runner.KeepRunningTime(1))
-        NuTo::MeshFem newMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
-}
+BENCHMARK_MAIN();

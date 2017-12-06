@@ -1,18 +1,11 @@
-#include "Benchmark.h"
+#include <benchmark/benchmark.h>
+
 #include "geometryConcrete/collision/handler/CollisionHandler.h"
 #include "geometryConcrete/collision/handler/ParticleHandler.h"
 #include "geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "geometryConcrete/Specimen.h"
 
-BENCHMARK(DenseSpherePacking, Warmup, runner)
-{
-    while (runner.KeepRunningTime(1.))
-    {
-    }
-}
-
-
-BENCHMARK(DenseSpherePacking, Run, runner)
+static void DenseSpherePacking(benchmark::State& state)
 {
     Eigen::MatrixXd boundingBox(3, 2);
     boundingBox << 0, 1, 0, 1, 0, 1;
@@ -31,7 +24,7 @@ BENCHMARK(DenseSpherePacking, Run, runner)
     constexpr double timePrintout = 1e3;
     constexpr double initialTimeBarrier = 0.01;
 
-    while (runner.KeepRunningIterations(10))
+    for (auto _ : state)
     {
         NuTo::ParticleHandler particleHandler(numParticles, s.GetBoundingBox(), randomVelocityRange, growthRate);
         NuTo::SubBoxHandler subBoxHandler(particleHandler, s, 10);
@@ -39,3 +32,5 @@ BENCHMARK(DenseSpherePacking, Run, runner)
         collisionHandler.Simulate(numEvents, timeMax, wallTimeMax, timePrintout, initialTimeBarrier);
     }
 }
+BENCHMARK(DenseSpherePacking);
+BENCHMARK_MAIN();
