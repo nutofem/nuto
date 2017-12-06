@@ -26,33 +26,48 @@ using namespace NuTo;
 using namespace NuTo::Groups;
 
 
+constexpr double SpecimenLength = 10.;
+constexpr unsigned int numElements = 4;
+
+//! @brief Standard history data management object.
+//! @tparam T: Data type of the history data
 template <typename T>
 class HistoryData
 {
     std::map<int, std::vector<T>> mHisData;
 
 public:
+    //! @brief Returns the history data for a specific integration point
+    //! @param cellNum: Number of the cell containing the integration point
+    //! @param ipNum: Number of the integration point
+    //! @return History data of the integration point
     const T& GetIPHistoryData(int cellNum, int ipNum) const
     {
         auto ipVecIt = mHisData.find(cellNum);
         if (ipVecIt == mHisData.end())
-            throw Exception(__PRETTY_FUNCTION__, "Cell data not found");
+            throw Exception(__PRETTY_FUNCTION__, "Cell data not found! - Did you initialize the history data?");
         return (*ipVecIt).second[ipNum];
     }
 
+    //! @brief Returns the history data for a specific integration point
+    //! @param cellNum: Number of the cell containing the integration point
+    //! @param ipNum: Number of the integration point
+    //! @return History data of the integration point
     T& GetIPHistoryData(int cellNum, int ipNum)
     {
         auto ipVecIt = mHisData.find(cellNum);
         if (ipVecIt == mHisData.end())
-            throw Exception(__PRETTY_FUNCTION__, "Cell data not found");
+            throw Exception(__PRETTY_FUNCTION__, "Cell data not found! - Did you initialize the history data?");
         return (*ipVecIt).second[ipNum];
     }
 
+    //! @brief Initializes the history data
+    //! @param cells: Cellgroup that is related to the integrand
+    //! @param dof: Dof type
     void InitializeHistoryData(const Groups::Group<CellInterface>& cells, DofType dof)
     {
         for (CellInterface& cell : cells)
         {
-
             cell.Apply([this](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
                 if (mHisData.find(cellData.GetCellId()) == mHisData.end())
                     mHisData.emplace(cellData.GetCellId(), std::vector<T>(cellData.GetNumIntegrationPoints()));
@@ -64,6 +79,7 @@ public:
 
 // %%% Custom law with history data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+//! @brief Structure that holds the history data of the creep law
 struct CreepHistoryData
 {
     EngineeringStrainPDE<1> prevStrain;
@@ -143,6 +159,11 @@ public:
         return MechanicsTangent::Constant(1. / chainCompliance);
     }
 
+    //! @brief Updates the history data
+    //! @param cellData: Cell related data
+    //! @param cellIpData: IP related data
+    //! @param dofType: Dof type (needed to calculate strains)
+    //! @param delta_t: Time increment
     void UpdateHistoryData(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, DofType dofType,
                            double delta_t)
     {
@@ -161,27 +182,36 @@ public:
         // The actual update
         hisData.prevStrain = strain;
         hisData.prevStress = stress;
-
         for (unsigned int i = 0; i < mE_KC.rows(); ++i)
-        {
             hisData.gamma[i] = Lambda(delta_t, i) * E / mE_KC[i] * (deltaStrain - deltaCreep) +
                                Beta(delta_t, i) * hisData.gamma[i];
-        }
     }
 
 private:
+    //! @brief Calculates the algorithm specific parameter beta
+    //! @param delta_t: Time increment
+    //! @param index: Index of the Kelvin Unit
+    //! @return Algorithm specific parameter beta
     double Beta(double delta_t, unsigned int index) const
     {
         assert(index < mT_KC.rows());
         return std::exp(-delta_t / mT_KC[index]);
     }
 
+    //! @brief Calculates the algorithm specific parameter lambda
+    //! @param delta_t: Time increment
+    //! @param index: Index of the Kelvin Unit
+    //! @return Algorithm specific parameter lambda
     double Lambda(double delta_t, unsigned int index) const
     {
         assert(index < mT_KC.rows());
         return mT_KC[index] / delta_t * (1 - Beta(delta_t, index));
     }
 
+    //! @brief Calculates the creep strain increment
+    //! @param hisData: History data object
+    //! @param delta_t: Time increment
+    //! @return Creep strain increment
     EngineeringStrainPDE<1> DeltaCreep(const CreepHistoryData& hisData, double delta_t) const
     {
         EngineeringStrainPDE<1> deltaCreep;
@@ -200,9 +230,11 @@ MeshFem Mesh1D()
     MeshFem mesh;
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
     NodeSimple* nr = nullptr;
-    for (unsigned int i = 0; i < 3; ++i)
+    constexpr unsigned int numNodes = numElements + 1;
+    constexpr double elementLength = SpecimenLength / numElements;
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
-        NodeSimple& nl = mesh.Nodes.Add({i * 5.});
+        NodeSimple& nl = mesh.Nodes.Add({i * elementLength});
         if (i > 0)
             mesh.Elements.Add({{{nl, *nr}, interpolation}});
         nr = &nl;
@@ -217,7 +249,7 @@ MeshFem Mesh1D()
 
 using namespace std::placeholders;
 
-BOOST_AUTO_TEST_CASE(IP_data)
+BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     MeshFem mesh = Mesh1D();
@@ -279,7 +311,7 @@ BOOST_AUTO_TEST_CASE(IP_data)
     GlobalDofVector extF;
     extF.J[displ].setZero(dofInfo.numIndependentDofs[displ]);
     extF.K[displ].setZero(dofInfo.numDependentDofs[displ]);
-    NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * 10, displ);
+    NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
     extF.J[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
     // Post processing stuff %%%%%%%%%%%%%%%%%%%%
@@ -301,7 +333,7 @@ BOOST_AUTO_TEST_CASE(IP_data)
         Eigen::VectorXd residual = gradient.J[displ] + extF.J[displ];
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
-        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-12)
+        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-10)
         {
             numIter++;
             // Build and solve system %%%%%%%%%%%
@@ -344,7 +376,7 @@ BOOST_AUTO_TEST_CASE(IP_data)
         totalStrain += rhsForce / E;
         for (unsigned int i = 0; i < E_KC.rows(); ++i)
             totalStrain += rhsForce / E_KC[i] * (1. - std::exp(-time / D_KC[i]));
-        rhsDispTheoretical.push_back((totalStrain)*10.);
+        rhsDispTheoretical.push_back(totalStrain * SpecimenLength);
     }
 
     // Compare results %%%%%%%%%%%%%%%%%%%%%%%%%%
