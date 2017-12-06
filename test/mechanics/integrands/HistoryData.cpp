@@ -138,7 +138,7 @@ public:
 
 
         // Calc Stress
-        auto deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
+        EngineeringStressPDE<1> deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
         return hisData.prevStress + deltaStress;
     }
 
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
         Eigen::VectorXd residual = gradient.J[displ] + extF.J[displ];
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
-        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-10)
+        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-9)
         {
             numIter++;
             // Build and solve system %%%%%%%%%%%
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
             // Merge dof values %%%%%%%%%%%%%%%%%
             int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
-            for (auto& node : mesh.NodesTotal(displ))
+            for (NodeSimple& node : mesh.NodesTotal(displ))
             {
                 int dofNumber = node.GetDofNumber(0);
                 if (dofNumber < numUnconstrainedDofs)
@@ -356,8 +356,11 @@ BOOST_AUTO_TEST_CASE(History_Data)
             residual = gradient.J[displ] + extF.J[displ];
         }
         if (numIter >= maxIter)
+        {
+            std::cout << residual.lpNorm<Infinity>() << std::endl;
+            std::cout << time << std::endl;
             throw Exception(__PRETTY_FUNCTION__, "No convergence");
-
+        }
         // Update history data %%%%%%%%%%%%%%%%%%
         for (auto& cell : momentumBalanceCells)
             cell.Apply(MomentumUpdateHistoryDataF);
