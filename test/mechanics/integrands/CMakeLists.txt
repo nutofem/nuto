@@ -1,7 +1,7 @@
 add_unit_test(NeumannBc
     mechanics/elements/ElementShapeFunctions.cpp)
 
-add_unit_test(IP_data
+add_unit_test(HistoryData
     math/Legendre.cpp
     mechanics/constraintsPde/Constraints.cpp
     mechanics/constraintsPde/ConstraintCompanion.cpp
