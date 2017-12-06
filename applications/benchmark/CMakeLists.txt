@@ -1,5 +1,7 @@
 unset(all_benchmarks CACHE)
 
+add_benchmark(BuildGradient)
+
 add_benchmark(ConstraintsBenchmark)
 
 add_benchmark(DenseSpherePacking)
