@@ -1,7 +1,8 @@
 #pragma once
 
-#include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
+#include "ContinuumBoundaryElement.h"
 #include <eigen3/Eigen/Dense>
+
 
 namespace NuTo
 {
@@ -22,9 +23,12 @@ public:
     ContinuumContactElement(const std::vector<std::pair<const ContinuumElement<TDimSlave>*, int>>& rElementsSlave,
                             Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic,
                                           Eigen::Dynamic>& rElementsMaster,
-                            const ConstitutiveBase* rConstitutiveContactLaw, int rContactAlgorithm);
+                            const ConstitutiveBase* rConstitutiveContactLaw, int rContactAlgorithm,
+                            const std::function<bool(int, int)>& IsNodeOnSurface);
 
-    virtual ~ContinuumContactElement() = default;
+    virtual ~ContinuumContactElement()
+    {
+    }
 
     NuTo::eError Evaluate(const ConstitutiveInputMap& rInput,
                           std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) override;
@@ -151,7 +155,8 @@ public:
     Eigen::VectorXd GetContactPressure(std::unordered_map<int, int>& rMappingGlobal2LocalSlaveNodes)
     {
         rMappingGlobal2LocalSlaveNodes = mMappingGlobal2LocalSlaveNodes;
-        return mGlobalNodalPressure;
+
+        return ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mGlobalNodalPressure;
     }
 
 
@@ -241,6 +246,13 @@ protected:
 
     Eigen::MatrixXd mGapMatrixPenalty; // contact type = 1: nonmortar
     bool mGapMatrixPenaltyAssembled;
+
+    //    Eigen::MatrixXd mGapMatrixTemp;
+    //    Eigen::VectorXd mGapVectorTemp;
+    //    Eigen::VectorXd mPressureVectorTemp;
+    //    Eigen::VectorXd mWeightsVectorTemp;
+
+    std::function<bool(int, int)> mIsNodeOnSurface;
 
     // *** the assembly takes place here, so mapping needed local - global dof numbers *** //
 

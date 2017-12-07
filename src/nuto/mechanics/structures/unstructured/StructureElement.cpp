@@ -1344,20 +1344,23 @@ void NuTo::Structure::ContactElementsCreateSlave(
 template <int TDimSlave, int TDimMaster>
 int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave, int rNodeGroupSlaveId, int rGroupElementsMaster,
                                            int rGroupNodesMaster, eIntegrationType rIntegrationType,
-                                           int rContactAlgorithm, int rConstitutiveLaw)
+                                           int rContactAlgorithm, int rConstitutiveLaw,
+                                           const std::function<bool(int, int)>& IsNodeOnSurface)
 {
     Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements =
             ContactElementsCreateMaster<TDimMaster>(rGroupElementsMaster, rGroupNodesMaster);
 
     return ContactElementsCreate<TDimSlave, TDimMaster>(rElementsGroupIDSlave, rNodeGroupSlaveId, masterElements,
-                                                        rIntegrationType, rContactAlgorithm, rConstitutiveLaw);
+                                                        rIntegrationType, rContactAlgorithm, rConstitutiveLaw,
+                                                        IsNodeOnSurface);
 }
 
 template <int TDimSlave, int TDimMaster>
 int NuTo::Structure::ContactElementsCreate(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw)
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface)
 {
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic>
             masterElements = ContactElementsCreateMaster<TDimMaster>(rMasterElementsID);
@@ -1444,7 +1447,7 @@ int NuTo::Structure::ContactElementsCreate(
     ContactElementsCreateSlave(elementsSlave, elementsSlaveContinuum);
 
     ElementBase* contactElement = new ContinuumContactElement<TDimSlave, TDimMaster>(
-            elementsSlaveContinuum, masterElements, itConstitutive->second, rContactAlgorithm);
+            elementsSlaveContinuum, masterElements, itConstitutive->second, rContactAlgorithm, IsNodeOnSurface);
 
     // find unused integer id
     int elementId = mElementMap.size();
@@ -1475,44 +1478,54 @@ int NuTo::Structure::ContactElementsCreate(
 template int NuTo::Structure::ContactElementsCreate<3, 2>(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<2, 2>(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<2, 1>(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<1, 2>(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<1, 1>(
         int rElementsGroupIDSlave, int rNodeGroupSlaveId,
         const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>& rMasterElementsID,
-        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+        eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw,
+        const std::function<bool(int, int)>& IsNodeOnSurface);
 
 template int NuTo::Structure::ContactElementsCreate<3, 2>(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
                                                           int rGroupElementsMaster, int rGroupNodesMaster,
                                                           eIntegrationType rIntegrationType, int rContactAlgorithm,
-                                                          int rConstitutiveLaw);
+                                                          int rConstitutiveLaw,
+                                                          const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<2, 2>(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
                                                           int rGroupElementsMaster, int rGroupNodesMaster,
                                                           eIntegrationType rIntegrationType, int rContactAlgorithm,
-                                                          int rConstitutiveLaw);
+                                                          int rConstitutiveLaw,
+                                                          const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<2, 1>(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
                                                           int rGroupElementsMaster, int rGroupNodesMaster,
                                                           eIntegrationType rIntegrationType, int rContactAlgorithm,
-                                                          int rConstitutiveLaw);
+                                                          int rConstitutiveLaw,
+                                                          const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<1, 2>(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
                                                           int rGroupElementsMaster, int rGroupNodesMaster,
                                                           eIntegrationType rIntegrationType, int rContactAlgorithm,
-                                                          int rConstitutiveLaw);
+                                                          int rConstitutiveLaw,
+                                                          const std::function<bool(int, int)>& IsNodeOnSurface);
 template int NuTo::Structure::ContactElementsCreate<1, 1>(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
                                                           int rGroupElementsMaster, int rGroupNodesMaster,
                                                           eIntegrationType rIntegrationType, int rContactAlgorithm,
-                                                          int rConstitutiveLaw);
+                                                          int rConstitutiveLaw,
+                                                          const std::function<bool(int, int)>& IsNodeOnSurface);
 
 
 //! @brief creates boundary elements and add them to an element group

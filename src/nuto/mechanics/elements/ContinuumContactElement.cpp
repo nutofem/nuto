@@ -35,7 +35,8 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
         const std::vector<std::pair<const ContinuumElement<TDimSlave>*, int>>& rElementsSlave,
         Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic>&
                 rElementsMaster,
-        const ConstitutiveBase* rConstitutiveContactLaw, int rContactAlgorithm)
+        const ConstitutiveBase* rConstitutiveContactLaw, int rContactAlgorithm,
+        const std::function<bool(int, int)>& IsNodeOnSurface)
 
     : ElementBase(rElementsSlave[0].first->GetStructure(), rElementsSlave[0].first->GetElementDataType(),
                   rElementsSlave[0].first->GetIpDataType(0), rElementsSlave[0].first->GetInterpolationType())
@@ -47,6 +48,7 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
     , mNumSlaveNodes(0)
     , mConstitutiveContactLaw(rConstitutiveContactLaw)
     , mContactType(rContactAlgorithm)
+    , mIsNodeOnSurface(IsNodeOnSurface)
 {
     //    if(TDimMaster != ((rSurfaceId == -1) ? TDimSlave : TDimSlave - 1))
     //        throw MechanicsException(__PRETTY_FUNCTION__, "The dimension of master side interpolation is not
@@ -203,6 +205,16 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(
 
             data.mShapeFunctionsIntegral += shapeFunsSlave * data.mJacobianByWeight(theIP);
         }
+
+        // nodes of one element
+        for (int k = 0; k < data.mShapeFunctionsIntegral.rows(); k++)
+        {
+            int surfaceid = it.second;
+            if (!mIsNodeOnSurface(k, surfaceid))
+                data.mShapeFunctionsIntegral(k) = 0.;
+        }
+
+        //        mWeightsVectorTemp = data.mShapeFunctionsIntegral;
 
         bool internalGradient = false;
         bool hessian_0_time_derivative = false;
@@ -420,6 +432,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         NContact *= jacobianByWeight;
 
         double gap = r.dot(normal); // gap at ip
+        //        std::cout << rTheIP << ": " << gap << std::endl << std::flush;
         double derivativeContactForce = mConstitutiveContactLaw->GetContactForceDerivative(gap);
 
         // GAP-MATRIX
@@ -429,7 +442,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         if (mContactType == 1 && rAssembleDerivative)
             rData.mMortarGapMatrixPenalty.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) +=
                     NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) * derivativeContactForce;
-
 
         const int numNodes = interpolationTypeDispMaster.GetNumNodes();
         unsigned int numDofsPerType =
@@ -468,6 +480,11 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         }
     }
 
+    //    mGapMatrixTemp =
+    //            rData.mMortarGapMatrix.block(0, 0, rData.mMortarGapVector.rows() * 3, rData.mMortarGapVector.rows());
+
+    //    mGapVectorTemp = rData.mMortarGapVector;
+
     if (mContactType == 0)
     {
         AssembleMortarTypeContact(rData, rElementAndSurfaceId);
@@ -496,11 +513,29 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
     int numStartingPointsElement = std::pow(numStartingPointsOneDir, TDimMaster);
     std::vector<Eigen::Matrix<double, TDimMaster, 1>> referenceCoordinates(numStartingPointsElement);
 
-    int count = 0;
-    for (int x = 0; x < numStartingPointsOneDir; x++)
+    if (mKnots.size() == 1)
     {
-        referenceCoordinates[count](0, 0) = coords(x);
-        count++;
+        int count = 0;
+        for (int x = 0; x < numStartingPointsOneDir; x++)
+        {
+            referenceCoordinates[count](0, 0) = coords(x);
+            count++;
+        }
+    }
+
+    if (mKnots.size() == 2)
+    {
+        int count = 0;
+
+        for (int x = 0; x < numStartingPointsOneDir; x++)
+        {
+            for (int y = 0; y < numStartingPointsOneDir; y++)
+            {
+                referenceCoordinates[count](0, 0) = coords(x);
+                referenceCoordinates[count](1, 0) = coords(y);
+                count++;
+            }
+        }
     }
 
     double minDistance = std::numeric_limits<double>::infinity();
@@ -600,9 +635,20 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         numIter++;
     }
 
-    if (numIter >= maxNumIter)
-        std::cout << "!!!!!!ContinuumContactElement: Maximum number of Newton iterations exceeded! (error = " << error
-                  << ")" << std::endl;
+    //    if (numIter >= maxNumIter)
+    //        std::cout << "!!!!!!ContinuumContactElement: Maximum number of Newton iterations exceeded! (error = " <<
+    //        error
+    //                  << ")" << std::endl;
+
+    Eigen::VectorXd normal = masterElement->InterpolateDofGlobalSurfaceNormal(rParameterMinMaster);
+    Eigen::VectorXd point = masterElement->InterpolateDofGlobalSurfaceDerivative(0, rParameterMinMaster, 0, 0);
+    Eigen::VectorXd slavePointIteration = point + (rProjectionVector.dot(normal)) * normal;
+
+    if ((slavePointIteration - coordinatesIPSlave).lpNorm<Eigen::Infinity>() > 1.e-8)
+    {
+        std::cout << "Not converged, deviation L2 norm: " << (slavePointIteration - coordinatesIPSlave).norm()
+                  << std::endl;
+    }
 
     return masterElement;
 }
@@ -833,7 +879,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             break;
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in
+        // GetConstitutiveOutputMap()...
         case Element::eOutput::GLOBAL_ROW_DOF:
         case Element::eOutput::GLOBAL_COLUMN_DOF:
         case Element::eOutput::UPDATE_STATIC_DATA:
@@ -859,20 +906,37 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             for (int i = 0; i < mNumSlaveNodes; i++)
             {
                 //                std::cout << mSlaveShapeFunctionsWeight(i) << " ";
-                if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-10)
+                if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-14)
+                {
                     mSlaveShapeFunctionsWeight(i) = 1.;
+                    //                    mWeightsVectorTemp(i) = 1.;
+                }
             }
-            std::cout << std::endl;
+
+            //            std::cout << mSlaveShapeFunctionsWeight << std::endl;
 
             //            Eigen::MatrixXd mat = ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
             //            std::cout << mat << std::endl;
 
+            //            std::cout << "Gap-Matri: \n" << std::endl;
+            //            std::cout << mGapMatrix << std::endl;
+
             Eigen::MatrixXd gapMatrixScaled = mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
+
+            //            std::cout << "Gap-Matri-Scaled: \n" << std::endl;
+            //            std::cout << gapMatrixScaled << std::endl;
 
             if (mContactType == 0)
             {
                 for (int i = 0; i < mNumSlaveNodes; i++)
                     mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(mMortarGlobalGapVector(i));
+
+                //                mPressureVectorTemp.setZero(mNumSlaveNodes);
+                //                for (int i = 0; i < mNumSlaveNodes; i++)
+                //{
+                //                    mPressureVectorTemp(i) =
+                //                    mConstitutiveContactLaw->GetContactForce(mGapVectorTemp(i));
+                //}
 
                 //                int numForces = 0;
                 //                for (int i = 0; i < mGlobalNodalPressure.rows(); i++)
@@ -883,6 +947,18 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                std::cout << numForces << std::endl;
 
                 //                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
+
+                //                Eigen::VectorXd forceTemp =
+                //                        mGapMatrixTemp * ((mWeightsVectorTemp.cwiseInverse()).asDiagonal()) *
+                //                        mPressureVectorTemp;
+
+                //                std::cout << (forceTemp - force.block(0, 0, forceTemp.rows(), 1)).norm() << std::endl;
+
+                //                Eigen::VectorXd forceTemp =
+                //                        (mGapMatrixTemp * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()))
+                //                        *
+                //                        mGlobalNodalPressure;
+
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
                 //                std::cout << rInternalGradient[dofRow].Norm() << std::endl;
             }
@@ -928,7 +1004,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                     Eigen::MatrixXd gapMatrixScaledWithForceDers =
                             mGapMatrix * (globalNodalPressureDerivative.asDiagonal());
 
-                    // Eigen::MatrixXd mat = gapMatrixScaledWithIntegrals*(gapMatrixScaledWithForceDers.transpose());
+                    // Eigen::MatrixXd mat =
+                    // gapMatrixScaledWithIntegrals*(gapMatrixScaledWithForceDers.transpose());
 
                     rGapMatrix(dofRow, dofCol) =
                             gapMatrixScaledWithIntegrals * (gapMatrixScaledWithForceDers.transpose());

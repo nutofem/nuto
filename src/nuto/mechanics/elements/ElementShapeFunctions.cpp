@@ -128,7 +128,6 @@ Eigen::Matrix<double, 4, 1> ShapeFunctionsTrussOrder3(const Eigen::VectorXd& rCo
     shapeFunctions(2) = +0.5625 + 1.6875 * r - 0.5625 * r2 - 1.6875 * r3;
     shapeFunctions(3) = -0.0625 - 0.0625 * r + 0.5625 * r2 + 0.5625 * r3;
     return shapeFunctions;
-
 }
 
 Eigen::Matrix<double, 4, 1> DerivativeShapeFunctionsTrussOrder3(const Eigen::VectorXd& rCoordinates)
@@ -289,9 +288,11 @@ Eigen::Matrix<double, 5, 1> ShapeFunctionsTrussSpectralOrder4(const Eigen::Vecto
     double r3 = r2 * r;
     double r4 = r3 * r;
     shapeFunctions(0) = +0.375 * r - 0.375 * r2 - 0.875 * r3 + 0.875 * r4;
-    shapeFunctions(1) = -1.336584577695453 * r + 2.041666666666666 * r2 + 1.336584577695453 * r3 - 2.041666666666666 * r4;
+    shapeFunctions(1) =
+            -1.336584577695453 * r + 2.041666666666666 * r2 + 1.336584577695453 * r3 - 2.041666666666666 * r4;
     shapeFunctions(2) = 1. - 3.333333333333333 * r2 + 2.333333333333333 * r4;
-    shapeFunctions(3) = +1.336584577695453 * r + 2.041666666666666 * r2 - 1.336584577695453 * r3 - 2.041666666666666 * r4;
+    shapeFunctions(3) =
+            +1.336584577695453 * r + 2.041666666666666 * r2 - 1.336584577695453 * r3 - 2.041666666666666 * r4;
     shapeFunctions(4) = -0.375 * r - 0.375 * r2 + 0.875 * r3 + 0.875 * r4;
     return shapeFunctions;
 }
@@ -303,13 +304,14 @@ Eigen::Matrix<double, 5, 1> DerivativeShapeFunctionsTrussSpectralOrder4(const Ei
     double r2 = r * r;
     double r3 = r2 * r;
     derivativeShapeFunctions(0) = 0.375 - 0.75 * r - 2.625 * r2 + 3.5 * r3;
-    derivativeShapeFunctions(1) = -1.336584577695453 + 4.083333333333333 * r + 4.009753733086359517 * r2 - 8.16666666666666 * r3;
+    derivativeShapeFunctions(1) =
+            -1.336584577695453 + 4.083333333333333 * r + 4.009753733086359517 * r2 - 8.16666666666666 * r3;
     derivativeShapeFunctions(2) = -6.666666666666666 * r + 9.33333333333333 * r3;
-    derivativeShapeFunctions(3) = 1.336584577695453 + 4.083333333333333 * r - 4.009753733086359517 * r2 - 8.16666666666666 * r3;
+    derivativeShapeFunctions(3) =
+            1.336584577695453 + 4.083333333333333 * r - 4.009753733086359517 * r2 - 8.16666666666666 * r3;
     derivativeShapeFunctions(4) = -0.375 - 0.75 * r + 2.625 * r2 + 3.5 * r3;
     return derivativeShapeFunctions;
 }
-
 }
 
 namespace ShapeFunctions2D
@@ -480,7 +482,8 @@ Eigen::Matrix<double, 10, 1> ShapeFunctionsTriangleOrder3(const Eigen::VectorXd&
     double r(rCoordinates(0));
     double s(rCoordinates(1));
 
-    shapeFunctions(0) = +1.0 - 5.5 * r - 5.5 * s + 9.0 * r * r + 18.0 * r * s + 9.0 * s * s - 4.5 * r * r * r - 13.5 * r * r * s - 13.5 * r * s * s - 4.5 * s * s * s;
+    shapeFunctions(0) = +1.0 - 5.5 * r - 5.5 * s + 9.0 * r * r + 18.0 * r * s + 9.0 * s * s - 4.5 * r * r * r -
+                        13.5 * r * r * s - 13.5 * r * s * s - 4.5 * s * s * s;
     shapeFunctions(1) = +9.0 * r - 22.5 * r * r - 22.5 * r * s + 13.5 * r * r * r + 27.0 * r * r * s + 13.5 * r * s * s;
     shapeFunctions(2) = -4.5 * r + 18.0 * r * r + 4.5 * r * s - 13.5 * r * r * r - 13.5 * r * r * s;
     shapeFunctions(3) = +1.0 * r - 4.5 * r * r + 4.5 * r * r * r;
@@ -596,20 +599,33 @@ Eigen::Matrix<double, 15, 1> ShapeFunctionsTriangleOrder4(const Eigen::VectorXd&
     double r(rCoordinates(0));
     double s(rCoordinates(1));
 
-    shapeFunctions(0) = +1.0 - 8.33333333333 * r - 8.33333333333 * s + 23.3333333333 * r * r + 46.6666666667 * r * s + 23.3333333333 * s * s - 26.6666666667 * r * r * r - 80.0 * r * r * s - 80.0 * r * s * s - 26.6666666667 * s * s * s + 10.6666666667 * s * s * s * s + 42.6666666667 * r * s * s * s
-            + 64.0 * r * r * s * s + 42.6666666667 * r * r * r * s + 10.6666666667 * r * r * r * r;
-    shapeFunctions(1) = +16.0 * r - 69.3333333333 * r * r - 69.3333333333 * r * s + 96.0 * r * r * r + 192.0 * r * r * s + 96.0 * r * s * s - 42.6666666667 * r * s * s * s - 128.0 * r * r * s * s - 128.0 * r * r * r * s - 42.6666666667 * r * r * r * r;
-    shapeFunctions(2) = -12.0 * r + 76.0 * r * r + 28.0 * r * s - 128.0 * r * r * r - 144.0 * r * r * s - 16.0 * r * s * s + 64.0 * r * r * s * s + 128.0 * r * r * r * s + 64.0 * r * r * r * r;
-    shapeFunctions(3) = +5.33333333333 * r - 37.3333333333 * r * r - 5.33333333333 * r * s + 74.6666666667 * r * r * r + 32.0 * r * r * s - 42.6666666667 * r * r * r * s - 42.6666666667 * r * r * r * r;
+    shapeFunctions(0) = +1.0 - 8.33333333333 * r - 8.33333333333 * s + 23.3333333333 * r * r + 46.6666666667 * r * s +
+                        23.3333333333 * s * s - 26.6666666667 * r * r * r - 80.0 * r * r * s - 80.0 * r * s * s -
+                        26.6666666667 * s * s * s + 10.6666666667 * s * s * s * s + 42.6666666667 * r * s * s * s +
+                        64.0 * r * r * s * s + 42.6666666667 * r * r * r * s + 10.6666666667 * r * r * r * r;
+    shapeFunctions(1) = +16.0 * r - 69.3333333333 * r * r - 69.3333333333 * r * s + 96.0 * r * r * r +
+                        192.0 * r * r * s + 96.0 * r * s * s - 42.6666666667 * r * s * s * s - 128.0 * r * r * s * s -
+                        128.0 * r * r * r * s - 42.6666666667 * r * r * r * r;
+    shapeFunctions(2) = -12.0 * r + 76.0 * r * r + 28.0 * r * s - 128.0 * r * r * r - 144.0 * r * r * s -
+                        16.0 * r * s * s + 64.0 * r * r * s * s + 128.0 * r * r * r * s + 64.0 * r * r * r * r;
+    shapeFunctions(3) = +5.33333333333 * r - 37.3333333333 * r * r - 5.33333333333 * r * s + 74.6666666667 * r * r * r +
+                        32.0 * r * r * s - 42.6666666667 * r * r * r * s - 42.6666666667 * r * r * r * r;
     shapeFunctions(4) = -1.0 * r + 7.33333333333 * r * r - 16.0 * r * r * r + 10.6666666667 * r * r * r * r;
-    shapeFunctions(5) = +16.0 * s - 69.3333333333 * r * s - 69.3333333333 * s * s + 96.0 * r * r * s + 192.0 * r * s * s + 96.0 * s * s * s - 42.6666666667 * s * s * s * s - 128.0 * r * s * s * s - 128.0 * r * r * s * s - 42.6666666667 * r * r * r * s;
-    shapeFunctions(6) = +96.0 * r * s - 224.0 * r * r * s - 224.0 * r * s * s + 128.0 * r * s * s * s + 256.0 * r * r * s * s + 128.0 * r * r * r * s;
-    shapeFunctions(7) = -32.0 * r * s + 160.0 * r * r * s + 32.0 * r * s * s - 128.0 * r * r * s * s - 128.0 * r * r * r * s;
+    shapeFunctions(5) = +16.0 * s - 69.3333333333 * r * s - 69.3333333333 * s * s + 96.0 * r * r * s +
+                        192.0 * r * s * s + 96.0 * s * s * s - 42.6666666667 * s * s * s * s - 128.0 * r * s * s * s -
+                        128.0 * r * r * s * s - 42.6666666667 * r * r * r * s;
+    shapeFunctions(6) = +96.0 * r * s - 224.0 * r * r * s - 224.0 * r * s * s + 128.0 * r * s * s * s +
+                        256.0 * r * r * s * s + 128.0 * r * r * r * s;
+    shapeFunctions(7) =
+            -32.0 * r * s + 160.0 * r * r * s + 32.0 * r * s * s - 128.0 * r * r * s * s - 128.0 * r * r * r * s;
     shapeFunctions(8) = +5.33333333333 * r * s - 32.0 * r * r * s + 42.6666666667 * r * r * r * s;
-    shapeFunctions(9) = -12.0 * s + 28.0 * r * s + 76.0 * s * s - 16.0 * r * r * s - 144.0 * r * s * s - 128.0 * s * s * s + 64.0 * s * s * s * s + 128.0 * r * s * s * s + 64.0 * r * r * s * s;
-    shapeFunctions(10) = -32.0 * r * s + 32.0 * r * r * s + 160.0 * r * s * s - 128.0 * r * s * s * s - 128.0 * r * r * s * s;
+    shapeFunctions(9) = -12.0 * s + 28.0 * r * s + 76.0 * s * s - 16.0 * r * r * s - 144.0 * r * s * s -
+                        128.0 * s * s * s + 64.0 * s * s * s * s + 128.0 * r * s * s * s + 64.0 * r * r * s * s;
+    shapeFunctions(10) =
+            -32.0 * r * s + 32.0 * r * r * s + 160.0 * r * s * s - 128.0 * r * s * s * s - 128.0 * r * r * s * s;
     shapeFunctions(11) = +4.0 * r * s - 16.0 * r * r * s - 16.0 * r * s * s + 64.0 * r * r * s * s;
-    shapeFunctions(12) = +5.33333333333 * s - 5.33333333333 * r * s - 37.3333333333 * s * s + 32.0 * r * s * s + 74.6666666667 * s * s * s - 42.6666666667 * s * s * s * s - 42.6666666667 * r * s * s * s;
+    shapeFunctions(12) = +5.33333333333 * s - 5.33333333333 * r * s - 37.3333333333 * s * s + 32.0 * r * s * s +
+                         74.6666666667 * s * s * s - 42.6666666667 * s * s * s * s - 42.6666666667 * r * s * s * s;
     shapeFunctions(13) = +5.33333333333 * r * s - 32.0 * r * s * s + 42.6666666667 * r * s * s * s;
     shapeFunctions(14) = -1.0 * s + 7.33333333333 * s * s - 16.0 * s * s * s + 10.6666666667 * s * s * s * s;
 
@@ -622,26 +638,40 @@ Eigen::Matrix<double, 15, 2> DerivativeShapeFunctionsTriangleOrder4(const Eigen:
     double r(rCoordinates(0));
     double s(rCoordinates(1));
 
-    derivativeShapeFunctions(0, 0) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s + 128.0 * r * r * s + 42.6666666667 * r * r * r;
-    derivativeShapeFunctions(0, 1) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s + 128.0 * r * r * s + 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(0, 0) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r -
+                                     160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s +
+                                     128.0 * r * r * s + 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(0, 1) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r -
+                                     160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s +
+                                     128.0 * r * r * s + 42.6666666667 * r * r * r;
 
-    derivativeShapeFunctions(1, 0) = +16.0 - 138.666666667 * r - 69.3333333333 * s + 288.0 * r * r + 384.0 * r * s + 96.0 * s * s - 42.6666666667 * s * s * s - 256.0 * r * s * s - 384.0 * r * r * s - 170.666666667 * r * r * r;
-    derivativeShapeFunctions(1, 1) = -69.3333333333 * r + 192.0 * r * r + 192.0 * r * s - 128.0 * r * s * s - 256.0 * r * r * s - 128.0 * r * r * r;
+    derivativeShapeFunctions(1, 0) = +16.0 - 138.666666667 * r - 69.3333333333 * s + 288.0 * r * r + 384.0 * r * s +
+                                     96.0 * s * s - 42.6666666667 * s * s * s - 256.0 * r * s * s - 384.0 * r * r * s -
+                                     170.666666667 * r * r * r;
+    derivativeShapeFunctions(1, 1) = -69.3333333333 * r + 192.0 * r * r + 192.0 * r * s - 128.0 * r * s * s -
+                                     256.0 * r * r * s - 128.0 * r * r * r;
 
-    derivativeShapeFunctions(2, 0) = -12.0 + 152.0 * r + 28.0 * s - 384.0 * r * r - 288.0 * r * s - 16.0 * s * s + 128.0 * r * s * s + 384.0 * r * r * s + 256.0 * r * r * r;
+    derivativeShapeFunctions(2, 0) = -12.0 + 152.0 * r + 28.0 * s - 384.0 * r * r - 288.0 * r * s - 16.0 * s * s +
+                                     128.0 * r * s * s + 384.0 * r * r * s + 256.0 * r * r * r;
     derivativeShapeFunctions(2, 1) = +28.0 * r - 144.0 * r * r - 32.0 * r * s + 128.0 * r * r * s + 128.0 * r * r * r;
 
-    derivativeShapeFunctions(3, 0) = +5.33333333333 - 74.6666666667 * r - 5.33333333333 * s + 224.0 * r * r + 64.0 * r * s - 128.0 * r * r * s - 170.666666667 * r * r * r;
+    derivativeShapeFunctions(3, 0) = +5.33333333333 - 74.6666666667 * r - 5.33333333333 * s + 224.0 * r * r +
+                                     64.0 * r * s - 128.0 * r * r * s - 170.666666667 * r * r * r;
     derivativeShapeFunctions(3, 1) = -5.33333333333 * r + 32.0 * r * r - 42.6666666667 * r * r * r;
 
     derivativeShapeFunctions(4, 0) = -1.0 + 14.6666666667 * r - 48.0 * r * r + 42.6666666667 * r * r * r;
     derivativeShapeFunctions(4, 1) = 0.;
 
-    derivativeShapeFunctions(5, 0) = -69.3333333333 * s + 192.0 * r * s + 192.0 * s * s - 128.0 * s * s * s - 256.0 * r * s * s - 128.0 * r * r * s;
-    derivativeShapeFunctions(5, 1) = +16.0 - 69.3333333333 * r - 138.666666667 * s + 96.0 * r * r + 384.0 * r * s + 288.0 * s * s - 170.666666667 * s * s * s - 384.0 * r * s * s - 256.0 * r * r * s - 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(5, 0) = -69.3333333333 * s + 192.0 * r * s + 192.0 * s * s - 128.0 * s * s * s -
+                                     256.0 * r * s * s - 128.0 * r * r * s;
+    derivativeShapeFunctions(5, 1) = +16.0 - 69.3333333333 * r - 138.666666667 * s + 96.0 * r * r + 384.0 * r * s +
+                                     288.0 * s * s - 170.666666667 * s * s * s - 384.0 * r * s * s - 256.0 * r * r * s -
+                                     42.6666666667 * r * r * r;
 
-    derivativeShapeFunctions(6, 0) = +96.0 * s - 448.0 * r * s - 224.0 * s * s + 128.0 * s * s * s + 512.0 * r * s * s + 384.0 * r * r * s;
-    derivativeShapeFunctions(6, 1) = +96.0 * r - 224.0 * r * r - 448.0 * r * s + 384.0 * r * s * s + 512.0 * r * r * s + 128.0 * r * r * r;
+    derivativeShapeFunctions(6, 0) =
+            +96.0 * s - 448.0 * r * s - 224.0 * s * s + 128.0 * s * s * s + 512.0 * r * s * s + 384.0 * r * r * s;
+    derivativeShapeFunctions(6, 1) =
+            +96.0 * r - 224.0 * r * r - 448.0 * r * s + 384.0 * r * s * s + 512.0 * r * r * s + 128.0 * r * r * r;
 
     derivativeShapeFunctions(7, 0) = -32.0 * s + 320.0 * r * s + 32.0 * s * s - 256.0 * r * s * s - 384.0 * r * r * s;
     derivativeShapeFunctions(7, 1) = -32.0 * r + 160.0 * r * r + 64.0 * r * s - 256.0 * r * r * s - 128.0 * r * r * r;
@@ -650,7 +680,8 @@ Eigen::Matrix<double, 15, 2> DerivativeShapeFunctionsTriangleOrder4(const Eigen:
     derivativeShapeFunctions(8, 1) = +5.33333333333 * r - 32.0 * r * r + 42.6666666667 * r * r * r;
 
     derivativeShapeFunctions(9, 0) = +28.0 * s - 32.0 * r * s - 144.0 * s * s + 128.0 * s * s * s + 128.0 * r * s * s;
-    derivativeShapeFunctions(9, 1) = -12.0 + 28.0 * r + 152.0 * s - 16.0 * r * r - 288.0 * r * s - 384.0 * s * s + 256.0 * s * s * s + 384.0 * r * s * s + 128.0 * r * r * s;
+    derivativeShapeFunctions(9, 1) = -12.0 + 28.0 * r + 152.0 * s - 16.0 * r * r - 288.0 * r * s - 384.0 * s * s +
+                                     256.0 * s * s * s + 384.0 * r * s * s + 128.0 * r * r * s;
 
     derivativeShapeFunctions(10, 0) = -32.0 * s + 64.0 * r * s + 160.0 * s * s - 128.0 * s * s * s - 256.0 * r * s * s;
     derivativeShapeFunctions(10, 1) = -32.0 * r + 32.0 * r * r + 320.0 * r * s - 384.0 * r * s * s - 256.0 * r * r * s;
@@ -659,7 +690,8 @@ Eigen::Matrix<double, 15, 2> DerivativeShapeFunctionsTriangleOrder4(const Eigen:
     derivativeShapeFunctions(11, 1) = +4.0 * r - 16.0 * r * r - 32.0 * r * s + 128.0 * r * r * s;
 
     derivativeShapeFunctions(12, 0) = -5.33333333333 * s + 32.0 * s * s - 42.6666666667 * s * s * s;
-    derivativeShapeFunctions(12, 1) = +5.33333333333 - 5.33333333333 * r - 74.6666666667 * s + 64.0 * r * s + 224.0 * s * s - 170.666666667 * s * s * s - 128.0 * r * s * s;
+    derivativeShapeFunctions(12, 1) = +5.33333333333 - 5.33333333333 * r - 74.6666666667 * s + 64.0 * r * s +
+                                      224.0 * s * s - 170.666666667 * s * s * s - 128.0 * r * s * s;
 
     derivativeShapeFunctions(13, 0) = +5.33333333333 * s - 32.0 * s * s + 42.6666666667 * s * s * s;
     derivativeShapeFunctions(13, 1) = +5.33333333333 * r - 64.0 * r * s + 128.0 * r * s * s;
@@ -855,19 +887,77 @@ Eigen::Matrix<double, 9, 2> DerivativeShapeFunctionsQuadSpectralOrder2(const Eig
     derivativeShapeFunctions.block<DxD, 1>(0, 1) = Eigen::Map<Eigen::Matrix<double, DxD, 1>>(dNdEta.data(), DxD);
 
     //    int theDerShapeFunction(0);
-//    for (int county = 0; county < D; county ++)
-//    {
-//        for (int countx = 0; countx < D; countx ++)
-//        {
-//            derivativeShapeFunctions(theDerShapeFunction,0) = derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
-//            derivativeShapeFunctions(theDerShapeFunction,1) = shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
-//            theDerShapeFunction++;
-//        }
-//    }
+    //    for (int county = 0; county < D; county ++)
+    //    {
+    //        for (int countx = 0; countx < D; countx ++)
+    //        {
+    //            derivativeShapeFunctions(theDerShapeFunction,0) =
+    //            derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
+    //            derivativeShapeFunctions(theDerShapeFunction,1) =
+    //            shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
+    //            theDerShapeFunction++;
+    //        }
+    //    }
 
     return derivativeShapeFunctions;
-
 }
+
+bool IsNodeOnSurfaceSpectralOrder2(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 1 || rNodeIndex == 2)
+            return true;
+    }
+    case 1:
+    {
+        if (rNodeIndex == 2 || rNodeIndex == 5 || rNodeIndex == 8)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex == 6 || rNodeIndex == 7 || rNodeIndex == 8)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 3 || rNodeIndex == 6)
+            return true;
+    }
+    }
+    return false;
+}
+
+bool IsNodeOnSurfaceSpectralOrder3(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 1 || rNodeIndex == 2 || rNodeIndex == 3)
+            return true;
+    }
+    case 1:
+    {
+        if (rNodeIndex == 3 || rNodeIndex == 7 || rNodeIndex == 11 || rNodeIndex == 15)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex == 12 || rNodeIndex == 13 || rNodeIndex == 14 || rNodeIndex == 15)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 4 || rNodeIndex == 8 || rNodeIndex == 12)
+            return true;
+    }
+    }
+    return false;
+}
+
 Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadSpectralOrder3(int rNodeIndex)
 {
     const int d = 4;
@@ -893,7 +983,6 @@ Eigen::Matrix<double, 16, 1> ShapeFunctionsQuadSpectralOrder3(const Eigen::Vecto
 
     Eigen::Matrix<double, D, D> shapeFunctionsMatrix = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
     return Eigen::Map<Eigen::Matrix<double, DxD, 1>>(shapeFunctionsMatrix.data(), DxD);
-
 }
 
 Eigen::Matrix<double, 16, 2> DerivativeShapeFunctionsQuadSpectralOrder3(const Eigen::VectorXd& rCoordinates)
@@ -905,8 +994,10 @@ Eigen::Matrix<double, 16, 2> DerivativeShapeFunctionsQuadSpectralOrder3(const Ei
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
     const Eigen::Matrix<double, D, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(cX);
     const Eigen::Matrix<double, D, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(cY);
-    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dx = ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(cX);
-    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(cY);
+    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dx =
+            ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(cX);
+    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dy =
+            ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(cY);
 
     Eigen::Matrix<double, DxD, 2> derivativeShapeFunctions;
 
@@ -917,15 +1008,17 @@ Eigen::Matrix<double, 16, 2> DerivativeShapeFunctionsQuadSpectralOrder3(const Ei
     derivativeShapeFunctions.block<DxD, 1>(0, 1) = Eigen::Map<Eigen::Matrix<double, DxD, 1>>(dNdEta.data(), DxD);
 
     //    int theDerShapeFunction(0);
-//    for (int county = 0; county < D; county ++)
-//    {
-//        for (int countx = 0; countx < D; countx ++)
-//        {
-//            derivativeShapeFunctions(theDerShapeFunction,0) = derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
-//            derivativeShapeFunctions(theDerShapeFunction,1) = shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
-//            theDerShapeFunction++;
-//        }
-//    }
+    //    for (int county = 0; county < D; county ++)
+    //    {
+    //        for (int countx = 0; countx < D; countx ++)
+    //        {
+    //            derivativeShapeFunctions(theDerShapeFunction,0) =
+    //            derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
+    //            derivativeShapeFunctions(theDerShapeFunction,1) =
+    //            shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
+    //            theDerShapeFunction++;
+    //        }
+    //    }
 
     return derivativeShapeFunctions;
 }
@@ -955,7 +1048,6 @@ Eigen::Matrix<double, 25, 1> ShapeFunctionsQuadSpectralOrder4(const Eigen::Vecto
 
     Eigen::Matrix<double, D, D> shapeFunctionsMatrix = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
     return Eigen::Map<Eigen::Matrix<double, DxD, 1>>(shapeFunctionsMatrix.data(), DxD);
-
 }
 
 Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Eigen::VectorXd& rCoordinates)
@@ -967,8 +1059,10 @@ Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Ei
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
     const Eigen::Matrix<double, D, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(cX);
     const Eigen::Matrix<double, D, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(cY);
-    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dx = ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(cX);
-    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(cY);
+    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dx =
+            ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(cX);
+    const Eigen::Matrix<double, D, 1>& derShapeFunctions1Dy =
+            ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(cY);
 
     Eigen::Matrix<double, DxD, 2> derivativeShapeFunctions;
 
@@ -979,19 +1073,20 @@ Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Ei
     derivativeShapeFunctions.block<DxD, 1>(0, 1) = Eigen::Map<Eigen::Matrix<double, DxD, 1>>(dNdEta.data(), DxD);
 
     //    int theDerShapeFunction(0);
-//    for (int county = 0; county < D; county ++)
-//    {
-//        for (int countx = 0; countx < D; countx ++)
-//        {
-//            derivativeShapeFunctions(theDerShapeFunction,0) = derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
-//            derivativeShapeFunctions(theDerShapeFunction,1) = shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
-//            theDerShapeFunction++;
-//        }
-//    }
+    //    for (int county = 0; county < D; county ++)
+    //    {
+    //        for (int countx = 0; countx < D; countx ++)
+    //        {
+    //            derivativeShapeFunctions(theDerShapeFunction,0) =
+    //            derShapeFunctions1Dx[countx]*shapeFunctions1Dy[county];
+    //            derivativeShapeFunctions(theDerShapeFunction,1) =
+    //            shapeFunctions1Dx[countx]*derShapeFunctions1Dy[county];
+    //            theDerShapeFunction++;
+    //        }
+    //    }
 
     return derivativeShapeFunctions;
 }
-
 }
 
 namespace ShapeFunctions3D
@@ -1076,7 +1171,50 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder2(int rNodeIndex)
         throw NuTo::MechanicsException("[NodeCoordinatesTetrahedronOrder2] node index out of range (0..9)");
         break;
     }
+}
 
+bool IsNodeOnSurfaceBrickSpectralOrder2(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex >= 0 && rNodeIndex <= 8)
+            return true;
+    }
+    case 1:
+    {
+
+        if (rNodeIndex == 0 || rNodeIndex == 1 || rNodeIndex == 2 || rNodeIndex == 9 || rNodeIndex == 10 ||
+            rNodeIndex == 11 || rNodeIndex == 18 || rNodeIndex == 19 || rNodeIndex == 20)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 3 || rNodeIndex == 6 || rNodeIndex == 9 || rNodeIndex == 12 ||
+            rNodeIndex == 15 || rNodeIndex == 18 || rNodeIndex == 21 || rNodeIndex == 24)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 18 || rNodeIndex == 19 || rNodeIndex == 20 || rNodeIndex == 21 || rNodeIndex == 22 ||
+            rNodeIndex == 23 || rNodeIndex == 24 || rNodeIndex == 25 || rNodeIndex == 26)
+            return true;
+    }
+    case 4:
+    {
+        if (rNodeIndex == 6 || rNodeIndex == 7 || rNodeIndex == 8 || rNodeIndex == 15 || rNodeIndex == 16 ||
+            rNodeIndex == 17 || rNodeIndex == 24 || rNodeIndex == 25 || rNodeIndex == 26)
+            return true;
+    }
+    case 5:
+    {
+        if (rNodeIndex == 2 || rNodeIndex == 5 || rNodeIndex == 8 || rNodeIndex == 11 || rNodeIndex == 14 ||
+            rNodeIndex == 17 || rNodeIndex == 20 || rNodeIndex == 23 || rNodeIndex == 26)
+            return true;
+    }
+    }
+    return false;
 }
 
 Eigen::Matrix<double, 10, 1> ShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates)
@@ -1167,6 +1305,39 @@ Eigen::Matrix<double, 10, 3> DerivativeShapeFunctionsTetrahedronOrder2(const Eig
     derivativeShapeFunctions(9, 2) = 4. * r;
 
     return derivativeShapeFunctions;
+}
+
+
+bool IsNodeOnSurfaceTetrahedronOrder2(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 1 || rNodeIndex == 2 || rNodeIndex == 4 || rNodeIndex == 5 ||
+            rNodeIndex == 6)
+            return true;
+    }
+    case 1:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 2 || rNodeIndex == 3 || rNodeIndex == 6 || rNodeIndex == 7 ||
+            rNodeIndex == 8)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 1 || rNodeIndex == 3 || rNodeIndex == 4 || rNodeIndex == 7 ||
+            rNodeIndex == 9)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 1 || rNodeIndex == 2 || rNodeIndex == 3 || rNodeIndex == 9 || rNodeIndex == 5 ||
+            rNodeIndex == 8)
+            return true;
+    }
+    }
+    return false;
 }
 
 Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex)
@@ -1390,102 +1561,102 @@ Eigen::Matrix<double, 20, 3> DerivativeShapeFunctionsBrickOrder2(const Eigen::Ve
 
     Eigen::Matrix<double, 20, 3> derivativeShapeFunctions;
 
-//    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r-s-t-2);
+    //    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r-s-t-2);
     derivativeShapeFunctions(0, 0) = 0.125 * minus_s * minus_t * (2 * r + s + t + 1);
     derivativeShapeFunctions(0, 1) = 0.125 * minus_r * minus_t * (r + 2 * s + t + 1);
     derivativeShapeFunctions(0, 2) = 0.125 * minus_r * minus_s * (r + s + 2 * t + 1);
 
-//    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t * ( r-s-t-2);
+    //    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t * ( r-s-t-2);
     derivativeShapeFunctions(1, 0) = 0.125 * minus_s * minus_t * (2 * r - s - t - 1);
     derivativeShapeFunctions(1, 1) = -0.125 * plus_r * minus_t * (r - 2 * s - t - 1);
     derivativeShapeFunctions(1, 2) = -0.125 * plus_r * minus_s * (r - s - 2 * t - 1);
 
-//    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t * ( r+s-t-2);
+    //    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t * ( r+s-t-2);
     derivativeShapeFunctions(2, 0) = 0.125 * plus_s * minus_t * (2 * r + s - t - 1);
     derivativeShapeFunctions(2, 1) = 0.125 * plus_r * minus_t * (r + 2 * s - t - 1);
     derivativeShapeFunctions(2, 2) = -0.125 * plus_r * plus_s * (r + s - 2 * t - 1);
 
-//    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t * (-r+s-t-2);
+    //    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t * (-r+s-t-2);
     derivativeShapeFunctions(3, 0) = 0.125 * plus_s * minus_t * (2 * r - s + t + 1);
     derivativeShapeFunctions(3, 1) = -0.125 * minus_r * minus_t * (r - 2 * s + t + 1);
     derivativeShapeFunctions(3, 2) = 0.125 * minus_r * plus_s * (r - s + 2 * t + 1);
 
-//    shapeFunctions[4] = 0.125 * minus_r * minus_s *  plus_t * (-r-s+t-2);
+    //    shapeFunctions[4] = 0.125 * minus_r * minus_s *  plus_t * (-r-s+t-2);
     derivativeShapeFunctions(4, 0) = 0.125 * minus_s * plus_t * (2 * r + s - t + 1);
     derivativeShapeFunctions(4, 1) = 0.125 * minus_r * plus_t * (r + 2 * s - t + 1);
     derivativeShapeFunctions(4, 2) = -0.125 * minus_r * minus_s * (r + s - 2 * t + 1);
 
-//    shapeFunctions[5] = 0.125 * plus_r  * minus_s *  plus_t * ( r-s+t-2);
+    //    shapeFunctions[5] = 0.125 * plus_r  * minus_s *  plus_t * ( r-s+t-2);
     derivativeShapeFunctions(5, 0) = 0.125 * minus_s * plus_t * (2 * r - s + t - 1);
     derivativeShapeFunctions(5, 1) = -0.125 * plus_r * plus_t * (r - 2 * s + t - 1);
     derivativeShapeFunctions(5, 2) = 0.125 * plus_r * minus_s * (r - s + 2 * t - 1);
 
-//    shapeFunctions[6] = 0.125 * plus_r  * plus_s  *  plus_t * ( r+s+t-2);
+    //    shapeFunctions[6] = 0.125 * plus_r  * plus_s  *  plus_t * ( r+s+t-2);
     derivativeShapeFunctions(6, 0) = 0.125 * plus_s * plus_t * (2 * r + s + t - 1);
     derivativeShapeFunctions(6, 1) = 0.125 * plus_r * plus_t * (r + 2 * s + t - 1);
     derivativeShapeFunctions(6, 2) = 0.125 * plus_r * plus_s * (r + s + 2 * t - 1);
 
-//    shapeFunctions[7] = 0.125 * minus_r * plus_s  *  plus_t * (-r+s+t-2);
+    //    shapeFunctions[7] = 0.125 * minus_r * plus_s  *  plus_t * (-r+s+t-2);
     derivativeShapeFunctions(7, 0) = 0.125 * plus_s * plus_t * (2 * r - s - t + 1);
     derivativeShapeFunctions(7, 1) = -0.125 * minus_r * plus_t * (r - 2 * s - t + 1);
     derivativeShapeFunctions(7, 2) = -0.125 * minus_r * plus_s * (r - s - 2 * t + 1);
 
-//    shapeFunctions[8] =  0.25 *   mid_r * minus_s * minus_t;
+    //    shapeFunctions[8] =  0.25 *   mid_r * minus_s * minus_t;
     derivativeShapeFunctions(8, 0) = -0.5 * r * minus_s * minus_t;
     derivativeShapeFunctions(8, 1) = -0.25 * mid_r * minus_t;
     derivativeShapeFunctions(8, 2) = -0.25 * mid_r * minus_s;
 
-//    shapeFunctions[9] =  0.25 *  plus_r *   mid_s * minus_t;
+    //    shapeFunctions[9] =  0.25 *  plus_r *   mid_s * minus_t;
     derivativeShapeFunctions(9, 0) = +0.25 * mid_s * minus_t;
     derivativeShapeFunctions(9, 1) = -0.5 * s * plus_r * minus_t;
     derivativeShapeFunctions(9, 2) = -0.25 * plus_r * mid_s;
 
-//    shapeFunctions[10]=  0.25 *   mid_r *  plus_s * minus_t;
+    //    shapeFunctions[10]=  0.25 *   mid_r *  plus_s * minus_t;
     derivativeShapeFunctions(10, 0) = -0.5 * r * plus_s * minus_t;
     derivativeShapeFunctions(10, 1) = 0.25 * mid_r * minus_t;
     derivativeShapeFunctions(10, 2) = -0.25 * mid_r * plus_s;
 
-//    shapeFunctions[11]=  0.25 * minus_r *   mid_s * minus_t;
+    //    shapeFunctions[11]=  0.25 * minus_r *   mid_s * minus_t;
     derivativeShapeFunctions(11, 0) = -0.25 * mid_s * minus_t;
     derivativeShapeFunctions(11, 1) = -0.5 * s * minus_r * minus_t;
     derivativeShapeFunctions(11, 2) = -0.25 * minus_r * mid_s;
 
-//    shapeFunctions[12]=  0.25 * minus_r * minus_s *   mid_t;
+    //    shapeFunctions[12]=  0.25 * minus_r * minus_s *   mid_t;
     derivativeShapeFunctions(12, 0) = -0.25 * minus_s * mid_t;
     derivativeShapeFunctions(12, 1) = -0.25 * minus_r * mid_t;
     derivativeShapeFunctions(12, 2) = -0.5 * t * minus_r * minus_s;
 
-//    shapeFunctions[13]=  0.25 *  plus_r * minus_s *   mid_t;
+    //    shapeFunctions[13]=  0.25 *  plus_r * minus_s *   mid_t;
     derivativeShapeFunctions(13, 0) = 0.25 * minus_s * mid_t;
     derivativeShapeFunctions(13, 1) = -0.25 * plus_r * mid_t;
     derivativeShapeFunctions(13, 2) = -0.5 * t * plus_r * minus_s;
 
-//    shapeFunctions[14]=  0.25 *  plus_r *  plus_s *   mid_t;
+    //    shapeFunctions[14]=  0.25 *  plus_r *  plus_s *   mid_t;
     derivativeShapeFunctions(14, 0) = 0.25 * plus_s * mid_t;
     derivativeShapeFunctions(14, 1) = 0.25 * plus_r * mid_t;
     derivativeShapeFunctions(14, 2) = -0.5 * t * plus_r * plus_s;
 
-//    shapeFunctions[15]=  0.25 * minus_r *  plus_s *   mid_t;
+    //    shapeFunctions[15]=  0.25 * minus_r *  plus_s *   mid_t;
     derivativeShapeFunctions(15, 0) = -0.25 * plus_s * mid_t;
     derivativeShapeFunctions(15, 1) = 0.25 * minus_r * mid_t;
     derivativeShapeFunctions(15, 2) = -0.5 * t * minus_r * plus_s;
 
-//    shapeFunctions[16]=  0.25 *   mid_r * minus_s *  plus_t;
+    //    shapeFunctions[16]=  0.25 *   mid_r * minus_s *  plus_t;
     derivativeShapeFunctions(16, 0) = -0.5 * r * minus_s * plus_t;
     derivativeShapeFunctions(16, 1) = -0.25 * mid_r * plus_t;
     derivativeShapeFunctions(16, 2) = 0.25 * mid_r * minus_s;
 
-//    shapeFunctions[17]=  0.25 *  plus_r *   mid_s *  plus_t;
+    //    shapeFunctions[17]=  0.25 *  plus_r *   mid_s *  plus_t;
     derivativeShapeFunctions(17, 0) = 0.25 * mid_s * plus_t;
     derivativeShapeFunctions(17, 1) = -0.5 * s * plus_r * plus_t;
     derivativeShapeFunctions(17, 2) = 0.25 * plus_r * mid_s;
 
-//    shapeFunctions[18]=  0.25 *   mid_r *  plus_s *  plus_t;
+    //    shapeFunctions[18]=  0.25 *   mid_r *  plus_s *  plus_t;
     derivativeShapeFunctions(18, 0) = -0.5 * r * plus_s * plus_t;
     derivativeShapeFunctions(18, 1) = 0.25 * mid_r * plus_t;
     derivativeShapeFunctions(18, 2) = 0.25 * mid_r * plus_s;
 
-//    shapeFunctions[19]=  0.25 * minus_r *   mid_s *  plus_t;
+    //    shapeFunctions[19]=  0.25 * minus_r *   mid_s *  plus_t;
     derivativeShapeFunctions(19, 0) = -0.25 * mid_s * plus_t;
     derivativeShapeFunctions(19, 1) = -0.5 * s * minus_r * plus_t;
     derivativeShapeFunctions(19, 2) = 0.25 * minus_r * mid_s;
@@ -1553,10 +1724,14 @@ Eigen::Matrix<double, 27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const E
         for (int countyNode = 0; countyNode < d; countyNode++)
             for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
-                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
-                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
+                // this can still be optimized, since the calculation of the product of the variables that are not
+                // derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) *
+                                                       shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) *
+                                                       shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) *
+                                                       shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
     /*   Eigen::Matrix<double,27, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder2(rCoordinates);
      Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
@@ -1638,10 +1813,14 @@ Eigen::Matrix<double, 64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const E
         for (int countyNode = 0; countyNode < d; countyNode++)
             for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
-                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
-                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
+                // this can still be optimized, since the calculation of the product of the variables that are not
+                // derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) *
+                                                       shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) *
+                                                       shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) *
+                                                       shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
     /*   Eigen::Matrix<double,64, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder3(rCoordinates);
      Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
@@ -1723,10 +1902,14 @@ Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const 
         for (int countyNode = 0; countyNode < d; countyNode++)
             for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
-                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
-                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
+                // this can still be optimized, since the calculation of the product of the variables that are not
+                // derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) *
+                                                       shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) *
+                                                       shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) *
+                                                       shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
     /*   Eigen::Matrix<double,125, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder4(rCoordinates);
      Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
@@ -1747,7 +1930,6 @@ Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const 
      */
     return derivativeShapeFunctions;
 }
-
 }
 
 
@@ -1778,7 +1960,7 @@ Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordina
     const double N00 = 0.5 * (1. - rCoordinates(0, 0));
     const double N01 = 0.5 * (1. + rCoordinates(0, 0));
 
-    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
+    return (Eigen::MatrixXd(4, 1) << -N00, -N01, N01, N00).finished();
 }
 
 Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates)
@@ -1811,13 +1993,13 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex)
 
 Eigen::MatrixXd ShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates)
 {
-    const double xi = rCoordinates(0,0);
+    const double xi = rCoordinates(0, 0);
 
     const double N00 = 0.5 * xi * (xi - 1.);
     const double N01 = (1. - xi * xi);
     const double N02 = 0.5 * xi * (xi + 1.);
 
-    return (Eigen::MatrixXd(6,1) << N00, N01, N02, -N02, -N01, -N00).finished();
+    return (Eigen::MatrixXd(6, 1) << N00, N01, N02, -N02, -N01, -N00).finished();
 }
 
 Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates)
@@ -1825,8 +2007,6 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
     // this interface element does not need any shape function derivatives
     return Eigen::Matrix2d::Zero();
 }
-
-
 }
 
 namespace ShapeFunctionsInterface3D // interval -1 to 1
@@ -1856,7 +2036,7 @@ Eigen::MatrixXd ShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordina
     const double N00 = 0.5 * (1. - rCoordinates(0, 0));
     const double N01 = 0.5 * (1. + rCoordinates(0, 0));
 
-    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
+    return (Eigen::MatrixXd(4, 1) << -N00, -N01, N01, N00).finished();
 }
 
 Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordinates)
@@ -1866,62 +2046,68 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd&
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace ShapeFunctionsInterface3D
+} // namespace ShapeFunctionsInterface3D
 
 
-// In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
+// In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials
+// is used (see. Borden et. al. 2011)
 namespace ShapeFunctionsIGA
 {
 
 /////////////////////////////// BSPLINE ////////////////////////////////////////////////////////////////////////
 
-int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
+int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd& rKnots)
 {
     int size = rKnots.rows();
     int iterations = 0;
 
-    if(rParameter < rKnots(0) || rParameter > rKnots(size - 1))
-        throw MechanicsException(__PRETTY_FUNCTION__, "The parameter is out of the range of the knot vector.");
+    if (rParameter < rKnots(0) || rParameter > rKnots(size - 1))
+        throw MechanicsException(__PRETTY_FUNCTION__, "The parameter " + std::to_string(rParameter) +
+                                                              " is out of the range of the knot vector.");
 
     int numBasisFuns = size - rDegree - 1;
-    if(rParameter == rKnots[numBasisFuns]) return numBasisFuns-1;
+    if (rParameter == rKnots[numBasisFuns])
+        return numBasisFuns - 1;
 
-    int low  = rDegree;
+    int low = rDegree;
     int high = numBasisFuns;
-    int mid  = (low + high)/2;
+    int mid = (low + high) / 2;
 
-    while(rParameter < rKnots[mid] || rParameter >= rKnots[mid+1])
+    while (rParameter < rKnots[mid] || rParameter >= rKnots[mid + 1])
     {
-        if(rParameter < rKnots[mid]) high = mid;
-        else                         low = mid;
+        if (rParameter < rKnots[mid])
+            high = mid;
+        else
+            low = mid;
 
-        mid = (low + high)/2;
+        mid = (low + high) / 2;
         iterations++;
-        if(iterations > size)
-            throw MechanicsException(__PRETTY_FUNCTION__, "The maximum number of iterations for finding the span exceeded.");
+        if (iterations > size)
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                                     "The maximum number of iterations for finding the span exceeded.");
     }
     return mid;
 }
 
-Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots)
+Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd& rKnots)
 {
-    Eigen::VectorXd rBasisFunctions(rDegree+1);
+    Eigen::VectorXd rBasisFunctions(rDegree + 1);
 
     rBasisFunctions[0] = 1.;
 
-    Eigen::VectorXd left(rDegree+1);
-    Eigen::VectorXd right(rDegree+1);
+    Eigen::VectorXd left(rDegree + 1);
+    Eigen::VectorXd right(rDegree + 1);
 
     for (int j = 1; j <= rDegree; j++)
     {
-        left[j]  = rParameter - rKnots[spanIdx + 1 - j];
+        left[j] = rParameter - rKnots[spanIdx + 1 - j];
         right[j] = rKnots[spanIdx + j] - rParameter;
         double saved = 0.;
-        for(int r = 0; r < j; r++)
+        for (int r = 0; r < j; r++)
         {
-            double temp = rBasisFunctions[r]/(right[r+1] + left[j-r]);
-            rBasisFunctions[r] = saved + right[r+1]*temp;
-            saved = left[j-r]*temp;
+            double temp = rBasisFunctions[r] / (right[r + 1] + left[j - r]);
+            rBasisFunctions[r] = saved + right[r + 1] * temp;
+            saved = left[j - r] * temp;
         }
         rBasisFunctions[j] = saved;
     }
@@ -1929,74 +2115,80 @@ Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, cons
     return rBasisFunctions;
 }
 
-Eigen::MatrixXd BasisFunctionsAndDerivatives( int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots)
+Eigen::MatrixXd BasisFunctionsAndDerivatives(int der, double rParameter, int spanIdx, int rDegree,
+                                             const Eigen::VectorXd& rKnots)
 {
-    Eigen::MatrixXd ndu(rDegree+1, rDegree+1);
+    Eigen::MatrixXd ndu(rDegree + 1, rDegree + 1);
 
-    ndu(0,0) = 1.0;
+    ndu(0, 0) = 1.0;
 
     Eigen::VectorXd left(rDegree + 1);
     Eigen::VectorXd right(rDegree + 1);
 
     for (int j = 1; j <= rDegree; j++)
     {
-        left[j]  = rParameter - rKnots[spanIdx + 1 - j];
+        left[j] = rParameter - rKnots[spanIdx + 1 - j];
         right[j] = rKnots[spanIdx + j] - rParameter;
         double saved = 0.;
-        for(int r = 0; r < j; r++)
+        for (int r = 0; r < j; r++)
         {
-            ndu(j,r) = right[r+1] + left[j-r]; // lower triange (knot differences)
-            double temp = ndu(r, j-1)/ndu(j,r);
-            ndu(r,j) = saved + right[r+1]*temp; // upper triangle
-            saved = left[j-r]*temp;
+            ndu(j, r) = right[r + 1] + left[j - r]; // lower triange (knot differences)
+            double temp = ndu(r, j - 1) / ndu(j, r);
+            ndu(r, j) = saved + right[r + 1] * temp; // upper triangle
+            saved = left[j - r] * temp;
         }
-        ndu(j,j) = saved;
+        ndu(j, j) = saved;
     }
 
-    Eigen::MatrixXd ders(der+1, rDegree+1);
+    Eigen::MatrixXd ders(der + 1, rDegree + 1);
 
-    for(int j = 0; j <= rDegree; j++) ders(0,j) = ndu(j,rDegree);
+    for (int j = 0; j <= rDegree; j++)
+        ders(0, j) = ndu(j, rDegree);
 
-    Eigen::MatrixXd a(2, rDegree+1);
-    for(int r = 0; r<=rDegree; r++)
+    Eigen::MatrixXd a(2, rDegree + 1);
+    for (int r = 0; r <= rDegree; r++)
     {
         int s1 = 0;
         int s2 = 1;
 
-        a(0,0) = 1.0;
+        a(0, 0) = 1.0;
 
         int j = 0;
-        for(int k = 1; k<=der; k++)
+        for (int k = 1; k <= der; k++)
         {
             double d = 0.;
-            int rk = r-k;
-            int pk = rDegree-k;
-            if(r >= k)
+            int rk = r - k;
+            int pk = rDegree - k;
+            if (r >= k)
             {
-                a(s2,0) = a(s1,0)/ndu(pk+1, rk);
-                d = a(s2,0)*ndu(rk,pk);
+                a(s2, 0) = a(s1, 0) / ndu(pk + 1, rk);
+                d = a(s2, 0) * ndu(rk, pk);
             }
             int j1 = 0;
-            if(rk >= -1) j1 = 1;
-            else         j1 = -rk;
+            if (rk >= -1)
+                j1 = 1;
+            else
+                j1 = -rk;
 
             int j2 = 0;
-            if(r-1 <= pk) j2 = k-1;
-            else          j2 = rDegree-r;
+            if (r - 1 <= pk)
+                j2 = k - 1;
+            else
+                j2 = rDegree - r;
 
-            for(j = j1; j <= j2; j++)
+            for (j = j1; j <= j2; j++)
             {
-                a(s2, j) = (a(s1,j) - a(s1, j-1))/ndu(pk+1, rk+j);
-                d += a(s2,j)*ndu(rk+j, pk);
+                a(s2, j) = (a(s1, j) - a(s1, j - 1)) / ndu(pk + 1, rk + j);
+                d += a(s2, j) * ndu(rk + j, pk);
             }
 
-            if(r <= pk)
+            if (r <= pk)
             {
-                a(s2,k) = -a(s1,k-1)/ndu(pk+1,r);
-                d += a(s2,k)*ndu(r,pk);
+                a(s2, k) = -a(s1, k - 1) / ndu(pk + 1, r);
+                d += a(s2, k) * ndu(r, pk);
             }
 
-            ders(k,r) = d;
+            ders(k, r) = d;
             j = s1;
             s1 = s2;
             s2 = j;
@@ -2004,107 +2196,111 @@ Eigen::MatrixXd BasisFunctionsAndDerivatives( int der, double rParameter, int sp
     }
 
     int r = rDegree;
-    for(int k = 1; k <= der; k++)
+    for (int k = 1; k <= der; k++)
     {
-        for (int j = 0; j <= rDegree; j++) ders(k,j) *=r;
-        r*= (rDegree-k);
+        for (int j = 0; j <= rDegree; j++)
+            ders(k, j) *= r;
+        r *= (rDegree - k);
     }
 
 
     return ders;
 }
 
-Eigen::VectorXd BasisFunctionsRat(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
+Eigen::VectorXd BasisFunctionsRat(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd& rKnots,
+                                  const Eigen::VectorXd& rWeights)
 {
     Eigen::VectorXd rBasisFunctions = BasisFunctions(rParameter, spanIdx, rDegree, rKnots);
 
     // NURBS specific ...
     double sum = 0.;
-    for(int i = 0; i <= rDegree; i++) sum += rBasisFunctions(i)*rWeights(spanIdx - rDegree + i);
-    for(int i = 0; i <= rDegree; i++) rBasisFunctions(i) *= (rWeights(spanIdx - rDegree + i)/sum);
+    for (int i = 0; i <= rDegree; i++)
+        sum += rBasisFunctions(i) * rWeights(spanIdx - rDegree + i);
+    for (int i = 0; i <= rDegree; i++)
+        rBasisFunctions(i) *= (rWeights(spanIdx - rDegree + i) / sum);
 
     return rBasisFunctions;
 }
 
-Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
+Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree,
+                                                const Eigen::VectorXd& rKnots, const Eigen::VectorXd& rWeights)
 {
-    if(der < 0 || der > 2)
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t der greater than 2 not implemented, possible values 0,1,2!");
+    if (der < 0 || der > 2)
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                                       ":\t der greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, rParameter, spanIdx, rDegree, rKnots);
 
     // NURBS specific ...
-    Eigen::VectorXd sum(der+1);
-    sum.setZero(der+1);
+    Eigen::VectorXd sum(der + 1);
+    sum.setZero(der + 1);
 
-    for(int i = 0; i <= rDegree; i++)
+    for (int i = 0; i <= rDegree; i++)
     {
         double weight = rWeights(spanIdx - rDegree + i);
-        if     (der == 0)
-            sum(0) += ders(0,i)*weight;
-        else if(der == 1)
+        if (der == 0)
+            sum(0) += ders(0, i) * weight;
+        else if (der == 1)
         {
-            sum(0) += ders(0,i)*weight;
-            sum(1) += ders(1,i)*weight;
+            sum(0) += ders(0, i) * weight;
+            sum(1) += ders(1, i) * weight;
         }
         else
         {
-            sum(0) += ders(0,i)*weight;
-            sum(1) += ders(1,i)*weight;
-            sum(2) += ders(2,i)*weight;
+            sum(0) += ders(0, i) * weight;
+            sum(1) += ders(1, i) * weight;
+            sum(2) += ders(2, i) * weight;
         }
     }
 
-    Eigen::VectorXd dersRat(rDegree+1);
-    dersRat.setZero(rDegree+1);
+    Eigen::VectorXd dersRat(rDegree + 1);
+    dersRat.setZero(rDegree + 1);
 
-    for(int i = 0; i <= rDegree; i++)
+    for (int i = 0; i <= rDegree; i++)
     {
         double weight = rWeights(spanIdx - rDegree + i);
-        if     (der == 0)
-            dersRat(i) = ders(0, i)*weight/sum(0);
-        else if(der == 1)
-            dersRat(i) = (ders(1, i)*sum(0) - ders(0,i)*sum(1))* weight/(sum(0)*sum(0));
+        if (der == 0)
+            dersRat(i) = ders(0, i) * weight / sum(0);
+        else if (der == 1)
+            dersRat(i) = (ders(1, i) * sum(0) - ders(0, i) * sum(1)) * weight / (sum(0) * sum(0));
         else
         {
-            double sum2 = sum(0)*sum(0);
-            dersRat(i) = weight*(ders(2, i)/sum(0) - 2*ders(1,i)*sum(1)/(sum2) - ders(0,i)*sum(2)/(sum2) + 2*ders(0,i)*sum(1)*sum(1)/(sum2*sum(0)));
+            double sum2 = sum(0) * sum(0);
+            dersRat(i) = weight * (ders(2, i) / sum(0) - 2 * ders(1, i) * sum(1) / (sum2)-ders(0, i) * sum(2) / (sum2) +
+                                   2 * ders(0, i) * sum(1) * sum(1) / (sum2 * sum(0)));
         }
     }
 
     return dersRat;
 }
 
-Eigen::VectorXd BasisFunctions2DRat(const Eigen::VectorXd &rCoordinates,
-                                    const Eigen::Vector2i &rSpanIdx,
-                                    const Eigen::Vector2i &rDegree,
-                                    const Eigen::VectorXd &rKnotsX,
-                                    const Eigen::VectorXd &rKnotsY,
-                                    const Eigen::MatrixXd &rWeights)
+Eigen::VectorXd BasisFunctions2DRat(const Eigen::VectorXd& rCoordinates, const Eigen::Vector2i& rSpanIdx,
+                                    const Eigen::Vector2i& rDegree, const Eigen::VectorXd& rKnotsX,
+                                    const Eigen::VectorXd& rKnotsY, const Eigen::MatrixXd& rWeights)
 {
     Eigen::VectorXd xBasis = BasisFunctions(rCoordinates(0), rSpanIdx(0), rDegree(0), rKnotsX);
     Eigen::VectorXd yBasis = BasisFunctions(rCoordinates(1), rSpanIdx(1), rDegree(1), rKnotsY);
 
-    Eigen::VectorXd basis((rDegree(0)+1)*(rDegree(1)+1));
-    basis.setZero((rDegree(0)+1)*(rDegree(1)+1));
+    Eigen::VectorXd basis((rDegree(0) + 1) * (rDegree(1) + 1));
+    basis.setZero((rDegree(0) + 1) * (rDegree(1) + 1));
 
     double sum = 0.;
-    for(int i = 0; i <= rDegree(1); i++)
+    for (int i = 0; i <= rDegree(1); i++)
     {
-        for(int j = 0; j <= rDegree(0); j++)
+        for (int j = 0; j <= rDegree(0); j++)
         {
             double weight = rWeights(rSpanIdx(1) - rDegree(1) + i, rSpanIdx(0) - rDegree(0) + j);
-            sum += xBasis(j)*yBasis(i)*weight;
+            sum += xBasis(j) * yBasis(i) * weight;
         }
     }
 
     int count = 0;
-    for(int i = 0; i <= rDegree(1); i++)
+    for (int i = 0; i <= rDegree(1); i++)
     {
-        for(int j = 0; j <= rDegree(0); j++)
+        for (int j = 0; j <= rDegree(0); j++)
         {
             double weight = rWeights(rSpanIdx(1) - rDegree(1) + i, rSpanIdx(0) - rDegree(0) + j);
-            basis(count) = xBasis(j)*yBasis(i)*weight/sum;
+            basis(count) = xBasis(j) * yBasis(i) * weight / sum;
             count++;
         }
     }
@@ -2112,95 +2308,101 @@ Eigen::VectorXd BasisFunctions2DRat(const Eigen::VectorXd &rCoordinates,
     return basis;
 }
 
-Eigen::MatrixXd BasisFunctionsAndDerivatives2DRat(int                    der,
-                                                  const Eigen::VectorXd &rCoordinates,
-                                                  const Eigen::Vector2i &rSpanIdx,
-                                                  const Eigen::Vector2i &rDegree,
-                                                  const Eigen::VectorXd &rKnotsX,
-                                                  const Eigen::VectorXd &rKnotsY,
-                                                  const Eigen::MatrixXd &rWeights)
+Eigen::MatrixXd BasisFunctionsAndDerivatives2DRat(int der, const Eigen::VectorXd& rCoordinates,
+                                                  const Eigen::Vector2i& rSpanIdx, const Eigen::Vector2i& rDegree,
+                                                  const Eigen::VectorXd& rKnotsX, const Eigen::VectorXd& rKnotsY,
+                                                  const Eigen::MatrixXd& rWeights)
 {
-    if(der < 0 || der >2)
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
+    if (der < 0 || der > 2)
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) +
+                                       ":\t 'der' greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd xBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(0), rSpanIdx(0), rDegree(0), rKnotsX);
     Eigen::MatrixXd yBasisDer = BasisFunctionsAndDerivatives(der, rCoordinates(1), rSpanIdx(1), rDegree(1), rKnotsY);
 
-    Eigen::MatrixXd ders((rDegree(0)+1)*(rDegree(1)+1), der+1);
-    ders.setZero((rDegree(0)+1)*(rDegree(1)+1), der+1);
+    Eigen::MatrixXd ders((rDegree(0) + 1) * (rDegree(1) + 1), der + 1);
+    ders.setZero((rDegree(0) + 1) * (rDegree(1) + 1), der + 1);
 
 
-    int num = ( (der+1)*(der+1) + (der+1) )/2;
+    int num = ((der + 1) * (der + 1) + (der + 1)) / 2;
     Eigen::VectorXd sum(num);
     sum.setZero(num);
 
-    for(int i = 0; i <= rDegree(1); i++)
+    for (int i = 0; i <= rDegree(1); i++)
     {
-        for(int j = 0; j <= rDegree(0); j++)
+        for (int j = 0; j <= rDegree(0); j++)
         {
             double weight = rWeights(rSpanIdx(1) - rDegree(1) + i, rSpanIdx(0) - rDegree(0) + j);
 
-            if     (der == 0)
+            if (der == 0)
             {
-                sum(0) += xBasisDer(0, j)*yBasisDer(0, i)*weight;
+                sum(0) += xBasisDer(0, j) * yBasisDer(0, i) * weight;
             }
-            else if(der == 1)
+            else if (der == 1)
             {
-                sum(0) += xBasisDer(0, j)*yBasisDer(0, i)*weight;
-                sum(1) += xBasisDer(1, j)*yBasisDer(0, i)*weight;
-                sum(2) += xBasisDer(0, j)*yBasisDer(1, i)*weight;
+                sum(0) += xBasisDer(0, j) * yBasisDer(0, i) * weight;
+                sum(1) += xBasisDer(1, j) * yBasisDer(0, i) * weight;
+                sum(2) += xBasisDer(0, j) * yBasisDer(1, i) * weight;
             }
             else
             {
-                sum(0) += xBasisDer(0, j)*yBasisDer(0, i)*weight;
-                sum(1) += xBasisDer(1, j)*yBasisDer(0, i)*weight;
-                sum(2) += xBasisDer(2, j)*yBasisDer(0, i)*weight;
+                sum(0) += xBasisDer(0, j) * yBasisDer(0, i) * weight;
+                sum(1) += xBasisDer(1, j) * yBasisDer(0, i) * weight;
+                sum(2) += xBasisDer(2, j) * yBasisDer(0, i) * weight;
 
-                sum(3) += xBasisDer(0, j)*yBasisDer(1, i)*weight;
-                sum(4) += xBasisDer(0, j)*yBasisDer(2, i)*weight;
+                sum(3) += xBasisDer(0, j) * yBasisDer(1, i) * weight;
+                sum(4) += xBasisDer(0, j) * yBasisDer(2, i) * weight;
 
-                sum(5) += xBasisDer(1, j)*yBasisDer(1, i)*weight;
+                sum(5) += xBasisDer(1, j) * yBasisDer(1, i) * weight;
             }
         }
     }
 
     int count = 0;
-    for(int i = 0; i <= rDegree(1); i++)
+    for (int i = 0; i <= rDegree(1); i++)
     {
-        for(int j = 0; j <= rDegree(0); j++)
+        for (int j = 0; j <= rDegree(0); j++)
         {
             double weight = rWeights(rSpanIdx(1) - rDegree(1) + i, rSpanIdx(0) - rDegree(0) + j);
 
-            if     (der == 0)
+            if (der == 0)
             {
-                ders(count,0) = xBasisDer(0,j)*yBasisDer(0,i)*weight/sum(0);
+                ders(count, 0) = xBasisDer(0, j) * yBasisDer(0, i) * weight / sum(0);
                 count++;
             }
-            else if(der == 1)
+            else if (der == 1)
             {
-                ders(count,0) = (xBasisDer(1,j)*yBasisDer(0,i)*sum(0)
-                               - xBasisDer(0,j)*yBasisDer(0,i)*sum(1)) * weight/(sum(0)*sum(0));
-                ders(count,1) = (xBasisDer(0,j)*yBasisDer(1,i)*sum(0)
-                               - xBasisDer(0,j)*yBasisDer(0,i)*sum(2)) * weight/(sum(0)*sum(0));
+                ders(count, 0) =
+                        (xBasisDer(1, j) * yBasisDer(0, i) * sum(0) - xBasisDer(0, j) * yBasisDer(0, i) * sum(1)) *
+                        weight / (sum(0) * sum(0));
+                ders(count, 1) =
+                        (xBasisDer(0, j) * yBasisDer(1, i) * sum(0) - xBasisDer(0, j) * yBasisDer(0, i) * sum(2)) *
+                        weight / (sum(0) * sum(0));
                 count++;
             }
             else
             {
-                ders(count,0) =(xBasisDer(2,j)*yBasisDer(0,i)/sum(0)
-                            - 2*xBasisDer(1,j)*yBasisDer(0,i)*sum(1)/(sum(0)*sum(0))
-                              - xBasisDer(0,j)*yBasisDer(0,i)*sum(2)/(sum(0)*sum(0))
-                            + 2*xBasisDer(0,j)*yBasisDer(0,i)*sum(1)*sum(1)/(sum(0)*sum(0)*sum(0)) ) * weight;
+                ders(count, 0) =
+                        (xBasisDer(2, j) * yBasisDer(0, i) / sum(0) -
+                         2 * xBasisDer(1, j) * yBasisDer(0, i) * sum(1) / (sum(0) * sum(0)) -
+                         xBasisDer(0, j) * yBasisDer(0, i) * sum(2) / (sum(0) * sum(0)) +
+                         2 * xBasisDer(0, j) * yBasisDer(0, i) * sum(1) * sum(1) / (sum(0) * sum(0) * sum(0))) *
+                        weight;
 
-                ders(count,1) = (xBasisDer(0,j)*yBasisDer(2,i)/sum(0)
-                             - 2*xBasisDer(0,j)*yBasisDer(1,i)*sum(3)/(sum(0)*sum(0))
-                               - xBasisDer(0,j)*yBasisDer(0,i)*sum(4)/(sum(0)*sum(0))
-                             + 2*xBasisDer(0,j)*xBasisDer(0,i)*sum(3)*sum(3)/(sum(0)*sum(0)*sum(0)) ) * weight;
+                ders(count, 1) =
+                        (xBasisDer(0, j) * yBasisDer(2, i) / sum(0) -
+                         2 * xBasisDer(0, j) * yBasisDer(1, i) * sum(3) / (sum(0) * sum(0)) -
+                         xBasisDer(0, j) * yBasisDer(0, i) * sum(4) / (sum(0) * sum(0)) +
+                         2 * xBasisDer(0, j) * xBasisDer(0, i) * sum(3) * sum(3) / (sum(0) * sum(0) * sum(0))) *
+                        weight;
 
-                ders(count,2) = (xBasisDer(1,j)*yBasisDer(1,i)/sum(0)
-                               - xBasisDer(1,j)*yBasisDer(0,i)*sum(3)/(sum(0)*sum(0))
-                               - xBasisDer(0,j)*yBasisDer(1,i)*sum(1)/(sum(0)*sum(0))
-                               - xBasisDer(1,j)*yBasisDer(0,i)*sum(5)*sum(5)/(sum(0)*sum(0))
-                             + 2*xBasisDer(0,j)*yBasisDer(0,i)*sum(1)*sum(3)/(sum(0)*sum(0)*sum(0)) ) * weight;
+                ders(count, 2) =
+                        (xBasisDer(1, j) * yBasisDer(1, i) / sum(0) -
+                         xBasisDer(1, j) * yBasisDer(0, i) * sum(3) / (sum(0) * sum(0)) -
+                         xBasisDer(0, j) * yBasisDer(1, i) * sum(1) / (sum(0) * sum(0)) -
+                         xBasisDer(1, j) * yBasisDer(0, i) * sum(5) * sum(5) / (sum(0) * sum(0)) +
+                         2 * xBasisDer(0, j) * yBasisDer(0, i) * sum(1) * sum(3) / (sum(0) * sum(0) * sum(0))) *
+                        weight;
                 count++;
             }
         }
@@ -2235,17 +2437,17 @@ Eigen::VectorXd Bernstein1D(double rParameter, int rOrder)
 {
     Eigen::VectorXd values(rOrder);
 
-    double paramUnivariate = (rParameter + 1.)/2;
+    double paramUnivariate = (rParameter + 1.) / 2;
     double u1 = 1. - paramUnivariate;
 
-    for(int j = 1; j < rOrder; j++)
+    for (int j = 1; j < rOrder; j++)
     {
         double saved = 0.;
-        for(int k = 0; k < j; k++)
+        for (int k = 0; k < j; k++)
         {
             double temp = values(k);
-            values(k) = saved + u1*temp;
-            saved = paramUnivariate*temp;
+            values(k) = saved + u1 * temp;
+            saved = paramUnivariate * temp;
         }
         values(j) = saved;
     }
@@ -2276,16 +2478,16 @@ Eigen::VectorXd DerivativeBernstein1DOrder4(double rParameter)
 Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder)
 {
     Eigen::VectorXd values(rOrder);
-    double u1 = rOrder-1;
+    double u1 = rOrder - 1;
 
-    for(int j = 1; j < rOrder; j++)
+    for (int j = 1; j < rOrder; j++)
     {
         double saved = 0.;
-        for(int k = 0; k < j; k++)
+        for (int k = 0; k < j; k++)
         {
             double temp = values(k);
-            values(k) = saved + u1*temp;
-            saved = u1*temp;
+            values(k) = saved + u1 * temp;
+            saved = u1 * temp;
         }
         values(j) = saved;
     }
@@ -2293,9 +2495,5 @@ Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace ShapeFunctionsIGA1D
-
-
-
+} // namespace ShapeFunctionsIGA1D
 }
-
