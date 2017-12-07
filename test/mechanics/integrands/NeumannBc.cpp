@@ -13,7 +13,6 @@
 using namespace NuTo;
 
 constexpr int cellID = 0;
-constexpr int numIPs = 1;
 constexpr int ipNum = 0;
 
 BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
@@ -35,7 +34,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 
     Integrands::NeumannBc<2> neumannIntegrand(dof, p);
 
-    CellData cellData(element, numIPs, cellID);
+    CellData cellData(element, cellID);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
                       element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(1, 0.)), 2);
 
@@ -113,7 +112,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     Integrands::NeumannBc<3> neumannIntegrand(dof, p);
 
-    CellData cellData(element, numIPs, cellID);
+    CellData cellData(element, cellID);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
                       element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(2, 1, 0.)), 3);
 
