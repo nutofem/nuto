@@ -2210,47 +2210,98 @@ Eigen::VectorXd BasisFunctionsRat(double rParameter, int spanIdx, int rDegree, c
     return rBasisFunctions;
 }
 
-Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree,
-                                                const Eigen::VectorXd& rKnots, const Eigen::VectorXd& rWeights)
+// die originale implementierung
+//Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree,
+//                                                const Eigen::VectorXd& rKnots, const Eigen::VectorXd& rWeights)
+//{
+//    if (der < 0 || der > 2)
+//        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) +
+//                                       ":\t der greater than 2 not implemented, possible values 0,1,2!");
+//
+//    Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, rParameter, spanIdx, rDegree, rKnots);
+//
+//    // NURBS specific ...
+//    Eigen::VectorXd sum(der + 1);
+//    sum.setZero(der + 1);
+//    for (int numDer = 0; numDer < der; numDer++)
+//    {
+//        for (int i = 0; i <= rDegree; i++)
+//        {
+//            sum(numDer) += ders(numDer, i) * rWeights(spanIdx - rDegree + i);
+//        }
+//    }
+//
+//
+//    Eigen::VectorXd dersRat(rDegree + 1);
+//    dersRat.setZero(rDegree + 1);
+//
+//    for (int i = 0; i <= rDegree; i++)
+//    {
+//        double weight = rWeights(spanIdx - rDegree + i);
+//        if (der == 0)
+//        {
+//            dersRat(i) = ders(der, i) * weight / sum(0);
+//        }
+//        else if (der == 1)
+//        {
+//            dersRat(i) = (ders(der, i) * sum(0) - ders(0, i) * sum(1)) * weight / (sum(0) * sum(0));
+//        }
+//        else
+//        {
+//            double sum2 = sum(0) * sum(0);
+//            dersRat(i) =
+//                    weight * (ders(der, i) / sum(0) - 2 * ders(1, i) * sum(1) / (sum2)-ders(0, i) * sum(2) / (sum2) +
+//                              2 * ders(0, i) * sum(1) * sum(1) / (sum2 * sum(0)));
+//        }
+//    }
+//
+//    return dersRat;
+//}
+
+// die implementirung von Peters branch
+Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
 {
-    if (der < 0 || der > 2)
-        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) +
-                                       ":\t der greater than 2 not implemented, possible values 0,1,2!");
+    if(der < 0 || der > 2)
+        throw NuTo::Exception(std::string(__PRETTY_FUNCTION__) + ":\t der greater than 2 not implemented, possible values 0,1,2!");
 
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, rParameter, spanIdx, rDegree, rKnots);
 
     // NURBS specific ...
-    Eigen::VectorXd sum(der + 1);
-    sum.setZero(der + 1);
-    for (int numDer = 0; numDer < der; numDer++)
-    {
-        for (int i = 0; i <= rDegree; i++)
-        {
-            sum(numDer) += ders(numDer, i) * rWeights(spanIdx - rDegree + i);
-        }
-    }
+    Eigen::VectorXd sum(der+1);
+    sum.setZero(der+1);
 
-
-    Eigen::VectorXd dersRat(rDegree + 1);
-    dersRat.setZero(rDegree + 1);
-
-    for (int i = 0; i <= rDegree; i++)
+    for(int i = 0; i <= rDegree; i++)
     {
         double weight = rWeights(spanIdx - rDegree + i);
-        if (der == 0)
+        if     (der == 0)
+            sum(0) += ders(0,i)*weight;
+        else if(der == 1)
         {
-            dersRat(i) = ders(der, i) * weight / sum(0);
-        }
-        else if (der == 1)
-        {
-            dersRat(i) = (ders(der, i) * sum(0) - ders(0, i) * sum(1)) * weight / (sum(0) * sum(0));
+            sum(0) += ders(0,i)*weight;
+            sum(1) += ders(1,i)*weight;
         }
         else
         {
-            double sum2 = sum(0) * sum(0);
-            dersRat(i) =
-                    weight * (ders(der, i) / sum(0) - 2 * ders(1, i) * sum(1) / (sum2)-ders(0, i) * sum(2) / (sum2) +
-                              2 * ders(0, i) * sum(1) * sum(1) / (sum2 * sum(0)));
+            sum(0) += ders(0,i)*weight;
+            sum(1) += ders(1,i)*weight;
+            sum(2) += ders(2,i)*weight;
+        }
+    }
+
+    Eigen::VectorXd dersRat(rDegree+1);
+    dersRat.setZero(rDegree+1);
+
+    for(int i = 0; i <= rDegree; i++)
+    {
+        double weight = rWeights(spanIdx - rDegree + i);
+        if     (der == 0)
+            dersRat(i) = ders(0, i)*weight/sum(0);
+        else if(der == 1)
+            dersRat(i) = (ders(1, i)*sum(0) - ders(0,i)*sum(1))* weight/(sum(0)*sum(0));
+        else
+        {
+            double sum2 = sum(0)*sum(0);
+            dersRat(i) = weight*(ders(2, i)/sum(0) - 2*ders(1,i)*sum(1)/(sum2) - ders(0,i)*sum(2)/(sum2) + 2*ders(0,i)*sum(1)*sum(1)/(sum2*sum(0)));
         }
     }
 

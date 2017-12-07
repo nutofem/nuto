@@ -2,6 +2,8 @@
 
 #include <functional>
 #include "mechanics/elements/ContinuumBoundaryElement.h"
+#include "mechanics/IGA/NURBSCurve.h"
+
 
 namespace NuTo
 {
@@ -18,6 +20,17 @@ struct ContactGap
     double PenaltyParameter;
 };
 
+struct ContactGapNURBS
+{
+	//! @brief coordinates of the points on the master surface prior to penetration
+	Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> CoordinatesAndIDs;
+
+	//! @brief degree of the polynomial
+	int Degree;
+
+	//! @brief penalty parameter for the constitutive contact law
+	double PenaltyParameter;
+};
 //NuTo::ContactGap DefineContactGap(std::function<Eigen::VectorXd(Eigen::VectorXd)> rGapFunction,
 //	    std::function<Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>(Eigen::VectorXd)> rGapFunctionDerivative1,
 //	    std::function<Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>(Eigen::VectorXd)> rGapFunctionDerivative2,
@@ -47,6 +60,25 @@ public:
     	mGapProblem.GapFunctionDerivative1 = rGapProblem.GapFunctionDerivative1;
     	mGapProblem.GapFunctionDerivative2 = rGapProblem.GapFunctionDerivative2;
     	mGapProblem.PenaltyParameter = rGapProblem.PenaltyParameter;
+
+    	mPenaltyParameter = rGapProblem.PenaltyParameter;
+    }
+
+    //! @brief getter for the ContactGapNURBS
+    void SetGeometryNURBS(ContactGapNURBS& rGapProblemNURBS)
+    {
+    	mGapProblemNURBS.CoordinatesAndIDs = rGapProblemNURBS.CoordinatesAndIDs;
+    	mGapProblemNURBS.Degree = rGapProblemNURBS.Degree;
+    	mGapProblemNURBS.PenaltyParameter = rGapProblemNURBS.PenaltyParameter;
+    }
+
+    void SetNURBScurve(NURBSCurve rNURBScurve)
+    {
+    	mNURBScurve = rNURBScurve;
+
+    	mNURBSinterpolation = true;
+
+    	mPenaltyParameter = mGapProblemNURBS.PenaltyParameter;
     }
 
 //    double GetPenaltyParameter() const
@@ -82,7 +114,17 @@ protected:
 
     Eigen::VectorXd GetGlobalIntegrationPointCoordinatesAfterDeformation(EvaluateDataContinuumBoundary<TDim>& rData, int rIpNum) const;
 
+    void InterpolateNURBScurce();
+
     ContactGap mGapProblem;
+
+    ContactGapNURBS mGapProblemNURBS;
+
+    NURBSCurve mNURBScurve;
+
+    double mPenaltyParameter;
+
+    bool mNURBSinterpolation;
 
 };
 

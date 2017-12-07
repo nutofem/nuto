@@ -636,6 +636,11 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScala
 //  BlockScalar normResidual = residual_mod.CalculateInfNorm();							// original from Peter
     normResidual = residual_mod.CalculateInfNorm();										// my variant
 
+    for (const auto dof : GetDofStatus().GetActiveDofTypes())
+    {
+    	std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Initial Residual: " << Node::DofToString(dof) << ": " << normResidual[dof] << std::endl;
+    }
+
     int iteration = 0;
     while(!(normResidual < tol) && iteration < rMaxNumIter)
     {

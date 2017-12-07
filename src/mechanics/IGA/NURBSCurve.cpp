@@ -546,7 +546,7 @@ void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSl
         rParameterStartMaster = 0.;
     while(error > tol && numIter < maxNumIter)
     {
-        // ==> function (dprime)
+    	// ==> function (dprime)
         Eigen::VectorXd coordinatesMaster = CurvePoint(rParameterStartMaster, 0);
         Eigen::VectorXd r = rCoordinatesSlave - coordinatesMaster;
         //if(r.norm() < tol) break;
@@ -566,6 +566,10 @@ void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSl
         error = std::fabs(b);
         numIter++;
     }
+
+	if(numIter >= maxNumIter)
+		 std::cout << "NuTo::NURBSCurve::findMinimalDistance]: Maximum number of Newton iterations exceeded!" << std::endl;
+
 //    std::cout << "Number of iterations: " << numIter << std::endl;
 }
 

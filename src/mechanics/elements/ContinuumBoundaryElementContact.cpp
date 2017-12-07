@@ -28,6 +28,7 @@
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
 
+
 using namespace NuTo;
 
 template <int TDim>
@@ -36,7 +37,7 @@ NuTo::ContinuumBoundaryElementContact<TDim>::ContinuumBoundaryElementContact(con
                                                                int rSurfaceId)
     : ContinuumBoundaryElement<TDim>(rBaseElement, integrationType, rSurfaceId)
 {
-
+	mNURBSinterpolation = false;
 }
 
 template <int TDim>
@@ -163,7 +164,7 @@ void NuTo::ContinuumBoundaryElementContact<TDim>::CalculateElementOutputInternal
         	if (gap < 0.) {
         		std::cout << "*** *** CONTRIBUTE TO INTERNAL GRADIENT *** ***" << std::endl;
             	rInternalGradient[dofRow] +=
-            			rData.mDetJxWeightIPxSection * NmatrixNormal.transpose() * mGapProblem.PenaltyParameter * gap;
+            			rData.mDetJxWeightIPxSection * NmatrixNormal.transpose() * mPenaltyParameter * gap;
 			}
         	break;
         }
@@ -235,7 +236,7 @@ void NuTo::ContinuumBoundaryElementContact<TDim>::CalculateElementOutputHessian0
             	if (gap < 0.) {
             		std::cout << "*** *** CONTRIBUTE TO HASSIAN *** ***" << std::endl;
             		hessian0 += rData.mDetJxWeightIPxSection * NmatrixNormal.transpose() *
-            				mGapProblem.PenaltyParameter * NmatrixNormal;
+            				mPenaltyParameter * NmatrixNormal;
             	}
             	break;
 			}
@@ -304,12 +305,31 @@ template <>
 std::pair<Eigen::VectorXd, double> NuTo::ContinuumBoundaryElementContact<2>::CalculateNormalToRigidBody(Eigen::VectorXd &rSlaveCoordinates) const
 {
 	std::cout << "Bin here: CalculateNormalToRigidBody" << std::endl;
-	// calculate the projection of rSlaveCoordinate to the rigid surface
-	Eigen::VectorXd ProjectionToMaster = ProjectionToRigidBody(rSlaveCoordinates);
 
-	std::cout << "CalculateNormalToRigidBody: projection to master = " << ProjectionToMaster.transpose() << std::endl;
+	Eigen::VectorXd ProjectionToMaster, tangent;
 
-	Eigen::VectorXd tangent = mGapProblem.GapFunctionDerivative1(ProjectionToMaster)(0,0);
+	if (mNURBSinterpolation == false) {
+
+		// calculate the projection of rSlaveCoordinate to the rigid surface
+		ProjectionToMaster = ProjectionToRigidBody(rSlaveCoordinates);
+
+		std::cout << "CalculateNormalToRigidBody: projection to master = " << ProjectionToMaster.transpose() << std::endl;
+
+		tangent = mGapProblem.GapFunctionDerivative1(ProjectionToMaster)(0,0);
+
+	} else {
+
+		// calculate projection to the NURBS surface
+		double parameter(0);
+		mNURBScurve.findMinimalDistance(rSlaveCoordinates, parameter);
+
+		ProjectionToMaster = mNURBScurve.CurvePoint(parameter, 0);
+
+		std::cout << "CalculateNormalToRigidBody: projection to master = " << ProjectionToMaster.transpose() << std::endl;
+
+		tangent = mNURBScurve.CurvePoint(parameter, 1);
+
+	}
 
 	std::cout << "- - -: tangent = " << tangent.transpose() << std::endl;
 
