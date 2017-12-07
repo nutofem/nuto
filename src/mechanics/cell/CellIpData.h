@@ -12,11 +12,11 @@ namespace NuTo
 class CellIpData
 {
 public:
-    CellIpData(const ElementCollection& elements, NuTo::Jacobian jacobian, NaturalCoords ipCoords, int ipNum)
+    CellIpData(const ElementCollection& elements, NuTo::Jacobian jacobian, NaturalCoords ipCoords, int ipId)
         : mElements(elements)
         , mJacobian(std::move(jacobian))
         , mIPCoords(std::move(ipCoords))
-        , mIPNum(ipNum)
+        , mIpId(ipId)
     {
     }
 
@@ -25,9 +25,9 @@ public:
         return Interpolate(mElements.CoordinateElement(), mIPCoords);
     }
 
-    int GetIPNum() const
+    int GetIpId() const
     {
-        return mIPNum;
+        return mIpId;
     }
 
     NMatrix GetNMatrix(const DofType& dofType) const
@@ -121,6 +121,6 @@ private:
     const ElementCollection& mElements;
     NuTo::Jacobian mJacobian;
     NaturalCoords mIPCoords;
-    int mIPNum;
+    int mIpId;
 };
 } /* NuTo */

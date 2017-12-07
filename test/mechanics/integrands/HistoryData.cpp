@@ -168,15 +168,15 @@ public:
                            double delta_t)
     {
         // Get history data
-        auto& hisData = GetIPHistoryData(cellData.GetCellId(), cellIpData.GetIPNum());
+        auto& hisData = GetIPHistoryData(cellData.GetCellId(), cellIpData.GetIpId());
 
         // Calculate necessary values for update
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
         NuTo::NodeValues u = cellData.GetNodeValues(dofType);
         EngineeringStrainPDE<1> deltaCreep{DeltaCreep(hisData, delta_t)};
         NuTo::EngineeringStrainPDE<1> strain = B * u;
-        NuTo::EngineeringStressPDE<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIPNum());
-        MechanicsTangent E = Tangent(strain, delta_t, cellData.GetCellId(), cellIpData.GetIPNum());
+        NuTo::EngineeringStressPDE<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
+        MechanicsTangent E = Tangent(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
         NuTo::EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
 
         // The actual update
