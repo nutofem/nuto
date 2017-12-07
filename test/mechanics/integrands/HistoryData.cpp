@@ -128,7 +128,7 @@ public:
                                    int ipNum) const override
     {
         // Get history data
-        auto& hisData = GetIPHistoryData(cellNum, ipNum);
+        const auto& hisData = GetIPHistoryData(cellNum, ipNum);
 
         // Calc strain increment
         EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
