@@ -1,7 +1,7 @@
 #pragma once
 
 #include <random>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "base/Exception.h"
 
 namespace NuTo

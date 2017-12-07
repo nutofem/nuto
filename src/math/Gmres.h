@@ -3,9 +3,9 @@
 #include <iostream>
 
 
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/QR>
+#include <Eigen/Sparse>
+#include <Eigen/Core>
+#include <Eigen/QR>
 
 
 namespace NuTo

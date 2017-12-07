@@ -3,7 +3,7 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/structures/StructureOutputBase.h"
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 
 
 namespace NuTo

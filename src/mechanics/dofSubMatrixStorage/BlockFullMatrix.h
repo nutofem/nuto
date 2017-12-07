@@ -5,7 +5,7 @@
 
 #include <ostream>
 #include <unordered_map>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace NuTo
 {

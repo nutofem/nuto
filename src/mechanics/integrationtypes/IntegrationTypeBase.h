@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "base/Exception.h"
 
 #include "visualize/VisualizeEnum.h"

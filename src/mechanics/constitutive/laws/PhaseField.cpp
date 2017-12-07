@@ -11,7 +11,7 @@
 
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 

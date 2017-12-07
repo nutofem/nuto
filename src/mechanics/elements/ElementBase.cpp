@@ -20,7 +20,7 @@
 
 #include "math/EigenCompanion.h"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "visualize/Point.h"
 #include "visualize/Cell.h"

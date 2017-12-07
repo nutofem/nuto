@@ -10,7 +10,7 @@
 
 #include <string>
 #include <fstream>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 /* Example File:
 

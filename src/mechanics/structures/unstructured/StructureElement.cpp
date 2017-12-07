@@ -22,7 +22,7 @@
 
 #include "mechanics/mesh/MeshCompanion.h"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 //! @brief returns the number of nodes
 //! @return number of nodes

@@ -1,4 +1,4 @@
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "base/Timer.h"
 #include "base/Exception.h"
 #include "math/SparseMatrixCSR.h"

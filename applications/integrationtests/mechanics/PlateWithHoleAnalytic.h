@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <cmath>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 using ExactStress = Eigen::Vector3d;
 constexpr double load = 10;

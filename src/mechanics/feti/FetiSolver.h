@@ -7,8 +7,8 @@
 #include <mpi.h>
 #include <boost/mpi.hpp>
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 
 class FetiSolver

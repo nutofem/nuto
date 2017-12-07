@@ -1,5 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 
