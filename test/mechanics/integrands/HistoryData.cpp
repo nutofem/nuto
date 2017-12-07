@@ -64,13 +64,13 @@ public:
     //! @brief Initializes the history data
     //! @param cells: Cellgroup that is related to the integrand
     //! @param dof: Dof type
-    void InitializeHistoryData(const Groups::Group<CellInterface>& cells, DofType dof)
+    void InitializeHistoryData(const Groups::Group<CellInterface>& cells, DofType dof, unsigned int ipPerCell)
     {
         for (CellInterface& cell : cells)
         {
-            cell.Apply([this](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+            cell.Apply([this, ipPerCell](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
                 if (mHisData.find(cellData.GetCellId()) == mHisData.end())
-                    mHisData.emplace(cellData.GetCellId(), std::vector<T>(cellData.GetNumIntegrationPoints()));
+                    mHisData.emplace(cellData.GetCellId(), std::vector<T>(ipPerCell));
             });
         }
     }
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     }
 
     // Initialize IP data %%%%%%%%%%%%%%%%%%%%%%%
-    creepLaw.InitializeHistoryData(momentumBalanceCells, displ);
+    creepLaw.InitializeHistoryData(momentumBalanceCells, displ, integrationType.GetNumIntegrationPoints());
 
 
     // Get gradient %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

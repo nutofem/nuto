@@ -36,7 +36,7 @@ public:
 
     void Apply(VoidFunction f) override
     {
-        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints(), Id());
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
@@ -61,7 +61,7 @@ private:
     template <typename TOperation, typename TReturn>
     TReturn IntegrateGeneric(TOperation&& f, TReturn result)
     {
-        CellData cellData(mElements, mIntegrationType.GetNumIntegrationPoints(), Id());
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
