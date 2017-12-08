@@ -126,9 +126,10 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
     Group<CellInterface> momentumBalanceCells;
+    int cellId = 0;
     for (ElementCollection& element : mesh.Elements)
     {
-        cellContainer.push_back(new Cell(element, integrationType));
+        cellContainer.push_back(new Cell(element, integrationType, cellId++));
         momentumBalanceCells.Add(cellContainer.back());
     }
 
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
     auto NeumannLoad = Bind(neumannBc, &Integrands::NeumannBc<2>::ExternalLoad);
 
-    cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc));
+    cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, cellId++));
     auto& neumannCell = cellContainer.back();
 
     // ************************************************************************
@@ -242,9 +243,10 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
     Group<CellInterface> cellGroup;
+    int cellId = 0;
     for (auto& element : mesh.Elements)
     {
-        cellContainer.push_back(new Cell(element, integrationType));
+        cellContainer.push_back(new Cell(element, integrationType, cellId++));
         cellGroup.Add(cellContainer.back());
     }
 

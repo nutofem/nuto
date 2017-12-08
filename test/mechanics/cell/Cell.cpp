@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     };
 
 
-    NuTo::Cell cell(elements, intType.get());
+    NuTo::Cell cell(elements, intType.get(), 0);
 
     BoostUnitTest::CheckVector(cell.Integrate(GradientF)[dofDispl], Eigen::VectorXd::Zero(8), 8);
 

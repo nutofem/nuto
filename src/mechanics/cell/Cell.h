@@ -10,12 +10,13 @@
 
 namespace NuTo
 {
-class Cell : public CellInterface, UniqueId<Cell>
+class Cell : public CellInterface
 {
 public:
-    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType)
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const int id)
         : mElements(elements)
         , mIntegrationType(integrationType)
+        , mId(id)
     {
     }
 
@@ -53,6 +54,11 @@ public:
         return mElements.DofElement(dof).GetDofNumbering();
     }
 
+    int Id() const
+    {
+        return mId;
+    }
+
 private:
     //! @brief integrates various operations with various return types
     //! @param op operation to perform
@@ -78,5 +84,6 @@ private:
 private:
     const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
+    const int mId;
 };
 } /* NuTo */
