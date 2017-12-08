@@ -32,47 +32,45 @@ constexpr unsigned int numElements = 4;
 //! @brief Standard history data management object.
 //! @tparam T: Data type of the history data
 template <typename T>
-class HistoryData
+class HistoryDataContiguousMemory
 {
-    std::map<int, std::vector<T>> mHisData;
+    unsigned int mIpsPerCell = 0;
+    std::vector<T> mHistoryData;
 
 public:
     //! @brief Returns the history data for a specific integration point
     //! @param cellNum: Number of the cell containing the integration point
     //! @param ipNum: Number of the integration point
     //! @return History data of the integration point
-    const T& GetIPHistoryData(int cellNum, int ipNum) const
+    const T& GetIPHistoryData(const unsigned int cellNum, const unsigned int ipNum) const
     {
-        auto ipVecIt = mHisData.find(cellNum);
-        if (ipVecIt == mHisData.end())
-            throw Exception(__PRETTY_FUNCTION__, "Cell data not found! - Did you initialize the history data?");
-        return (*ipVecIt).second[ipNum];
+        assert(cellNum < mHistoryData.size() / mIpsPerCell);
+        assert(ipNum < mIpsPerCell);
+        return mHistoryData[cellNum * mIpsPerCell + ipNum];
     }
 
     //! @brief Returns the history data for a specific integration point
     //! @param cellNum: Number of the cell containing the integration point
     //! @param ipNum: Number of the integration point
     //! @return History data of the integration point
-    T& GetIPHistoryData(int cellNum, int ipNum)
+    T& GetIPHistoryData(const unsigned int cellNum, const unsigned int ipNum)
     {
-        auto ipVecIt = mHisData.find(cellNum);
-        if (ipVecIt == mHisData.end())
-            throw Exception(__PRETTY_FUNCTION__, "Cell data not found! - Did you initialize the history data?");
-        return (*ipVecIt).second[ipNum];
+        assert(cellNum < mHistoryData.size() / mIpsPerCell);
+        assert(ipNum < mIpsPerCell);
+        return mHistoryData[cellNum * mIpsPerCell + ipNum];
     }
 
     //! @brief Initializes the history data
-    //! @param cells: Cellgroup that is related to the integrand
-    //! @param dof: Dof type
-    void InitializeHistoryData(const Groups::Group<CellInterface>& cells, DofType dof, unsigned int ipPerCell)
+    //! @param numCells: Number of cells that access the history data
+    //! @param ipsPerCell: Number of integration points per cell
+    void InitializeHistoryData(const unsigned int numCells, const unsigned int ipsPerCell)
     {
-        for (CellInterface& cell : cells)
-        {
-            cell.Apply([this, ipPerCell](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-                if (mHisData.find(cellData.GetCellId()) == mHisData.end())
-                    mHisData.emplace(cellData.GetCellId(), std::vector<T>(ipPerCell));
-            });
-        }
+        if (mIpsPerCell > 0)
+            throw Exception(__PRETTY_FUNCTION__, "History data is already initialized!");
+        assert(ipsPerCell > 0);
+        assert(numCells > 0);
+        mIpsPerCell = ipsPerCell;
+        mHistoryData.resize(ipsPerCell * numCells);
     }
 };
 
@@ -94,7 +92,7 @@ struct CreepHistoryData
 };
 
 //! @brief Creep law using the exponential algorithm
-class CreepLaw : public Laws::MechanicsInterface<1>, public HistoryData<CreepHistoryData>
+class CreepLaw : public Laws::MechanicsInterface<1>, public HistoryDataContiguousMemory<CreepHistoryData>
 {
 
     double mE; //!< Youngs modulus
@@ -300,7 +298,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     }
 
     // Initialize IP data %%%%%%%%%%%%%%%%%%%%%%%
-    creepLaw.InitializeHistoryData(momentumBalanceCells, displ, integrationType.GetNumIntegrationPoints());
+    creepLaw.InitializeHistoryData(momentumBalanceCells.Size(), integrationType.GetNumIntegrationPoints());
 
 
     // Get gradient %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
