@@ -28,6 +28,36 @@ void Check2DMesh(NuTo::MeshFem& mesh)
     BOOST_CHECK_NO_THROW(transformedMesh.NodeAtCoordinate(Eigen::Vector2d(43., 9.)));
 }
 
+BOOST_AUTO_TEST_CASE(MeshTrusses)
+{
+    auto mesh = NuTo::UnitMeshFem::CreateTrusses(13);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 13);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 14);
+
+    bool nodesHaveExpectedValue = true;
+    for (unsigned int i = 0; i < mesh.Nodes.Size(); ++i)
+    {
+        if (std::abs(mesh.Nodes[i].GetValues()[0] - static_cast<double>(i) / mesh.Elements.Size()) > 1e-6)
+        {
+            nodesHaveExpectedValue = false;
+            break;
+        }
+    }
+    BOOST_CHECK(nodesHaveExpectedValue);
+
+    bool correctNodeOrder = true;
+    for (auto& element : mesh.Elements)
+    {
+        if (element.CoordinateElement().GetNode(0).GetValues()[0] >
+            element.CoordinateElement().GetNode(1).GetValues()[0])
+        {
+            correctNodeOrder = false;
+            break;
+        }
+    }
+    BOOST_CHECK(correctNodeOrder);
+}
+
 BOOST_AUTO_TEST_CASE(MeshQuad)
 {
     auto mesh = NuTo::UnitMeshFem::CreateQuads(2, 7);
