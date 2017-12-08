@@ -42,9 +42,9 @@ public:
     //! @param cellNum: Number of the cell containing the integration point
     //! @param ipNum: Number of the integration point
     //! @return History data of the integration point
-    const T& GetIPHistoryData(const unsigned int cellNum, const unsigned int ipNum) const
+    const T& GetIpHistoryData(const unsigned int cellNum, const unsigned int ipNum) const
     {
-        assert(cellNum < mHistoryData.size() / mIpsPerCell);
+        assert(cellNum < mHistoryData.size() / mIpsPerCell && "Have you initialized the history data?");
         assert(ipNum < mIpsPerCell);
         return mHistoryData[cellNum * mIpsPerCell + ipNum];
     }
@@ -53,9 +53,9 @@ public:
     //! @param cellNum: Number of the cell containing the integration point
     //! @param ipNum: Number of the integration point
     //! @return History data of the integration point
-    T& GetIPHistoryData(const unsigned int cellNum, const unsigned int ipNum)
+    T& GetIpHistoryData(const unsigned int cellNum, const unsigned int ipNum)
     {
-        assert(cellNum < mHistoryData.size() / mIpsPerCell);
+        assert(cellNum < mHistoryData.size() / mIpsPerCell && "Have you initialized the history data?");
         assert(ipNum < mIpsPerCell);
         return mHistoryData[cellNum * mIpsPerCell + ipNum];
     }
@@ -126,7 +126,7 @@ public:
                                    int ipNum) const override
     {
         // Get history data
-        const auto& hisData = GetIPHistoryData(cellNum, ipNum);
+        const auto& hisData = GetIpHistoryData(cellNum, ipNum);
 
         // Calc strain increment
         EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
@@ -166,7 +166,7 @@ public:
                            double delta_t)
     {
         // Get history data
-        auto& hisData = GetIPHistoryData(cellData.GetCellId(), cellIpData.GetIpId());
+        auto& hisData = GetIpHistoryData(cellData.GetCellId(), cellIpData.GetIpId());
 
         // Calculate necessary values for update
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
