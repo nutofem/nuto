@@ -10,5 +10,6 @@ add_unit_test(HistoryData
     mechanics/integrationtypes/IntegrationTypeBase.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
     mechanics/mesh/MeshFem.cpp
-    mechanics/mesh/MeshFemDofConvert.cpp)
+    mechanics/mesh/MeshFemDofConvert.cpp
+    mechanics/mesh/UnitMeshFem.cpp)
 

@@ -14,6 +14,7 @@
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
+#include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/nodes/NodeSimple.h"
 
 #include <cassert>
@@ -26,7 +27,7 @@ using namespace NuTo;
 using namespace NuTo::Groups;
 
 
-constexpr double SpecimenLength = 10.;
+constexpr double SpecimenLength = 1.;
 constexpr unsigned int numElements = 4;
 
 //! @brief Standard history data management object.
@@ -221,28 +222,6 @@ private:
 };
 
 
-// %%% Mesh generation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-MeshFem Mesh1D()
-{
-    MeshFem mesh;
-    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
-    NodeSimple* nr = nullptr;
-    constexpr unsigned int numNodes = numElements + 1;
-    constexpr double elementLength = SpecimenLength / numElements;
-    for (unsigned int i = 0; i < numNodes; ++i)
-    {
-        NodeSimple& nl = mesh.Nodes.Add({i * elementLength});
-        if (i > 0)
-            mesh.Elements.Add({{{nl, *nr}, interpolation}});
-        nr = &nl;
-    }
-
-
-    return mesh;
-}
-
-
 // %%% Main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 using namespace std::placeholders;
@@ -250,7 +229,9 @@ using namespace std::placeholders;
 BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    MeshFem mesh = Mesh1D();
+    MeshFem mesh = UnitMeshFem::CreateTrusses(numElements);
+    //    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateTrusses(numElements),
+    //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
     DofType displ("displacements", 1);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
     AddDofInterpolation(&mesh, displ, interpolation);
@@ -329,7 +310,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
         // Calculate residual %%%%%%%%%%%%%%%%%%%
         GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-        Eigen::VectorXd residual = gradient.J[displ] + extF.J[displ];
+        Eigen::VectorXd residual = gradient.J[displ] - extF.J[displ];
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
         while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-9)
@@ -352,7 +333,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
             // Calculate new residual %%%%%%%%%%%
             gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-            residual = gradient.J[displ] + extF.J[displ];
+            residual = gradient.J[displ] - extF.J[displ];
         }
         if (numIter >= maxIter)
         {

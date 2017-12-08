@@ -6,6 +6,11 @@ namespace NuTo
 namespace UnitMeshFem
 {
 
+//! @brief creates a 1 dimensional mesh from (0) -- (1) with numX divisions
+//! @param numX number of divisions in x direction
+//! @return created mesh
+MeshFem CreateTrusses(int numX);
+
 //! @brief creates a triangular mesh from (0,0) -- (1,1) with numX and numY divisions
 //! @param numX number of divisions in x direction
 //! @param numY number of divisions in y direction
