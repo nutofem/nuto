@@ -1,5 +1,5 @@
-#include "BoostUnitTest.h"
 #include "mechanics/mesh/UnitMeshFem.h"
+#include "BoostUnitTest.h"
 
 void Check2DMesh(NuTo::MeshFem& mesh)
 {
@@ -30,32 +30,23 @@ void Check2DMesh(NuTo::MeshFem& mesh)
 
 BOOST_AUTO_TEST_CASE(MeshTrusses)
 {
-    auto mesh = NuTo::UnitMeshFem::CreateTrusses(13);
-    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 13);
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 14);
+    constexpr int numElements = 15;
+    auto mesh = NuTo::UnitMeshFem::CreateTrusses(numElements);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), numElements);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), numElements + 1);
 
-    bool nodesHaveExpectedValue = true;
-    for (unsigned int i = 0; i < mesh.Nodes.Size(); ++i)
+    for (const auto& node : mesh.Nodes)
     {
-        if (std::abs(mesh.Nodes[i].GetValues()[0] - static_cast<double>(i) / mesh.Elements.Size()) > 1e-6)
-        {
-            nodesHaveExpectedValue = false;
-            break;
-        }
+        BOOST_CHECK(
+                std::abs((node.GetValues()[0] * numElements) - std::round(node.GetValues()[0] * numElements) < 1e-6));
+        BOOST_CHECK(node.GetValues()[0] <= 1.0 && node.GetValues()[0] >= 0.0);
     }
-    BOOST_CHECK(nodesHaveExpectedValue);
 
-    bool correctNodeOrder = true;
-    for (auto& element : mesh.Elements)
+    for (const auto& element : mesh.Elements)
     {
-        if (element.CoordinateElement().GetNode(0).GetValues()[0] >
-            element.CoordinateElement().GetNode(1).GetValues()[0])
-        {
-            correctNodeOrder = false;
-            break;
-        }
+        BOOST_CHECK(element.CoordinateElement().GetNode(0).GetValues()[0] <
+                    element.CoordinateElement().GetNode(1).GetValues()[0]);
     }
-    BOOST_CHECK(correctNodeOrder);
 }
 
 BOOST_AUTO_TEST_CASE(MeshQuad)
