@@ -17,36 +17,36 @@ template <int TDim>
 class MomentumBalance
 {
 public:
-    MomentumBalance(NuTo::DofType dofType, const Laws::MechanicsInterface<TDim>& law)
+    MomentumBalance(DofType dofType, const Laws::MechanicsInterface<TDim>& law)
         : mDofType(dofType)
         , mLaw(law)
     {
     }
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
+    DofVector<double> Gradient(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
-        NuTo::DofVector<double> gradient;
+        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NodeValues u = cellData.GetNodeValues(mDofType);
+        DofVector<double> gradient;
 
-        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
+        EngineeringStrain<TDim> strain = B * u;
         gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT);
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double deltaT)
+    DofMatrix<double> Hessian0(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
-        NuTo::DofMatrix<double> hessian0;
+        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NodeValues u = cellData.GetNodeValues(mDofType);
+        DofMatrix<double> hessian0;
 
-        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
+        EngineeringStrain<TDim> strain = B * u;
         hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(strain, deltaT) * B;
         return hessian0;
     }
 
 private:
-    NuTo::DofType mDofType;
+    DofType mDofType;
     const Laws::MechanicsInterface<TDim>& mLaw;
 };
 } /* Integrand */

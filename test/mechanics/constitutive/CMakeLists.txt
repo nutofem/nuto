@@ -1,6 +1,6 @@
 add_unit_test(LinearElastic)
 add_unit_test(EngineeringStrainInvariants)
-add_unit_test(EngineeringStrainPDE)
-add_unit_test(EngineeringStressPDE)
+add_unit_test(EngineeringStrain)
+add_unit_test(EngineeringStress)
 
 add_subdirectory(damageLaws)

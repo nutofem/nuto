@@ -3,7 +3,7 @@
 #include "mechanics/constitutive/EngineeringStrainInvariants.h"
 
 using namespace NuTo::EngineeringStrainInvariants;
-using Strain = NuTo::EngineeringStrainPDE<3>; 
+using Strain = NuTo::EngineeringStrain<3>;
 
 BOOST_AUTO_TEST_CASE(TensorToTensor)
 {

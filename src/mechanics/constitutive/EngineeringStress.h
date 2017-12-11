@@ -27,37 +27,38 @@ namespace NuTo
  *  \f]
  */
 template <int TDim>
-class EngineeringStressPDE : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
+class EngineeringStress : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
 {
     using Parent = Eigen::Matrix<double, Voigt::Dim(TDim), 1>;
-public:
-    EngineeringStressPDE() = default;
 
-    //! @brief This constructor allows you to construct EngineeringStressPDE from Eigen expressions
+public:
+    EngineeringStress() = default;
+
+    //! @brief This constructor allows you to construct EngineeringStress from Eigen expressions
     template <typename OtherDerived>
-    EngineeringStressPDE(const Eigen::MatrixBase<OtherDerived>& other)
-        : Parent(other) 
+    EngineeringStress(const Eigen::MatrixBase<OtherDerived>& other)
+        : Parent(other)
     {
     }
-    
-    //! @brief This constructor allows you to construct EngineeringStressPDE from Eigen expressions
+
+    //! @brief This constructor allows you to construct EngineeringStress from Eigen expressions
     template <typename OtherDerived>
-    EngineeringStressPDE(Eigen::MatrixBase<OtherDerived>&& other)
-        : Parent(other) 
+    EngineeringStress(Eigen::MatrixBase<OtherDerived>&& other)
+        : Parent(other)
     {
     }
-    
-    //! @brief This method allows you to assign Eigen expressions to EngineeringStressPDE
+
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStress
     template <typename OtherDerived>
-    EngineeringStressPDE& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    EngineeringStress& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Parent::operator=(other);
         return *this;
     }
-    
-    //! @brief This method allows you to assign Eigen expressions to EngineeringStressPDE
+
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStress
     template <typename OtherDerived>
-    EngineeringStressPDE& operator=(Eigen::MatrixBase<OtherDerived>&& other)
+    EngineeringStress& operator=(Eigen::MatrixBase<OtherDerived>&& other)
     {
         this->Parent::operator=(other);
         return *this;

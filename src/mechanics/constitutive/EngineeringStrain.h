@@ -30,37 +30,38 @@ namespace NuTo
  *
  */
 template <int TDim>
-class EngineeringStrainPDE : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
+class EngineeringStrain : public Eigen::Matrix<double, Voigt::Dim(TDim), 1>
 {
     using Parent = Eigen::Matrix<double, Voigt::Dim(TDim), 1>;
-public:
-    EngineeringStrainPDE() = default;
 
-    //! @brief This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
+public:
+    EngineeringStrain() = default;
+
+    //! @brief This constructor allows you to construct EngineeringStrain from Eigen expressions
     template <typename OtherDerived>
-    EngineeringStrainPDE(const Eigen::MatrixBase<OtherDerived>& other)
-        : Parent(other) 
+    EngineeringStrain(const Eigen::MatrixBase<OtherDerived>& other)
+        : Parent(other)
     {
     }
-    
-    //! @brief This constructor allows you to construct EngineeringStrainPDE from Eigen expressions
+
+    //! @brief This constructor allows you to construct EngineeringStrain from Eigen expressions
     template <typename OtherDerived>
-    EngineeringStrainPDE(Eigen::MatrixBase<OtherDerived>&& other)
-        : Parent(other) 
+    EngineeringStrain(Eigen::MatrixBase<OtherDerived>&& other)
+        : Parent(other)
     {
     }
-    
-    //! @brief This method allows you to assign Eigen expressions to EngineeringStrainPDE
+
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStrain
     template <typename OtherDerived>
-    EngineeringStrainPDE& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    EngineeringStrain& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Parent::operator=(other);
         return *this;
     }
-    
-    //! @brief This method allows you to assign Eigen expressions to EngineeringStrainPDE
+
+    //! @brief This method allows you to assign Eigen expressions to EngineeringStrain
     template <typename OtherDerived>
-    EngineeringStrainPDE& operator=(Eigen::MatrixBase<OtherDerived>&& other)
+    EngineeringStrain& operator=(Eigen::MatrixBase<OtherDerived>&& other)
     {
         this->Parent::operator=(other);
         return *this;
