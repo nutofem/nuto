@@ -34,7 +34,6 @@ include(CTest)
 add_subdirectory(test)
 add_subdirectory(applications/integrationtests)
 add_subdirectory(applications/examples)
-add_subdirectory(applications/examplesPDE)
 add_subdirectory(applications/benchmark)
 
 # Custom examples are applications you don't want to add to the repository, but
