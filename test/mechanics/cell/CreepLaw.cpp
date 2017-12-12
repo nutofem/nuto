@@ -229,7 +229,7 @@ using namespace std::placeholders;
 BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    MeshFem mesh = UnitMeshFem::CreateTrusses(numElements);
+    MeshFem mesh = UnitMeshFem::CreateLines(numElements);
     //    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateTrusses(numElements),
     //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
     DofType displ("displacements", 1);

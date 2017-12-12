@@ -32,7 +32,7 @@ MeshFem CreateNodes2D(int numX, int numY)
 }
 
 
-MeshFem UnitMeshFem::CreateTrusses(int numX)
+MeshFem UnitMeshFem::CreateLines(int numX)
 {
     MeshFem mesh = CreateNodes1D(numX);
     const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear(1));

@@ -31,7 +31,7 @@ void Check2DMesh(NuTo::MeshFem& mesh)
 BOOST_AUTO_TEST_CASE(MeshTrusses)
 {
     constexpr int numElements = 15;
-    auto mesh = NuTo::UnitMeshFem::CreateTrusses(numElements);
+    auto mesh = NuTo::UnitMeshFem::CreateLines(numElements);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), numElements);
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), numElements + 1);
 
