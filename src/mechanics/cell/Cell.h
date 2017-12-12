@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/UniqueId.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/elements/ElementCollection.h"
 #include "mechanics/dofs/DofContainer.h"
