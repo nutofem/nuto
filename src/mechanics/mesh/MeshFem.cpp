@@ -7,8 +7,8 @@ using namespace NuTo;
 
 InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& interpolation)
 {
-    mInterpolations.push_back(interpolation.Clone().release());
-    return *mInterpolations.rbegin();
+    mInterpolations.push_back(interpolation.Clone());
+    return *mInterpolations.rbegin()->get();
 }
 
 NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
@@ -58,7 +58,7 @@ Groups::Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, double axis
         auto& coordinateElement = element.CoordinateElement();
         for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
         {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues(); 
+            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
             if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
                 group.Add(coordinateElement.GetNode(iNode));
         }

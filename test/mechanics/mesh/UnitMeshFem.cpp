@@ -1,6 +1,5 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "BoostUnitTest.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
 
 void Check2DMesh(NuTo::MeshFem& mesh)
 {

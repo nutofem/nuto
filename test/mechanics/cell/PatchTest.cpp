@@ -1,6 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include <eigen3/Eigen/Dense> // for solve
+#include "boost/ptr_container/ptr_vector.hpp"
 
 #include "base/Group.h"
 

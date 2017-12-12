@@ -22,6 +22,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
 using namespace Eigen;
 using namespace NuTo;
 using namespace NuTo::Groups;
