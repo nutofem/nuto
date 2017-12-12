@@ -1,5 +1,6 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "BoostUnitTest.h"
+#include "mechanics/interpolation/InterpolationTrussLinear.h"
 
 void Check2DMesh(NuTo::MeshFem& mesh)
 {
@@ -82,4 +83,16 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     transformedMesh.Nodes[0].SetValue(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
+}
+
+// This test is related to our github issue #148. Visit github to read about the details
+BOOST_AUTO_TEST_CASE(MeshMovabilityError)
+{
+    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateLines(1);
+    {
+        NuTo::MeshFem tempMesh = NuTo::UnitMeshFem::CreateLines(1);
+        mesh = std::move(tempMesh);
+    }
+    auto& coordinateElement = mesh.Elements[0].CoordinateElement();
+    coordinateElement.GetDofDimension();
 }

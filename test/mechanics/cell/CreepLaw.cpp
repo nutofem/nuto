@@ -230,8 +230,9 @@ BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     MeshFem mesh = UnitMeshFem::CreateLines(numElements);
-    //    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateTrusses(numElements),
+    //    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(numElements),
     //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
+
     DofType displ("displacements", 1);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
     AddDofInterpolation(&mesh, displ, interpolation);
