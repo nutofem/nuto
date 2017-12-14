@@ -56,4 +56,4 @@ install(EXPORT NuToTargets
 
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
-add_custom_target(headers SOURCES ${HeaderFiles})
+#add_custom_target(headers SOURCES ${HeaderFiles})

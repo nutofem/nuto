@@ -1,10 +1,12 @@
 #pragma once
-#include <boost/ptr_container/ptr_vector.hpp>
 #include "base/Group.h"
 #include "base/ValueVector.h"
 #include "mechanics/DirectionEnum.h"
 #include "mechanics/nodes/NodeSimple.h"
 #include "mechanics/elements/ElementCollection.h"
+
+#include <memory>
+#include <vector>
 
 namespace NuTo
 {
@@ -69,6 +71,6 @@ public:
     ValueVector<ElementCollectionFem> Elements;
 
 private:
-    boost::ptr_vector<InterpolationSimple> mInterpolations;
+    std::vector<std::unique_ptr<InterpolationSimple>> mInterpolations;
 };
 } /* NuTo */
