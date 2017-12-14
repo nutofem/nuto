@@ -13,10 +13,10 @@
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
-#include "mechanics/constraintsPde/Constraints.h"
-#include "mechanics/constraintsPde/ConstraintCompanion.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 
-#include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"
@@ -25,7 +25,6 @@
 #include "mechanics/cell/SimpleAssember.h"
 
 using namespace NuTo;
-using namespace NuTo::Groups;
 
 //! @brief automatically create the lambda
 //! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
@@ -87,15 +86,15 @@ MeshFem QuadPatchTestMesh()
     return mesh;
 }
 
-ConstraintPde::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
+Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 {
-    ConstraintPde::Constraints constraints;
+    Constraint::Constraints constraints;
 
     Group<NodeSimple> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
     Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
 
-    constraints.Add(dof, ConstraintPde::Component(nodesConstrainedInX, {eDirection::X}));
-    constraints.Add(dof, ConstraintPde::Component(nodesConstrainedInY, {eDirection::Y}));
+    constraints.Add(dof, Constraint::Component(nodesConstrainedInX, {eDirection::X}));
+    constraints.Add(dof, Constraint::Component(nodesConstrainedInY, {eDirection::Y}));
 
     return constraints;
 }
@@ -108,7 +107,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     AddDofInterpolation(&mesh, displ, interpolation);
 
-    ConstraintPde::Constraints constraints = DefineConstraints(&mesh, displ);
+    Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
@@ -218,7 +217,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     auto constraints = DefineConstraints(&mesh, displ); // fixed boundary conditions
     Group<NodeSimple> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
     const double boundaryDisplacement = 1.;
-    constraints.Add(displ, ConstraintPde::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
+    constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];

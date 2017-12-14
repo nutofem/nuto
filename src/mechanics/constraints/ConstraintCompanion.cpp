@@ -1,106 +1,120 @@
+#include "base/Exception.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/groups/Group.h"
+#include "mechanics/nodes/NodeSimple.h"
+#include "mechanics/constraints/Equation.h"
+
 
 namespace NuTo
 {
 namespace Constraint
 {
 
-std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> directions, double value)
+std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, double value)
 {
     return Component(node, directions, RhsConstant(value));
 }
 
 
-std::vector<Equation> Component(const NodeBase& node, std::vector<eDirection> directions, RhsFunction rhs)
+std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto direction : directions)
     {
         int component = ToComponentIndex(direction);
-        if (node.GetNumDofs() < component)
-            // TODO This check is not meaningful at the moment, since this method returns the
-            // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
-            // if you try to constrain the Z component of the temperature. Which would be wrong.
-            throw Exception(__PRETTY_FUNCTION__, "Dimension mismatch");
-
-        eqs.push_back(Equation({Term(node, component, 1)}, rhs));
+        eqs.emplace_back(node, component, rhs);
     }
     return eqs;
 }
 
 
-std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions, double value)
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, double value)
 {
     return Component(nodes, directions, RhsConstant(value));
 }
 
 
-std::vector<Equation> Component(const Group<NodeBase>& nodes, std::vector<eDirection> directions, RhsFunction rhs)
+std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
-    for (auto& nodePair : nodes)
+    for (const auto& node : nodes)
     {
-        auto tmpEqs = Component(*nodePair.second, directions, rhs);
+        auto tmpEqs = Component(node, directions, rhs);
         eqs.insert(eqs.end(), tmpEqs.begin(), tmpEqs.end());
     }
     return eqs;
 }
 
 
-Equation Direction(const NodeBase& node, Eigen::VectorXd direction, RhsFunction rhs)
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
 {
-    if (node.GetNumDofs() < direction.rows())
-        // TODO This check is not meaningful at the moment, since this method returns the
-        // total number of dofs, say 4 (3 disp, 1 temp). This will not find the error
-        // if you try to constrain the Z component of the temperature. Which would be wrong.
-        throw Exception(__PRETTY_FUNCTION__, "Dimension mismatch");
 
+    int maxComponentIndex = -1;
+    if (direction.cwiseAbs().maxCoeff(&maxComponentIndex) < 1.e-6)
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Your direction vector is composed of zeros only! The direction is unspecified!");
+
+    // Normalization necessary, otherwise rhs depends on length of the direction vector
     direction.normalize();
-    Equation e(rhs);
+
+    // first nonzero direction component defines the dependent dof
+    // Lambda corrects original rhs funtion
+    Equation e(node, maxComponentIndex,
+               [=](double time) -> double { return rhs(time) / direction[maxComponentIndex]; });
+
+    // add terms for all non zero direction components
     for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
-        e.AddTerm(Term(node, iComponent, direction[iComponent]));
+        if (std::abs(direction[iComponent]) > 0 && iComponent != maxComponentIndex)
+            e.AddTerm(Term(node, iComponent, -direction[iComponent] / direction[maxComponentIndex]));
+
 
     return e;
 }
 
-Equation Direction(const NodeBase& node, Eigen::VectorXd direction, double value)
+Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value)
 {
     return Direction(node, direction, RhsConstant(value));
 }
 
-std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
-    for (auto& nodePair : nodes)
-        eqs.push_back(Direction(*nodePair.second, direction, rhs));
+    for (auto& node : nodes)
+        eqs.push_back(Direction(node, direction, rhs));
     return eqs;
 }
 
-std::vector<Equation> Direction(const Group<NodeBase>& nodes, Eigen::VectorXd direction, double value)
+std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
 {
     return Direction(nodes, direction, RhsConstant(value));
 }
 
-Equation Value(const NodeBase& node, double value)
+Equation Value(const NodeSimple& node, double value)
 {
-    return Value(node, [=](double) { return value; });
+    return Value(node, RhsConstant(value));
 }
 
-Equation Value(const NodeBase& node, RhsFunction rhs)
+Equation Value(const NodeSimple& node, RhsFunction rhs)
 {
-    return Direction(node, Eigen::VectorXd::Ones(1), rhs);
+    if (node.GetNumValues() != 1)
+        throw Exception(__PRETTY_FUNCTION__, "This function is meant to be used with single value nodes only");
+    return Component(node, {eDirection::X}, rhs)[0];
 }
 
-std::vector<Equation> Value(const Group<NodeBase>& nodes, double value)
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, double value)
 {
-    return Direction(nodes, Eigen::VectorXd::Ones(1), RhsConstant(value));
+    std::vector<Equation> eqs;
+    for (auto& node : nodes)
+        eqs.push_back(Value(node, value));
+    return eqs;
 }
 
-std::vector<Equation> Value(const Group<NodeBase>& nodes, RhsFunction rhs)
+std::vector<Equation> Value(const Group<NodeSimple>& nodes, RhsFunction rhs)
 {
-    return Direction(nodes, Eigen::VectorXd::Ones(1), rhs);
+    std::vector<Equation> eqs;
+    for (auto& node : nodes)
+        eqs.push_back(Value(node, rhs));
+    return eqs;
 }
 
-} /* Constraint */
+} /* ConstraintPde */
 } /* NuTo */

@@ -13,34 +13,12 @@ class Equation
 {
 public:
     //! @brief ctor with constant rhs, defaults to 0
+    //! @param dependentNode node reference
+    //! @param dependentComponent component in the dof vector of the node
     //! @param rhs value for the constant rhs
-    Equation(double rhs = 0)
-        : mRhs([=](double) { return rhs; })
-    {
-    }
-
-    //! @brief ctor with terms and constant rhs
-    //! @param terms equation terms
-    //! @param rhs value for the constant rhs
-    Equation(std::vector<Term> terms, double rhs = 0)
-        : mRhs([=](double) { return rhs; })
-        , mTerms(terms)
-    {
-    }
-
-    //! @brief ctor with a rhs function
-    //! @param rhs rhs function
-    Equation(RhsFunction rhs)
+    Equation(const NodeSimple& dependentNode, int dependentComponent, RhsFunction rhs)
         : mRhs(rhs)
-    {
-    }
-
-    //! @brief ctor with a rhs function and terms
-    //! @param terms equation terms
-    //! @param rhs rhs function
-    Equation(std::vector<Term> terms, RhsFunction rhs)
-        : mRhs(rhs)
-        , mTerms(terms)
+        , mTerms{Term(dependentNode, dependentComponent, 1)}
     {
     }
 
@@ -65,11 +43,9 @@ public:
         return mTerms;
     }
 
-    //! @brief nonconst getter for mTerms
-    //! @remark IMO only used for ExchangeNodePtr which is very questionable...
-    std::vector<Term>& GetTerms()
+    int GetDependentDofNumber() const
     {
-        return mTerms;
+        return mTerms.front().GetConstrainedDofNumber();
     }
 
 private:

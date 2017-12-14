@@ -1,5 +1,6 @@
 #pragma once
-#include "mechanics/nodes/NodeBase.h"
+#include "base/Exception.h"
+#include "mechanics/nodes/NodeSimple.h"
 
 namespace NuTo
 {
@@ -12,27 +13,22 @@ public:
     //! @brief ctor that sets all members so that the term consists of
     //! ... + coefficient * node->GetDof(component) + ...
     //! @param node node reference
-    //! @param component component in the dof vector of the node
+    //! @param component component in the dof vector of the node, has to be smaller than node.GetNumValues()
     //! @param coefficient coefficient of the equation term
-    Term(const NodeBase& node, int component, double coefficient)
+    Term(const NodeSimple& node, int component, double coefficient)
         : mNode(node)
         , mComponent(component)
         , mCoefficient(coefficient)
     {
+        if (component >= node.GetNumValues())
+            throw Exception(__PRETTY_FUNCTION__, "Term construction failed. Node has " +
+                                                         std::to_string(node.GetNumValues()) +
+                                                         " components and you tried to constrain component " +
+                                                         std::to_string(component) + ".");
     }
-
-    //! @brief replaces oldNode with newNode
-    //! @param oldNode old node
-    //! @param newNode new node
-    void ExchangeNode(const NodeBase& oldNode, const NodeBase& newNode)
-    {
-        if (&mNode.get() == &oldNode)
-            mNode = newNode;
-    }
-
 
     //! @brief getter for mNode
-    const NodeBase& GetNode() const
+    const NodeSimple& GetNode() const
     {
         return mNode;
     }
@@ -49,10 +45,16 @@ public:
         return mCoefficient;
     }
 
+    int GetConstrainedDofNumber() const
+    {
+        return mNode.get().GetDofNumber(mComponent);
+    }
+
 private:
-    //! @brief node reference, std::reference_wrapper is neat since it provides copy
-    //! ctor and assignment
-    std::reference_wrapper<const NodeBase> mNode;
+    //! @brief node reference
+    //! @remark `std::reference_wrapper` is used instead of a reference to
+    //! make `Term` default CopyAssignable
+    std::reference_wrapper<const NodeSimple> mNode;
 
     //! @brief component component in the dof vector of the node
     int mComponent;

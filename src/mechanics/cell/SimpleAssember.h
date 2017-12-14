@@ -17,7 +17,7 @@ public:
     {
     }
 
-    GlobalDofVector BuildVector(const Groups::Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    GlobalDofVector BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                 CellInterface::VectorFunction f) const
     {
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
@@ -44,7 +44,7 @@ public:
         return gradient;
     }
 
-    GlobalDofMatrixSparse BuildMatrix(const Groups::Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    GlobalDofMatrixSparse BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                       CellInterface::MatrixFunction f) const
     {
         GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);

@@ -5,6 +5,7 @@
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/integrands/MomentumBalance.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
 double VolumeF(const NuTo::CellData&, const NuTo::CellIpData&)
 {
