@@ -3,6 +3,11 @@
 
 #include "math/NewtonRaphson.h"
 
+/*
+ * Shows that the performance of the NuTo::NewtonRaphson algorithm is very close to the performace of a handwritten
+ * hardcode algorithm for a cubic scalar equation.
+ */
+
 constexpr double tolerance = 1.e-10;
 
 auto ValidProblem()
@@ -21,7 +26,7 @@ void Check(double x)
     }
 }
 
-static void Function(benchmark::State& state)
+static void NuToAlgorithm(benchmark::State& state)
 {
     auto problem = ValidProblem();
     for (auto _ : state)
@@ -30,9 +35,9 @@ static void Function(benchmark::State& state)
         Check(x);
     }
 }
-BENCHMARK(Function);
+BENCHMARK(NuToAlgorithm);
 
-static void FunctionLineSearch(benchmark::State& state)
+static void NuToWithLineSearch(benchmark::State& state)
 {
     auto problem = ValidProblem();
     for (auto _ : state)
@@ -42,7 +47,7 @@ static void FunctionLineSearch(benchmark::State& state)
         Check(x);
     }
 }
-BENCHMARK(FunctionLineSearch);
+BENCHMARK(NuToWithLineSearch);
 
 static void Hardcode(benchmark::State& state)
 {
@@ -67,4 +72,4 @@ static void Hardcode(benchmark::State& state)
 }
 BENCHMARK(Hardcode);
 
-BENCHMARK_MAIN();
+BENCHMARK_MAIN()

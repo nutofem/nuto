@@ -1,6 +1,11 @@
 #include <benchmark/benchmark.h>
 #include "mechanics/constraints/Constraints.h"
 
+/*
+ * The constraint creation requires checks with all previously created constraints. In a naive implementation, this has
+ * O(N^2) complexity, which is bad (too slow). This benchmark calculates the complexity - hopefully to be O(N log N).
+ */
+
 auto zero = [](double) { return 0.; };
 const NuTo::DofType d("...", 1);
 
@@ -20,4 +25,4 @@ void Constraints(benchmark::State& state)
 }
 
 BENCHMARK(Constraints)->RangeMultiplier(10)->Range(1, 1e6)->Complexity();
-BENCHMARK_MAIN();
+BENCHMARK_MAIN()

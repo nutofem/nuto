@@ -7,6 +7,17 @@
 #include <vector>
 #include <unordered_map>
 
+/*
+ * Benchmarks various implementations of the ShapeFunctionMemoization based on
+ *  - vector
+ *      Obviously, vector is fastest but causes problems based on its 'rasterized' implementation. IMO this requires
+ *      that user know exactly how this is implemented to properly identify bugs.
+ *  - unordered_map
+ *      Requires a not obvious hash function floating point coordinates and is not faster that the much simpler map ...
+ *  - map
+ *
+ */
+
 //! @brief transforms a vector of natural node coordinates to a reasonable id
 template <int TRaster>
 struct NaturalCoordianteToId
@@ -188,4 +199,4 @@ BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizer<result, Eigen::Vector3d>);
 BENCHMARK_TEMPLATE(Run, NuTo::NaturalCoordinateMemoizerMap<result, Eigen::Vector3d>);
 BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizerUnorderedMap<result, Eigen::Vector3d>);
 
-BENCHMARK_MAIN();
+BENCHMARK_MAIN()

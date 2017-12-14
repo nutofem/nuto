@@ -4,9 +4,6 @@ add_benchmark(BuildGradient)
 
 add_benchmark(ConstraintsBenchmark)
 
-add_benchmark(DenseSpherePacking)
-target_link_libraries(DenseSpherePacking GeometryConcrete)
-
 add_benchmark(MeshFemBenchmark)
 
 add_benchmark(NewtonRaphsonBenchmark)

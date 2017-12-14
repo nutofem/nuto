@@ -4,6 +4,11 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 
+/*
+ * Calculates the big O complexity of various, potentially expensive MeshFem methods.
+ */
+
+//! @brief Measures to create a 2D triangle mesh
 static void Create(benchmark::State& state)
 {
     const int n = state.range(0);
@@ -12,6 +17,7 @@ static void Create(benchmark::State& state)
     state.SetComplexityN(n * n);
 }
 
+//! @brief Measures to create a 2D triangle mesh and add another 'layer' of dof elements
 static void Convert(benchmark::State& state)
 {
     const int n = state.range(0);
@@ -24,6 +30,7 @@ static void Convert(benchmark::State& state)
     state.SetComplexityN(n * n);
 }
 
+//! @brief Measures to transform the coordinates of a 2D triangle mesh
 static void Transform(benchmark::State& state)
 {
     const int n = state.range(0);
@@ -42,5 +49,4 @@ static void Transform(benchmark::State& state)
 BENCHMARK(Create)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
 BENCHMARK(Convert)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
 BENCHMARK(Transform)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
-
-BENCHMARK_MAIN();
+BENCHMARK_MAIN()

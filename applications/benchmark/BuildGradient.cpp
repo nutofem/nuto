@@ -7,14 +7,17 @@
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/constitutive/LinearElastic.h"
 
-namespace Benchmark
-{
+/*
+ * Measures/Compares time for the calculation of a linear elastic gradient with quadratic quad elements
+ *   - current NuTo implementation
+ *   - (hopefully?) as fast as possible hardcode implementation
+ */
 
 template <int TDim>
-class Node
+class FixNode
 {
 public:
-    Node(Eigen::Matrix<double, TDim, 1> rValues)
+    FixNode(Eigen::Matrix<double, TDim, 1> rValues)
         : mValues(rValues)
     {
     }
@@ -49,7 +52,7 @@ class HardCodeElement8N
 {
 
 public:
-    HardCodeElement8N(const std::vector<Node<2>*>& rNodes)
+    HardCodeElement8N(const std::vector<FixNode<2>*>& rNodes)
         : mNodes(rNodes)
     {
         constexpr IntegrationTypeQuad it;
@@ -121,24 +124,23 @@ public:
     }
 
 private:
-    std::vector<Node<2>*> mNodes;
+    std::vector<FixNode<2>*> mNodes;
     std::array<Eigen::Matrix<double, 8, 2>, 4> mDerivativeShapeCache;
     const NuTo::Laws::LinearElastic<2> mLaw = NuTo::Laws::LinearElastic<2>(20000, 0.3, NuTo::ePlaneState::PLANE_STRAIN);
 };
-}
 
 static void Hardcode(benchmark::State& state)
 {
-    std::vector<Benchmark::Node<2>*> nodes;
+    std::vector<FixNode<2>*> nodes;
 
-    Benchmark::Node<2> n0(Eigen::Vector2d({0, 0}));
-    Benchmark::Node<2> n1(Eigen::Vector2d({1, 0}));
-    Benchmark::Node<2> n2(Eigen::Vector2d({1, 1}));
-    Benchmark::Node<2> n3(Eigen::Vector2d({0, 1}));
-    Benchmark::Node<2> n4(Eigen::Vector2d({0.5, 0}));
-    Benchmark::Node<2> n5(Eigen::Vector2d({1, 0.5}));
-    Benchmark::Node<2> n6(Eigen::Vector2d({0.5, 1}));
-    Benchmark::Node<2> n7(Eigen::Vector2d({0, 0.5}));
+    FixNode<2> n0(Eigen::Vector2d({0, 0}));
+    FixNode<2> n1(Eigen::Vector2d({1, 0}));
+    FixNode<2> n2(Eigen::Vector2d({1, 1}));
+    FixNode<2> n3(Eigen::Vector2d({0, 1}));
+    FixNode<2> n4(Eigen::Vector2d({0.5, 0}));
+    FixNode<2> n5(Eigen::Vector2d({1, 0.5}));
+    FixNode<2> n6(Eigen::Vector2d({0.5, 1}));
+    FixNode<2> n7(Eigen::Vector2d({0, 0.5}));
     nodes.push_back(&n0);
     nodes.push_back(&n1);
     nodes.push_back(&n2);
@@ -148,7 +150,7 @@ static void Hardcode(benchmark::State& state)
     nodes.push_back(&n6);
     nodes.push_back(&n7);
 
-    Benchmark::HardCodeElement8N e(nodes);
+    HardCodeElement8N e(nodes);
 
     for (auto _ : state)
         e.BuildInternalGradient();
@@ -199,5 +201,4 @@ static void NuToPde(benchmark::State& state)
         cell.Integrate(Gradient);
 }
 BENCHMARK(NuToPde);
-
-BENCHMARK_MAIN();
+BENCHMARK_MAIN()
