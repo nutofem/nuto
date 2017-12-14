@@ -12,9 +12,10 @@ namespace NuTo
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType)
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const int id)
         : mElements(elements)
         , mIntegrationType(integrationType)
+        , mId(id)
     {
     }
 
@@ -35,14 +36,14 @@ public:
 
     void Apply(VoidFunction f) override
     {
-        CellData cellData(mElements);
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
             f(cellData, cellipData);
         }
     }
@@ -50,6 +51,11 @@ public:
     Eigen::VectorXi DofNumbering(DofType dof) override
     {
         return mElements.DofElement(dof).GetDofNumbering();
+    }
+
+    int Id() const
+    {
+        return mId;
     }
 
 private:
@@ -60,7 +66,7 @@ private:
     template <typename TOperation, typename TReturn>
     TReturn IntegrateGeneric(TOperation&& f, TReturn result)
     {
-        CellData cellData(mElements);
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
@@ -68,7 +74,7 @@ private:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
             result += f(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return result;
@@ -77,5 +83,6 @@ private:
 private:
     const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
+    const int mId;
 };
 } /* NuTo */

@@ -29,8 +29,8 @@ public:
         NodeValues u = cellData.GetNodeValues(mDofType);
         DofVector<double> gradient;
 
-        EngineeringStrain<TDim> strain = B * u;
-        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT);
+        NuTo::EngineeringStrain<TDim> strain = B * u;
+        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId());
         return gradient;
     }
 
@@ -40,8 +40,9 @@ public:
         NodeValues u = cellData.GetNodeValues(mDofType);
         DofMatrix<double> hessian0;
 
-        EngineeringStrain<TDim> strain = B * u;
-        hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(strain, deltaT) * B;
+        NuTo::EngineeringStrain<TDim> strain = B * u;
+        hessian0(mDofType, mDofType) =
+                B.transpose() * mLaw.Tangent(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId()) * B;
         return hessian0;
     }
 

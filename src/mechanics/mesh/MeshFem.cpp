@@ -7,8 +7,8 @@ using namespace NuTo;
 
 InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& interpolation)
 {
-    mInterpolations.push_back(interpolation.Clone().release());
-    return *mInterpolations.rbegin();
+    mInterpolations.push_back(interpolation.Clone());
+    return *mInterpolations.rbegin()->get();
 }
 
 NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
