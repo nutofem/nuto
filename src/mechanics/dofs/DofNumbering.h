@@ -2,7 +2,7 @@
 
 #include "base/Group.h"
 
-#include "mechanics/constraintsPde/Constraints.h"
+#include "mechanics/constraints/Constraints.h"
 #include "mechanics/dofs/DofContainer.h"
 #include "mechanics/nodes/NodeSimple.h"
 
@@ -24,7 +24,7 @@ struct DofInfo
     }
 };
 
-DofInfo Build(const Groups::Group<NodeSimple>& dofNodes, DofType dof, const ConstraintPde::Constraints& constraints);
+DofInfo Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints);
 
 } /* DofNumbering */
 } /* NuTo */

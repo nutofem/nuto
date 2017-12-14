@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
     NodeSimple nodeUnconstrained1(Eigen::Vector2d::Zero());
     NodeSimple nodeConstrained(Eigen::Vector2d::Zero());
 
-    ConstraintPde::Constraints constraints;
+    Constraint::Constraints constraints;
 
-    Groups::Group<NodeSimple> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
+    Group<NodeSimple> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
 
     constraints.Add(d, {nodeConstrained, 1, rhs}); // 1st equation for component 1 --> expected number 4
     constraints.Add(d, {nodeConstrained, 0, rhs}); // 2nd equation for component 0 --> expected number 5

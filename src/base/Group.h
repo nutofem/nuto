@@ -5,9 +5,6 @@
 
 namespace NuTo
 {
-namespace Groups
-{
-
 //! @brief Ordered container class for elements, nodes and the like. No duplicates.
 //!
 //! The group saves pointers to its members but can be iterated through
@@ -16,7 +13,7 @@ namespace Groups
 //! @tparam T type of group members
 //! @tparam TCompare functor representing the comparison operation used for sorting
 template <typename T>
-class Group 
+class Group
 {
     //! @brief Container, similar to std::set, with an underlying std::vector.
     class SortedUniqueVector
@@ -171,6 +168,4 @@ Group<T> SymmetricDifference(const Group<T>& one, const Group<T>& two)
 {
     return Difference(Unite(one, two), Intersection(one, two));
 }
-
-} // namespace Group
 } // namespace NuTo

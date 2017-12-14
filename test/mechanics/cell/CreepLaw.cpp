@@ -4,10 +4,10 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/cell/SimpleAssember.h"
-#include "mechanics/constitutive/laws/LinearElastic.h"
-#include "mechanics/constitutive/laws/MechanicsInterface.h"
-#include "mechanics/constraintsPde/Constraints.h"
-#include "mechanics/constraintsPde/ConstraintCompanion.h"
+#include "mechanics/constitutive/LinearElastic.h"
+#include "mechanics/constitutive/MechanicsInterface.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
 #include "mechanics/dofs/DofNumbering.h"
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -26,8 +26,6 @@
 
 using namespace Eigen;
 using namespace NuTo;
-using namespace NuTo::Groups;
-
 
 constexpr double SpecimenLength = 1.;
 constexpr unsigned int numElements = 4;
@@ -83,8 +81,8 @@ public:
 //! @brief Structure that holds the history data of the creep law
 struct CreepHistoryData
 {
-    EngineeringStrainPDE<1> prevStrain;
-    EngineeringStressPDE<1> prevStress;
+    EngineeringStrain<1> prevStrain;
+    EngineeringStress<1> prevStress;
     VectorXd gamma = Eigen::VectorXd::Zero(2);
 
     CreepHistoryData()
@@ -125,21 +123,20 @@ public:
     //! @param cellNum: Number of currently evaluated cell
     //! @param ipNum: Number of currently evaluated integration point
     //! @return Stress at integration point
-    EngineeringStressPDE<1> Stress(EngineeringStrainPDE<1> strain, double delta_t, int cellNum,
-                                   int ipNum) const override
+    EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, int cellNum, int ipNum) const override
     {
         // Get history data
         const auto& hisData = GetIpHistoryData(cellNum, ipNum);
 
         // Calc strain increment
-        EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
+        EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;
 
         // Calc creep strain increment
-        EngineeringStrainPDE<1> deltaCreep{DeltaCreep(hisData, delta_t)};
+        EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
 
 
         // Calc Stress
-        EngineeringStressPDE<1> deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
+        EngineeringStress<1> deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
         return hisData.prevStress + deltaStress;
     }
 
@@ -149,7 +146,7 @@ public:
     //! @param cellNum: Number of currently evaluated cell
     //! @param ipNum: Number of currently evaluated integration point
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrainPDE<1>, double delta_t, int cellNum, int ipNum) const override
+    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int cellNum, int ipNum) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;
@@ -174,11 +171,11 @@ public:
         // Calculate necessary values for update
         NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
         NuTo::NodeValues u = cellData.GetNodeValues(dofType);
-        EngineeringStrainPDE<1> deltaCreep{DeltaCreep(hisData, delta_t)};
-        NuTo::EngineeringStrainPDE<1> strain = B * u;
-        NuTo::EngineeringStressPDE<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
+        EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
+        NuTo::EngineeringStrain<1> strain = B * u;
+        NuTo::EngineeringStress<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
         MechanicsTangent E = Tangent(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
-        NuTo::EngineeringStrainPDE<1> deltaStrain = strain - hisData.prevStrain;
+        NuTo::EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;
 
         // The actual update
         hisData.prevStrain = strain;
@@ -213,9 +210,9 @@ private:
     //! @param hisData: History data object
     //! @param delta_t: Time increment
     //! @return Creep strain increment
-    EngineeringStrainPDE<1> DeltaCreep(const CreepHistoryData& hisData, double delta_t) const
+    EngineeringStrain<1> DeltaCreep(const CreepHistoryData& hisData, double delta_t) const
     {
-        EngineeringStrainPDE<1> deltaCreep;
+        EngineeringStrain<1> deltaCreep;
         deltaCreep[0] = 0.;
         for (unsigned int i = 0; i < mE_KC.rows(); ++i)
             deltaCreep[0] += (1. - Beta(delta_t, i)) * hisData.gamma[i];
@@ -241,9 +238,9 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
 
     // Create constraints %%%%%%%%%%%%%%%%%%%%%%%
-    ConstraintPde::Constraints constraints;
+    Constraint::Constraints constraints;
     auto& nodeLeft = mesh.NodeAtCoordinate(Eigen::VectorXd::Zero(1), displ);
-    constraints.Add(displ, ConstraintPde::Component(nodeLeft, {eDirection::X}));
+    constraints.Add(displ, Constraint::Component(nodeLeft, {eDirection::X}));
 
 
     // DOF numbering %%%%%%%%%%%%%%%%%%%%%%%%%%%%

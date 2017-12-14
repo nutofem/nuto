@@ -1,4 +1,3 @@
-#include <mechanics/MechanicsEnums.h>
 #include "Benchmark.h"
 #include "geometryConcrete/collision/handler/CollisionHandler.h"
 #include "geometryConcrete/collision/handler/ParticleHandler.h"

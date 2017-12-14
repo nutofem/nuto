@@ -1,47 +1,28 @@
-#include <ostream>
-#include "math/SparseMatrixCSRVector2General.h"
 #include "mechanics/constraints/Constraints.h"
-#include "mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
+using namespace NuTo::Constraint;
 
-void Constraint::Constraints::Add(Node::eDof dof, Equation equation)
+
+void Constraints::Add(DofType dof, Equation equation)
 {
+    mTermChecker.CheckEquation(equation);
+
     mEquations[dof].push_back(equation);
-    mConstraintsChanged = true;
 }
 
-void Constraint::Constraints::Add(Node::eDof dof, std::vector<Equation> equations)
+void Constraints::Add(DofType dof, std::vector<Equation> equations)
 {
-    Equations& dofEquations = mEquations[dof];
-    dofEquations.insert(dofEquations.begin(), equations.begin(), equations.end());
-    mConstraintsChanged = true;
+    for (auto equation : equations)
+        Add(dof, equation);
 }
 
-void Constraint::Constraints::RemoveAll()
+Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
 {
-    mEquations.clear();
-    mConstraintsChanged = true;
-}
-
-
-void Constraint::Constraints::SetHaveChanged(bool value)
-{
-    mConstraintsChanged = value;
-}
-
-bool Constraint::Constraints::HaveChanged() const
-{
-    return mConstraintsChanged;
-}
-
-Eigen::VectorXd Constraint::Constraints::GetRhs(Node::eDof dof, double time) const
-{
-    const auto it = mEquations.find(dof);
-    if (it == mEquations.end())
+    if (not mEquations.Has(dof))
         return Eigen::VectorXd::Zero(0); // no equations for this dof type
 
-    const Equations& equations = it->second;
+    const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
     Eigen::VectorXd rhs(numEquations);
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
@@ -49,91 +30,95 @@ Eigen::VectorXd Constraint::Constraints::GetRhs(Node::eDof dof, double time) con
     return rhs;
 }
 
-SparseMatrixCSRVector2General<double> Constraint::Constraints::BuildConstraintMatrix(Node::eDof dof, int nDofs) const
+Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int numIndependentDofs) const
 {
-    const auto it = mEquations.find(dof);
-    if (it == mEquations.end())
-        return SparseMatrixCSRVector2General<double>(0, nDofs); // no equations for this dof type
+    if (not mEquations.Has(dof))
+        return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
 
-    const Equations& equations = it->second;
+    const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
 
-    SparseMatrixCSRVector2General<double> matrix(numEquations, nDofs);
+    Eigen::SparseMatrix<double> matrix(numEquations, numIndependentDofs);
 
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
         const auto& equation = equations[iEquation];
-        for (const auto& term : equation.GetTerms())
+        for (Term term : equation.GetTerms())
         {
-            if (term.GetNode().GetNum(dof) < term.GetComponent())
+            double coefficient = term.GetCoefficient();
+            int globalDofNumber = term.GetConstrainedDofNumber();
+            if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
+                throw Exception(__PRETTY_FUNCTION__,
+                                "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
+
+            if (globalDofNumber >= numIndependentDofs)
             {
-                // TODO
-                // Currently, equations have no knowledge about dofs and cannot call GetNum(dof). This
-                // can only be done here in the constraint.
-                // After adding the separation of dofs, each node has only one dof type and the GetNum()
-                // function can be called (e.g.) in the ctor of term.
-                std::ostringstream message;
-                message << "Cannot access component " << term.GetComponent() << " from node " << term.GetNode() << ".";
-                throw Exception(__PRETTY_FUNCTION__, message.str());
+                // This corresponds to the last block of size numDependentDofs x numDependentDofs that should be an
+                // identity matrix
+                int transformedDof = globalDofNumber - numIndependentDofs;
+                if (transformedDof != iEquation)
+                    throw Exception(__PRETTY_FUNCTION__, "The numbering of the dependent dofs "
+                                                         "is not in accordance with the equation numbering.");
+                continue; // Do not put the value into the matrix.
             }
 
-            double coefficient = term.GetCoefficient();
-            int globalDofNumber = term.GetNode().GetDof(dof, term.GetComponent());
             if (std::abs(coefficient) > 1.e-18)
-                matrix.AddValue(iEquation, globalDofNumber, coefficient);
+                matrix.coeffRef(iEquation, globalDofNumber) = coefficient;
         }
     }
     return matrix;
 }
 
-int Constraint::Constraints::GetNumEquations(Node::eDof dof) const
+int Constraints::GetNumEquations(DofType dof) const
 {
-    auto it = mEquations.find(dof);
-    if (it == mEquations.end())
+    if (not mEquations.Has(dof))
         return 0;
-
-    return it->second.size();
+    return mEquations[dof].size();
 }
 
-void Constraint::Constraints::ExchangeNodePtr(const NodeBase& oldNode, const NodeBase& newNode)
+const Equation& Constraints::GetEquation(DofType dof, int equationNumber) const
 {
-    for (auto& mapPair : mEquations)
+    return mEquations[dof].at(equationNumber);
+}
+
+template <typename T>
+bool Contains(const T& container, NuTo::Constraint::Term t)
+{
+    return container.find(t) != container.end();
+}
+
+bool Constraints::TermChecker::TermCompare::operator()(const Term& lhs, const Term& rhs) const
+{
+    if (&lhs.GetNode() != &rhs.GetNode())
+        return &lhs.GetNode() < &rhs.GetNode();
+    return lhs.GetComponent() < rhs.GetComponent();
+}
+
+void Constraints::TermChecker::CheckEquation(Equation e)
+{
+    // The new dependent term must not constrain the same dof as any existing terms
+    Term newDependentTerm = e.GetTerms()[0];
+
+    if (Contains(mDependentTerms, newDependentTerm))
+        throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
+                                             "is already constrained as a dependent dof in another equation.");
+
+    if (Contains(mOtherTerms, newDependentTerm))
+        throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
+                                             "is already constrained in another equation.");
+
+
+    // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
+    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
+    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
     {
-        auto& equations = mapPair.second;
-        for (auto& equation : equations)
-        {
-            for (auto& term : equation.GetTerms())
-                term.ExchangeNode(oldNode, newNode);
-        }
+        Term newTerm = e.GetTerms()[iNewTerm];
+        if (Contains(mDependentTerms, newTerm))
+            throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
+                                                 "as a dependent dof in another equation");
     }
-}
 
-namespace NuTo
-{
-namespace Constraint
-{
-std::ostream& operator<<(std::ostream& out, const Constraints& constraints)
-{
-    constexpr double rhsEvaluateTime0 = 0;
-    constexpr double rhsEvaluateTime1 = 1;
-    for (const auto& dofEquationPair : constraints.mEquations)
-    {
-        out << "Equations for dof type " << Node::DofToString(dofEquationPair.first) << ":\n";
-        const auto& equations = dofEquationPair.second;
-        for (const auto& equation : equations)
-        {
-            out << "Rhs [ " << equation.GetRhs(rhsEvaluateTime0) << " ... " << equation.GetRhs(rhsEvaluateTime1)
-                << " ] = ";
-            for (const auto& term : equation.GetTerms())
-            {
-                out << term.GetCoefficient() << " * (dof "
-                    << term.GetNode().GetDof(dofEquationPair.first, term.GetComponent()) << " [component "
-                    << term.GetComponent() << "]) + ";
-            }
-            out << "\b\b  \n"; // overrides the last "+" by moving the cursor left twice(\b) and override with blanks
-        }
-    }
-    return out;
+    mDependentTerms.insert(e.GetTerms()[0]);
+    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+        mOtherTerms.insert(e.GetTerms()[iNewTerm]);
 }
-} /* Constraint */
-} /* NuTo */

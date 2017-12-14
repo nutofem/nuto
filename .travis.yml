@@ -39,4 +39,5 @@ before_script:
 script:
     - make -j2 unit
 after_success:
+    - cd ..
     - ./scripts/upload_coverage.sh

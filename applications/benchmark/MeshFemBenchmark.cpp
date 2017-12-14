@@ -22,29 +22,29 @@ BENCHMARK(Mesh, CreateTriangles1000x1000, runner)
 BENCHMARK(Mesh, Convert10x10, runner)
 {
     NuTo::InterpolationTriangleLinear interpolation(2);
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
     while (runner.KeepRunningTime(1))
     {
-        NuTo::MeshFem m = mesh;
-        NuTo::AddDofInterpolation(&m, NuTo::DofType("dof", 2), interpolation);
+        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(10, 10);
+        NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
     }
 }
 BENCHMARK(Mesh, Convert100x100, runner)
 {
     NuTo::InterpolationTriangleLinear interpolation(2);
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
     while (runner.KeepRunningTime(1))
     {
-        NuTo::MeshFem m = mesh;
-        NuTo::AddDofInterpolation(&m, NuTo::DofType("dof", 2), interpolation);
+        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(100, 100);
+        NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
     }
 }
 BENCHMARK(Mesh, Convert1000x1000, runner)
 {
     NuTo::InterpolationTriangleLinear interpolation(2);
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
     while (runner.KeepRunningTime(1))
+    {
+        NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(1000, 1000);
         NuTo::AddDofInterpolation(&mesh, NuTo::DofType("dof", 2), interpolation);
+    }
 }
 
 

@@ -16,25 +16,8 @@ add_unit_test(CellIpData
     mechanics/elements/ElementShapeFunctions.cpp)
 
 
-add_unit_test(PatchTest
-    mechanics/dofs/DofNumbering.cpp
-    mechanics/integrationtypes/IntegrationTypeBase.cpp
-    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
-    math/Legendre.cpp
-    mechanics/constraintsPde/Constraints.cpp
-    mechanics/constraintsPde/ConstraintCompanion.cpp
-    mechanics/mesh/MeshFem.cpp
-    mechanics/mesh/MeshFemDofConvert.cpp
-    mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(PatchTest)
+target_link_libraries(PatchTest Mechanics)
 
-add_unit_test(CreepLaw
-    math/Legendre.cpp
-    mechanics/constraintsPde/Constraints.cpp
-    mechanics/constraintsPde/ConstraintCompanion.cpp
-    mechanics/dofs/DofNumbering.cpp
-    mechanics/elements/ElementShapeFunctions.cpp
-    mechanics/integrationtypes/IntegrationTypeBase.cpp
-    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
-    mechanics/mesh/MeshFem.cpp
-    mechanics/mesh/MeshFemDofConvert.cpp
-    mechanics/mesh/UnitMeshFem.cpp)
+add_unit_test(CreepLaw)
+target_link_libraries(CreepLaw Mechanics)
