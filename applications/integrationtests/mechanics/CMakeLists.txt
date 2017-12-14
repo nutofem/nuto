@@ -34,6 +34,7 @@ add_integrationtest(ContinuumElement)
 add_integrationtest(CreepUniaxial)
 add_integrationtest(CSDAInterface)
 add_integrationtest(GradientDamage)
+add_integrationtest(Hygro1D)
 add_integrationtest(IGA)
 add_integrationtest(ImplEx)
 add_integrationtest(InhomogeneousMaterial)
@@ -54,7 +55,6 @@ add_integrationtest(SurfaceLoad)
 add_integrationtest(ThermoElasticity1D)
 add_integrationtest(TrussIn2D)
 add_integrationtest(TrussIn3D)
-
 
 
 if(ENABLE_MPI)

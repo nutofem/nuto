@@ -55,7 +55,7 @@ public:
 
 protected:
     std::ofstream mLogFile; //!< Logfile for output.
-    std::string mLogFileName ; //!< LogfileName for output.
+    std::string mLogFileName; //!< LogfileName for output.
     bool mQuiet = false; //!< If true, no writing to console.;
 };
 

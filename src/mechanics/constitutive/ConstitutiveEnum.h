@@ -41,7 +41,8 @@ enum class eConstitutiveType
     THERMAL_STRAINS, //!< strain induced by temperature change
     LINEAR_ELASTIC_ANISOTROPIC, //!< linear elastic fully anisotropic material
     LINEAR_DIELECTRIC, //!< linear isotropic dielectric material (insulating but polarizable)
-    LINEAR_PIEZOELECTRIC //!< linear piezoelectric material (fully anisotropic)
+    LINEAR_PIEZOELECTRIC, //!< linear piezoelectric material (fully anisotropic)
+    WAHWAHWAH
 };
 
 const std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap();

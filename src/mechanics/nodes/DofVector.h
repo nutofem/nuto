@@ -42,7 +42,7 @@ public:
         lhs *= scalar;
         return lhs;
     }
-    
+
     friend std::ostream& operator<<(std::ostream& out, const DofVector<T>& dofVector)
     {
         for (auto const& data : dofVector.mData)

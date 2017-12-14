@@ -12,7 +12,8 @@ std::set<eDof> GetDofSet()
 {
     const std::set<eDof> set = {eDof::COORDINATES,       eDof::TEMPERATURE,         eDof::DISPLACEMENTS,
                                 eDof::NONLOCALEQSTRAIN,  eDof::WATERVOLUMEFRACTION, eDof::RELATIVEHUMIDITY,
-                                eDof::ELECTRICPOTENTIAL, eDof::CRACKPHASEFIELD};
+                                eDof::ELECTRICPOTENTIAL, eDof::CRACKPHASEFIELD,     eDof::CAPILLARY_PRESSURE,
+                                eDof::GAS_PRESSURE};
     return set;
 }
 
@@ -26,7 +27,9 @@ std::map<eDof, std::string> GetDofMap()
                                                 {eDof::WATERVOLUMEFRACTION, "WATERVOLUMEFRACTION"},
                                                 {eDof::RELATIVEHUMIDITY, "RELATIVEHUMIDITY"},
                                                 {eDof::ELECTRICPOTENTIAL, "ELECTRICPOTENTIAL"},
-                                                {eDof::CRACKPHASEFIELD, "CRACKPHASEFIELD"}};
+                                                {eDof::CRACKPHASEFIELD, "CRACKPHASEFIELD"},
+                                                {eDof::CAPILLARY_PRESSURE, "CAPILLARY_PRESSURE"},
+                                                {eDof::GAS_PRESSURE, "GAS_PRESSURE"}};
     return attributeMap;
 }
 
@@ -69,6 +72,8 @@ bool IsScalar(eDof dofType)
     case eDof::WATERVOLUMEFRACTION:
     case eDof::CRACKPHASEFIELD:
     case eDof::ELECTRICPOTENTIAL:
+    case eDof::CAPILLARY_PRESSURE:
+    case eDof::GAS_PRESSURE:
         return true;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "DOF type not found.");

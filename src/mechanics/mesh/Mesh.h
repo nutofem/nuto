@@ -9,7 +9,6 @@ namespace NuTo
 class Mesh
 {
 public:
-
     NodeSimple& CreateNode(Eigen::VectorXd rValues)
     {
         mNodes.push_back(new NodeSimple(rValues));
