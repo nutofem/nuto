@@ -4,7 +4,6 @@
 #include "math/NewtonRaphson.h"
 
 constexpr double tolerance = 1.e-10;
-constexpr double runtime = .1;
 
 auto ValidProblem()
 {

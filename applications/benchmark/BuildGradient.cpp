@@ -189,7 +189,7 @@ static void NuToPde(benchmark::State& state)
     NuTo::Integrands::MomentumBalance<2> integrand(displDof, law);
     const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
 
-    NuTo::Cell cell(element, it);
+    NuTo::Cell cell(element, it, 0);
 
     auto Gradient = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
         return integrand.Gradient(cellData, cellIpData, 0);
