@@ -72,4 +72,4 @@ static void Hardcode(benchmark::State& state)
 }
 BENCHMARK(Hardcode);
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

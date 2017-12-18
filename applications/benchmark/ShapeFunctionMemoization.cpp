@@ -199,4 +199,4 @@ BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizer<result, Eigen::Vector3d>);
 BENCHMARK_TEMPLATE(Run, NuTo::NaturalCoordinateMemoizerMap<result, Eigen::Vector3d>);
 BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizerUnorderedMap<result, Eigen::Vector3d>);
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

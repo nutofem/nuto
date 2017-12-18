@@ -25,4 +25,4 @@ void Constraints(benchmark::State& state)
 }
 
 BENCHMARK(Constraints)->RangeMultiplier(10)->Range(1, 1e6)->Complexity();
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

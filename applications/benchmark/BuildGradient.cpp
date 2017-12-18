@@ -201,4 +201,4 @@ static void NuToPde(benchmark::State& state)
         cell.Integrate(Gradient);
 }
 BENCHMARK(NuToPde);
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();
