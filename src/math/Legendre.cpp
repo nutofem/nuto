@@ -9,11 +9,14 @@ double NuTo::Math::Polynomial::Legendre(int n, double x, int k)
 {
     auto Factorial = [=](int i) -> int { return std::tgamma(i + 1); };
 
-    if (n < k)
-        return 0.;
-    if (n == k)
-        return Factorial(2 * k) / (std::pow(2, k) * Factorial(k));
-    return (((2. * n - 1.) * x * Legendre(n - 1, x, k) - (n - 1. + k) * Legendre(n - 2, x, k)) / (n - k));
+    std::vector<double> vals(n + 1, 0.);
+    if (n >= k)
+        vals[k] = Factorial(2 * k) / (std::pow(2, k) * Factorial(k));
+    for (int i = k + 1; i <= n; i++)
+    {
+        vals[i] = ((2. * i - 1.) * x * vals[i - 1] - (i - 1. + k) * vals[i - 2]) / (i - k);
+    }
+    return vals.back();
 }
 
 double FindLegendreRoot(double guess, int n, int derivative)
