@@ -2,69 +2,65 @@
 #include "mechanics/dofs/DofVector.h"
 #include <sstream>
 
-BOOST_AUTO_TEST_CASE(DofVectorAddition)
+using namespace NuTo;
+
+struct TestVectors
 {
-    NuTo::DofType dof0("foo", 1);
-    NuTo::DofType dof1("bar", 1);
+    DofType dof0 = DofType("foo", 1);
+    DofType dof1 = DofType("bar", 1);
 
-    NuTo::DofVector<double> dofVector0;
-    NuTo::DofVector<double> dofVector1;
+    DofVector<double> v0;
+    DofVector<double> v1;
 
-    dofVector0[dof0] = Eigen::Vector3d({1, 2, 3});
-    dofVector1[dof0] = Eigen::Vector3d({10, 20, 30});
+    TestVectors()
+    {
+        v0[dof0] = Eigen::Vector3d({1, 2, 3});
+        v0[dof1] = Eigen::Vector2d({8, 9});
 
-    dofVector0[dof1] = Eigen::Vector2d({8, 9});
-    dofVector1[dof1] = Eigen::Vector2d({80, 90});
+        v1[dof0] = Eigen::Vector3d({10, 20, 30});
+        v1[dof1] = Eigen::Vector2d({80, 90});
+    }
+};
 
-    dofVector0 += dofVector1;
-
-    BoostUnitTest::CheckVector(dofVector0[dof0], std::vector<double>({11, 22, 33}), 3);
-    BoostUnitTest::CheckVector(dofVector0[dof1], std::vector<double>({88, 99}), 2);
+BOOST_FIXTURE_TEST_CASE(DofVectorAddition, TestVectors)
+{
+    v0 += v1;
+    BoostUnitTest::CheckEigenMatrix(v0[dof0], Eigen::Vector3d(11, 22, 33));
+    BoostUnitTest::CheckEigenMatrix(v0[dof1], Eigen::Vector2d(88, 99));
+    BoostUnitTest::CheckEigenMatrix(v1[dof0], Eigen::Vector3d(10, 20, 30));
+    BoostUnitTest::CheckEigenMatrix(v1[dof1], Eigen::Vector2d(80, 90));
 }
 
-BOOST_AUTO_TEST_CASE(DofVectorScalarMultiplication)
+BOOST_FIXTURE_TEST_CASE(DofVectorScalarMultiplication, TestVectors)
 {
-    NuTo::DofType dof0("foo", 1);
-    NuTo::DofType dof1("bar", 1);
+    v0 *= 2.;
+    BoostUnitTest::CheckEigenMatrix(v0[dof0], Eigen::Vector3d(2, 4, 6));
+    BoostUnitTest::CheckEigenMatrix(v0[dof1], Eigen::Vector2d(16, 18));
 
-    NuTo::DofVector<double> dofVector0;
-    dofVector0[dof0] = Eigen::Vector3d({1, 2, 3});
-    dofVector0[dof1] = Eigen::Vector2d({8, 9});
-
-    dofVector0 *= 2.;
-    BoostUnitTest::CheckVector(dofVector0[dof0], std::vector<double>({2, 4, 6}), 3);
-    BoostUnitTest::CheckVector(dofVector0[dof1], std::vector<double>({16, 18}), 2);
-
-    NuTo::DofVector<double> dofVector1 = dofVector0 * 0.5;
-    BoostUnitTest::CheckVector(dofVector1[dof0], std::vector<double>({1, 2, 3}), 3);
-    BoostUnitTest::CheckVector(dofVector1[dof1], std::vector<double>({8, 9}), 2);
+    DofVector<double> v = v0 * 0.5;
+    BoostUnitTest::CheckEigenMatrix(v[dof0], Eigen::Vector3d(1, 2, 3));
+    BoostUnitTest::CheckEigenMatrix(v[dof1], Eigen::Vector2d(8, 9));
 }
 
-BOOST_AUTO_TEST_CASE(DofVectorUninitializedAddition)
+BOOST_FIXTURE_TEST_CASE(DofVectorUninitializedAddition, TestVectors)
 {
-    NuTo::DofType dof0("foo", 1);
-    NuTo::DofType dof1("bar", 1);
-
-    NuTo::DofVector<double> dofVector0;
-    NuTo::DofVector<double> dofVector1;
-
-    dofVector1[dof0] = Eigen::Vector3d({11, 22, 33});
-    dofVector1[dof1] = Eigen::Vector2d({88, 99});
-
-    dofVector0 += dofVector1;
-
-    BoostUnitTest::CheckVector(dofVector0[dof0], std::vector<double>({11, 22, 33}), 3);
-    BoostUnitTest::CheckVector(dofVector0[dof1], std::vector<double>({88, 99}), 2);
+    DofVector<double> v;
+    v += v0 + v1;
+    BoostUnitTest::CheckEigenMatrix(v[dof0], Eigen::Vector3d(11, 22, 33));
+    BoostUnitTest::CheckEigenMatrix(v[dof1], Eigen::Vector2d(88, 99));
 }
 
-BOOST_AUTO_TEST_CASE(DofVectorStream)
+BOOST_FIXTURE_TEST_CASE(DofVectorExport, TestVectors)
 {
-    NuTo::DofType dof0("foo", 1);
-    NuTo::DofType dof1("bar", 1);
-    NuTo::DofVector<double> dofVector;
-    dofVector[dof0] = Eigen::Vector3d::Zero();
-    dofVector[dof1] = Eigen::Vector3d::Zero();
+    Eigen::VectorXd vExportD0D1 = ToEigen(v0, {dof0, dof1});
+    BoostUnitTest::CheckVector(vExportD0D1, std::vector<double>{1, 2, 3, 8, 9}, 5);
+
+    Eigen::VectorXd vExportD1D0 = ToEigen(v0, {dof1, dof0});
+    BoostUnitTest::CheckVector(vExportD1D0, std::vector<double>{8, 9, 1, 2, 3}, 5);
+}
+
+BOOST_FIXTURE_TEST_CASE(DofVectorStream, TestVectors)
+{
     std::stringstream ss;
-    ss << dofVector;
+    ss << v0;
 }
-
