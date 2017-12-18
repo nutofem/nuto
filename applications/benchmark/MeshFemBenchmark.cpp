@@ -64,4 +64,4 @@ static void Transform(benchmark::State& state)
 BENCHMARK(Create)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
 BENCHMARK(Convert)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
 BENCHMARK(Transform)->RangeMultiplier(2)->Range(16, 1024)->Complexity();
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();
