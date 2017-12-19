@@ -42,8 +42,7 @@ std::vector<std::vector<int>> GetElementNodeIds3D(const std::vector<int>& corner
         return {nodes0, nodes1};
     }
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                       ShapeTypeToString(elementShape) + " not supported as 3D element");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, ShapeTypeToString(elementShape) + " not supported as 3D element");
     }
 }
 
@@ -62,8 +61,7 @@ std::vector<std::vector<int>> GetElementNodeIds2D(const std::vector<int>& corner
         return {e1, e2};
     }
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                       ShapeTypeToString(elementShape) + " not supported as 3D element");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, ShapeTypeToString(elementShape) + " not supported as 3D element");
     }
 }
 
@@ -256,7 +254,7 @@ std::pair<int, int> NuTo::MeshGenerator::Grid(Structure& s, std::vector<double> 
 
 std::function<Eigen::Vector3d(Eigen::Vector3d)> NuTo::MeshGenerator::GetCylinderMapping(double radius, double height)
 {
-    return [&radius, height](Eigen::Vector3d v) -> Eigen::VectorXd {
+    return [radius, height](Eigen::Vector3d v) -> Eigen::VectorXd {
         v.x() = v.x() * 2 - 1;
         v.y() = v.y() * 2 - 1;
         v.z() = v.z() * 2 - 1;

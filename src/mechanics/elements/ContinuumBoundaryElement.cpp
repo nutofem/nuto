@@ -316,25 +316,25 @@ void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(NuTo::Evalu
                                                                      const NuTo::ConstitutiveInputMap&,
                                                                      const NuTo::ConstitutiveOutputMap&) const
 {
-    if (this->mInterpolationType->GetActiveDofs().find(NuTo::Node::eDof::NONLOCALEQSTRAIN) !=
-        this->mInterpolationType->GetActiveDofs().end())
-    {
-        if (this->mAlphaUserDefined == -1) // just to put it somewhere...
-            rData.m1DivAlpha = 1. / this->CalculateAlpha();
-        else
-            rData.m1DivAlpha = 1. / this->mAlphaUserDefined;
+    //    if (this->mInterpolationType->GetActiveDofs().find(NuTo::Node::eDof::NONLOCALEQSTRAIN) !=
+    //        this->mInterpolationType->GetActiveDofs().end())
+    //    {
+    //        if (this->mAlphaUserDefined == -1) // just to put it somewhere...
+    //            rData.m1DivAlpha = 1. / this->CalculateAlpha();
+    //        else
+    //            rData.m1DivAlpha = 1. / this->mAlphaUserDefined;
 
-        // const auto &localEqStrain =
-        //    *static_cast<NuTo::ConstitutiveScalar
-        //    *>(rConstitutiveOutput.at(NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
-        // const auto &nonlocalEqStrain =
-        //    *static_cast<NuTo::ConstitutiveScalar
-        //    *>(rConstitutiveInput.at(NuTo::Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
-        //
-        // double gradEeqN = localEqStrain[0] - nonlocalEqStrain[0];
-        // if (gradEeqN > 0)
-        //    rData.m1DivAlpha = 0;
-    }
+    //        // const auto &localEqStrain =
+    //        //    *static_cast<NuTo::ConstitutiveScalar
+    //        //    *>(rConstitutiveOutput.at(NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
+    //        // const auto &nonlocalEqStrain =
+    //        //    *static_cast<NuTo::ConstitutiveScalar
+    //        //    *>(rConstitutiveInput.at(NuTo::Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
+    //        //
+    //        // double gradEeqN = localEqStrain[0] - nonlocalEqStrain[0];
+    //        // if (gradEeqN > 0)
+    //        //    rData.m1DivAlpha = 0;
+    //    }
 }
 
 template <int TDim>
