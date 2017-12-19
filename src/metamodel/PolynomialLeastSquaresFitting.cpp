@@ -76,6 +76,8 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
         rhs(i) = mBoundaryConditions[i].second;
     }
 
+    lhs.makeCompressed();
+
     Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
     solver.analyzePattern(lhs);
     solver.factorize(lhs);

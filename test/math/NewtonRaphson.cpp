@@ -95,6 +95,7 @@ auto ValidMatrixProblem()
         Eigen::SparseMatrix<double> m(2, 2);
         m.insert(0, 0) = 3 * x[0] * x[0] - 1;
         m.insert(1, 1) = 1;
+        m.makeCompressed();
         return m;
     };
     auto Norm = [](Eigen::VectorXd x) { return x.norm(); };
