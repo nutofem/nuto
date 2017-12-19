@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,7 @@ public:
 
 private:
     void ReadGmshFile(const std::string& fileName);
+
 
     std::vector<GmshNode> ReadNodesASCII(std::ifstream& file);
     std::vector<GmshElement> ReadElementsASCII(std::ifstream& file);
