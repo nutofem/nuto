@@ -33,7 +33,7 @@ BOOST_FIXTURE_TEST_CASE(DofVectorImport, TestVector)
     Eigen::VectorXd v(5);
     v << 0, 1, 2, 3, 4;
 
-    FromEigen(v0, v, {dof0, dof1});
+    FromEigen(v, {dof0, dof1}, &v0);
     BoostUnitTest::CheckEigenMatrix(v0[dof0], Eigen::Vector3d(0, 1, 2));
     BoostUnitTest::CheckEigenMatrix(v0[dof1], Eigen::Vector2d(3, 4));
 }
