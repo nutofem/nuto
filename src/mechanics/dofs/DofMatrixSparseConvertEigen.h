@@ -40,7 +40,11 @@ inline int TotalNonZeros(const DofMatrixSparse<T>& v, std::vector<DofType> dofs)
 template <typename T>
 inline Eigen::SparseMatrix<T> ToEigen(const DofMatrixSparse<T>& v, std::vector<DofType> dofs)
 {
+    if (dofs.size() == 1)
+        return v(dofs.front(), dofs.front());
+
     std::vector<Eigen::Triplet<T>> triplets;
+    triplets.reserve(TotalNonZeros(v, dofs));
     int startRow = 0;
     for (auto dofRow : dofs)
     {
