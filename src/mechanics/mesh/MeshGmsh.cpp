@@ -29,6 +29,13 @@ struct GmshElement
     std::vector<int> nodes;
 };
 
+struct GmshPhysicalNames
+{
+    int id = 0;
+    int dimension = 0;
+    std::string name;
+};
+
 
 GmshHeader ReadGmshHeader(std::ifstream& file)
 {
