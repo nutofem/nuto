@@ -22,10 +22,10 @@ function(add_unit_test ClassName)
     set(srcObject "${relpath}.${ClassName}")
     # if there is an object (the class is not "header-only"), link it as well
     if(TARGET "${srcObject}")
-        add_executable(${ClassName} EXCLUDE_FROM_ALL ${ClassName}.cpp
+        add_executable(${ClassName} ${ClassName}.cpp
             $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
     else()
-        add_executable(${ClassName} EXCLUDE_FROM_ALL ${ClassName}.cpp
+        add_executable(${ClassName} ${ClassName}.cpp
             ${AdditionalObjects})
     endif()
     # link the unit test framework to the unit test
