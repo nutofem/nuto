@@ -37,7 +37,7 @@ void EigenCompanion::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::stri
     }
 }
 
-Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string &rFileName)
+Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName)
 {
     std::ifstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())

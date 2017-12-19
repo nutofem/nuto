@@ -413,7 +413,7 @@ void NewmarkDirect::IterateForActiveDofValues(const StructureOutputBlockVector& 
     int timeStepMaxIterations = 0;
     bool converged = true;
 
-    //auto final_lastConverged_dof_dt = lastConverged_dof_dt;
+    // auto final_lastConverged_dof_dt = lastConverged_dof_dt;
 
     for (const auto& activeDofs : mStepActiveDofs)
     {

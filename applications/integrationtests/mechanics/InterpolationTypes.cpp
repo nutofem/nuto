@@ -106,7 +106,7 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
 
 BOOST_AUTO_TEST_CASE(InterpolationTruss)
 {
-    NuTo::IntegrationTypeTensorProduct<1> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<1> myIntegrationType(2, NuTo::eIntegrationMethod::GAUSS);
     {
         NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D, 1);
         myIT.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTriangle)
 BOOST_AUTO_TEST_CASE(InterpolationQuad)
 {
 
-    NuTo::IntegrationTypeTensorProduct<2> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<2> myIntegrationType(2, NuTo::eIntegrationMethod::GAUSS);
 
     NuTo::InterpolationType myIT4(NuTo::Interpolation::eShapeType::QUAD2D, 2);
     myIT4.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(InterpolationTetrahedron)
 
 BOOST_AUTO_TEST_CASE(InterpolationBrick)
 {
-    NuTo::IntegrationTypeTensorProduct<3> myIntegrationType(2,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<3> myIntegrationType(2, NuTo::eIntegrationMethod::GAUSS);
 
     NuTo::InterpolationType myIT8(NuTo::Interpolation::eShapeType::BRICK3D, 3);
     myIT8.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);

@@ -40,8 +40,8 @@ constexpr double lengthX = 20.;
 constexpr double thickness = 1.0;
 
 // material
-double youngsModulus = 4094;
-constexpr double poissonsRatio = 0.3;
+double youngsModulus = 1000;
+constexpr double poissonsRatio = 0.0;
 
 // integration
 constexpr bool performLineSearch = false;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     structure.GetLogger().OpenFile("FetiRixenFarhatHeterogeneousExampleLogFile_" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "FetiRixenFarhatHeterogeneousExample.mesh" + std::to_string(rank);
+    std::string meshFile = "meshes/FetiRixenFarhatHeterogeneousExample.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::COORDINATES, eTypeOrder::EQUIDISTANT1);
@@ -179,6 +179,7 @@ int main(int argc, char* argv[])
     newmarkFeti.SetPerformLineSearch(performLineSearch);
     newmarkFeti.SetToleranceResidual(eDof::DISPLACEMENTS, toleranceDisp);
     newmarkFeti.SetIterativeSolver(NuTo::NewmarkFeti<EigenSolver>::eIterativeSolver::ConjugateGradient);
+    newmarkFeti.SetFetiScaling(FetiScaling::Multiplicity);
     newmarkFeti.SetMaxNumberOfFetiIterations(1000);
     newmarkFeti.SetToleranceIterativeSolver(1.e-6);
 

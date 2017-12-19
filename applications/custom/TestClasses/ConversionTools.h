@@ -9,13 +9,14 @@
 #include <Tpetra_Vector.hpp>
 //#include <Tpetra_Distributor.hpp>
 
-//#include <Xpetra_DefaultPlatform.hpp>
-//#include <Xpetra_Map.hpp>
-//#include <Xpetra_CrsMatrix.hpp>
-//#include <Xpetra_MultiVector.hpp>
+#include <Xpetra_DefaultPlatform.hpp>
+#include <Xpetra_Map.hpp>
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_MultiVector.hpp>
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Comm.hpp>
+#include <Teuchos_DefaultComm.hpp>
 
 #ifdef HAVE_MPI
 #include <Epetra_MpiComm.h>
@@ -34,6 +35,7 @@ public:
     ConversionTools(Epetra_MpiComm rComm) : mComm(rComm)
     {
         mComm_teuchos = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+//        mComm_teuchos = Teuchos::DefaultComm<int>::getComm();
 //        mComm_teuchos = Xpetra::DefaultPlatform::getDefaultPlatform().getComm();
     }
 
@@ -46,6 +48,14 @@ public:
     ConversionTools(Epetra_SerialComm rComm) : mComm(rComm){}
     ConversionTools(Teuchos::RCP<Teuchos::Comm<int> > rComm_teuchos) : mComm_teuchos(rComm_teuchos){}
 #endif
+#ifdef HAVE_MPI
+    Epetra_MpiComm getComm_epetra(){return mComm;}
+    Teuchos::RCP<const Teuchos::Comm<int>> getComm_tpetra(){return mComm_teuchos;}
+#else
+    Epetra_SerialComm getComm_epetra(){return mComm;}
+#endif
+
+
     //******** Epetra conversion ********
     Epetra_CrsMatrix convertEigen2EpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, bool rAsGlobal = false, bool rFillComplete = false);
 
@@ -71,9 +81,13 @@ public:
 
     Teuchos::RCP<Tpetra::CrsMatrix<double, int, int>> convertEigen2TpetraCrsMatrix(Eigen::SparseMatrix<double> rEigenMatrix, Teuchos::RCP<const Tpetra::CrsGraph<int, int>> rGraph, bool rFillComplete = false);
 
+    Teuchos::RCP<Tpetra::CrsMatrix<double, int, int> > convertEigen2TpetraCrsMatrix_global(Eigen::SparseMatrix<double> rEigenMatrix, Teuchos::RCP<const Tpetra::Map<int, int> > rRowMap, Teuchos::RCP<const Tpetra::Map<int, int> > rColMap, bool rFillComplete);
+
     Teuchos::RCP<Tpetra::Vector<double, int, int>> convertEigen2TpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, bool rAsGlobal = false);
 
     Teuchos::RCP<Tpetra::Vector<double, int, int>> convertEigen2TpetraVector(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Teuchos::RCP<const Tpetra::Map<int, int>> rMap);
+
+    Teuchos::RCP<Tpetra::Vector<double, int, int> > convertEigen2TpetraVector_global(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Teuchos::RCP<const Tpetra::Map<int, int> > rMap);
 
     std::vector<double> convertTPetraVector2StdVector(Teuchos::RCP<const Tpetra::Vector<double, int, int>> rVector);
 
@@ -86,9 +100,20 @@ public:
 
 
     //******** Xpetra conversion ********
-//    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
-//    Teuchos::RCP<Xpetra::CrsMatrix<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraCrsMatrix(Eigen::SparseMatrix<valuesType> rEigenMatrix, Teuchos::RCP<const Xpetra::Map<localOrdinalType, globalOrdinalType>> rRowMap, Teuchos::RCP<const Xpetra::Map<localOrdinalType, globalOrdinalType>> rColMap, bool rFillComplete = false);
+    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
+    Teuchos::RCP<Xpetra::CrsMatrix<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraCrsMatrix(Eigen::SparseMatrix<valuesType> rEigenMatrix, bool rAsGlobal = false, bool rFillComplete = false);
 
+    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
+    Teuchos::RCP<Xpetra::CrsMatrix<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraCrsMatrix(Eigen::SparseMatrix<valuesType> rEigenMatrix, Teuchos::RCP<const Xpetra::Map<localOrdinalType, globalOrdinalType>> rRowMap, Teuchos::RCP<const Xpetra::Map<localOrdinalType, globalOrdinalType>> rColMap, bool rFillComplete = false);
+
+    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
+    Teuchos::RCP<Xpetra::CrsMatrix<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraCrsMatrix(Eigen::SparseMatrix<valuesType> rEigenMatrix, Teuchos::RCP<const Xpetra::CrsGraph<localOrdinalType, globalOrdinalType>> rGraph, bool rFillComplete = false);
+
+    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
+    Teuchos::RCP<Xpetra::Vector<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraVector(Eigen::Matrix<valuesType, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, bool rAsGlobal = false);
+
+    template<typename valuesType, typename localOrdinalType, typename globalOrdinalType>
+    Teuchos::RCP<Xpetra::Vector<valuesType, localOrdinalType, globalOrdinalType>> convertEigen2XpetraVector(Eigen::Matrix<valuesType, Eigen::Dynamic, Eigen::Dynamic> rEigenVector, Teuchos::RCP<const Xpetra::Map<localOrdinalType, globalOrdinalType>> rMap);
 
 private:
     int* map2Array_Int(std::map<int, int> rMap);
@@ -110,6 +135,14 @@ private:
     void generateDefaultGlobalMapTpetra(Teuchos::RCP<Tpetra::Map<int, int>>& rMap, int rNumGlobalElements);
 
     void generateDefaultGlobalMapTpetra(Tpetra::Map<int, int>& rMap, int rNumGlobalElements);
+
+
+    //******** Xpetra support functions ********
+    template<typename localOrdinalType, typename globalOrdinalType>
+    void generateDefaultGlobalMapsXpetra(Teuchos::RCP<Xpetra::Map<localOrdinalType, globalOrdinalType>>& rRowMap, Teuchos::RCP<Xpetra::Map<localOrdinalType, globalOrdinalType>>& rColumnMap, globalOrdinalType rNumGlobalRows, globalOrdinalType rNumGlobalColumns);
+
+    template<typename localOrdinalType, typename globalOrdinalType>
+    void generateDefaultGlobalMapXpetra(Teuchos::RCP<Xpetra::Map<localOrdinalType, globalOrdinalType>>& rMap, globalOrdinalType rNumGlobalElements);
 
 
 protected:

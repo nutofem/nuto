@@ -1,9 +1,8 @@
 #pragma once
-#include <memory>
-#include <boost/noncopyable.hpp>
 #include "mechanics/cell/CellData.h"
-#include "mechanics/cell/CellIPData.h"
-#include "mechanics/nodes/DofVector.h"
+#include "mechanics/cell/CellIpData.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/cell/IPValue.h"
 
 namespace NuTo
@@ -14,8 +13,9 @@ class Integrand
 public:
     virtual Integrand<TDim>* Clone() const = 0;
     virtual ~Integrand() = default;
-    virtual DofVector<double> Gradient(const CellData&, const CellIPData<TDim>&) = 0;
-    virtual std::vector<IPValue> IPValues(const CellData&, const CellIPData<TDim>&) = 0;
+    virtual DofVector<double> Gradient(const CellData&, const CellIpData<TDim>&) = 0;
+    virtual DofMatrix<double> Hessian0(const CellData&, const CellIpData<TDim>&) = 0;
+    virtual std::vector<IPValue> IPValues(const CellData&, const CellIpData<TDim>&) = 0;
 };
 
 } /* NuTo */

@@ -132,9 +132,8 @@ void CallbackHandlerPython::Hessian(Eigen::MatrixXd& rHessian) const
     int dim = (int)sqrt(PyList_GET_SIZE(result));
     if (dim * dim != PyList_GET_SIZE(result))
     {
-        throw(Exception(
-                __PRETTY_FUNCTION__,
-                "The python list for the hessian matrix should have NumParameters*NumParameters entries."));
+        throw(Exception(__PRETTY_FUNCTION__,
+                        "The python list for the hessian matrix should have NumParameters*NumParameters entries."));
     }
 
     rHessian.resize(dim, dim);

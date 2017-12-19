@@ -123,11 +123,11 @@ public:
     //! @param rDof ... specific dof type
     //! @param rTimeDerivative ... time derivative
     //! @param rValue ... dof scalar value
-    void Set(Node::eDof rDof, int, double rValue)
+    void Set(Node::eDof rDof, int rTimeDerivative, double rValue)
     {
         Eigen::VectorXd value(1);
         value[0] = rValue;
-        Set(rDof, 0, value);
+        Set(rDof, rTimeDerivative, value);
     }
 
     //! @brief sets the dof values for a specific scalar dof

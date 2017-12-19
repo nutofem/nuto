@@ -16,7 +16,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
 {
     if (rNumRows_ != rNumColumns_)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] Symmetric matrix must have same number of rows and columns.");
+                        "] Symmetric matrix must have same number of rows and columns.");
 }
 
 //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a
@@ -33,7 +33,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(
 {
     if (rFullMatrix.cols() != rFullMatrix.rows())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] Symmetric matrix must have same number of rows and columns.");
+                        "] Symmetric matrix must have same number of rows and columns.");
 
     double tolerance = rAbsoluteTolerance;
     if (rRelativeTolerance > 1e-14)
@@ -369,7 +369,7 @@ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
 NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
 {
     throw Exception(__PRETTY_FUNCTION__, "To be implemented.");
-}  
+}
 
 //! @brief ... calculate the transpose of the matrix (transpose row and columns)
 //! @return ... transpose of this matrix (sparse csr storage)
@@ -462,7 +462,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddScal(const SparseMatrixCSRSymm
 template <class T>
 void NuTo::SparseMatrixCSRVector2Symmetric<T>::ReorderColumns(const std::vector<int>&)
 {
-    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");  
+    throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
 }
 
 //! @brief ... resize matrix
@@ -476,7 +476,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Resize(int rNumRows, int rNumColu
 
     if (rNumRows != rNumColumns)
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] number of rows and column has to be identical for symmetric matrices.");
+                        "] number of rows and column has to be identical for symmetric matrices.");
 
     // no resize, since the reserved size is only decreased with a copy of a new object
     this->mValues = std::vector<std::vector<T>>(rNumRows);
@@ -527,7 +527,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Add_TransA_B_C_Scal(const NuTo::S
 
     if (not rB.IsSymmetric())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] rB must be symmetric for the symmetric version of this operation");
+                        "] rB must be symmetric for the symmetric version of this operation");
 
     /*
      *  A.T * B * A
@@ -553,8 +553,7 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Add_TransA_B_C_Scal(const NuTo::S
     }
     if (resultNumRows != this->GetNumRows() or resultNumCols != this->GetNumColumns())
     {
-        throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] matrix dimension mismatch of *this and A.T * B");
+        throw Exception(std::string("[") + __PRETTY_FUNCTION__ + "] matrix dimension mismatch of *this and A.T * B");
     }
     if (this->HasOneBasedIndexing() or rA.HasOneBasedIndexing() or rB.HasOneBasedIndexing())
     {
@@ -636,12 +635,12 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::Sub_TransA_B_Plus_C_D_Scal(const 
     if (rB.GetNumColumns() != rC.GetNumRows() or rC.GetNumColumns() != rB.GetNumRows() or
         rB.GetNumEntries() != rC.GetNumEntries())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] B.T should be equal to C for the symmetric version of this method.");
+                        "] B.T should be equal to C for the symmetric version of this method.");
 
     if (rA.GetNumColumns() != rD.GetNumColumns() or rA.GetNumRows() != rD.GetNumRows() or
         rA.GetNumEntries() != rD.GetNumEntries())
         throw Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                            "] A should be equal to D for the symmetric version of this method.");
+                        "] A should be equal to D for the symmetric version of this method.");
 
     /*
      *  IGNORES B and D

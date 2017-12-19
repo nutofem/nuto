@@ -18,8 +18,8 @@ const NuTo::GradientDamageEngineeringStress* AsLaw(const NuTo::Constitutive::IPC
 BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
 {
     NuTo::GradientDamageEngineeringStress law;
-    NuTo::IntegrationTypeTensorProduct<1> integrationType1(1,NuTo::eIntegrationMethod::GAUSS);
-    NuTo::IntegrationTypeTensorProduct<1> integrationType2(2,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<1> integrationType1(1, NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<1> integrationType2(2, NuTo::eIntegrationMethod::GAUSS);
 
     NuTo::IPData data(integrationType1);
     BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(0), NuTo::Exception);
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(IPData_Copy_Move)
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move_Values)
 {
     NuTo::GradientDamageEngineeringStress law;
-    NuTo::IntegrationTypeTensorProduct<1> integrationType(1,NuTo::eIntegrationMethod::GAUSS);
+    NuTo::IntegrationTypeTensorProduct<1> integrationType(1, NuTo::eIntegrationMethod::GAUSS);
 
     constexpr double kappa = 42.6174;
 

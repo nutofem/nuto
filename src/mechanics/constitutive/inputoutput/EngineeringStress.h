@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
 
 
 namespace NuTo
@@ -34,8 +34,8 @@ class EngineeringStress : public ConstitutiveVector<ConstitutiveIOBase::GetVoigt
 public:
     EngineeringStress() = default;
     EngineeringStress(std::initializer_list<double> initList);
-    //EngineeringStress(const EngineeringStress&) = default;
-    //EngineeringStress(EngineeringStress&&) = default;
+    // EngineeringStress(const EngineeringStress&) = default;
+    // EngineeringStress(EngineeringStress&&) = default;
 
     EngineeringStress<3> As3D(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 

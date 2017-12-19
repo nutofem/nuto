@@ -113,8 +113,8 @@ set(MechanicsInterpolationtypesSources
     )
 
 set(MechanicsIGASources
-    IGA/BSplineCurve.cpp
-    IGA/BSplineSurface.cpp
+    iga/BSplineCurve.cpp
+    iga/BSplineSurface.cpp
     )
 
 set(MechanicsLoadsSources
@@ -142,6 +142,9 @@ set(MechanicsMeshSources
     mesh/ImportFromGmsh.cpp
     mesh/MeshCompanion.cpp
     mesh/MeshGenerator.cpp
+    mesh/MeshFem.cpp
+    mesh/MeshFemDofConvert.cpp
+    mesh/UnitMeshFem.cpp
     )
 
 set(MechanicsNodesSources
@@ -233,7 +236,7 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics ${ANN_LIBRARIES})
+target_link_libraries(Mechanics Base Math Boost::filesystem Ann::Ann)
 
 if(ENABLE_MPI)
     message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")

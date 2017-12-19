@@ -283,10 +283,10 @@ void StructureMesh::visualizeSerializedParticularSolution(std::vector<double> rS
     std::vector<double> serialDisplacements = serialData.completeDisplacements;
     std::vector<std::vector<int>> serialNode2Dofs = serialData.completeNode2Dofs;
 
-    for (int i = 0; i < serialDisplacementIDs.size(); ++i)
-    {
-        std::cout << serialDisplacementIDs.size() << " -> " << serialDisplacementIDs[i] << ": " << serialDisplacements[i] << std::endl;
-    }
+//    for (int i = 0; i < serialDisplacementIDs.size(); ++i)
+//    {
+//        std::cout << serialDisplacementIDs.size() << " -> " << serialDisplacementIDs[i] << ": " << serialDisplacements[i] << std::endl;
+//    }
 
     std::vector<std::vector<double>> sortedSerialNodeCoords = sortNodeCoords(serialNodeIDs, serialNodeCoords);
     std::vector<double> sortedSerialDisplacements = sortDisplacements(serialDisplacementIDs, serialDisplacements);

@@ -1,72 +1,88 @@
 #pragma once
 
-#include "mechanics/cell/CellInterface.h"
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/elements/ElementSimple.h"
-#include "mechanics/nodes/DofContainer.h"
-#include "mechanics/cell/Integrand.h"
+#include "mechanics/cell/CellInterface.h"
+#include "mechanics/elements/ElementCollection.h"
+#include "mechanics/dofs/DofContainer.h"
+#include "mechanics/integrands/Base.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "mechanics/cell/CellData.h"
+#include "mechanics/cell/CellIpData.h"
 
 namespace NuTo
 {
-template <int TDim>
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementSimple& rCoordinateElement, DofContainer<ElementSimple*> rElements,
-         const IntegrationTypeBase& rIntegrationType, const Integrand<TDim>& rIntegrand)
-        : mCoordinateElement(rCoordinateElement)
-        , mElements(rElements)
-        , mIntegrationType(rIntegrationType)
-        , mIntegrand()
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType,
+         const Integrands::Base& integrand)
+        : mElements(elements)
+        , mIntegrationType(integrationType)
+        , mIntegrands()
     {
-        for (int i = 0; i < rIntegrationType.GetNumIntegrationPoints(); i++)
-            mIntegrand.push_back(rIntegrand.Clone());
+        for (int i = 0; i < integrationType.GetNumIntegrationPoints(); i++)
+            mIntegrands.push_back(integrand.Clone().release());
     }
 
-    //! @brief builds the internal gradien
-    DofVector<double> Gradient() override
+    DofVector<double> Integrate(const VectorOperation& op) override
     {
-        DofVector<double> gradient;
+        return Integrate(op, DofVector<double>());
+    }
+
+    DofMatrix<double> Integrate(const MatrixOperation& op) override
+    {
+        return Integrate(op, DofMatrix<double>());
+    }
+
+    double Integrate(const ScalarOperation& op) override
+    {
+        return Integrate(op, double{0});
+    }
+
+    void Apply(const VoidOperation& op) override
+    {
+        CellData cellData(mElements);
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
+                              mElements.CoordinateElement().GetDofDimension());
+            CellIpData cellipData(mElements, jacobian, ipCoords);
+            op(mIntegrands[iIP], cellData, cellipData);
+        }
+    }
+
+    Eigen::VectorXi DofNumbering(DofType dof) override
+    {
+        return mElements.DofElement(dof).GetDofNumbering();
+    }
+
+private:
+    //! @brief integrates various operations with various return types
+    //! @param op operation to perform
+    //! @param result result value. It is not clear how to properly initialize an arbitrary TResult to zero. Thus, the
+    //! user has to provide it with this argument.
+    template <typename TOperation, typename TReturn>
+    TReturn Integrate(TOperation&& op, TReturn result)
+    {
         CellData cellData(mElements);
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            gradient += mIntegrand[iIP].Gradient(cellData, cellipData) * jacobian.Det() * ipWeight;
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
+                              mElements.CoordinateElement().GetDofDimension());
+            CellIpData cellipData(mElements, jacobian, ipCoords);
+            result += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
         }
-        return gradient;
-    }
-
-    DofVector<int> DofNumbering() override
-    {
-        return DofVector<int>();
-    }
-
-    //! @brief Extracts a vector (each IP) of vectors (several IPValues for the same integrion point) of IPValues
-    std::vector<std::vector<IPValue>> IPValues() override
-    {
-        std::vector<std::vector<IPValue>> ipValues;
-
-        CellData cellData(mElements);
-        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
-        {
-            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian<TDim> jacobian(mCoordinateElement.ExtractNodeValues(),
-                                    mCoordinateElement.GetInterpolation().GetDerivativeShapeFunctions(ipCoords));
-            CellIPData<TDim> cellipData(mElements, jacobian, ipCoords);
-            ipValues.push_back(mIntegrand[iIP].IPValues(cellData, cellipData));
-        }
-        return ipValues;
+        return result;
     }
 
 private:
-    const ElementSimple& mCoordinateElement;
-    DofContainer<ElementSimple*> mElements;
+    const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrand<TDim>> mIntegrand;
+    boost::ptr_vector<Integrands::Base> mIntegrands;
 };
 } /* NuTo */

@@ -28,7 +28,7 @@ public:
         NORMGRADIENT, // norm of gradient is smaller than a prescribed value
         MINOBJECTIVE, // mObjective is smaller than a prescribed value
         DELTAOBJECTIVEBETWEENCYCLES, // decrease in mObjective function between two consecutive cycles is smaller than
-                                     // prescribed value
+        // prescribed value
         REACHINGMACHINEPRECISION // machine precision is reached for the norm of the increment
     };
 

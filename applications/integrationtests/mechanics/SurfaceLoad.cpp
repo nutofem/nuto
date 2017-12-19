@@ -24,7 +24,7 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
     int numNodes = rStructure.GetNumNodes();
     if (extLoadVector.rows() != numNodes * dimension)
         throw NuTo::Exception("[SurfaceLoad::CheckHydrostaticPressure] F_ext.GetNumRows() != dimension * "
-                                       "numNodes. Maybe you (mistakenly) applied constraints.");
+                              "numNodes. Maybe you (mistakenly) applied constraints.");
 
     Eigen::VectorXd resForce = Eigen::VectorXd::Zero(dimension);
     for (int iNode = 0; iNode < numNodes; ++iNode)
@@ -295,7 +295,7 @@ void CheckSurfaceLoad(NuTo::Structure& rStructure, const Eigen::VectorXd& rLoad,
     int numNodes = rStructure.GetNumNodes();
     if (extLoadVector.rows() != numNodes * dimension)
         throw NuTo::Exception("[SurfaceLoad::CheckSurfaceLoad] F_ext.GetNumRows() != dimension * numNodes. "
-                                       "Maybe you (mistakenly) applied constraints.");
+                              "Maybe you (mistakenly) applied constraints.");
 
     Eigen::VectorXd resForce = Eigen::VectorXd::Zero(dimension);
 

@@ -2,40 +2,38 @@
 
 ### Doxygen related documentation
 
-* @ref Doxygen
+- @ref Doxygen
 
-* @ref TikzImages
+- @ref TikzImages
 
-* @ref BuildLocalDocumentation
-
-### continuous integration
-
-* @ref Coverage
+- @ref BuildLocalDocumentation
 
 ### C++ related documentation
 
-* @ref BoostPtrContainer
+- @ref BoostPtrContainer
 
-* @ref AvoidUnsigned
+- @ref AvoidUnsigned
 
-* @ref ForwardDeclarations
+- @ref ForwardDeclarations
 
-* @ref BuildWithClang
+- @ref BuildWithClang
 
-* @ref FullMatrixToEigenRemarks
+- @ref FullMatrixToEigenRemarks
 
-* [**Profiling using gperftools**](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
+- [**Profiling using gperftools**](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
 
 ### NuTo related documentation
 
-* @ref ConstitutiveStaticData
+- @ref ConstitutiveStaticData
 
-* @ref FETI
+- @ref FETI
 
-* @ref NuToSerializeStream
+- @ref Mpi
 
-* @ref Constraints
+- @ref NuToSerializeStream
 
-* @ref SpatialContainer
+- @ref Constraints
 
-* @ref CodingStyle
+- @ref SpatialContainer
+
+- @ref CodingStyle

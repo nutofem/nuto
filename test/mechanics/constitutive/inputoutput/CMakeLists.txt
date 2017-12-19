@@ -20,4 +20,3 @@ add_unit_test(ConstitutiveIOMap
     mechanics/constitutive/inputoutput/EngineeringStrain.cpp
     mechanics/constitutive/ConstitutiveEnum.cpp
     )
-    

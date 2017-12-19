@@ -1,69 +1,51 @@
 add_subdirectory(paraviewScripts)
+add_subdirectory(meshes)
 
-
-########################################################################################################################
-##  MESH FILES
-########################################################################################################################
-
-set(MESH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/meshes")
-foreach(rank RANGE 0 3)
-    foreach(mesh FetiMultiplicityScaling.mesh)
-        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}${rank}" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}${rank}")
-    endforeach()
-endforeach()
-
-foreach(rank RANGE 0 1)
-    foreach(mesh Feti.mesh)
-        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}${rank}" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}${rank}")
-    endforeach()
-endforeach()
-
-foreach(rank RANGE 0 15)
-    foreach(mesh FetiRixenFarhatHeterogeneousExample.mesh)
-        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/${mesh}${rank}" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}${rank}")
-    endforeach()
-endforeach()
-
-execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${MESH_DIR}/Feti_compare.msh" "${CMAKE_CURRENT_BINARY_DIR}/Feti_compare.msh")
-
-########################################################################################################################
+################################################################################
 ##  TESTS
-########################################################################################################################
+################################################################################
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     foreach(test Feti FetiGradientDamage)
-        add_executable(${test} ${test}.cpp)
-        target_link_libraries(${test} Mechanics Math Base FetiLib ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-        if(ENABLE_VISUALIZE)
-            target_link_libraries(${test} Visualize)
-        endif()
-        if(MUMPS_FOUND)
-            target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-        endif()
+        add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
+        target_link_libraries(${test} Mechanics Math Base FetiLib)
+        target_link_libraries(${test} Boost::mpi ${LAPACK_LIBRARIES})
+        target_link_libraries(${test} ${MPI_LIBRARIES})
+        target_link_libraries(${test} Visualize)
         set(MPIEXEC_NUMPROC_FLAG -np 2)
         set(MPIEXEC mpirun)
-        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+        set(MPICMD ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${test})
+        add_test(integration::mechanics::${test}.cpp ${MPICMD})
+        append_to_tests(${test})
     endforeach()
-    foreach(test FetiMultiplicityScaling FetiPreconditioner)
-        add_executable(${test} ${test}.cpp)
-        target_link_libraries(${test} Mechanics Math Base FetiLib ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-        if(ENABLE_VISUALIZE)
-            target_link_libraries(${test} Visualize)
-        endif()
+
+################################################################################
+
+    foreach(test FetiMultiplicityScaling FetiPreconditioner FetiKScaling)
+        add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
+        target_link_libraries(${test} Mechanics Math Base FetiLib)
+        target_link_libraries(${test} Boost::mpi ${LAPACK_LIBRARIES})
+        target_link_libraries(${test} ${MPI_LIBRARIES})
+        target_link_libraries(${test} Visualize)
         set(MPIEXEC_NUMPROC_FLAG -np 4)
         set(MPIEXEC mpirun)
-        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+        set(MPICMD ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${test})
+        add_test(integration::mechanics::${test}.cpp ${MPICMD})
+        append_to_tests(${test})
     endforeach()
+
+################################################################################
 
     foreach(test FetiRixenFarhatHeterogeneousExample)
-        add_executable(${test} ${test}.cpp)
-        target_link_libraries(${test} Mechanics Math Base FetiLib ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
-        if(ENABLE_VISUALIZE)
-            target_link_libraries(${test} Visualize)
-        endif()
+        add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
+        target_link_libraries(${test} Mechanics Math Base FetiLib)
+        target_link_libraries(${test} Boost::mpi ${LAPACK_LIBRARIES})
+        target_link_libraries(${test} ${MPI_LIBRARIES})
+        target_link_libraries(${test} Visualize)
         set(MPIEXEC_NUMPROC_FLAG -np 16)
         set(MPIEXEC mpirun)
-        add_test(NAME integration::mechanics::${test}.cpp COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+        set(MPICMD ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${test})
+        add_test(integration::mechanics::${test}.cpp ${MPICMD})
+        append_to_tests(${test})
     endforeach()
-
 endif()

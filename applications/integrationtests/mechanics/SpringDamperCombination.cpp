@@ -249,14 +249,12 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI, const TimeControl& rT
 
 inline void SetupVisualize(NuTo::Structure& rS)
 {
-#ifdef ENABLE_VISUALIZE
     int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
     rS.GroupAddElementsTotal(visGrp);
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
     //        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
     rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
-#endif // ENABLE_VISUALIZE
 }
 
 

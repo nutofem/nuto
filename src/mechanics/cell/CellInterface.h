@@ -1,23 +1,20 @@
 #pragma once
 
-#include <vector>
-#include "mechanics/nodes/DofVector.h"
-#include "mechanics/cell/IPValue.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
+#include "mechanics/integrands/Operations.h"
 
 namespace NuTo
 {
 class CellInterface
 {
 public:
-    CellInterface() = default;
     virtual ~CellInterface() = default;
-    CellInterface(const CellInterface&) = default;
-    CellInterface(CellInterface&&) = default;
-    CellInterface& operator=(const CellInterface&) = default;
-    CellInterface& operator=(CellInterface&&) = default;
 
-    virtual DofVector<double> Gradient() = 0;
-    virtual DofVector<int> DofNumbering() = 0;
-    virtual std::vector<std::vector<IPValue>> IPValues() = 0;
+    virtual DofVector<double> Integrate(const VectorOperation&) = 0;
+    virtual DofMatrix<double> Integrate(const MatrixOperation&) = 0;
+    virtual double Integrate(const ScalarOperation&) = 0;
+    virtual void Apply(const VoidOperation&) = 0;
+    virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
 };
 } /* NuTo */

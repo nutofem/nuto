@@ -319,7 +319,7 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
                 {
 
                     // add sphere to corresponding box
-                    unsigned int boxIndex = mDivisions[1] * mDivisions[2] * indX + mDivisions[2] * indY + indZ;
+                    int boxIndex = mDivisions[1] * mDivisions[2] * indX + mDivisions[2] * indY + indZ;
                     if (std::abs(boxIndex) >= mSubBoxes.size())
                         throw NuTo::Exception(__PRETTY_FUNCTION__,
                                               "Box size/position does not match sphere size/position.");
@@ -334,7 +334,6 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 
 void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
 {
-#ifdef ENABLE_VISUALIZE
     NuTo::Visualize::UnstructuredGrid visuBorders;
     visuBorders.DefineCellData("Direction");
     for (auto& box : mSubBoxes)
@@ -342,7 +341,6 @@ void NuTo::SubBoxHandler::VisualizeBorders(std::string rFile)
             wall->VisualizationStatic(visuBorders);
 
     visuBorders.ExportVtuDataFile(rFile);
-#endif
 }
 
 double NuTo::SubBoxHandler::GetVolume() const

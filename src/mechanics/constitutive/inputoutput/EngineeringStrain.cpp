@@ -142,12 +142,6 @@ template double NuTo::EngineeringStrain<3>::InvariantJ2() const;
 
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::Deviatoric() const;
 
-
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double, ePlaneState) const;
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double, ePlaneState) const;
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double, ePlaneState) const;
-
-
 template class NuTo::EngineeringStrain<1>;
 template class NuTo::EngineeringStrain<2>;
 template class NuTo::EngineeringStrain<3>;

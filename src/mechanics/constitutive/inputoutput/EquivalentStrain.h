@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "mechanics/constitutive/inputoutput/ConstitutivePlaneStateEnum.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 namespace NuTo
 {

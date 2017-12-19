@@ -740,11 +740,11 @@ void NuTo::LinearPiezoelectric::CheckParameters() const
         {
             if (mStiffness(ii, jj) != mStiffness(jj, ii))
             {
-                throw NuTo::Exception(
-                        BOOST_CURRENT_FUNCTION,
-                        "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," + std::to_string(jj) +
-                                "] = " + std::to_string(mStiffness(ii, jj)) + "\n" + "(entry [" + std::to_string(jj) +
-                                "," + std::to_string(ii) + "] = " + std::to_string(mStiffness(jj, ii)) + ".");
+                throw NuTo::Exception(BOOST_CURRENT_FUNCTION,
+                                      "Stiffness must be symmetric (entry [" + std::to_string(ii) + "," +
+                                              std::to_string(jj) + "] = " + std::to_string(mStiffness(ii, jj)) + "\n" +
+                                              "(entry [" + std::to_string(jj) + "," + std::to_string(ii) + "] = " +
+                                              std::to_string(mStiffness(jj, ii)) + ".");
             }
         }
     }

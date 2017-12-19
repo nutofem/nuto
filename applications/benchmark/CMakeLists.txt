@@ -1,7 +1,5 @@
-add_custom_target(benchmark COMMAND ctest -V -R benchmark)
+unset(all_benchmarks CACHE)
 
-
-if(ENABLE_MECHANICS)
 foreach(test
     BuildGradient
     LinearElasticity
@@ -10,43 +8,47 @@ foreach(test
     AssembleSparseMatrix
     ShapeFunctionMemoization
     Solvers
+    MeshFemBenchmark
     )
 
-    add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base)
-    if(MUMPS_FOUND)
-        target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-    if(ENABLE_VISUALIZE)
-        target_link_libraries(${test} Visualize)
-    endif()
+    add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
+    target_link_libraries(${test} Mechanics Math Base Visualize)
     add_test(benchmark::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    append_to_benchmarks(${test})
 endforeach()
 
 if(PARDISO_FOUND)
-    target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${OpenBLAS_LIBRARIES})
+    target_link_libraries(Solvers ${PARDISO_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
 
 
-add_executable(LinearElasticityOPENMP LinearElasticityOPENMP.cpp)
-target_link_libraries(LinearElasticityOPENMP Mechanics Math Base)
-if(ENABLE_VISUALIZE)
-    target_link_libraries(LinearElasticityOPENMP Visualize)
-endif()
-endif()
+add_executable(LinearElasticityOPENMP
+    EXCLUDE_FROM_ALL LinearElasticityOPENMP.cpp)
+target_link_libraries(LinearElasticityOPENMP Mechanics Math Base Visualize)
+append_to_benchmarks(LinearElasticityOPENMP)
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_executable(DenseSpherePacking DenseSpherePacking.cpp)
-    target_link_libraries(DenseSpherePacking Math Base GeometryConcrete ${Boost_LIBRARIES})
-    add_test(benchmark::DenseSpherePacking ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
-endif()
+add_executable(DenseSpherePacking EXCLUDE_FROM_ALL DenseSpherePacking.cpp)
+target_link_libraries(DenseSpherePacking Math Base GeometryConcrete)
+add_test(benchmark::DenseSpherePacking
+    ${CMAKE_CURRENT_BUILD_DIR}/DenseSpherePacking)
+append_to_benchmarks(DenseSpherePacking)
 
-add_executable(NewtonRaphsonBenchmark NewtonRaphsonBenchmark.cpp)
+add_executable(NewtonRaphsonBenchmark
+    EXCLUDE_FROM_ALL NewtonRaphsonBenchmark.cpp)
+target_include_directories(NewtonRaphsonBenchmark
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(NewtonRaphsonBenchmark)
 
 if(MPI_FOUND)
     target_link_libraries(NewtonRaphsonBenchmark ${MPI_LIBRARIES})
 endif()
 
-target_include_directories(NewtonRaphsonBenchmark PUBLIC ${CMAKE_SOURCE_DIR}/src)
-
 add_subdirectory(TrilinosBenchmark)
+
+add_executable(BlockVectors
+    EXCLUDE_FROM_ALL BlockVectors.cpp)
+target_include_directories(BlockVectors
+    PRIVATE ${CMAKE_SOURCE_DIR}/src)
+append_to_benchmarks(BlockVectors)
+
+add_custom_target(benchmarks DEPENDS ${all_benchmarks})

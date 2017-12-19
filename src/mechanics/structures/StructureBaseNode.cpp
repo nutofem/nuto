@@ -14,10 +14,8 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupEnum.h"
 
-#ifdef ENABLE_VISUALIZE
 #include "visualize/UnstructuredGrid.h"
 #include "visualize/ComponentName.h"
-#endif
 
 void NuTo::StructureBase::NodeSetDisplacements(int rNode, const Eigen::VectorXd& rDisplacements)
 {
@@ -50,7 +48,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
         throw Exception(__PRETTY_FUNCTION__, "Displacement matrix has to have a single column.");
     if (nodePtr->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < rTimeDerivative)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "number of time derivatives stored at node is less than the required value.");
+                        "number of time derivatives stored at node is less than the required value.");
     if (rDisplacements.rows() <= 0 or rDisplacements.rows() > 3)
         throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
@@ -122,7 +120,7 @@ void NuTo::StructureBase::NodeSetTemperature(int rNode, int rTimeDerivative, dou
     this->mUpdateTmpStaticDataRequired = true;
     if (nodePtr->GetNumTimeDerivatives(Node::eDof::TEMPERATURE) < rTimeDerivative)
         throw Exception(__PRETTY_FUNCTION__,
-                                 "Number of time derivatives stored at node is less than the required value.");
+                        "Number of time derivatives stored at node is less than the required value.");
     nodePtr->Set(Node::eDof::TEMPERATURE, rTimeDerivative, rTemperature);
 }
 
@@ -208,8 +206,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, Eigen::Matr
     for (Group<NodeBase>::iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); ++itNode, theNode++)
     {
         if (numDisp != 1 and numDisp != 2 and numDisp != 3)
-            throw Exception(__PRETTY_FUNCTION__,
-                                     "The number of displacement components is either 1, 2 or 3.");
+            throw Exception(__PRETTY_FUNCTION__, "The number of displacement components is either 1, 2 or 3.");
 
         rDisplacements.row(theNode) = itNode->second->Get(Node::eDof::DISPLACEMENTS).transpose();
     }
@@ -264,8 +261,7 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, Eigen::Matrix
     for (Group<NodeBase>::iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); ++itNode, theNode++)
     {
         if (numCoords != 1 and numCoords != 2 and numCoords != 3)
-            throw Exception(__PRETTY_FUNCTION__,
-                                     "The number of coordinates components is either 1, 2 or 3.");
+            throw Exception(__PRETTY_FUNCTION__, "The number of coordinates components is either 1, 2 or 3.");
 
         rCoordinates.row(theNode) = itNode->second->Get(Node::eDof::COORDINATES).transpose();
     }
@@ -303,9 +299,8 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, Eigen::VectorX
     {
         NodeInternalForce(node.second, nodeForceLocal);
         if (nodeForceLocal.rows() != rNodeForce.rows())
-            throw Exception(
-                    __PRETTY_FUNCTION__,
-                    "The number of displacement components is not equal for all members of the group.");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "The number of displacement components is not equal for all members of the group.");
         rNodeForce += nodeForceLocal;
     }
 }
@@ -315,8 +310,7 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
     elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] =
             std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
-    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] =
-            std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     std::vector<ElementBase*> elements;
     this->NodeGetElements(rNodePtr, elements);
@@ -382,8 +376,8 @@ NuTo::NodeBase& NuTo::StructureBase::NodeGetAtCoordinate(Eigen::VectorXd coordin
     }
     std::stringstream coordStream;
     coordStream << '(' << coordinate.transpose() << ')';
-    throw Exception(__PRETTY_FUNCTION__, "There is no node at " + coordStream.str() + " within tolerance " +
-                                                          std::to_string(tolerance));
+    throw Exception(__PRETTY_FUNCTION__,
+                    "There is no node at " + coordStream.str() + " within tolerance " + std::to_string(tolerance));
 }
 
 int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange)
@@ -411,8 +405,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
                 nodeId = node.first;
             }
             else
-                throw Exception(__PRETTY_FUNCTION__,
-                                         "there is more than one node at that coordinate position.");
+                throw Exception(__PRETTY_FUNCTION__, "there is more than one node at that coordinate position.");
         }
     }
     if (nodeId == -1)
@@ -423,7 +416,6 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, dou
 }
 
 
-#ifdef ENABLE_VISUALIZE
 void NuTo::StructureBase::NodeTotalAddToVisualize(Visualize::UnstructuredGrid& visualizer,
                                                   const std::vector<eVisualizeWhat>& visualizeComponents) const
 {
@@ -498,4 +490,3 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(Visualize::UnstructuredGrid& 
         }
     }
 }
-#endif // ENABLE_VISUALIZE

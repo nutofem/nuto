@@ -45,9 +45,14 @@ int main(int argc, char* argv[])
 {
     boost::mpi::environment env(argc, argv);
 
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     int numIterationsLumpedNoScaling = 0;
     int numIterationsLumpedMultiScaling = 0;
-    // Conjugate gradient, lumped preconditioner, no scaling
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -63,7 +68,8 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    // Conjugate gradient, lumped preconditioner, multiplicity scaling
+    if (rank == 0)
+        std::cout << "Conjugate gradient, lumped preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -79,12 +85,15 @@ int main(int argc, char* argv[])
                 ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    assert(numIterationsLumpedMultiScaling < numIterationsLumpedNoScaling and "Scaling should improve convergence");
+    if (numIterationsLumpedMultiScaling > numIterationsLumpedNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     int numIterationsDirichletNoScaling = 0;
     int numIterationsDirichletMultiScaling = 0;
-    // Conjugate gradient, dirichlet preconditioner, no scaling
+
+    if (rank == 0)
+        std::cout << "Conjugate gradient, dirichlet preconditioner, no scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -96,10 +105,12 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletNoScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletNoScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
-
-    // Conjugate gradient, dirichlet preconditioner, multiplicity scaling
+    
+    if (rank == 0)
+        std::cout << "Conjugate gradient, dirichlet preconditioner, multiplicity scaling." << std::endl;
     {
         NuTo::StructureFeti structure(dim);
         InitializeStructure(structure);
@@ -111,10 +122,12 @@ int main(int argc, char* argv[])
 
         newmarkFeti.Solve(simulationTime);
 
-        numIterationsDirichletMultiScaling = ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
+        numIterationsDirichletMultiScaling =
+                ReadNumIterationsFromFile(newmarkFeti.PostProcessing().GetResultDirectory() + "/FetiSolverInfo.txt");
     }
 
-    assert(numIterationsDirichletMultiScaling < numIterationsDirichletNoScaling and "Scaling should improve convergence");
+    if (numIterationsDirichletMultiScaling > numIterationsDirichletNoScaling)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Scaling should improve convergence");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +175,7 @@ void InitializeStructure(NuTo::StructureFeti& structure)
     structure.GetLogger().OpenFile("output" + std::to_string(rank));
     structure.GetLogger().SetQuiet(true);
 
-    std::string meshFile = "FetiMultiplicityScaling.mesh" + std::to_string(rank);
+    std::string meshFile = "meshes/FetiMultiplicityScaling.mesh" + std::to_string(rank);
 
     const int interpolationTypeId = structure.InterpolationTypeCreate(eShapeType::QUAD2D);
     structure.InterpolationTypeAdd(interpolationTypeId, eDof::DISPLACEMENTS, eTypeOrder::EQUIDISTANT1);

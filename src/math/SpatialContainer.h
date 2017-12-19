@@ -48,24 +48,24 @@ public:
     }
 
 
-    //! @brief checks if there are entries at rCoordinate in the radius rRadius
+    //! @brief checks if there are entries at rCoordinate in the radius radius
     //! @param rCoordinate querry point
-    //! @param rRadius nearest neighbor search radius
+    //! @param radius nearest neighbor search radius
     //! @return true (at least one coordinate found) or false (nothing found)
-    bool HasEntryAtCoordinate(Eigen::VectorXd rCoordinate, double rRadius) const
+    bool HasEntryAtCoordinate(Eigen::VectorXd rCoordinate, double radius) const
     {
         ANNpoint querryPoint = rCoordinate.data();
-        ANNdist radiusSquared = rRadius * rRadius;
+        ANNdist radiusSquared = radius * radius;
         return mTree->annkFRSearch(querryPoint, radiusSquared, 0) > 0;
     }
 
-    //! @brief finds and returns values that have the same coordinates within the radius rRadius
-    //! @param rRadius nearest neighbor search radius
+    //! @brief finds and returns values that have the same coordinates within the radius radius
+    //! @param radius nearest neighbor search radius
     //! @return outer vector has the size of unique coordinates
     //!         inner vector contains all objects with the same coordinates
-    std::vector<std::vector<T>> GetAllDuplicateValues(double rRadius) const
+    std::vector<std::vector<T>> GetAllDuplicateValues(double radius) const
     {
-        auto duplicateIds = GetAllDuplicateIDs(rRadius);
+        auto duplicateIds = GetAllDuplicateIDs(radius);
         std::vector<std::vector<T>> values;
         values.reserve(duplicateIds.size());
 
@@ -83,9 +83,9 @@ public:
     }
 
     //! @brief completely similar to public function @GetAllDuplicateValues but returns IDs instead of values
-    //! @param rRadius nearest neighbor search radius
+    //! @param radius nearest neighbor search radius
     //! @return see @GetAllDuplicateValues (with IDs)
-    std::vector<std::vector<int>> GetAllDuplicateIDs(double rRadius) const
+    std::vector<std::vector<int>> GetAllDuplicateIDs(double radius) const
     {
         // define a set of searchIDs. All points in the neighborhood of a previously searched ID
         // are removed from this set. (to prevent duplicate duplicates. u see?)
@@ -96,7 +96,7 @@ public:
         std::vector<std::vector<int>> duplicates;
         while (not searchIds.empty())
         {
-            auto duplicatesAtId = FindIDsWithinRadius(*searchIds.begin(), rRadius);
+            auto duplicatesAtId = FindIDsWithinRadius(*searchIds.begin(), radius);
             duplicates.push_back(duplicatesAtId);
 
             for (int duplicate : duplicatesAtId)
@@ -105,13 +105,13 @@ public:
         return duplicates;
     }
 
-    //! @brief finds all ids in the neighborhood of point rIndex
-    //! @param rRadius nearest neighbor search radius
-    //! @return all ids in the neighborhood of point rIndex
-    std::vector<int> FindIDsWithinRadius(int rIndex, double rRadius) const
+    //! @brief finds all ids in the neighborhood of coord
+    //! @param radius nearest neighbor search radius
+    //! @return all ids in the neighborhood of point index
+    std::vector<int> FindIDsWithinRadius(Eigen::VectorXd coord, double radius) const
     {
-        ANNpoint querryPoint = mPoints[rIndex];
-        ANNdist radiusSquared = rRadius * rRadius;
+        ANNpoint querryPoint = coord.data(); 
+        ANNdist radiusSquared = radius * radius;
 
         // the return value of this function is ALWAYS the number of points in the radiusSquared
         int numPointsInDistance = mTree->annkFRSearch(querryPoint, radiusSquared, 0);
@@ -120,6 +120,18 @@ public:
         std::vector<ANNidx> nearestNeighbourIds(numPointsInDistance);
         mTree->annkFRSearch(querryPoint, radiusSquared, numPointsInDistance, nearestNeighbourIds.data());
         return nearestNeighbourIds;
+    }
+
+
+    //! @brief finds all ids in the neighborhood of point index
+    //! @param radius nearest neighbor search radius
+    //! @return all ids in the neighborhood of point index
+    std::vector<int> FindIDsWithinRadius(int index, double radius) const
+    {
+        Eigen::VectorXd coord(mTree->theDim());
+        for (int i = 0; i < coord.rows(); ++i)
+            coord[i] = mPoints[index][i];
+        return FindIDsWithinRadius(coord, radius);
     }
 
 private:

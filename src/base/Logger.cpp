@@ -2,8 +2,9 @@
 #include "base/Exception.h"
 
 NuTo::Logger::Logger()
+    : mLogFile()
+    , mLogFileName()
 {
-    mQuiet = false;
 }
 
 //! @brief ..opens the file stored in the string mLogFileName

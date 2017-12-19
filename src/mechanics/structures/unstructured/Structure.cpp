@@ -138,7 +138,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
                 default:
                 {
                     throw NuTo::Exception(std::string("[") + __PRETTY_FUNCTION__ +
-                                                   std::string("] Output request not implemented."));
+                                          std::string("] Output request not implemented."));
                 }
                 }
             }
@@ -242,9 +242,8 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput,
 
                         default:
                         {
-                            throw NuTo::Exception(__PRETTY_FUNCTION__,
-                                                           StructureOutputToString(iteratorOutput.first) +
-                                                                   " requested but not implemented.");
+                            throw NuTo::Exception(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) +
+                                                                               " requested but not implemented.");
                         }
                         }
                     }

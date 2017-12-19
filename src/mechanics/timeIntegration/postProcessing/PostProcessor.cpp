@@ -23,6 +23,8 @@ void PostProcessor::PostProcess(const StructureOutputBlockVector& outOfBalance)
 
     mStructure.WriteRestartFile(GetRestartFileName(), mTimeControl.GetCurrentTime());
 
+    mCallback(mStructure, mTimeControl);
+
     for (auto& result : mResults)
         result.CalculateAndAddValues(mStructure, mTimeStepResult, outOfBalance, mTimeControl.GetCurrentTime());
 
@@ -80,7 +82,6 @@ std::string PostProcessor::GetRestartFileName() const
 
 void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
 {
-#ifdef ENABLE_VISUALIZE
     boost::filesystem::path resultFile(mResultDir);
 
     if (mExportDataFileNodes == true)
@@ -137,8 +138,6 @@ void PostProcessor::ExportVisualizationFiles(double time, int timeStep)
         file << endOfXML.str();
         file.close();
     }
-
-#endif // ENABLE_VISUALIZE
 }
 
 

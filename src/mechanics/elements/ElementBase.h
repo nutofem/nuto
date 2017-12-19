@@ -21,13 +21,11 @@ enum class eVisualizeWhat;
 template <typename IOEnum>
 class ConstitutiveIOMap;
 
-#ifdef ENABLE_VISUALIZE
 namespace Visualize
 {
 class UnstructuredGrid;
 }
 enum class eCellTypes;
-#endif // ENABLE_VISUALIZE
 
 namespace Constitutive
 {
@@ -287,8 +285,6 @@ public:
     }
 
 
-#ifdef ENABLE_VISUALIZE
-
     //! @brief Computes all data in visualizeComponents for the visualization. Decomposes the element into small cells
     //! for the cisualization.
     //! @param visualizer
@@ -316,8 +312,6 @@ public:
                                        std::vector<NuTo::eCellTypes>& VisualizationCellType,
                                        std::vector<unsigned int>& VisualizationCellsIncidence,
                                        std::vector<unsigned int>& VisualizationCellsIP) const;
-
-#endif // ENABLE_VISUALIZE
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element
     //! length/area/volum is negative)

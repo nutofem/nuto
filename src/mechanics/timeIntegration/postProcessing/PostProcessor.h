@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -47,6 +48,13 @@ public:
         return mResultDir;
     }
 
+    //! @brief Set a custom callback function that is always called during postprocessing
+    //! @param callback Custom callback function
+    void SetCallback(std::function<void(const StructureBase&, const TimeControl&)> callback)
+    {
+        mCallback = callback;
+    }
+
     //! @brief Get the name of the restart file
     std::string GetRestartFileName() const;
 
@@ -89,6 +97,10 @@ private:
 
     double mMinTimeStepPlot = 0; //!< Minimum time between writing results
     double mLastTimePlot = -1e99; //!< Last time when a VTK file was written
+#ifndef SWIG
+    std::function<void(const StructureBase&, const TimeControl&)> mCallback = [](const StructureBase&,
+                                                                                 const TimeControl&) {};
+#endif
 
     StructureBase& mStructure;
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mechanics/elements/ElementSimple.h"
-#include "mechanics/nodes/DofContainer.h"
+#include "mechanics/dofs/DofContainer.h"
+#include "mechanics/elements/ElementCollection.h"
 
 namespace NuTo
 {
@@ -10,21 +10,31 @@ namespace NuTo
 //! @brief Extracts 'cell data' like nodal values from the cell
 //! @remark The life time of objects of this class is limited to the evaluation of one NuTo::Cell. This class will
 //! calculate (and cache) all the information that are required once per cell. Classic example: NodeValues. Even if
-//! `GetNodeValues()` is called 42 times, they should only be extracted once. Ehrm [TODO]!
+//! `GetNodeValues()` is called 42 times, they should only be extracted once.
 class CellData
 {
 public:
-    CellData(const DofContainer<ElementSimple*>& rElements)
-        : mElements(rElements)
+    CellData(const ElementCollection& elements)
+        : mElements(elements)
     {
     }
 
-    NodeValues GetNodeValues(const DofType& rDofType) const
+    NodeValues GetCoordinates() const
     {
-        return mElements[rDofType]->ExtractNodeValues();
+        return mElements.CoordinateElement().ExtractNodeValues();
+    }
+
+    NodeValues GetNodeValues(const DofType& dofType) const
+    {
+        NodeValues& nodeValues = mNodeValues[dofType];
+        if (nodeValues.size() == 0)
+            nodeValues = mElements.DofElement(dofType).ExtractNodeValues();
+
+        return nodeValues;
     }
 
 private:
-    const DofContainer<ElementSimple*>& mElements;
+    mutable DofContainer<NodeValues> mNodeValues;
+    const ElementCollection& mElements;
 };
 } /* NuTo */

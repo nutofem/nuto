@@ -3,9 +3,6 @@
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${PYTHON_CXX_FLAGS}")
 
-find_package(Numpy REQUIRED)
-include_directories(${NUMPY_INCLUDE_PATH})
-
 # Python required for interface files c++ and python
 message(STATUS "Checking for Python...")
 find_package(PythonInterp 3 REQUIRED)
@@ -14,13 +11,21 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # get python version
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
-        OUTPUT_VARIABLE PYTHON_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
+    OUTPUT_VARIABLE PYTHON_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
+
+# set numpy include path for generated wrapper files
+execute_process(COMMAND
+    ${CMAKE_SOURCE_DIR}/scripts/get_numpy_path.py
+    OUTPUT_VARIABLE NUMPY_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(PYTHON_CXX_FLAGS "${PYTHON_CXX_FLAGS} -I${NUMPY_PATH}")
 
 # SWIG required for interface files c++ and python
 message(STATUS "Checking for SWIG...")
@@ -40,36 +45,21 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(base)
 add_subdirectory(math)
-if(ENABLE_MECHANICS)
-    add_subdirectory(mechanics)
-else()
-    deactivate_module(mechanics.ModuleMechanics)
-endif()
+add_subdirectory(mechanics)
 
-if(ENABLE_GEOMETRYCONCRETE)
-    add_subdirectory(geometryConcrete)
-else()
-    deactivate_module(geometryConcrete.ModuleGeometryConcrete)
-endif()
+add_subdirectory(geometryConcrete)
 
-if(ENABLE_METAMODEL)
-    add_subdirectory(metamodel)
-else()
-    deactivate_module(metamodel.ModuleMetamodel)
-endif()
+add_subdirectory(metamodel)
 
-if(ENABLE_OPTIMIZE)
-    add_subdirectory(optimize)
-else()
-    deactivate_module(optimize.ModuleOptimize)
-endif()
+add_subdirectory(optimize)
 
 # support for strongly typed enums was introduced in 3.0.3
 if(SWIG_VERSION VERSION_LESS "3.0.3")
     file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
     file(READ enum_hack.py ADDITIONAL_ENUMS)
     string(CONCAT MODIFIED_FILE_CONTENT ${FILE_CONTENT} ${ADDITIONAL_ENUMS})
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+        "${MODIFIED_FILE_CONTENT}")
 endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
