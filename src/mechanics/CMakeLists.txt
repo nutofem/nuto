@@ -17,7 +17,6 @@ set(MechanicsSources
     integrationtypes/IntegrationType2D3NGauss4Ip.cpp
     integrationtypes/IntegrationType2D3NGauss6Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12Ip.cpp
-    integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp

@@ -1,7 +1,5 @@
 #include <cassert>
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.h"
-#include "visualize/VisualizeEnum.h"
-
 
 //! @brief constructor
 NuTo::IntegrationType2D3NGauss3Ip::IntegrationType2D3NGauss3Ip()
@@ -57,68 +55,4 @@ int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints() const
 double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int) const
 {
     return 1 / 6.;
-}
-
-void NuTo::IntegrationType2D3NGauss3Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                              std::vector<double>& VisualizationPointLocalCoordinates,
-                                                              unsigned int& NumVisualizationCells,
-                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
-                                                              std::vector<unsigned int>& VisualizationCellsIP) const
-{
-    NumVisualizationPoints = 7;
-
-    // Point 0
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 1
-    VisualizationPointLocalCoordinates.push_back(0.5);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 2
-    VisualizationPointLocalCoordinates.push_back(1);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 3
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0.5);
-
-    // Point 4
-    VisualizationPointLocalCoordinates.push_back(1. / 3.);
-    VisualizationPointLocalCoordinates.push_back(1. / 3.);
-
-    // Point 5
-    VisualizationPointLocalCoordinates.push_back(0.5);
-    VisualizationPointLocalCoordinates.push_back(0.5);
-
-    // Point 6
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(1);
-
-    NumVisualizationCells = 3;
-
-    // cell 0
-    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
-    VisualizationCellsIncidence.push_back(0);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(4);
-    VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIP.push_back(0);
-
-    // cell 1
-    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(2);
-    VisualizationCellsIncidence.push_back(5);
-    VisualizationCellsIncidence.push_back(4);
-    VisualizationCellsIP.push_back(1);
-
-    // cell 2
-    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
-    VisualizationCellsIncidence.push_back(4);
-    VisualizationCellsIncidence.push_back(5);
-    VisualizationCellsIncidence.push_back(6);
-    VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIP.push_back(2);
 }
