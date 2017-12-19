@@ -10,4 +10,10 @@ add_unit_test(InterpolationQuadLinear
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationQuadSerendipity
     mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(InterpolationTrussLobatto
+    math/Legendre.cpp)
+add_unit_test(InterpolationQuadLobatto
+    math/Legendre.cpp)
+add_unit_test(InterpolationBrickLobatto
+    math/Legendre.cpp)
 
