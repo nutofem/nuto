@@ -52,12 +52,26 @@ BOOST_FIXTURE_TEST_CASE(DofVectorUninitializedAddition, TestVectors)
 
 BOOST_FIXTURE_TEST_CASE(DofVectorExport, TestVectors)
 {
+    Eigen::VectorXd vExportD1 = ToEigen(v0, {dof1});
+    BoostUnitTest::CheckVector(vExportD1, std::vector<double>{8, 9}, 2);
+
     Eigen::VectorXd vExportD0D1 = ToEigen(v0, {dof0, dof1});
     BoostUnitTest::CheckVector(vExportD0D1, std::vector<double>{1, 2, 3, 8, 9}, 5);
 
     Eigen::VectorXd vExportD1D0 = ToEigen(v0, {dof1, dof0});
     BoostUnitTest::CheckVector(vExportD1D0, std::vector<double>{8, 9, 1, 2, 3}, 5);
 }
+
+BOOST_FIXTURE_TEST_CASE(DofVectorImport, TestVectors)
+{
+    Eigen::VectorXd v(5);
+    v << 0, 1, 2, 3, 4;
+
+    FromEigen(v0, v, {dof1, dof0});
+    BoostUnitTest::CheckEigenMatrix(v0[dof0], Eigen::Vector3d(0, 1, 2));
+    BoostUnitTest::CheckEigenMatrix(v0[dof1], Eigen::Vector2d(3, 4));
+}
+
 
 BOOST_FIXTURE_TEST_CASE(DofVectorStream, TestVectors)
 {
