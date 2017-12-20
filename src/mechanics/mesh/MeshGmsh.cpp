@@ -1,12 +1,17 @@
 #include "MeshGmsh.h"
 
 #include "base/Exception.h"
+#include "mechanics/interpolation/InterpolationTrussLinear.h"
+#include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/InterpolationQuadLinear.h"
 
 #include <array>
+#include <climits>
 #include <algorithm>
 #include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <vector>
 
 
@@ -42,6 +47,11 @@ struct GmshPhysicalNames
 struct GmshFileContent
 {
     GmshHeader header;
+    int minNodeId = INT_MAX;
+    int maxNodeId = INT_MIN;
+    int minElementId = INT_MAX;
+    int maxElementId = INT_MIN;
+    int dimension = 1;
     std::vector<GmshNode> nodes;
     std::vector<GmshElement> elements;
     std::vector<GmshPhysicalNames> physicalNames;
@@ -76,6 +86,98 @@ NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
     ReadGmshFile(fileName);
 }
 
+std::vector<NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
+{
+    std::vector<NodeSimple*> nodePtrVec;
+    Eigen::VectorXd coords(fileContent.dimension);
+    if (fileContent.nodes.size() == static_cast<unsigned int>(fileContent.maxNodeId - fileContent.minNodeId + 1))
+    {
+        // contiguous IDs
+        nodePtrVec.resize(fileContent.nodes.size());
+        for (const GmshNode& gmshNode : fileContent.nodes)
+        {
+            int vectorPos = gmshNode.id - fileContent.minNodeId;
+            for (int i = 0; i < fileContent.dimension; ++i)
+                coords[i] = gmshNode.coordinates[i];
+            nodePtrVec[vectorPos] = &(mMesh.Nodes.Add(coords));
+        }
+    }
+    else
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Non contiguous node IDs - not implemented");
+    }
+    return nodePtrVec;
+}
+
+const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& mesh, int gmshType, int dimension)
+{
+    using namespace NuTo;
+    switch (gmshType)
+    {
+    case 1:
+        return mesh.CreateInterpolation(InterpolationTrussLinear(dimension));
+    case 2:
+        return mesh.CreateInterpolation(InterpolationTriangleLinear(dimension));
+    case 3:
+        return mesh.CreateInterpolation(InterpolationQuadLinear(dimension));
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
+    }
+}
+
+std::vector<NuTo::ElementCollection*> NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
+                                                                     const std::vector<NuTo::NodeSimple*>& nodePtrVec)
+{
+    std::vector<NuTo::ElementCollection*> elementPtrVec(fileContent.elements.size(), nullptr);
+    std::map<int, const InterpolationSimple*> interpolationPtrMap;
+    if (fileContent.elements.size() ==
+        static_cast<unsigned int>(fileContent.maxElementId - fileContent.minElementId + 1))
+    {
+        for (GmshElement gmshElement : fileContent.elements)
+        {
+            int vectorPos = gmshElement.id - fileContent.minElementId;
+            // Skip node elements
+            if (gmshElement.type == 15)
+                continue;
+
+
+            auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
+            if (interpolationIter == interpolationPtrMap.end())
+                interpolationIter =
+                        interpolationPtrMap
+                                .emplace(gmshElement.type,
+                                         &CreateElementInterpolation(mMesh, gmshElement.type, fileContent.dimension))
+                                .first;
+            std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
+            for (unsigned int i = 0; i < elementNodes.size(); ++i)
+            {
+                int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
+                elementNodes[i] = nodePtrVec[nodeVectorPos];
+            }
+
+
+            elementPtrVec[vectorPos] = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
+            //        gmshElement.type
+        }
+    }
+    else
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Non contiguous element IDs - not implemented");
+    }
+    return elementPtrVec;
+}
+
+void NuTo::MeshGmsh::CreatePhysicalGroups(const std::vector<NuTo::ElementCollection*>& elementPtrVec)
+{
+}
+
+void NuTo::MeshGmsh::CreateMesh(const GmshFileContent& fileContent)
+{
+    std::vector<NuTo::NodeSimple*> nodePtrVec = CreateNodes(fileContent);
+    std::vector<NuTo::ElementCollection*> elementPtrVec = CreateElements(fileContent, nodePtrVec);
+    CreatePhysicalGroups(elementPtrVec);
+}
+
 void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
 {
     const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
@@ -93,6 +195,9 @@ void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
         file >> element.id;
         file >> element.type;
         file >> numTags;
+
+        fileContent.minElementId = std::min(fileContent.minElementId, element.id);
+        fileContent.maxElementId = std::max(fileContent.maxElementId, element.id);
 
         element.tags.resize(numTags);
         for (int& tag : element.tags)
@@ -116,14 +221,25 @@ void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
     int numNodes = std::stoi(line);
 
     fileContent.nodes.resize(numNodes);
+    bool is2d = false;
+    bool is3d = false;
     for (GmshNode& node : fileContent.nodes)
     {
         file >> node.id;
         file >> node.coordinates[0];
         file >> node.coordinates[1];
         file >> node.coordinates[2];
+        fileContent.minNodeId = std::min(fileContent.minNodeId, node.id);
+        fileContent.maxNodeId = std::max(fileContent.maxNodeId, node.id);
+        is2d = (is2d || node.coordinates[1] != 0);
+        is3d = (is3d || node.coordinates[2] != 0);
         std::getline(file, line);
     }
+    if (is2d)
+        fileContent.dimension = 2;
+    if (is3d)
+        fileContent.dimension = 3;
+
     std::getline(file, line);
     if (line.compare("$EndNodes") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
@@ -210,7 +326,7 @@ void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
             ProcessSectionASCII(file, fileContent);
         }
     }
-
-
     file.close();
+
+    CreateMesh(fileContent);
 }

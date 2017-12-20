@@ -6,4 +6,6 @@ add_unit_test(UnitMeshFem
     mechanics/mesh/MeshFem
     mechanics/elements/ElementShapeFunctions)
     
-add_unit_test(MeshGmsh)
+add_unit_test(MeshGmsh
+    mechanics/mesh/MeshFem
+    mechanics/elements/ElementShapeFunctions)
