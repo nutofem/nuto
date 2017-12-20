@@ -3,8 +3,10 @@
 #include "base/Exception.h"
 
 #include <array>
-#include <fstream>
+#include <algorithm>
+#include <functional>
 #include <iostream>
+#include <map>
 #include <vector>
 
 
@@ -37,6 +39,12 @@ struct GmshPhysicalNames
 };
 
 
+struct GmshFileContent
+{
+    GmshHeader header;
+    std::vector<GmshNode> nodes;
+};
+
 GmshHeader ReadGmshHeader(std::ifstream& file)
 {
     std::string line;
@@ -56,6 +64,7 @@ GmshHeader ReadGmshHeader(std::ifstream& file)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
                                                            std::to_string(header.version));
     }
+    getline(file, line); // $EndMeshFormat
     return header;
 }
 
@@ -137,6 +146,50 @@ std::vector<GmshElement> NuTo::MeshGmsh::ReadElementsASCII(std::ifstream& file)
     return elements;
 }
 
+
+void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
+{
+    std::string line;
+    std::getline(file, line);
+    int numNodes = std::stoi(line);
+
+    fileContent.nodes.resize(numNodes);
+    for (GmshNode& node : fileContent.nodes)
+    {
+        file >> node.id;
+        file >> node.coordinates[0];
+        file >> node.coordinates[1];
+        file >> node.coordinates[2];
+        std::getline(file, line);
+    }
+    std::getline(file, line);
+    if (line.compare("$EndNodes") != 0)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
+}
+
+void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
+{
+    std::map<std::string, std::function<void(std::istream&, GmshFileContent&)>> sectionEvalutionMap{
+            {"NODES", ReadNodesASCII}};
+    std::string line;
+    std::getline(file, line);
+    if (line[0] == '$')
+    {
+        // remove $
+        std::string sectionName = line.substr(1, line.size() - 1);
+        // capitalize
+        std::transform(sectionName.begin(), sectionName.end(), sectionName.begin(), ::toupper);
+        if (sectionName.find("END") == 0)
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Found unprocessed section closure: " + sectionName);
+
+        auto evalIterator = sectionEvalutionMap.find(sectionName);
+        if (evalIterator == sectionEvalutionMap.end())
+            throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh section type: " + sectionName);
+        evalIterator->second(file, fileContent);
+    }
+}
+
+
 void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
 {
     std::ifstream file;
@@ -151,18 +204,26 @@ void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
                                                      ""
                                                      " for read access.");
     }
+    GmshFileContent fileContent;
 
 
-    GmshHeader header = ReadGmshHeader(file);
+    fileContent.header = ReadGmshHeader(file);
 
-    if (header.isBinary)
+    if (fileContent.header.isBinary)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented yet");
     }
     else
     {
-        std::vector<GmshNode> nodes = ReadNodesASCII(file);
-        std::vector<GmshElement> elements = ReadElementsASCII(file);
+
+
+        while (not file.eof())
+        {
+            ProcessSectionASCII(file, fileContent);
+        }
+
+        // std::vector<GmshNode> nodes = ReadNodesASCII(file);
+        // std::vector<GmshElement> elements = ReadElementsASCII(file);
     }
 
 
