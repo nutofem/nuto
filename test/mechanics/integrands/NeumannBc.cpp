@@ -20,14 +20,14 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
     // coordinate element
     NodeSimple nc0(Eigen::Vector2d(0, 0));
     NodeSimple nc1(Eigen::Vector2d(2, 2));
-    InterpolationTrussLinear coordinateInterpolation(2);
+    InterpolationTrussLinear coordinateInterpolation;
     ElementCollectionFem element({{nc0, nc1}, coordinateInterpolation});
 
     // displacement nodes
     DofType dof("displacements", 2);
     NodeSimple nd0(Eigen::Vector2d(0, 0));
     NodeSimple nd1(Eigen::Vector2d(0, 0));
-    InterpolationTrussLinear displacementInterpolation(2);
+    InterpolationTrussLinear displacementInterpolation;
     element.AddDofElement(dof, {{nd0, nd1}, displacementInterpolation});
 
     Eigen::Vector2d p(4, 42);
@@ -100,12 +100,12 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
     nodesDispPtrs.push_back(&nodesDisp[2]);
 
     // coordinate element
-    InterpolationTriangleLinear coordinateInterpolation(3);
+    InterpolationTriangleLinear coordinateInterpolation;
     ElementCollectionFem element({nodePtrs, coordinateInterpolation});
 
     // displacement nodes
     DofType dof("displacements", 3);
-    InterpolationTriangleLinear displacementInterpolation(3);
+    InterpolationTriangleLinear displacementInterpolation;
     element.AddDofElement(dof, {nodesDispPtrs, displacementInterpolation});
 
     Eigen::Vector3d p(1., 1., 1.);

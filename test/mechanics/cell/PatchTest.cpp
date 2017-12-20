@@ -76,7 +76,7 @@ MeshFem QuadPatchTestMesh()
     NodeSimple& n6 = mesh.Nodes.Add(Eigen::Vector2d(8, 7));
     NodeSimple& n7 = mesh.Nodes.Add(Eigen::Vector2d(4, 7));
 
-    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
     mesh.Elements.Add({{{n0, n1, n5, n4}, interpolation}});
     mesh.Elements.Add({{{n1, n2, n6, n5}, interpolation}});
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 {
     MeshFem mesh = QuadPatchTestMesh();
     DofType displ("displacements", 2);
-    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
     AddDofInterpolation(&mesh, displ, interpolation);
 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
 
     // manually add the boundary element
-    const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear(2));
+    const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
 
     // extract existing nodes
     Group<NodeSimple> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 {
     MeshFem mesh = QuadPatchTestMesh();
     DofType displ("displacements", 2);
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
     AddDofInterpolation(&mesh, displ, interpolation);
 
