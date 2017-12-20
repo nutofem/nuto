@@ -43,6 +43,8 @@ struct GmshFileContent
 {
     GmshHeader header;
     std::vector<GmshNode> nodes;
+    std::vector<GmshElement> elements;
+    std::vector<GmshPhysicalNames> physicalNames;
 };
 
 GmshHeader ReadGmshHeader(std::ifstream& file)
@@ -74,56 +76,18 @@ NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
     ReadGmshFile(fileName);
 }
 
-
-std::vector<GmshNode> NuTo::MeshGmsh::ReadNodesASCII(std::ifstream& file)
-{
-    std::string line;
-    do
-    {
-        std::getline(file, line);
-        if (file.eof())
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "End of file! - Did not find $Nodes");
-    } while (line.compare("$Nodes") != 0);
-
-    std::getline(file, line);
-    mNumNodes = std::stoi(line);
-
-    std::vector<GmshNode> nodes(mNumNodes);
-    for (GmshNode& node : nodes)
-    {
-        file >> node.id;
-        file >> node.coordinates[0];
-        file >> node.coordinates[1];
-        file >> node.coordinates[2];
-        std::getline(file, line);
-    }
-    std::getline(file, line);
-    if (line.compare("$EndNodes") != 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
-
-    return nodes;
-}
-
-
-std::vector<GmshElement> NuTo::MeshGmsh::ReadElementsASCII(std::ifstream& file)
+void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
 {
     const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
                                                              10, 27, 18, 14, 1, 8, 20, 15, 13, 9, 10,
                                                              12, 15, 15, 21, 4, 5, 6,  20, 26, 56};
 
     std::string line;
-    do
-    {
-        std::getline(file, line);
-        if (file.eof())
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "End of file! - Did not find $Elements");
-    } while (line.compare("$Elements") != 0);
-
     std::getline(file, line);
-    mNumElements = std::stoi(line);
+    int numElements = std::stoi(line);
 
-    std::vector<GmshElement> elements(mNumElements);
-    for (GmshElement& element : elements)
+    fileContent.elements.resize(numElements);
+    for (GmshElement& element : fileContent.elements)
     {
         int numTags;
         file >> element.id;
@@ -142,8 +106,6 @@ std::vector<GmshElement> NuTo::MeshGmsh::ReadElementsASCII(std::ifstream& file)
     std::getline(file, line);
     if (line.compare("$EndElements") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
-
-    return elements;
 }
 
 
@@ -167,10 +129,36 @@ void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
 }
 
+void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
+{
+    std::string line;
+    std::getline(file, line);
+    int numNames = std::stoi(line);
+
+    fileContent.physicalNames.resize(numNames);
+    for (GmshPhysicalNames& name : fileContent.physicalNames)
+    {
+        file >> name.dimension;
+        file >> name.id;
+        file >> name.name;
+        std::getline(file, line);
+    }
+    std::getline(file, line);
+    if (line.compare("$EndPhysicalNames") != 0)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndPhysicalNames not found!");
+}
+
 void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
 {
     std::map<std::string, std::function<void(std::istream&, GmshFileContent&)>> sectionEvalutionMap{
-            {"NODES", ReadNodesASCII}};
+            {"NODES", ReadNodesASCII}, {"PHYSICALNAMES", ReadPhysicalNamesASCII}, {"ELEMENTS", ReadElementsASCII},
+            //{"PERIODIC", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
+            //{"NODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
+            //{"ENDNODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
+            //{"ELEMENTNODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
+            //{"INTERPOLATIONSCHEME", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }}
+    };
+
     std::string line;
     std::getline(file, line);
     if (line[0] == '$')
@@ -221,9 +209,6 @@ void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
         {
             ProcessSectionASCII(file, fileContent);
         }
-
-        // std::vector<GmshNode> nodes = ReadNodesASCII(file);
-        // std::vector<GmshElement> elements = ReadElementsASCII(file);
     }
 
 
