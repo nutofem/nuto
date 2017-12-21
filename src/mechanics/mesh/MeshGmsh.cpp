@@ -258,14 +258,17 @@ const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(int
 
 std::vector<NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
 {
-    std::vector<NodeSimple*> nodePtrVec(fileContent.nodes.size(), nullptr);
+    std::vector<NodeSimple*> nodePtrVec(fileContent.maxNodeId - fileContent.minNodeId + 1, nullptr);
     Eigen::VectorXd coords(fileContent.dimension);
 
     for (const GmshNode& gmshNode : fileContent.nodes)
     {
-        int vectorPos = gmshNode.id - fileContent.minNodeId;
+        unsigned int vectorPos = gmshNode.id - fileContent.minNodeId;
         for (int i = 0; i < fileContent.dimension; ++i)
             coords[i] = gmshNode.coordinates[i];
+
+        if (vectorPos >= nodePtrVec.size())
+            throw Exception(__PRETTY_FUNCTION__, "Internal error - Calculated node position bigger than vector size!");
         nodePtrVec[vectorPos] = &(mMesh.Nodes.Add(coords));
     }
     return nodePtrVec;
