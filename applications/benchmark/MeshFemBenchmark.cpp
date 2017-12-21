@@ -26,7 +26,7 @@ static void Create(benchmark::State& state)
 static void Convert(benchmark::State& state)
 {
     const int n = state.range(0);
-    NuTo::InterpolationTriangleLinear interpolation(2);
+    NuTo::InterpolationTriangleLinear interpolation;
     for (auto _ : state)
     {
         NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateTriangles(n, n);

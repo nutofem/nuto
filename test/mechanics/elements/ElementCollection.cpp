@@ -5,10 +5,10 @@
 
 BOOST_AUTO_TEST_CASE(ElementCollectionAccess)
 {
-    NuTo::NodeSimple n0(Eigen::Vector2d(0,0));
-    NuTo::NodeSimple n1(Eigen::Vector2d(0,0));
-    NuTo::NodeSimple n2(Eigen::Vector2d(0,0));
-    NuTo::InterpolationTriangleLinear interpolation(2);
+    NuTo::NodeSimple n0(Eigen::Vector2d(0, 0));
+    NuTo::NodeSimple n1(Eigen::Vector2d(0, 0));
+    NuTo::NodeSimple n2(Eigen::Vector2d(0, 0));
+    NuTo::InterpolationTriangleLinear interpolation;
 
 
     NuTo::ElementCollectionFem elements(NuTo::ElementFem({n0, n1, n2}, interpolation));
@@ -18,4 +18,3 @@ BOOST_AUTO_TEST_CASE(ElementCollectionAccess)
     BOOST_CHECK_EQUAL(cellElements.CoordinateElement().GetDofDimension(), 2);
     BOOST_CHECK_EQUAL(cellElements.CoordinateElement().GetNumNodes(), 3);
 }
-
