@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
 
     DofType displ("displacements", 1);
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
+    const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear());
     AddDofInterpolation(&mesh, displ, interpolation);
 
 

@@ -8,11 +8,6 @@ namespace NuTo
 class InterpolationTrussLinear : public InterpolationSimple
 {
 public:
-    InterpolationTrussLinear(int dofDimension)
-        : mDofDimension(dofDimension)
-    {
-    }
-
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
         return std::make_unique<InterpolationTrussLinear>(*this);
@@ -37,13 +32,5 @@ public:
     {
         return 2;
     }
-
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
-private:
-    int mDofDimension;
 };
 } /* NuTo */

@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
 NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
 NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
-NuTo::InterpolationTriangleLinear interpolation = NuTo::InterpolationTriangleLinear(2);
+NuTo::InterpolationTriangleLinear interpolation;
 
 NuTo::ElementFem TestElement()
 {
