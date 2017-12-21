@@ -86,158 +86,6 @@ static GmshHeader ReadGmshHeader(std::ifstream& file)
 }
 
 
-NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
-{
-    ReadGmshFile(fileName);
-}
-
-const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
-{
-    std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
-    auto physGroupIt = mPhysicalGroups.find(physicalName);
-    if (physGroupIt == mPhysicalGroups.end())
-        throw Exception(__PRETTY_FUNCTION__, "Couldn't find group with name " + physicalName);
-    return physGroupIt->second;
-}
-
-std::vector<NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
-{
-    std::vector<NodeSimple*> nodePtrVec;
-    Eigen::VectorXd coords(fileContent.dimension);
-    if (fileContent.nodes.size() == static_cast<unsigned int>(fileContent.maxNodeId - fileContent.minNodeId + 1))
-    {
-        // contiguous IDs
-        nodePtrVec.resize(fileContent.nodes.size());
-        for (const GmshNode& gmshNode : fileContent.nodes)
-        {
-            int vectorPos = gmshNode.id - fileContent.minNodeId;
-            for (int i = 0; i < fileContent.dimension; ++i)
-                coords[i] = gmshNode.coordinates[i];
-            nodePtrVec[vectorPos] = &(mMesh.Nodes.Add(coords));
-        }
-    }
-    else
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Non contiguous node IDs - not implemented");
-    }
-    return nodePtrVec;
-}
-
-const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& mesh, int gmshType, int dimension)
-{
-    using namespace NuTo;
-    switch (gmshType)
-    {
-    case 1:
-        return mesh.CreateInterpolation(InterpolationTrussLinear(dimension));
-    case 2:
-        return mesh.CreateInterpolation(InterpolationTriangleLinear(dimension));
-    case 3:
-        return mesh.CreateInterpolation(InterpolationQuadLinear(dimension));
-    default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
-    }
-}
-
-std::string GetPhysicalGroupName(const GmshFileContent& fileContent, int groupId)
-{
-    std::string physicalName{""};
-    for (const GmshPhysicalNames& gmshPhysicalName : fileContent.physicalNames)
-        if (gmshPhysicalName.id == groupId)
-        {
-            physicalName = gmshPhysicalName.name;
-            break;
-        }
-    return physicalName;
-}
-
-
-void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
-                                    const std::vector<NuTo::NodeSimple*>& nodePtrVec)
-{
-    std::map<int, const InterpolationSimple*> interpolationPtrMap;
-
-    for (GmshElement gmshElement : fileContent.elements)
-    {
-        // Skip node elements
-        if (gmshElement.type == 15)
-            continue;
-
-
-        auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
-        if (interpolationIter == interpolationPtrMap.end())
-            interpolationIter = interpolationPtrMap
-                                        .emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type,
-                                                                                               fileContent.dimension))
-                                        .first;
-        std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
-        for (unsigned int i = 0; i < elementNodes.size(); ++i)
-        {
-            int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
-            elementNodes[i] = nodePtrVec[nodeVectorPos];
-        }
-
-
-        NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
-        AddElementToPhysicalGroup(*elementPtr, GetPhysicalGroupName(fileContent, gmshElement.tags[0]));
-        //        gmshElement.type
-    }
-}
-
-
-void NuTo::MeshGmsh::AddElementToPhysicalGroup(NuTo::ElementCollection& element, std::string physicalName)
-{
-    if (physicalName.length() <= 0)
-        return;
-    std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
-    // Regarding the map/iterator stuff: https://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
-    auto physGroupIt = mPhysicalGroups.lower_bound(physicalName);
-    if (physGroupIt != mPhysicalGroups.end() && !(mPhysicalGroups.key_comp()(physicalName, physGroupIt->first)))
-        physGroupIt->second.Add(element);
-    else
-        mPhysicalGroups.emplace_hint(physGroupIt, physicalName, NuTo::Group<ElementCollection>(element));
-}
-
-void NuTo::MeshGmsh::CreateMesh(const GmshFileContent& fileContent)
-{
-    std::vector<NuTo::NodeSimple*> nodePtrVec = CreateNodes(fileContent);
-    CreateElements(fileContent, nodePtrVec);
-}
-
-void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
-{
-    const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
-                                                             10, 27, 18, 14, 1, 8, 20, 15, 13, 9, 10,
-                                                             12, 15, 15, 21, 4, 5, 6,  20, 26, 56};
-
-    std::string line;
-    std::getline(file, line);
-    int numElements = std::stoi(line);
-
-    fileContent.elements.resize(numElements);
-    for (GmshElement& element : fileContent.elements)
-    {
-        int numTags;
-        file >> element.id;
-        file >> element.type;
-        file >> numTags;
-
-        element.tags.resize(numTags);
-        for (int& tag : element.tags)
-            file >> tag;
-
-        element.nodes.resize(elementNumNodesLookUp[element.type]);
-        for (int& node : element.nodes)
-            file >> node;
-        std::getline(file, line); // endl
-    }
-    std::getline(file, line);
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-    if (line.compare("$ENDELEMENTS") != 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
-}
-
-
 void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
 {
     std::string line;
@@ -270,6 +118,41 @@ void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
 }
 
+void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
+{
+    // first element does not exist. Gmsh uses one based indexing
+    const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
+                                                             10, 27, 18, 14, 1, 8, 20, 15, 13, 9, 10,
+                                                             12, 15, 15, 21, 4, 5, 6,  20, 26, 56};
+
+    std::string line;
+    std::getline(file, line);
+    int numElements = std::stoi(line);
+
+    fileContent.elements.resize(numElements);
+    for (GmshElement& element : fileContent.elements)
+    {
+        int numTags;
+        file >> element.id;
+        file >> element.type;
+        file >> numTags;
+
+        element.tags.resize(numTags);
+        for (int& tag : element.tags)
+            file >> tag;
+
+        element.nodes.resize(elementNumNodesLookUp[element.type]);
+        for (int& node : element.nodes)
+            file >> node;
+        std::getline(file, line); // endl
+    }
+    std::getline(file, line);
+    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+    if (line.compare("$ENDELEMENTS") != 0)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
+}
+
+
 void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
 {
     std::string line;
@@ -283,6 +166,7 @@ void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
         file >> name.id;
         file >> name.name;
 
+        // remove quotation marks from string
         name.name.erase(std::remove(name.name.begin(), name.name.end(), '\"'), name.name.end());
         std::getline(file, line);
     }
@@ -314,6 +198,142 @@ void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
         else
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh section type: " + sectionName);
     }
+}
+
+
+const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& mesh, int gmshType, int dimension)
+{
+    using namespace NuTo;
+    switch (gmshType)
+    {
+    case 1:
+        return mesh.CreateInterpolation(InterpolationTrussLinear(dimension));
+    case 2:
+        return mesh.CreateInterpolation(InterpolationTriangleLinear(dimension));
+    case 3:
+        return mesh.CreateInterpolation(InterpolationQuadLinear(dimension));
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
+    }
+}
+
+
+std::string GetPhysicalGroupName(const GmshFileContent& fileContent, int groupId)
+{
+    std::string physicalName{""};
+    for (const GmshPhysicalNames& gmshPhysicalName : fileContent.physicalNames)
+        if (gmshPhysicalName.id == groupId)
+        {
+            physicalName = gmshPhysicalName.name;
+            break;
+        }
+    return physicalName;
+}
+
+
+// Member functions
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
+{
+    ReadGmshFile(fileName);
+}
+
+const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
+{
+    std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
+    auto physGroupIt = mNamedPhysicalGroups.find(physicalName);
+    if (physGroupIt == mNamedPhysicalGroups.end())
+        throw Exception(__PRETTY_FUNCTION__, "Couldn't find group with name " + physicalName);
+    return *(physGroupIt->second);
+}
+
+const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(int physicalGroupId) const
+{
+    auto physGroupIt = mPhysicalGroups.find(physicalGroupId);
+    if (physGroupIt == mPhysicalGroups.end())
+        throw Exception(__PRETTY_FUNCTION__, "Couldn't find group with ID " + std::to_string(physicalGroupId));
+    return physGroupIt->second;
+}
+
+std::vector<NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
+{
+    std::vector<NodeSimple*> nodePtrVec(fileContent.nodes.size(), nullptr);
+    Eigen::VectorXd coords(fileContent.dimension);
+
+    for (const GmshNode& gmshNode : fileContent.nodes)
+    {
+        int vectorPos = gmshNode.id - fileContent.minNodeId;
+        for (int i = 0; i < fileContent.dimension; ++i)
+            coords[i] = gmshNode.coordinates[i];
+        nodePtrVec[vectorPos] = &(mMesh.Nodes.Add(coords));
+    }
+    return nodePtrVec;
+}
+
+
+void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
+                                    const std::vector<NuTo::NodeSimple*>& nodePtrVec)
+{
+    std::map<int, const InterpolationSimple*> interpolationPtrMap;
+
+    for (GmshElement gmshElement : fileContent.elements)
+    {
+        // Skip node elements
+        if (gmshElement.type == 15)
+            continue;
+
+
+        auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
+        if (interpolationIter == interpolationPtrMap.end())
+            interpolationIter = interpolationPtrMap
+                                        .emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type,
+                                                                                               fileContent.dimension))
+                                        .first;
+        std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
+        for (unsigned int i = 0; i < elementNodes.size(); ++i)
+        {
+            int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
+            if (nodePtrVec[nodeVectorPos] == nullptr)
+                throw Exception(__PRETTY_FUNCTION__, "Internal error - No node found! ID mapping is wrong");
+            elementNodes[i] = nodePtrVec[nodeVectorPos];
+        }
+
+
+        NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
+        AddElementToPhysicalGroup(fileContent, *elementPtr, gmshElement.tags[0]);
+    }
+}
+
+
+void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::ElementCollection& element,
+                                               int physicalGroupId)
+{
+    // Regarding the map/iterator stuff: https://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
+    auto physGroupIt = mPhysicalGroups.lower_bound(physicalGroupId);
+    if (physGroupIt != mPhysicalGroups.end() && !(mPhysicalGroups.key_comp()(physicalGroupId, physGroupIt->first)))
+        // Add to existing group
+        physGroupIt->second.Add(element);
+    else
+    {
+        // Create new group
+        physGroupIt =
+                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<ElementCollection>(element));
+
+        // Create new named group, if a name is defined
+        std::string physicalName = GetPhysicalGroupName(fileContent, physicalGroupId);
+        if (physicalName.length() > 0)
+        {
+            std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
+            mNamedPhysicalGroups.emplace(physicalName, &(physGroupIt->second));
+        }
+    }
+}
+
+void NuTo::MeshGmsh::CreateMesh(const GmshFileContent& fileContent)
+{
+    std::vector<NuTo::NodeSimple*> nodePtrVec = CreateNodes(fileContent);
+    CreateElements(fileContent, nodePtrVec);
 }
 
 

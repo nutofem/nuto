@@ -3,9 +3,9 @@ $MeshFormat
 $EndMeshFormat
 $PhysicalNames
 3
-0 3 "UpperLeftCorner"
-1 1 "Boundary"
-2 2 "Domain"
+0 2 "UpperLeftCorner"
+1 7 "Left"
+2 1 "Domain"
 $EndPhysicalNames
 $Nodes
 5
@@ -17,13 +17,13 @@ $Nodes
 $EndNodes
 $Elements
 9
-1 15 2 3 2 2
-2 1 2 1 1 1 2
-3 1 2 1 2 2 3
-4 1 2 1 3 3 4
-5 1 2 1 4 4 1
-6 2 2 2 1 1 2 5
-7 2 2 2 1 1 5 4
-8 2 2 2 1 2 3 5
-9 2 2 2 1 3 4 5
+1 15 2 2 2 2
+2 15 2 6 4 4
+3 1 2 7 1 1 2
+4 1 2 9 2 2 3
+5 1 2 8 3 3 4
+6 2 2 1 1 1 2 5
+7 2 2 1 1 1 5 4
+8 2 2 1 1 2 3 5
+9 2 2 1 1 3 4 5
 $EndElements
