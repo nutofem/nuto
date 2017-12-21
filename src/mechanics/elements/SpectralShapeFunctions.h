@@ -12,24 +12,30 @@ namespace ShapeFunctions1D
 //! @brief Lobatto nodes in one dimension
 //! @param order Polynomial order (minumum: 1 linear, 2 quadratic, etc.)
 //! @return local node coordinates ordered from left to right
-std::vector<double> NodeCoordinatesTrussLobatto(int order)
+Eigen::VectorXd NodeCoordinatesTrussLobatto(int order)
 {
     if (order < 1)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Order too low. Must be 1 or higher");
 
     std::vector<double> points = NuTo::Math::Polynomial::LegendreDerivRoots(order);
-    points.insert(points.begin(), -1.);
-    points.push_back(1.);
-    return points;
+
+    Eigen::VectorXd result(points.size()+2);
+    result[0] = -1.;
+    for (size_t i = 0; i<points.size();i++)
+    {
+        result[i+1] = points[i];
+    }
+    result[result.size()-1] = 1.;
+    return result;
 }
 
 //! @brief Compute barycentric weights from node coordinates
 //! @param nodes local node coordinates
-std::vector<double> BarycentricWeights(const std::vector<double>& nodes)
+Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes)
 {
-    std::vector<double> w(nodes.size(), 1.);
-    for (size_t j = 0; j < nodes.size(); j++)
-        for (size_t i = 0; i < nodes.size(); i++)
+    Eigen::VectorXd w = Eigen::VectorXd::Ones(nodes.size());
+    for (int j = 0; j < nodes.size(); j++)
+        for (int i = 0; i < nodes.size(); i++)
         {
             if (i != j)
             {
@@ -45,13 +51,13 @@ std::vector<double> BarycentricWeights(const std::vector<double>& nodes)
 //! @param x local coordinate where shapes are evaluated
 //! @param nodes local node coordinates
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
-std::vector<double> ShapeFunctionsTrussLagrange(const double x, const std::vector<double>& nodes)
+Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> result(nodes.size(), 0.);
-    std::vector<double> w = BarycentricWeights(nodes);
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size());
+    Eigen::VectorXd w = BarycentricWeights(nodes);
     // Check if x is a node (or near)
     bool xMatchesNode = false;
-    for (size_t j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.size(); j++)
     {
         if (std::abs(x - nodes[j]) < 1.e-15)
         {
@@ -66,14 +72,14 @@ std::vector<double> ShapeFunctionsTrussLagrange(const double x, const std::vecto
 
     double sum = 0;
 
-    for (size_t j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.size(); j++)
     {
         double tmp = w[j]/(x-nodes[j]);
         result[j] = tmp;
         sum += tmp;
     }
 
-    for (size_t j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.size(); j++)
     {
         result[j] /= sum;
     }
@@ -84,18 +90,18 @@ std::vector<double> ShapeFunctionsTrussLagrange(const double x, const std::vecto
 //! @param x local coordinate where shapes are evaluated
 //! @param nodes local node coordinates
 //! @return shape derivatives evaluated at x.
-std::vector<double> DerivativeShapeFunctionsTrussLagrange(const double x, const std::vector<double>& nodes)
+Eigen::VectorXd DerivativeShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> result(nodes.size(), 0.);
-    std::vector<double> w = BarycentricWeights(nodes);
-    for (size_t j = 0; j < nodes.size(); j++)
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size());
+    Eigen::VectorXd w = BarycentricWeights(nodes);
+    for (int j = 0; j < nodes.size(); j++)
     {
-        for (size_t k = 0; k < nodes.size(); k++)
+        for (int k = 0; k < nodes.size(); k++)
         {
             if (k != j)
             {
                 double tmp = 1.;
-                for (size_t i = 0; i < nodes.size(); i++)
+                for (int i = 0; i < nodes.size(); i++)
                 {
                     if ((i != j) && (i != k))
                     {
@@ -116,15 +122,18 @@ namespace ShapeFunctions2D
 //! @brief Lobatto nodes for quad element (tensor product)
 //! @param order Polynomial order in 1D
 //! @return local node coordinates
-std::vector<Eigen::Vector2d> NodeCoordinatesQuadLobatto(int order)
+Eigen::MatrixXd NodeCoordinatesQuadLobatto(int order)
 {
-    std::vector<double> nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    std::vector<Eigen::Vector2d> result;
-    for (size_t i=0; i<nodes.size(); i++)
+    Eigen::VectorXd nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
+    Eigen::MatrixXd result(nodes.size() * nodes.size(),2);
+    int count = 0;
+    for (int i=0; i<nodes.size(); i++)
     {
-        for (size_t j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.size(); j++)
         {
-            result.push_back(Eigen::Vector2d({nodes[i],nodes[j]}));
+            result(count,0) = nodes[i];
+            result(count,1) = nodes[j];
+            count++;
         }
     }
     return result;
@@ -134,36 +143,41 @@ std::vector<Eigen::Vector2d> NodeCoordinatesQuadLobatto(int order)
 //! @param x local coordinate where shapes are evaluated
 //! @param nodes local node coordinates
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
-std::vector<double> ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const std::vector<double>& nodes)
+Eigen::VectorXd ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
 
-    std::vector<double> result;
-    for (size_t j=0; j<nodes.size(); j++)
+    Eigen::VectorXd result(nodes.size() * nodes.size());
+    int count = 0;
+    for (int j=0; j<nodes.size(); j++)
     {
-        for (size_t i=0; i<nodes.size(); i++)
+        for (int i=0; i<nodes.size(); i++)
         {
-            result.push_back(Nx[i] * Ny[j]);
+            result[count] = Nx[i] * Ny[j];
+            count++;
         }
     }
     return result;
 }
 
-std::vector<Eigen::Vector2d> DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const std::vector<double>& nodes)
+Eigen::MatrixXd DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> DNx = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> DNy = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd DNx = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd DNy = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
 
-    std::vector<double> Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
 
-    std::vector<Eigen::Vector2d> result;
-    for (size_t j=0; j<nodes.size(); j++)
+    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.size() * nodes.size(),2);
+    int count = 0;
+    for (int j=0; j<nodes.size(); j++)
     {
-        for (size_t i=0; i<nodes.size(); i++)
+        for (int i=0; i<nodes.size(); i++)
         {
-            result.push_back( Eigen::Vector2d({DNx[i]*Ny[j] , Nx[i]*DNy[j]})   );
+            result(count,0) = DNx[i]*Ny[j];
+            result(count,1) =  Nx[i]*DNy[j];
+            count++;
         }
     }
     return result;
@@ -178,17 +192,21 @@ namespace ShapeFunctions3D
 //! @brief Lobatto nodes for brick element (tensor product)
 //! @param order Polynomial order in 1D
 //! @return local node coordinates
-std::vector<Eigen::Vector3d> NodeCoordinatesBrickLobatto(int order)
+Eigen::MatrixXd NodeCoordinatesBrickLobatto(int order)
 {
-    std::vector<double> nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    std::vector<Eigen::Vector3d> result;
-    for (size_t i=0; i<nodes.size(); i++)
+    Eigen::VectorXd nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
+    Eigen::MatrixXd result(nodes.size() * nodes.size() * nodes.size(),3);
+    int count = 0;
+    for (int i=0; i<nodes.size(); i++)
     {
-        for (size_t j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.size(); j++)
         {
-            for (size_t k=0; k<nodes.size(); k++)
+            for (int k=0; k<nodes.size(); k++)
             {
-                result.push_back(Eigen::Vector3d({nodes[i],nodes[j],nodes[k]}));
+                result(count,0) = nodes[i];
+                result(count,1) = nodes[j];
+                result(count,2) = nodes[k];
+                count++;
             }
         }
     }
@@ -199,44 +217,50 @@ std::vector<Eigen::Vector3d> NodeCoordinatesBrickLobatto(int order)
 //! @param x local coordinate where shapes are evaluated
 //! @param nodes local node coordinates
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
-std::vector<double> ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const std::vector<double>& nodes)
+Eigen::VectorXd ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
-    std::vector<double> Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
+    Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
 
-    std::vector<double> result;
-    for (size_t k=0; k<nodes.size(); k++)
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size() * nodes.size() * nodes.size());
+    int count = 0;
+    for (int k=0; k<nodes.size(); k++)
     {
-        for (size_t j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.size(); j++)
         {
-            for (size_t i=0; i<nodes.size(); i++)
+            for (int i=0; i<nodes.size(); i++)
             {
-                result.push_back(Nx[i] * Ny[j]  * Nz[k]);
+                result[count] = Nx[i] * Ny[j]  * Nz[k];
+                count++;
             }
         }
     }
     return result;
 }
 
-std::vector<Eigen::Vector3d> DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const std::vector<double>& nodes)
+Eigen::MatrixXd DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes)
 {
-    std::vector<double> DNx = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> DNy = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
-    std::vector<double> DNz = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(2), nodes);
+    Eigen::VectorXd DNx = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd DNy = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd DNz = ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(x(2), nodes);
 
-    std::vector<double> Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
-    std::vector<double> Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
-    std::vector<double> Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
+    Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
+    Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
+    Eigen::VectorXd Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
 
-    std::vector<Eigen::Vector3d> result;
-    for (size_t k=0; k<nodes.size(); k++)
+    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.size() * nodes.size() * nodes.size(), 3);
+    int count = 0;
+    for (int k=0; k<nodes.size(); k++)
     {
-        for (size_t j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.size(); j++)
         {
-            for (size_t i=0; i<nodes.size(); i++)
+            for (int i=0; i<nodes.size(); i++)
             {
-                result.push_back( Eigen::Vector3d({DNx[i]*Ny[j]*Nz[k] , Nx[i]*DNy[j]*Nz[k], Nx[i]*Ny[j]*DNz[k]})   );
+                result(count,0) = DNx[i]* Ny[j]* Nz[k];
+                result(count,1) =  Nx[i]*DNy[j]* Nz[k];
+                result(count,2) =  Nx[i]* Ny[j]*DNz[k];
+                count++;
             }
         }
     }

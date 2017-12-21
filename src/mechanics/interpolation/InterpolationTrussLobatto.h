@@ -22,7 +22,7 @@ public:
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
         Eigen::VectorXd result(mNodes.size());
-        const std::vector<double> shapes = ShapeFunctions1D::ShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
+        const Eigen::VectorXd shapes = ShapeFunctions1D::ShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
         for (size_t i = 0; i < mNodes.size(); i++)
         {
             result[i] = shapes[i];
@@ -33,7 +33,7 @@ public:
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
         Eigen::VectorXd result(mNodes.size());
-        const std::vector<double> shapes =
+        const Eigen::VectorXd shapes =
                 ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
         for (size_t i = 0; i < mNodes.size(); i++)
         {

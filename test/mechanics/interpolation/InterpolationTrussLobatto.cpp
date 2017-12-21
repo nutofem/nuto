@@ -4,7 +4,7 @@
 
 std::vector<Eigen::VectorXd> GetTestPoints()
 {
-    return {Eigen::VectorXd::Ones(1) * (-1.), Eigen::VectorXd::Ones(1) * (0.), Eigen::VectorXd::Ones(1) * (1.)};
+    return {Eigen::VectorXd::Constant(1, 1.), Eigen::VectorXd::Constant(1, 0.), Eigen::VectorXd::Constant(1, 1.)};
 }
 
 BOOST_AUTO_TEST_CASE(InterpolationTrussLobatto)

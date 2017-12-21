@@ -20,25 +20,12 @@ public:
 
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        Eigen::VectorXd result(GetNumNodes());
-        const std::vector<double> shapes = ShapeFunctions3D::ShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
-        for (size_t i = 0; i < shapes.size(); i++)
-        {
-            result[i] = shapes[i];
-        }
-        return result;
+        return ShapeFunctions3D::ShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        Eigen::MatrixXd result(GetNumNodes(),3);
-        const std::vector<Eigen::Vector3d> shapes =
-                ShapeFunctions3D::DerivativeShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
-        for (size_t i = 0; i < shapes.size(); i++)
-        {
-            result.row(i) = shapes[i];
-        }
-        return result;
+        return ShapeFunctions3D::DerivativeShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
@@ -71,6 +58,6 @@ public:
 
 private:
     int mDofDimension;
-    std::vector<double> mNodes;
+    Eigen::VectorXd mNodes;
 };
 } /* NuTo */

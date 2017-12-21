@@ -20,25 +20,12 @@ public:
 
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        Eigen::VectorXd result(GetNumNodes());
-        const std::vector<double> shapes = ShapeFunctions2D::ShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
-        for (size_t i = 0; i < shapes.size(); i++)
-        {
-            result[i] = shapes[i];
-        }
-        return result;
+        return ShapeFunctions2D::ShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        Eigen::MatrixXd result(GetNumNodes(),2);
-        const std::vector<Eigen::Vector2d> shapes =
-                ShapeFunctions2D::DerivativeShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
-        for (size_t i = 0; i < shapes.size(); i++)
-        {
-            result.row(i) = shapes[i];
-        }
-        return result;
+        return ShapeFunctions2D::DerivativeShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
