@@ -7,8 +7,7 @@ namespace NuTo
 class InterpolationBrickLobatto : public InterpolationSimple
 {
 public:
-    InterpolationBrickLobatto(int dofDimension, int order)
-        : mDofDimension(dofDimension)
+    InterpolationBrickLobatto(int order)
     {
         mNodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
     }
@@ -51,13 +50,7 @@ public:
         return mNodes.size() * mNodes.size() * mNodes.size();
     }
 
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
 private:
-    int mDofDimension;
     Eigen::VectorXd mNodes;
 };
 } /* NuTo */

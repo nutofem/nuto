@@ -10,7 +10,7 @@ std::vector<Eigen::VectorXd> GetTestPoints()
 BOOST_AUTO_TEST_CASE(InterpolationTrussLobatto)
 {
     int order = 5;
-    NuTo::InterpolationTrussLobatto interpolation(1, order);
+    NuTo::InterpolationTrussLobatto interpolation(order);
 
     std::vector<Eigen::VectorXd> rPoints = GetTestPoints();
 

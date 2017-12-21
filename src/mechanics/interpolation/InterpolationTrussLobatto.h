@@ -8,8 +8,7 @@ namespace NuTo
 class InterpolationTrussLobatto : public InterpolationSimple
 {
 public:
-    InterpolationTrussLobatto(int dofDimension, int order)
-        : mDofDimension(dofDimension)
+    InterpolationTrussLobatto(int order)
     {
         mNodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
     }
@@ -23,7 +22,7 @@ public:
     {
         Eigen::VectorXd result(mNodes.size());
         const Eigen::VectorXd shapes = ShapeFunctions1D::ShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
-        for (size_t i = 0; i < mNodes.size(); i++)
+        for (int i = 0; i < mNodes.size(); i++)
         {
             result[i] = shapes[i];
         }
@@ -35,7 +34,7 @@ public:
         Eigen::VectorXd result(mNodes.size());
         const Eigen::VectorXd shapes =
                 ShapeFunctions1D::DerivativeShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
-        for (size_t i = 0; i < mNodes.size(); i++)
+        for (int i = 0; i < mNodes.size(); i++)
         {
             result[i] = shapes[i];
         }
@@ -54,13 +53,7 @@ public:
         return mNodes.size();
     }
 
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
 private:
-    int mDofDimension;
-    std::vector<double> mNodes;
+    Eigen::VectorXd mNodes;
 };
 } /* NuTo */

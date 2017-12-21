@@ -7,8 +7,7 @@ namespace NuTo
 class InterpolationQuadLobatto : public InterpolationSimple
 {
 public:
-    InterpolationQuadLobatto(int dofDimension, int order)
-        : mDofDimension(dofDimension)
+    InterpolationQuadLobatto(int order)
     {
         mNodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
     }
@@ -49,13 +48,7 @@ public:
         return mNodes.size() * mNodes.size();
     }
 
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
 private:
-    int mDofDimension;
-    std::vector<double> mNodes;
+    Eigen::VectorXd mNodes;
 };
 } /* NuTo */
