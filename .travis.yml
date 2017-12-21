@@ -37,6 +37,8 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
 script:
     - make -j2 unit
-after_success:
+    - sudo make install
     - cd ..
+    - ./scripts/check_install.sh
+after_success:
     - ./scripts/upload_coverage.sh
