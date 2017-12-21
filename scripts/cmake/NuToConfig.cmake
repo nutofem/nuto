@@ -1,0 +1,7 @@
+include(CMakeFindDependencyMacro)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+find_dependency(MUMPS)
+find_dependency(ARPACK)
+find_dependency(ANN)
+include("${CMAKE_CURRENT_LIST_DIR}/CheckBoost.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/NuToTargets.cmake")
