@@ -4,6 +4,8 @@ add_benchmark(BuildGradient)
 
 add_benchmark(ConstraintsBenchmark)
 
+add_benchmark(DofMatrixExport)
+
 add_benchmark(MeshFemBenchmark)
 
 add_benchmark(NewtonRaphsonBenchmark)

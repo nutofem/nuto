@@ -29,16 +29,8 @@ public:
             {
                 Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
                 const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
-                const int numIndependentDofs = mNumIndependentDofs[dof];
                 for (int i = 0; i < numberingDof.rows(); ++i)
-                {
-                    int globalDofNumber = numberingDof[i];
-                    double globalDofValue = cellGradientDof[i];
-                    if (globalDofNumber < numIndependentDofs)
-                        gradient.J[dof][globalDofNumber] += globalDofValue;
-                    else
-                        gradient.K[dof][globalDofNumber - numIndependentDofs] += globalDofValue;
-                }
+                    gradient(dof, numberingDof[i]) += cellGradientDof[i];
             }
         }
         return gradient;
