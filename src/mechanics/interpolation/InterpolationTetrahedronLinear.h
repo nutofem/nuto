@@ -8,11 +8,6 @@ namespace NuTo
 class InterpolationTetrahedronLinear : public InterpolationSimple
 {
 public:
-    InterpolationTetrahedronLinear(int dofDimension)
-        : mDofDimension(dofDimension)
-    {
-    }
-
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
         return std::make_unique<InterpolationTetrahedronLinear>(*this);
@@ -37,13 +32,5 @@ public:
     {
         return 4;
     }
-
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
-private:
-    int mDofDimension;
 };
 } /* NuTo */

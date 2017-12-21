@@ -35,7 +35,7 @@ MeshFem CreateNodes2D(int numX, int numY)
 MeshFem UnitMeshFem::CreateLines(int numX)
 {
     MeshFem mesh = CreateNodes1D(numX);
-    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear(1));
+    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
     for (int i = 0; i < numX; ++i)
     {
         auto& nl = mesh.Nodes[i];
@@ -49,7 +49,7 @@ MeshFem UnitMeshFem::CreateLines(int numX)
 MeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
 {
     MeshFem mesh = CreateNodes2D(numX, numY);
-    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(2));
+    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     for (int iY = 0; iY < numY; ++iY)
         for (int iX = 0; iX < numX; ++iX)
         {
@@ -66,7 +66,7 @@ MeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
 MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
 {
     MeshFem mesh = CreateNodes2D(numX, numY);
-    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear(2));
+    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
     for (int iY = 0; iY < numY; ++iY)
         for (int iX = 0; iX < numX; ++iX)
         {

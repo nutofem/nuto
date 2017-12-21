@@ -18,7 +18,6 @@ public:
         for (NodeSimple* node : nodes)
             mNodes.push_back(*node);
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
-        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
     ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
@@ -27,7 +26,6 @@ public:
         , mInterpolation(interpolation)
     {
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
-        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
     }
 
     virtual NodeValues ExtractNodeValues() const override
@@ -41,8 +39,7 @@ public:
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
     {
-        return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(),
-                         Interpolation().GetDofDimension());
+        return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(), GetDofDimension());
     }
 
     ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
@@ -57,7 +54,7 @@ public:
 
     int GetDofDimension() const override
     {
-        return Interpolation().GetDofDimension();
+        return GetNode(0).GetNumValues();
     }
 
     Eigen::VectorXi GetDofNumbering() const override
