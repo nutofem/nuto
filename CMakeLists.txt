@@ -31,10 +31,12 @@ add_subdirectory(src)
 
 #test Environment
 include(CTest)
-add_subdirectory(test)
-add_subdirectory(applications/integrationtests)
-add_subdirectory(applications/examples)
-add_subdirectory(applications/benchmark)
+add_subdirectory(test EXCLUDE_FROM_ALL)
+add_subdirectory(applications/integrationtests EXCLUDE_FROM_ALL)
+add_subdirectory(applications/examples EXCLUDE_FROM_ALL)
+if(benchmark_FOUND)
+    add_subdirectory(applications/benchmark EXCLUDE_FROM_ALL)
+endif()
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing

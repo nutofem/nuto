@@ -1,6 +1,5 @@
 #include <cassert>
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
-#include "visualize/VisualizeEnum.h"
 
 //! @brief constructor
 NuTo::IntegrationType3D4NGauss1Ip::IntegrationType3D4NGauss1Ip()
@@ -30,44 +29,4 @@ int NuTo::IntegrationType3D4NGauss1Ip::GetNumIntegrationPoints() const
 double NuTo::IntegrationType3D4NGauss1Ip::GetIntegrationPointWeight(int) const
 {
     return 1 / 6.;
-}
-
-void NuTo::IntegrationType3D4NGauss1Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                                                              std::vector<double>& VisualizationPointLocalCoordinates,
-                                                              unsigned int& NumVisualizationCells,
-                                                              std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                                                              std::vector<unsigned int>& VisualizationCellsIncidence,
-                                                              std::vector<unsigned int>& VisualizationCellsIP) const
-{
-    NumVisualizationPoints = 4;
-
-    // Point 0
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 1
-    VisualizationPointLocalCoordinates.push_back(1);
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 2
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(1);
-    VisualizationPointLocalCoordinates.push_back(0);
-
-    // Point 3
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(0);
-    VisualizationPointLocalCoordinates.push_back(1);
-
-    NumVisualizationCells = 1;
-
-    // cell 0
-    VisualizationCellType.push_back(NuTo::eCellTypes::TETRAEDER);
-    VisualizationCellsIncidence.push_back(0);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(2);
-    VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIP.push_back(0);
 }

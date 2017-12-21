@@ -1,116 +1,23 @@
-#include "Benchmark.h"
-#include <Eigen/Core>
-#include "mechanics/elements/ElementOutputBlockVectorDouble.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
-#include "mechanics/constitutive/laws/EngineeringStressHelper.h"
-#include "mechanics/nodes/NodeDof.h"
+#include <benchmark/benchmark.h>
 #include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementFem.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "mechanics/integrands/MomentumBalance.h"
-#include "mechanics/constitutive/laws/LinearElastic.h"
-#include "mechanics/sections/SectionPlane.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
-namespace Benchmark
-{
-
-class HardCodeElement8NDynamic
-{
-
-public:
-    HardCodeElement8NDynamic(const std::vector<NuTo::NodeBase*>& rNodes)
-        : mNodes(rNodes)
-    {
-    }
-
-    Eigen::VectorXd BuildInternalGradient() const
-    {
-        const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
-
-        Eigen::VectorXd result = Eigen::VectorXd::Zero(16, 1);
-
-        const auto disp = GetDisp();
-        const auto coords = GetCoordinatesModified();
-
-        for (int i = 0; i < it.GetNumIntegrationPoints(); ++i)
-        {
-            const Eigen::Vector2d ip = it.GetLocalIntegrationPointCoordinates(i);
-
-            const auto derivativeShapeFunctions = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(ip);
-            const auto J = GetJacobian(derivativeShapeFunctions, coords);
-
-            const auto B = GetB(derivativeShapeFunctions, J);
-
-            result += B.transpose() * mLaw.Stress(B * disp) * J.determinant();
-        }
-        return result;
-    }
-
-    Eigen::VectorXd GetDisp() const
-    {
-        Eigen::VectorXd disp(16);
-        for (int i = 0; i < 8; ++i)
-        {
-            const auto& nodeValues = mNodes[i]->Get(NuTo::Node::eDof::DISPLACEMENTS);
-            disp(2 * i) = nodeValues[0];
-            disp(2 * i + 1) = nodeValues[1];
-        }
-        return disp;
-    }
-
-    Eigen::MatrixXd GetCoordinatesModified() const
-    {
-
-        Eigen::Matrix<double, 2, Eigen::Dynamic> coordinates(2, 8);
-        for (int i = 0; i < 8; ++i)
-        {
-            const auto& nodeCoordinate = mNodes[i]->Get(NuTo::Node::eDof::COORDINATES);
-            coordinates(0, i) = nodeCoordinate[0];
-            coordinates(1, i) = nodeCoordinate[1];
-        }
-        return coordinates;
-    }
-
-    Eigen::Matrix2d GetJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rCoords) const
-    {
-        return rCoords * rDerivativeShapeFunctions;
-    }
-
-    Eigen::MatrixXd GetB(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::Matrix2d& J) const
-    {
-        const Eigen::MatrixXd derivativeShapeFunctionsJ = rDerivativeShapeFunctions * J.inverse();
-        Eigen::MatrixXd B = Eigen::MatrixXd::Zero(3, 16);
-
-        for (int iNode = 0, iColumn = 0; iNode < 8; ++iNode, iColumn += 2)
-        {
-            const double dNdX = derivativeShapeFunctionsJ(iNode, 0);
-            const double dNdY = derivativeShapeFunctionsJ(iNode, 1);
-
-            B(0, iColumn) = dNdX;
-            B(1, iColumn + 1) = dNdY;
-            B(2, iColumn) = dNdY;
-            B(2, iColumn + 1) = dNdX;
-        }
-        return B;
-    }
-
-private:
-    std::vector<NuTo::NodeBase*> mNodes;
-    const NuTo::Laws::LinearElastic<2> mLaw = NuTo::Laws::LinearElastic<2>(20000, 0.3, NuTo::ePlaneState::PLANE_STRAIN);
-};
+/*
+ * Measures/Compares time for the calculation of a linear elastic gradient with quadratic quad elements
+ *   - current NuTo implementation
+ *   - (hopefully?) as fast as possible hardcode implementation
+ */
 
 template <int TDim>
-class Node
+class FixNode
 {
 public:
-    Node(Eigen::Matrix<double, TDim, 1> rValues)
+    FixNode(Eigen::Matrix<double, TDim, 1> rValues)
         : mValues(rValues)
     {
     }
@@ -145,7 +52,7 @@ class HardCodeElement8N
 {
 
 public:
-    HardCodeElement8N(const std::vector<Node<2>*>& rNodes)
+    HardCodeElement8N(const std::vector<FixNode<2>*>& rNodes)
         : mNodes(rNodes)
     {
         constexpr IntegrationTypeQuad it;
@@ -217,25 +124,23 @@ public:
     }
 
 private:
-    std::vector<Node<2>*> mNodes;
+    std::vector<FixNode<2>*> mNodes;
     std::array<Eigen::Matrix<double, 8, 2>, 4> mDerivativeShapeCache;
     const NuTo::Laws::LinearElastic<2> mLaw = NuTo::Laws::LinearElastic<2>(20000, 0.3, NuTo::ePlaneState::PLANE_STRAIN);
 };
 
-}
-
-BENCHMARK(BuildGradient, HardcodeFixEverything, runner)
+static void Hardcode(benchmark::State& state)
 {
-    std::vector<Benchmark::Node<2>*> nodes;
+    std::vector<FixNode<2>*> nodes;
 
-    Benchmark::Node<2> n0(Eigen::Vector2d({0, 0}));
-    Benchmark::Node<2> n1(Eigen::Vector2d({1, 0}));
-    Benchmark::Node<2> n2(Eigen::Vector2d({1, 1}));
-    Benchmark::Node<2> n3(Eigen::Vector2d({0, 1}));
-    Benchmark::Node<2> n4(Eigen::Vector2d({0.5, 0}));
-    Benchmark::Node<2> n5(Eigen::Vector2d({1, 0.5}));
-    Benchmark::Node<2> n6(Eigen::Vector2d({0.5, 1}));
-    Benchmark::Node<2> n7(Eigen::Vector2d({0, 0.5}));
+    FixNode<2> n0(Eigen::Vector2d({0, 0}));
+    FixNode<2> n1(Eigen::Vector2d({1, 0}));
+    FixNode<2> n2(Eigen::Vector2d({1, 1}));
+    FixNode<2> n3(Eigen::Vector2d({0, 1}));
+    FixNode<2> n4(Eigen::Vector2d({0.5, 0}));
+    FixNode<2> n5(Eigen::Vector2d({1, 0.5}));
+    FixNode<2> n6(Eigen::Vector2d({0.5, 1}));
+    FixNode<2> n7(Eigen::Vector2d({0, 0.5}));
     nodes.push_back(&n0);
     nodes.push_back(&n1);
     nodes.push_back(&n2);
@@ -245,108 +150,14 @@ BENCHMARK(BuildGradient, HardcodeFixEverything, runner)
     nodes.push_back(&n6);
     nodes.push_back(&n7);
 
-    Benchmark::HardCodeElement8N e(nodes);
+    HardCodeElement8N e(nodes);
 
-    while (runner.KeepRunningIterations(1e6))
-    {
+    for (auto _ : state)
         e.BuildInternalGradient();
-    }
 }
+BENCHMARK(Hardcode);
 
-BENCHMARK(BuildGradient, HardcodeDynamic, runner)
-{
-    std::vector<NuTo::NodeBase*> nodes;
-
-    NuTo::NodeDofInfo info;
-    info.mDimension = 2;
-    info.mNumTimeDerivatives = 0;
-    info.mIsDof = true;
-
-    std::map<NuTo::Node::eDof, NuTo::NodeDofInfo> infos;
-    infos[NuTo::Node::eDof::COORDINATES] = info;
-    infos[NuTo::Node::eDof::DISPLACEMENTS] = info;
-
-    NuTo::NodeDof n0(infos);
-    NuTo::NodeDof n1(infos);
-    NuTo::NodeDof n2(infos);
-    NuTo::NodeDof n3(infos);
-    NuTo::NodeDof n4(infos);
-    NuTo::NodeDof n5(infos);
-    NuTo::NodeDof n6(infos);
-    NuTo::NodeDof n7(infos);
-    n0.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0, 0}));
-    n1.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1, 0}));
-    n2.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1, 1}));
-    n3.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0, 1}));
-    n4.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5, 0}));
-    n5.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({1, 0.5}));
-    n6.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0.5, 1}));
-    n7.Set(NuTo::Node::eDof::COORDINATES, 0, Eigen::Vector2d({0, 0.5}));
-    nodes.push_back(&n0);
-    nodes.push_back(&n1);
-    nodes.push_back(&n2);
-    nodes.push_back(&n3);
-    nodes.push_back(&n4);
-    nodes.push_back(&n5);
-    nodes.push_back(&n6);
-    nodes.push_back(&n7);
-
-    Benchmark::HardCodeElement8NDynamic e(nodes);
-
-    while (runner.KeepRunningIterations(1e6))
-    {
-        e.BuildInternalGradient();
-    }
-}
-
-BENCHMARK(BuildGradient, NuTo, runner)
-{
-    NuTo::Structure s(2);
-
-    s.NodeCreate(0, Eigen::Vector2d({0, 0}));
-    s.NodeCreate(1, Eigen::Vector2d({1, 0}));
-    s.NodeCreate(2, Eigen::Vector2d({1, 1}));
-    s.NodeCreate(3, Eigen::Vector2d({0, 1}));
-    s.NodeCreate(4, Eigen::Vector2d({0.5, 0}));
-    s.NodeCreate(5, Eigen::Vector2d({1, .5}));
-    s.NodeCreate(6, Eigen::Vector2d({0.5, 1}));
-    s.NodeCreate(7, Eigen::Vector2d({0, .5}));
-
-
-    int myInterpolationType = s.InterpolationTypeCreate("Quad2D");
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES,
-                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS,
-                           NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeSetIntegrationType(myInterpolationType, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
-
-    int elementID = s.ElementCreate(myInterpolationType, {0, 1, 2, 3, 4, 5, 6, 7});
-
-    s.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    s.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 12);
-    s.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    s.ElementTotalSetConstitutiveLaw(0);
-
-    s.ElementSetConstitutiveLaw(elementID, 0);
-
-    auto section = NuTo::SectionPlane::Create(3., true);
-    s.ElementTotalSetSection(section);
-
-    s.ElementTotalConvertToInterpolationType();
-    std::map<NuTo::Element::eOutput, std::shared_ptr<NuTo::ElementOutputBase>> elementOutputMap;
-    elementOutputMap[NuTo::Element::eOutput::INTERNAL_GRADIENT] =
-            std::make_shared<NuTo::ElementOutputBlockVectorDouble>(s.GetDofStatus());
-
-    NuTo::ElementBase* element = s.ElementGetElementPtr(elementID);
-
-    while (runner.KeepRunningIterations(1e6))
-    {
-        element->Evaluate(elementOutputMap);
-    }
-}
-
-
-BENCHMARK(BuildGradient, NuToPDE, runner)
+static void NuToPde(benchmark::State& state)
 {
     NuTo::NodeSimple n0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple n1(Eigen::Vector2d({1, 0}));
@@ -357,7 +168,7 @@ BENCHMARK(BuildGradient, NuToPDE, runner)
     NuTo::NodeSimple n6(Eigen::Vector2d({0.5, 1}));
     NuTo::NodeSimple n7(Eigen::Vector2d({0, 0.5}));
     std::vector<NuTo::NodeSimple*> coordNodes({&n0, &n1, &n2, &n3, &n4, &n5, &n6, &n7});
-    NuTo::InterpolationQuadSerendipity coordInterpolation(2);
+    NuTo::InterpolationQuadSerendipity coordInterpolation;
     NuTo::ElementFem coordElement(coordNodes, coordInterpolation);
 
     NuTo::NodeSimple nd0(Eigen::Vector2d({0, 0}));
@@ -369,21 +180,25 @@ BENCHMARK(BuildGradient, NuToPDE, runner)
     NuTo::NodeSimple nd6(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nd7(Eigen::Vector2d({0, 0}));
     std::vector<NuTo::NodeSimple*> displNodes({&nd0, &nd1, &nd2, &nd3, &nd4, &nd5, &nd6, &nd7});
-    NuTo::InterpolationQuadSerendipity displInterpolation(2);
+    NuTo::InterpolationQuadSerendipity displInterpolation;
     NuTo::ElementFem displElement(displNodes, displInterpolation);
 
     NuTo::DofType displDof("Displacements", 2);
-    NuTo::ElementCollection elements(coordElement);
-    elements.AddDofElement(displDof, displElement);
+    NuTo::ElementCollectionFem element(coordElement);
+    element.AddDofElement(displDof, displElement);
 
     NuTo::Laws::LinearElastic<2> law(20000, 0.3, NuTo::ePlaneState::PLANE_STRAIN);
-    NuTo::Integrands::TimeDependent::MomentumBalance<2> integrand(displDof, law);
+    NuTo::Integrands::MomentumBalance<2> integrand(displDof, law);
     const NuTo::IntegrationTypeTensorProduct<2> it(2, NuTo::eIntegrationMethod::GAUSS);
 
-    NuTo::Cell cell(elements, it, integrand);
+    NuTo::Cell cell(element, it, 0);
 
-    while (runner.KeepRunningIterations(1e6))
-    {
-        cell.Integrate(NuTo::Integrands::TimeDependent::Gradient());
-    }
+    auto Gradient = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return integrand.Gradient(cellData, cellIpData, 0);
+    };
+
+    for (auto _ : state)
+        cell.Integrate(Gradient);
 }
+BENCHMARK(NuToPde);
+BENCHMARK_MAIN();

@@ -19,14 +19,14 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     // const double lz = 1; // requires something like "Section" ...
     const double E = 6174;
 
-    NuTo::InterpolationQuadLinear interpolationCoordinates(2);
+    NuTo::InterpolationQuadLinear interpolationCoordinates;
     NuTo::NodeSimple nCoord0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nCoord1(Eigen::Vector2d({lx, 0}));
     NuTo::NodeSimple nCoord2(Eigen::Vector2d({lx, ly}));
     NuTo::NodeSimple nCoord3(Eigen::Vector2d({0, ly}));
     NuTo::ElementFem coordinateElement({nCoord0, nCoord1, nCoord2, nCoord3}, interpolationCoordinates);
 
-    NuTo::InterpolationQuadLinear interpolationDisplacements(2);
+    NuTo::InterpolationQuadLinear interpolationDisplacements;
     NuTo::NodeSimple nDispl0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl1(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl2(Eigen::Vector2d({0, 0}));

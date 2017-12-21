@@ -7,11 +7,6 @@ namespace NuTo
 class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
-    InterpolationQuadLinear(int dofDimension)
-        : mDofDimension(dofDimension)
-    {
-    }
-
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
         return std::make_unique<InterpolationQuadLinear>(*this);
@@ -36,13 +31,5 @@ public:
     {
         return 4;
     }
-
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
-private:
-    int mDofDimension;
 };
 } /* NuTo */

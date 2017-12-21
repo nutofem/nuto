@@ -207,11 +207,11 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& mesh,
     switch (gmshType)
     {
     case 1:
-        return mesh.CreateInterpolation(InterpolationTrussLinear(dimension));
+        return mesh.CreateInterpolation(InterpolationTrussLinear());
     case 2:
-        return mesh.CreateInterpolation(InterpolationTriangleLinear(dimension));
+        return mesh.CreateInterpolation(InterpolationTriangleLinear());
     case 3:
-        return mesh.CreateInterpolation(InterpolationQuadLinear(dimension));
+        return mesh.CreateInterpolation(InterpolationQuadLinear());
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
     }

@@ -1,9 +1,14 @@
-#include "Benchmark.h"
-#include "math/NewtonRaphson.h"
 #include <cmath>
+#include <benchmark/benchmark.h>
+
+#include "math/NewtonRaphson.h"
+
+/*
+ * Shows that the performance of the NuTo::NewtonRaphson algorithm is very close to the performace of a handwritten
+ * hardcode algorithm for a cubic scalar equation.
+ */
 
 constexpr double tolerance = 1.e-10;
-constexpr double runtime = .1;
 
 auto ValidProblem()
 {
@@ -11,15 +16,6 @@ auto ValidProblem()
     auto DR = [](double x) { return 3. * x * x - 1; };
     auto Norm = [](double x) { return std::abs(x); };
     return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance);
-}
-
-auto InfoProblem()
-{
-    auto R = [](double x) { return x * x * x - x + 6; };
-    auto DR = [](double x) { return 3. * x * x - 1; };
-    auto Norm = [](double x) { return std::abs(x); };
-    auto Info = [](int i, double x, double r) { std::cout << "NewtonStep: " << i << '\t' << x << '\t' << r << '\n'; };
-    return NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, tolerance, Info);
 }
 
 void Check(double x)
@@ -30,41 +26,32 @@ void Check(double x)
     }
 }
 
-BENCHMARK(Newton, NuToFunction, runner)
+static void NuToAlgorithm(benchmark::State& state)
 {
     auto problem = ValidProblem();
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
         Check(x);
     }
 }
+BENCHMARK(NuToAlgorithm);
 
-BENCHMARK(Newton, NuToFunctionWithInfoToCout, runner)
-{
-    auto problem = InfoProblem();
-    while (runner.KeepRunningTime(runtime))
-    {
-        auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100);
-        Check(x);
-    }
-}
-
-
-BENCHMARK(Newton, NuToFunctionLineSearch, runner)
+static void NuToWithLineSearch(benchmark::State& state)
 {
     auto problem = ValidProblem();
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         auto x = NuTo::NewtonRaphson::Solve(problem, 0., NuTo::NewtonRaphson::DoubleSolver(), 100,
                                             NuTo::NewtonRaphson::LineSearch());
         Check(x);
     }
 }
+BENCHMARK(NuToWithLineSearch);
 
-BENCHMARK(Newton, hardcode, runner)
+static void Hardcode(benchmark::State& state)
 {
-    while (runner.KeepRunningTime(runtime))
+    for (auto _ : state)
     {
         double x = 0;
         double r = x * x * x - x + 6;
@@ -83,3 +70,6 @@ BENCHMARK(Newton, hardcode, runner)
         Check(x);
     }
 }
+BENCHMARK(Hardcode);
+
+BENCHMARK_MAIN();

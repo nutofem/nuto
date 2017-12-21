@@ -1,6 +1,5 @@
 #include <cassert>
 #include "mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.h"
-#include "visualize/VisualizeEnum.h"
 
 
 Eigen::VectorXd NuTo::IntegrationType3D6NGauss1Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
@@ -23,28 +22,4 @@ int NuTo::IntegrationType3D6NGauss1Ip::GetNumIntegrationPoints() const
 double NuTo::IntegrationType3D6NGauss1Ip::GetIntegrationPointWeight(int) const
 {
     return 1;
-}
-
-NuTo::IntegrationTypeBase::IpCellInfo NuTo::IntegrationType3D6NGauss1Ip::GetVisualizationCells() const
-{
-    IpCellInfo ipCellInfo;
-    constexpr int numPoints = 6;
-
-    ipCellInfo.vertices.resize(numPoints);
-    ipCellInfo.vertices[0].localCoords = Eigen::Vector3d(0, 0, -1);
-    ipCellInfo.vertices[1].localCoords = Eigen::Vector3d(1, 0, -1);
-    ipCellInfo.vertices[2].localCoords = Eigen::Vector3d(0, 1, -1);
-
-    ipCellInfo.vertices[3].localCoords = Eigen::Vector3d(0, 0, 1);
-    ipCellInfo.vertices[4].localCoords = Eigen::Vector3d(1, 0, 1);
-    ipCellInfo.vertices[5].localCoords = Eigen::Vector3d(0, 1, 1);
-
-    constexpr int numCells = 1;
-
-    ipCellInfo.cells.resize(numCells);
-    ipCellInfo.cells[0].cellType = NuTo::eCellTypes::WEDGE;
-    ipCellInfo.cells[0].ipId = 0;
-    ipCellInfo.cells[0].pointIds = {0, 1, 2, 3, 4, 5};
-
-    return ipCellInfo;
 }
