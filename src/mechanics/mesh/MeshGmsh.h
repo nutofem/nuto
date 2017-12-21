@@ -19,7 +19,7 @@ public:
     MeshGmsh(const MeshGmsh&) = delete;
     MeshGmsh(MeshGmsh&&) = default;
     MeshGmsh& operator=(const MeshGmsh&) = delete;
-    MeshGmsh& operator=(MeshGmsh&&) = delete;
+    MeshGmsh& operator=(MeshGmsh&&) = default;
     ~MeshGmsh() = default;
 
     explicit MeshGmsh(const std::string& fileName);

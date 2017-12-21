@@ -16,6 +16,9 @@
 #include <vector>
 
 
+// Helper structs (cpp only)
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 struct GmshHeader
 {
     double version;
@@ -50,15 +53,16 @@ struct GmshFileContent
     GmshHeader header;
     int minNodeId = INT_MAX;
     int maxNodeId = INT_MIN;
-    int minElementId = INT_MAX;
-    int maxElementId = INT_MIN;
     int dimension = 1;
     std::vector<GmshNode> nodes;
     std::vector<GmshElement> elements;
     std::vector<GmshPhysicalNames> physicalNames;
 };
 
-GmshHeader ReadGmshHeader(std::ifstream& file)
+// Helper functions (cpp only)
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+static GmshHeader ReadGmshHeader(std::ifstream& file)
 {
     std::string line;
     getline(file, line);
@@ -152,39 +156,31 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
                                     const std::vector<NuTo::NodeSimple*>& nodePtrVec)
 {
     std::map<int, const InterpolationSimple*> interpolationPtrMap;
-    if (fileContent.elements.size() ==
-        static_cast<unsigned int>(fileContent.maxElementId - fileContent.minElementId + 1))
+
+    for (GmshElement gmshElement : fileContent.elements)
     {
-        for (GmshElement gmshElement : fileContent.elements)
+        // Skip node elements
+        if (gmshElement.type == 15)
+            continue;
+
+
+        auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
+        if (interpolationIter == interpolationPtrMap.end())
+            interpolationIter = interpolationPtrMap
+                                        .emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type,
+                                                                                               fileContent.dimension))
+                                        .first;
+        std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
+        for (unsigned int i = 0; i < elementNodes.size(); ++i)
         {
-            // Skip node elements
-            if (gmshElement.type == 15)
-                continue;
-
-
-            auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
-            if (interpolationIter == interpolationPtrMap.end())
-                interpolationIter =
-                        interpolationPtrMap
-                                .emplace(gmshElement.type,
-                                         &CreateElementInterpolation(mMesh, gmshElement.type, fileContent.dimension))
-                                .first;
-            std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
-            for (unsigned int i = 0; i < elementNodes.size(); ++i)
-            {
-                int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
-                elementNodes[i] = nodePtrVec[nodeVectorPos];
-            }
-
-
-            NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
-            AddElementToPhysicalGroup(*elementPtr, GetPhysicalGroupName(fileContent, gmshElement.tags[0]));
-            //        gmshElement.type
+            int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
+            elementNodes[i] = nodePtrVec[nodeVectorPos];
         }
-    }
-    else
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Non contiguous element IDs - not implemented");
+
+
+        NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
+        AddElementToPhysicalGroup(*elementPtr, GetPhysicalGroupName(fileContent, gmshElement.tags[0]));
+        //        gmshElement.type
     }
 }
 
@@ -226,9 +222,6 @@ void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
         file >> element.type;
         file >> numTags;
 
-        fileContent.minElementId = std::min(fileContent.minElementId, element.id);
-        fileContent.maxElementId = std::max(fileContent.maxElementId, element.id);
-
         element.tags.resize(numTags);
         for (int& tag : element.tags)
             file >> tag;
@@ -239,7 +232,8 @@ void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
         std::getline(file, line); // endl
     }
     std::getline(file, line);
-    if (line.compare("$EndElements") != 0)
+    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+    if (line.compare("$ENDELEMENTS") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
 }
 
@@ -271,7 +265,8 @@ void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
         fileContent.dimension = 3;
 
     std::getline(file, line);
-    if (line.compare("$EndNodes") != 0)
+    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+    if (line.compare("$ENDNODES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
 }
 
@@ -292,21 +287,14 @@ void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
         std::getline(file, line);
     }
     std::getline(file, line);
-    if (line.compare("$EndPhysicalNames") != 0)
+
+    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+    if (line.compare("$ENDPHYSICALNAMES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndPhysicalNames not found!");
 }
 
 void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
 {
-    std::map<std::string, std::function<void(std::istream&, GmshFileContent&)>> sectionEvalutionMap{
-            {"NODES", ReadNodesASCII}, {"PHYSICALNAMES", ReadPhysicalNamesASCII}, {"ELEMENTS", ReadElementsASCII},
-            //{"PERIODIC", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
-            //{"NODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
-            //{"ENDNODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
-            //{"ELEMENTNODEDATA", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }},
-            //{"INTERPOLATIONSCHEME", [](std::istream&, GmshFileContent&) { throw NuTo::Exception("Not Implemented"); }}
-    };
-
     std::string line;
     std::getline(file, line);
     if (line[0] == '$')
@@ -315,13 +303,16 @@ void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
         std::string sectionName = line.substr(1, line.size() - 1);
         // capitalize
         std::transform(sectionName.begin(), sectionName.end(), sectionName.begin(), ::toupper);
-        if (sectionName.find("END") == 0)
-            throw NuTo::Exception(__PRETTY_FUNCTION__, "Found unprocessed section closure: " + sectionName);
 
-        auto evalIterator = sectionEvalutionMap.find(sectionName);
-        if (evalIterator == sectionEvalutionMap.end())
+        // Execute section read function
+        if (sectionName.compare("NODES") == 0)
+            ReadNodesASCII(file, fileContent);
+        else if (sectionName.compare("ELEMENTS") == 0)
+            ReadElementsASCII(file, fileContent);
+        else if (sectionName.compare("PHYSICALNAMES") == 0)
+            ReadPhysicalNamesASCII(file, fileContent);
+        else
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh section type: " + sectionName);
-        evalIterator->second(file, fileContent);
     }
 }
 
