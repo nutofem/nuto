@@ -25,8 +25,13 @@ jobs:
           compiler: gcc
         - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
           compiler: clang
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: gcc
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: clang
     allow_failures:
         - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
     fast_finish: true
 
 before_install:

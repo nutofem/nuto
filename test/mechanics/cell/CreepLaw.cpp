@@ -146,7 +146,7 @@ public:
     //! @param cellNum: Number of currently evaluated cell
     //! @param ipNum: Number of currently evaluated integration point
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int cellNum, int ipNum) const override
+    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int, int) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;
