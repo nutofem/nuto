@@ -52,6 +52,12 @@ public:
     //! @return Desired element collection group
     const NuTo::Group<ElementCollection>& GetPhysicalGroup(int physicalGroupId) const;
 
+    //! @brief Gets the MeshFem
+    MeshFem& GetMeshFEM()
+    {
+        return mMesh;
+    }
+
 private:
     //! @brief Adds an element to its corresponding physical group. If the element is part of named group and the group
     //! does not exist, then a named physical group is also created.
