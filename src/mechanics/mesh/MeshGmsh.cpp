@@ -346,33 +346,21 @@ void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
     std::ifstream file;
     file.open(fileName, std::ios::in);
 
-
     if (not file.is_open())
     {
         std::cout << fileName << std::endl;
-        throw Exception(__PRETTY_FUNCTION__, "Error opening input file "
-                                             "" + fileName +
-                                                     ""
-                                                     " for read access.");
+        throw Exception(__PRETTY_FUNCTION__, "Error opening input file " + fileName + " for read access.");
     }
+
     GmshFileContent fileContent;
-
-
     fileContent.header = ReadGmshHeader(file);
 
     if (fileContent.header.isBinary)
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Not implemented yet");
-    }
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented yet");
     else
-    {
-
-
         while (not file.eof())
-        {
             ProcessSectionASCII(file, fileContent);
-        }
-    }
+
     file.close();
 
     CreateMesh(fileContent);
