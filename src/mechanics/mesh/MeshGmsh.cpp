@@ -52,6 +52,14 @@ struct GmshFileContent
     std::vector<GmshPhysicalNames> physicalNames;
 };
 
+void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
+{
+    std::string line;
+    std::getline(rFile, line);
+    if (line.compare(expected) != 0)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, expected + " not found!");
+}
+
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -74,12 +82,12 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
                                                            std::to_string(header.version));
     }
-    std::getline(rFile, line); // $EndMeshFormat
+    ExpectNextLineToBe(rFile, "$EndMeshFormat");
     return header;
 }
 
 
-std::tuple<std::vector<GmshNode>, int> ReadNodesASCII(std::istream& rFile)
+std::tuple<std::vector<GmshNode>, int> ReadNodesASCII(std::ifstream& rFile)
 {
     std::string line;
     std::getline(rFile, line);
@@ -104,14 +112,11 @@ std::tuple<std::vector<GmshNode>, int> ReadNodesASCII(std::istream& rFile)
     if (is3d)
         dimension = 3;
 
-    std::getline(rFile, line);
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-    if (line.compare("$ENDNODES") != 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
+    ExpectNextLineToBe(rFile, "$EndNodes");
     return {std::move(nodes), dimension};
 }
 
-std::vector<GmshElement> ReadElementsASCII(std::istream& rFile)
+std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
 {
     // first element does not exist. Gmsh uses one based indexing
     const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
@@ -139,15 +144,12 @@ std::vector<GmshElement> ReadElementsASCII(std::istream& rFile)
             rFile >> node;
         std::getline(rFile, line); // endl
     }
-    std::getline(rFile, line);
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-    if (line.compare("$ENDELEMENTS") != 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
+    ExpectNextLineToBe(rFile, "$EndElements");
     return elements;
 }
 
 
-std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& rFile)
+std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::ifstream& rFile)
 {
     std::string line;
     std::getline(rFile, line);
@@ -164,15 +166,11 @@ std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& rFile)
         name.name.erase(std::remove(name.name.begin(), name.name.end(), '\"'), name.name.end());
         std::getline(rFile, line);
     }
-    std::getline(rFile, line);
-
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-    if (line.compare("$ENDPHYSICALNAMES") != 0)
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndPhysicalNames not found!");
+    ExpectNextLineToBe(rFile, "$EndPhysicalNames");
     return physicalNames;
 }
 
-void ProcessSectionASCII(std::istream& rFile, GmshFileContent& rFileContent)
+void ProcessSectionASCII(std::ifstream& rFile, GmshFileContent& rFileContent)
 {
     std::string line;
     std::getline(rFile, line);
