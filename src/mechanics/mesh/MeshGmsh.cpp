@@ -80,39 +80,43 @@ static GmshHeader ReadGmshHeader(std::ifstream& file)
 }
 
 
-void ReadNodesASCII(std::istream& file, GmshFileContent& fileContent)
+std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& file)
 {
     std::string line;
     std::getline(file, line);
     int numNodes = std::stoi(line);
 
-    fileContent.nodes.resize(numNodes);
+    int dimension = 1;
+    int minNodeId = INT_MAX;
+    int maxNodeId = INT_MIN;
+    std::vector<GmshNode> nodes(numNodes);
     bool is2d = false;
     bool is3d = false;
-    for (GmshNode& node : fileContent.nodes)
+    for (GmshNode& node : nodes)
     {
         file >> node.id;
         file >> node.coordinates[0];
         file >> node.coordinates[1];
         file >> node.coordinates[2];
-        fileContent.minNodeId = std::min(fileContent.minNodeId, node.id);
-        fileContent.maxNodeId = std::max(fileContent.maxNodeId, node.id);
+        minNodeId = std::min(minNodeId, node.id);
+        maxNodeId = std::max(maxNodeId, node.id);
         is2d = (is2d || node.coordinates[1] != 0);
         is3d = (is3d || node.coordinates[2] != 0);
         std::getline(file, line);
     }
     if (is2d)
-        fileContent.dimension = 2;
+        dimension = 2;
     if (is3d)
-        fileContent.dimension = 3;
+        dimension = 3;
 
     std::getline(file, line);
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDNODES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
+    return {std::move(nodes), dimension, minNodeId, maxNodeId};
 }
 
-void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
+std::vector<GmshElement> ReadElementsASCII(std::istream& file)
 {
     // first element does not exist. Gmsh uses one based indexing
     const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
@@ -123,8 +127,8 @@ void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
     std::getline(file, line);
     int numElements = std::stoi(line);
 
-    fileContent.elements.resize(numElements);
-    for (GmshElement& element : fileContent.elements)
+    std::vector<GmshElement> elements(numElements);
+    for (GmshElement& element : elements)
     {
         int numTags;
         file >> element.id;
@@ -144,17 +148,18 @@ void ReadElementsASCII(std::istream& file, GmshFileContent& fileContent)
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDELEMENTS") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
+    return elements;
 }
 
 
-void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
+std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& file)
 {
     std::string line;
     std::getline(file, line);
     int numNames = std::stoi(line);
 
-    fileContent.physicalNames.resize(numNames);
-    for (GmshPhysicalNames& name : fileContent.physicalNames)
+    std::vector<GmshPhysicalNames> physicalNames(numNames);
+    for (GmshPhysicalNames& name : physicalNames)
     {
         file >> name.dimension;
         file >> name.id;
@@ -169,9 +174,10 @@ void ReadPhysicalNamesASCII(std::istream& file, GmshFileContent& fileContent)
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDPHYSICALNAMES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndPhysicalNames not found!");
+    return physicalNames;
 }
 
-void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
+void ProcessSectionASCII(std::istream& file, GmshFileContent& rFileContent)
 {
     std::string line;
     std::getline(file, line);
@@ -184,11 +190,12 @@ void ProcessSectionASCII(std::istream& file, GmshFileContent& fileContent)
 
         // Execute section read function
         if (sectionName.compare("NODES") == 0)
-            ReadNodesASCII(file, fileContent);
+            std::tie(rFileContent.nodes, rFileContent.dimension, rFileContent.minNodeId, rFileContent.maxNodeId) =
+                    ReadNodesASCII(file);
         else if (sectionName.compare("ELEMENTS") == 0)
-            ReadElementsASCII(file, fileContent);
+            rFileContent.elements = ReadElementsASCII(file);
         else if (sectionName.compare("PHYSICALNAMES") == 0)
-            ReadPhysicalNamesASCII(file, fileContent);
+            rFileContent.physicalNames = ReadPhysicalNamesASCII(file);
         else
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh section type: " + sectionName);
     }
