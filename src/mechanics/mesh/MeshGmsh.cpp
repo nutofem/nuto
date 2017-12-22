@@ -215,14 +215,10 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
 
 std::string GetPhysicalGroupName(const GmshFileContent& fileContent, int groupId)
 {
-    std::string physicalName{""};
     for (const GmshPhysicalNames& gmshPhysicalName : fileContent.physicalNames)
         if (gmshPhysicalName.id == groupId)
-        {
-            physicalName = gmshPhysicalName.name;
-            break;
-        }
-    return physicalName;
+            return gmshPhysicalName.name;
+    return "";
 }
 
 
@@ -329,19 +325,16 @@ void NuTo::MeshGmsh::ReadGmshFile(const std::string& fileName)
     file.open(fileName, std::ios::in);
 
     if (not file.is_open())
-    {
-        std::cout << fileName << std::endl;
         throw Exception(__PRETTY_FUNCTION__, "Error opening input file " + fileName + " for read access.");
-    }
 
     GmshFileContent fileContent;
     fileContent.header = ReadGmshHeader(file);
 
     if (fileContent.header.isBinary)
         throw Exception(__PRETTY_FUNCTION__, "Not implemented yet");
-    else
-        while (not file.eof())
-            ProcessSectionASCII(file, fileContent);
+
+    while (not file.eof())
+        ProcessSectionASCII(file, fileContent);
 
     file.close();
 
