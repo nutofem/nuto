@@ -8,19 +8,32 @@ notifications:
         on_success: change  # always|never|change
         on_failure: always
         on_start: never
-compiler:
-    - clang
-    - gcc
-env:
-    - BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
-    - BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
-matrix:
-    exclude:
-        - compiler: clang
-          env: BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
-        - compiler: clang
-          env: BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
+
+jobs:
+    include:
+        - stage: normal builds
+          env: BUILD_TYPE=Release OPENMP=FALSE
+          compiler: clang
+        - env: BUILD_TYPE=Release OPENMP=TRUE
+          compiler: gcc
+        - env: BUILD_TYPE=Release OPENMP=FALSE
+          compiler: gcc
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=--coverage
+          compiler: gcc
+        - stage: compiler warnings
+          env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+          compiler: gcc
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+          compiler: clang
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: gcc
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: clang
+    allow_failures:
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+    fast_finish: true
+
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
