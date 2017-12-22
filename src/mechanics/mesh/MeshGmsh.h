@@ -62,9 +62,10 @@ private:
     //! @brief Adds an element to its corresponding physical group. If the element is part of named group and the group
     //! does not exist, then a named physical group is also created.
     //! @param fileContent: Special structure (see MeshGmsh.cpp) that holds the read file content
-    //! @param element: Current element
+    //! @param rElement: Current element
     //! @param physicalGroupId: Id of the elements physical group
-    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, ElementCollection& element, int physicalGroupId);
+    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, ElementCollection& rElement,
+                                   int physicalGroupId);
 
     //! @brief Creates all nodes defined in the gmsh file
     //! @param fileContent: Special structure (see MeshGmsh.cpp) that holds the read file content

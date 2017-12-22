@@ -56,34 +56,34 @@ struct GmshFileContent
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-GmshHeader ReadGmshHeader(std::ifstream& file)
+GmshHeader ReadGmshHeader(std::ifstream& rFile)
 {
     std::string line;
-    std::getline(file, line);
+    std::getline(rFile, line);
 
     int binary;
     GmshHeader header;
-    file >> header.version;
-    file >> binary;
-    file >> header.doubleSize;
+    rFile >> header.version;
+    rFile >> binary;
+    rFile >> header.doubleSize;
 
     header.isBinary = (binary == 1);
 
-    std::getline(file, line); // endl
+    std::getline(rFile, line); // endl
     if (header.version < 2.)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
                                                            std::to_string(header.version));
     }
-    std::getline(file, line); // $EndMeshFormat
+    std::getline(rFile, line); // $EndMeshFormat
     return header;
 }
 
 
-std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& file)
+std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& rFile)
 {
     std::string line;
-    std::getline(file, line);
+    std::getline(rFile, line);
     int numNodes = std::stoi(line);
 
     int dimension = 1;
@@ -94,29 +94,29 @@ std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& fi
     bool is3d = false;
     for (GmshNode& node : nodes)
     {
-        file >> node.id;
-        file >> node.coordinates[0];
-        file >> node.coordinates[1];
-        file >> node.coordinates[2];
+        rFile >> node.id;
+        rFile >> node.coordinates[0];
+        rFile >> node.coordinates[1];
+        rFile >> node.coordinates[2];
         minNodeId = std::min(minNodeId, node.id);
         maxNodeId = std::max(maxNodeId, node.id);
         is2d = (is2d || node.coordinates[1] != 0);
         is3d = (is3d || node.coordinates[2] != 0);
-        std::getline(file, line);
+        std::getline(rFile, line);
     }
     if (is2d)
         dimension = 2;
     if (is3d)
         dimension = 3;
 
-    std::getline(file, line);
+    std::getline(rFile, line);
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDNODES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
     return {std::move(nodes), dimension, minNodeId, maxNodeId};
 }
 
-std::vector<GmshElement> ReadElementsASCII(std::istream& file)
+std::vector<GmshElement> ReadElementsASCII(std::istream& rFile)
 {
     // first element does not exist. Gmsh uses one based indexing
     const std::array<unsigned int, 32> elementNumNodesLookUp{0,  2,  3,  4,  4, 8, 6,  5,  3,  6, 9,
@@ -124,27 +124,27 @@ std::vector<GmshElement> ReadElementsASCII(std::istream& file)
                                                              12, 15, 15, 21, 4, 5, 6,  20, 26, 56};
 
     std::string line;
-    std::getline(file, line);
+    std::getline(rFile, line);
     int numElements = std::stoi(line);
 
     std::vector<GmshElement> elements(numElements);
     for (GmshElement& element : elements)
     {
         int numTags;
-        file >> element.id;
-        file >> element.type;
-        file >> numTags;
+        rFile >> element.id;
+        rFile >> element.type;
+        rFile >> numTags;
 
         element.tags.resize(numTags);
         for (int& tag : element.tags)
-            file >> tag;
+            rFile >> tag;
 
         element.nodes.resize(elementNumNodesLookUp[element.type]);
         for (int& node : element.nodes)
-            file >> node;
-        std::getline(file, line); // endl
+            rFile >> node;
+        std::getline(rFile, line); // endl
     }
-    std::getline(file, line);
+    std::getline(rFile, line);
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDELEMENTS") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndElements not found!");
@@ -152,24 +152,24 @@ std::vector<GmshElement> ReadElementsASCII(std::istream& file)
 }
 
 
-std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& file)
+std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& rFile)
 {
     std::string line;
-    std::getline(file, line);
+    std::getline(rFile, line);
     int numNames = std::stoi(line);
 
     std::vector<GmshPhysicalNames> physicalNames(numNames);
     for (GmshPhysicalNames& name : physicalNames)
     {
-        file >> name.dimension;
-        file >> name.id;
-        file >> name.name;
+        rFile >> name.dimension;
+        rFile >> name.id;
+        rFile >> name.name;
 
         // remove quotation marks from string
         name.name.erase(std::remove(name.name.begin(), name.name.end(), '\"'), name.name.end());
-        std::getline(file, line);
+        std::getline(rFile, line);
     }
-    std::getline(file, line);
+    std::getline(rFile, line);
 
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDPHYSICALNAMES") != 0)
@@ -177,10 +177,10 @@ std::vector<GmshPhysicalNames> ReadPhysicalNamesASCII(std::istream& file)
     return physicalNames;
 }
 
-void ProcessSectionASCII(std::istream& file, GmshFileContent& rFileContent)
+void ProcessSectionASCII(std::istream& rFile, GmshFileContent& rFileContent)
 {
     std::string line;
-    std::getline(file, line);
+    std::getline(rFile, line);
     if (line[0] == '$')
     {
         // remove $
@@ -191,28 +191,28 @@ void ProcessSectionASCII(std::istream& file, GmshFileContent& rFileContent)
         // Execute section read function
         if (sectionName.compare("NODES") == 0)
             std::tie(rFileContent.nodes, rFileContent.dimension, rFileContent.minNodeId, rFileContent.maxNodeId) =
-                    ReadNodesASCII(file);
+                    ReadNodesASCII(rFile);
         else if (sectionName.compare("ELEMENTS") == 0)
-            rFileContent.elements = ReadElementsASCII(file);
+            rFileContent.elements = ReadElementsASCII(rFile);
         else if (sectionName.compare("PHYSICALNAMES") == 0)
-            rFileContent.physicalNames = ReadPhysicalNamesASCII(file);
+            rFileContent.physicalNames = ReadPhysicalNamesASCII(rFile);
         else
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh section type: " + sectionName);
     }
 }
 
 
-const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& mesh, int gmshType, int dimension)
+const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh, int gmshType, int dimension)
 {
     using namespace NuTo;
     switch (gmshType)
     {
     case 1:
-        return mesh.CreateInterpolation(InterpolationTrussLinear());
+        return rMesh.CreateInterpolation(InterpolationTrussLinear());
     case 2:
-        return mesh.CreateInterpolation(InterpolationTriangleLinear());
+        return rMesh.CreateInterpolation(InterpolationTriangleLinear());
     case 3:
-        return mesh.CreateInterpolation(InterpolationQuadLinear());
+        return rMesh.CreateInterpolation(InterpolationQuadLinear());
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
     }
@@ -310,19 +310,19 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
 }
 
 
-void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::ElementCollection& element,
+void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::ElementCollection& rElement,
                                                int physicalGroupId)
 {
     // Regarding the map/iterator stuff: https://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
     auto physGroupIt = mPhysicalGroups.lower_bound(physicalGroupId);
     if (physGroupIt != mPhysicalGroups.end() && !(mPhysicalGroups.key_comp()(physicalGroupId, physGroupIt->first)))
         // Add to existing group
-        physGroupIt->second.Add(element);
+        physGroupIt->second.Add(rElement);
     else
     {
         // Create new group
         physGroupIt =
-                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<ElementCollection>(element));
+                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<ElementCollection>(rElement));
 
         // Create new named group, if a name is defined
         std::string physicalName = GetPhysicalGroupName(fileContent, physicalGroupId);
