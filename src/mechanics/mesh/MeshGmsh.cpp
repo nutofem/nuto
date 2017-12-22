@@ -65,7 +65,7 @@ struct GmshFileContent
 static GmshHeader ReadGmshHeader(std::ifstream& file)
 {
     std::string line;
-    getline(file, line);
+    std::getline(file, line);
 
     int binary;
     GmshHeader header;
@@ -81,7 +81,7 @@ static GmshHeader ReadGmshHeader(std::ifstream& file)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
                                                            std::to_string(header.version));
     }
-    getline(file, line); // $EndMeshFormat
+    std::getline(file, line); // $EndMeshFormat
     return header;
 }
 
