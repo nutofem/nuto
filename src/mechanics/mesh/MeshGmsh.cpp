@@ -8,6 +8,7 @@
 #include <array>
 #include <climits>
 #include <fstream>
+#include <unordered_map>
 
 
 // Helper structs (cpp only)
@@ -45,8 +46,6 @@ struct GmshPhysicalNames
 struct GmshFileContent
 {
     GmshHeader header;
-    int minNodeId = INT_MAX;
-    int maxNodeId = INT_MIN;
     int dimension = 1;
     std::vector<GmshNode> nodes;
     std::vector<GmshElement> elements;
@@ -80,15 +79,13 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
 }
 
 
-std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& rFile)
+std::tuple<std::vector<GmshNode>, int> ReadNodesASCII(std::istream& rFile)
 {
     std::string line;
     std::getline(rFile, line);
     int numNodes = std::stoi(line);
 
     int dimension = 1;
-    int minNodeId = INT_MAX;
-    int maxNodeId = INT_MIN;
     std::vector<GmshNode> nodes(numNodes);
     bool is2d = false;
     bool is3d = false;
@@ -98,8 +95,6 @@ std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& rF
         rFile >> node.coordinates[0];
         rFile >> node.coordinates[1];
         rFile >> node.coordinates[2];
-        minNodeId = std::min(minNodeId, node.id);
-        maxNodeId = std::max(maxNodeId, node.id);
         is2d = (is2d || node.coordinates[1] != 0);
         is3d = (is3d || node.coordinates[2] != 0);
         std::getline(rFile, line);
@@ -113,7 +108,7 @@ std::tuple<std::vector<GmshNode>, int, int, int> ReadNodesASCII(std::istream& rF
     std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     if (line.compare("$ENDNODES") != 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "$EndNodes not found!");
-    return {std::move(nodes), dimension, minNodeId, maxNodeId};
+    return {std::move(nodes), dimension};
 }
 
 std::vector<GmshElement> ReadElementsASCII(std::istream& rFile)
@@ -190,8 +185,7 @@ void ProcessSectionASCII(std::istream& rFile, GmshFileContent& rFileContent)
 
         // Execute section read function
         if (sectionName.compare("NODES") == 0)
-            std::tie(rFileContent.nodes, rFileContent.dimension, rFileContent.minNodeId, rFileContent.maxNodeId) =
-                    ReadNodesASCII(rFile);
+            std::tie(rFileContent.nodes, rFileContent.dimension) = ReadNodesASCII(rFile);
         else if (sectionName.compare("ELEMENTS") == 0)
             rFileContent.elements = ReadElementsASCII(rFile);
         else if (sectionName.compare("PHYSICALNAMES") == 0)
@@ -257,27 +251,23 @@ const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(int
     return physGroupIt->second;
 }
 
-std::vector<NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
+std::unordered_map<int, NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
 {
-    std::vector<NodeSimple*> nodePtrVec(fileContent.maxNodeId - fileContent.minNodeId + 1, nullptr);
+    std::unordered_map<int, NodeSimple*> nodePtrs;
     Eigen::VectorXd coords(fileContent.dimension);
 
     for (const GmshNode& gmshNode : fileContent.nodes)
     {
-        unsigned int vectorPos = gmshNode.id - fileContent.minNodeId;
         for (int i = 0; i < fileContent.dimension; ++i)
             coords[i] = gmshNode.coordinates[i];
-
-        if (vectorPos >= nodePtrVec.size())
-            throw Exception(__PRETTY_FUNCTION__, "Internal error - Calculated node position bigger than vector size!");
-        nodePtrVec[vectorPos] = &(mMesh.Nodes.Add(coords));
+        nodePtrs[gmshNode.id] = &(mMesh.Nodes.Add(coords));
     }
-    return nodePtrVec;
+    return nodePtrs;
 }
 
 
 void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
-                                    const std::vector<NuTo::NodeSimple*>& nodePtrVec)
+                                    const std::unordered_map<int, NuTo::NodeSimple*>& nodePtrs)
 {
     std::map<int, const InterpolationSimple*> interpolationPtrMap;
 
@@ -287,7 +277,6 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
         if (gmshElement.type == 15)
             continue;
 
-
         auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
         if (interpolationIter == interpolationPtrMap.end())
             interpolationIter = interpolationPtrMap
@@ -296,13 +285,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
                                         .first;
         std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
         for (unsigned int i = 0; i < elementNodes.size(); ++i)
-        {
-            int nodeVectorPos = gmshElement.nodes[i] - fileContent.minNodeId;
-            if (nodePtrVec[nodeVectorPos] == nullptr)
-                throw Exception(__PRETTY_FUNCTION__, "Internal error - No node found! ID mapping is wrong");
-            elementNodes[i] = nodePtrVec[nodeVectorPos];
-        }
-
+            elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
 
         NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
         AddElementToPhysicalGroup(fileContent, *elementPtr, gmshElement.tags[0]);
@@ -336,8 +319,7 @@ void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileConten
 
 void NuTo::MeshGmsh::CreateMesh(const GmshFileContent& fileContent)
 {
-    std::vector<NuTo::NodeSimple*> nodePtrVec = CreateNodes(fileContent);
-    CreateElements(fileContent, nodePtrVec);
+    CreateElements(fileContent, CreateNodes(fileContent));
 }
 
 

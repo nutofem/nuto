@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
-class GmshFileContent;
+struct GmshFileContent;
 
 namespace NuTo
 {
@@ -72,13 +73,14 @@ private:
     //! @return Vector containing pointers to all nodes
     //! @remark The node dimension is determined automatically. If at least one node has a y-coordinate the dimension is
     //! set to 2d (or 3d). If at least one node has a z-coordinate the dimension is set to 3d.
-    //! @remark The returned vector is used in CreateElements to easily find the nodes connected to a specific gmsh ID.
-    std::vector<NodeSimple*> CreateNodes(const GmshFileContent& fileContent);
+    //! @remark The returned collection is used in CreateElements to easily find the nodes connected to a specific gmsh
+    //! ID.
+    std::unordered_map<int, NodeSimple*> CreateNodes(const GmshFileContent& fileContent);
 
     //! @brief Creates all elements defined in the gmsh file
     //! @param fileContent: Special structure (see MeshGmsh.cpp) that holds the read file content
-    //! @param nodePtrVec: Vector that holds pointers to all created elements. (See CreateNodes)
-    void CreateElements(const GmshFileContent& fileContent, const std::vector<NodeSimple*>& nodePtrVec);
+    //! @param nodePtrs: Collection that holds pointers to all created elements. (See CreateNodes)
+    void CreateElements(const GmshFileContent& fileContent, const std::unordered_map<int, NodeSimple*>& nodePtrs);
 
     //! @brief Fills the MeshFem member from gmsh file content
     //! @param fileContent: Special structure (see MeshGmsh.cpp) that holds the read file content
