@@ -1,46 +1,28 @@
-#include "Benchmark.h"
-#include "mechanics/constraintsPde/Constraints.h"
+#include <benchmark/benchmark.h>
+#include "mechanics/constraints/Constraints.h"
+
+/*
+ * The constraint creation requires checks with all previously created constraints. In a naive implementation, this has
+ * O(N^2) complexity, which is bad (too slow). This benchmark calculates the complexity - hopefully to be O(N log N).
+ */
 
 auto zero = [](double) { return 0.; };
 const NuTo::DofType d("...", 1);
 
-
-void Run(BenchmarkInternal::Runner& runner, int size)
+void Constraints(benchmark::State& state)
 {
-    std::vector<NuTo::NodeSimple> nodes(size, NuTo::NodeSimple(0));
+    std::vector<NuTo::NodeSimple> nodes(state.range(0), NuTo::NodeSimple(0));
     for (int i = 0; i < nodes.size(); ++i)
         nodes[i].SetDofNumber(0, i);
 
-    while (runner.KeepRunningTime(0.1))
+    for (auto _ : state)
     {
-        NuTo::ConstraintPde::Constraints c;
+        NuTo::Constraint::Constraints c;
         for (int i = 0; i < nodes.size(); ++i)
             c.Add(d, {nodes[i], 0, zero});
     }
+    state.SetComplexityN(state.range(0));
 }
 
-BENCHMARK(Constraints, c100, runner)
-{
-    Run(runner, 100);
-};
-
-BENCHMARK(Constraints, c1000, runner)
-{
-    Run(runner, 1000);
-};
-
-BENCHMARK(Constraints, c10000, runner)
-{
-    Run(runner, 10000);
-};
-
-BENCHMARK(Constraints, c100000, runner)
-{
-    Run(runner, 100000);
-};
-
-BENCHMARK(Constraints, c1000000, runner)
-{
-    Run(runner, 1000000);
-};
-
+BENCHMARK(Constraints)->RangeMultiplier(10)->Range(1, 1e6)->Complexity();
+BENCHMARK_MAIN();

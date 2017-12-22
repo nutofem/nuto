@@ -20,9 +20,6 @@ set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
 check_for_dependencies()
 
-configure_file(${CMAKE_SOURCE_DIR}/scripts/cmake/CTestCustom.cmake
-    ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
-
 add_subdirectory(external)
 
 if(ENABLE_PYTHON)
@@ -34,10 +31,12 @@ add_subdirectory(src)
 
 #test Environment
 include(CTest)
-add_subdirectory(test)
-add_subdirectory(applications/integrationtests)
-add_subdirectory(applications/examples)
-add_subdirectory(applications/benchmark)
+add_subdirectory(test EXCLUDE_FROM_ALL)
+add_subdirectory(applications/integrationtests EXCLUDE_FROM_ALL)
+add_subdirectory(applications/examples EXCLUDE_FROM_ALL)
+if(benchmark_FOUND)
+    add_subdirectory(applications/benchmark EXCLUDE_FROM_ALL)
+endif()
 
 # Custom examples are applications you don't want to add to the repository, but
 # that should still be picked up by CMake. If this directory is empty, nothing
@@ -51,10 +50,6 @@ install(DIRECTORY src/
     FILES_MATCHING PATTERN "*.h"
     )
 
-install(FILES scripts/NuToMacros.cmake
-    DESTINATION lib/cmake/NuTo
-    )
-
 install(EXPORT NuToTargets
     FILE NuToConfig.cmake
     NAMESPACE NuTo::
@@ -63,4 +58,4 @@ install(EXPORT NuToTargets
 
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
-add_custom_target(headers SOURCES ${HeaderFiles})
+#add_custom_target(headers SOURCES ${HeaderFiles})

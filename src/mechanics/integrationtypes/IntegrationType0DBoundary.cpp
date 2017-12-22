@@ -34,13 +34,3 @@ int IntegrationType0DBoundary::GetDimension() const
 {
     return 0;
 }
-
-void NuTo::IntegrationType0DBoundary::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>&,
-                                                            unsigned int& NumVisualizationCells,
-                                                            std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
-                                                            std::vector<unsigned int>&) const
-{
-    // no visualisation since its a 0D element
-    NumVisualizationPoints = 0;
-    NumVisualizationCells = 0;
-}

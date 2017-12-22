@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(NodeSimpleValues)
 BOOST_AUTO_TEST_CASE(NodeSimpleDofNumbers)
 {
     NuTo::NodeSimple node(Eigen::Vector3d{1., 2., 3.});
-    BOOST_CHECK_EQUAL(node.GetDofNumber(0), 0);
+    BOOST_CHECK_EQUAL(node.GetDofNumber(0), -1);
 
     node.SetDofNumber(1, 42);
     BOOST_CHECK_EQUAL(node.GetDofNumber(1), 42);

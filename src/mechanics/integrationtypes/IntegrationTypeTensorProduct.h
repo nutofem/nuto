@@ -39,12 +39,6 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
-    void GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                               std::vector<double>& VisualizationPointLocalCoordinates,
-                               unsigned int& NumVisualizationCells,
-                               std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                               std::vector<unsigned int>& VisualizationCellsIncidence,
-                               std::vector<unsigned int>& VisualizationCellsIP) const override;
 private:
     //! @brief ... 1D integration points coordinates
     std::vector<double> mIPts1D;
@@ -52,9 +46,5 @@ private:
     std::vector<Eigen::Matrix<double, TDim, 1>> mIPts;
     //! @brief ... weights for the integration
     std::vector<double> mWeights;
-
-    //! @brief ... visualization points in 1D
-    void GetVisualizationPoints(unsigned int& NumVisualizationPoints,
-                                std::vector<double>& VisualizationPointLocalCoordinates) const;
 };
 } // namespace

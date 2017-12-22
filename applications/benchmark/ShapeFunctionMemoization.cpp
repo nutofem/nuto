@@ -1,13 +1,22 @@
-#include "Benchmark.h"
+#include <benchmark/benchmark.h>
 
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "math/NaturalCoordinateMemoizer.h"
 
+#include <memory>
 #include <vector>
 #include <unordered_map>
+
+/*
+ * Benchmarks various implementations of the ShapeFunctionMemoization based on
+ *  - vector
+ *      Obviously, vector is fastest but causes problems based on its 'rasterized' implementation. IMO this requires
+ *      that user know exactly how this is implemented to properly identify bugs.
+ *  - unordered_map
+ *      Requires a not obvious hash function floating point coordinates and is not faster that the much simpler map ...
+ *  - map
+ *
+ */
 
 //! @brief transforms a vector of natural node coordinates to a reasonable id
 template <int TRaster>
@@ -104,11 +113,11 @@ auto testFunction = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectra
 using result = Eigen::Matrix<double, 125, 3>;
 
 template <typename TMemoizer>
-void Run(BenchmarkInternal::Runner& runner)
+void Run(benchmark::State& state)
 {
     TMemoizer memo(testFunction);
     Lobatto l;
-    while (runner.KeepRunningTime(1))
+    for (auto _ : state)
         for (const auto& ip : l.ips)
             memo.Get(ip);
 }
@@ -186,18 +195,8 @@ private:
     std::function<TResult(TNaturalCoords)> mFunction;
 };
 
+BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizer<result, Eigen::Vector3d>);
+BENCHMARK_TEMPLATE(Run, NuTo::NaturalCoordinateMemoizerMap<result, Eigen::Vector3d>);
+BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizerUnorderedMap<result, Eigen::Vector3d>);
 
-BENCHMARK(Hash, Vector, runner)
-{
-    Run<NaturalCoordinateMemoizer<result, Eigen::Vector3d>>(runner);
-}
-
-BENCHMARK(Hash, Map, runner)
-{
-    Run<NuTo::NaturalCoordinateMemoizerMap<result, Eigen::Vector3d>>(runner);
-}
-
-BENCHMARK(Hash, Unordered, runner)
-{
-    Run<NaturalCoordinateMemoizerUnorderedMap<result, Eigen::Vector3d>>(runner);
-}
+BENCHMARK_MAIN();

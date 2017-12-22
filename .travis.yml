@@ -33,7 +33,6 @@ before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
     - ./scripts/install_gmsh.sh
-    - ./scripts/install_cmake.sh
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
     - sudo apt-get -qq install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev lcov curl libglu1-mesa-dev
@@ -45,8 +44,6 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ..; fi
 script:
     - make -j2 unit
-    #- make -j2 && make -j2 integrationtests # need to make python modules before integrationtests
-    #- if [[ "$EXAMPLES" == "TRUE" ]]; then make -j2 examples; fi
 after_success:
     - cd ..
     - ./scripts/upload_coverage.sh

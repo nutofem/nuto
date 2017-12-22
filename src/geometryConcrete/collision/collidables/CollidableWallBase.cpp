@@ -6,7 +6,7 @@
  */
 
 #include <iomanip>
-#include <eigen3/Eigen/Dense> // for cross product
+#include <Eigen/Dense> // for cross product
 
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
