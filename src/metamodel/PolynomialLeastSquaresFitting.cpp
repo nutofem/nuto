@@ -1,6 +1,6 @@
 #include "metamodel/PolynomialLeastSquaresFitting.h"
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseMatrixCSRGeneral.h"
+#include <Eigen/Sparse>
+#include <Eigen/SparseLU>
 
 // constructor
 NuTo::PolynomialLeastSquaresFitting::PolynomialLeastSquaresFitting()
@@ -48,7 +48,7 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
     int N_SupportPoints = this->mSupportPoints.GetNumSupportPoints();
 
     mPolynomialCoeffs.resize(mDegree + 1);
-    NuTo::SparseMatrixCSRGeneral<double> lhs(mDegree + 1, mDegree + 1);
+    Eigen::SparseMatrix<double> lhs(mDegree + 1, mDegree + 1);
     Eigen::VectorXd rhs(mDegree + 1);
     rhs.setZero();
 
@@ -60,7 +60,7 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
             {
                 if (i >= int(mBoundaryConditions.size()))
                 {
-                    lhs.AddValue(i, j, pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i + j));
+                    lhs.insert(i, j) = pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i + j);
                 }
             }
             rhs(i) += pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i) *
@@ -71,17 +71,17 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
     {
         for (int j = 0; j <= mDegree; j++)
         {
-            lhs.AddValue(i, j, pow(mBoundaryConditions[i].first, j));
+            lhs.insert(i, j) = pow(mBoundaryConditions[i].first, j);
         }
         rhs(i) = mBoundaryConditions[i].second;
     }
-    lhs.SetOneBasedIndexing();
 
+    lhs.makeCompressed();
 
-    NuTo::SparseDirectSolverMUMPS Solver;
-    Solver.SetShowTime(false);
-
-    Solver.Solve(lhs, rhs, mPolynomialCoeffs);
+    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+    solver.analyzePattern(lhs);
+    solver.factorize(lhs);
+    mPolynomialCoeffs = solver.solve(rhs);
 }
 
 //! @brief ... Gets the degree of the polynom
