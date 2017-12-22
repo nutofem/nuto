@@ -56,7 +56,7 @@ struct GmshFileContent
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-static GmshHeader ReadGmshHeader(std::ifstream& file)
+GmshHeader ReadGmshHeader(std::ifstream& file)
 {
     std::string line;
     std::getline(file, line);
