@@ -8,33 +8,45 @@ notifications:
         on_success: change  # always|never|change
         on_failure: always
         on_start: never
-compiler:
-    - clang
-    - gcc
-env:
-    - BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
-    - BUILD_TYPE=Release OPENMP=FALSE EXAMPLES=TRUE
-    - BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
-matrix:
-    exclude:
-        - compiler: clang
-          env: BUILD_TYPE=Debug   OPENMP=FALSE EXAMPLES=FALSE COVERAGE=--coverage
-        - compiler: clang
-          env: BUILD_TYPE=Release OPENMP=TRUE  EXAMPLES=TRUE
+
+jobs:
+    include:
+        - stage: normal builds
+          env: BUILD_TYPE=Release OPENMP=FALSE
+          compiler: clang
+        - env: BUILD_TYPE=Release OPENMP=TRUE
+          compiler: gcc
+        - env: BUILD_TYPE=Release OPENMP=FALSE
+          compiler: gcc
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=--coverage
+          compiler: gcc
+        - stage: compiler warnings
+          env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+          compiler: gcc
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+          compiler: clang
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: gcc
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+          compiler: clang
+    allow_failures:
+        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
+        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
+    fast_finish: true
+
 before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - ./scripts/install_numpy.sh
     - ./scripts/install_gmsh.sh
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev
-    - sudo apt-get install -y lcov curl libglu1-mesa-dev
+    - sudo apt-get -qq install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev lcov curl libglu1-mesa-dev
 before_script:
     - mkdir build
     - cd build
-    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE -DENABLE_MPI=TRUE"
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS ..; fi
+    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_MPI=TRUE"
+    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ..; fi
 script:
     - make -j2 unit
 after_success:

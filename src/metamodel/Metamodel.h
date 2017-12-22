@@ -63,10 +63,8 @@ public:
                                  Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax) const;
     virtual void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates,
                                   Eigen::MatrixXd& rOutputCoordinates) const = 0;
-    virtual void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates,
-                                                    Eigen::MatrixXd& rOutputCoordinates,
-                                                    Eigen::MatrixXd& rOutputCoordinatesMin,
-                                                    Eigen::MatrixXd& rOutputCoordinatesMax) const
+    virtual void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd&, Eigen::MatrixXd&, Eigen::MatrixXd&,
+                                                    Eigen::MatrixXd&) const
     {
         throw Exception("Metamodel::SolveConfidenceIntervalTransformed - not implemented for this kind of metamodel.");
     }
