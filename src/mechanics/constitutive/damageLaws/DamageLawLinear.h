@@ -1,54 +1,54 @@
 #pragma once
 
-#include <memory>
+#include <algorithm> // std::min
 #include "mechanics/constitutive/damageLaws/DamageLaw.h"
 
 namespace NuTo
 {
 namespace Constitutive
 {
-
+//! @brief linear damage law
+//! Peerlings et al.. Gradient enhanced damage quasi-brittle materials 1996.
+/*!
+ *  \f[
+ *  \omega = \begin{cases}
+ *     0 & \text{if } \kappa < \kappa_0 \\
+ *     \frac{\kappa_c}{\kappa} \frac{\kappa - \kappa_i}{\kappa_c - \kappa_i} & \text{otherwise}.
+    \end{cases} \\
+    \omega = \min(\omega, \omega_{\max})
+ *  \f]
+ */
 class DamageLawLinear : public DamageLaw
 {
 public:
-    static std::shared_ptr<DamageLaw> Create(double kappa0, double kappaC, double damageMax)
-    {
-        return std::shared_ptr<DamageLaw>(new DamageLawLinear(kappa0, kappaC, damageMax));
-    }
-
-protected:
-    DamageLawLinear(double kappa0, double kappaC, double damageMax)
-        : DamageLaw(kappa0)
+    DamageLawLinear(double kappa0, double kappaC, double omegaMax)
+        : mKappa0(kappa0)
         , mKappaC(kappaC)
-        , mDamageMax(damageMax)
+        , mOmegaMax(omegaMax)
     {
     }
 
-    //! @brief protected virtual method for the damage calculation
-    //!        the case kappa <= kappa0 is already covered in the public interface
-    //! @param kappa history variable
-    //! @return damage
-    double Damage(const double kappa) const override
+    double Damage(double kappa) const override
     {
+        if (kappa < mKappa0)
+            return 0.;
         double damage = mKappaC / kappa * (kappa - mKappa0) / (mKappaC - mKappa0);
-        return std::min(damage, mDamageMax);
+        return std::min(damage, mOmegaMax);
     }
 
-    //! @brief protected virtual method for the damage derivative calculation
-    //!        the case kappa <= kappa0 is already covered in the public interface
-    //! @param kappa history variable
-    //! @return damage derivative
-    double Derivative(const double kappa) const override
+    double Derivative(double kappa) const override
     {
-        if (Damage(kappa) < mDamageMax)
+        if (kappa < mKappa0)
+            return 0.;
+        if (Damage(kappa) < mOmegaMax)
             return mKappaC * mKappa0 / (kappa * kappa * (mKappaC - mKappa0));
         return 0;
     }
 
 private:
-    const double mKappaC;
-    const double mDamageMax;
+    double mKappa0;
+    double mKappaC;
+    double mOmegaMax;
 };
-
 } /* Constitutive */
 } /* NuTo */
