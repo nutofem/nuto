@@ -1,10 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "base/Exception.h"
-
-#include "visualize/VisualizeEnum.h"
 
 namespace NuTo
 {
@@ -56,32 +54,5 @@ public:
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is
     void Info(int rVerboseLevel) const;
-
-
-    struct CellInfo
-    {
-        int visualizeCellId = -1; // global visualize id, set later by visualizer
-        std::vector<int> pointIds;
-        eCellTypes cellType;
-        int ipId;
-    };
-
-    struct CellVectexInfo
-    {
-        int visualizePointId = -1; // global visualize id, set later by visualizer
-        Eigen::VectorXd localCoords;
-    };
-
-    struct IpCellInfo
-    {
-        std::vector<CellInfo> cells;
-        std::vector<CellVectexInfo> vertices;
-    };
-
-    virtual IpCellInfo GetVisualizationCells() const;
-
-    virtual void GetVisualizationCells(unsigned int&, std::vector<double>&, unsigned int&,
-                                       std::vector<NuTo::eCellTypes>&, std::vector<unsigned int>&,
-                                       std::vector<unsigned int>&) const {};
 };
 } // namespace NuTo

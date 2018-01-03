@@ -6,7 +6,7 @@
  */
 
 #include <iomanip>
-#include <eigen3/Eigen/Dense> // for cross product
+#include <Eigen/Dense> // for cross product
 
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
@@ -34,7 +34,7 @@ void NuTo::CollidableWallBase::PerformCollision(CollidableBase& rCollidable)
 {
     rCollidable.PerformCollision(*this);
 }
-void NuTo::CollidableWallBase::PerformCollision(CollidableWallBase& rWall)
+void NuTo::CollidableWallBase::PerformCollision(CollidableWallBase&)
 {
     // nothing here.
 }
@@ -44,7 +44,7 @@ double NuTo::CollidableWallBase::PredictCollision(CollidableBase& rCollidable, i
     return rCollidable.PredictCollision(*this, rType);
 }
 
-double NuTo::CollidableWallBase::PredictCollision(CollidableWallBase& rWall, int& rType)
+double NuTo::CollidableWallBase::PredictCollision(CollidableWallBase&, int&)
 {
     return -1;
 }
@@ -111,14 +111,6 @@ void NuTo::CollidableWallBase::SetBoxes(SubBox& rInsideBox, SubBox& rOutsideBox)
     mBoxes.push_back(&rInsideBox);
     mInsideBox = &rInsideBox;
     mOutsideBox = &rOutsideBox;
-}
-
-void NuTo::CollidableWallBase::GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const
-{
-}
-
-void NuTo::CollidableWallBase::MoveAndGrow(double rTime)
-{
 }
 
 bool NuTo::CollidableWallBase::IsInside(const CollidableParticleSphere& rSphere) const

@@ -4,7 +4,7 @@
 #include "optimize/CallbackHandler.h"
 
 #include "base/Exception.h"
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include <string>
 
 namespace NuTo

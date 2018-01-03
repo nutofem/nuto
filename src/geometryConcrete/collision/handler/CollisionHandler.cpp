@@ -55,11 +55,6 @@ void NuTo::CollisionHandler::InitializeLogger(NuTo::Logger& rLogger)
     rLogger << "# Event \t Time \t EKin \t Phi \t WTime \n";
 }
 
-void NuTo::CollisionHandler::VisualizeSpheres(long rNumEvents, double rGlobalTime, bool rIsFinal)
-{
-    // mSpheres->VisualizeSpheres(mName, rNumEvents, rGlobalTime, rIsFinal);
-}
-
 double NuTo::CollisionHandler::Simulate(const long rNumEventsMax, const double rTimeMax, const double rWTimeMax,
                                         const double rTimePrintOut, const double rInitialTimeBarrier)
 {

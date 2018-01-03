@@ -11,58 +11,50 @@ namespace NuTo
 class SimpleAssembler
 {
 public:
-    SimpleAssembler(const NuTo::DofContainer<int>& numIndependentDofs, const NuTo::DofContainer<int>& numDependentDofs)
+    SimpleAssembler(DofContainer<int> numIndependentDofs, DofContainer<int> numDependentDofs)
         : mNumIndependentDofs(numIndependentDofs)
         , mNumDependentDofs(numDependentDofs)
     {
     }
 
-    GlobalDofVector BuildVector(const Groups::Group<NuTo::CellInterface>& cells,
-                                const std::vector<NuTo::DofType*>& dofTypes, const VectorOperation& op) const
+    GlobalDofVector BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+                                CellInterface::VectorFunction f) const
     {
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
         for (NuTo::CellInterface& cell : cells)
         {
-            const DofVector<double> cellGradient = cell.Integrate(op);
+            const DofVector<double> cellGradient = cell.Integrate(f);
 
-            for (const DofType* dof : dofTypes)
+            for (DofType dof : dofTypes)
             {
-                Eigen::VectorXi numberingDof = cell.DofNumbering(*dof);
-                const Eigen::VectorXd& cellGradientDof = cellGradient[*dof];
-                const int numIndependentDofs = mNumIndependentDofs[*dof];
+                Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
+                const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
                 for (int i = 0; i < numberingDof.rows(); ++i)
-                {
-                    int globalDofNumber = numberingDof[i];
-                    double globalDofValue = cellGradientDof[i];
-                    if (globalDofNumber < numIndependentDofs)
-                        gradient.J[*dof][globalDofNumber] += globalDofValue;
-                    else
-                        gradient.K[*dof][globalDofNumber - numIndependentDofs] += globalDofValue;
-                }
+                    gradient(dof, numberingDof[i]) += cellGradientDof[i];
             }
         }
         return gradient;
     }
 
-    GlobalDofMatrixSparse BuildMatrix(const Groups::Group<NuTo::CellInterface>& cells,
-                                      const std::vector<NuTo::DofType*>& dofTypes, const MatrixOperation& op) const
+    GlobalDofMatrixSparse BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+                                      CellInterface::MatrixFunction f) const
     {
         GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);
 
         for (NuTo::CellInterface& cell : cells)
         {
-            const DofMatrix<double> cellHessian = cell.Integrate(op);
+            const DofMatrix<double> cellHessian = cell.Integrate(f);
 
-            for (const DofType* dofI : dofTypes)
+            for (DofType dofI : dofTypes)
             {
-                Eigen::VectorXi numberingDofI = cell.DofNumbering(*dofI);
-                for (const DofType* dofJ : dofTypes)
+                Eigen::VectorXi numberingDofI = cell.DofNumbering(dofI);
+                for (DofType dofJ : dofTypes)
                 {
-                    Eigen::VectorXi numberingDofJ = cell.DofNumbering(*dofJ);
-                    const Eigen::MatrixXd& cellHessianDof = cellHessian(*dofI, *dofJ);
+                    Eigen::VectorXi numberingDofJ = cell.DofNumbering(dofJ);
+                    const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
 
-                    const int numIndependentDofsI = mNumIndependentDofs[*dofI];
-                    const int numIndependentDofsJ = mNumIndependentDofs[*dofJ];
+                    const int numIndependentDofsI = mNumIndependentDofs[dofI];
+                    const int numIndependentDofsJ = mNumIndependentDofs[dofJ];
 
                     for (int i = 0; i < numberingDofI.rows(); ++i)
                     {
@@ -79,12 +71,12 @@ public:
                             {
                                 if (activeJ)
                                 {
-                                    hessian.JJ(*dofI, *dofJ).coeffRef(globalDofNumberI, globalDofNumberJ) +=
+                                    hessian.JJ(dofI, dofJ).coeffRef(globalDofNumberI, globalDofNumberJ) +=
                                             globalDofValue;
                                 }
                                 else
                                 {
-                                    hessian.JK(*dofI, *dofJ)
+                                    hessian.JK(dofI, dofJ)
                                             .coeffRef(globalDofNumberI, globalDofNumberJ - numIndependentDofsJ) +=
                                             globalDofValue;
                                 }
@@ -93,13 +85,13 @@ public:
                             {
                                 if (activeJ)
                                 {
-                                    hessian.KJ(*dofI, *dofJ)
+                                    hessian.KJ(dofI, dofJ)
                                             .coeffRef(globalDofNumberI - numIndependentDofsI, globalDofNumberJ) +=
                                             globalDofValue;
                                 }
                                 else
                                 {
-                                    hessian.KK(*dofI, *dofJ)
+                                    hessian.KK(dofI, dofJ)
                                             .coeffRef(globalDofNumberI - numIndependentDofsI,
                                                       globalDofNumberJ - numIndependentDofsJ) += globalDofValue;
                                 }
@@ -113,27 +105,27 @@ public:
     }
 
 private:
-    GlobalDofVector ProperlyResizedGlobalVector(const std::vector<NuTo::DofType*>& dofTypes) const
+    GlobalDofVector ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const
     {
         GlobalDofVector v;
-        for (auto* dof : dofTypes)
+        for (auto dof : dofTypes)
         {
-            v.J[*dof].setZero(mNumIndependentDofs[*dof]);
-            v.K[*dof].setZero(mNumDependentDofs[*dof]);
+            v.J[dof].setZero(mNumIndependentDofs[dof]);
+            v.K[dof].setZero(mNumDependentDofs[dof]);
         }
         return v;
     }
 
-    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(const std::vector<NuTo::DofType*>& dofTypes) const
+    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const
     {
         GlobalDofMatrixSparse m;
-        for (auto* dofI : dofTypes)
-            for (auto* dofJ : dofTypes)
+        for (auto dofI : dofTypes)
+            for (auto dofJ : dofTypes)
             {
-                m.JJ(*dofI, *dofJ).resize(mNumIndependentDofs[*dofI], mNumIndependentDofs[*dofJ]);
-                m.JK(*dofI, *dofJ).resize(mNumIndependentDofs[*dofI], mNumDependentDofs[*dofJ]);
-                m.KJ(*dofI, *dofJ).resize(mNumDependentDofs[*dofI], mNumIndependentDofs[*dofJ]);
-                m.KK(*dofI, *dofJ).resize(mNumDependentDofs[*dofI], mNumDependentDofs[*dofJ]);
+                m.JJ(dofI, dofJ).resize(mNumIndependentDofs[dofI], mNumIndependentDofs[dofJ]);
+                m.JK(dofI, dofJ).resize(mNumIndependentDofs[dofI], mNumDependentDofs[dofJ]);
+                m.KJ(dofI, dofJ).resize(mNumDependentDofs[dofI], mNumIndependentDofs[dofJ]);
+                m.KK(dofI, dofJ).resize(mNumDependentDofs[dofI], mNumDependentDofs[dofJ]);
             }
         return m;
     }

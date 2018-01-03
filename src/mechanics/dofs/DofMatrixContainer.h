@@ -10,19 +10,24 @@ template <typename T>
 class DofMatrixContainer : public DofCalcContainer<T>
 {
 public:
-    T& operator()(const DofType& d0, const DofType& d1)
+    T& operator()(DofType d0, DofType d1)
     {
         return this->ResizingIdAccess(CantorParingFunction(d0.Id(), d1.Id()));
     }
 
-    const T& operator()(const DofType& d0, const DofType& d1) const
+    const T& operator()(DofType d0, DofType d1) const
     {
         return this->mData[CantorParingFunction(d0.Id(), d1.Id())];
     }
 
+    const T& operator[](DofType) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "This method is for vectors only, not for matrices.");
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const DofMatrixContainer<T>& dofMatrix)
     {
-        for (int i = 0; i < dofMatrix.mData.size(); ++i)
+        for (size_t i = 0; i < dofMatrix.mData.size(); ++i)
         {
             auto xy = CantorPairingFunctionReverse(i);
             out << "=== " << xy.first << " " << xy.second << " ===" << std::endl;

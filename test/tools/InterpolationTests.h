@@ -63,7 +63,7 @@ void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r)
 template <typename T>
 void RunTests(const std::vector<Eigen::VectorXd>& rPoints)
 {
-    T interpolation(1);
+    T interpolation;
 
     BOOST_TEST_MESSAGE("Checking copy move...");
     CheckCopyMove<T>();

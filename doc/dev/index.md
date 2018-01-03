@@ -32,6 +32,8 @@
 
 - @ref Constraints
 
+- @ref ConstraintsPde
+
 - @ref SpatialContainer
 
 - @ref CodingStyle

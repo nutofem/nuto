@@ -13,11 +13,12 @@ template <typename T>
 class DofCalcContainer
 {
 public:
-
     //! @brief initializes the data container zu the most common size 1
-    DofCalcContainer(int size = 1)
+    //! @remark explicit to avoid construction with `double` type that caused ambiguities in some overloaded methods
+    explicit DofCalcContainer(int size = 1)
         : mData(size)
-    {}
+    {
+    }
 
     //! @brief const access
     //! @param dofType dof type
@@ -41,7 +42,7 @@ public:
     //! @brief performs _uninitialized addition_ that resizes the data to the length of `rhs`
     DofCalcContainer& operator+=(const DofCalcContainer& rhs)
     {
-        for (int i = 0; i < rhs.mData.size(); ++i)
+        for (size_t i = 0; i < rhs.mData.size(); ++i)
         {
             auto& thisData = ResizingIdAccess(i);
             if (thisData.size() == 0)
@@ -59,7 +60,7 @@ public:
         return *this;
     }
 
-    friend DofCalcContainer operator+(DofCalcContainer lhs, DofCalcContainer&& rhs)
+    friend DofCalcContainer operator+(DofCalcContainer lhs, const DofCalcContainer& rhs)
     {
         lhs += rhs;
         return lhs;
@@ -73,7 +74,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const DofCalcContainer<T>& v)
     {
-        for (int i = 0; i < v.mData.size(); ++i)
+        for (size_t i = 0; i < v.mData.size(); ++i)
         {
             out << "==== Index " << i << "====\n";
             out << v.mData[i] << '\n';
@@ -98,7 +99,6 @@ public:
 
 
 protected:
-
     //! @brief data container
     std::vector<T> mData;
 
@@ -107,7 +107,7 @@ protected:
     //! @return nonconst reference to `i`-th data entry
     T& ResizingIdAccess(int i)
     {
-        if (mData.size() < i + 1)
+        if (static_cast<int>(mData.size()) < i + 1)
             mData.resize(i + 1);
         return mData[i];
     }

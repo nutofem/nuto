@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace NuTo
 {

@@ -5,15 +5,12 @@
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/integrands/MomentumBalance.h"
+#include "mechanics/constitutive/LinearElastic.h"
 
-
-struct Volume : NuTo::ScalarOperation
+double VolumeF(const NuTo::CellData&, const NuTo::CellIpData&)
 {
-    double operator()(NuTo::Integrands::Base&, const NuTo::CellData&, const NuTo::CellIpData&) const override
-    {
-        return 1.;
-    }
-};
+    return 1.;
+}
 
 BOOST_AUTO_TEST_CASE(CellLetsSee)
 {
@@ -22,14 +19,14 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     // const double lz = 1; // requires something like "Section" ...
     const double E = 6174;
 
-    NuTo::InterpolationQuadLinear interpolationCoordinates(2);
+    NuTo::InterpolationQuadLinear interpolationCoordinates;
     NuTo::NodeSimple nCoord0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nCoord1(Eigen::Vector2d({lx, 0}));
     NuTo::NodeSimple nCoord2(Eigen::Vector2d({lx, ly}));
     NuTo::NodeSimple nCoord3(Eigen::Vector2d({0, ly}));
     NuTo::ElementFem coordinateElement({nCoord0, nCoord1, nCoord2, nCoord3}, interpolationCoordinates);
 
-    NuTo::InterpolationQuadLinear interpolationDisplacements(2);
+    NuTo::InterpolationQuadLinear interpolationDisplacements;
     NuTo::NodeSimple nDispl0(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl1(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nDispl2(Eigen::Vector2d({0, 0}));
@@ -51,11 +48,21 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
     using namespace NuTo::Integrands;
-    TimeDependent::MomentumBalance<2> integrand({dofDispl}, law);
+    MomentumBalance<2> integrand({dofDispl}, law);
+    // bind the functions Gradient and Hessian
+    auto GradientF = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return integrand.Gradient(cellData, cellIpData, /*deltaT = */ 0);
 
-    NuTo::Cell cell(elements, intType.get(), integrand);
+    };
+    auto Hessian0F = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return integrand.Hessian0(cellData, cellIpData, /*deltaT = */ 0);
+    };
 
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl], Eigen::VectorXd::Zero(8), 8);
+
+    NuTo::Cell cell(elements, intType.get(), 1337);
+    BOOST_CHECK(cell.Id() == 1337);
+
+    BoostUnitTest::CheckVector(cell.Integrate(GradientF)[dofDispl], Eigen::VectorXd::Zero(8), 8);
 
     const double ux = 0.4;
     nDispl1.SetValue(0, ux);
@@ -64,7 +71,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     double area = ly;
     double intForce = E * ux / lx * area / 2.;
 
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl],
+    BoostUnitTest::CheckVector(cell.Integrate(GradientF)[dofDispl],
                                std::vector<double>({-intForce, 0, intForce, 0, intForce, 0, -intForce, 0}), 8);
 
     const double uy = 0.2;
@@ -75,16 +82,16 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     area = lx;
     intForce = E * uy / ly * area / 2;
-    BoostUnitTest::CheckVector(cell.Integrate(TimeDependent::Gradient())[dofDispl],
+    BoostUnitTest::CheckVector(cell.Integrate(GradientF)[dofDispl],
                                std::vector<double>({0, -intForce, 0, -intForce, 0, intForce, 0, intForce}), 8);
     {
         // check hessian0
-        auto hessian = cell.Integrate(TimeDependent::Hessian0())(dofDispl, dofDispl);
-        auto gradient = cell.Integrate(TimeDependent::Gradient())[dofDispl];
+        auto hessian = cell.Integrate(Hessian0F)(dofDispl, dofDispl);
+        auto gradient = cell.Integrate(GradientF)[dofDispl];
         auto u = displacementElement.ExtractNodeValues();
 
         BoostUnitTest::CheckEigenMatrix(gradient, hessian * u);
     }
 
-    BOOST_CHECK_CLOSE(cell.Integrate(Volume()), lx*ly, 1.e-10);
+    BOOST_CHECK_CLOSE(cell.Integrate(VolumeF), lx * ly, 1.e-10);
 }

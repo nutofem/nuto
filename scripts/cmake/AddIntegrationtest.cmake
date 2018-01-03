@@ -4,7 +4,7 @@ function(append_to_tests TestName)
 endfunction()
 
 function(add_integrationtest test)
-    add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
+    add_executable(${test} ${test}.cpp)
     target_link_libraries(${test} Mechanics Math Base Visualize Metamodel
         Boost::unit_test_framework ${LAPACK_LIBRARIES})
     target_include_directories(${test} PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
