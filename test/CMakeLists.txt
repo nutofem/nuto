@@ -1,9 +1,9 @@
 unset(all_unit_tests CACHE)
 
-add_subdirectory(base)
+#add_subdirectory(base)
 add_subdirectory(math)
-add_subdirectory(mechanics)
-add_subdirectory(visualize)
+#add_subdirectory(mechanics)
+#add_subdirectory(visualize)
 
 add_custom_target(unit
     COMMAND ctest -R unit --output-on-failure
