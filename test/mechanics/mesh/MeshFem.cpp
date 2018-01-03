@@ -12,8 +12,7 @@ void SetStuff(NuTo::MeshFem& m)
 NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 {
     NuTo::MeshFem mesh;
-    auto& interpolationCoords = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(2));
-    auto& interpolationDof = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(dofType.GetNum()));
+    auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
     auto& n0 = mesh.Nodes.Add(Eigen::Vector2d({1, 0}));
     auto& n1 = mesh.Nodes.Add(Eigen::Vector2d({2, 0}));
@@ -23,8 +22,8 @@ NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
     auto& nd1 = mesh.Nodes.Add(4);
     auto& nd2 = mesh.Nodes.Add(6174);
 
-    auto& e0 = mesh.Elements.Add({{{n0, n1, n2}, interpolationCoords}});
-    e0.AddDofElement(dofType, {{nd0, nd1, nd2}, interpolationDof});
+    auto& e0 = mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
+    e0.AddDofElement(dofType, {{nd0, nd1, nd2}, interpolation});
     return mesh;
 }
 
@@ -117,9 +116,9 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
     auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(1, 1));
 
-    auto& interpolationCoords = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(2));
-    mesh.Elements.Add({{{n0, n1, n2}, interpolationCoords}});
-    mesh.Elements.Add({{{n1, n3, n2}, interpolationCoords}});
+    auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
+    mesh.Elements.Add({{{n1, n3, n2}, interpolation}});
 
     int expectedNumCoordinateNodes = 4;
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
@@ -127,9 +126,8 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     // add linear dof type
 
-    const auto& interpolationLinear = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear(1));
     NuTo::DofType dof0("linear", 1);
-    NuTo::AddDofInterpolation(&mesh, dof0, interpolationLinear);
+    NuTo::AddDofInterpolation(&mesh, dof0, interpolation);
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
@@ -150,7 +148,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
      * The numbering is not correct, but the total number of points is.
      */
     NuTo::DofType dof1("quadratic", 1);
-    const auto& interpolationQuadratic = mesh.CreateInterpolation(NuTo::InterpolationTriangleQuadratic(1));
+    const auto& interpolationQuadratic = mesh.CreateInterpolation(NuTo::InterpolationTriangleQuadratic());
     NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;

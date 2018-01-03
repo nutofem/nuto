@@ -6,17 +6,17 @@
 #include "base/Exception.h"
 #include <cmath>
 
-double NuTo::EmptyTransferFunction::evaluate(double x)
+double NuTo::EmptyTransferFunction::evaluate(double)
 {
     throw Exception("EmptyTransferFunction::evaluate : trying to evaluate empty activation function.");
 }
 
-double NuTo::EmptyTransferFunction::derivative(double x)
+double NuTo::EmptyTransferFunction::derivative(double)
 {
     throw Exception("EmptyTransferFunction::derivative : trying to evaluate empty activation function.");
 }
 
-double NuTo::EmptyTransferFunction::second_derivative(double x)
+double NuTo::EmptyTransferFunction::second_derivative(double)
 {
     throw Exception("EmptyTransferFunction::second_derivative : trying to evaluate empty activation function.");
 }
@@ -40,12 +40,12 @@ double NuTo::HardLimTransferFunction::evaluate(double x)
         return 1.;
 }
 
-double NuTo::HardLimTransferFunction::derivative(double x)
+double NuTo::HardLimTransferFunction::derivative(double)
 {
     return 0.;
 }
 
-double NuTo::HardLimTransferFunction::second_derivative(double x)
+double NuTo::HardLimTransferFunction::second_derivative(double)
 {
     return 0.;
 }
@@ -69,12 +69,12 @@ double NuTo::HardLimsTransferFunction::evaluate(double x)
         return 1.;
 }
 
-double NuTo::HardLimsTransferFunction::derivative(double x)
+double NuTo::HardLimsTransferFunction::derivative(double)
 {
     return 0;
 }
 
-double NuTo::HardLimsTransferFunction::second_derivative(double x)
+double NuTo::HardLimsTransferFunction::second_derivative(double)
 {
     return 0;
 }
@@ -95,12 +95,12 @@ double NuTo::PureLinTransferFunction::evaluate(double x)
     return x;
 }
 
-double NuTo::PureLinTransferFunction::derivative(double x)
+double NuTo::PureLinTransferFunction::derivative(double)
 {
     return 1;
 }
 
-double NuTo::PureLinTransferFunction::second_derivative(double x)
+double NuTo::PureLinTransferFunction::second_derivative(double)
 {
     return 0;
 }
@@ -137,7 +137,7 @@ double NuTo::SatLinTransferFunction::derivative(double x)
         return 0.;
 }
 
-double NuTo::SatLinTransferFunction::second_derivative(double x)
+double NuTo::SatLinTransferFunction::second_derivative(double)
 {
     return 0.;
 }
@@ -173,7 +173,7 @@ double NuTo::SatLinsTransferFunction::derivative(double x)
         return 0.;
 }
 
-double NuTo::SatLinsTransferFunction::second_derivative(double x)
+double NuTo::SatLinsTransferFunction::second_derivative(double)
 {
     return 0.;
 }
@@ -291,7 +291,7 @@ double NuTo::PosLinTransferFunction::derivative(double x)
         return 1.;
 }
 
-double NuTo::PosLinTransferFunction::second_derivative(double x)
+double NuTo::PosLinTransferFunction::second_derivative(double)
 {
     return 0.;
 }

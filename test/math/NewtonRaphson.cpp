@@ -2,9 +2,9 @@
 #include "math/NewtonRaphson.h"
 #include <cmath>
 #include <iostream>
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseMatrixCSRGeneral.h"
 #include <complex>
+#include <Eigen/Sparse>
+#include <Eigen/SparseLU>
 
 constexpr double tolerance = 1.e-10;
 using namespace NuTo::NewtonRaphson;
@@ -92,37 +92,38 @@ auto ValidMatrixProblem()
         return r;
     };
     auto DR = [](Eigen::VectorXd x) {
-        NuTo::SparseMatrixCSRGeneral<double> m(2, 2);
-        m.AddValue(0, 0, 3 * x[0] * x[0] - 1);
-        m.AddValue(1, 1, 1);
+        Eigen::SparseMatrix<double> m(2, 2);
+        m.insert(0, 0) = 3 * x[0] * x[0] - 1;
+        m.insert(1, 1) = 1;
+        m.makeCompressed();
         return m;
     };
     auto Norm = [](Eigen::VectorXd x) { return x.norm(); };
     return DefineProblem(R, DR, Norm, tolerance);
 }
 
-struct MumpsWrapper
+struct EigenWrapper
 {
-    Eigen::VectorXd Solve(NuTo::SparseMatrixCSRGeneral<double>& DR, const Eigen::VectorXd& R)
+    Eigen::VectorXd Solve(Eigen::SparseMatrix<double>& DR, const Eigen::VectorXd& R)
     {
         Eigen::VectorXd v;
-        DR.SetOneBasedIndexing();
-        mSolver.Solve(DR, R, v);
-        return v;
+        Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+        solver.analyzePattern(DR);
+        solver.factorize(DR);
+        return solver.solve(R);
     }
-    NuTo::SparseDirectSolverMUMPS mSolver;
 };
 
 BOOST_AUTO_TEST_CASE(NewtonSparse)
 {
     Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
-    auto result = Solve(ValidMatrixProblem(), x0, MumpsWrapper(), 100);
+    auto result = Solve(ValidMatrixProblem(), x0, EigenWrapper(), 100);
     BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonSparseLineSearch)
 {
     Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
-    auto result = Solve(ValidMatrixProblem(), x0, MumpsWrapper(), 20, LineSearch());
+    auto result = Solve(ValidMatrixProblem(), x0, EigenWrapper(), 20, LineSearch());
     BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
 }

@@ -146,7 +146,7 @@ public:
     //! @param cellNum: Number of currently evaluated cell
     //! @param ipNum: Number of currently evaluated integration point
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int cellNum, int ipNum) const override
+    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int, int) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
 
     DofType displ("displacements", 1);
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear(1));
+    const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear());
     AddDofInterpolation(&mesh, displ, interpolation);
 
 
