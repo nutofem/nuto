@@ -9,24 +9,22 @@ notifications:
         on_success: change  # always|never|change
         on_failure: always
         on_start: never
-compiler:
-    - gcc
 
 env:
-    - BUILD_TYPE=Debug OPENMP=FALSE COVERAGE=--coverage
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=clang++-4.0 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=TRUE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=FALSE -DCMAKE_CXX_FLAGS=--coverage"
 
 before_install:
     - ci_env=`bash <(curl -s https://codecov.io/env)`
     - echo $ci_env
-
     - docker pull nuto/nuto_docker:v2
     - docker run $ci_env -itd --name dock -v $(pwd):/project nuto/nuto_docker:v2
 
 script:
-    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++-6 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE"
-    #- docker exec dock mkdir build && cd build
     - docker exec dock cmake $BUILD_OPTIONS .
     - docker exec dock make -j2 unit
+
 after_success:
-    #- docker exec dock cd ..
-    - docker exec dock bash scripts/upload_coverage.sh
+    - docker exec dock bash scripts/upload_coverage.sh # will simply fail if --coverage is not set.
