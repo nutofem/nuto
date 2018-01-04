@@ -1,18 +1,14 @@
-FROM ubuntu
-RUN apt-get -qq update
-RUN apt-get install -y software-properties-common
-RUN apt-get -qq update
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
-RUN apt-get -qq update
+FROM ubuntu:xenial
 
+RUN apt-get update && apt-get dist-upgrade -y
 # Toolchain?
-RUN apt-get install -y --fix-missing cmake
-RUN apt-get install -y g++-6
-RUN apt-get install -y clang++-4.0
-# Nuto deps
-RUN apt-get install -y libeigen3-dev libiomp-dev swig3.0 doxygen python3-dev python3-numpy libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gmsh 
+RUN apt-get install -y g++ clang cmake
 # boost
 RUN apt-get install -y libboost-filesystem-dev libboost-system-dev libboost-mpi-dev libboost-test-dev
+
+# Nuto deps
+RUN apt-get install -y libeigen3-dev libiomp-dev swig3.0 doxygen python3-dev python3-numpy libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gmsh 
+
 # coverage and documentation
 RUN apt-get install -y lcov curl texlive-font-utils
 

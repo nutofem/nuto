@@ -11,16 +11,15 @@ notifications:
         on_start: never
 
 env:
-    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=clang++-4.0 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
-    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
-    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=TRUE"
-    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++-6 -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=FALSE -DCMAKE_CXX_FLAGS=--coverage"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=TRUE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=FALSE -DCMAKE_CXX_FLAGS=--coverage"
 
 before_install:
     - ci_env=`bash <(curl -s https://codecov.io/env)`
     - echo $ci_env
-    - docker pull nuto/nuto_docker:v2
-    - docker run $ci_env -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:v3
+    - docker run $ci_env -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:xenial
 
 script:
     # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
