@@ -9,14 +9,12 @@ notifications:
         on_success: change  # always|never|change
         on_failure: always
         on_start: never
-matrix:
-    include:
-        - compiler: clang
-          env: BUILD_TYPE=Release OPENMP=TRUE
-        - compiler: g++
-          env: BUILD_TYPE=Release OPENMP=FALSE
-          env: BUILD_TYPE=Release OPENMP=TRUE
-          env: BUILD_TYPE=Debug OPENMP=FALSE COVERAGE=--coverage
+
+env:
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=FALSE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=TRUE"
+    - BUILD_OPTIONS="-DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=FALSE -DCMAKE_CXX_FLAGS=--coverage"
 
 before_install:
     - ci_env=`bash <(curl -s https://codecov.io/env)`
@@ -26,7 +24,7 @@ before_install:
 script:
     # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
     # - The source code from travis is 'mounted' as /home/nuto/source via the -v option in the docker run command above
-    - docker exec dock cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE  source
+    - docker exec dock cmake $BUILD_OPTIONS source
     - docker exec dock make -j2 unit
 
 after_success:
