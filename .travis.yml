@@ -20,11 +20,13 @@ before_install:
     - ci_env=`bash <(curl -s https://codecov.io/env)`
     - echo $ci_env
     - docker pull nuto/nuto_docker:v2
-    - docker run $ci_env -itd --name dock -v $(pwd):/project nuto/nuto_docker:v2
+    - docker run $ci_env -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:v3
 
 script:
-    - docker exec dock cmake $BUILD_OPTIONS .
+    # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
+    # - The source code from travis is 'mounted' as /home/nuto/source via the -v option in the docker run command above
+    - docker exec dock cmake $BUILD_OPTIONS source
     - docker exec dock make -j2 unit
 
 after_success:
-    - docker exec dock bash scripts/upload_coverage.sh # will simply fail if --coverage is not set.
+    - docker exec dock bash source/scripts/upload_coverage.sh # will simply fail if --coverage is not set.
