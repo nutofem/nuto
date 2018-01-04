@@ -25,6 +25,9 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssember.h"
 
+#include "visualize/QuadAverageHandler.h"
+#include "visualize/Visualizer.h"
+
 using namespace NuTo;
 
 //! @brief automatically create the lambda
@@ -303,6 +306,17 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
+    Visualize::Visualizer<Visualize::QuadAverageHandler> visualize(cellGroup);
+    visualize.DofValues(displ);
+
+    auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
+        EngineeringStrain<2> strain = cellIpData.GetBMatrixStrain(displ) * cellData.GetNodeValues(displ);
+        return linearElasticLaw.Stress(strain, 0.0, 0, 0);
+    };
+    visualize.CellData(stress, "Stress");
+
+    visualize.CellData([](const CellData&, const CellIpData&){return Eigen::Matrix<double, 1, 1>(7.0);}, "Seven");
+    visualize.WriteVTKFile("output.vtu");
 
     // ************************************************************************
     //             check solution

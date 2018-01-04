@@ -26,6 +26,14 @@ public:
     virtual DofMatrix<double> Integrate(MatrixFunction) = 0;
     virtual void Apply(VoidFunction) = 0;
 
+    virtual std::vector<Eigen::VectorXd>
+    Eval(std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> f) const = 0;
+
     virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
+
+    //! Coordinate interpolation
+    virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const = 0;
+    //! Dof interpolation
+    virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const = 0;
 };
 } /* NuTo */

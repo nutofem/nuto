@@ -17,7 +17,7 @@ add_unit_test(CellIpData
 
 
 add_unit_test(PatchTest)
-target_link_libraries(PatchTest Mechanics)
+target_link_libraries(PatchTest Mechanics Visualize)
 
 add_unit_test(CreepLaw)
 target_link_libraries(CreepLaw Mechanics)
