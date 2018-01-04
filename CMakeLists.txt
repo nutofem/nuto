@@ -9,7 +9,7 @@ option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
-option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
+option(ENABLE_PYTHON "create python wrapper for nuto" FALSE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
