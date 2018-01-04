@@ -23,6 +23,7 @@ matrix:
 before_install:
     - ci_env=`bash <(curl -s https://codecov.io/env)`
     - echo $ci_env
+    - travis_retry docker pull nuto/nuto_docker:xenial
     - docker run $ci_env -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:xenial
 
 script:
