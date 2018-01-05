@@ -2,13 +2,7 @@ language: cpp
 sudo: false
 services: docker
 dist: trusty
-notifications:
-    webhooks:
-        urls:
-            - "https://scalar.vector.im/api/neb/services/hooks/dHJhdmlzLWNpLyU0MFBzaXJ1cyUzQW1hdHJpeC5vcmcvJTIxZG9KWEFCclp5VVBlV0Jmb0ZYJTNBbWF0cml4Lm9yZw"
-        on_success: change  # always|never|change
-        on_failure: always
-        on_start: never
+
 matrix:
     include:
         - compiler: clang
