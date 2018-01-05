@@ -60,14 +60,12 @@ public:
 
     Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const override
     {
-        const auto& coordinateElement = mElements.CoordinateElement();
-        return coordinateElement.GetNMatrix(naturalCoords) * coordinateElement.ExtractNodeValues();
+        return NuTo::Interpolate(mElements.CoordinateElement(), naturalCoords);
     }
 
     Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const override
     {
-        const auto& element = mElements.DofElement(dof);
-        return element.GetNMatrix(naturalCoords) * element.ExtractNodeValues();
+        return NuTo::Interpolate(mElements.DofElement(dof), naturalCoords);
     }
 
     std::vector<Eigen::VectorXd>
