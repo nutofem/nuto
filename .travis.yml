@@ -15,10 +15,9 @@ matrix:
           env: BUILD_TYPE=Debug OPENMP=FALSE COVERAGE=--coverage
 
 before_install:
-    - ci_env=`bash <(curl -s https://codecov.io/env)`
-    - echo $ci_env
+    - CI_ENV=`bash <(curl -s https://codecov.io/env)`
     - travis_retry docker pull nuto/nuto_docker:xenial
-    - docker run $ci_env -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:xenial
+    - docker run $CI_ENV -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:xenial
 
 script:
     # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
