@@ -13,8 +13,10 @@ template <typename THandler>
 class Visualizer
 {
 public:
-    Visualizer(Group<CellInterface>& cells)
+    template<typename... HandlerArguments>
+    Visualizer(Group<CellInterface>& cells, HandlerArguments&&... args)
         : mCells(cells)
+        , mHandler(std::forward<HandlerArguments>(args)...)
     {
         for (auto& cell : mCells)
             mPointIds.push_back(mHandler.WriteGeometry(cell, &mGrid));

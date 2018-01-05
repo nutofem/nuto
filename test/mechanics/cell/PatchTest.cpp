@@ -26,6 +26,7 @@
 #include "mechanics/cell/SimpleAssember.h"
 
 #include "visualize/QuadAverageHandler.h"
+#include "visualize/TensorProductVoronoiHandler.h"
 #include "visualize/Visualizer.h"
 
 using namespace NuTo;
@@ -57,7 +58,7 @@ MeshFem QuadPatchTestMesh()
      *    3-----------------------2
      * /| | - _        e2       / | -->
      * /| |     -7------------6   | -->
-     * /| | e5  /     e4      |   | -->
+     * /| | e4  /     e3      |   | -->
      * /| |    /              |e1 | -->
      * /| |   /    _____------5   | -->
      * /| |  4-----            \  | --> p
@@ -191,6 +192,24 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
             node.SetValue(1, newDisplacements[dofY]);
     }
 
+    int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
+    pointsPerDirection += 1; // one point per direction doesn't do much Voronoiying
+    Visualize::Visualizer<Visualize::TensorProductVoronoiHandler<2>> visualize(momentumBalanceCells,
+                                                                               pointsPerDirection);
+    visualize.DofValues(displ);
+
+    auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
+        EngineeringStrain<2> strain = cellIpData.GetBMatrixStrain(displ) * cellData.GetNodeValues(displ);
+        return linearElasticLaw.Stress(strain, 0.0, 0, 0);
+    };
+    visualize.CellData(stress, "Stress");
+
+    visualize.CellData([](const CellData&, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(7.0); }, "Seven");
+    visualize.CellData(
+            [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
+            "CellId");
+    visualize.WriteVTKFile("outputVoronoi.vtu");
+
     auto analyticDisplacementField = [=](Eigen::Vector2d coord) {
         // pressure / A = sigma = E * strain = E * deltaU / L
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
@@ -315,7 +334,10 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     };
     visualize.CellData(stress, "Stress");
 
-    visualize.CellData([](const CellData&, const CellIpData&){return Eigen::Matrix<double, 1, 1>(7.0);}, "Seven");
+    visualize.CellData([](const CellData&, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(7.0); }, "Seven");
+    visualize.CellData(
+            [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
+            "CellId");
     visualize.WriteVTKFile("output.vtu");
 
     // ************************************************************************

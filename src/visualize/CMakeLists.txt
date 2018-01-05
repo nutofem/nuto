@@ -6,6 +6,7 @@ set(VisualizeSources
     XMLWriter.cpp
     DataArray.cpp
     QuadAverageHandler.cpp
+    TensorProductVoronoiHandler.cpp
 )
 
 create_nuto_module(Visualize "${VisualizeSources}")
