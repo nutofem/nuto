@@ -37,22 +37,12 @@ class VisualizeTestStructure
     NuTo::NodeSimple nd4 = NuTo::NodeSimple(Eigen::Vector2d(8, 1) / 10);
     NuTo::NodeSimple nd5 = NuTo::NodeSimple(Eigen::Vector2d(8, 5) / 10);
 
-    NuTo::InterpolationQuadLinear interpolation = NuTo::InterpolationQuadLinear(2);
+    NuTo::InterpolationQuadLinear interpolation = NuTo::InterpolationQuadLinear();
 
     NuTo::ElementCollectionFem elements0 =
             NuTo::ElementCollectionFem(NuTo::ElementFem({n0, n1, n2, n3}, interpolation));
     NuTo::ElementCollectionFem elements1 =
             NuTo::ElementCollectionFem(NuTo::ElementFem({n1, n4, n5, n2}, interpolation));
-
-    NuTo::IpValues ip00 = {{Eigen::Vector3d(1, 1, 1), "Stress"}, {Eigen::Vector3d(10, 10, 10), "Strain"}};
-    NuTo::IpValues ip01 = {{Eigen::Vector3d(2, 2, 2), "Stress"}, {Eigen::Vector3d(20, 20, 20), "Strain"}};
-    NuTo::IpValues ip02 = {{Eigen::Vector3d(3, 3, 3), "Stress"}, {Eigen::Vector3d(30, 30, 30), "Strain"}};
-    NuTo::IpValues ip03 = {{Eigen::Vector3d(4, 4, 4), "Stress"}, {Eigen::Vector3d(40, 40, 40), "Strain"}};
-
-    NuTo::IpValues ip10 = {{Eigen::Vector3d(5, 5, 5), "Stress"}, {Eigen::Vector3d(50, 50, 50), "Strain"}};
-    NuTo::IpValues ip11 = {{Eigen::Vector3d(6, 6, 6), "Stress"}, {Eigen::Vector3d(60, 60, 60), "Strain"}};
-    NuTo::IpValues ip12 = {{Eigen::Vector3d(7, 7, 7), "Stress"}, {Eigen::Vector3d(70, 70, 70), "Strain"}};
-    NuTo::IpValues ip13 = {{Eigen::Vector3d(8, 8, 8), "Stress"}, {Eigen::Vector3d(80, 80, 80), "Strain"}};
 
     fakeit::Mock<NuTo::CellInterface> cell0;
     fakeit::Mock<NuTo::CellInterface> cell1;
@@ -64,13 +54,13 @@ public:
         elements1.AddDofElement(d, NuTo::ElementFem({nd1, nd4, nd5, nd2}, interpolation));
     }
 
-    NuTo::Groups::Group<NuTo::CellInterface> Cells()
+    NuTo::Group<NuTo::CellInterface> Cells()
     {
-        Method(cell0, GetElementCollection) = elements0;
-        Method(cell0, GetIpValues) = {ip00, ip01, ip02, ip03};
-        Method(cell1, GetElementCollection) = elements1;
-        Method(cell1, GetIpValues) = {ip10, ip11, ip12, ip13};
-
+        Eigen::VectorXd bla = Eigen::Vector3d::Constant(1.0);
+        fakeit::When(ConstOverloadedMethod(cell0, Interpolate, Eigen::VectorXd(Eigen::VectorXd)))
+                .AlwaysReturn(bla);
+        fakeit::When(ConstOverloadedMethod(cell1, Interpolate, Eigen::VectorXd(Eigen::VectorXd)))
+                .AlwaysReturn(bla);
         return {cell0.get(), cell1.get()};
     }
 };
