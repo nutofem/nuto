@@ -1,54 +1,31 @@
 language: cpp
-sudo: required
+sudo: false
+services: docker
 dist: trusty
-notifications:
-    webhooks:
-        urls:
-            - "https://scalar.vector.im/api/neb/services/hooks/dHJhdmlzLWNpLyU0MFBzaXJ1cyUzQW1hdHJpeC5vcmcvJTIxZG9KWEFCclp5VVBlV0Jmb0ZYJTNBbWF0cml4Lm9yZw"
-        on_success: change  # always|never|change
-        on_failure: always
-        on_start: never
 
-jobs:
+matrix:
     include:
-        - stage: normal builds
+        - compiler: clang
           env: BUILD_TYPE=Release OPENMP=FALSE
-          compiler: clang
-        - env: BUILD_TYPE=Release OPENMP=TRUE
-          compiler: gcc
-        - env: BUILD_TYPE=Release OPENMP=FALSE
-          compiler: gcc
-        - env: BUILD_TYPE=Debug   OPENMP=FALSE COVERAGE=--coverage
-          compiler: gcc
-        - stage: compiler warnings
-          env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
-          compiler: gcc
-        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
-          compiler: clang
-        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
-          compiler: gcc
-        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
-          compiler: clang
-    allow_failures:
-        - env: BUILD_TYPE=Debug   OPENMP=FALSE WERROR=-Werror
-        - env: BUILD_TYPE=Release   OPENMP=FALSE WERROR=-Werror
-    fast_finish: true
+        - compiler: g++
+          env: BUILD_TYPE=Release OPENMP=FALSE
+        - compiler: g++
+          env: BUILD_TYPE=Release OPENMP=TRUE
+        - compiler: g++
+          env: BUILD_TYPE=Debug OPENMP=FALSE COVERAGE=--coverage
 
 before_install:
-    - export PATH=/home/travis/miniconda/bin:$PATH
-    - ./scripts/install_numpy.sh
-    - ./scripts/install_gmsh.sh
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get -qq update
-    - sudo apt-get -qq install -y g++-6 clang libeigen3-dev libgcc-6-dev libiomp-dev swig3.0 libboost-filesystem1.55-dev libboost-test1.55-dev libboost-mpi1.55-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev lcov curl libglu1-mesa-dev
-before_script:
-    - mkdir build
-    - cd build
-    - BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DENABLE_MPI=TRUE"
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake $BUILD_OPTIONS -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++ cmake $BUILD_OPTIONS -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ..; fi
+    - CI_ENV=`bash <(curl -s https://codecov.io/env)`
+    - travis_retry docker pull nuto/nuto_docker:xenial
+    - docker run $CI_ENV -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:xenial
+
 script:
-    - make -j2 unit
+    # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
+    # - The source code from travis is 'mounted' as /home/nuto/source via the -v option in the docker run command above
+    - docker exec dock cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE source
+    - docker exec dock make -j2 unit
+    - docker exec dock make -j2
+    - docker exec dock bash source/scripts/check_install.sh
+
 after_success:
-    - cd ..
-    - ./scripts/upload_coverage.sh
+    - docker exec dock bash source/scripts/upload_coverage.sh # will simply fail if --coverage is not set.
