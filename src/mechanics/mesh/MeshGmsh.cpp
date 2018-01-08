@@ -113,7 +113,7 @@ std::tuple<std::vector<GmshNode>, int> ReadNodesASCII(std::ifstream& rFile)
         dimension = 3;
 
     ExpectNextLineToBe(rFile, "$EndNodes");
-    return {std::move(nodes), dimension};
+    return std::tuple<std::vector<GmshNode>, int>(std::move(nodes), dimension);
 }
 
 std::vector<GmshElement> ReadElementsASCII(std::ifstream& rFile)
@@ -194,7 +194,7 @@ void ProcessSectionASCII(std::ifstream& rFile, GmshFileContent& rFileContent)
 }
 
 
-const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh, int gmshType, int dimension)
+const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh, int gmshType)
 {
     using namespace NuTo;
     switch (gmshType)
@@ -273,10 +273,9 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
 
         auto interpolationIter = interpolationPtrMap.find(gmshElement.type);
         if (interpolationIter == interpolationPtrMap.end())
-            interpolationIter = interpolationPtrMap
-                                        .emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type,
-                                                                                               fileContent.dimension))
-                                        .first;
+            interpolationIter =
+                    interpolationPtrMap.emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type))
+                            .first;
         std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
         for (unsigned int i = 0; i < elementNodes.size(); ++i)
             elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
