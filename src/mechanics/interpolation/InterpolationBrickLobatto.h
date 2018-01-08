@@ -29,20 +29,7 @@ public:
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        const int d = mNodes.size();
-
-        assert(nodeId >= 0);
-        assert(nodeId < GetNumNodes());
-
-        int i = nodeId % d;
-        int j = nodeId % (d*d) / d;
-        int k = nodeId / (d*d);
-
-        double cX = mNodes[i];
-        double cY = mNodes[j];
-        double cZ = mNodes[k];
-
-        return Eigen::Vector3d({cX, cY,cZ});
+        return ShapeFunctions3D::NodeCoordinatesBrickLobatto(nodeId, mNodes);
     }
 
     int GetNumNodes() const override

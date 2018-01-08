@@ -10,6 +10,13 @@ namespace ShapeFunctions1D
 {
 
 //! @brief Lobatto nodes in one dimension
+//!
+//! Node Numbering:
+//!
+//! number               0   ,  1,  2, ... , order
+//!                      |--------------------|
+//! local coordinate    -1   ,  .......... , +1
+//!
 //! @param order Polynomial order (minumum: 1 linear, 2 quadratic, etc.)
 //! @return local node coordinates ordered from left to right
 Eigen::VectorXd NodeCoordinatesTrussLobatto(int order)
@@ -25,7 +32,7 @@ Eigen::VectorXd NodeCoordinatesTrussLobatto(int order)
     {
         result[i+1] = points[i];
     }
-    result[result.size()-1] = 1.;
+    result[result.rows()-1] = 1.;
     return result;
 }
 
@@ -33,9 +40,9 @@ Eigen::VectorXd NodeCoordinatesTrussLobatto(int order)
 //! @param nodes local node coordinates
 Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes)
 {
-    Eigen::VectorXd w = Eigen::VectorXd::Ones(nodes.size());
-    for (int j = 0; j < nodes.size(); j++)
-        for (int i = 0; i < nodes.size(); i++)
+    Eigen::VectorXd w = Eigen::VectorXd::Ones(nodes.rows());
+    for (int j = 0; j < nodes.rows(); j++)
+        for (int i = 0; i < nodes.rows(); i++)
         {
             if (i != j)
             {
@@ -53,11 +60,11 @@ Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes)
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
 Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
 {
-    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size());
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows());
     Eigen::VectorXd w = BarycentricWeights(nodes);
     // Check if x is a node (or near)
     bool xMatchesNode = false;
-    for (int j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.rows(); j++)
     {
         if (std::abs(x - nodes[j]) < 1.e-15)
         {
@@ -72,14 +79,14 @@ Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorX
 
     double sum = 0;
 
-    for (int j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.rows(); j++)
     {
         double tmp = w[j]/(x-nodes[j]);
         result[j] = tmp;
         sum += tmp;
     }
 
-    for (int j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.rows(); j++)
     {
         result[j] /= sum;
     }
@@ -92,16 +99,16 @@ Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorX
 //! @return shape derivatives evaluated at x.
 Eigen::VectorXd DerivativeShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
 {
-    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size());
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows());
     Eigen::VectorXd w = BarycentricWeights(nodes);
-    for (int j = 0; j < nodes.size(); j++)
+    for (int j = 0; j < nodes.rows(); j++)
     {
-        for (int k = 0; k < nodes.size(); k++)
+        for (int k = 0; k < nodes.rows(); k++)
         {
             if (k != j)
             {
                 double tmp = 1.;
-                for (int i = 0; i < nodes.size(); i++)
+                for (int i = 0; i < nodes.rows(); i++)
                 {
                     if ((i != j) && (i != k))
                     {
@@ -120,23 +127,44 @@ Eigen::VectorXd DerivativeShapeFunctionsTrussLagrange(const double x, const Eige
 namespace ShapeFunctions2D
 {
 //! @brief Lobatto nodes for quad element (tensor product)
-//! @param order Polynomial order in 1D
-//! @return local node coordinates
-Eigen::MatrixXd NodeCoordinatesQuadLobatto(int order)
+//!
+//! Node Numbering:
+//!
+//!                    y ^
+//!                      |
+//!
+//!                     12---13------14------15
+//!                      |                    |
+//!                      |                    |
+//!                      8    9      10      11
+//!                      |                    |
+//!                      |                    |
+//!                      4     5      6       7
+//!                      |                    |
+//!                      |                    |
+//!                      0-----1------2-------3     --> x
+//!
+//!
+//! local coordinate    -1   ,  .......... , +1
+//!
+//! @param nodeId
+//! @param nodes local node coords in interval [-1,1 ] used to build
+//! a quad grid
+//! @return coordinates of node with id nodeId
+Eigen::MatrixXd NodeCoordinatesQuadLobatto(int nodeId, const Eigen::VectorXd& nodes)
 {
-    Eigen::VectorXd nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    Eigen::MatrixXd result(nodes.size() * nodes.size(),2);
-    int count = 0;
-    for (int i=0; i<nodes.size(); i++)
-    {
-        for (int j=0; j<nodes.size(); j++)
-        {
-            result(count,0) = nodes[i];
-            result(count,1) = nodes[j];
-            count++;
-        }
-    }
-    return result;
+    const int d = nodes.rows();
+
+    assert(nodeId >= 0);
+    assert(nodeId < nodes.rows() * nodes.rows() );
+
+    int i = nodeId % d;
+    int j = nodeId / d;
+
+    double cX = nodes[i];
+    double cY = nodes[j];
+
+    return Eigen::Vector2d({cX, cY});
 }
 
 //! @brief Value of Lagrange type shape functions with given 1D nodes (tensor product)
@@ -148,11 +176,11 @@ Eigen::VectorXd ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen:
     Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
     Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
 
-    Eigen::VectorXd result(nodes.size() * nodes.size());
+    Eigen::VectorXd result(nodes.rows() * nodes.rows());
     int count = 0;
-    for (int j=0; j<nodes.size(); j++)
+    for (int j=0; j<nodes.rows(); j++)
     {
-        for (int i=0; i<nodes.size(); i++)
+        for (int i=0; i<nodes.rows(); i++)
         {
             result[count] = Nx[i] * Ny[j];
             count++;
@@ -169,11 +197,11 @@ Eigen::MatrixXd DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x, co
     Eigen::VectorXd Nx = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(0), nodes);
     Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
 
-    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.size() * nodes.size(),2);
+    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows(),2);
     int count = 0;
-    for (int j=0; j<nodes.size(); j++)
+    for (int j=0; j<nodes.rows(); j++)
     {
-        for (int i=0; i<nodes.size(); i++)
+        for (int i=0; i<nodes.rows(); i++)
         {
             result(count,0) = DNx[i]*Ny[j];
             result(count,1) =  Nx[i]*DNy[j];
@@ -190,27 +218,51 @@ Eigen::MatrixXd DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x, co
 namespace ShapeFunctions3D
 {
 //! @brief Lobatto nodes for brick element (tensor product)
-//! @param order Polynomial order in 1D
-//! @return local node coordinates
-Eigen::MatrixXd NodeCoordinatesBrickLobatto(int order)
+//!
+//! Node Numbering:
+//!
+//!                              z
+//!                             /
+//!
+//!
+//!
+//!                    y ^  /                   /
+//!                      | 32---33------34------35
+//!                       /                   /
+//!                     12---13------14------15
+//!                      |                    | 27
+//!                      |                    |
+//!                      8    9      10      11
+//!                      |                    | 23
+//!                      |                    |
+//!                      4     5      6       7  /
+//!                      |                    | 19
+//!                      |                    |/
+//!                      0-----1------2-------3     --> x
+//!
+//!
+//! local coordinate    -1   ,  .......... , +1
+//!
+//! @param nodeId
+//! @param nodes local node coords in interval [-1,1 ] used to build
+//! a brick grid
+//! @return coordinates of node with id nodeId
+Eigen::MatrixXd NodeCoordinatesBrickLobatto(int nodeId, const Eigen::VectorXd& nodes)
 {
-    Eigen::VectorXd nodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    Eigen::MatrixXd result(nodes.size() * nodes.size() * nodes.size(),3);
-    int count = 0;
-    for (int i=0; i<nodes.size(); i++)
-    {
-        for (int j=0; j<nodes.size(); j++)
-        {
-            for (int k=0; k<nodes.size(); k++)
-            {
-                result(count,0) = nodes[i];
-                result(count,1) = nodes[j];
-                result(count,2) = nodes[k];
-                count++;
-            }
-        }
-    }
-    return result;
+    const int d = nodes.rows();
+
+    assert(nodeId >= 0);
+    assert(nodeId < nodes.rows() * nodes.rows() * nodes.rows());
+
+    int i = nodeId % d;
+    int j = nodeId % (d*d) / d;
+    int k = nodeId / (d*d);
+
+    double cX = nodes[i];
+    double cY = nodes[j];
+    double cZ = nodes[k];
+
+    return Eigen::Vector3d({cX, cY,cZ});
 }
 
 //! @brief Value of Lagrange type shape functions with given 1D nodes (tensor product)
@@ -223,13 +275,13 @@ Eigen::VectorXd ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen
     Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
     Eigen::VectorXd Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
 
-    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.size() * nodes.size() * nodes.size());
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows() * nodes.rows() * nodes.rows());
     int count = 0;
-    for (int k=0; k<nodes.size(); k++)
+    for (int k=0; k<nodes.rows(); k++)
     {
-        for (int j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.rows(); j++)
         {
-            for (int i=0; i<nodes.size(); i++)
+            for (int i=0; i<nodes.rows(); i++)
             {
                 result[count] = Nx[i] * Ny[j]  * Nz[k];
                 count++;
@@ -249,13 +301,13 @@ Eigen::MatrixXd DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x, c
     Eigen::VectorXd Ny = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(1), nodes);
     Eigen::VectorXd Nz = ShapeFunctions1D::ShapeFunctionsTrussLagrange(x(2), nodes);
 
-    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.size() * nodes.size() * nodes.size(), 3);
+    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows() * nodes.rows(), 3);
     int count = 0;
-    for (int k=0; k<nodes.size(); k++)
+    for (int k=0; k<nodes.rows(); k++)
     {
-        for (int j=0; j<nodes.size(); j++)
+        for (int j=0; j<nodes.rows(); j++)
         {
-            for (int i=0; i<nodes.size(); i++)
+            for (int i=0; i<nodes.rows(); i++)
             {
                 result(count,0) = DNx[i]* Ny[j]* Nz[k];
                 result(count,1) =  Nx[i]*DNy[j]* Nz[k];

@@ -29,18 +29,7 @@ public:
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        const int d = mNodes.size();
-
-        assert(nodeId >= 0);
-        assert(nodeId < GetNumNodes());
-
-        int i = nodeId % d;
-        int j = nodeId / d;
-
-        double cX = mNodes[i];
-        double cY = mNodes[j];
-
-        return Eigen::Vector2d({cX, cY});
+        return ShapeFunctions2D::NodeCoordinatesQuadLobatto(nodeId, mNodes);
     }
 
     int GetNumNodes() const override
