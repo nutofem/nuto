@@ -156,7 +156,7 @@ void NuTo::ParticleHandler::Sync(const double rTime)
         particle->MoveAndGrow(rTime);
 }
 
-const double NuTo::ParticleHandler::GetKineticEnergy() const
+double NuTo::ParticleHandler::GetKineticEnergy() const
 {
     double eKin = 0.;
     for (auto particle : mParticles)
@@ -164,7 +164,7 @@ const double NuTo::ParticleHandler::GetKineticEnergy() const
     return eKin;
 }
 
-const double NuTo::ParticleHandler::GetVolume() const
+double NuTo::ParticleHandler::GetVolume() const
 {
     double volume = 0.;
     for (auto particle : mParticles)

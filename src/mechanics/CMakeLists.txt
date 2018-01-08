@@ -8,6 +8,7 @@ set(MechanicsSources
     timeIntegration/TimeControl.cpp
     tools/GlobalFractureEnergyIntegrator.cpp
     mesh/MeshFem.cpp
+    mesh/MeshGmsh.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp

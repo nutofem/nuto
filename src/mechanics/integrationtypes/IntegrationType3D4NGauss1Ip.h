@@ -9,10 +9,6 @@ class IntegrationType3D4NGauss1Ip : public IntegrationType3D
 {
 
 public:
-    //! @brief constructor
-    IntegrationType3D4NGauss1Ip();
-
-
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return rCoordinates (result)

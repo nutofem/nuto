@@ -320,7 +320,7 @@ void NuTo::SubBoxHandler::AddSpheresToBoxes()
 
                     // add sphere to corresponding box
                     int boxIndex = mDivisions[1] * mDivisions[2] * indX + mDivisions[2] * indY + indZ;
-                    if (std::abs(boxIndex) >= mSubBoxes.size())
+                    if (std::abs(boxIndex) >= static_cast<int>(mSubBoxes.size()))
                         throw NuTo::Exception(__PRETTY_FUNCTION__,
                                               "Box size/position does not match sphere size/position.");
 

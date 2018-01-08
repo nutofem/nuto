@@ -9,7 +9,7 @@ option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
-option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
+option(ENABLE_PYTHON "create python wrapper for nuto" FALSE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
@@ -29,7 +29,7 @@ endif()
 # build nuto
 add_subdirectory(src)
 
-#test Environment
+# test Environment
 include(CTest)
 add_subdirectory(test EXCLUDE_FROM_ALL)
 add_subdirectory(applications/integrationtests EXCLUDE_FROM_ALL)
@@ -38,24 +38,20 @@ if(benchmark_FOUND)
     add_subdirectory(applications/benchmark EXCLUDE_FROM_ALL)
 endif()
 
-# Custom examples are applications you don't want to add to the repository, but
-# that should still be picked up by CMake. If this directory is empty, nothing
-# happens.
-if(ENABLE_CUSTOM_EXAMPLES)
-    add_subdirectory(applications/custom)
-endif()
-
+# Copy headers
 install(DIRECTORY src/
     DESTINATION include/nuto
     FILES_MATCHING PATTERN "*.h"
     )
 
+# Copy cmake macros
+install(DIRECTORY scripts/cmake/
+    DESTINATION lib/cmake/NuTo
+    FILES_MATCHING PATTERN "*.cmake"
+    )
+
 install(EXPORT NuToTargets
-    FILE NuToConfig.cmake
+    FILE NuToTargets.cmake
     NAMESPACE NuTo::
     DESTINATION lib/cmake/NuTo
     )
-
-# This makes qtcreator show header-only classes...
-file(GLOB_RECURSE HeaderFiles "*.h")
-#add_custom_target(headers SOURCES ${HeaderFiles})
