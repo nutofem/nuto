@@ -1,18 +1,12 @@
 #include "visualize/Point.h"
 #include "base/Exception.h"
+#include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
 
-Point::Point(Eigen::Vector3d coordinates)
-    : mCoordinates(coordinates)
-{
-}
-
 Point::Point(Eigen::VectorXd coordinates)
-    : mCoordinates(Eigen::Vector3d::Zero())
+    : mCoordinates(EigenCompanion::To3D(coordinates))
 {
-    const int dim = coordinates.rows();
-    mCoordinates.segment(0, dim) = coordinates;
 }
 
 void Point::SetData(int dataIndex, Eigen::VectorXd data)

@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     visualize.CellData(
             [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
             "CellId");
-    visualize.WriteVTKFile("outputVoronoi.vtu");
+    visualize.WriteVtuFile("outputVoronoi.vtu");
 
     auto analyticDisplacementField = [=](Eigen::Vector2d coord) {
         // pressure / A = sigma = E * strain = E * deltaU / L
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     visualize.CellData(
             [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
             "CellId");
-    visualize.WriteVTKFile("output.vtu");
+    visualize.WriteVtuFile("output.vtu");
 
     // ************************************************************************
     //             check solution

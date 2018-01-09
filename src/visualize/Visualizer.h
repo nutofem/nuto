@@ -54,9 +54,9 @@ public:
         }
     }
 
-    //! Write out a VTK file.
+    //! Write out a VTK unstructured grid file.
     //! @param filename Name of the resulting file.
-    void WriteVTKFile(std::string filename)
+    void WriteVtuFile(std::string filename)
     {
         mGrid.ExportVtuDataFile(filename, false);
     }

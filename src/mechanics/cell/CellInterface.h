@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mechanics/cell/IpValues.h"
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"
 #include <functional>
@@ -21,13 +20,15 @@ public:
 
     using VoidFunction = std::function<void(const CellData&, const CellIpData&)>;
 
+    using EvalFunction = std::function<Eigen::VectorXd(const CellData&, const CellIpData&)>;
+
     virtual double Integrate(ScalarFunction) = 0;
     virtual DofVector<double> Integrate(VectorFunction) = 0;
     virtual DofMatrix<double> Integrate(MatrixFunction) = 0;
     virtual void Apply(VoidFunction) = 0;
 
     virtual std::vector<Eigen::VectorXd>
-    Eval(std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> f) const = 0;
+    Eval(EvalFunction f) const = 0;
 
     virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
 

@@ -13,10 +13,6 @@ class Point
 public:
     //! @brief ... constructor
     //! @param coordinates ... point coordinates
-    Point(Eigen::Vector3d coordinates);
-
-    //! @brief ... constructor
-    //! @param coordinates ... point coordinates
     Point(Eigen::VectorXd coordinates);
 
     //! @brief ... set data

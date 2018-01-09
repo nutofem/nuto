@@ -10,3 +10,4 @@ set(VisualizeSources
 )
 
 create_nuto_module(Visualize "${VisualizeSources}")
+target_link_libraries(Visualize Math)

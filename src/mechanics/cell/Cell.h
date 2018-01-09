@@ -69,7 +69,7 @@ public:
     }
 
     std::vector<Eigen::VectorXd>
-    Eval(std::function<Eigen::VectorXd(const CellData& cellData, const CellIpData& cellIpData)> f) const override
+    Eval(EvalFunction f) const override
     {
         CellData cellData(mElements, Id());
         std::vector<Eigen::VectorXd> result;
