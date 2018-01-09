@@ -60,10 +60,10 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
             {
                 if (i >= int(mBoundaryConditions.size()))
                 {
-                    lhs.insert(i, j) = pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i + j);
+                    lhs.coeffRef(i, j) += pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i + j);
                 }
             }
-            rhs(i) += pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i) *
+            rhs[i] += pow(mSupportPoints.GetOrigSupportPointsInput()(0, k), i) *
                       mSupportPoints.GetOrigSupportPointsOutput()(0, k);
         }
     }
@@ -71,9 +71,9 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
     {
         for (int j = 0; j <= mDegree; j++)
         {
-            lhs.insert(i, j) = pow(mBoundaryConditions[i].first, j);
+            lhs.coeffRef(i, j) += pow(mBoundaryConditions[i].first, j);
         }
-        rhs(i) = mBoundaryConditions[i].second;
+        rhs[i] = mBoundaryConditions[i].second;
     }
 
     lhs.makeCompressed();
