@@ -1,7 +1,8 @@
 #include "BoostUnitTest.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include "visualize/QuadAverageHandler.h"
+#include "visualize/AverageHandler.h"
+#include "visualize/AverageGeometries.h"
 #include "visualize/Visualizer.h"
 #include "visualize/XMLWriter.h"
 #include "TestStructure.h"
@@ -26,12 +27,13 @@ public:
 
 BOOST_AUTO_TEST_CASE(GroupAverage)
 {
+    using namespace Visualize;
     NuTo::DofType dof("NodeCoordinatesDiv10", 2);
     NuTo::Test::VisualizeTestStructure s(dof);
     auto cells = s.Cells();
 
     std::string filename = "AverageOutput.vtu";
-    Visualize::Visualizer<Visualize::QuadAverageHandler> visualize(cells);
+    Visualizer<AverageHandler> visualize(cells, AverageGeometryQuad());
     visualize.WriteVtuFile(filename);
     UnstructuredGridCheck::Average(filename);
 }

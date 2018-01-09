@@ -25,7 +25,8 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssember.h"
 
-#include "visualize/QuadAverageHandler.h"
+#include "visualize/AverageHandler.h"
+#include "visualize/AverageGeometries.h"
 #include "visualize/TensorProductVoronoiHandler.h"
 #include "visualize/Visualizer.h"
 
@@ -325,7 +326,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    Visualize::Visualizer<Visualize::QuadAverageHandler> visualize(cellGroup);
+    Visualize::Visualizer<Visualize::AverageHandler> visualize(cellGroup, Visualize::AverageGeometryTriangle());
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {

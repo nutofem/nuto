@@ -5,7 +5,7 @@ set(VisualizeSources
     UnstructuredGrid.cpp
     XMLWriter.cpp
     DataArray.cpp
-    QuadAverageHandler.cpp
+    AverageHandler.cpp
     TensorProductVoronoiHandler.cpp
 )
 
