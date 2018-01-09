@@ -8,16 +8,27 @@ namespace NuTo
 namespace Visualize
 {
 
+
+struct VoronoiCell
+{
+    std::vector<int> cellCornerIds;
+    eCellTypes cellType;
+};
+
+struct VoronoiGeometry
+{
+    std::vector<Eigen::VectorXd> pointCoordinates;
+    std::vector<VoronoiCell> voronoiCells;
+};
+
+
 //! Cell handler that subdivides a cell into subcells.
-//! @tparam TDim Dimension of cells to be visualized.
-template <int TDim>
-class TensorProductVoronoiHandler
+class VoronoiHandler
 {
 public:
     //! Constructor.
-    //! @param numCellsPerDirection Number of cells "per Direction", i.e. if the dimension is two, passing a three here
-    //!                             will result in nine subcells.
-    TensorProductVoronoiHandler(int numCellsPerDirection);
+    //! @param geometry definition of arbitrary voronoi cells
+    VoronoiHandler(VoronoiGeometry geometry);
 
     //! Generate a visualize geometry for each cell and write it to the grid.
     //! @param cell Current cell to be visualized.
@@ -40,15 +51,8 @@ public:
     void CellData(int cellId, std::vector<Eigen::VectorXd> values, std::string name, UnstructuredGrid* grid);
 
 private:
-    void SetCellType();
-    void SetVoronoiCells(int numCellsPerDirection);
-
-    std::vector<std::vector<int>> mVoronoiCellCorners;
-
-    //! for each "mechanics cell", save the IDs of the "visualize cells"
+    VoronoiGeometry mGeometry;
     std::vector<std::vector<int>> mSubCells;
-    std::vector<Eigen::VectorXd> mPointCoordinates;
-    eCellTypes mCellType;
 };
 
 } // namespace Visualize
