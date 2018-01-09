@@ -23,7 +23,7 @@ void CheckPartitionOfUnity(const NuTo::InterpolationSimple& r, const std::vector
 }
 
 void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints,
-                                      double rDelta = 1.e-6)
+                                      double rDelta = 1.e-10)
 {
     for (const auto& point : rPoints)
     {
