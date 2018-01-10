@@ -39,10 +39,10 @@ public:
     void SetTransferFunction(int rLayer, eTransferFunctions rTransferFunction);
 
     double Objective() const override;
-    void Gradient(Eigen::MatrixXd& rGradient) const override;
+    void Gradient(Eigen::Ref<Eigen::MatrixXd> rGradient) const override;
     void Hessian(Eigen::MatrixXd& rDiagHessian) const override;
     void HessianDiag(Eigen::MatrixXd& rDiagHessian) const;
-    void HessianFull(Eigen::MatrixXd& rDiagHessian) const;
+    void HessianFull(Eigen::Ref<Eigen::MatrixXd> rDiagHessian) const;
 
     Eigen::MatrixXd GetParameters() const;
     void SetParameters(const Eigen::MatrixXd& Parameters) override;

@@ -27,7 +27,7 @@ public:
         throw Exception(__PRETTY_FUNCTION__, "Objective function not implemented in CallbackHandler object.");
     }
 
-    virtual void Gradient(Eigen::MatrixXd&) const
+    virtual void Gradient(Eigen::Ref<Eigen::MatrixXd>) const
     {
         throw Exception(__PRETTY_FUNCTION__, "Gradient function not implemented in CallbackHandler object.");
     }

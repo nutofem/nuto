@@ -30,7 +30,7 @@ public:
 
     double Objective() const override;
 
-    void Gradient(Eigen::MatrixXd& rGradient) const override;
+    void Gradient(Eigen::Ref<Eigen::MatrixXd> rGradient) const override;
 
     void Hessian(Eigen::MatrixXd& rHessian) const override;
 

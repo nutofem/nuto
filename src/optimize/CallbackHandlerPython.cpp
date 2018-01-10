@@ -86,7 +86,7 @@ double CallbackHandlerPython::Objective() const
 }
 
 
-void CallbackHandlerPython::Gradient(Eigen::MatrixXd& rGradient) const
+void CallbackHandlerPython::Gradient(Eigen::Ref<Eigen::MatrixXd> rGradient) const
 {
     // Variant with the creation of lists, better directly wrap a full matrix
     // call external python function

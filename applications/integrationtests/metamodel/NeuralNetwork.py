@@ -145,8 +145,9 @@ else:
         print ('gradientExact:\n', gradientExact)
         error = True
 
-# hessian
-hessian = np.zeros((NumParameters, NumParameters))
+# hessian; change storage order to correspond to Eigen storage order 
+# see [PyBind Documentation](https://pybind11.readthedocs.io/en/master/advanced/cast/eigen.html)
+hessian = np.zeros((NumParameters, NumParameters), order='F')
 myNetwork.HessianFull(hessian)
 if (printResult):
     print ('hessian:\n', hessian)

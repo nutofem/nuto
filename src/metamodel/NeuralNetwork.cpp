@@ -134,7 +134,7 @@ double NuTo::NeuralNetwork::Objective() const
 }
 
 
-void NuTo::NeuralNetwork::Gradient(Eigen::MatrixXd& rGradient) const
+void NuTo::NeuralNetwork::Gradient(Eigen::Ref<Eigen::MatrixXd> rGradient) const
 {
     // printf("call gradient from NuTo::NeuralNetwork\n");
     rGradient.resize(
@@ -251,13 +251,14 @@ void NuTo::NeuralNetwork::Hessian(Eigen::MatrixXd& rHessian) const
         HessianFull(rHessian);
 }
 
-void NuTo::NeuralNetwork::HessianFull(Eigen::MatrixXd& rHessian) const
+void NuTo::NeuralNetwork::HessianFull(Eigen::Ref<Eigen::MatrixXd> rHessian) const
 {
     int NumParameters = mNumWeights + mNumBiases;
     Eigen::MatrixXd jacobian(NumParameters, mSupportPoints.GetDimOutput());
 
     // initialize Hessian
-    rHessian.setZero(NumParameters, NumParameters);
+    rHessian.resize(NumParameters, NumParameters);
+    rHessian.setZero();
 
     int numNeurons = GetNumNeurons();
     std::vector<double> pA(numNeurons); // store the current value of each neuron before applying the transfer function
