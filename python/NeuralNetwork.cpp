@@ -41,5 +41,15 @@ PYBIND11_MODULE(metamodel, m)
             .def("SetTransferFunction", &NeuralNetwork::SetTransferFunction)
             .def("SetMaxBayesianIterations", &NeuralNetwork::SetMaxBayesianIterations)
             .def("Objective", &NeuralNetwork::Objective)
+            .def("Gradient", &NeuralNetwork::Gradient)
+            .def("HessianFull", &NeuralNetwork::HessianFull)
+            .def("GetParameters", &NeuralNetwork::GetParameters)
+            .def("GetNumParameters", &NeuralNetwork::GetNumParameters)
             .def("UseDiagHessian", &NeuralNetwork::UseDiagHessian);
+
+
+    py::enum_<NeuralNetwork::eTransferFunctions>(m, "eTransferFunctions")
+            .value("TanSig", NeuralNetwork::eTransferFunctions::TanSig)
+            .value("PureLin", NeuralNetwork::eTransferFunctions::PureLin)
+            .export_values();
 }

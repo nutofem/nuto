@@ -139,10 +139,8 @@ public:
         mBayesian = false;
     }
 
-#ifndef SWIG
     void Jacobian(Eigen::MatrixXd& rJacobian, std::vector<double>& pA, std::vector<double>& pO,
                   Eigen::MatrixXd& pM) const;
-#endif
 
     void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const override;
     void SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates,

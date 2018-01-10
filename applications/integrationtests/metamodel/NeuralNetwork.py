@@ -91,8 +91,8 @@ myNetwork.AppendMinMaxTransformationInput(lowerBound, upperBound)
 myNetwork.AppendMinMaxTransformationOutput(lowerBound, upperBound)
 myNetwork.BuildTransformation()
 # set transfer functions
-myNetwork.SetTransferFunction(0, metamodel.NeuralNetwork.TanSig)
-myNetwork.SetTransferFunction(1, metamodel.NeuralNetwork.PureLin)
+myNetwork.SetTransferFunction(0, metamodel.eTransferFunctions.TanSig)
+myNetwork.SetTransferFunction(1, metamodel.eTransferFunctions.PureLin)
 
 # build/train the network
 myNetwork.Build()
@@ -125,7 +125,7 @@ else:
     objectiveExact = float(f.readline())
     f.close()
     if (math.fabs(objective - objectiveExact) > 1e-8):
-        print ('[' + system, sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective - objectiveExact)) + ')')
+        print ('[' + sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective - objectiveExact)) + ')')
         print ('objectiveExact including regularization terms (transformed space):\n', objectiveExact)
         error = True
 
@@ -141,7 +141,7 @@ if (createResult):
 else:
     gradientExact = np.loadtxt(pathToResultFiles + "Gradient.txt", skiprows=1)
     if (np.max(np.abs(gradientExact - gradient)) > 1e-8):
-        print ('[' + system, sys.argv[0] + '] : gradient is not correct.(' + str(np.max(np.abs(gradientExact - gradient))) + ')')
+        print ('[' + sys.argv[0] + '] : gradient is not correct.(' + str(np.max(np.abs(gradientExact - gradient))) + ')')
         print ('gradientExact:\n', gradientExact)
         error = True
 
@@ -156,7 +156,7 @@ else:
     hessianExact = np.loadtxt(pathToResultFiles+"Hessian.txt", skiprows=1)
     RelError = (hessianExact - hessian) / hessianExact
     if (np.max(np.abs(RelError)) > 1e-8):
-        print ('[' + system, sys.argv[0] + '] : hessian is not correct.(' + str(np.max(np.abs(RelError))) + ')')
+        print ('[' + sys.argv[0] + '] : hessian is not correct.(' + str(np.max(np.abs(RelError))) + ')')
         print ('hessianExact:\n', hessianExact)
         print ('relative Error:\n', RelError)
         error = True
