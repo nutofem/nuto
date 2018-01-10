@@ -124,7 +124,7 @@ void NuTo::Metamodel::SetSupportPoints(int rDimInput, int rDimOutput, Eigen::Mat
         throw Exception("Metamodel::SetSupportPoints - number of samples (number of columns) in input and "
                         "output matrix must be identical .");
 
-    mSupportPoints.SetSupportPoints(rInputCoordinates, rOutputCoordinates);
+    this->mSupportPoints.SetSupportPoints(rInputCoordinates, rOutputCoordinates);
 }
 
 void NuTo::Metamodel::BuildTransformation()

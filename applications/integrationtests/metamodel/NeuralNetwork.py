@@ -1,4 +1,4 @@
-import nuto
+import metamodel
 import random
 import math
 import sys
@@ -67,8 +67,11 @@ SupportPointsOutputExact = ExactFunction(dimOutput, SupportPointsInput)
 SupportPointsOutputNoise = RandomSamplesGauss(meanNoise, sigmaNoise, dimOutput, numSamples)
 SupportPointsOutputWithNoise = SupportPointsOutputExact + SupportPointsOutputNoise
 
+
 # create network with certain number of neurons in each hiddenlayer
-myNetwork = nuto.NeuralNetwork([numNeuronsHiddenLayer])
+myNetwork = metamodel.NeuralNetwork([numNeuronsHiddenLayer])
+myNetwork.SetSupportPoints(3, 3, [1.,2.,3.], [4.,5.,6.])
+sys.exit(0)
 myNetwork.InitRandomNumberGenerator(randomSeed)
 myNetwork.SetBayesianTraining()
 myNetwork.SetInitAlpha(1e-5)
@@ -91,8 +94,8 @@ myNetwork.AppendMinMaxTransformationInput(lowerBound, upperBound)
 myNetwork.AppendMinMaxTransformationOutput(lowerBound, upperBound)
 myNetwork.BuildTransformation()
 # set transfer functions
-myNetwork.SetTransferFunction(0, nuto.NeuralNetwork.TanSig)
-myNetwork.SetTransferFunction(1, nuto.NeuralNetwork.PureLin)
+myNetwork.SetTransferFunction(0, metamodel.NeuralNetwork.TanSig)
+myNetwork.SetTransferFunction(1, metamodel.NeuralNetwork.PureLin)
 
 # build/train the network
 myNetwork.Build()

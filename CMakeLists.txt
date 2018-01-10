@@ -23,7 +23,8 @@ check_for_dependencies()
 add_subdirectory(external)
 
 if(ENABLE_PYTHON)
-    add_subdirectory(python/nuto)
+    add_subdirectory(external/pybind11)
+    add_subdirectory(python)
 endif()
 
 # build nuto
