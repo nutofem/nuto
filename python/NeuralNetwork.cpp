@@ -11,6 +11,7 @@ PYBIND11_MODULE(metamodel, m)
 {
     m.doc() = "NuTo Metamodel python module.";
 
+    py::class_<CallbackHandler>(m, "CallbackHandler");
 
     py::class_<Metamodel>(m, "Metamodel")
             .def("InitRandomNumberGenerator", &Metamodel::InitRandomNumberGenerator)
@@ -41,18 +42,4 @@ PYBIND11_MODULE(metamodel, m)
             .def("SetMaxBayesianIterations", &NeuralNetwork::SetMaxBayesianIterations)
             .def("Objective", &NeuralNetwork::Objective)
             .def("UseDiagHessian", &NeuralNetwork::UseDiagHessian);
-    //.def("InitRandomNumberGenerator", &NeuralNetwork::InitRandomNumberGenerator);
-    //.def_readonly("CapillaryPressure", &PoreState::CapillaryPressure)
-    //.def_readonly("GasPressure", &PoreState::GasPressure)
-    //.def_readonly("Temperature", &PoreState::Temperature)
-    //.def_readonly("VapourPressure", &PoreState::VapourPressure)
-    //.def_readonly("AirPressure", &PoreState::AirPressure)
-    //.def_readonly("AirDensity", &PoreState::AirDensity)
-    //.def_readonly("dVapourPressure_dCapillaryPressure", &PoreState::dVapourPressure_dCapillaryPressure)
-    //.def_readonly("VapourDensity", &PoreState::VapourDensity)
-    //.def_readonly("GasDensity", &PoreState::GasDensity)
-    //.def_readonly("GasMolarMass", &PoreState::GasMolarMass)
-    //.def_readonly("AirDynamicViscosity", &PoreState::AirDynamicViscosity)
-    //.def_readonly("WaterDensity", &PoreState::WaterDensity)
-    //.def_readonly("WaterDynamicViscosity", &PoreState::WaterDynamicViscosity);
 }

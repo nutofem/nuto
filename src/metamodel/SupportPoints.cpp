@@ -1,18 +1,12 @@
 #include <boost/math/distributions/normal.hpp>
-#include <iostream>
+
 #include "base/Exception.h"
 #include "metamodel/SupportPoints.h"
 #include "metamodel/Transformation.h"
 
 NuTo::SupportPoints::SupportPoints()
 {
-    Clear();
-    // mTransformationBuild = false;
-    std::cout << "CTOR" << std::endl;
-    std::cout << mSPOrigInput.rows() << std::endl;
-    std::cout << mSPOrigOutput.rows() << std::endl;
-    std::cout << mSPOrigInput.cols() << std::endl;
-    std::cout << mSPOrigOutput.cols() << std::endl;
+    mTransformationBuild = false;
 }
 
 NuTo::SupportPoints::~SupportPoints()
@@ -23,7 +17,7 @@ NuTo::SupportPoints::~SupportPoints()
 //! @brief clear support points
 void NuTo::SupportPoints::Clear()
 {
-    mSPOrigInput.resize(1, 1);
+    mSPOrigInput.resize(0, 0);
     mSPTransInput.resize(0, 0);
     mSPTransOutput.resize(0, 0);
     mWeight.resize(0);
@@ -76,13 +70,6 @@ void NuTo::SupportPoints::SetSupportPoints(const Eigen::MatrixXd& rSPOrigInput, 
         throw Exception("[NuTo::SupportPoints::SetSupportPoints] Number of columns for input and output must "
                         "be identical (=number of samples).");
     }
-    std::cout << mSPOrigInput.rows() << std::endl;
-    std::cout << mSPOrigOutput.rows() << std::endl;
-    std::cout << mSPOrigInput.cols() << std::endl;
-    std::cout << mSPOrigOutput.cols() << std::endl;
-
-    std::cout << mSPOrigInput << std::endl;
-    std::cout << mSPOrigOutput << std::endl;
 
     mSPOrigInput = rSPOrigInput;
     mSPOrigOutput = rSPOrigOutput;

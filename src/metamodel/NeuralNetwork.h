@@ -15,7 +15,7 @@ class TransferFunction;
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief Standard abstract class for all metamodels in NuTo
-class NeuralNetwork : public virtual Metamodel, public virtual CallbackHandler
+class NeuralNetwork : public Metamodel, public CallbackHandler
 {
 public:
     enum eTransferFunctions

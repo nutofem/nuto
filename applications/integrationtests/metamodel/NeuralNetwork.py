@@ -67,11 +67,8 @@ SupportPointsOutputExact = ExactFunction(dimOutput, SupportPointsInput)
 SupportPointsOutputNoise = RandomSamplesGauss(meanNoise, sigmaNoise, dimOutput, numSamples)
 SupportPointsOutputWithNoise = SupportPointsOutputExact + SupportPointsOutputNoise
 
-
 # create network with certain number of neurons in each hiddenlayer
 myNetwork = metamodel.NeuralNetwork([numNeuronsHiddenLayer])
-myNetwork.SetSupportPoints(3, 3, [1.,2.,3.], [4.,5.,6.])
-sys.exit(0)
 myNetwork.InitRandomNumberGenerator(randomSeed)
 myNetwork.SetBayesianTraining()
 myNetwork.SetInitAlpha(1e-5)
