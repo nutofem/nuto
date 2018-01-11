@@ -36,3 +36,15 @@ void AverageHandler::CellData(int cellId, std::vector<Eigen::VectorXd> values, s
 
     grid->SetCellData(cellId, name, sum / values.size());
 }
+
+void AverageHandler::PointData(const CellInterface& cell, std::function<Eigen::VectorXd(Eigen::VectorXd)> f,
+                   std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
+{
+    grid->DefinePointData(name);
+    for (size_t iCorner = 0; iCorner < mGeometry.cornerCoordinates.size(); ++iCorner)
+    {
+        auto coords = cell.Interpolate(mGeometry.cornerCoordinates[iCorner]);
+        auto value = f(coords);
+        grid->SetPointData(pointIds[iCorner], name, value);
+    }
+}

@@ -54,6 +54,19 @@ public:
         }
     }
 
+    //! Visualize a function y = f(x) over a collection of cells
+    //! @param f Function taking the coordinates as an Eigen vector and returning an Eigen vector
+    //! @param name Name to be used in the resulting output file for the data array.
+    void PointData(std::function<Eigen::VectorXd(Eigen::VectorXd)> f, std::string name)
+    {
+        int i = 0;
+        for (const auto& cell : mCells)
+        {
+            mHandler.PointData(cell, f, mPointIds[i], name, &mGrid);
+            ++i;
+        }
+    }
+
     //! Write out a VTK unstructured grid file.
     //! @param filename Name of the resulting file.
     void WriteVtuFile(std::string filename)

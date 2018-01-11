@@ -10,3 +10,6 @@ target_link_libraries(AverageVisualizer Visualize)
 add_unit_test(VoronoiVisualizer
     mechanics/elements/ElementShapeFunctions.cpp)
 target_link_libraries(VoronoiVisualizer Visualize)
+
+add_unit_test(MeshFunction)
+target_link_libraries(MeshFunction Mechanics Visualize)
