@@ -18,3 +18,57 @@ BOOST_AUTO_TEST_CASE(NonContiguousNodeNumbering)
 {
     BOOST_CHECK_NO_THROW(MeshGmsh("quadNoncontiguous.msh"));
 }
+
+BOOST_AUTO_TEST_CASE(QuadLinear)
+{
+    MeshGmsh gmsh("quad1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(QuadSerendipity)
+{
+    MeshGmsh gmsh("quadSerendipity2.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(TriangleLinear)
+{
+    MeshGmsh gmsh("triangle1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(TriangleQuadratic)
+{
+    MeshGmsh gmsh("triangle2.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(LineLinear)
+{
+    MeshGmsh gmsh("line1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(TetrahedronLinear)
+{
+    MeshGmsh gmsh("tet1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(BrickLinear)
+{
+    MeshGmsh gmsh("hex1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(PrismLinear)
+{
+    MeshGmsh gmsh("prism1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}
+
+BOOST_AUTO_TEST_CASE(PyramidLinear)
+{
+    MeshGmsh gmsh("pyramid1.msh");
+    auto g = gmsh.GetPhysicalGroup(0);
+}

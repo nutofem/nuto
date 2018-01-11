@@ -154,6 +154,14 @@ Eigen::Matrix<double, 18, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rC
 Eigen::Matrix<double, 18, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Eigen::Matrix<double, 3, 1> NodeCoordinatesPyramidOrder1(int rNodeIndex);
+
+Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates);
+
+Eigen::Matrix<double, 5, 3> DerivativeShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 
