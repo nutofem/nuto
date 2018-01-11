@@ -1400,7 +1400,7 @@ Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& r
     const double z = rCoordinates[2];
 
     double rationalTerm = x * y * z;
-    if (std::abs(rationalTerm) > 1e-10)
+    if (std::abs(rationalTerm) > 1.e-14)
     {
         rationalTerm /= (1. - z);
     }
@@ -1408,9 +1408,9 @@ Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& r
     Eigen::Matrix<double, 5, 1> shapeFunctions;
 
     shapeFunctions[0] = 0.25 * ((1 + x) * (1 + y) - z + rationalTerm);
-    shapeFunctions[1] = 0.25 * ((1 + x) * (1 - y) - z + rationalTerm);
+    shapeFunctions[1] = 0.25 * ((1 + x) * (1 - y) - z - rationalTerm);
     shapeFunctions[2] = 0.25 * ((1 - x) * (1 - y) - z + rationalTerm);
-    shapeFunctions[3] = 0.25 * ((1 - x) * (1 + y) - z + rationalTerm);
+    shapeFunctions[3] = 0.25 * ((1 - x) * (1 + y) - z - rationalTerm);
     shapeFunctions[4] = z;
     return shapeFunctions;
 }
@@ -1428,21 +1428,21 @@ Eigen::Matrix<double, 5, 3> DerivativeShapeFunctionsPyramidOrder1(const Eigen::V
         z = 0.99;
     }
 
-    derivativeShapeFunctions(0, 0) = 0.25 * (1 + y + y * z / (1 - z));
-    derivativeShapeFunctions(0, 1) = 0.25 * (1 + x + x * z / (1 - z));
+    derivativeShapeFunctions(0, 0) = 0.25 * (1 + y / (1 - z));
+    derivativeShapeFunctions(0, 1) = 0.25 * (1 + x / (1 - z));
     derivativeShapeFunctions(0, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
 
-    derivativeShapeFunctions(1, 0) = 0.25 * (1 - y + y * z / (1 - z));
-    derivativeShapeFunctions(1, 1) = 0.25 * (-(1 + x) + x * z / (1 - z));
-    derivativeShapeFunctions(1, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
+    derivativeShapeFunctions(1, 0) = 0.25 * (1 - y / (1 - z));
+    derivativeShapeFunctions(1, 1) = 0.25 * (-1 - x / (1 - z));
+    derivativeShapeFunctions(1, 2) = 0.25 * (-1 - x * y / (1 - z) / (1 - z));
 
-    derivativeShapeFunctions(2, 0) = 0.25 * (-(1 - y) + y * z / (1 - z));
-    derivativeShapeFunctions(2, 1) = 0.25 * (-(1 - x) + x * z / (1 - z));
+    derivativeShapeFunctions(2, 0) = 0.25 * (-1 + y / (1 - z));
+    derivativeShapeFunctions(2, 1) = 0.25 * (-1 + x / (1 - z));
     derivativeShapeFunctions(2, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
 
-    derivativeShapeFunctions(3, 0) = 0.25 * (-(1 + y) + y * z / (1 - z));
-    derivativeShapeFunctions(3, 1) = 0.25 * (1 - x + x * z / (1 - z));
-    derivativeShapeFunctions(3, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
+    derivativeShapeFunctions(3, 0) = 0.25 * (-1 - y / (1 - z));
+    derivativeShapeFunctions(3, 1) = 0.25 * (1 - x / (1 - z));
+    derivativeShapeFunctions(3, 2) = 0.25 * (-1 - x * y / (1 - z) / (1 - z));
 
     derivativeShapeFunctions(4, 0) = 0.;
     derivativeShapeFunctions(4, 1) = 0.;
