@@ -628,7 +628,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
     int masterSurfaceId = mElementsMaster(indexMasterElement(0), indexMasterElement(1)).second;
 
     // **** Newton iteration ****//
-    double tol = 1.e-10;
+    double tol = 1.e-8;
     double error = 1.;
     int maxNumIter = 100;
     int numIter = 0;
@@ -680,27 +680,32 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         }
         else if (mKnots.size() == 2)
         {
+            if (rParameterMinMaster(0) + increment(0) < 0.)
+            {
+                break;
+                //                rParameterMinMaster(0) = 0.;
+            }
+
+            if (rParameterMinMaster(1) + increment(1) < 0.)
+            {
+                break;
+                //                rParameterMinMaster(1) = 0.;
+            }
+
+            if (rParameterMinMaster(0) + increment(0) > 1.)
+            {
+                break;
+                //                rParameterMinMaster(0) = 1.;
+            }
+
+            if (rParameterMinMaster(1) + increment(1) > 1.)
+            {
+                break;
+                //                rParameterMinMaster(1) = 1.;
+            }
+
             rParameterMinMaster += increment;
 
-            //            if (rParameterMinMaster(0) < 0.)
-            //            {
-            //                rParameterMinMaster(0) = 0.;
-            //            }
-
-            //            if (rParameterMinMaster(1) < 0.)
-            //            {
-            //                rParameterMinMaster(1) = 0.;
-            //            }
-
-            //            if (rParameterMinMaster(0) > 1.)
-            //            {
-            //                rParameterMinMaster(0) = 1.;
-            //            }
-
-            //            if (rParameterMinMaster(1) > 1.)
-            //            {
-            //                rParameterMinMaster(1) = 1.;
-            //            }
             indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]);
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(1), 0, mKnots[1]);
         }
