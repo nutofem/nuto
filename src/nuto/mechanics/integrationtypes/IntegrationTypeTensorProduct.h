@@ -47,6 +47,8 @@ public:
                 identifier = std::string("2D4NLOBATTO") + std::to_string(mIPts1D.size() * mIPts1D.size()) +
                              std::string("IP");
         }
+
+        return identifier;
     }
 
     virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override

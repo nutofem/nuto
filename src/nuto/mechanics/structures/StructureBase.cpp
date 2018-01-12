@@ -1049,7 +1049,8 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& tol, int rMaxNumIter, int rLoadCase)
+std::vector<NuTo::StructureOutputBlockVector>
+NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& tol, int rMaxNumIter, int rLoadCase)
 {
     if (GetNumTimeDerivatives() > 0)
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
@@ -1105,15 +1106,17 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScala
 
         // solve
         hessian0.ApplyCMatrix(cmat);
-        //        std::cout << "Solve - start\n" << std::flush;
+        std::cout << "Solve - start\n" << std::flush;
         delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
-        //        std::cout << "Solve - end\n" << std::flush;
+        std::cout << "Solve - end\n" << std::flush;
         delta_dof_dt0.K = cmat * delta_dof_dt0.J * (-1.);
 
         // calculate line search trial state
         trial_dof_dt0 = dof_dt0 + delta_dof_dt0;
         NodeMergeDofValues(0, trial_dof_dt0.J, trial_dof_dt0.K);
         ElementTotalUpdateTmpStaticData();
+
+        //        break;
 
         Evaluate(inputMap, evaluate_InternalGradient);
 
@@ -1129,6 +1132,11 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScala
 
         iteration++;
     }
+    std::vector<NuTo::StructureOutputBlockVector> vectorReturn;
+    vectorReturn.push_back(residual);
+    vectorReturn.push_back(extForce);
+    vectorReturn.push_back(intForce);
+    return vectorReturn;
 }
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix,

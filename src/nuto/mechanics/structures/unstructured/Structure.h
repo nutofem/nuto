@@ -577,6 +577,8 @@ public:
                                                                    ElementData::eElementDataType rElementData,
                                                                    IpData::eIpDataType rIPData);
 
+    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshTemp(const std::string& rFileName, int elementType);
+
 
 #endif // SWIG
 
@@ -801,6 +803,7 @@ protected:
     FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshAux(const std::string& rFileName,
                                                                       ElementData::eElementDataType rElementData,
                                                                       IpData::eIpDataType rIPData);
+
 #endif // SWIG
 
     boost::ptr_map<int, NodeBase> mNodeMap;

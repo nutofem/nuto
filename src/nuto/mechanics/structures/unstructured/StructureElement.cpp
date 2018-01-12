@@ -1574,7 +1574,6 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
         const InterpolationType* interpolationType = elementPtr->GetInterpolationType();
         try
         {
-
             // loop over all surfaces
             for (int iSurface = 0; iSurface < interpolationType->GetNumSurfaces(); ++iSurface)
             {

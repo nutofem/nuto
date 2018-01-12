@@ -29,6 +29,7 @@
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include <eigen3/Eigen/Dense>
 
 template <int TDimSlave, int TDimMaster>
 NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
@@ -207,12 +208,12 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(
         }
 
         // nodes of one element
-        for (int k = 0; k < data.mShapeFunctionsIntegral.rows(); k++)
-        {
-            int surfaceid = it.second;
-            if (!mIsNodeOnSurface(k, surfaceid))
-                data.mShapeFunctionsIntegral(k) = 0.;
-        }
+        //        for (int k = 0; k < data.mShapeFunctionsIntegral.rows(); k++)
+        //        {
+        //            int surfaceid = it.second;
+        //            if (!mIsNodeOnSurface(k, surfaceid))
+        //                data.mShapeFunctionsIntegral(k) = 0.;
+        //        }
 
         //        mWeightsVectorTemp = data.mShapeFunctionsIntegral;
 
@@ -389,7 +390,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         // normal vector
         Eigen::VectorXd normal = masterElement->InterpolateDofGlobalSurfaceNormal(parameterMinMaster);
 
-        // Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*),
+        // Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s),
+        // ShapeFunctionsMaster(\xi^*),
         // n^*) d\Gamma
 
         const InterpolationBase& interpolationTypeDispSlave =
@@ -400,6 +402,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
                 masterElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
         Eigen::VectorXd shapeFunsMaster =
                 interpolationTypeDispMaster.CalculateShapeFunctions(parameterMinMaster); // master is always iga
+
 
         int numSlaveFunsNormal = shapeFunsSlave.rows() * normal.rows();
         int numMasterFunsNormal = shapeFunsMaster.rows() * normal.rows();
@@ -420,7 +423,57 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
             count += normal.rows();
         }
 
-        // matrix containing the derivatives of the slave and master side multiplied by the normal (R^S * normal \\  R^M
+        double gap = r.dot(normal); // gap at ip
+        //        std::cout << rTheIP << ": " << gap << std::endl << std::flush;
+
+        // ----------- geometrical linearization terms ---- start ------------//
+
+        if (0)
+        {
+            Eigen::VectorXd shapeFunsMasterFirstDer =
+                    interpolationTypeDispMaster.CalculateDerivativeShapeFunctionsNatural(
+                            parameterMinMaster); // master is always iga
+
+            Eigen::VectorXd tau_1 = masterElement->InterpolateDofGlobalSurfaceDerivative(0, parameterMinMaster, 1, 0);
+            double m_11 = tau_1.dot(tau_1);
+            Eigen::VectorXd secondder_1 =
+                    masterElement->InterpolateDofGlobalSurfaceDerivative(0, parameterMinMaster, 2, 0);
+            double k_11 = secondder_1.dot(normal);
+
+            Eigen::VectorXd T(numSlaveFunsNormal + numMasterFunsNormal);
+            Eigen::VectorXd N_1(numSlaveFunsNormal + numMasterFunsNormal);
+
+            T.setZero();
+            N_1.setZero();
+
+            count = 0;
+
+            // slave part
+            for (int i = 0; i < shapeFunsSlave.rows(); i++)
+            {
+                T.block(count, 0, tau_1.rows(), 1) = shapeFunsSlave(i) * tau_1;
+                count += tau_1.rows();
+            }
+
+            // master part
+            for (int i = 0; i < shapeFunsSlave.rows(); i++)
+            {
+                T.block(count, 0, tau_1.rows(), 1) = shapeFunsMaster(i) * tau_1;
+                N_1.block(count, 0, tau_1.rows(), 1) = shapeFunsMasterFirstDer(i) * normal;
+                count += tau_1.rows();
+            }
+
+            Eigen::VectorXd D_1 = (1 / (m_11 - k_11 * gap)) * (T - gap * N_1);
+            Eigen::VectorXd N_1_square = N_1 - k_11 * D_1;
+
+            Eigen::MatrixXd L = (-gap / m_11) * N_1_square * N_1_square.transpose() - D_1 * N_1.transpose() -
+                                N_1 * D_1.transpose() + k_11 * D_1 * D_1.transpose();
+        }
+
+        // ----------- geometrical linearization terms --- end -------------//
+
+        // matrix containing the derivatives of the slave and master side multiplied by the normal (R^S * normal
+        // \\  R^M
         // * normal)
         Eigen::MatrixXd NContact;
         NContact.resize(numSlaveFunsNormal + numMasterFunsNormal, shapeFunsSlave.rows());
@@ -431,8 +484,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
                 shapeFunsMasterNormal * shapeFunsSlave.transpose();
         NContact *= jacobianByWeight;
 
-        double gap = r.dot(normal); // gap at ip
-        //        std::cout << rTheIP << ": " << gap << std::endl << std::flush;
         double derivativeContactForce = mConstitutiveContactLaw->GetContactForceDerivative(gap);
 
         // GAP-MATRIX
@@ -503,10 +554,10 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 {
     // **** Get the starting point for iteration **** //
 
-    int numStartingPointsOneDir = 7;
+    int numStartingPointsOneDir = 10;
     Eigen::VectorXd coords(numStartingPointsOneDir);
-    coords(0) = -0.95;
-    double length = 1.9;
+    coords(0) = -0.99;
+    double length = 1.98;
     for (int i = 1; i < numStartingPointsOneDir; i++)
         coords(i) = coords(i - 1) + length / (numStartingPointsOneDir - 1);
 
@@ -539,7 +590,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
     }
 
     double minDistance = std::numeric_limits<double>::infinity();
-    Eigen::Vector2d indexMasterElement(0., 0.);
+    Eigen::Vector2i indexMasterElement(0, 0);
     Eigen::Matrix<double, TDimMaster, 1> localParameter;
     for (int i = 0; i < mElementsMaster.rows(); i++)
     {
@@ -620,16 +671,41 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         if (mKnots.size() == 1)
         {
             rParameterMinMaster(0) += increment(0);
+            if (rParameterMinMaster(0) < 0.)
+                rParameterMinMaster(0) = 0.;
+
+            if (rParameterMinMaster(0) > 1.)
+                rParameterMinMaster(0) = 1.;
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]);
         }
         else if (mKnots.size() == 2)
         {
             rParameterMinMaster += increment;
+
+            //            if (rParameterMinMaster(0) < 0.)
+            //            {
+            //                rParameterMinMaster(0) = 0.;
+            //            }
+
+            //            if (rParameterMinMaster(1) < 0.)
+            //            {
+            //                rParameterMinMaster(1) = 0.;
+            //            }
+
+            //            if (rParameterMinMaster(0) > 1.)
+            //            {
+            //                rParameterMinMaster(0) = 1.;
+            //            }
+
+            //            if (rParameterMinMaster(1) > 1.)
+            //            {
+            //                rParameterMinMaster(1) = 1.;
+            //            }
             indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]);
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(1), 0, mKnots[1]);
         }
 
-        masterElement = mElementsMaster(indexMasterElement(0), indexMasterElement(1)).first;
+        masterElement = mElementsMaster(indexMasterElement(1), indexMasterElement(0)).first;
 
         error = dprime.norm();
         numIter++;
@@ -646,8 +722,8 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 
     if ((slavePointIteration - coordinatesIPSlave).lpNorm<Eigen::Infinity>() > 1.e-8)
     {
-        std::cout << "Not converged, deviation L2 norm: " << (slavePointIteration - coordinatesIPSlave).norm()
-                  << std::endl;
+        std::cout << "Not converged, deviation L2 norm (" << coordinatesIPSlave.transpose()
+                  << "): " << (slavePointIteration - coordinatesIPSlave).norm() << std::endl;
     }
 
     return masterElement;
@@ -906,7 +982,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             for (int i = 0; i < mNumSlaveNodes; i++)
             {
                 //                std::cout << mSlaveShapeFunctionsWeight(i) << " ";
-                if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-14)
+                if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-10)
                 {
                     mSlaveShapeFunctionsWeight(i) = 1.;
                     //                    mWeightsVectorTemp(i) = 1.;
@@ -946,7 +1022,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                }
                 //                std::cout << numForces << std::endl;
 
-                //                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
+                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
 
                 //                Eigen::VectorXd forceTemp =
                 //                        mGapMatrixTemp * ((mWeightsVectorTemp.cwiseInverse()).asDiagonal()) *
@@ -960,7 +1036,14 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                        mGlobalNodalPressure;
 
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
-                //                std::cout << rInternalGradient[dofRow].Norm() << std::endl;
+
+                std::cout << "|force|_1: ";
+                double sum = 0.;
+                for (int i = 0; i < mNumSlaveDofs; i++)
+                {
+                    sum += force(i);
+                }
+                std::cout << sum << std::endl;
             }
             else if (mContactType == 1)
             {
@@ -1146,7 +1229,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ComputeMeshTyingMatri
             nonZeroEntries.push_back(i);
     }
 
-    for (auto& it : nonZeroEntries)
+    for (int it : nonZeroEntries)
     {
         for (auto& itMap : mMappingGlobal2LocalSlaveNodes)
         {
@@ -1160,8 +1243,9 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ComputeMeshTyingMatri
     D = D_unscaled;
     M = M_unscaled;
 
-    //    D = D_unscaled*(mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal();
-    //    M = M_unscaled*(mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal();
+    // scaling - not needed becaise Variational contribution = 0, contrary to the contact
+    //    D = (mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal() * D_unscaled;
+    //    M = (mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal() * M_unscaled;
 }
 
 template <int TDimSlave, int TDimMaster>

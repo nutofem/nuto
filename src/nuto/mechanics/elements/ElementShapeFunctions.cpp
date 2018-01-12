@@ -1087,6 +1087,93 @@ Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Ei
 
     return derivativeShapeFunctions;
 }
+
+bool IsNodeOnSurfaceQuadSpectralOrder2(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex >= 0 && rNodeIndex <= 2)
+            return true;
+    }
+    case 1:
+    {
+
+        if (rNodeIndex == 2 || rNodeIndex == 5 || rNodeIndex == 8)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex == 6 || rNodeIndex == 7 || rNodeIndex == 8)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 3 || rNodeIndex == 6)
+            return true;
+    }
+    }
+    return false;
+}
+
+bool IsNodeOnSurfaceQuadSpectralOrder3(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex >= 0 && rNodeIndex <= 3)
+            return true;
+    }
+    case 1:
+    {
+
+        if (rNodeIndex == 3 || rNodeIndex == 7 || rNodeIndex == 11 || rNodeIndex == 15)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex >= 12 && rNodeIndex <= 15)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 4 || rNodeIndex == 8 || rNodeIndex == 12)
+            return true;
+    }
+    }
+    return false;
+}
+
+bool IsNodeOnSurfaceQuadSpectralOrder4(int rNodeIndex, int surfaceid)
+{
+    switch (surfaceid)
+    {
+    case 0:
+    {
+        if (rNodeIndex >= 0 && rNodeIndex <= 4)
+            return true;
+    }
+    case 1:
+    {
+
+        if (rNodeIndex == 4 || rNodeIndex == 9 || rNodeIndex == 14 || rNodeIndex == 19 || rNodeIndex == 24)
+            return true;
+    }
+    case 2:
+    {
+        if (rNodeIndex >= 20 && rNodeIndex <= 24)
+            return true;
+    }
+    case 3:
+    {
+        if (rNodeIndex == 0 || rNodeIndex == 5 || rNodeIndex == 10 || rNodeIndex == 15 || rNodeIndex == 20)
+            return true;
+    }
+    }
+    return false;
+}
 }
 
 namespace ShapeFunctions3D
