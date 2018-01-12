@@ -1,6 +1,6 @@
 set(MathSources
     CubicSplineInterpolation.cpp
-    EigenCompanion.cpp
+    EigenIO.cpp
     Interpolation.cpp
     LinearInterpolation.cpp
     Legendre.cpp
