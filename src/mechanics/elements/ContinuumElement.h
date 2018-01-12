@@ -115,7 +115,7 @@ public:
     virtual Eigen::Matrix<double, TDim, TDim> CalculateJacobianParametricSpaceIGA() const;
 
     Eigen::MatrixXd CalculateMatrixB(Node::eDof rDofType, const Eigen::MatrixXd& rDerivativeShapeFunctions,
-                                     const Eigen::Matrix<double, TDim, TDim> rInvJacobian) const;
+                                     const Eigen::Matrix<double, TDim, TDim> rInvJacobian, const Eigen::VectorXd* rIpCoordsNatural = 0) const;
 
 protected:
     const DofStatus& mDofStatus;
@@ -145,6 +145,24 @@ protected:
     virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
                                                  ElementOutputIpData& rIpData) const;
 
+    virtual void FillConstitutiveOutputMapInternalGradientAxSy(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                           BlockFullVector<double>& rInternalGradient) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
+    virtual void FillConstitutiveOutputMapHessianAxSy0(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   BlockFullMatrix<double>& rHessian0) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
+    virtual void FillConstitutiveOutputMapHessianAxSy1(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   BlockFullMatrix<double>& rHessian1) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global
@@ -162,6 +180,8 @@ protected:
     //! @brief Turns rDerivativeShapeFunctions into the B-Matrix for the displacements
     //! @remark: (N0,x & N0,y \\ ...)   --> (N0,x & 0 \\ 0 & N0,y \\ N0,y & N0,x)
     void BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& rDerivativeShapeFunctions) const;
+
+    void BlowToBMatrixEngineeringStrainAxSy(Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rIpCoordsNatural) const;
 
     void CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim>& rData);
 
@@ -182,6 +202,26 @@ protected:
                                                 int rTheIP) const;
     virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateDataContinuum<TDim>& rData,
                                               int rTheIP, const ConstitutiveOutputMap& constitutiveOutput) const;
+
+    virtual void CalculateElementOutputInternalGradientAxSy(BlockFullVector<double>& rInternalGradient,
+                                                            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+                                                            const ConstitutiveInputMap& constitutiveInput,
+                                                            const ConstitutiveOutputMap& constitutiveOutput) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
+    virtual void CalculateElementOutputHessianAxSy0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<TDim>& rData,
+                                                    int rTheIP, const ConstitutiveOutputMap& constitutiveOutput) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
+    virtual void CalculateElementOutputHessianAxSy1(BlockFullMatrix<double>& rHessian1, EvaluateDataContinuum<TDim>& rData,
+                                                    int rTheIP, const ConstitutiveOutputMap& constitutiveOutput) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
 
     virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 };

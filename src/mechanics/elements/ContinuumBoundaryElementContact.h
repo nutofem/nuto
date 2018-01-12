@@ -106,6 +106,13 @@ protected:
 
     void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
                                         const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+
+    void CalculateElementOutputHessianAxSy0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
+                                        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
     void CalculateNmatrixNormal(EvaluateDataContinuumBoundary<TDim>& rData, Eigen::MatrixXd& rNmatrixNormal, double& rGap, int rTheIP) const;
 
     std::pair<Eigen::VectorXd, double> CalculateNormalToRigidBody(Eigen::VectorXd &rSlaveCoordinates) const;

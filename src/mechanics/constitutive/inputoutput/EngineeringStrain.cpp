@@ -121,6 +121,14 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, ePlaneSt
         strain3D[4] = 0.;
         strain3D[5] = v[2];
         break;
+//    case ePlaneState::AXISYMMETRIC:
+//        strain3D[0] = v[0];
+//        strain3D[1] = v[1];
+//        strain3D[2] = v[2];
+//        strain3D[3] = 0.;
+//        strain3D[4] = 0.;
+//        strain3D[5] = v[3];
+//    	break;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Specify section behavior, either PLANE_STRAIN or PLANE_STRESS");
     }

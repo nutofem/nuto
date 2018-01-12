@@ -5,11 +5,12 @@
 namespace NuTo
 {
 
-enum class ePlaneState
-{
-    PLANE_STRESS,
-    PLANE_STRAIN
-};
+//enum class ePlaneState
+//{
+//    PLANE_STRESS,
+//    PLANE_STRAIN,
+//	AXISYMMETRIC
+//};
 
 //! @brief Input to tell the law whether the material is under plane stress or plane strain.
 class ConstitutivePlaneState : public ConstitutiveIOBase

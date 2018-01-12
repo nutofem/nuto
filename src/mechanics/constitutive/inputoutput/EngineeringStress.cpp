@@ -48,17 +48,28 @@ EngineeringStress<3> EngineeringStress<1>::As3D(ePlaneState) const
 }
 
 template <>
-EngineeringStress<3> EngineeringStress<2>::As3D(ePlaneState rPlaneState) const
+EngineeringStress<3> EngineeringStress<2>::As3D(ePlaneState planeState) const
 {
-    EngineeringStress<3> stress;
-    stress[0] = (*this)[0];
-    stress[1] = (*this)[1];
-    //  stress[2] = 0.;
-    //  stress[3] = 0.;
-    //  stress[4] = 0.;
-    stress[5] = (*this)[2];
-    if (rPlaneState == ePlaneState::PLANE_STRAIN)
+	EngineeringStress<3> stress;
+    switch (planeState)
     {
+    case ePlaneState::PLANE_STRESS:
+        stress[0] = (*this)[0];
+        stress[1] = (*this)[1];
+        //  stress[2] = 0.;
+        //  stress[3] = 0.;
+        //  stress[4] = 0.;
+        stress[5] = (*this)[2];
+        break;
+//    case ePlaneState::AXISYMMETRIC:
+//        stress[0] = (*this)[0];
+//        stress[1] = (*this)[1];
+//        stress[2] = (*this)[2];
+//        //  stress[3] = 0.;
+//        //  stress[4] = 0.;
+//        stress[5] = (*this)[3];
+//    	break;
+    default:
         throw Exception(__PRETTY_FUNCTION__, "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
     }
     return stress;
@@ -79,9 +90,9 @@ double EngineeringStress<1>::VonMisesStress(ePlaneState) const
 template <>
 double EngineeringStress<2>::VonMisesStress(ePlaneState rPlaneState) const
 {
-    if (rPlaneState == ePlaneState::PLANE_STRAIN)
+    if (rPlaneState == ePlaneState::PLANE_STRAIN || rPlaneState == ePlaneState::AXISYMMETRIC)
     {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented for PLANE_STRAIN and I don't know how to solve it.");
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented for PLANE_STRAIN and AXISYMMETRIC and I don't know how to solve it.");
     }
     const auto& s = data();
     double misesSquared = s[0] * s[0] - s[0] * s[1] + s[1] * s[1] + 3 * s[2] * s[2];

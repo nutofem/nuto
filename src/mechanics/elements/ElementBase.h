@@ -331,6 +331,8 @@ protected:
     virtual void ReorderNodes();
 
     void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
+
+    void AddAxisymmetricStateToOutput(ConstitutiveOutputMap& output) const;
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global
     //! dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs

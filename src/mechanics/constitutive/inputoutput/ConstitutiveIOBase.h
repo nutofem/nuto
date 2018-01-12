@@ -8,12 +8,20 @@
 namespace NuTo
 {
 
+enum class ePlaneState
+{
+    PLANE_STRESS,
+    PLANE_STRAIN,
+	AXISYMMETRIC
+};
+
 template <int TRows, int TCols>
 class ConstitutiveMatrix;
 template <int TRows>
 class ConstitutiveVector;
 template <int TDim>
 class EngineeringStrain;
+class EngineeringStrainAxSy;
 namespace Constitutive
 {
 enum class eInput;
@@ -46,9 +54,18 @@ public:
 
     ConstitutiveIOBase& operator=(const ConstitutiveIOBase& rOther);
 
-    //! @remark 1-->1,   2-->3,   3-->6
+    //! @remark 1-->1,   2-->3,   3-->6, ePlaneState::AXISYMMETRIC-->4
     static constexpr int GetVoigtDim(int D)
     {
+        return D == 1 ? 1 : (D == 2 ? 3 : 6);
+    }
+
+    static constexpr int GetVoigtDim(int D, ePlaneState planeState)
+    {
+    	if (D == 2 && planeState == ePlaneState::AXISYMMETRIC) {
+			return 4;
+		}
+
         return D == 1 ? 1 : (D == 2 ? 3 : 6);
     }
 
@@ -128,6 +145,10 @@ public:
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
+    virtual const EngineeringStrainAxSy& AsEngineeringStrainAxSy() const
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+    }
 
     virtual EngineeringStrain<1>& AsEngineeringStrain1D()
     {
@@ -138,6 +159,10 @@ public:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }
     virtual EngineeringStrain<3>& AsEngineeringStrain3D()
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
+    }
+    virtual EngineeringStrainAxSy& AsEngineeringStrainAxSy()
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
     }

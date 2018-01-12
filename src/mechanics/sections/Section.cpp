@@ -32,4 +32,8 @@ bool Section::IsPlaneStrain() const
     throw Exception(__PRETTY_FUNCTION__, "Section is not a plane section.");
 }
 
+bool Section::IsAxiSymmetric() const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Section is not a plane section.");
+}
 

@@ -27,6 +27,8 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrainAxSy.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStressAxSy.h"
 
 using namespace NuTo;
 
@@ -52,6 +54,9 @@ void NuTo::ContinuumElement<TDim>::Evaluate(
     ExtractAllNecessaryDofValues(data);
 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
+    if (TDim == 2)
+    	AddAxisymmetricStateToOutput(constitutiveOutput);
+
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
 
     if (TDim == 2)
@@ -135,16 +140,28 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
-            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
-            break;
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                FillConstitutiveOutputMapInternalGradientAxSy(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+        	} else {
+                FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+        	}
+        	break;
 
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                FillConstitutiveOutputMapHessianAxSy0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+        	} else {
+                FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+        	}
             break;
 
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-            FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
-            break;
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                FillConstitutiveOutputMapHessianAxSy1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+        	} else {
+                FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+        	}
+        	break;
 
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
             FillConstitutiveOutputMapHessian2(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
@@ -242,6 +259,45 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
             break;
         default:
             throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " +
+                                                                  Node::DofToString(dofRow) + " not implemented.");
+        }
+    }
+}
+
+template <>
+void NuTo::ContinuumElement<2>::FillConstitutiveOutputMapInternalGradientAxSy(
+        ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const
+{
+    if (!GetSection()->IsAxiSymmetric()) {
+    	throw Exception(__PRETTY_FUNCTION__, "An AXISYMMETRIC function is used for a non-AXISYMMETRIC state!");
+    }
+
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
+    {
+
+        if (not(mInterpolationType->IsDof(dofRow)))
+        {
+            rInternalGradient[dofRow].resize(0);
+            rInternalGradient[dofRow].setZero();
+            continue;
+        }
+
+        rInternalGradient[dofRow].setZero(mInterpolationType->Get(dofRow).GetNumDofs());
+
+        switch (dofRow)
+        {
+        case Node::eDof::DISPLACEMENTS:
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_AxSy];
+            break;
+        case Node::eDof::NONLOCALEQSTRAIN:
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_RADIUS];
+            break;
+        case Node::eDof::CRACKPHASEFIELD:
+            rConstitutiveOutput[NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART];
+            break;
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for AXISYMMETRIC state and " +
                                                                   Node::DofToString(dofRow) + " not implemented.");
         }
     }
@@ -356,6 +412,69 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
     }
 }
 
+template <>
+void NuTo::ContinuumElement<2>::FillConstitutiveOutputMapHessianAxSy0(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                     BlockFullMatrix<double>& rHessian0) const
+{
+    if (!GetSection()->IsAxiSymmetric()) {
+    	throw Exception(__PRETTY_FUNCTION__, "An AXISYMMETRIC function is used for a non-AXISYMMETRIC state!");
+    }
+
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
+    {
+        for (auto dofCol : mDofStatus.GetActiveDofTypes())
+        {
+
+            if (not(mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
+            {
+                rHessian0(dofRow, dofCol).resize(0, 0);
+                rHessian0(dofRow, dofCol).setZero();
+                continue;
+            }
+
+            rHessian0(dofRow, dofCol)
+                    .setZero(mInterpolationType->Get(dofRow).GetNumDofs(),
+                             mInterpolationType->Get(dofCol).GetNumDofs());
+
+            if (not GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy];
+                break;
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_NONLOCAL_EQ_STRAIN];
+                break;
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy];
+                break;
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_RADIUS];
+                break;
+
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::CRACKPHASEFIELD):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_PHASE_FIELD];
+                break;
+
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART];
+                break;
+
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN_AxSy];
+                break;
+
+            default:
+                throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for AXISYMMETRIC state and (" +
+                                                                      Node::DofToString(dofRow) + "," +
+                                                                      Node::DofToString(dofCol) + ") not implemented.");
+            }
+        }
+    }
+}
+
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput,
                                                                      BlockFullMatrix<double>& rHessian1) const
@@ -406,6 +525,46 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
                 break;
             default:
                 throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for (" +
+                                                                      Node::DofToString(dofRow) + "," +
+                                                                      Node::DofToString(dofCol) + ") not implemented.");
+            }
+        }
+    }
+}
+
+template <>
+void NuTo::ContinuumElement<2>::FillConstitutiveOutputMapHessianAxSy1(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                     BlockFullMatrix<double>& rHessian1) const
+{
+    for (auto dofRow : mDofStatus.GetActiveDofTypes())
+    {
+        for (auto dofCol : mDofStatus.GetActiveDofTypes())
+        {
+
+            if (not(mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
+            {
+                rHessian1(dofRow, dofCol).resize(0, 0);
+                rHessian1(dofRow, dofCol).setZero();
+                continue;
+            }
+
+            rHessian1(dofRow, dofCol)
+                    .setZero(mInterpolationType->Get(dofRow).GetNumDofs(),
+                             mInterpolationType->Get(dofCol).GetNumDofs());
+
+            if (!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow, dofCol, 1))
+                continue;
+
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy_DT1];
+                break;
+
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
+                break;
+            default:
+                throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for AXISYMMETRIC for (" +
                                                                       Node::DofToString(dofRow) + "," +
                                                                       Node::DofToString(dofCol) + ") not implemented.");
             }
@@ -568,9 +727,23 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
                     rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
             break;
         }
+        case Constitutive::eInput::ENGINEERING_STRAIN_AxSy:
+        {
+            auto& strain = *static_cast<ConstitutiveVector<4>*>(it.second.get());
+            strain.AsVector() =
+                    rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
+            break;
+        }
         case Constitutive::eInput::ENGINEERING_STRAIN_DT1:
         {
             auto& strain = *static_cast<ConstitutiveVector<VoigtDim>*>(it.second.get());
+            strain.AsVector() =
+                    rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues_dt1.at(Node::eDof::DISPLACEMENTS);
+            break;
+        }
+        case Constitutive::eInput::ENGINEERING_STRAIN_AxSy_DT1:
+        {
+            auto& strain = *static_cast<ConstitutiveVector<4>*>(it.second.get());
             strain.AsVector() =
                     rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues_dt1.at(Node::eDof::DISPLACEMENTS);
             break;
@@ -714,7 +887,7 @@ Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElement<TDim>::CalculateJacobia
 template <int TDim>
 Eigen::MatrixXd
 NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofType, const Eigen::MatrixXd& rDerivativeShapeFunctions,
-                                               const Eigen::Matrix<double, TDim, TDim> rInvJacobian) const
+                                               const Eigen::Matrix<double, TDim, TDim> rInvJacobian, const Eigen::VectorXd* rIpCoordsNatural) const
 {
     assert(rDerivativeShapeFunctions.rows() == GetNumNodes(rDofType));
     assert(rDerivativeShapeFunctions.cols() == TDim);
@@ -752,7 +925,18 @@ NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofType, const Eigen:
     case Node::eDof::DISPLACEMENTS:
     {
         Bmat = rDerivativeShapeFunctions.lazyProduct(rInvJacobian);
-        BlowToBMatrixEngineeringStrain(Bmat);
+        if (TDim == 2) {
+        	if (GetSection()->IsAxiSymmetric()) {
+        		if (rIpCoordsNatural == 0) {
+        			throw Exception(__PRETTY_FUNCTION__, " ip coordinates are necessary to calculate an AXISYMMETRIC B-matrix.");
+        		}
+        			BlowToBMatrixEngineeringStrainAxSy(Bmat, *rIpCoordsNatural);
+        	    } else {
+        	        BlowToBMatrixEngineeringStrain(Bmat);
+        	    }
+		} else {
+	        BlowToBMatrixEngineeringStrain(Bmat);
+		}
         break;
     }
     default: // gradient for a scalar dof type
@@ -781,16 +965,29 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
-            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP,
-                                                   constitutiveInput, constitutiveOutput);
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+        		CalculateElementOutputInternalGradientAxSy(it.second->GetBlockFullVectorDouble(), rData, rTheIP,
+        		                                                   constitutiveInput, constitutiveOutput);
+        	} else {
+        		CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP,
+        		                                                   constitutiveInput, constitutiveOutput);
+        	}
             break;
 
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                CalculateElementOutputHessianAxSy0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	} else {
+                CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	}
             break;
 
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-            CalculateElementOutputHessian1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                CalculateElementOutputHessianAxSy1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	} else {
+                CalculateElementOutputHessian1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutput);
+        	}
             break;
 
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
@@ -961,6 +1158,69 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
         }
         default:
             throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " +
+                                                                  Node::DofToString(dofRow) + " not implemented.");
+        }
+    }
+}
+
+template <>
+void NuTo::ContinuumElement<2>::CalculateElementOutputInternalGradientAxSy(
+        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<2>& rData, int rTheIP,
+        const ConstitutiveInputMap& constitutiveInput, const ConstitutiveOutputMap& constitutiveOutput) const
+{
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        switch (dofRow)
+        {
+        case Node::eDof::DISPLACEMENTS:
+        {
+            const auto& engineeringStress = *static_cast<EngineeringStressAxSy*>(
+                    constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_STRESS_AxSy).get());
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * engineeringStress;
+            break;
+        }
+        case Node::eDof::NONLOCALEQSTRAIN:
+        {
+            const auto& N = *(rData.GetNMatrix(dofRow));
+            const auto& B = rData.mB.at(dofRow);
+            const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(
+                    constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
+            const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(
+                    constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
+            const double c = (*static_cast<ConstitutiveScalar*>(
+                    constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_RADIUS).get()))[0];
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection *
+                    (N.transpose() * (nonlocalEqStrain[0] - localEqStrain[0]) +
+                     B.transpose() * (c * B * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN)));
+            break;
+        }
+        case Node::eDof::CRACKPHASEFIELD:
+        {
+            const auto G = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                    Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
+            const auto l = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                    Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
+            const auto& N = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
+            const auto& B = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
+            const auto& d = rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD);
+
+            const auto& d_dt = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
+
+            const auto& kappa = (*static_cast<ConstitutiveScalar*>(
+                    constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
+            const auto visco = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                    Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
+
+            // TODO: replace sigma * eps with static data kappa
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
+                                         (((G / l + 2. * kappa) * N.transpose() * N + G * l * B.transpose() * B) * d -
+                                          2. * kappa * N.transpose() + N.transpose() * N * d_dt * visco);
+            break;
+        }
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for AXISYMMETRIC for " +
                                                                   Node::DofToString(dofRow) + " not implemented.");
         }
     }
@@ -1179,6 +1439,101 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
     }
 }
 
+template <>
+void NuTo::ContinuumElement<2>::CalculateElementOutputHessianAxSy0(BlockFullMatrix<double>& rHessian0,
+                                                                  EvaluateDataContinuum<2>& rData, int rTheIP,
+                                                                  const ConstitutiveOutputMap& constitutiveOutput) const
+{
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : mInterpolationType->GetActiveDofs())
+        {
+            if (!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+            auto& hessian0 = rHessian0(dofRow, dofCol);
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<4, 4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * tangentStressStrain *
+                            rData.mB.at(dofRow);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
+            {
+                const auto& tangentStressNonlocalEqStrain = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_NONLOCAL_EQ_STRAIN).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() *
+                            tangentStressNonlocalEqStrain * (*(rData.GetNMatrix(dofCol)));
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy).get());
+                hessian0 -= rData.mDetJxWeightIPxSection * ((rData.GetNMatrix(dofRow))->transpose()) *
+                            tangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+            {
+                const auto& N = *(rData.GetNMatrix(dofRow));
+                const auto& B = rData.mB.at(dofRow);
+                const auto& c = (*static_cast<ConstitutiveScalar*>(
+                        constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_RADIUS).get()))[0];
+                hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * N + c * B.transpose() * B);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::CRACKPHASEFIELD):
+            {
+                const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
+                const auto& Nd = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
+                const auto& dStressDPhaseField = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_PHASE_FIELD).get());
+                hessian0 += rData.mDetJxWeightIPxSection * Bu.transpose() * dStressDPhaseField * Nd;
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& Nd = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
+                const double d = (Nd * rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD))(0, 0);
+                const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
+                const auto& tangentElasticEnergyStrain = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN_AxSy)
+                                .get());
+
+                hessian0 += rData.mDetJxWeightIPxSection * 2 * (d - 1.) * Nd.transpose() *
+                            tangentElasticEnergyStrain.transpose() * Bu;
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
+            {
+                const auto G = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                        Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
+                const auto l = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                        Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
+
+                const auto& N = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
+                const auto& B = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
+
+                const auto& kappa = (*static_cast<ConstitutiveScalar*>(
+                        constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
+
+                hessian0 += rData.mDetJxWeightIPxSection *
+                            ((G / l + 2 * kappa) * N.transpose() * N + G * l * B.transpose() * B);
+                break;
+            }
+            default:
+                throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for AXISYMMETRIC for (" +
+                                                                      Node::DofToString(dofRow) + "," +
+                                                                      Node::DofToString(dofCol) + ") not implemented.");
+            }
+        }
+    }
+}
+
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1,
                                                                   EvaluateDataContinuum<TDim>& rData, int rTheIP,
@@ -1261,6 +1616,48 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                 throw Exception(
                         std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_1_TIME_DERIVATIVE for "
                                                                  "(" +
+                        Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
+            }
+        }
+    }
+}
+
+template <>
+void NuTo::ContinuumElement<2>::CalculateElementOutputHessianAxSy1(BlockFullMatrix<double>& rHessian1,
+                                                                  EvaluateDataContinuum<2>& rData, int rTheIP,
+                                                                  const ConstitutiveOutputMap& constitutiveOutput) const
+{
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : mInterpolationType->GetActiveDofs())
+        {
+            if (!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow, dofCol, 1))
+                continue;
+            auto& hessian1 = rHessian1(dofRow, dofCol);
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentStressStrainRate = *static_cast<ConstitutiveMatrix<4, 4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy_DT1)
+                                .get());
+                hessian1 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * tangentStressStrainRate *
+                            rData.mB.at(dofRow);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
+            {
+                const auto& N = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
+                const auto visco = GetConstitutiveLaw(rTheIP).GetParameterDouble(
+                        Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
+                hessian1 += visco * rData.mDetJxWeightIPxSection * N.transpose() * N;
+            }
+            break;
+
+            default:
+                throw Exception(
+                        std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_1_TIME_DERIVATIVE for "
+                                                                 "AXISYMMETRIC for (" +
                         Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
@@ -1558,7 +1955,7 @@ void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDa
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
         rData.mN[dof] = &interpolationType.MatrixN(ipCoords);
 
-        rData.mB[dof] = CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoords), invJacobian);
+        rData.mB[dof] = CalculateMatrixB(dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoords), invJacobian, &ipCoords);
     }
 }
 
@@ -1574,6 +1971,10 @@ void NuTo::ContinuumElement<1>::BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& 
 template <>
 void NuTo::ContinuumElement<2>::BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& rDerivativeShapeFunctions) const
 {
+    if (GetSection()->IsAxiSymmetric()) {
+    	throw Exception(__PRETTY_FUNCTION__, "Using of the coordinates of an IP is required for the AXISYMMETRIC state.");
+    }
+
     int numNodes = GetNumNodes(Node::eDof::DISPLACEMENTS);
     assert(rDerivativeShapeFunctions.cols() == 2);
     assert(rDerivativeShapeFunctions.rows() == numNodes);
@@ -1589,6 +1990,55 @@ void NuTo::ContinuumElement<2>::BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& 
         Bmat(1, iColumn + 1) = dNdY;
         Bmat(2, iColumn) = dNdY;
         Bmat(2, iColumn + 1) = dNdX;
+    }
+    std::swap(rDerivativeShapeFunctions, Bmat);
+}
+
+template <>
+void NuTo::ContinuumElement<2>::BlowToBMatrixEngineeringStrainAxSy(Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rIpCoordsNatural) const
+{
+    if (!GetSection()->IsAxiSymmetric()) {
+    	throw Exception(__PRETTY_FUNCTION__, "A B-matrix of the AXISYMMETRIC state is used for a non-AXISYMMETRIC state!");
+    }
+
+    int numNodes = GetNumNodes(Node::eDof::DISPLACEMENTS);
+    assert(rDerivativeShapeFunctions.cols() == 2);
+    assert(rDerivativeShapeFunctions.rows() == numNodes);
+
+    Eigen::MatrixXd Bmat = Eigen::MatrixXd::Zero(4, numNodes * 2);
+
+    // compute the radial coordinate of rTheIP
+    const Eigen::MatrixXd& matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).MatrixN(rIpCoordsNatural);
+    Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
+
+    Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
+
+    globalIntegrationPointCoordinates.segment(0, GetLocalDimension()) = matrixN * nodeCoordinates;
+
+	double radialCoordinate = globalIntegrationPointCoordinates(0);
+	double inverseRadialCoordinate;
+
+	// compute the shape functions
+    const Eigen::VectorXd& shapeFunctions = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).ShapeFunctions(rIpCoordsNatural);
+    assert(shapeFunctions.rows() == numNodes);
+
+    for (int iNode = 0, iColumn = 0; iNode < numNodes; ++iNode, iColumn += 2)
+    {
+    	double dNdX = rDerivativeShapeFunctions(iNode, 0);
+    	double dNdY = rDerivativeShapeFunctions(iNode, 1);
+
+    	// compute 1/radialCoordinate using the L'Hopital's rule
+    	if (radialCoordinate < 1e-10) {
+			inverseRadialCoordinate = dNdX;
+		} else {
+			inverseRadialCoordinate = shapeFunctions(iNode) / radialCoordinate;
+		}
+
+    	Bmat(0, iColumn) = dNdX;
+    	Bmat(1, iColumn + 1) = dNdY;
+    	Bmat(2, iColumn) = inverseRadialCoordinate;
+    	Bmat(3, iColumn) = dNdY;
+    	Bmat(3, iColumn + 1) = dNdX;
     }
     std::swap(rDerivativeShapeFunctions, Bmat);
 }
@@ -1652,7 +2102,22 @@ double NuTo::ContinuumElement<1>::CalculateDetJxWeightIPxSection(double rDetJaco
 template <>
 double NuTo::ContinuumElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+//    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+
+    double sectionFactor;
+
+    // define the element section-based factor
+    if (GetSection()->IsAxiSymmetric()) {
+    	// section factor is the radial coordinate of rTheIP
+    	// get the global coordinate (in initial configuration) of the integration point rTheIP
+    	Eigen::Vector3d GlobalIpCoordinate3D = GetGlobalIntegrationPointCoordinates(rTheIP);
+    	sectionFactor = GlobalIpCoordinate3D(0);
+	} else {
+		// simple plane element
+		sectionFactor = mSection->GetThickness();
+	}
+
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * sectionFactor;
 }
 
 template <>

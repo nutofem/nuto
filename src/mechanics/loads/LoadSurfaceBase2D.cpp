@@ -222,6 +222,12 @@ void LoadSurfaceBase2D::AddLoadToGlobalSubVectors(StructureOutputBlockVector& ex
 
             // calculate weighting factor
             double thickness = elementPtr->GetSection()->GetThickness();
+
+            if (elementPtr->GetSection()->IsAxiSymmetric()) {
+            	// for an axisymmetric element the thickness is the radial coordinate
+            	thickness = ipCoordsGlobal(0);
+            }
+
             double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
 
             // calculate surface load

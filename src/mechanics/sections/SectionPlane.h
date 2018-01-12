@@ -15,11 +15,17 @@ public:
     //! @param isPlaneStrain `true` corresponds to plane strain, `false` to plane stress
     static std::shared_ptr<SectionPlane> Create(double thickness, bool isPlaneStrain);
 
+    //! @brief Create an axisymmetric section
+    //! @param thickness is set to 1
+    static std::shared_ptr<SectionPlane> CreateAxiSymmetric();
+
     //! @brief Get the section thickness
     //! @return Section thickness
     double GetThickness() const override;
 
     virtual bool IsPlaneStrain() const override;
+
+    virtual bool IsAxiSymmetric() const override;
 
 private:
     //! @brief Print information about the section
@@ -30,10 +36,17 @@ private:
     //! @param isPlaneStrain `true` corresponds to plane strain, `false` to plane stress
     SectionPlane(double thickness, bool isPlaneStrain);
 
+    //! @brief Constructor for axisymmetric
+    //! @param thickness = 1
+    SectionPlane();
+
     //! @brief Section thickness
     double mThickness;
 
     //! @brief **true** -> plane strain; **false** -> plane stress
     bool mIsPlaneStrain;
+
+    //! @brief **true** -> axisymmetric; **false** -> plane train or plane stress
+    bool mIsAxiSymmetric;
 };
 }

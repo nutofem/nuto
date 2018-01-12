@@ -5,6 +5,8 @@ set(MechanicsConstitutiveSources
     constitutive/inputoutput/ConstitutiveIOMap.cpp
     constitutive/inputoutput/EngineeringStrain.cpp
     constitutive/inputoutput/EngineeringStress.cpp
+    constitutive/inputoutput/EngineeringStrainAxSy.cpp
+    constitutive/inputoutput/EngineeringStressAxSy.cpp
     constitutive/inputoutput/EquivalentStrain.cpp
     constitutive/laws/AdditiveBase.cpp
     constitutive/laws/AdditiveInputExplicit.cpp

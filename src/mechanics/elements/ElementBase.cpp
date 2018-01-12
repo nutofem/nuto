@@ -653,15 +653,28 @@ void NuTo::ElementBase::ReorderNodes()
 void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveInput) const
 {
     auto planeState = NuTo::Constitutive::eInput::PLANE_STATE;
-    if (!GetSection()->IsPlaneStrain())
-    {
-        // plane stress is default
-        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
-    }
-    else
-    {
+    if (GetSection()->IsAxiSymmetric()) {
         constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
         auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
-        value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
-    }
+        value.SetPlaneState(NuTo::ePlaneState::AXISYMMETRIC);
+	} else {
+	    if (!GetSection()->IsPlaneStrain())
+	    {
+	        // plane stress is default
+	        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+	    }
+	    else
+	    {
+	        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+	        auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
+	        value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
+	    }
+	}
+}
+
+void NuTo::ElementBase::AddAxisymmetricStateToOutput(ConstitutiveOutputMap& constitutiveOutput) const
+{
+	if (GetSection()->IsAxiSymmetric()) {
+		constitutiveOutput[NuTo::Constitutive::eOutput::AXISYMMETRIC_STATE] = nullptr;
+	}
 }

@@ -29,6 +29,9 @@ public:
     //! @brief Check if section is plane strain (if false, it's plane stress)
     virtual bool IsPlaneStrain() const;
 
+    //! @brief Check if section is axisymmetric (if false, it's plane stress or plane strain)
+    virtual bool IsAxiSymmetric() const;
+
 protected:
     //! @brief Outstream function for "virtual friend idiom"
     virtual void Info(std::ostream& out) const = 0;

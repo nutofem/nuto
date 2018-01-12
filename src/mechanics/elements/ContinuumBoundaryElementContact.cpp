@@ -295,6 +295,91 @@ void NuTo::ContinuumBoundaryElementContact<TDim>::CalculateElementOutputHessian0
 }
 
 template <>
+void NuTo::ContinuumBoundaryElementContact<2>::CalculateElementOutputHessianAxSy0(
+        BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<2>& rData,
+        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
+{
+    for (auto dofRow : ContinuumBoundaryElement<2>::mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : ContinuumBoundaryElement<2>::mInterpolationType->GetActiveDofs())
+        {
+            if (!ContinuumBoundaryElement<2>::GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+            auto& hessian0 = rHessian0(dofRow, dofCol);
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+			{
+            	std::cout << "Bin here: CalculateElementOutputHESSIANAxSy0" << std::endl;
+            	Eigen::MatrixXd NmatrixNormal;
+            	double gap;
+
+            	CalculateNmatrixNormal(rData, NmatrixNormal, gap, rTheIP);
+
+            	//==> update stiffness due to the contact force
+            	if (gap < 0.) {
+            		std::cout << "*** *** CONTRIBUTE TO HASSIAN AXISYMMETRIC *** ***" << std::endl;
+            		hessian0 += rData.mDetJxWeightIPxSection * NmatrixNormal.transpose() *
+            				mPenaltyParameter * NmatrixNormal;
+            	}
+            	break;
+			}
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
+                break;
+
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy).get());
+                hessian0 -= rData.mDetJxWeightIPxSection * rData.m1DivAlpha * rData.mN.at(dofRow).transpose() *
+                            tangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+            {
+                hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection *
+                            rData.m1DivAlpha;
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
+            {
+                const auto& internalGradientRH_dRH_Boundary_NN_H0 = *static_cast<ConstitutiveScalar*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() *
+                            internalGradientRH_dRH_Boundary_NN_H0 * rData.mN.at(dofCol);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
+            {
+                const auto& internalGradientWV_dWV_Boundary_NN_H0 = *static_cast<ConstitutiveScalar*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() *
+                            internalGradientWV_dWV_Boundary_NN_H0 * rData.mN.at(dofCol);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
+                break;
+            default:
+            /*******************************************************\
+            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
+            \*******************************************************/
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
+                continue;
+                throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
+                                                              "(" + Node::DofToString(dofRow) +
+                                                                      "," + Node::DofToString(dofCol) +
+                                                                      ") not implemented.");
+            }
+        }
+    }
+}
+
+template <>
 std::pair<Eigen::VectorXd, double> NuTo::ContinuumBoundaryElementContact<1>::CalculateNormalToRigidBody(Eigen::VectorXd &rSlaveCoordinates) const
 {
 	throw Exception(std::string("[") + __PRETTY_FUNCTION__ +

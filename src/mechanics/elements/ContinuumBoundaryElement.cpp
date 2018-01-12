@@ -50,6 +50,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::Evaluate(
     ExtractAllNecessaryDofValues(data);
 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
+    if (TDim == 2)
+    	AddAxisymmetricStateToOutput(constitutiveOutput);
+
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
@@ -98,11 +101,15 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
-            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+        	FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
             break;
 
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+            	FillConstitutiveOutputMapHessianAxSy0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            } else {
+            	FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            }
             break;
 
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
@@ -173,6 +180,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(
     Eigen::Matrix<double, TDim, 1> ipCoordsNatural =
             interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
 
+    Eigen::VectorXd ipCoordsNaturalAsVector(ipCoordsNatural);
+
     std::cout << "--- CalculateNMatrixBMatrixDetJacobian: rTheIP, mSurfaceId" << rTheIP <<" "<< mSurfaceId << std::endl;
     std::cout << "--- CalculateNMatrixBMatrixDetJacobian: ipCoordsSurface" << ipCoordsSurface << std::endl;
     std::cout << "--- CalculateNMatrixBMatrixDetJacobian: ipCoordsNatural" << ipCoordsNatural << std::endl;
@@ -206,7 +215,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(
         rData.mN[dof] = interpolationType.MatrixN(ipCoordsNatural);
 
         rData.mB[dof] = mBaseElement.CalculateMatrixB(
-                dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
+                dof, interpolationType.DerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian, &ipCoordsNaturalAsVector);
     }
     std::cout << "CalculateNMatrixBMatrixDetJacobian: out " << std::endl;
     std::cout << "CalculateNMatrixBMatrixDetJacobian: rData pointer -> " << &rData << std::endl;
@@ -229,6 +238,13 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         case Constitutive::eInput::ENGINEERING_STRAIN:
         {
             auto& strain = *static_cast<ConstitutiveVector<voigtDim>*>(it.second.get());
+            strain.AsVector() =
+                    rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
+            break;
+        }
+        case Constitutive::eInput::ENGINEERING_STRAIN_AxSy:
+        {
+            auto& strain = *static_cast<ConstitutiveVector<4>*>(it.second.get());
             strain.AsVector() =
                     rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
             break;
@@ -295,7 +311,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
 
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
             UpdateAlphaGradientDamage(rData, constitutiveInput, constitutiveOutput);
-            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
+        	if (TDim == 2 && GetSection()->IsAxiSymmetric()) {
+                CalculateElementOutputHessianAxSy0(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
+        	} else {
+                CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
+        	}
             break;
 
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
@@ -471,6 +491,49 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(
     }
 }
 
+template <>
+void NuTo::ContinuumBoundaryElement<2>::CalculateElementOutputHessianAxSy0(
+        BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<2>& rData,
+        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
+{
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : mInterpolationType->GetActiveDofs())
+        {
+            if (!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+            auto& hessian0 = rHessian0(dofRow, dofCol);
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
+                break;
+
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<4>*>(
+                        constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy).get());
+                hessian0 -= rData.mDetJxWeightIPxSection * rData.m1DivAlpha * rData.mN.at(dofRow).transpose() *
+                            tangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
+                break;
+            }
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+            {
+                hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection *
+                            rData.m1DivAlpha;
+                break;
+            }
+            default:
+            	throw Exception(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for AXISYMMETRIC for "
+                                                              "(" + Node::DofToString(dofRow) +
+                                                                      "," + Node::DofToString(dofCol) +
+                                                                      ") not implemented.");
+            }
+        }
+    }
+}
+
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData,
                                                                         const ConstitutiveOutputMap& constitutiveOutput,
@@ -615,6 +678,50 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
     }
 }
 
+template <>
+void NuTo::ContinuumBoundaryElement<2>::FillConstitutiveOutputMapHessianAxSy0(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                             BlockFullMatrix<double>& rHessian0) const
+{
+    using namespace NuTo::Constitutive;
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : mInterpolationType->GetActiveDofs())
+        {
+            Eigen::MatrixXd& dofSubMatrix = rHessian0(dofRow, dofCol);
+            dofSubMatrix.resize(mInterpolationType->Get(dofRow).GetNumDofs(),
+                                mInterpolationType->Get(dofCol).GetNumDofs());
+            dofSubMatrix.setZero();
+            if (!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
+                break;
+
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] =
+                        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::LOCAL_EQ_STRAIN);
+                rConstitutiveOutput[eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy] =
+                        ConstitutiveIOBase::makeConstitutiveIO<2>(eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy);
+                break;
+
+            case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+                rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] =
+                        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::LOCAL_EQ_STRAIN);
+                break;
+
+            default:
+                throw Exception(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for AXISYMMETRIC for "
+                                                              "(" + Node::DofToString(dofRow) +
+                                                                      "," + Node::DofToString(dofCol) +
+                                                                      ") not implemented.");
+            }
+        }
+    }
+}
 
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap&,
@@ -886,8 +993,23 @@ double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(double,
 template <>
 double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) *
-           mBaseElement.mSection->GetThickness();
+//    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) *
+//           mBaseElement.mSection->GetThickness();
+
+    double sectionFactor;
+
+    // define the element section-based factor
+    if (GetSection()->IsAxiSymmetric()) {
+    	// section factor is the radial coordinate of rTheIP
+    	// get the global coordinate (in initial configuration) of the integration point rTheIP
+    	Eigen::Vector3d GlobalIpCoordinate3D = GetGlobalIntegrationPointCoordinates(rTheIP);
+    	sectionFactor = GlobalIpCoordinate3D(0);
+	} else {
+		// simple plane element
+		sectionFactor = mBaseElement.mSection->GetThickness();
+	}
+
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * sectionFactor;
 }
 
 template <>

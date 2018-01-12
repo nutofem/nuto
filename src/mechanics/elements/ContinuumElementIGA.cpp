@@ -138,7 +138,7 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
         rData.mNIGA[dof] = interpolationType.MatrixNIGA(ipCoords, mKnotIDs);
 
         rData.mB[dof] = this->CalculateMatrixB(
-                dof, interpolationType.DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs), invJacobian);
+                dof, interpolationType.DerivativeShapeFunctionsNaturalIGA(ipCoords, mKnotIDs), invJacobian, &ipCoords);
     }
 }
 
@@ -212,7 +212,22 @@ double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJ
 template <>
 double NuTo::ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+//  return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+
+    double sectionFactor;
+
+    // define the element section-based factor
+    if (GetSection()->IsAxiSymmetric()) {
+    	// section factor is the radial coordinate of rTheIP
+    	// get the global coordinate (in initial configuration) of the integration point rTheIP
+    	Eigen::Vector3d GlobalIpCoordinate3D = GetGlobalIntegrationPointCoordinates(rTheIP);
+    	sectionFactor = GlobalIpCoordinate3D(0);
+    } else {
+    	// simple plane element
+    	sectionFactor = mSection->GetThickness();
+    }
+
+    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * sectionFactor;
 }
 
 } // namespace NuTo

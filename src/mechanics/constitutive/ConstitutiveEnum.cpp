@@ -166,7 +166,9 @@ std::string NuTo::Constitutive::InputToString(const NuTo::Constitutive::eInput& 
                                                                             "WATER_VOLUME_FRACTION_GRADIENT")(
             eInput::CALCULATE_STATIC_DATA, "CALCULATE_STATIC_DATA")(eInput::TIME, "TIME")(
             eInput::TIME_STEP, "TIME_STEP")(eInput::CALCULATE_INITIALIZE_VALUE_RATES,
-                                            "CALCULATE_INITIALIZE_VALUE_RATES");
+                                            "CALCULATE_INITIALIZE_VALUE_RATES")(
+			eInput::ENGINEERING_STRAIN_AxSy, "ENGINEERING_STRAIN_AxSy");
+
     std::map<eInput, std::string>::const_iterator it = lut.find(e);
     if (lut.end() != it)
         return it->second;
@@ -250,7 +252,17 @@ std::string NuTo::Constitutive::OutputToString(const NuTo::Constitutive::eOutput
             eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0, "D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0")(
             eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N, "INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N")(
             eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N,
-            "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N");
+            "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N")(
+            eOutput::AXISYMMETRIC_STATE, "AXISYMMETRIC_STATE")(
+            eOutput::ENGINEERING_STRAIN_AxSy, "ENGINEERING_STRAIN_AxSy")(
+            eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy, "D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy")(
+            eOutput::ENGINEERING_STRESS_AxSy, "ENGINEERING_STRESS_AxSy")(
+            eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy, "D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy")(
+    		eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy_DT1, "D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy_DT1")(
+    		eOutput::D_ENGINEERING_STRESS_AxSy_D_NONLOCAL_EQ_STRAIN, "D_ENGINEERING_STRESS_AxSy_D_NONLOCAL_EQ_STRAIN")(
+    		eOutput::D_ENGINEERING_STRESS_AxSy_D_PHASE_FIELD, "D_ENGINEERING_STRESS_AxSy_D_PHASE_FIELD")(
+    		eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN_AxSy, "D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN_AxSy");
+
     std::map<eOutput, std::string>::const_iterator it = lut.find(e);
     if (lut.end() != it)
         return it->second;

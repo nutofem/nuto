@@ -9,6 +9,7 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrainAxSy.h"
 
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -34,32 +35,59 @@ NuTo::LinearElasticEngineeringStress::GetConstitutiveInputs(const ConstitutiveOu
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto& itOutput : rConstitutiveOutput)
-    {
-        switch (itOutput.first)
+    if (rConstitutiveOutput.find(NuTo::Constitutive::eOutput::AXISYMMETRIC_STATE) != rConstitutiveOutput.end()) {
+		// loop for axysimmetric output
+        for (auto& itOutput : rConstitutiveOutput)
         {
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
-        {
-            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
-            break;
+            switch (itOutput.first)
+            {
+            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_AxSy:
+            case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+            {
+                constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN_AxSy];
+                break;
+            }
+            case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+                constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN_AxSy];
+                break;
+            // no inputs needed for:
+            case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy:
+            case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+                break;
+            default:
+                continue;
+            }
         }
-        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
-            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
-            break;
-        // no inputs needed for:
-        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
-        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
-            break;
-        default:
-            continue;
-            //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
-            //            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
-            //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
-            //            law.");
-        }
-    }
+	} else {
+		// loop for conventional output
+	    for (auto& itOutput : rConstitutiveOutput)
+	    {
+	        switch (itOutput.first)
+	        {
+	        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+	        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+	        {
+	            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+	            break;
+	        }
+	        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+	            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+	            break;
+	        // no inputs needed for:
+	        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+	        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+	        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+	            break;
+	        default:
+	            continue;
+	            //            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
+	            //            throw Exception(std::string("[")+__PRETTY_FUNCTION__+"] output object " +
+	            //            Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive
+	            //            law.");
+	        }
+	    }
+	}
 
     return constitutiveInputMap;
 }
@@ -139,6 +167,7 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
     switch (planeState.GetPlaneState())
     {
     case ePlaneState::PLANE_STRAIN:
+    case ePlaneState::AXISYMMETRIC:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
     case ePlaneState::PLANE_STRESS:
@@ -166,18 +195,32 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
             engineeringStress[2] = C33 * engineeringStrain[2];
             break;
         }
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_AxSy:
+        {
+            ConstitutiveIOBase& engineeringStress = *itOutput.second;
+            engineeringStress.AssertIsVector<4>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const auto& engineeringStrain =
+                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN_AxSy)->AsEngineeringStrainAxSy();
+
+            engineeringStress[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2];
+            engineeringStress[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2];
+            engineeringStress[2] = C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1];
+            engineeringStress[3] = C33 * engineeringStrain[3];
+            break;
+        }
         case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE: // for visualization
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
-            const auto& engineeringStrain =
-                    rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-
             switch (planeState.GetPlaneState())
             {
             case ePlaneState::PLANE_STRAIN:
             {
+            	const auto& engineeringStrain =
+            			rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+
                 engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
                 engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
                 engineeringStress3D[2] = C12 * (engineeringStrain[0] + engineeringStrain[1]);
@@ -186,8 +229,24 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
                 engineeringStress3D[5] = C33 * engineeringStrain[2];
                 break;
             }
+            case ePlaneState::AXISYMMETRIC:
+            {
+            	const auto& engineeringStrain =
+            			rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN_AxSy)->AsEngineeringStrainAxSy();
+
+                engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2];
+                engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2];
+                engineeringStress3D[2] = C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1];
+                engineeringStress3D[3] = 0.;
+                engineeringStress3D[4] = 0.;
+                engineeringStress3D[5] = C33 * engineeringStrain[3];
+                break;
+            }
             case ePlaneState::PLANE_STRESS:
             {
+            	const auto& engineeringStrain =
+            			rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+
                 engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
                 engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
                 engineeringStress3D[2] = 0.;
@@ -221,11 +280,41 @@ void NuTo::LinearElasticEngineeringStress::Evaluate<2>(const ConstitutiveInputMa
             tangent(2, 2) = C33;
             break;
         }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy:
+        {
+            ConstitutiveIOBase& tangent = *itOutput.second;
+            tangent.AssertIsMatrix<4, 4>(itOutput.first, __PRETTY_FUNCTION__);
+
+            tangent(0, 0) = C11;
+            tangent(1, 0) = C12;
+            tangent(2, 0) = C12;
+            tangent(3, 0) = 0;
+
+            tangent(0, 1) = C12;
+            tangent(1, 1) = C11;
+            tangent(2, 1) = C12;
+            tangent(3, 1) = 0;
+
+            tangent(0, 2) = C12;
+            tangent(1, 2) = C12;
+            tangent(2, 2) = C11;
+            tangent(3, 2) = 0;
+
+            tangent(0, 3) = 0;
+            tangent(1, 3) = 0;
+            tangent(2, 3) = 0;
+            tangent(3, 3) = C33;
+            break;
+        }
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE: // for visualization
         {
-            itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)
-                                                               ->AsEngineeringStrain2D()
-                                                               .As3D(mNu, planeState.GetPlaneState());
+        	if (planeState.GetPlaneState() == ePlaneState::AXISYMMETRIC) {
+        		itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN_AxSy)
+                                ->AsEngineeringStrainAxSy().As3D();
+        	} else {
+        		itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)
+                                ->AsEngineeringStrain2D().As3D(mNu, planeState.GetPlaneState());
+        	}
         }
         break;
         case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
@@ -418,8 +507,10 @@ bool NuTo::LinearElasticEngineeringStress::CheckOutputTypeCompatibility(NuTo::Co
     switch (rOutputEnum)
     {
     case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+    case Constitutive::eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy:
     case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
     case Constitutive::eOutput::ENGINEERING_STRESS:
+    case Constitutive::eOutput::ENGINEERING_STRESS_AxSy:
     case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
     case Constitutive::eOutput::UPDATE_STATIC_DATA:
     case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:

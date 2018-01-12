@@ -157,6 +157,12 @@ protected:
     void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
                                          ElementOutputIpData& rIpData) const;
 
+    virtual void FillConstitutiveOutputMapHessianAxSy0(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                   BlockFullMatrix<double>& rHessian0) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
@@ -173,6 +179,13 @@ protected:
                                                 const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
     virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
                                         const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+
+    virtual void CalculateElementOutputHessianAxSy0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData,
+                                        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const
+    {
+    	throw NuTo::Exception(__PRETTY_FUNCTION__, "Only implemented for 2D AXISYMMETRIC.");
+    }
+
     void CalculateElementOutputIpData(ElementOutputIpData& rIpData, const ConstitutiveOutputMap& constitutiveOutput,
                                       int rTheIP) const;
 

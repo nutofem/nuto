@@ -3,6 +3,8 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrainAxSy.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStressAxSy.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
@@ -61,6 +63,11 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputT
     case eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
     case eOutput::D_STRAIN_D_TEMPERATURE:
         return std::make_unique<ConstitutiveVector<VoigtDim>>();
+    case eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN_AxSy:
+    case eOutput::D_ENGINEERING_STRESS_AxSy_D_NONLOCAL_EQ_STRAIN:
+    case eOutput::D_ENGINEERING_STRESS_AxSy_D_PHASE_FIELD:
+    case eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN_AxSy:
+    	return std::make_unique<ConstitutiveVector<4>>();
     // visualize
     case eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
     case eOutput::ENGINEERING_STRAIN_VISUALIZE:
@@ -72,11 +79,18 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputT
     // other
     case eOutput::ENGINEERING_STRESS:
         return std::make_unique<EngineeringStress<TDim>>();
+    case eOutput::ENGINEERING_STRESS_AxSy:
+    	return std::make_unique<EngineeringStressAxSy>();
     case eOutput::ENGINEERING_STRAIN:
         return std::make_unique<EngineeringStrain<TDim>>();
+    case eOutput::ENGINEERING_STRAIN_AxSy:
+    	return std::make_unique<EngineeringStrainAxSy>();
     case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
     case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1:
         return std::make_unique<ConstitutiveMatrix<VoigtDim, VoigtDim>>();
+    case eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy:
+    case eOutput::D_ENGINEERING_STRESS_AxSy_D_ENGINEERING_STRAIN_AxSy_DT1:
+        return std::make_unique<ConstitutiveMatrix<4, 4>>();
     case eOutput::D_ELECTRIC_DISPLACEMENT_D_ELECTRIC_FIELD:
         return std::make_unique<ConstitutiveMatrix<TDim, TDim>>();
     case eOutput::D_ELECTRIC_DISPLACEMENT_D_ENGINEERING_STRAIN:
@@ -90,6 +104,7 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eOutput outputT
     case eOutput::INTERFACE_CONSTITUTIVE_MATRIX:
         return std::make_unique<ConstitutiveMatrixXd>();
     case eOutput::UPDATE_STATIC_DATA:
+    case eOutput::AXISYMMETRIC_STATE:
         return nullptr;
     default:
         throw Exception(__PRETTY_FUNCTION__, "Don't know how to create constitutive output for " +
@@ -133,6 +148,9 @@ NuTo::ConstitutiveIOBase::makeConstitutiveIO(NuTo::Constitutive::eInput inputTyp
     case eInput::ENGINEERING_STRAIN:
     case eInput::ENGINEERING_STRAIN_DT1:
         return std::make_unique<EngineeringStrain<TDim>>();
+    case eInput::ENGINEERING_STRAIN_AxSy:
+    case eInput::ENGINEERING_STRAIN_AxSy_DT1:
+    	return std::make_unique<EngineeringStrainAxSy>();
     case eInput::INTERFACE_SLIP:
         return std::make_unique<ConstitutiveMatrixXd>();
     case eInput::CALCULATE_STATIC_DATA:
@@ -215,7 +233,7 @@ namespace NuTo
 template <int TDim>
 EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain()
 {
-    throw Exception(__PRETTY_FUNCTION__, "invalid diemnsion");
+    throw Exception(__PRETTY_FUNCTION__, "invalid dimension");
 }
 
 template <>
@@ -236,11 +254,15 @@ EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>()
     return AsEngineeringStrain3D();
 }
 
+//EngineeringStrainAxSy& ConstitutiveIOBase::AsEngineeringStrainAxSy()
+//{
+//    return AsEngineeringStrainAxSy();
+//}
 
 template <int TDim>
 const EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain() const
 {
-    throw Exception(__PRETTY_FUNCTION__, "invalid diemnsion");
+    throw Exception(__PRETTY_FUNCTION__, "invalid dimension");
 }
 
 template <>
@@ -260,4 +282,9 @@ const EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>() const
 {
     return AsEngineeringStrain3D();
 }
+
+//const EngineeringStrainAxSy& ConstitutiveIOBase::AsEngineeringStrainAxSy() const
+//{
+//    return AsEngineeringStrainAxSy();
+//}
 }
