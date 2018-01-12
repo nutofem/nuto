@@ -1116,8 +1116,6 @@ NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& to
         NodeMergeDofValues(0, trial_dof_dt0.J, trial_dof_dt0.K);
         ElementTotalUpdateTmpStaticData();
 
-        //        break;
-
         Evaluate(inputMap, evaluate_InternalGradient);
 
         residual = intForce - extForce;

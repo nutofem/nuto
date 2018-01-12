@@ -91,6 +91,9 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
         mKnots.push_back(knotsY);
     }
 
+    std::cout << "KnotsX: " << mKnots[0].transpose() << std::endl;
+    std::cout << "KnotsY: " << mKnots[1].transpose() << std::endl;
+
     for (unsigned int dim = 0; dim < mKnots.size(); dim++)
     {
         for (int i = 1; i < mKnots[dim].rows(); i++)
@@ -592,9 +595,9 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::Vector2i indexMasterElement(0, 0);
     Eigen::Matrix<double, TDimMaster, 1> localParameter;
-    for (int i = 0; i < mElementsMaster.rows(); i++)
+    for (int i = 0; i < mElementsMaster.rows(); i++) // y
     {
-        for (int j = 0; j < mElementsMaster.cols(); j++)
+        for (int j = 0; j < mElementsMaster.cols(); j++) // x
         {
             const auto* elementPtr = mElementsMaster(i, j).first;
             int surfaceId = mElementsMaster(i, j).second;
@@ -616,8 +619,8 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
                     localParameter = it;
                     minDistance = distance;
                     rParameterMinMaster = parameter;
-                    indexMasterElement(0) = i;
-                    indexMasterElement(1) = j;
+                    indexMasterElement(0) = i; // y
+                    indexMasterElement(1) = j; // x
                 }
             }
         }
@@ -625,6 +628,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 
     const NuTo::ContinuumElementIGA<TDimMaster>* masterElement =
             mElementsMaster(indexMasterElement(0), indexMasterElement(1)).first;
+
     int masterSurfaceId = mElementsMaster(indexMasterElement(0), indexMasterElement(1)).second;
 
     // **** Newton iteration ****//
@@ -680,20 +684,22 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         }
         else if (mKnots.size() == 2)
         {
-            if (rParameterMinMaster(0) + increment(0) < 0. || rParameterMinMaster(1) + increment(1) < 0. ||
-                rParameterMinMaster(0) + increment(0) > 1. || rParameterMinMaster(1) + increment(1) > 1.)
-            {
-                std::cout << "dprime.norm: " << dprime.norm() << ", increment.norm: " << increment.norm() << std::endl;
-                break;
-            }
+            //            if (rParameterMinMaster(0) + increment(0) < 0. || rParameterMinMaster(1) + increment(1) < 0.
+            //            ||
+            //                rParameterMinMaster(0) + increment(0) > 1. || rParameterMinMaster(1) + increment(1) > 1.)
+            //            {
+            //                std::cout << "dprime.norm: " << dprime.norm() << ", increment.norm: " << increment.norm()
+            //                << std::endl;
+            //                break;
+            //            }
 
             rParameterMinMaster += increment;
 
-            indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]);
-            indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(1), 0, mKnots[1]);
+            indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]); // x
+            indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(1), 0, mKnots[1]); // y
         }
 
-        masterElement = mElementsMaster(indexMasterElement(1), indexMasterElement(0)).first;
+        masterElement = mElementsMaster(indexMasterElement(0), indexMasterElement(1)).first;
 
         error = dprime.norm();
         numIter++;
