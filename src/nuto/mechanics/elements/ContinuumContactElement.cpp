@@ -680,28 +680,11 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
         }
         else if (mKnots.size() == 2)
         {
-            if (rParameterMinMaster(0) + increment(0) < 0.)
+            if (rParameterMinMaster(0) + increment(0) < 0. || rParameterMinMaster(1) + increment(1) < 0. ||
+                rParameterMinMaster(0) + increment(0) > 1. || rParameterMinMaster(1) + increment(1) > 1.)
             {
+                std::cout << "dprime.norm: " << dprime.norm() << ", increment.norm: " << increment.norm() << std::endl;
                 break;
-                //                rParameterMinMaster(0) = 0.;
-            }
-
-            if (rParameterMinMaster(1) + increment(1) < 0.)
-            {
-                break;
-                //                rParameterMinMaster(1) = 0.;
-            }
-
-            if (rParameterMinMaster(0) + increment(0) > 1.)
-            {
-                break;
-                //                rParameterMinMaster(0) = 1.;
-            }
-
-            if (rParameterMinMaster(1) + increment(1) > 1.)
-            {
-                break;
-                //                rParameterMinMaster(1) = 1.;
             }
 
             rParameterMinMaster += increment;
