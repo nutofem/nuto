@@ -3,7 +3,13 @@
 #include "base/Exception.h"
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "mechanics/interpolation/InterpolationTetrahedronLinear.h"
+#include "mechanics/interpolation/InterpolationBrickLinear.h"
+#include "mechanics/interpolation/InterpolationPrismLinear.h"
+#include "mechanics/interpolation/InterpolationPyramidLinear.h"
 
 #include <array>
 #include <climits>
@@ -205,6 +211,18 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
         return rMesh.CreateInterpolation(InterpolationTriangleLinear());
     case 3:
         return rMesh.CreateInterpolation(InterpolationQuadLinear());
+    case 4:
+        return rMesh.CreateInterpolation(InterpolationTetrahedronLinear());
+    case 5:
+        return rMesh.CreateInterpolation(InterpolationBrickLinear());
+    case 6:
+        return rMesh.CreateInterpolation(InterpolationPrismLinear());
+    case 7:
+        return rMesh.CreateInterpolation(InterpolationPyramidLinear());
+    case 9:
+        return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
+    case 16:
+        return rMesh.CreateInterpolation(InterpolationQuadSerendipity());
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
     }
