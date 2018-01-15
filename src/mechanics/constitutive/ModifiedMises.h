@@ -45,8 +45,11 @@ public:
     Eigen::Matrix<double, Voigt::Dim(TDim), 1> Derivative(const NuTo::EngineeringStrain<TDim>& strain) const;
 
 private:
-    //! This method may be useful for other classes. However, it cannot be a member of
-    //! EngineeringStrain since it is only valid for isotropic strains
+    //! Transforms `strain` of dimension TDim to dimension 3, depending on `nu` and `ePlaneState`
+    //! @param nu poissons ratio
+    //! @param planeState PLANE_STRAIN or PLANE_STRESS
+    //! @remark This method may be useful for other classes. However, it cannot be a member of
+    //!         EngineeringStrain since it is only valid for isotropic strains
     EngineeringStrain<3> Strain3D(const EngineeringStrain<TDim>& strain, double nu, ePlaneState) const;
 
     double mNu;
