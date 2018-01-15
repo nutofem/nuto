@@ -12,7 +12,6 @@
 #include "mechanics/interpolation/InterpolationPyramidLinear.h"
 
 #include <array>
-#include <climits>
 #include <fstream>
 #include <unordered_map>
 
@@ -45,7 +44,7 @@ struct GmshPhysicalNames
 {
     int id = 0;
     int dimension = 0;
-    std::string name;
+    std::string physicalName;
 };
 
 
@@ -272,14 +271,16 @@ std::vector<GmshPhysicalNames> ReadPhysicalNames(std::ifstream& rFile)
     int numNames = std::stoi(line);
 
     std::vector<GmshPhysicalNames> physicalNames(numNames);
-    for (GmshPhysicalNames& name : physicalNames)
+    for (GmshPhysicalNames& physicalName : physicalNames)
     {
-        rFile >> name.dimension;
-        rFile >> name.id;
-        rFile >> name.name;
+        rFile >> physicalName.dimension;
+        rFile >> physicalName.id;
+        rFile >> physicalName.physicalName;
 
         // remove quotation marks from string
-        name.name.erase(std::remove(name.name.begin(), name.name.end(), '\"'), name.name.end());
+        physicalName.physicalName.erase(
+                std::remove(physicalName.physicalName.begin(), physicalName.physicalName.end(), '\"'),
+                physicalName.physicalName.end());
         std::getline(rFile, line);
     }
     ExpectNextLineToBe(rFile, "$EndPhysicalNames");
@@ -355,7 +356,7 @@ std::string GetPhysicalGroupName(const GmshFileContent& fileContent, int groupId
 {
     for (const GmshPhysicalNames& gmshPhysicalName : fileContent.physicalNames)
         if (gmshPhysicalName.id == groupId)
-            return gmshPhysicalName.name;
+            return gmshPhysicalName.physicalName;
     return "";
 }
 
@@ -368,16 +369,16 @@ NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
     ReadGmshFile(fileName);
 }
 
-const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
+const NuTo::Group<NuTo::ElementCollectionFem>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
 {
     std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
     auto physGroupIt = mNamedPhysicalGroups.find(physicalName);
     if (physGroupIt == mNamedPhysicalGroups.end())
-        throw Exception(__PRETTY_FUNCTION__, "Couldn't find group with name " + physicalName);
+        throw Exception(__PRETTY_FUNCTION__, "Couldn't find group with physicalName " + physicalName);
     return *(physGroupIt->second);
 }
 
-const NuTo::Group<NuTo::ElementCollection>& NuTo::MeshGmsh::GetPhysicalGroup(int physicalGroupId) const
+const NuTo::Group<NuTo::ElementCollectionFem>& NuTo::MeshGmsh::GetPhysicalGroup(int physicalGroupId) const
 {
     auto physGroupIt = mPhysicalGroups.find(physicalGroupId);
     if (physGroupIt == mPhysicalGroups.end())
@@ -420,13 +421,13 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
         for (unsigned int i = 0; i < elementNodes.size(); ++i)
             elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
 
-        NuTo::ElementCollection* elementPtr = &(mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}}));
-        AddElementToPhysicalGroup(fileContent, *elementPtr, gmshElement.tags[0]);
+        NuTo::ElementCollectionFem& element = mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}});
+        AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }
 }
 
 
-void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::ElementCollection& rElement,
+void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::ElementCollectionFem& rElement,
                                                int physicalGroupId)
 {
     // Regarding the map/iterator stuff: https://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
@@ -438,9 +439,9 @@ void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileConten
     {
         // Create new group
         physGroupIt =
-                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<ElementCollection>(rElement));
+                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<ElementCollectionFem>(rElement));
 
-        // Create new named group, if a name is defined
+        // Create new named group, if a physicalName is defined
         std::string physicalName = GetPhysicalGroupName(fileContent, physicalGroupId);
         if (physicalName.length() > 0)
         {
