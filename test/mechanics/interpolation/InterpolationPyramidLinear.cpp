@@ -9,7 +9,8 @@ std::vector<Eigen::VectorXd> GetTestPoints()
 {
     return {Eigen::Vector3d({-0.7, -0.7, 0}), Eigen::Vector3d({0.7, -0.7, 0}),    Eigen::Vector3d({0.7, 0.7, 0}),
             Eigen::Vector3d({-0.7, 0.7, 0}),  Eigen::Vector3d({-0.1, -0.1, 0.8}), Eigen::Vector3d({0.1, -0.1, 0.8}),
-            Eigen::Vector3d({0.1, 0.1, 0.8}), Eigen::Vector3d({-0.1, 0.1, 0.8}),  Eigen::Vector3d({0.0, 0.0, 0.99})};
+            Eigen::Vector3d({0.1, 0.1, 0.8}), Eigen::Vector3d({-0.1, 0.1, 0.8}),  Eigen::Vector3d({0.0, 0.0, 0.99}),
+            Eigen::Vector3d({0.0, 0.0, 1.0})};
 }
 
 BOOST_AUTO_TEST_CASE(InterpolationPyramidLinear)

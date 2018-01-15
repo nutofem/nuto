@@ -7,6 +7,7 @@
 #include <cassert>
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "base/Exception.h"
+#include <cfloat>
 
 namespace NuTo
 {
@@ -1400,7 +1401,7 @@ Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& r
     const double z = rCoordinates[2];
 
     double rationalTerm = x * y * z;
-    if (std::abs(rationalTerm) > 1.e-14)
+    if ((1. - z) != 0.)
     {
         rationalTerm /= (1. - z);
     }
@@ -1423,9 +1424,9 @@ Eigen::Matrix<double, 5, 3> DerivativeShapeFunctionsPyramidOrder1(const Eigen::V
 
     Eigen::Matrix<double, 5, 3> derivativeShapeFunctions;
 
-    if (std::abs(x * y) < 1.e-12)
+    if ((1. - z) == 0.)
     {
-        z = 0.99;
+        z = 1 - DBL_EPSILON;
     }
 
     derivativeShapeFunctions(0, 0) = 0.25 * (1 + y / (1 - z));
