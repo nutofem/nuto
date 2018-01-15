@@ -19,47 +19,56 @@ BOOST_AUTO_TEST_CASE(NonContiguousNodeNumbering)
     BOOST_CHECK_NO_THROW(MeshGmsh("quadNoncontiguous.msh"));
 }
 
+void CheckMesh(std::string meshFile, int numNodesExpected)
+{
+    BOOST_CHECK_NO_THROW(MeshGmsh{meshFile});
+    MeshGmsh m(meshFile);
+    auto& meshFem = m.GetMeshFEM();
+    BOOST_CHECK_EQUAL(meshFem.Nodes.Size(), numNodesExpected);
+    BOOST_CHECK_EQUAL(meshFem.Elements.begin()->CoordinateElement().Interpolation().GetNumNodes(), numNodesExpected);
+}
+
 BOOST_AUTO_TEST_CASE(QuadLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("quad1.msh"));
+    CheckMesh("quad1.msh", 4);
 }
 
 BOOST_AUTO_TEST_CASE(QuadSerendipity)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("quadSerendipity2.msh"));
+    CheckMesh("quadSerendipity2.msh", 8);
 }
 
 BOOST_AUTO_TEST_CASE(TriangleLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("triangle1.msh"));
+    CheckMesh("triangle1.msh", 3);
 }
 
 BOOST_AUTO_TEST_CASE(TriangleQuadratic)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("triangle2.msh"));
+    CheckMesh("triangle2.msh", 6);
 }
 
 BOOST_AUTO_TEST_CASE(LineLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("line1.msh"));
+    CheckMesh("line1.msh", 2);
 }
 
 BOOST_AUTO_TEST_CASE(TetrahedronLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("tet1.msh"));
+    CheckMesh("tet1.msh", 4);
 }
 
 BOOST_AUTO_TEST_CASE(BrickLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("hex1.msh"));
+    CheckMesh("hex1.msh", 8);
 }
 
 BOOST_AUTO_TEST_CASE(PrismLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("prism1.msh"));
+    CheckMesh("prism1.msh", 6);
 }
 
 BOOST_AUTO_TEST_CASE(PyramidLinear)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("pyramid1.msh"));
+    CheckMesh("pyramid1.msh", 5);
 }
