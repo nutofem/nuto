@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE(OneDimensional)
     // Define the law using policy based design principles, hopefully applied correctly
     Laws::LinearElastic<1> linearElastic(E, nu);
     Constitutive::DamageLawExponential dmg(kappa0, beta, alpha);
-    ModifiedMises<1> strainNorm(nu, fc / ft);
-    Laws::EvolutionImplicit<1, NuTo::ModifiedMises<1>> history(strainNorm, /*numCells=*/1, /*numIps=*/1);
+    Constitutive::ModifiedMises<1> strainNorm(nu, fc / ft);
+    Laws::EvolutionImplicit<1, Constitutive::ModifiedMises<1>> history(strainNorm, /*numCells=*/1, /*numIps=*/1);
     auto localDamageLaw = Laws::CreateLocalIsotropicDamage<1>(dmg, history, linearElastic);
 
     // Test the law by following the decreasing part of the load displacement curve after the peak load

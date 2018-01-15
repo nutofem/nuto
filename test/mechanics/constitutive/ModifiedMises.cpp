@@ -2,6 +2,7 @@
 #include "mechanics/constitutive/ModifiedMises.h"
 
 using namespace NuTo;
+using namespace NuTo::Constitutive;
 
 template <int TDim>
 std::vector<EngineeringStrain<TDim>> StrainTestCases()

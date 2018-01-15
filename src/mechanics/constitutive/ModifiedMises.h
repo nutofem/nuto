@@ -6,18 +6,26 @@
 
 namespace NuTo
 {
-//! Equivalent strain (strain norm) based on the modified mises norm.
-//! De Vree et al. "Comparision of nonlocal approaches in continuum damage mechanics", Computers \& Structures, 1995.
-//! https://doi.org/10.1016/0045-7949(94)00501-S
-//!
-//! It includes the value `k` in a way that expresses the ratio of the materials compressive to tensile strength: A
-//! uniaxial tensile strain and a k-times higher uniaxial compressive strain both lead to the same equivalent strain.
-//! With the strain tensor invariant I1 and the deviatoric strain tensor invariant J2, it reads
-//! \f[/
-//! \varepsilon_\text{eq}(\bm \varepsilon) = \frac{k-1}{2k(1-2\nu)}I_1 +
-//! \frac{1}{2k}\sqrt{\left(\frac{k-1}{1-2\nu}I_1\right)^2 + \frac{2k}{(1+\nu)^2}J_2}
-//! \f]
-//! @tparam TDim dimension 1,2,3
+namespace Constitutive
+{
+/**
+ * Equivalent strain (strain norm) based on the modified mises norm.
+ * De Vree et al. "Comparision of nonlocal approaches in continuum damage mechanics", Computers \& Structures,
+ * 1995.
+ * https://doi.org/10.1016/0045-7949(94)00501-S
+ *
+ * It includes the value `k` in a way that expresses the ratio of the materials compressive to tensile strength:
+ * A
+ * uniaxial tensile strain and a k-times higher uniaxial compressive strain both lead to the same equivalent
+ * strain.
+ * With the strain tensor invariant I1 and the deviatoric strain tensor invariant J2, it reads
+ * \f[/
+ * \varepsilon_\text{eq}(\boldsymbol \varepsilon) = \frac{k-1}{2k(1-2\nu)}I_1 +
+ * \frac{1}{2k}\sqrt{\left(\frac{k-1}{1-2\nu}I_1\right)^2 + \frac{2k}{(1+\nu)^2}J_2}
+ * \f]
+ *
+ * @tparam TDim dimension 1,2,3
+ */
 template <int TDim>
 class ModifiedMises
 {
@@ -240,4 +248,6 @@ inline Eigen::Matrix<double, 6, 1> ModifiedMises<3>::Derivative(const NuTo::Engi
     }
     return derivative;
 }
+
+} /* Constitutive */
 } /* NuTo */
