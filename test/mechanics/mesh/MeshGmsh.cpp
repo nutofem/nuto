@@ -21,45 +21,45 @@ BOOST_AUTO_TEST_CASE(NonContiguousNodeNumbering)
 
 BOOST_AUTO_TEST_CASE(QuadLinear)
 {
-    BOOST_CHECK_NO_THROW("quad1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("quad1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(QuadSerendipity)
 {
-    BOOST_CHECK_NO_THROW("quadSerendipity2.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("quadSerendipity2.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(TriangleLinear)
 {
-    BOOST_CHECK_NO_THROW("triangle1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("triangle1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(TriangleQuadratic)
 {
-    BOOST_CHECK_NO_THROW("triangle2.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("triangle2.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(LineLinear)
 {
-    BOOST_CHECK_NO_THROW("line1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("line1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(TetrahedronLinear)
 {
-    BOOST_CHECK_NO_THROW("tet1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("tet1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(BrickLinear)
 {
-    BOOST_CHECK_NO_THROW("hex1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("hex1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(PrismLinear)
 {
-    BOOST_CHECK_NO_THROW("prism1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("prism1.msh"));
 }
 
 BOOST_AUTO_TEST_CASE(PyramidLinear)
 {
-    BOOST_CHECK_NO_THROW("pyramid1.msh");
+    BOOST_CHECK_NO_THROW(MeshGmsh("pyramid1.msh"));
 }
