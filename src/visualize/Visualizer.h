@@ -11,7 +11,7 @@ namespace Visualize
 
 //! Class to write visualization files of DOF values and cell data.
 //! @tparam THandler Cell handler class that converts computation cell into visualize output.
-//!                  For examples, see @link QuadAverageHandler @endlink and @link TensorProductVoronoiHandler @endlink.
+//!                  For examples, see QuadAverageHandler and TensorProductVoronoiHandler.
 template <typename THandler>
 class Visualizer
 {
