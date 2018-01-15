@@ -9,6 +9,15 @@ add_unit_test(UnitMeshFem
 foreach(inputFile
     quad.msh
     quadNoncontiguous.msh
+    quad1.msh
+    quadSerendipity2.msh
+    triangle1.msh
+    triangle2.msh
+    line1.msh
+    tet1.msh
+    hex1.msh
+    prism1.msh
+    pyramid1.msh
     )
 create_symlink("${inputFile}")
 endforeach()
