@@ -73,12 +73,6 @@ public:
     TElasticLaw mElasticLaw;
 };
 
-template <int TDim, typename TDamageLaw, typename TStrainNorm, typename TElasticLaw>
-static auto CreateLocalIsotropicDamage(TDamageLaw damageLaw, TStrainNorm strainNorm, TElasticLaw elasticLaw)
-{
-    return LocalIsotropicDamage<TDim, TDamageLaw, TStrainNorm, TElasticLaw>(damageLaw, strainNorm, elasticLaw);
-}
-
 /** Explicit evolution equation for the NuTo::LocalIsotropicDamageLaw that implements
  * \f[
  *  \kappa(\boldsymbol \varepsilon) = \max \left(\kappa, \varepsilon_\text{eq}(\boldsymbol \varepsilon) \right)
