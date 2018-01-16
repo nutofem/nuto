@@ -21,6 +21,12 @@ public:
     {
     }
 
+    template <typename TOther>
+    ContainerView(const TOther& other)
+        : Base<T>(other.begin(), other.end())
+    {
+    }
+
     ContainerView(std::initializer_list<std::reference_wrapper<T>> list)
         : Base<T>(list.begin(), list.end())
         , m(std::move(list))

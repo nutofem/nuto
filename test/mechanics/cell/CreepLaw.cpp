@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
         time += delta_t;
 
         // Calculate residual %%%%%%%%%%%%%%%%%%%
-        GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+        GlobalDofVector gradient = assembler.BuildVector(cellContainer, {displ}, MomentumGradientF);
         Eigen::VectorXd residual = gradient.J[displ] - extF.J[displ];
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
         {
             numIter++;
             // Build and solve system %%%%%%%%%%%
-            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(cellContainer, {displ}, MomentumHessian0F);
             Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
             Eigen::VectorXd deltaDisplacements = hessianDense.ldlt().solve(residual);
             displacements -= deltaDisplacements;
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
             }
 
             // Calculate new residual %%%%%%%%%%%
-            gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+            gradient = assembler.BuildVector(cellContainer, {displ}, MomentumGradientF);
             residual = gradient.J[displ] - extF.J[displ];
         }
         if (numIter >= maxIter)

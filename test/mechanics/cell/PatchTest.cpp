@@ -263,24 +263,20 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     auto GradientF = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
     auto Hessian0F = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
 
-    boost::ptr_vector<CellInterface> cellContainer;
+    std::vector<Cell> cells;
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
-    Group<CellInterface> cellGroup;
     int cellId = 0;
     for (auto& element : mesh.Elements)
-    {
-        cellContainer.push_back(new Cell(element, integrationType, cellId++));
-        cellGroup.Add(cellContainer.back());
-    }
+        cells.emplace_back(element, integrationType, cellId++);
 
     // ************************************************************************
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
 
-    auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
-    auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
+    auto gradient = assembler.BuildVector(cells, {displ}, GradientF);
+    auto hessian = assembler.BuildMatrix(cells, {displ}, Hessian0F);
 
     Eigen::MatrixXd kJJ = Eigen::MatrixXd(hessian.JJ(displ, displ));
     Eigen::MatrixXd kJK = Eigen::MatrixXd(hessian.JK(displ, displ));
@@ -327,7 +323,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    Visualize::Visualizer<Visualize::AverageHandler> visualize(cellGroup, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer<Visualize::AverageHandler> visualize(cells, Visualize::AverageGeometryQuad());
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {

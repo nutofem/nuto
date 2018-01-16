@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/Group.h"
+#include "base/ContainerView.h"
 #include "mechanics/cell/CellInterface.h"
 #include "visualize/UnstructuredGrid.h"
 
@@ -19,8 +19,8 @@ public:
     //! Construct a visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param ...args Additional arguments that get passed on to the constructor of the cell handler.
-    template<typename... HandlerArguments>
-    Visualizer(Group<CellInterface>& cells, HandlerArguments&&... args)
+    template <typename... HandlerArguments>
+    Visualizer(ContainerView<CellInterface> cells, HandlerArguments&&... args)
         : mCells(cells)
         , mHandler(std::forward<HandlerArguments>(args)...)
     {
@@ -75,7 +75,7 @@ public:
     }
 
 private:
-    Group<CellInterface>& mCells;
+    ContainerView<CellInterface> mCells;
     std::vector<std::vector<int>> mPointIds;
     THandler mHandler;
     UnstructuredGrid mGrid;
