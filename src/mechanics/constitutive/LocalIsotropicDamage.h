@@ -65,7 +65,9 @@ public:
         mEvolution.Update(strain, deltaT, cellId, ipId);
     }
 
-private:
+public:
+    // Intentionally made public. I assume that we know what we do. And this avoids lots of code, either getters
+    // (possibly nonconst) or forwarding functions like `double Kappa(...), double Damage(...)`
     TDamageLaw mDamageLaw;
     TEvolution mEvolution;
     TElasticLaw mElasticLaw;
@@ -120,13 +122,12 @@ public:
         mKappas[Ip(cellId, ipId)] = Kappa(strain, deltaT, cellId, ipId);
     }
 
-protected:
     size_t Ip(int cellId, int ipId) const
     {
         return cellId * mNumIpsPerCell + ipId;
     }
 
-private:
+public:
     TStrainNorm mStrainNorm;
     size_t mNumIpsPerCell;
     std::vector<double> mKappas;
