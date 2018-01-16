@@ -2,6 +2,7 @@
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/interpolation/InterpolationBrickLinear.h"
 
 using namespace NuTo;
 
@@ -28,6 +29,21 @@ MeshFem CreateNodes2D(int numX, int numY)
             const double y = static_cast<double>(iY) / numY;
             mesh.Nodes.Add(Eigen::Vector2d(x, y));
         }
+    return mesh;
+}
+
+MeshFem CreateNodes3D(int numX, int numY, int numZ)
+{
+    MeshFem mesh;
+    for (int iZ = 0; iZ < numZ + 1; ++iZ)
+        for (int iY = 0; iY < numY + 1; ++iY)
+            for (int iX = 0; iX < numX + 1; ++iX)
+            {
+                const double x = static_cast<double>(iX) / numX;
+                const double y = static_cast<double>(iY) / numY;
+                const double z = static_cast<double>(iZ) / numZ;
+                mesh.Nodes.Add(Eigen::Vector3d(x, y, z));
+            }
     return mesh;
 }
 
@@ -76,6 +92,27 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
             auto& node3 = mesh.Nodes[iX + (iY + 1) * (numX + 1)];
             mesh.Elements.Add({{{node0, node1, node2, node3}, interpolation}});
         }
+    return mesh;
+}
+
+MeshFem UnitMeshFem::CreateBricks(int numX, int numY, int numZ)
+{
+    MeshFem mesh = CreateNodes3D(numX, numY, numZ);
+    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationBrickLinear());
+    for (int iZ = 0; iZ < numZ; ++iZ)
+        for (int iY = 0; iY < numY; ++iY)
+            for (int iX = 0; iX < numX; ++iX)
+            {
+                auto& node0 = mesh.Nodes[iX + iY * (numX + 1) + iZ * (numX + 1) * (numY + 1)];
+                auto& node1 = mesh.Nodes[iX + 1 + iY * (numX + 1) + iZ * (numX + 1) * (numY + 1)];
+                auto& node2 = mesh.Nodes[iX + 1 + (iY + 1) * (numX + 1) + iZ * (numX + 1) * (numY + 1)];
+                auto& node3 = mesh.Nodes[iX + (iY + 1) * (numX + 1) + iZ * (numX + 1) * (numY + 1)];
+                auto& node4 = mesh.Nodes[iX + iY * (numX + 1) + (iZ + 1) * (numX + 1) * (numY + 1)];
+                auto& node5 = mesh.Nodes[iX + 1 + iY * (numX + 1) + (iZ + 1) * (numX + 1) * (numY + 1)];
+                auto& node6 = mesh.Nodes[iX + 1 + (iY + 1) * (numX + 1) + (iZ + 1) * (numX + 1) * (numY + 1)];
+                auto& node7 = mesh.Nodes[iX + (iY + 1) * (numX + 1) + (iZ + 1) * (numX + 1) * (numY + 1)];
+                mesh.Elements.Add({{{node0, node1, node2, node3, node4, node5, node6, node7}, interpolation}});
+            }
     return mesh;
 }
 

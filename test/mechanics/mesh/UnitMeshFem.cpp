@@ -69,6 +69,20 @@ BOOST_AUTO_TEST_CASE(MeshQuad)
     Check2DMesh(mesh);
 }
 
+BOOST_AUTO_TEST_CASE(MeshBrick)
+{
+    auto mesh = NuTo::UnitMeshFem::CreateBricks(2, 7, 3);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 3);
+
+    for (auto& element : mesh.Elements)
+    {
+        auto d_dxi = element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::Vector3d(0., 0., 0.));
+        auto x = element.CoordinateElement().ExtractNodeValues();
+        auto J = NuTo::Jacobian(x, d_dxi, 3);
+        BOOST_CHECK_GT(J.Det(), 0.);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(MeshTriangle)
 {
     auto mesh = NuTo::UnitMeshFem::CreateTriangles(2, 7);
