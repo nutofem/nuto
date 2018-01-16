@@ -57,11 +57,21 @@ struct GmshFileContent
     std::vector<GmshPhysicalNames> physicalNames;
 };
 
+//! Returns true, if sLong and sShort are equal up to the length of sShort.
+//! CompareLeft("ABC", "ABC") --> true
+//! CompareLeft("ABCD", "ABC") --> true
+//! CompareLeft("ABC   ", "ABC") --> true
+//! CompareLeft(" ABC", "ABC") --> false
+bool CompareLeft(const std::string& sLong, const std::string& sShort)
+{
+    return sLong.compare(0, sShort.size(), sShort) == 0;
+}
+
 void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
 {
     std::string line;
     std::getline(rFile, line);
-    if (line.compare(expected) != 0)
+    if (not CompareLeft(line, expected))
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Expected " + expected + ", got " + line + "!");
 }
 
@@ -295,13 +305,13 @@ void ProcessSection(std::ifstream& rFile, GmshFileContent& rFileContent)
     if (line.empty())
         return;
 
-    if (line == "$PhysicalNames")
+    if (CompareLeft(line, "$PhysicalNames"))
     {
         rFileContent.physicalNames = ReadPhysicalNames(rFile);
         return;
     }
 
-    if (line == "$Nodes")
+    if (CompareLeft(line, "$Nodes"))
     {
         if (rFileContent.header.isBinary)
             std::tie(rFileContent.nodes, rFileContent.dimension) = ReadNodesBinary(rFile);
@@ -310,7 +320,7 @@ void ProcessSection(std::ifstream& rFile, GmshFileContent& rFileContent)
         return;
     }
 
-    if (line == "$Elements")
+    if (CompareLeft(line, "$Elements"))
     {
         if (rFileContent.header.isBinary)
             rFileContent.elements = ReadElementsBinary(rFile);
