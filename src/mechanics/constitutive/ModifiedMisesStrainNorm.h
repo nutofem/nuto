@@ -27,14 +27,14 @@ namespace Constitutive
  * @tparam TDim dimension 1,2,3
  */
 template <int TDim>
-class ModifiedMises
+class ModifiedMisesStrainNorm
 {
 public:
     //! Constructor.
     //! @param nu Poissons ratio
     //! @param k ratio of compressive strength to tensile strength, ~10 for concrete
     //! @param planeState PLANE_STRAIN or PLANE_STRESS
-    ModifiedMises(double nu, double k, ePlaneState planeState = ePlaneState::PLANE_STRAIN);
+    ModifiedMisesStrainNorm(double nu, double k, ePlaneState planeState = ePlaneState::PLANE_STRAIN);
 
     //! @param strain strain to evaluate
     //! @return the value of the modified Mises strain norm
@@ -62,7 +62,7 @@ private:
 
 
 template <int TDim>
-inline ModifiedMises<TDim>::ModifiedMises(double nu, double k, ePlaneState planeState)
+inline ModifiedMisesStrainNorm<TDim>::ModifiedMisesStrainNorm(double nu, double k, ePlaneState planeState)
     : mNu(nu)
     , mK(k)
     , mPlaneState(planeState)
@@ -73,7 +73,7 @@ inline ModifiedMises<TDim>::ModifiedMises(double nu, double k, ePlaneState plane
 
 
 template <>
-inline EngineeringStrain<3> ModifiedMises<1>::Strain3D(const EngineeringStrain<1>& strain, double nu, ePlaneState) const
+inline EngineeringStrain<3> ModifiedMisesStrainNorm<1>::Strain3D(const EngineeringStrain<1>& strain, double nu, ePlaneState) const
 {
     EngineeringStrain<3> v;
     v[0] = strain[0];
@@ -86,7 +86,7 @@ inline EngineeringStrain<3> ModifiedMises<1>::Strain3D(const EngineeringStrain<1
 }
 
 template <>
-inline EngineeringStrain<3> ModifiedMises<2>::Strain3D(const EngineeringStrain<2>& strain, double nu,
+inline EngineeringStrain<3> ModifiedMisesStrainNorm<2>::Strain3D(const EngineeringStrain<2>& strain, double nu,
                                                        ePlaneState planeState) const
 {
     EngineeringStrain<3> v;
@@ -114,14 +114,14 @@ inline EngineeringStrain<3> ModifiedMises<2>::Strain3D(const EngineeringStrain<2
 }
 
 template <>
-inline EngineeringStrain<3> ModifiedMises<3>::Strain3D(const EngineeringStrain<3>& strain, double, ePlaneState) const
+inline EngineeringStrain<3> ModifiedMisesStrainNorm<3>::Strain3D(const EngineeringStrain<3>& strain, double, ePlaneState) const
 {
     return strain;
 }
 
 
 template <int TDim>
-inline double ModifiedMises<TDim>::Value(const NuTo::EngineeringStrain<TDim>& strain) const
+inline double ModifiedMisesStrainNorm<TDim>::Value(const NuTo::EngineeringStrain<TDim>& strain) const
 {
     EngineeringStrain<3> strain3D = Strain3D(strain, mNu, mPlaneState);
     double I1 = NuTo::EngineeringStrainInvariants::I1(strain3D);
@@ -134,7 +134,7 @@ inline double ModifiedMises<TDim>::Value(const NuTo::EngineeringStrain<TDim>& st
 
 
 template <>
-inline Eigen::Matrix<double, 1, 1> ModifiedMises<1>::Derivative(const NuTo::EngineeringStrain<1>& strain) const
+inline Eigen::Matrix<double, 1, 1> ModifiedMisesStrainNorm<1>::Derivative(const NuTo::EngineeringStrain<1>& strain) const
 {
     Eigen::Matrix<double, 1, 1> derivative;
     double dJ2dexx = 2. / 3. * strain[0] * (1 + mNu) * (1 + mNu);
@@ -155,7 +155,7 @@ inline Eigen::Matrix<double, 1, 1> ModifiedMises<1>::Derivative(const NuTo::Engi
 }
 
 template <>
-inline Eigen::Matrix<double, 3, 1> ModifiedMises<2>::Derivative(const NuTo::EngineeringStrain<2>& strain) const
+inline Eigen::Matrix<double, 3, 1> ModifiedMisesStrainNorm<2>::Derivative(const NuTo::EngineeringStrain<2>& strain) const
 {
     Eigen::Matrix<double, 3, 1> derivative;
 
@@ -215,7 +215,7 @@ inline Eigen::Matrix<double, 3, 1> ModifiedMises<2>::Derivative(const NuTo::Engi
 }
 
 template <>
-inline Eigen::Matrix<double, 6, 1> ModifiedMises<3>::Derivative(const NuTo::EngineeringStrain<3>& strain) const
+inline Eigen::Matrix<double, 6, 1> ModifiedMisesStrainNorm<3>::Derivative(const NuTo::EngineeringStrain<3>& strain) const
 {
     Eigen::Matrix<double, 6, 1> derivative;
 

@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include "math/EigenCompanion.h"
 #include "mechanics/constitutive/LocalIsotropicDamage.h"
-#include "mechanics/constitutive/ModifiedMises.h"
+#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(OneDimensional)
 
     // Define the law using policy based design principles, hopefully applied correctly
     using Damage = Constitutive::DamageLawExponential;
-    using StrainNorm = Constitutive::ModifiedMises<1>;
+    using StrainNorm = Constitutive::ModifiedMisesStrainNorm<1>;
     using Evolution = Laws::EvolutionImplicit<1, StrainNorm>;
     using ElasticLaw = Laws::LinearElastic<1>;
     using Law = Laws::LocalIsotropicDamage<1, Damage, Evolution, ElasticLaw>;

@@ -81,7 +81,7 @@ public:
  * @tparam TDim dimension
  *
  * @tparam TStrainNorm strain norm \f$ \varepsilon_\text{eq}(\boldsymbol \varepsilon) \f$. This requires the methods
- * `Kappa(strain)` and `DkappaDstrain(strain)` to be implemented, e.g. NuTo::Constitutive::ModifiedMises.
+ * `Kappa(strain)` and `DkappaDstrain(strain)` to be implemented, e.g. NuTo::Constitutive::ModifiedMisesStrainNorm.
  */
 template <int TDim, typename TStrainNorm>
 class EvolutionImplicit

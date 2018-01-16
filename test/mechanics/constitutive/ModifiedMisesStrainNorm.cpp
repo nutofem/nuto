@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/ModifiedMises.h"
+#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
 using namespace NuTo;
 using namespace NuTo::Constitutive;
@@ -30,7 +30,7 @@ void CheckLocalEqStrainDerivativesMises(ePlaneState planeState = ePlaneState::PL
 {
     double nu = 0.25;
     double k = 9.81;
-    ModifiedMises<TDim> modMises(nu, k, planeState);
+    ModifiedMisesStrainNorm<TDim> modMises(nu, k, planeState);
 
     // check derivatives
     for (auto strain : StrainTestCases<TDim>())
@@ -78,9 +78,9 @@ BOOST_AUTO_TEST_CASE(EqStrainZero)
 {
     const double k = 10;
     const double nu = 0.;
-    BOOST_CHECK_SMALL(ModifiedMises<1>(nu, k).Value(EngineeringStrain<1>::Zero()), 1.e-6);
-    BOOST_CHECK_SMALL(ModifiedMises<2>(nu, k).Value(EngineeringStrain<2>::Zero()), 1.e-6);
-    BOOST_CHECK_SMALL(ModifiedMises<3>(nu, k).Value(EngineeringStrain<3>::Zero()), 1.e-6);
+    BOOST_CHECK_SMALL(ModifiedMisesStrainNorm<1>(nu, k).Value(EngineeringStrain<1>::Zero()), 1.e-6);
+    BOOST_CHECK_SMALL(ModifiedMisesStrainNorm<2>(nu, k).Value(EngineeringStrain<2>::Zero()), 1.e-6);
+    BOOST_CHECK_SMALL(ModifiedMisesStrainNorm<3>(nu, k).Value(EngineeringStrain<3>::Zero()), 1.e-6);
 }
 
 BOOST_AUTO_TEST_CASE(EqStrain)
@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE(EqStrain)
     const double nu = 0.;
     EngineeringStrain<3> strain = EngineeringStrain<3>::Zero();
     strain[0] = 2.;
-    BOOST_CHECK_CLOSE(ModifiedMises<3>(nu, k).Value(strain), 2., 1.e-6);
+    BOOST_CHECK_CLOSE(ModifiedMisesStrainNorm<3>(nu, k).Value(strain), 2., 1.e-6);
     strain[0] = 0.;
     strain[2] = -2 * k;
-    BOOST_CHECK_CLOSE(ModifiedMises<3>(nu, k).Value(strain), 2., 1.e-6);
+    BOOST_CHECK_CLOSE(ModifiedMisesStrainNorm<3>(nu, k).Value(strain), 2., 1.e-6);
 }
