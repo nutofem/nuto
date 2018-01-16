@@ -48,9 +48,34 @@ BOOST_AUTO_TEST_CASE(FromBase)
     BOOST_CHECK(std::equal(cv.begin(), cv.end(), v.begin()));
 }
 
+void AcceptingInitList(NuTo::ContainerView<Interface> view)
+{
+    BOOST_CHECK_EQUAL(view.begin()->Value(), 1);
+}
+
+struct WithInitList
+{
+    WithInitList(NuTo::ContainerView<Interface> view)
+        : mView(view)
+    {
+    }
+
+    void Check()
+    {
+        BOOST_CHECK_EQUAL(mView.begin()->Value(), 1);
+    }
+
+    NuTo::ContainerView<Interface> mView;
+};
+
 BOOST_AUTO_TEST_CASE(FromInitializerList)
 {
     Impl a(1), b(2), c(3);
-    NuTo::ContainerView<Interface> cv({a, b, c});
-    BOOST_CHECK(cv.front() == a);
+    AcceptingInitList({a, b, c});
+
+    // WithInitList w({a, b, c});
+    // w.Check();
+
+    // NuTo::ContainerView<Interface> view({a, b, c});
+    // BOOST_CHECK_EQUAL(view.begin()->Value(), 1);
 }

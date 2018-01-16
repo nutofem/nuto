@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    Visualize::Visualizer<Visualize::AverageHandler> visualize(cells, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer<Visualize::AverageHandler> visualize({cells.front()}, Visualize::AverageGeometryQuad());
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
