@@ -47,3 +47,10 @@ BOOST_AUTO_TEST_CASE(FromBase)
     NuTo::ContainerView<Interface> cv(v);
     BOOST_CHECK(std::equal(cv.begin(), cv.end(), v.begin()));
 }
+
+BOOST_AUTO_TEST_CASE(FromInitializerList)
+{
+    Impl a(1), b(2), c(3);
+    NuTo::ContainerView<Interface> cv({a, b, c});
+    BOOST_CHECK(cv.front() == a);
+}

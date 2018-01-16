@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/Group.h"
+#include "base/ContainerView.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/dofs/DofContainer.h"
 #include "mechanics/dofs/GlobalDofVector.h"
@@ -17,7 +17,7 @@ public:
     {
     }
 
-    GlobalDofVector BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    GlobalDofVector BuildVector(ContainerView<CellInterface> cells, std::vector<DofType> dofTypes,
                                 CellInterface::VectorFunction f) const
     {
         GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
@@ -36,7 +36,7 @@ public:
         return gradient;
     }
 
-    GlobalDofMatrixSparse BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    GlobalDofMatrixSparse BuildMatrix(ContainerView<CellInterface> cells, std::vector<DofType> dofTypes,
                                       CellInterface::MatrixFunction f) const
     {
         GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);
