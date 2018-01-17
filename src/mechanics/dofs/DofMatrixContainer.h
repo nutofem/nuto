@@ -87,10 +87,10 @@ private:
         bool operator()(const DofPair& a, const DofPair& b) const
         {
             // check for equiv(a.first, b.first)
-            if (!(a.first.GetName() < b.first.GetName()) && !(b.first.GetName() < a.first.GetName()))
-                return a.second.GetName() < b.second.GetName();
+            if (a.first.Id() == b.first.Id())
+                return a.second.Id() < b.second.Id();
             else
-                return a.first.GetName() < b.first.GetName();
+                return a.first.Id() < b.first.Id();
         }
     };
     std::map<DofPair, T, CompareDofPairs> mData;
