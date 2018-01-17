@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"
 #include <functional>

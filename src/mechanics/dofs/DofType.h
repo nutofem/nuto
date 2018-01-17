@@ -32,4 +32,12 @@ private:
     std::string mName;
     int mNum;
 };
+
+struct CompareDofType
+{
+    bool operator()(const DofType& a, const DofType& b) const
+    {
+        return a.GetName() < b.GetName();
+    }
+};
 } /* NuTo */
