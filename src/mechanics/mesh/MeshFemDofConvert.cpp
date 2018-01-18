@@ -174,3 +174,35 @@ void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const Interpolat
         elementCollection.AddDofElement(dofType, ElementFem(nodesForTheNewlyCreatedElement, interpolation));
     }
 }
+
+void NuTo::ChangeCoordinateInterpolation(MeshFem* rMesh, const InterpolationSimple& interpolation)
+{
+    // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on
+    // the dimensions of the mesh.
+    SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
+
+    for (size_t i = 0; i < rMesh->Elements.Size(); i++)
+    {
+        auto& elementCollection = rMesh->Elements[i];
+        std::vector<NodeSimple*> nodesForTheNewlyCreatedElement;
+
+        const auto& coordinateElement = elementCollection.CoordinateElement();
+        for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
+        {
+            Eigen::Vector3d coord = To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));
+
+            NodePoint* nodePoint = subBoxes.FindAt(coord);
+            if (nodePoint)
+            {
+                nodesForTheNewlyCreatedElement.push_back(&nodePoint->mNode);
+            }
+            else
+            {
+                auto& node = rMesh->Nodes.Add(coord.head(coordinateElement.GetDofDimension()));
+                subBoxes.Add(NodePoint(coord, node));
+                nodesForTheNewlyCreatedElement.push_back(&node);
+            }
+        }
+        elementCollection.CoordinateElement() = ElementFem(nodesForTheNewlyCreatedElement, interpolation);
+    }
+}

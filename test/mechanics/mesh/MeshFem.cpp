@@ -2,6 +2,8 @@
 #include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
 void SetStuff(NuTo::MeshFem& m)
@@ -153,4 +155,20 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof1Nodes = 9;
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
+}
+
+BOOST_AUTO_TEST_CASE(ChangeCoordinateElement)
+{
+    NuTo::MeshFem mesh;
+    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(1, 1));
+    auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+
+    auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
+    mesh.Elements.Add({{{n0, n1, n2, n3}, interpolation}});
+
+    NuTo::ChangeCoordinateInterpolation(&mesh, NuTo::InterpolationQuadSerendipity());
+
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 12);
 }
