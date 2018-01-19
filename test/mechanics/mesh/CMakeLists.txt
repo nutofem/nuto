@@ -7,6 +7,7 @@ add_unit_test(UnitMeshFem
     mechanics/elements/ElementShapeFunctions)
 
 foreach(inputFile
+    binary.msh
     quad.msh
     quadNoncontiguous.msh
     quad1.msh
