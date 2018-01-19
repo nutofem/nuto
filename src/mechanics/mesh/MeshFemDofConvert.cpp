@@ -181,6 +181,9 @@ void NuTo::ChangeCoordinateInterpolation(MeshFem* rMesh, const InterpolationSimp
     // the dimensions of the mesh.
     SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
 
+    // Save old coordinate node refs to remove them later
+    auto oldCoordinateNodes = rMesh->NodesTotal();
+
     for (size_t i = 0; i < rMesh->Elements.Size(); i++)
     {
         auto& elementCollection = rMesh->Elements[i];
@@ -204,5 +207,12 @@ void NuTo::ChangeCoordinateInterpolation(MeshFem* rMesh, const InterpolationSimp
             }
         }
         elementCollection.CoordinateElement() = ElementFem(nodesForTheNewlyCreatedElement, interpolation);
+    }
+
+    for (auto& nd : oldCoordinateNodes)
+    {
+        auto isIdentical = [&](NodeSimple& n) { return ((&n) == (&nd)); };
+        auto& nodes = rMesh->Nodes;
+        nodes.Erase(std::find_if(nodes.begin(), nodes.end(), isIdentical));
     }
 }

@@ -168,7 +168,19 @@ BOOST_AUTO_TEST_CASE(ChangeCoordinateElement)
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
     mesh.Elements.Add({{{n0, n1, n2, n3}, interpolation}});
 
-    NuTo::ChangeCoordinateInterpolation(&mesh, NuTo::InterpolationQuadSerendipity());
+    auto& newInterpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadSerendipity());
+    NuTo::ChangeCoordinateInterpolation(&mesh, newInterpolation);
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 12);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 8);
+
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0.5, 0)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0.5)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1, 1)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0.5, 1)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 1)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0.5)));
+
+    BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0.5, 0.5)), NuTo::Exception);
 }
