@@ -11,35 +11,33 @@ namespace NuTo
 class EigenCompanion
 {
 public:
-    //! @brief Append the rows of one matrix to the other
-    //! @param top Matrix that is getting extended
-    //! @param bottom Matrix that is added to the bottom of the other one
-    static void AppendRows(Eigen::MatrixXd& top, const Eigen::MatrixXd& bottom);
-
-
-    //! @brief writes a matrix to a file
-    //! @param rMatrix matrix
-    //! @param rFileName file name
-    //! @param rDelimiter delimiters between the entries in each line, default = space
-    static void WriteToFile(const Eigen::MatrixXd& rMatrix, const std::string& rFileName, std::string rDelimiter = " ");
-
-
-    //! @brief reads a matrix from a file
-    //! @param rFileName file name
-    //! @param rDelimiter delimiters between the entries in each line, default = space
-    //! @return matrix
-    static Eigen::MatrixXd ReadFromFile(const std::string& rFileName);
-
     //! @brief converts data to a 3D vector, fills with zeros if needed
     //! @param data vector of arbitrary size
     //! @return 3D vector
-    static Eigen::Vector3d To3D(const Eigen::VectorXd& data);
+    static Eigen::Vector3d To3D(const Eigen::VectorXd& data)
+    {
+        const int dimension = data.rows();
+        Eigen::Vector3d vector3d = Eigen::Vector3d::Zero();
+        vector3d.block(0, 0, dimension, 1) = data;
+        return vector3d;
+    }
 
-private:
-    //! @brief converts a string, seperated by rDelimiter, to a vector of doubles
-    //! @param rString string to convert
-    //! @param rDelimiter delimiters between the entries in each line
-    //! @return vector containing the numbers in the string
-    static std::vector<double> StringToDoubles(const std::string& rString);
+    //! @brief transforms an initializer_list to an Eigen::VectorXd
+    static Eigen::VectorXd ToEigen(std::initializer_list<double> l)
+    {
+        Eigen::VectorXd v(l.size());
+
+        int position = 0;
+        for (auto value : l)
+            v[position++] = value;
+
+        return v;
+    }
+
+    //! @brief transforms a single double number to an Eigen::VectorXd
+    static Eigen::VectorXd ToEigen(double d)
+    {
+        return Eigen::VectorXd::Constant(1, d);
+    }
 };
-}
+} /* NuTo */
