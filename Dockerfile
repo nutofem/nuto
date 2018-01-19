@@ -24,6 +24,7 @@ USER nuto
 
 # create the source directory /home/nuto/source
 RUN mkdir /home/nuto/source
+RUN mkdir /home/nuto/build
 
-# the build directory will be in /home/nuto 
-WORKDIR /home/nuto
+# the build directory will be in /home/nuto/source/build
+WORKDIR /home/nuto/build
