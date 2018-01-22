@@ -1,4 +1,5 @@
 set(MechanicsSources
+    cell/SimpleAssembler.cpp
     constraints/Constraints.cpp
     constraints/ConstraintCompanion.cpp
     dofs/DofNumbering.cpp
