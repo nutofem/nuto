@@ -3,7 +3,7 @@
 //
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include "base/Exception.h"
-#include "math/EigenCompanion.h"
+#include "math/EigenIO.h"
 
 NuTo::Tools::GlobalFractureEnergyIntegrator::GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces,
                                                                             const Eigen::VectorXd& rDisplacements)
@@ -16,8 +16,8 @@ NuTo::Tools::GlobalFractureEnergyIntegrator::GlobalFractureEnergyIntegrator(cons
 NuTo::Tools::GlobalFractureEnergyIntegrator::GlobalFractureEnergyIntegrator(std::string rFileForces,
                                                                             std::string rFileDisplacements, int rColumn)
 {
-    mForce = NuTo::EigenCompanion::ReadFromFile(rFileForces).col(rColumn).cwiseAbs();
-    mDispl = NuTo::EigenCompanion::ReadFromFile(rFileDisplacements).col(rColumn).cwiseAbs();
+    mForce = NuTo::EigenIO::ReadFromFile(rFileForces).col(rColumn).cwiseAbs();
+    mDispl = NuTo::EigenIO::ReadFromFile(rFileDisplacements).col(rColumn).cwiseAbs();
 
     CheckData();
 }

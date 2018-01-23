@@ -5,9 +5,9 @@
 
 namespace NuTo
 {
-
-//! @brief ... Engineering strain
-/*!
+/**
+ * Engineering strain
+ *
  *  Due to the symmetry of the second order engineering strain tensor the engineering strain components can be stored as
  * vector
  *  \f[

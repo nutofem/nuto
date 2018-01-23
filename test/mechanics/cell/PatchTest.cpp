@@ -23,7 +23,7 @@
 #include "mechanics/integrands/NeumannBc.h"
 
 #include "mechanics/cell/Cell.h"
-#include "mechanics/cell/SimpleAssember.h"
+#include "mechanics/cell/SimpleAssembler.h"
 
 #include "visualize/AverageHandler.h"
 #include "visualize/AverageGeometries.h"
