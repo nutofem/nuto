@@ -2,6 +2,7 @@
 #include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
 void SetStuff(NuTo::MeshFem& m)
@@ -153,4 +154,45 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof1Nodes = 9;
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
+}
+
+BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
+{
+
+    /* first create this:
+     *
+     * 2-----3-----5
+     * |\    |     |
+     * | \   |     |
+     * |  \  |     |
+     * |   \ |     |
+     * |    \|     |
+     * 0-----1-----4
+     */
+    NuTo::MeshFem mesh;
+    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+    auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(1, 1));
+    auto& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 0));
+    auto& n5 = mesh.Nodes.Add(Eigen::Vector2d(2, 1));
+
+    auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    auto& interpolationQuad = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
+    mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    mesh.Elements.Add({{{n1, n4, n5, n3}, interpolationQuad}});
+
+    int expectedNumCoordinateNodes = 6;
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
+
+
+    // add linear dof type
+
+    NuTo::DofType dof0("isoparametric", 1);
+    NuTo::AddDofInterpolation(&mesh, dof0);
+
+    int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
+
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 }
