@@ -1,4 +1,7 @@
 #include "mechanics/mesh/MeshFemDofConvert.h"
+#include "math/EigenCompanion.h"
+
+using namespace NuTo::EigenCompanion;
 
 //! @brief container that performs O(1) addition and O(1) lookup based on subboxes. These subboxes divide the domain
 //! with a given number of subdivisions.
@@ -93,13 +96,6 @@ private:
 };
 
 
-Eigen::Vector3d To3D(Eigen::VectorXd v)
-{
-    Eigen::Vector3d v3d = Eigen::Vector3d::Zero();
-    v3d.segment(0, v.size()) = v;
-    return v3d;
-}
-
 struct NodePoint : Eigen::Vector3d // to inherit operator[]
 {
     NodePoint(Eigen::VectorXd v, NuTo::NodeSimple& node)
@@ -157,7 +153,8 @@ void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const Interpolat
         const auto& coordinateElement = elementCollection.CoordinateElement();
         for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
         {
-            Eigen::Vector3d coord = To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));
+            Eigen::Vector3d coord =
+                    EigenCompanion::To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));
 
             NodePoint* nodePoint = subBoxes.FindAt(coord);
             if (nodePoint)

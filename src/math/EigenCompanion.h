@@ -8,36 +8,35 @@ namespace NuTo
 {
 
 //! @brief Collection of helper functions for Eigen matrices
-class EigenCompanion
+namespace EigenCompanion
 {
-public:
-    //! @brief converts data to a 3D vector, fills with zeros if needed
-    //! @param data vector of arbitrary size
-    //! @return 3D vector
-    static Eigen::Vector3d To3D(const Eigen::VectorXd& data)
-    {
-        const int dimension = data.rows();
-        Eigen::Vector3d vector3d = Eigen::Vector3d::Zero();
-        vector3d.block(0, 0, dimension, 1) = data;
-        return vector3d;
-    }
+//! @brief converts data to a 3D vector, fills with zeros if needed
+//! @param data vector of arbitrary size
+//! @return 3D vector
+inline Eigen::Vector3d To3D(const Eigen::VectorXd& data)
+{
+    const int dimension = data.rows();
+    Eigen::Vector3d vector3d = Eigen::Vector3d::Zero();
+    vector3d.block(0, 0, dimension, 1) = data;
+    return vector3d;
+}
 
-    //! @brief transforms an initializer_list to an Eigen::VectorXd
-    static Eigen::VectorXd ToEigen(std::initializer_list<double> l)
-    {
-        Eigen::VectorXd v(l.size());
+//! @brief transforms an initializer_list to an Eigen::VectorXd
+inline Eigen::VectorXd ToEigen(std::initializer_list<double> l)
+{
+    Eigen::VectorXd v(l.size());
 
-        int position = 0;
-        for (auto value : l)
-            v[position++] = value;
+    int position = 0;
+    for (auto value : l)
+        v[position++] = value;
 
-        return v;
-    }
+    return v;
+}
 
-    //! @brief transforms a single double number to an Eigen::VectorXd
-    static Eigen::VectorXd ToEigen(double d)
-    {
-        return Eigen::VectorXd::Constant(1, d);
-    }
+//! @brief transforms a single double number to an Eigen::VectorXd
+inline Eigen::VectorXd ToEigen(double d)
+{
+    return Eigen::VectorXd::Constant(1, d);
+}
 };
 } /* NuTo */
