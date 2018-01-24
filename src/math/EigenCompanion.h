@@ -38,5 +38,5 @@ inline Eigen::VectorXd ToEigen(double d)
 {
     return Eigen::VectorXd::Constant(1, d);
 }
-};
+} /* EigenCompanion */
 } /* NuTo */
