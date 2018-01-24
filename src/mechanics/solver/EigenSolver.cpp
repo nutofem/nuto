@@ -3,7 +3,7 @@
 #include <Eigen/SparseLU>
 #include <Eigen/SparseQR>
 
-#ifdef HAS_SUITESPARSE
+#ifdef HAVE_SUITESPARSE
 #include <Eigen/UmfPackSupport>
 #include <Eigen/CholmodSupport>
 #endif
@@ -26,7 +26,7 @@ Eigen::VectorXd EigenSolver(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, st
         return EigenSparseSolve<Eigen::SparseLU<Eigen::SparseMatrix<double>>>(A, b);
     if (solver == "EigenSparseQR")
         return EigenSparseSolve<Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>>(A, b);
-#ifdef HAS_SUITESPARSE
+#ifdef HAVE_SUITESPARSE
     if (solver == "EigenUmfPackLU")
         return EigenSparseSolve<Eigen::UmfPackLU<Eigen::SparseMatrix<double>>>(A, b);
     if (solver == "EigenCholmodSupernodalLLT")

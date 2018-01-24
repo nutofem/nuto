@@ -8,6 +8,7 @@ find_library(SUITESPARSE_LIBRARIES NAMES umfpack)
 add_library(SuiteSparse::SuiteSparse SHARED IMPORTED)
 set_target_properties(SuiteSparse::SuiteSparse PROPERTIES
     IMPORTED_LOCATION "${SUITESPARSE_LIBRARIES}"
+    INTERFACE_COMPILE_DEFINITIONS "HAVE_SUITESPARSE"
     INTERFACE_INCLUDE_DIRECTORIES "${SUITESPARSE_INCLUDE_DIR}")
 
 include(FindPackageHandleStandardArgs)

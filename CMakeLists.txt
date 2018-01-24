@@ -3,12 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
-option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
-option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 option(ENABLE_PYTHON "create python wrapper for nuto" FALSE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
