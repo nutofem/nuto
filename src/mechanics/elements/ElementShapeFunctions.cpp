@@ -7,6 +7,7 @@
 #include <cassert>
 #include "mechanics/elements/ElementShapeFunctions.h"
 #include "base/Exception.h"
+#include <cfloat>
 
 namespace NuTo
 {
@@ -1369,6 +1370,84 @@ Eigen::Matrix<double, 18, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::Ve
     derivativeShapeFunctions(17, 0) = dNTriangle2(4, 0) * NTruss2[1];
     derivativeShapeFunctions(17, 1) = dNTriangle2(4, 1) * NTruss2[1];
     derivativeShapeFunctions(17, 2) = NTriangle2[4] * dNTruss2[1];
+
+    return derivativeShapeFunctions;
+}
+
+Eigen::Matrix<double, 3, 1> NodeCoordinatesPyramidOrder1(int rNodeIndex)
+{
+    switch (rNodeIndex)
+    {
+
+    case 0:
+        return Eigen::Vector3d(1., 1., 0.);
+    case 1:
+        return Eigen::Vector3d(1., -1., 0.);
+    case 2:
+        return Eigen::Vector3d(-1., -1., 0.);
+    case 3:
+        return Eigen::Vector3d(-1., 1., 0.);
+    case 4:
+        return Eigen::Vector3d(0., 0., 1.);
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+    }
+}
+
+Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    const double x = rCoordinates[0];
+    const double y = rCoordinates[1];
+    const double z = rCoordinates[2];
+
+    double rationalTerm = x * y * z;
+    if ((1. - z) != 0.)
+    {
+        rationalTerm /= (1. - z);
+    }
+
+    Eigen::Matrix<double, 5, 1> shapeFunctions;
+
+    shapeFunctions[0] = 0.25 * ((1 + x) * (1 + y) - z + rationalTerm);
+    shapeFunctions[1] = 0.25 * ((1 + x) * (1 - y) - z - rationalTerm);
+    shapeFunctions[2] = 0.25 * ((1 - x) * (1 - y) - z + rationalTerm);
+    shapeFunctions[3] = 0.25 * ((1 - x) * (1 + y) - z - rationalTerm);
+    shapeFunctions[4] = z;
+    return shapeFunctions;
+}
+
+Eigen::Matrix<double, 5, 3> DerivativeShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    const double x = rCoordinates[0];
+    const double y = rCoordinates[1];
+    double z = rCoordinates[2];
+
+    Eigen::Matrix<double, 5, 3> derivativeShapeFunctions;
+
+    if ((1. - z) == 0.)
+    {
+        z = 1 - DBL_EPSILON;
+    }
+
+    derivativeShapeFunctions(0, 0) = 0.25 * (1 + y / (1 - z));
+    derivativeShapeFunctions(0, 1) = 0.25 * (1 + x / (1 - z));
+    derivativeShapeFunctions(0, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
+
+    derivativeShapeFunctions(1, 0) = 0.25 * (1 - y / (1 - z));
+    derivativeShapeFunctions(1, 1) = 0.25 * (-1 - x / (1 - z));
+    derivativeShapeFunctions(1, 2) = 0.25 * (-1 - x * y / (1 - z) / (1 - z));
+
+    derivativeShapeFunctions(2, 0) = 0.25 * (-1 + y / (1 - z));
+    derivativeShapeFunctions(2, 1) = 0.25 * (-1 + x / (1 - z));
+    derivativeShapeFunctions(2, 2) = 0.25 * (-1 + x * y / (1 - z) / (1 - z));
+
+    derivativeShapeFunctions(3, 0) = 0.25 * (-1 - y / (1 - z));
+    derivativeShapeFunctions(3, 1) = 0.25 * (1 - x / (1 - z));
+    derivativeShapeFunctions(3, 2) = 0.25 * (-1 - x * y / (1 - z) / (1 - z));
+
+    derivativeShapeFunctions(4, 0) = 0.;
+    derivativeShapeFunctions(4, 1) = 0.;
+    derivativeShapeFunctions(4, 2) = 1.;
 
     return derivativeShapeFunctions;
 }

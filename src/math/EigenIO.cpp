@@ -1,4 +1,4 @@
-#include "math/EigenCompanion.h"
+#include "math/EigenIO.h"
 
 #include <fstream>
 #include <iomanip>
@@ -8,15 +8,26 @@
 
 using namespace NuTo;
 
-void EigenCompanion::AppendRows(Eigen::MatrixXd& top, const Eigen::MatrixXd& bottom)
+std::vector<double> StringToDoubles(const std::string& rString)
 {
-    if (top.cols() != bottom.cols())
-        throw Exception(__PRETTY_FUNCTION__, "Number of columns for both matrices must be identical.");
-    top.conservativeResize(top.rows() + bottom.rows(), Eigen::NoChange);
-    top.bottomRows(bottom.rows()) = bottom;
+    std::istringstream lineStream(rString);
+    std::vector<std::string> splitLine;
+    std::copy(std::istream_iterator<std::string>(lineStream), std::istream_iterator<std::string>(),
+              std::back_inserter(splitLine));
+
+    std::vector<double> doubles;
+    doubles.reserve(splitLine.size());
+    for (const auto& split : splitLine)
+    {
+        double d;
+        std::istringstream(split) >> d;
+        doubles.push_back(d); // std::stod throws [probably due to some result files that clash with the numeric_limits]
+    }
+
+    return doubles;
 }
 
-void EigenCompanion::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::string& rFileName, std::string rDelimiter)
+void EigenIO::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::string& rFileName, std::string rDelimiter)
 {
     std::ofstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())
@@ -37,7 +48,7 @@ void EigenCompanion::WriteToFile(const Eigen::MatrixXd& rMatrix, const std::stri
     }
 }
 
-Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName)
+Eigen::MatrixXd EigenIO::ReadFromFile(const std::string& rFileName)
 {
     std::ifstream fileStream(rFileName.c_str());
     if (!fileStream.is_open())
@@ -76,32 +87,4 @@ Eigen::MatrixXd EigenCompanion::ReadFromFile(const std::string& rFileName)
     }
     fileStream.close();
     return m;
-}
-
-Eigen::Vector3d EigenCompanion::To3D(const Eigen::VectorXd& data)
-{
-    const int dimension = data.rows();
-    Eigen::Vector3d vector3d = Eigen::Vector3d::Zero();
-    vector3d.block(0, 0, dimension, 1) = data;
-    return vector3d;
-}
-
-
-std::vector<double> EigenCompanion::StringToDoubles(const std::string& rString)
-{
-    std::istringstream lineStream(rString);
-    std::vector<std::string> splitLine;
-    std::copy(std::istream_iterator<std::string>(lineStream), std::istream_iterator<std::string>(),
-              std::back_inserter(splitLine));
-
-    std::vector<double> doubles;
-    doubles.reserve(splitLine.size());
-    for (const auto& split : splitLine)
-    {
-        double d;
-        std::istringstream(split) >> d;
-        doubles.push_back(d); // std::stod throws [probably due to some result files that clash with the numeric_limits]
-    }
-
-    return doubles;
 }

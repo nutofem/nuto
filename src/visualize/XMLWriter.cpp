@@ -29,6 +29,18 @@ int ToVtkCellType(eCellTypes type)
         return 7;
     case eCellTypes::WEDGE:
         return 13;
+    case eCellTypes::PYRAMID:
+        return 14;
+    case eCellTypes::LINE2NDORDER:
+        return 21;
+    case eCellTypes::TRIANGLE2NDORDER:
+        return 22;
+    case eCellTypes::QUAD2NDORDER:
+        return 23;
+    case eCellTypes::TETRAEDER2NDORDER:
+        return 24;
+    case eCellTypes::HEXAHEDRON2NDORDER:
+        return 25;
     }
     throw Exception(__PRETTY_FUNCTION__, "Unknown cell type");
 }

@@ -58,6 +58,33 @@ public:
         return mId;
     }
 
+    Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const override
+    {
+        return NuTo::Interpolate(mElements.CoordinateElement(), naturalCoords);
+    }
+
+    Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const override
+    {
+        return NuTo::Interpolate(mElements.DofElement(dof), naturalCoords);
+    }
+
+    std::vector<Eigen::VectorXd>
+    Eval(EvalFunction f) const override
+    {
+        CellData cellData(mElements, Id());
+        std::vector<Eigen::VectorXd> result;
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
+                              mElements.CoordinateElement().GetDofDimension());
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
+            result.push_back(f(cellData, cellipData));
+        }
+        return result;
+    }
+
 private:
     //! @brief integrates various operations with various return types
     //! @param op operation to perform
