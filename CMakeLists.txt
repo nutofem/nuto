@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
+option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_CUSTOM_EXAMPLES
     "enable private examples in separate directory (applications/custom)" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
