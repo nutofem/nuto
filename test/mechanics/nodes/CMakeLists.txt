@@ -1,3 +1,3 @@
-add_unit_test(NodeBase)
+add_unit_test(NodeSimple)
 
 

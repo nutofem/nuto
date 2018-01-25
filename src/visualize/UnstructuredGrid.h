@@ -2,10 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "visualize/Cell.h"
 #include "visualize/Point.h"
+
+struct UnstructuredGridCheck;
 
 namespace NuTo
 {
@@ -16,6 +18,7 @@ namespace Visualize
 class UnstructuredGrid
 {
     friend class XMLWriter;
+    friend struct ::UnstructuredGridCheck;
 
 public:
     //! @brief ... export to Vtu datafile
@@ -26,7 +29,7 @@ public:
     //! @brief ... add Point to unstructured grid
     //! @param rCoordinates ... point coordinates
     //! @return ... point id
-    int AddPoint(Eigen::Vector3d coordinates);
+    int AddPoint(Eigen::VectorXd coordinates);
 
     //! @brief ... add cell
     //! @param rPoints ... point id's (zero based indexing)

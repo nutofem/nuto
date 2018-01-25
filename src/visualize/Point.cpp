@@ -1,18 +1,18 @@
 #include "visualize/Point.h"
 #include "base/Exception.h"
+#include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
 
-Point::Point(Eigen::Vector3d coordinates, int numData)
-    : mCoordinates(coordinates)
+Point::Point(Eigen::VectorXd coordinates)
+    : mCoordinates(EigenCompanion::To3D(coordinates))
 {
-    mData.resize(numData);
 }
 
 void Point::SetData(int dataIndex, Eigen::VectorXd data)
 {
-    if (dataIndex >= static_cast<int>(this->mData.size()))
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "invalid data index.");
+    if (dataIndex >= static_cast<int>(mData.size()))
+        mData.resize(dataIndex + 1);
     mData[dataIndex] = data;
 }
 

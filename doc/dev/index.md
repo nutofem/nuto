@@ -22,6 +22,8 @@
 
 - [**Profiling using gperftools**](https://github.com/nutofem/nuto/wiki/How-to-profile-a-NuTo-application-using-the-Google-Perftools)
 
+- @ref UploadDockerImage
+
 ### NuTo related documentation
 
 - @ref ConstitutiveStaticData
@@ -33,6 +35,8 @@
 - @ref NuToSerializeStream
 
 - @ref Constraints
+
+- @ref ConstraintsPde
 
 - @ref SpatialContainer
 

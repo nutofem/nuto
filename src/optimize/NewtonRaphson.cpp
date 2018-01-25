@@ -1,7 +1,7 @@
 #include "optimize/NewtonRaphson.h"
 #include "base/Exception.h"
 
-#include <eigen3/Eigen/LU>
+#include <Eigen/LU>
 
 //! @brief constructor
 NuTo::NewtonRaphson::NewtonRaphson()

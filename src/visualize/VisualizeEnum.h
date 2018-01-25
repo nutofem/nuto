@@ -12,7 +12,13 @@ enum class eCellTypes
     TETRAEDER,
     HEXAHEDRON,
     POLYGON,
-    WEDGE
+    WEDGE,
+    PYRAMID,
+    LINE2NDORDER,
+    TRIANGLE2NDORDER,
+    QUAD2NDORDER,
+    TETRAEDER2NDORDER,
+    HEXAHEDRON2NDORDER
 };
 
 namespace Visualize
@@ -35,6 +41,18 @@ inline int GetNumPoints(eCellTypes cellType)
         return 8;
     case eCellTypes::WEDGE:
         return 6;
+    case eCellTypes::PYRAMID:
+        return 5;
+    case eCellTypes::LINE2NDORDER:
+        return 3;
+    case eCellTypes::TRIANGLE2NDORDER:
+        return 6;
+    case eCellTypes::QUAD2NDORDER:
+        return 8;
+    case eCellTypes::TETRAEDER2NDORDER:
+        return 10;
+    case eCellTypes::HEXAHEDRON2NDORDER:
+        return 20;
     default:
         return -1;
     }

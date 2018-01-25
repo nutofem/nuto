@@ -1,5 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
 
@@ -8,11 +8,6 @@ namespace NuTo
 class InterpolationTriangleLinear : public InterpolationSimple
 {
 public:
-    InterpolationTriangleLinear(int dofDimension)
-        : mDofDimension(dofDimension)
-    {
-    }
-
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
         return std::make_unique<InterpolationTriangleLinear>(*this);
@@ -37,13 +32,5 @@ public:
     {
         return 3;
     }
-
-    int GetDofDimension() const override
-    {
-        return mDofDimension;
-    }
-
-private:
-    int mDofDimension;
 };
 } /* NuTo */

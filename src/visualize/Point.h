@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace NuTo
 {
@@ -13,8 +13,7 @@ class Point
 public:
     //! @brief ... constructor
     //! @param coordinates ... point coordinates
-    //! @param numData ... number of different point data fields
-    Point(Eigen::Vector3d coordinates, int numData);
+    Point(Eigen::VectorXd coordinates);
 
     //! @brief ... set data
     //! @param dataIndex ... data index

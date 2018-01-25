@@ -14,7 +14,7 @@ public:
     virtual NodeValues ExtractNodeValues() const = 0;
 
     virtual int GetDofDimension() const = 0;
-    
+
     //! @brief extract the dof numbers from its nodes.
     //! @remark They have to be in the same order as defined in ExtractNodeValues()
     virtual Eigen::VectorXi GetDofNumbering() const = 0;

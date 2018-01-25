@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "visualize/VisualizeEnum.h"
 
 namespace NuTo
@@ -15,8 +15,7 @@ public:
     //! @brief constructor
     //! @param pointIds ... point ids
     //! @param cellType ... cell type enum
-    //! @param numData ... number of different data fields
-    Cell(std::vector<int> pointIds, eCellTypes cellType, int numData);
+    Cell(std::vector<int> pointIds, eCellTypes cellType);
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points

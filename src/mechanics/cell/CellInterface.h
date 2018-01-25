@@ -1,20 +1,41 @@
 #pragma once
 
+#include <vector>
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"
-#include "mechanics/integrands/Operations.h"
+#include <functional>
 
 namespace NuTo
 {
+class CellData;
+class CellIpData;
+
 class CellInterface
 {
 public:
     virtual ~CellInterface() = default;
 
-    virtual DofVector<double> Integrate(const VectorOperation&) = 0;
-    virtual DofMatrix<double> Integrate(const MatrixOperation&) = 0;
-    virtual double Integrate(const ScalarOperation&) = 0;
-    virtual void Apply(const VoidOperation&) = 0;
+    using ScalarFunction = std::function<double(const CellData&, const CellIpData&)>;
+    using VectorFunction = std::function<DofVector<double>(const CellData&, const CellIpData&)>;
+    using MatrixFunction = std::function<DofMatrix<double>(const CellData&, const CellIpData&)>;
+
+    using VoidFunction = std::function<void(const CellData&, const CellIpData&)>;
+
+    using EvalFunction = std::function<Eigen::VectorXd(const CellData&, const CellIpData&)>;
+
+    virtual double Integrate(ScalarFunction) = 0;
+    virtual DofVector<double> Integrate(VectorFunction) = 0;
+    virtual DofMatrix<double> Integrate(MatrixFunction) = 0;
+    virtual void Apply(VoidFunction) = 0;
+
+    virtual std::vector<Eigen::VectorXd>
+    Eval(EvalFunction f) const = 0;
+
     virtual Eigen::VectorXi DofNumbering(DofType dof) = 0;
+
+    //! Coordinate interpolation
+    virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const = 0;
+    //! Dof interpolation
+    virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const = 0;
 };
 } /* NuTo */

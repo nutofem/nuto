@@ -1,5 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "mechanics/interpolation/TypeDefs.h"
 #include <memory>
 
@@ -34,8 +34,6 @@ public:
     //! @brief returns the number of nodes
     //! @return number of nodes
     virtual int GetNumNodes() const = 0;
-
-    virtual int GetDofDimension() const = 0;
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself

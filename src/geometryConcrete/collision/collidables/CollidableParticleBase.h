@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 
 namespace NuTo

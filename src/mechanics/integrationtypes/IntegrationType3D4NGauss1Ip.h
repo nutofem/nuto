@@ -9,10 +9,6 @@ class IntegrationType3D4NGauss1Ip : public IntegrationType3D
 {
 
 public:
-    //! @brief constructor
-    IntegrationType3D4NGauss1Ip();
-
-
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return rCoordinates (result)
@@ -26,12 +22,5 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
-
-    void GetVisualizationCells(unsigned int& NumVisualizationPoints,
-                               std::vector<double>& VisualizationPointLocalCoordinates,
-                               unsigned int& NumVisualizationCells,
-                               std::vector<NuTo::eCellTypes>& VisualizationCellType,
-                               std::vector<unsigned int>& VisualizationCellsIncidence,
-                               std::vector<unsigned int>& VisualizationCellsIP) const override;
 };
 } // namespace NuTo

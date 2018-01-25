@@ -1,10 +1,8 @@
 #pragma once
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/elements/ElementCollection.h"
 #include "mechanics/dofs/DofContainer.h"
-#include "mechanics/integrands/Base.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/CellIpData.h"
@@ -14,42 +12,39 @@ namespace NuTo
 class Cell : public CellInterface
 {
 public:
-    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType,
-         const Integrands::Base& integrand)
+    Cell(const ElementCollection& elements, const IntegrationTypeBase& integrationType, const int id)
         : mElements(elements)
         , mIntegrationType(integrationType)
-        , mIntegrands()
+        , mId(id)
     {
-        for (int i = 0; i < integrationType.GetNumIntegrationPoints(); i++)
-            mIntegrands.push_back(integrand.Clone().release());
     }
 
-    DofVector<double> Integrate(const VectorOperation& op) override
+    DofVector<double> Integrate(VectorFunction f) override
     {
-        return Integrate(op, DofVector<double>());
+        return IntegrateGeneric(f, DofVector<double>());
     }
 
-    DofMatrix<double> Integrate(const MatrixOperation& op) override
+    DofMatrix<double> Integrate(MatrixFunction f) override
     {
-        return Integrate(op, DofMatrix<double>());
+        return IntegrateGeneric(f, DofMatrix<double>());
     }
 
-    double Integrate(const ScalarOperation& op) override
+    double Integrate(ScalarFunction f) override
     {
-        return Integrate(op, double{0});
+        return IntegrateGeneric(f, double{0});
     }
 
-    void Apply(const VoidOperation& op) override
+    void Apply(VoidFunction f) override
     {
-        CellData cellData(mElements);
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
-            op(mIntegrands[iIP], cellData, cellipData);
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
+            f(cellData, cellipData);
         }
     }
 
@@ -58,15 +53,47 @@ public:
         return mElements.DofElement(dof).GetDofNumbering();
     }
 
+    int Id() const
+    {
+        return mId;
+    }
+
+    Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const override
+    {
+        return NuTo::Interpolate(mElements.CoordinateElement(), naturalCoords);
+    }
+
+    Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const override
+    {
+        return NuTo::Interpolate(mElements.DofElement(dof), naturalCoords);
+    }
+
+    std::vector<Eigen::VectorXd>
+    Eval(EvalFunction f) const override
+    {
+        CellData cellData(mElements, Id());
+        std::vector<Eigen::VectorXd> result;
+        for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
+        {
+            auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
+            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
+                              mElements.CoordinateElement().GetDofDimension());
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
+            result.push_back(f(cellData, cellipData));
+        }
+        return result;
+    }
+
 private:
     //! @brief integrates various operations with various return types
     //! @param op operation to perform
     //! @param result result value. It is not clear how to properly initialize an arbitrary TResult to zero. Thus, the
     //! user has to provide it with this argument.
     template <typename TOperation, typename TReturn>
-    TReturn Integrate(TOperation&& op, TReturn result)
+    TReturn IntegrateGeneric(TOperation&& f, TReturn result)
     {
-        CellData cellData(mElements);
+        CellData cellData(mElements, Id());
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
@@ -74,8 +101,8 @@ private:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords);
-            result += op(mIntegrands[iIP], cellData, cellipData) * jacobian.Det() * ipWeight;
+            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
+            result += f(cellData, cellipData) * jacobian.Det() * ipWeight;
         }
         return result;
     }
@@ -83,6 +110,6 @@ private:
 private:
     const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
-    boost::ptr_vector<Integrands::Base> mIntegrands;
+    const int mId;
 };
 } /* NuTo */

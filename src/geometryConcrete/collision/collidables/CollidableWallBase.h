@@ -8,7 +8,7 @@
 #pragma once
 
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace NuTo
 {
@@ -68,7 +68,9 @@ public:
     double PredictCollision(CollidableWallBase& rWall, int& rType) override;
 
     //! @brief ... walls to neither grow nor move, do nothing
-    void MoveAndGrow(double rTime) override;
+    void MoveAndGrow(double) override
+    {
+    }
 
     //! @brief ... ture for physical walls
     virtual bool IsPhysical() const = 0;
@@ -78,7 +80,9 @@ public:
     virtual void VisualizationStatic(Visualize::UnstructuredGrid& rVisualizer) const;
 
     //! @brief ... does nothing as all other wall events are still legal
-    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const override;
+    void GetLocalEventsToDelete(LocalEvents&) const override
+    {
+    }
 
     //! @brief ... returns whether a sphere is on the positive side of this wall
     //! @param rSphere ... sphere to test

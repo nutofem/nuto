@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include <memory>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include "base/Exception.h"
 
@@ -275,7 +275,8 @@ BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary)
 
 BOOST_AUTO_TEST_CASE(SerializeInvalidWrite)
 {
-    BOOST_CHECK_THROW(NuTo::SerializeStreamOut("/home/ME_WANTS_TO_WRITE_HERE.dat", true), NuTo::Exception);
+    BOOST_CHECK_THROW(NuTo::SerializeStreamOut("/home/non_existing_directory/ME_WANTS_TO_WRITE_HERE.dat", true),
+                      NuTo::Exception);
 }
 
 BOOST_AUTO_TEST_CASE(SerializeInvalidRead)

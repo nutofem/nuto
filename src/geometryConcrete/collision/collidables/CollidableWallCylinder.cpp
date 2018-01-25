@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include <eigen3/Eigen/Dense> // for cross product
+#include <Eigen/Dense> // for cross product
 
 #include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"
@@ -180,7 +180,7 @@ bool NuTo::CollidableWallCylinder::IsInside(const CollidableParticleSphere& rSph
 }
 
 
-void NuTo::CollidableWallCylinder::Print(std::ostream& rReturnStream) const
+void NuTo::CollidableWallCylinder::Print(std::ostream&) const
 {
     // TODO: NuTo::CollidableWallCylinder::Print
 }

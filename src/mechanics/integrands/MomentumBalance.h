@@ -1,8 +1,9 @@
 #pragma once
 
-#include "mechanics/integrands/TimeDependent.h"
-#include "mechanics/constitutive/laws/LinearElastic.h"
+#include "mechanics/constitutive/MechanicsInterface.h"
 #include "mechanics/dofs/DofType.h"
+#include "mechanics/dofs/DofVector.h"
+#include "mechanics/dofs/DofMatrix.h"
 #include "mechanics/interpolation/TypeDefs.h"
 #include "mechanics/cell/CellIpData.h"
 #include "mechanics/cell/CellData.h"
@@ -11,53 +12,43 @@ namespace NuTo
 {
 namespace Integrands
 {
-namespace TimeDependent
-{
 
 template <int TDim>
-class MomentumBalance : public Interface
+class MomentumBalance
 {
 public:
-    MomentumBalance(const NuTo::DofType& dofType, const Laws::MechanicsInterface<TDim>& law)
+    MomentumBalance(DofType dofType, const Laws::MechanicsInterface<TDim>& law)
         : mDofType(dofType)
         , mLaw(law)
     {
     }
 
-    std::unique_ptr<Base> Clone() const override
+    DofVector<double> Gradient(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        return std::make_unique<MomentumBalance<TDim>>(*this);
-    }
+        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NodeValues u = cellData.GetNodeValues(mDofType);
+        DofVector<double> gradient;
 
-    NuTo::DofVector<double> Gradient(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT) override
-    {
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
-        NuTo::DofVector<double> gradient;
-
-        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
-        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT);
+        NuTo::EngineeringStrain<TDim> strain = B * u;
+        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId());
         return gradient;
     }
 
-    NuTo::DofMatrix<double> Hessian0(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, double,
-                                     double deltaT) override
+    DofMatrix<double> Hessian0(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NuTo::NodeValues u = cellData.GetNodeValues(mDofType);
-        NuTo::DofMatrix<double> hessian0;
+        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        NodeValues u = cellData.GetNodeValues(mDofType);
+        DofMatrix<double> hessian0;
 
-        NuTo::EngineeringStrainPDE<TDim> strain = B * u;
-        hessian0(mDofType, mDofType) = B.transpose() * mLaw.Tangent(strain, deltaT) * B;
+        NuTo::EngineeringStrain<TDim> strain = B * u;
+        hessian0(mDofType, mDofType) =
+                B.transpose() * mLaw.Tangent(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId()) * B;
         return hessian0;
     }
 
 private:
-    const NuTo::DofType& mDofType;
+    DofType mDofType;
     const Laws::MechanicsInterface<TDim>& mLaw;
 };
-
-} /* TimeDependent */
 } /* Integrand */
 } /* NuTo */

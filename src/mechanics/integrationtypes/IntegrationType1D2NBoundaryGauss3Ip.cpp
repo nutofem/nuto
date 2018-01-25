@@ -1,5 +1,4 @@
 #include "mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
-#include "visualize/VisualizeEnum.h"
 
 // constructor
 NuTo::IntegrationType1D2NBoundaryGauss3Ip::IntegrationType1D2NBoundaryGauss3Ip()
@@ -55,29 +54,4 @@ double NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetIntegrationPointWeight(int 
         throw Exception(
                 "[NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetIntegrationPointWeight] Ip number out of range.");
     }
-}
-
-void NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetVisualizationCells(
-        unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
-{
-    NumVisualizationPoints = 4;
-    VisualizationPointLocalCoordinates.push_back(-1);
-    VisualizationPointLocalCoordinates.push_back(-0.3873);
-    VisualizationPointLocalCoordinates.push_back(0.3873);
-    VisualizationPointLocalCoordinates.push_back(1);
-    NumVisualizationCells = 3;
-    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
-    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
-    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
-    VisualizationCellsIncidence.push_back(0);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(1);
-    VisualizationCellsIncidence.push_back(2);
-    VisualizationCellsIncidence.push_back(2);
-    VisualizationCellsIncidence.push_back(3);
-    VisualizationCellsIP.push_back(1);
-    VisualizationCellsIP.push_back(2);
-    VisualizationCellsIP.push_back(3);
 }

@@ -11,16 +11,16 @@ void UnstructuredGrid::ExportVtuDataFile(const std::string& filename, bool asBin
     XMLWriter::Export(filename, *this, asBinary);
 }
 
-int UnstructuredGrid::AddPoint(Eigen::Vector3d coordinates)
+int UnstructuredGrid::AddPoint(Eigen::VectorXd coordinates)
 {
-    mPoints.push_back(Point(coordinates, mPointDataNames.size()));
+    mPoints.push_back(Point(coordinates));
     return mPoints.size() - 1;
 }
 
 int UnstructuredGrid::AddCell(std::vector<int> pointIds, eCellTypes cellType)
 {
     CheckPoints(pointIds);
-    mCells.push_back(Cell(pointIds, cellType, mCellDataNames.size()));
+    mCells.push_back(Cell(pointIds, cellType));
     return mCells.size() - 1;
 }
 
@@ -35,10 +35,7 @@ void UnstructuredGrid::CheckPoints(std::vector<int> pointIds) const
 void UnstructuredGrid::DefinePointData(std::string name)
 {
     if (std::find(mPointDataNames.begin(), mPointDataNames.end(), name) != mPointDataNames.end())
-        throw Exception(__PRETTY_FUNCTION__, "data name already exist for point data.");
-
-    if (not mPoints.empty())
-        throw Exception(__PRETTY_FUNCTION__, "define all data fields _before_ adding points");
+        return; // i dont care
 
     mPointDataNames.push_back(name);
 }
@@ -46,10 +43,7 @@ void UnstructuredGrid::DefinePointData(std::string name)
 void UnstructuredGrid::DefineCellData(std::string name)
 {
     if (std::find(mCellDataNames.begin(), mCellDataNames.end(), name) != mCellDataNames.end())
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "data name already exist for point data.");
-
-    if (not mCells.empty())
-        throw Exception(__PRETTY_FUNCTION__, "define all data fields _before_ adding cells");
+        return; // i dont care
 
     mCellDataNames.push_back(name);
 }

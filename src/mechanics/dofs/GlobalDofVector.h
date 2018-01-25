@@ -10,6 +10,22 @@ class GlobalDofVector
 public:
     NuTo::DofVector<double> J;
     NuTo::DofVector<double> K;
+
+    double& operator()(DofType dof, int globalDofNumber)
+    {
+        const int numIndependent = J[dof].size();
+        if (globalDofNumber < numIndependent)
+            return J[dof][globalDofNumber];
+        else
+            return K[dof][globalDofNumber - numIndependent];
+    }
+
+    GlobalDofVector& operator+=(const GlobalDofVector& rhs)
+    {
+        this->J += rhs.J;
+        this->K += rhs.K;
+        return *this;
+    }
 };
 
 } /* NuTo */

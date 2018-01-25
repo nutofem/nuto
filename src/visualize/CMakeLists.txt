@@ -5,6 +5,10 @@ set(VisualizeSources
     UnstructuredGrid.cpp
     XMLWriter.cpp
     DataArray.cpp
+    AverageHandler.cpp
+    VoronoiHandler.cpp
+    VoronoiGeometries.cpp
 )
 
 create_nuto_module(Visualize "${VisualizeSources}")
+target_link_libraries(Visualize Math)

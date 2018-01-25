@@ -17,8 +17,7 @@ public:
     {
         for (NodeSimple* node : nodes)
             mNodes.push_back(*node);
-        assert(mNodes.size() == interpolation.GetNumNodes());
-        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
+        assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
     ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
@@ -26,23 +25,21 @@ public:
         : mNodes(nodes)
         , mInterpolation(interpolation)
     {
-        assert(mNodes.size() == interpolation.GetNumNodes());
-        assert(mNodes.front().get().GetNumValues() == interpolation.GetDofDimension());
+        assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
     virtual NodeValues ExtractNodeValues() const override
     {
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
-        for (size_t i = 0; i < GetNumNodes(); ++i)
+        for (int i = 0; i < GetNumNodes(); ++i)
             nodeValues.segment(dim * i, dim) = GetNode(i).GetValues();
         return nodeValues;
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
     {
-        return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(),
-                         Interpolation().GetDofDimension());
+        return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(), GetDofDimension());
     }
 
     ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
@@ -57,7 +54,7 @@ public:
 
     int GetDofDimension() const override
     {
-        return Interpolation().GetDofDimension();
+        return GetNode(0).GetNumValues();
     }
 
     Eigen::VectorXi GetDofNumbering() const override
@@ -87,14 +84,14 @@ public:
 
     NodeSimple& GetNode(int i)
     {
-        assert(i < mNodes.size());
+        assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
 
     const NodeSimple& GetNode(int i) const
     {
-        assert(i < mNodes.size());
+        assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
