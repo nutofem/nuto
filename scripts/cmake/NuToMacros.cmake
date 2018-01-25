@@ -1,7 +1,6 @@
 include(AddBenchmark)
 include(AddUnitTest)
 include(AddIntegrationtest)
-include(CheckForDependencies)
 include(CreateSymlink)
 include(CreateNutoModule)
 include(GetGitRevisionDescription)
