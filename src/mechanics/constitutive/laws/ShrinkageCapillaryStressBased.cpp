@@ -69,7 +69,7 @@ NuTo::ShrinkageCapillaryStressBased::GetParameterDouble(NuTo::Constitutive::eCon
         return mTemperature;
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -83,7 +83,7 @@ void NuTo::ShrinkageCapillaryStressBased::SetParameterDouble(NuTo::Constitutive:
         return;
     default:
         throw Exception(__PRETTY_FUNCTION__, std::string("Constitutive law does not have the parameter ") +
-                                                              Constitutive::ConstitutiveParameterToString(rIdentifier));
+                                                     Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -129,8 +129,10 @@ void NuTo::ShrinkageCapillaryStressBased::Evaluate(const NuTo::ConstitutiveInput
                     static_cast<ConstitutiveVector<VoigtDim>*>(itOutput.second.get())->AsVector();
             // VHIRTHAMTODO --- how to handle atmospheric pressure?
             double capillaryStress = ( // mAtmosphericPressure
-                    -waterVolumeFraction * NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant *
-                    mTemperature / NuTo::SI::MolarMassWater * std::log(relativeHumidity));
+                                             -waterVolumeFraction * NuTo::SI::DensityLiquidWater(mTemperature) *
+                                             NuTo::SI::IdealGasConstant * mTemperature / NuTo::SI::MolarMassWater *
+                                             std::log(relativeHumidity)) /
+                                     1e6;
 
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor
             // form and adding the result to the engeneering stress
@@ -150,7 +152,7 @@ void NuTo::ShrinkageCapillaryStressBased::Evaluate(const NuTo::ConstitutiveInput
                     static_cast<ConstitutiveVector<VoigtDim>*>(itOutput.second.get())->AsVector();
             double capillaryStress_dRH = -waterVolumeFraction * NuTo::SI::DensityLiquidWater(mTemperature) *
                                          NuTo::SI::IdealGasConstant * mTemperature /
-                                         (NuTo::SI::MolarMassWater * relativeHumidity);
+                                         (NuTo::SI::MolarMassWater * relativeHumidity) / 1e6;
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor
             // form and adding the result to the engeneering stress
             for (unsigned int i = 0; i < TDim; ++i)
@@ -167,7 +169,7 @@ void NuTo::ShrinkageCapillaryStressBased::Evaluate(const NuTo::ConstitutiveInput
             Eigen::Matrix<double, VoigtDim, 1>& engineeringStress_dWV =
                     static_cast<ConstitutiveVector<VoigtDim>*>(itOutput.second.get())->AsVector();
             double capillaryStress_dWV = -NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant *
-                                         mTemperature / (NuTo::SI::MolarMassWater)*std::log(relativeHumidity);
+                                         mTemperature / (NuTo::SI::MolarMassWater)*std::log(relativeHumidity) / 1e6;
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor
             // form and adding the result to the engeneering stress
             for (unsigned int i = 0; i < TDim; ++i)

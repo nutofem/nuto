@@ -164,6 +164,11 @@ public:
     //! param rActiveDofs ... active Dofs of the calculation step
     void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof>& rActiveDofs);
 
+    void ClearActiveDofCalculationSteps()
+    {
+        mStepActiveDofs.clear();
+    }
+
 #ifndef SWIG
     //! @brief Sets the solver
     void SetSolver(std::unique_ptr<SolverBase> rSolver)
