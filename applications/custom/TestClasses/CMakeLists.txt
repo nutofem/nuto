@@ -90,3 +90,6 @@ target_link_libraries(1D_Test ConversionTools PrintTools)
 target_link_libraries(2D_Test ConversionTools PrintTools TrilinosUtils)
 
 target_link_libraries(MeshJson_Test ConversionTools PrintTools FetiLib)
+
+add_library(ZoltanMesh ZoltanMesh.cpp)
+target_link_libraries(ZoltanMesh Mechanics Math Visualize)

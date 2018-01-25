@@ -1,8 +1,37 @@
-SET(Trilinos_PREFIX /home/briedel/install/Trilinos)
-SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-FIND_PACKAGE(Trilinos REQUIRED)
+#SET(Trilinos_PREFIX /home/briedel/install/Trilinos)
+#SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
+#FIND_PACKAGE(Trilinos REQUIRED)
+#INCLUDE_DIRECTORIES(${Trilinos_INCLUDE_DIRS})
+#INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
+
+SET(Trilinos_INCLUDE_DIRS /usr/include/trilinos)
+SET(Trilinos_TPL_INCLUDE_DIRS /usr/include)
+
+SET(MyTrilinos_LIBRARIES
+    trilinos_epetra
+    trilinos_tpetra
+    trilinos_teuchoscomm
+    trilinos_teuchoscore
+    trilinos_teuchoskokkoscomm
+    trilinos_teuchoskokkoscompat
+    trilinos_teuchosnumerics
+    trilinos_teuchosparameterlist
+    trilinos_kokkoscore
+    trilinos_amesos2
+    trilinos_amesos
+    trilinos_aztecoo
+    trilinos_ifpack2
+    trilinos_ifpack
+    trilinos_belos
+    trilinos_belosepetra
+    trilinos_belostpetra
+    )
+
 INCLUDE_DIRECTORIES(${Trilinos_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/test/tools)
+
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/applications/custom)
 
 #add_unit_test(TrilinosTests)
@@ -29,10 +58,8 @@ foreach(test
         IterativeSolver)
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base ConversionTools ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
-    if (ENABLE_VISUALIZE)
-        target_link_libraries(${test} Visualize)
-    endif()
+    #target_link_libraries(${test} Mechanics Math Base ConversionTools ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base ConversionTools Visualize ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MyTrilinos_LIBRARIES})
     if(MUMPS_FOUND)
         target_link_libraries(${test} ${MUMPS_LIBRARIES})
     endif()

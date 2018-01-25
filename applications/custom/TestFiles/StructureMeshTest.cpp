@@ -26,6 +26,8 @@
 #include <Ifpack.h>
 #include <Ifpack_AdditiveSchwarz.h>
 
+#include <zoltan.h>
+
 #else
 #include <trilinos/Epetra_MpiComm.h>
 #include <trilinos/Epetra_CrsMatrix.h>
@@ -91,6 +93,7 @@
 #include "../TestClasses/ConversionTools.h"
 #include "../TestClasses/StructureMesh.h"
 #include "../TestClasses/MeshFileGenerator.h"
+#include "../TestClasses/ZoltanMesh.h"
 
 
 using NuTo::Interpolation::eShapeType;
@@ -638,53 +641,6 @@ MeshFem QuadPatchTestMesh_partition1()
 }
 
 
-std::vector<MeshFem> partitionMesh(MeshFem* rMesh, DofType rDof)
-{
-    int meshCount = 2;
-    std::vector<MeshFem> newMeshes(meshCount);
-
-    auto& origNode0 = rMesh->NodeAtCoordinate(Eigen::Vector2d(0,0), rDof);
-    auto& origNode1 = rMesh->NodeAtCoordinate(Eigen::Vector2d(10,0), rDof);
-    auto& origNode2 = rMesh->NodeAtCoordinate(Eigen::Vector2d(10,10), rDof);
-    auto& origNode3 = rMesh->NodeAtCoordinate(Eigen::Vector2d(0,10), rDof);
-    auto& origNode4 = rMesh->NodeAtCoordinate(Eigen::Vector2d(2,2), rDof);
-    auto& origNode5 = rMesh->NodeAtCoordinate(Eigen::Vector2d(8,3), rDof);
-    auto& origNode6 = rMesh->NodeAtCoordinate(Eigen::Vector2d(8,7), rDof);
-    auto& origNode7 = rMesh->NodeAtCoordinate(Eigen::Vector2d(4,7), rDof);
-
-    auto& n0 = newMeshes[0].Nodes.Add(origNode0);
-    auto& n2 = newMeshes[0].Nodes.Add(origNode2);
-    auto& n3 = newMeshes[0].Nodes.Add(origNode3);
-    auto& n4 = newMeshes[0].Nodes.Add(origNode4);
-    auto& n5 = newMeshes[0].Nodes.Add(origNode5);
-    auto& n6 = newMeshes[0].Nodes.Add(origNode6);
-    auto& n7 = newMeshes[0].Nodes.Add(origNode7);
-
-    const auto& interpolation = newMeshes[0].CreateInterpolation(InterpolationQuadLinear(2));
-
-    newMeshes[0].Elements.Add({{{n7, n6, n2, n3}, interpolation}});
-    newMeshes[0].Elements.Add({{{n4, n5, n6, n7}, interpolation}});
-    newMeshes[0].Elements.Add({{{n0, n4, n7, n3}, interpolation}});
-
-
-//    mesh = newMeshes[1];
-    n0 = newMeshes[1].Nodes.Add(origNode0);
-    auto& n1 = newMeshes[1].Nodes.Add(origNode1);
-    n2 = newMeshes[1].Nodes.Add(origNode2);
-    n4 = newMeshes[1].Nodes.Add(origNode4);
-    n5 = newMeshes[1].Nodes.Add(origNode5);
-    n6 = newMeshes[1].Nodes.Add(origNode6);
-
-    const auto& interpolation2 = newMeshes[1].CreateInterpolation(InterpolationQuadLinear(2));
-
-    newMeshes[1].Elements.Add({{{n0, n1, n5, n4}, interpolation2}});
-    newMeshes[1].Elements.Add({{{n1, n2, n6, n5}, interpolation2}});
-
-    return newMeshes;
-}
-
-
-
 struct DofInfo
 {
     DofContainer<int> numIndependentDofs;
@@ -1184,6 +1140,331 @@ void run_Assembler_test()
     Teuchos::RCP<Tpetra::MultiVector<double, int, int>> sol_tpetra = solveSystem_tpetra(globalA_JJ_tpetra, globalRhsVector_tpetra, false);
 }
 
+std::vector<ZoltanMesh> partitionMesh(int argc, char** argv, ZoltanMesh* rMesh, int rRank, int rNumProcs = 2)
+{
+    int changes, numGidEntries, numLidEntries, numImport, numExport;
+    ZOLTAN_ID_PTR importGlobalGids, importLocalGids, exportGlobalGids, exportLocalGids;
+    int *importProcs, *importToPart, *exportProcs, *exportToPart;
+
+    struct Zoltan_Struct *zz;
+    int zoltanInfo = 0;
+    float version = 0;
+    zoltanInfo = Zoltan_Initialize(argc, argv, &version);
+
+
+    if (zoltanInfo != ZOLTAN_OK){
+        std::cout << "ERROR: Something went wrong with Zoltan" << std::endl;
+//        MPI_Finalize();
+        exit(0);
+    }
+
+    zz = Zoltan_Create(MPI_COMM_WORLD);
+
+    /* General parameters */
+    Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
+    Zoltan_Set_Param(zz, "LB_METHOD", "HYPERGRAPH");   /* partitioning method */
+    Zoltan_Set_Param(zz, "HYPERGRAPH_PACKAGE", "PHG"); /* version of method */
+    Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1");/* global IDs are integers */
+    Zoltan_Set_Param(zz, "NUM_LID_ENTRIES", "1");/* local IDs are integers */
+    Zoltan_Set_Param(zz, "RETURN_LISTS", "ALL"); /* export AND import lists */
+    Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "0"); /* use Zoltan default vertex weights */
+    Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "0");/* use Zoltan default hyperedge weights */
+
+    /* PHG parameters  - see the Zoltan User's Guide for many more
+    *   (The "REPARTITION" approach asks Zoltan to create a partitioning that is
+    *    better but is not too far from the current partitioning, rather than partitioning
+    *    from scratch.  It may be faster but of lower quality that LB_APPROACH=PARTITION.)
+    */
+
+//    Zoltan_Set_Param(zz, "LB_APPROACH", "REPARTITION");
+    Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
+
+    /* Application defined query functions */
+    Zoltan_Set_Num_Obj_Fn(zz, rMesh->get_number_of_localElements, rMesh);
+    Zoltan_Set_Obj_List_Fn(zz, rMesh->get_localElement_list, rMesh);
+    Zoltan_Set_HG_Size_CS_Fn(zz, rMesh->get_number_of_localNodes_localPins, rMesh);
+    Zoltan_Set_HG_CS_Fn(zz, rMesh->get_hypergraph, rMesh);
+
+    zoltanInfo = Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
+                             &changes,        /* 1 if partitioning was changed, 0 otherwise */
+                             &numGidEntries,  /* Number of integers used for a global ID */
+                             &numLidEntries,  /* Number of integers used for a local ID */
+                             &numImport,      /* Number of vertices to be sent to me */
+                             &importGlobalGids,  /* Global IDs of vertices to be sent to me */
+                             &importLocalGids,   /* Local IDs of vertices to be sent to me */
+                             &importProcs,    /* Process rank for source of each incoming vertex */
+                             &importToPart,   /* New partition for each incoming vertex */
+                             &numExport,      /* Number of vertices I must send to other processes*/
+                             &exportGlobalGids,  /* Global IDs of the vertices I must send */
+                             &exportLocalGids,   /* Local IDs of the vertices I must send */
+                             &exportProcs,    /* Process to which I send each of the vertices */
+                             &exportToPart);  /* Partition to which each vertex will belong */
+
+    if (zoltanInfo != ZOLTAN_OK){
+        std::cout << "ERROR: Something went wrong with Zoltan" << std::endl;
+//        MPI_Finalize();
+        Zoltan_Destroy(&zz);
+        exit(0);
+    }
+
+//    if (myRank == 0)
+//    {
+        std::cout << "Partition summary\n-----------------" << std::endl;
+        std::cout << "changes: " << changes << std::endl;
+        std::cout << "numGidEntries: " << numGidEntries << std::endl;
+        std::cout << "numLidEntries: " << numLidEntries << std::endl;
+        std::cout << "numImport: " << numImport << std::endl;
+        std::cout << "importGlobalGids: " << std::endl;
+        for (int i = 0; i < numImport; ++i)
+        {
+            std::cout << importGlobalGids[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "importLocalGids: " << std::endl;
+        for (int i = 0; i < numImport; ++i)
+        {
+            std::cout << importLocalGids[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "importProcs: " << std::endl;
+        for (int i = 0; i < numImport; ++i)
+        {
+            std::cout << importProcs[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "importToPart: " << std::endl;
+        for (int i = 0; i < numImport; ++i)
+        {
+            std::cout << importToPart[i] << ", ";
+        }
+        std::cout << "numExport: " << numExport << std::endl;
+        std::cout << "exportGlobalGids: " << std::endl;
+        for (int i = 0; i < numExport; ++i)
+        {
+            std::cout << exportGlobalGids[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "exportLocalGids: " << std::endl;
+        for (int i = 0; i < numExport; ++i)
+        {
+            std::cout << exportLocalGids[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "exportProcs: " << std::endl;
+        for (int i = 0; i < numExport; ++i)
+        {
+            std::cout << exportProcs[i] << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "exportToPart: " << std::endl;
+        for (int i = 0; i < numExport; ++i)
+        {
+            std::cout << exportToPart[i] << ", ";
+        }
+        std::cout << std::endl;
+//    }
+
+    int parts[rMesh->numLocalElements] = {rRank};
+
+    for (int i=0; i < numExport; ++i){
+        parts[exportLocalGids[i]] = exportToPart[i];
+    }
+
+    int partAssign[rMesh->numGlobalElements], allPartAssign[rMesh->numGlobalElements];
+
+    memset(partAssign, 0, sizeof(int) * rMesh->numGlobalElements);
+
+    for (int i=0; i < rMesh->numLocalElements; ++i){
+        partAssign[rMesh->myGlobalElementIDs[i]] = parts[i];
+    }
+    MPI_Reduce(partAssign, allPartAssign, rMesh->numGlobalElements, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    std::cout << "Local elements of Proc [" << rRank << "]: ";
+    for (int part : partAssign)
+    {
+        std::cout << part << " ";
+    }
+    std::cout << std::endl;
+
+    Zoltan_LB_Free_Part(&importGlobalGids, &importLocalGids,
+                        &importProcs, &importToPart);
+    Zoltan_LB_Free_Part(&exportGlobalGids, &exportLocalGids,
+                        &exportProcs, &exportToPart);
+
+    Zoltan_Destroy(&zz);
+}
+
+void run_Assembler_Zoltan_test(int argc, char** argv)
+{
+    RCP<const Teuchos::Comm<int>> commTeuchos = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+
+    int rank = commTeuchos->getRank();
+    ZoltanMesh mesh = ZoltanMesh::create_2D_mesh();
+    DofType displ("displacements", 2);
+    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(2));
+
+    AddDofInterpolation(&mesh, displ, interpolation);
+    DofInfo dofInfo = ManualDofNumbering(&mesh, displ);
+
+    //-------------- mesh partitioning
+    std::vector<MeshFem> subMeshes(2);
+    MeshFem subMesh0 = QuadPatchTestMesh_partition0();
+    MeshFem subMesh1 = QuadPatchTestMesh_partition1();
+
+    std::cout << "Rank[" << commTeuchos->getRank() << "] : localElements (before) = " << mesh.numLocalElements << std::endl;
+    partitionMesh(argc, argv ,&mesh, rank);
+    std::cout << "Rank[" << commTeuchos->getRank() << "] : localElements (after) = " << mesh.numLocalElements << std::endl;
+
+    const auto& interpolation0 = subMesh0.CreateInterpolation(InterpolationQuadLinear(2));
+    AddDofInterpolation(&subMesh0, displ, interpolation0);
+    const auto& interpolation1 = subMesh1.CreateInterpolation(InterpolationQuadLinear(2));
+    AddDofInterpolation(&subMesh1, displ, interpolation1);
+
+    std::vector<DofInfo> subMeshNumbering = dofNumberingSubMeshes(&mesh, &subMesh0, &subMesh1, displ);
+    std::vector<std::map<int, int>> local2GlobalDofs = local2GlobalNumbering(&mesh, &subMesh0, &subMesh1, displ);
+    subMeshes[0] = std::move(subMesh0);
+    subMeshes[1] = std::move(subMesh1);
+
+    //--------- do the following steps for every part of the mesh
+
+    DofInfo currDofInfo = subMeshNumbering[rank];
+
+    // ************************************************************************
+    //                 add continuum cells
+    // ************************************************************************
+    constexpr double E = 20000;
+    constexpr double nu = 0.2;
+    Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
+    Integrands::TimeDependent::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+
+    boost::ptr_vector<CellInterface> cellContainer;
+    IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
+
+    NuTo::Groups::Group<CellInterface> cellGroup;
+    for (auto& element : subMeshes[rank].Elements)
+    {
+        cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
+        cellGroup.Add(cellContainer.back());
+    }
+
+    // ************************************************************************
+    //                 add boundary cells
+    // ************************************************************************
+
+    // manually add the boundary element
+    const auto& interpolationBc = subMeshes[rank].CreateInterpolation(InterpolationTrussLinear(2));
+
+    IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
+    Eigen::Vector2d pressureBC(1, 0);
+    Integrands::TimeDependent::NeumannBc<2> neumannBc(displ, pressureBC);
+
+    // extract existing nodes
+    NuTo::Groups::Group<NodeSimple> boundaryCoordNodes = subMeshes[rank].NodesAtAxis(eDirection::X, 10);
+    if (boundaryCoordNodes.Size() == 2)
+    {
+        NodeSimple& nc1 = *boundaryCoordNodes.begin();
+        NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
+
+        auto boundaryDisplNodes = subMeshes[rank].NodesAtAxis(eDirection::X, displ, 10);
+        NodeSimple& nd1 = *boundaryDisplNodes.begin();
+        NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
+
+        // add the boundary element
+        auto& boundaryElement = subMeshes[rank].Elements.Add({{{nc1, nc2}, interpolationBc}});
+        boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
+
+        cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, neumannBc));
+        cellGroup.Add(cellContainer.back());
+    }
+
+    // ************************************************************************
+    //                  assemble
+    // ************************************************************************
+    SimpleAssembler assembler(currDofInfo.numIndependentDofs, currDofInfo.numDependentDofs);
+
+    auto gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
+    auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
+    Eigen::SparseMatrix<double> A_JJ = hessian.JJ(displ,displ);
+    Eigen::VectorXd r_J = gradient.J[displ];
+
+    //-----------
+
+    //******************************************
+    //*     create overlapping index map       *
+    //******************************************
+    std::vector<int> myGlobalDofIDs = getAllDofNumbers(local2GlobalDofs, rank);
+    int* myGlobalDofIDs_arr = &myGlobalDofIDs[0];
+    RCP<Tpetra::Map<int, int>> overlappingMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myGlobalDofIDs_arr, myGlobalDofIDs.size(), 0, commTeuchos));
+
+
+    //******************************************
+    //*       create owning index map          *
+    //******************************************
+    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
+    int* myOwningGlobalActiveDofIDs_arr = &myOwningGlobalActiveDofIDs[0];
+    RCP<Tpetra::Map<int, int>> owningMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myOwningGlobalActiveDofIDs_arr, myOwningGlobalActiveDofIDs.size(), 0, commTeuchos));
+
+//    std::ostream &out = std::cout;
+//    RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(out));
+//    *fos << "OwningMap :" << std::endl;
+//    owningMap_tpetra->describe(*fos,Teuchos::VERB_EXTREME);
+//    *fos << std::endl;
+//    *fos << "OverlappingMap :" << std::endl;
+//    overlappingMap_tpetra->describe(*fos,Teuchos::VERB_EXTREME);
+//    *fos << std::endl;
+
+    //******************************************
+    //*         create index graphs            *
+    //******************************************
+    int maxNonZeros = 18;   //got by interpolation type (order), e.g. QUAD2 + EQUIDISTANT1 => 18
+    RCP<Tpetra::CrsGraph<int, int>> owningGraph_tpetra = rcp(new Tpetra::CrsGraph<int,int>(owningMap_tpetra, maxNonZeros, Tpetra::ProfileType::DynamicProfile));
+    RCP<Tpetra::CrsGraph<int, int>> overlappingGraph_tpetra = rcp(new Tpetra::CrsGraph<int, int>(overlappingMap_tpetra, maxNonZeros, Tpetra::ProfileType::DynamicProfile));
+    std::vector<int> columnIndices;
+    for (int k=0; k<A_JJ.outerSize(); ++k)
+    {
+        columnIndices.clear();
+        for (Eigen::SparseMatrix<double>::InnerIterator it(A_JJ,k); it; ++it)
+        {
+            // describe position of entries
+            overlappingGraph_tpetra->insertGlobalIndices(myGlobalDofIDs_arr[it.row()], 1, &myGlobalDofIDs_arr[it.col()]);
+        }
+    }
+
+    //******************************************
+    //*   define inter-process communication   *
+    //*      for local-to-global indices       *
+    //******************************************
+    RCP<const Tpetra::Export<int, int>> exporter_tpetra = rcp(new Tpetra::Export<int, int>(overlappingMap_tpetra, owningMap_tpetra));
+    overlappingGraph_tpetra->fillComplete();
+    owningGraph_tpetra->doExport(*overlappingGraph_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::INSERT);
+    owningGraph_tpetra->fillComplete();
+
+
+    //******************************************
+    //*  initialize Trilinos matrix and vector *
+    //******************************************
+    RCP<Tpetra::CrsMatrix<double, int, int>> globalA_JJ_tpetra = rcp(new Tpetra::CrsMatrix<double, int, int>(owningGraph_tpetra));
+    RCP<Tpetra::Vector<double, int, int>> globalRhsVector_tpetra = rcp(new Tpetra::Vector<double, int, int>(owningMap_tpetra));
+    globalRhsVector_tpetra->putScalar(0.0);
+
+    Eigen::SparseMatrix<double, Eigen::RowMajor> A_JJ_rowMajor(A_JJ);
+
+    //******************************************
+    //*    conversion from NuTo to Trilinos    *
+    //******************************************
+    ConversionTools converter2;
+    Teuchos::RCP<Tpetra::CrsMatrix<double, int, int>> localA_JJ_tpetra = converter2.convertEigen2TpetraCrsMatrix(A_JJ_rowMajor, overlappingGraph_tpetra, true);
+    Teuchos::RCP<Tpetra::Vector<double, int, int>> localRhsVector_tpetra = converter2.convertEigen2TpetraVector(r_J, overlappingMap_tpetra);
+    globalA_JJ_tpetra->doExport(*localA_JJ_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::ADD);
+    globalRhsVector_tpetra->doExport(*localRhsVector_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::INSERT);
+    globalRhsVector_tpetra->scale(-1.);
+
+    //******************************************
+    //*        solve complete problem          *
+    //******************************************
+    Teuchos::RCP<Tpetra::MultiVector<double, int, int>> sol_tpetra = solveSystem_tpetra(globalA_JJ_tpetra, globalRhsVector_tpetra, false);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -1196,7 +1477,8 @@ int main(int argc, char **argv)
 
 //    run_mesh_test(comm, fileNames);
 //    run_simpleAssembler_test();
-    run_Assembler_test();
+//    run_Assembler_test();
+    run_Assembler_Zoltan_test(argc, argv);
     return 0;
 }
 

@@ -1,8 +1,25 @@
-SET(Trilinos_PREFIX /home/briedel/install/Trilinos)
-SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-FIND_PACKAGE(Trilinos REQUIRED)
-INCLUDE_DIRECTORIES(${Trilinos_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
+SET(Trilinos_INCLUDE_DIRS /usr/include/trilinos)
+SET(Trilinos_TPL_INCLUDE_DIRS /usr/include)
+
+SET(MyTrilinos_LIBRARIES
+    trilinos_epetra
+    trilinos_tpetra
+    trilinos_teuchoscomm
+    trilinos_teuchoscore
+    trilinos_teuchoskokkoscomm
+    trilinos_teuchoskokkoscompat
+    trilinos_teuchosnumerics
+    trilinos_teuchosparameterlist
+    trilinos_kokkoscore
+    trilinos_amesos2
+    trilinos_amesos
+    trilinos_aztecoo
+    trilinos_ifpack2
+    trilinos_ifpack
+    trilinos_belos
+    trilinos_belosepetra
+    trilinos_belostpetra
+    )
 
 if(ENABLE_MECHANICS)
 foreach(test
@@ -12,7 +29,8 @@ foreach(test
     )
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base ConversionTools ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+    #target_link_libraries(${test} Mechanics Math Base ConversionTools ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base ConversionTools ${MyTrilinos_LIBRARIES})
     if(ENABLE_VISUALIZE)
         target_link_libraries(${test} Visualize)
     endif()
