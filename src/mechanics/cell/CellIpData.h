@@ -30,6 +30,11 @@ public:
         return mIpId;
     }
 
+    NuTo::Jacobian GetJacobian() const
+    {
+        return mJacobian;
+    }
+
     NMatrix GetNMatrix(const DofType& dofType) const
     {
         return mElements.DofElement(dofType).GetNMatrix(mIPCoords);
