@@ -1,32 +1,22 @@
-# `add_unit_test(SomeClass FilesItNeedsToLink)` builds the unit test of the
-# name `SomeClass` and all the files required (`FilesItNeedsToLink`), links
-# Boost unit test framework to it, and adds it to the test suite under an
+# `add_unit_test(SomeClass)` builds the unit test of the name `SomeClass`,
+# links it to the required libraries and adds it to the test suite under an
 # appropriate name
 function(add_unit_test ClassName)
     # find relative path, i.e. remove the `.../test/`
     string(REPLACE "${CMAKE_SOURCE_DIR}/test/" ""
         relpath ${CMAKE_CURRENT_SOURCE_DIR})
 
-    # if there are additional arguments, transform them from their filename
-    # to the appropriate object library targets
     if(ARGN)
         foreach(filename ${ARGN})
-            get_target_from_source(${CMAKE_SOURCE_DIR}/src/${filename} target)
-            set(AdditionalObjects
-                "${AdditionalObjects};$<TARGET_OBJECTS:${target}>")
+            set(AdditionalSources "${AdditionalSources};${CMAKE_SOURCE_DIR}/src/${filename}")
         endforeach()
     endif()
 
-    # look for the corresponding object to the unit test
-    string(REPLACE "/" "." relpath ${relpath})
-    set(srcObject "${relpath}.${ClassName}")
-    # if there is an object (the class is not "header-only"), link it as well
-    if(TARGET "${srcObject}")
-        add_executable(${ClassName} ${ClassName}.cpp
-            $<TARGET_OBJECTS:${srcObject}> ${AdditionalObjects})
+    set(CorrespondingCpp "${CMAKE_SOURCE_DIR}/src/${relpath}/${ClassName}.cpp")
+    if(EXISTS ${CorrespondingCpp})
+        add_executable(${ClassName} ${ClassName}.cpp ${CorrespondingCpp} ${AdditionalSources})
     else()
-        add_executable(${ClassName} ${ClassName}.cpp
-            ${AdditionalObjects})
+        add_executable(${ClassName} ${ClassName}.cpp ${AdditionalSources})
     endif()
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})

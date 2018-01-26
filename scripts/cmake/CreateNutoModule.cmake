@@ -1,7 +1,5 @@
 function(create_nuto_module ModuleName ModuleSources)
-    sources_to_objects("${ModuleSources}" ModuleObjects)
-
-    add_library(${ModuleName} ${ModuleObjects} ${ARGN})
+    add_library(${ModuleName} ${ModuleSources} ${ARGN})
     set_target_properties(${ModuleName} PROPERTIES
         OUTPUT_NAME NuTo${ModuleName}
         )
