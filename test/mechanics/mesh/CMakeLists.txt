@@ -15,6 +15,7 @@ foreach(inputFile
     triangle1.msh
     triangle2.msh
     line1.msh
+    line2.msh
     tet1.msh
     hex1.msh
     prism1.msh
@@ -25,4 +26,5 @@ endforeach()
 
 add_unit_test(MeshGmsh
     mechanics/mesh/MeshFem
+    math/Legendre
     mechanics/elements/ElementShapeFunctions)
