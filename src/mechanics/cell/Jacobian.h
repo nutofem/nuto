@@ -46,43 +46,46 @@ public:
             }
             }
         }
-        else
+        else if (globalDimension == interpolationDimension + 1)
         {
-            assert(globalDimension == interpolationDimension + 1);
             switch (globalDimension)
             {
             case 2:
             {
-                const int numRows = derivativeShapeFunctions.rows();
-                NodeValues nodeCopy = nodeValues;
-                // see CalculateFixedSize(...) for the Eigen::Map functionality
-                auto nodeBlockCoordinates =
-                        Eigen::Map<Eigen::Matrix<double, 2, Eigen::Dynamic>>(nodeCopy.data(), 2, numRows);
-                mDetJacobian = (nodeBlockCoordinates * derivativeShapeFunctions).norm();
+                Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2,1>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 2,2> extendedJacobian;
+                extendedJacobian.col(0) = jacobian;
+                Eigen::Vector2d normal( -jacobian(1,0), jacobian(0,0));
+                normal /= normal.norm();
+                extendedJacobian.col(1) = normal;
+                mJacobian = extendedJacobian;
+                mInvJacobian = extendedJacobian.inverse();
+                mDetJacobian = extendedJacobian.determinant();
                 break;
             }
             case 3:
             {
-                const int numRows = derivativeShapeFunctions.rows();
-                NodeValues nodeCopy = nodeValues;
-                // see CalculateFixedSize(...) for the Eigen::Map functionality
-                auto nodeBlockCoordinatesMap =
-                        Eigen::Map<Eigen::Matrix<double, 3, Eigen::Dynamic>>(nodeCopy.data(), 3, numRows);
-
-                Eigen::MatrixXd nodeBlockCoordinates = nodeBlockCoordinatesMap;
-
-                Eigen::Matrix<double, 3, 2> jacobian = nodeBlockCoordinates * derivativeShapeFunctions;
-                Eigen::Vector3d derivativeXi = jacobian.col(0);
-                Eigen::Vector3d derivativeMu = jacobian.col(1);
-
-                mDetJacobian = (derivativeXi.cross(derivativeMu)).norm();
+                Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3,2>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 3,3> extendedJacobian;
+                extendedJacobian.col(0) = jacobian.col(0);
+                extendedJacobian.col(1) = jacobian.col(1);
+                Eigen::Vector3d normal = (jacobian.col(0)).cross(jacobian.col(1));
+                normal /= normal.norm();
+                extendedJacobian.col(2) = normal;
+                mJacobian = extendedJacobian;
+                mInvJacobian = extendedJacobian.inverse();
+                mDetJacobian = extendedJacobian.determinant();
                 break;
+
             }
             default:
             {
                 throw;
             }
             }
+        } else
+        {
+            throw;
         }
     }
 
