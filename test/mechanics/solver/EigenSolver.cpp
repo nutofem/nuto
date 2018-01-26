@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include "mechanics/solver/EigenSolver.h"
+#include "base/Exception.h"
 #include <boost/test/data/test_case.hpp>
 
 namespace bdata = boost::unit_test::data;
@@ -50,6 +51,6 @@ BOOST_DATA_TEST_CASE(suiteSparse, bdata::make(suiteSparseSolversNames), solver)
     auto x = EigenSolver(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 #else
-    BOOST_CHECK_THROW(EigenSolver(sys.A, sys.b, solver))
+    BOOST_CHECK_THROW(EigenSolver(sys.A, sys.b, solver), Exception);
 #endif
 }
