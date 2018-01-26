@@ -21,14 +21,29 @@ public:
             switch (globalDimension)
             {
             case 1:
-                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<1>(nodeValues, derivativeShapeFunctions);
+            {
+                Eigen::Matrix<double, 1, 1> jacobian = CalculateFixedSize<1,1>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = jacobian.inverse();
+                mDetJacobian = jacobian.determinant();
                 break;
+            }
             case 2:
-                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<2>(nodeValues, derivativeShapeFunctions);
+            {
+                Eigen::Matrix<double, 2, 2> jacobian = CalculateFixedSize<2,2>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = jacobian.inverse();
+                mDetJacobian = jacobian.determinant();
                 break;
+            }
             case 3:
-                std::tie(mInvJacobian, mDetJacobian) = CalculateFixedSize<3>(nodeValues, derivativeShapeFunctions);
+            {
+                Eigen::Matrix<double, 3, 3> jacobian = CalculateFixedSize<3,3>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = jacobian.inverse();
+                mDetJacobian = jacobian.determinant();
                 break;
+            }
             }
         }
         else
@@ -82,30 +97,36 @@ public:
         return mInvJacobian;
     }
 
+    const Dynamic3by3& Get() const
+    {
+        return mJacobian;
+    }
+
     double Det() const
     {
         return mDetJacobian;
     }
 
 private:
-    template <int TDim>
-    std::pair<Eigen::Matrix<double, TDim, TDim>, double>
+    template <int TSpaceDim, int TLocalDim>
+    Eigen::Matrix<double, TSpaceDim, TLocalDim>
     CalculateFixedSize(NuTo::NodeValues nodeValues,
                        const NuTo::DerivativeShapeFunctionsNatural& derivativeShapeFunctions)
     {
-        const int numRows = derivativeShapeFunctions.rows();
+        const int numShapes = derivativeShapeFunctions.rows();
         auto nodeBlockCoordinates =
-                Eigen::Map<Eigen::Matrix<double, TDim, Eigen::Dynamic>>(nodeValues.data(), TDim, numRows);
+                Eigen::Map<Eigen::Matrix<double, TSpaceDim, Eigen::Dynamic>>(nodeValues.data(), TSpaceDim, numShapes);
         // This mapping converts a vector
         // (x0 y0 z0 x1 y1 z1 x2 y2 z3 ...)^T
         // to the matrix
         // x0  x1  x2  x3 ...
         // y0  y1  y2  y3 ...
         // z0  z1  z2  z3 ...
-        Eigen::Matrix<double, TDim, TDim> jacobian = nodeBlockCoordinates * derivativeShapeFunctions;
-        return std::make_pair(jacobian.inverse(), jacobian.determinant());
+        Eigen::Matrix<double, TSpaceDim, TLocalDim> jacobian = nodeBlockCoordinates * derivativeShapeFunctions;
+        return jacobian;
     }
 
+    Dynamic3by3 mJacobian;
     Dynamic3by3 mInvJacobian;
     double mDetJacobian;
 };
