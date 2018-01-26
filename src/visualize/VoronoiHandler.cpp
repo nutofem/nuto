@@ -1,4 +1,5 @@
 #include "visualize/VoronoiHandler.h"
+#include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
 
@@ -29,8 +30,16 @@ void VoronoiHandler::WriteDofValues(const CellInterface& cell, const DofType dof
                                     UnstructuredGrid* grid)
 {
     grid->DefinePointData(dof.GetName());
+    bool as3d = dof.GetNum() == 2; // allows _warp by vector for 2d displacements
     for (size_t iPoint = 0; iPoint < mGeometry.pointCoordinates.size(); ++iPoint)
-        grid->SetPointData(pointIds[iPoint], dof.GetName(), cell.Interpolate(mGeometry.pointCoordinates[iPoint], dof));
+    {
+        auto dofValues = cell.Interpolate(mGeometry.pointCoordinates[iPoint], dof);
+
+        if (as3d)
+            dofValues = EigenCompanion::To3D(dofValues);
+
+        grid->SetPointData(pointIds[iPoint], dof.GetName(), dofValues);
+    }
 }
 
 void VoronoiHandler::CellData(int cellId, std::vector<Eigen::VectorXd> values, std::string name, UnstructuredGrid* grid)
