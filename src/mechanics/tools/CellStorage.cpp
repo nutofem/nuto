@@ -3,7 +3,7 @@
 
 using namespace NuTo;
 
-Group<CellInterface> CellStorage::AddCells(Group<ElementCollection> elements,
+Group<CellInterface> CellStorage::AddCells(Group<ElementCollectionFem> elements,
                                            const IntegrationTypeBase& integrationType, int cellStartId)
 {
     Group<CellInterface> cellGroup;

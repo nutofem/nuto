@@ -18,7 +18,7 @@ public:
     //! @param integrationType suitable integration type that matches the elements
     //! @param cellStartId start id of the continous cell numbering
     //! @return group of newly created cells
-    Group<CellInterface> AddCells(Group<ElementCollection> elements, const IntegrationTypeBase& integrationType,
+    Group<CellInterface> AddCells(Group<ElementCollectionFem> elements, const IntegrationTypeBase& integrationType,
                                   int cellStartId = 0);
 
 private:

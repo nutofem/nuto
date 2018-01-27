@@ -24,6 +24,7 @@ create_symlink("meshes")
 # generate tests
 add_integrationtest(PatchTest)
 add_integrationtest(CreepLaw)
+add_integrationtest(QuasistaticProblem)
 #add_integrationtest(AdditiveInput)
 #add_integrationtest(AdditiveOutput)
 #add_integrationtest(BlockMatrices)
