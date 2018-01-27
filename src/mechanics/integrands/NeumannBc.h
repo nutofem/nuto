@@ -20,9 +20,15 @@ template <int TDim>
 class NeumannBc
 {
 public:
-    NeumannBc(NuTo::DofType dofType, Eigen::Matrix<double, TDim, 1> factor)
+    using LoadFunction = std::function<Eigen::Matrix<double, TDim, 1>(Eigen::VectorXd)>;
+    static LoadFunction Constant(Eigen::Matrix<double, TDim, 1> factor)
+    {
+        return [factor](Eigen::VectorXd) { return factor; };
+    }
+
+    NeumannBc(NuTo::DofType dofType, LoadFunction f)
         : mDofType(dofType)
-        , mFactor(factor)
+        , mLoadFunction(f)
     {
     }
 
@@ -31,14 +37,14 @@ public:
         NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);
         NuTo::DofVector<double> gradient;
 
-        gradient[mDofType] = N.transpose() * mFactor;
+        gradient[mDofType] = N.transpose() * mLoadFunction(cellIpData.GlobalCoordinates());
 
         return gradient;
     }
 
 private:
     NuTo::DofType mDofType;
-    Eigen::Matrix<double, TDim, 1> mFactor;
+    LoadFunction mLoadFunction;
 };
 } /* Integrand */
 } /* NuTo */
