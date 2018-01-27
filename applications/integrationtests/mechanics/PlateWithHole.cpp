@@ -87,10 +87,10 @@ Constraint::Constraints FixBottomAndLeft(MeshFem* rMesh, DofType disp)
     Constraint::Constraints constraints;
 
     auto nodesLeft = rMesh->NodesAtAxis(eDirection::X, disp, 0.);
-    auto nodesLower = rMesh->NodesAtAxis(eDirection::Y, disp, 0.);
+    auto nodesBottom = rMesh->NodesAtAxis(eDirection::Y, disp, 0.);
 
     constraints.Add(disp, Constraint::Component(nodesLeft, {eDirection::X}));
-    constraints.Add(disp, Constraint::Component(nodesLower, {eDirection::Y}));
+    constraints.Add(disp, Constraint::Component(nodesBottom, {eDirection::Y}));
 
     return constraints;
 }
@@ -110,11 +110,20 @@ BOOST_AUTO_TEST_CASE(PlateWithHole)
 
     auto constraints = FixBottomAndLeft(&mesh, disp);
 
+    Laws::LinearElastic<2> law(1.e5, 0.3, ePlaneState::PLANE_STRESS);
+    Integrands::MomentumBalance<2> momentumBalance(disp, law);
+
+
     constexpr double lx = 4;
     constexpr double ly = 4;
     auto nodesRight = mesh.NodesAtAxis(eDirection::X, disp, lx);
-    auto nodesUpper = mesh.NodesAtAxis(eDirection::Y, disp, ly);
+    auto nodesTop = mesh.NodesAtAxis(eDirection::Y, disp, ly);
 
+    auto elementsRight = mesh.ElementsFromNodes(nodesRight, disp);
+    auto elementsTop = mesh.ElementsFromNodes(nodesTop, disp);
+
+    Integrands::NeumannBc<2> neumannRight(disp, Test::PlateWithHoleAnalytical::PressureRight);
+    Integrands::NeumannBc<2> neumannTop(disp, Test::PlateWithHoleAnalytical::PressureTop);
 
     // auto meshInfo = s.ImportFromGmsh(meshFile);
     //
