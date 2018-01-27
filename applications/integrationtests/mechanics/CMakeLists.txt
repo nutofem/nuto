@@ -1,28 +1,24 @@
-add_subdirectory(uniaxial)
+#add_subdirectory(uniaxial)
 
-if(ENABLE_MPI)
-    add_subdirectory(feti)
-endif()
-
-if(ENABLE_PYTHON)
-    foreach(test
-        Brick8N
-        DeleteElemNode
-        ElectricWave
-        HeatConduction
-        MassMatrixIntegration
-        NonlinearLoad
-        Quad2DPatchTest
-        Tetrahedron10N
-        TimeIntegrationResultForce
-        )
-        add_test(integration::mechanics::${test}.py
-            ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
-        set_property(TEST integration::mechanics::${test}.py
-            PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
-    endforeach()
-endif()
-
+#if(ENABLE_PYTHON)
+#    foreach(test
+#        Brick8N
+#        DeleteElemNode
+#        ElectricWave
+#        HeatConduction
+#        MassMatrixIntegration
+#        NonlinearLoad
+#        Quad2DPatchTest
+#        Tetrahedron10N
+#        TimeIntegrationResultForce
+#        )
+#        add_test(integration::mechanics::${test}.py
+#            ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
+#        set_property(TEST integration::mechanics::${test}.py
+#            PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+#    endforeach()
+#endif()
+#
 create_symlink("meshes")
 
 # generate tests
@@ -61,14 +57,3 @@ add_integrationtest(CreepLaw)
 #add_integrationtest(TrussIn2D)
 #add_integrationtest(TrussIn3D)
 
-if(ENABLE_MPI)
-    add_executable(MPI EXCLUDE_FROM_ALL MPI.cpp)
-    target_link_libraries(MPI ${MPI_LIBRARIES})
-    set(MPIEXEC_NUMPROC_FLAG -np 4)
-    set(MPIEXEC mpirun)
-    #set(OVERSUBSCRIBE --oversubscribe)
-    add_test(NAME integration::mechanics::MPI
-        COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}
-        ${CMAKE_CURRENT_BINARY_DIR}/MPI)
-    append_to_tests(MPI)
-endif()
