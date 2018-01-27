@@ -103,3 +103,24 @@ Group<NodeSimple> MeshFem::NodesTotal(DofType d)
             group.Add(element.DofElement(d).GetNode(iNode));
     return group;
 }
+
+Group<ElementCollectionFem> MeshFem::ElementsFromNodes(const Group<NodeSimple>& nodes, DofType dofType)
+{
+    Group<ElementCollectionFem> elements;
+    for (auto& element : this->Elements)
+    {
+        auto& dofElement = element.DofElement(dofType);
+        bool allNodesContained = true;
+        for (int iNode = 0; iNode < dofElement.GetNumNodes(); ++iNode)
+        {
+            if (not nodes.Contains(dofElement.GetNode(iNode)))
+            {
+                allNodesContained = false;
+                continue;
+            }
+        }
+        if (allNodesContained)
+            elements.Add(element);
+    }
+    return elements;
+}

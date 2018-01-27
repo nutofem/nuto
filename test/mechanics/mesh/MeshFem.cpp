@@ -98,6 +98,19 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionAxis)
     }
 }
 
+BOOST_AUTO_TEST_CASE(MeshElementSelectFromNodes)
+{
+    NuTo::DofType d("Dof", 1);
+    NuTo::MeshFem mesh = DummyMesh(d);
+
+    auto allNodes = mesh.NodesTotal(d);
+    BOOST_CHECK_EQUAL(mesh.ElementsFromNodes(allNodes, d).Size(), 1);
+
+    NuTo::Group<NuTo::NodeSimple> notAllNodes;
+    notAllNodes.Add(*allNodes.begin());
+    BOOST_CHECK_EQUAL(mesh.ElementsFromNodes(notAllNodes, d).Size(), 0);
+}
+
 BOOST_AUTO_TEST_CASE(MeshConvert)
 {
 

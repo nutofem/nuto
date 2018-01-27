@@ -65,6 +65,9 @@ public:
     //! @return group containing all selected nodes
     Group<NodeSimple> NodesTotal();
 
+    //! @brief selects all elements whose nodes for `dofType` are in `nodes`
+    //! @return group containing all selected nodes
+    Group<ElementCollectionFem> ElementsFromNodes(const Group<NodeSimple>& nodes, DofType dofType);
 
 public:
     ValueVector<NodeSimple> Nodes;
