@@ -23,6 +23,13 @@ MeshFem CreateTriangles(int numX, int numY);
 //! @return created mesh
 MeshFem CreateQuads(int numX, int numY);
 
+//! @brief creates a brick mesh from (0,0,0) -- (1,1,1) with numX, numY, numZ divisions
+//! @param numX number of divisions in x direction
+//! @param numY number of divisions in y direction
+//! @param numZ number of divisions in z direction
+//! @return created mesh
+MeshFem CreateBricks(int numX, int numY, int numZ);
+
 //! @brief transforms a mesh with a given transformation function f
 //! @param oldMesh mesh that is transformed. Call with an xvalue of mesh.
 //! @param f transformation function
