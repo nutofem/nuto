@@ -2,5 +2,7 @@ add_unit_test(LinearElastic)
 add_unit_test(EngineeringStrainInvariants)
 add_unit_test(EngineeringStrain)
 add_unit_test(EngineeringStress)
+add_unit_test(ModifiedMisesStrainNorm)
+add_unit_test(LocalIsotropicDamage)
 
 add_subdirectory(damageLaws)

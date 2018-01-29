@@ -3,7 +3,7 @@
 #include "base/Group.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/CellInterface.h"
-#include "mechanics/cell/SimpleAssember.h"
+#include "mechanics/cell/SimpleAssembler.h"
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/MechanicsInterface.h"
 #include "mechanics/constraints/Constraints.h"

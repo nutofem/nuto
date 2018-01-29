@@ -1,4 +1,7 @@
 #include "mechanics/mesh/MeshFemDofConvert.h"
+#include "math/EigenCompanion.h"
+
+using namespace NuTo::EigenCompanion;
 
 //! @brief container that performs O(1) addition and O(1) lookup based on subboxes. These subboxes divide the domain
 //! with a given number of subdivisions.
@@ -44,7 +47,7 @@ public:
     //! algorithm below that only adds a T if nothing is found within the search radius.
     //! @param coords query point
     //! @return pointer to T if something is found, nullptr otherwise
-    T* FindAt(Eigen::Vector3d coords)
+    boost::optional<T> FindAt(Eigen::Vector3d coords)
     {
         int i = (coords[0] - mDomain.start[0]) / mDelta[0];
         int j = (coords[1] - mDomain.start[1]) / mDelta[1];
@@ -67,10 +70,9 @@ public:
                     // search the subbox (ii,jj,kk) for matches
                     for (T& entry : mData[Index(ii, jj, kk)])
                         if ((entry - coords).squaredNorm() < mDomain.searchRadiusSquared)
-                            return &entry;
+                            return entry;
                 }
-        return nullptr; // TODO17:  This is a classic case for the c++17 feature std::optional<T>. Here we have to
-        // introduce pointers to our precious interface.
+        return boost::none;
     }
 
 private:
@@ -92,13 +94,6 @@ private:
     const Eigen::Vector3d mDelta; // mDelta is precalculated since it is used a lot.
 };
 
-
-Eigen::Vector3d To3D(Eigen::VectorXd v)
-{
-    Eigen::Vector3d v3d = Eigen::Vector3d::Zero();
-    v3d.segment(0, v.size()) = v;
-    return v3d;
-}
 
 struct NodePoint : Eigen::Vector3d // to inherit operator[]
 {
@@ -143,8 +138,8 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
     return d;
 }
 
-
-void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const InterpolationSimple& interpolation)
+void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
+                               boost::optional<const InterpolationSimple&> optionalInterpolation)
 {
     // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on
     // the dimensions of the mesh.
@@ -155,11 +150,12 @@ void NuTo::AddDofInterpolation(MeshFem* rMesh, DofType dofType, const Interpolat
         std::vector<NodeSimple*> nodesForTheNewlyCreatedElement;
 
         const auto& coordinateElement = elementCollection.CoordinateElement();
+        const auto& interpolation = optionalInterpolation.value_or(coordinateElement.Interpolation());
         for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
         {
             Eigen::Vector3d coord = To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));
 
-            NodePoint* nodePoint = subBoxes.FindAt(coord);
+            boost::optional<NodePoint> nodePoint = subBoxes.FindAt(coord);
             if (nodePoint)
             {
                 nodesForTheNewlyCreatedElement.push_back(&nodePoint->mNode);

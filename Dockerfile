@@ -22,8 +22,8 @@ RUN useradd nuto && echo "nuto:nuto" | chpasswd && adduser nuto sudo
 RUN mkdir -p /home/nuto && chown -R nuto:nuto /home/nuto
 USER nuto
 
-# create the source directory /home/nuto/source
+# create the source and build directories
 RUN mkdir /home/nuto/source
+RUN mkdir /home/nuto/build
 
-# the build directory will be in /home/nuto 
-WORKDIR /home/nuto
+WORKDIR /home/nuto/build

@@ -64,13 +64,6 @@ BOOST_AUTO_TEST_CASE(DofMatrixUninitializedAddition)
     CheckDofMatrix(dofMatrix0, dof0, dof1);
 }
 
-BOOST_AUTO_TEST_CASE(DofMatrixVectorAccess)
-{
-    NuTo::DofType dof0("foo", 1);
-    NuTo::DofMatrixSparse<int> dofMatrix0;
-    BOOST_CHECK_THROW(dofMatrix0[dof0], NuTo::Exception);
-}
-
 BOOST_AUTO_TEST_CASE(DofMatrixStream)
 {
     NuTo::DofType dof0("foo", 1);
