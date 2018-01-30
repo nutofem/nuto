@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include <boost/filesystem.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <string>
 #include <iostream>
 
@@ -22,63 +23,16 @@
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"
+#include "mechanics/integrands/Bind.h"
 
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
-#include "visualize/AverageHandler.h"
-#include "visualize/AverageGeometries.h"
 #include "visualize/VoronoiHandler.h"
 #include "visualize/VoronoiGeometries.h"
 #include "visualize/Visualizer.h"
 
 #include "PlateWithHoleAnalytic.h"
-
-// void ApplyBCs(NuTo::Structure& s)
-//{
-//    constexpr double lx = 4;
-//    constexpr double ly = 4;
-//
-//    auto& groupLeft = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, 0.);
-//    auto& groupRight = s.GroupGetNodesAtCoordinate(NuTo::eDirection::X, lx);
-//    auto& groupLower = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, 0);
-//    auto& groupUpper = s.GroupGetNodesAtCoordinate(NuTo::eDirection::Y, ly);
-//
-//    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(groupLeft,
-//    {NuTo::eDirection::X}));
-//    s.Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS,
-//                        NuTo::Constraint::Component(groupLower, {NuTo::eDirection::Y}));
-//
-//    int groupElementBCUpper = s.GroupCreate(NuTo::eGroupId::Elements);
-//    int groupElementBCRight = s.GroupCreate(NuTo::eGroupId::Elements);
-//    s.GroupAddElementsFromNodes(groupElementBCRight, s.GroupGetId(&groupRight), false);
-//    s.GroupAddElementsFromNodes(groupElementBCUpper, s.GroupGetId(&groupUpper), false);
-//
-//    s.LoadSurfacePressureFunctionCreate2D(groupElementBCRight, s.GroupGetId(&groupRight),
-//                                          NuTo::Test::PlateWithHoleAnalytical::PressureRight);
-//    s.LoadSurfacePressureFunctionCreate2D(groupElementBCUpper, s.GroupGetId(&groupUpper),
-//                                          NuTo::Test::PlateWithHoleAnalytical::PressureTop);
-//}
-//
-// void CheckSolution(NuTo::Structure& s, double tolerance)
-//{
-//    s.SetShowTime(false);
-//    for (int elementId : s.GroupGetMemberIds(s.GroupGetElementsTotal()))
-//    {
-//        auto ipCoords = s.ElementGetIntegrationPointCoordinates(elementId);
-//        auto ipStress = s.ElementGetEngineeringStress(elementId);
-//
-//        for (int iIP = 0; iIP < ipCoords.cols(); ++iIP)
-//        {
-//            auto numericStressNuTo = ipStress.col(iIP);
-//            Eigen::Vector3d numericStress(numericStressNuTo[0], numericStressNuTo[1], numericStressNuTo[5]);
-//            auto analyticStress = NuTo::Test::PlateWithHoleAnalytical::AnalyticStress(ipCoords.col(iIP));
-//            auto error = (analyticStress - numericStress).norm() / analyticStress.norm();
-//            BOOST_CHECK_SMALL(error, tolerance);
-//        }
-//    }
-//}
-//
 
 using namespace NuTo;
 
@@ -106,57 +60,101 @@ BOOST_AUTO_TEST_CASE(PlateWithHole)
     auto meshGmsh = MeshGmsh(meshFile);
     auto& mesh = meshGmsh.GetMeshFEM();
     DofType disp("displacements", 2);
-    AddDofInterpolation(&meshGmsh.GetMeshFEM(), disp);
+    AddDofInterpolation(&mesh, disp);
 
-    auto constraints = FixBottomAndLeft(&mesh, disp);
-
-    Laws::LinearElastic<2> law(1.e5, 0.3, ePlaneState::PLANE_STRESS);
+    const double E = 6174.;
+    const double nu = 0.1415;
+    Laws::LinearElastic<2> law(E, nu, ePlaneState::PLANE_STRESS);
     Integrands::MomentumBalance<2> momentumBalance(disp, law);
-
-
-    constexpr double lx = 4;
-    constexpr double ly = 4;
-    auto nodesRight = mesh.NodesAtAxis(eDirection::X, disp, lx);
-    auto nodesTop = mesh.NodesAtAxis(eDirection::Y, disp, ly);
-
-    auto elementsRight = mesh.ElementsFromNodes(nodesRight, disp);
-    auto elementsTop = mesh.ElementsFromNodes(nodesTop, disp);
 
     Integrands::NeumannBc<2> neumannRight(disp, Test::PlateWithHoleAnalytical::PressureRight);
     Integrands::NeumannBc<2> neumannTop(disp, Test::PlateWithHoleAnalytical::PressureTop);
 
-    // auto meshInfo = s.ImportFromGmsh(meshFile);
-    //
-    // int interpolationType = meshInfo[0].second;
-    // s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,
-    //                       NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    //
-    // s.SetVerboseLevel(10);
-    // s.ElementTotalConvertToInterpolationType();
-    //
-    // double thickness = 1.;
-    // auto section = NuTo::SectionPlane::Create(thickness, false);
-    // s.ElementTotalSetSection(section);
-    //
-    // using namespace NuTo::Constitutive;
-    //
-    // int constitutiveLaw = s.ConstitutiveLawCreate(eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    // s.ConstitutiveLawSetParameterDouble(constitutiveLaw, eConstitutiveParameter::YOUNGS_MODULUS, 1.e5);
-    // s.ConstitutiveLawSetParameterDouble(constitutiveLaw, eConstitutiveParameter::POISSONS_RATIO, 0.3);
-    // s.ElementTotalSetConstitutiveLaw(constitutiveLaw);
-    //
-    // ApplyBCs(s);
-    //
-    // s.SolveGlobalSystemStaticElastic();
-    //
-    // int visualizationGroup = s.GroupGetElementsTotal();
-    // s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    // s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    // s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-    //
-    // std::string resultDir = "./PlateWithHoleResults";
-    // boost::filesystem::create_directory(resultDir);
-    // s.ExportVtkDataFileElements(resultDir + "/PlateWithHole.vtu", true);
-    //
-    // CheckSolution(s, 0.05);
+    auto Hessian0Plate = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
+    auto GradientPlate = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
+    auto GradientRight = Bind(neumannRight, &Integrands::NeumannBc<2>::ExternalLoad);
+    auto GradientTop = Bind(neumannTop, &Integrands::NeumannBc<2>::ExternalLoad);
+
+    boost::ptr_vector<CellInterface> cells;
+    Group<CellInterface> cellsPlate;
+    IntegrationTypeTensorProduct<2> integrationTypeCells(2, eIntegrationMethod::GAUSS);
+    for (auto& element : meshGmsh.GetPhysicalGroup("Plate"))
+    {
+        cells.push_back(new Cell(element, integrationTypeCells, 0));
+        cellsPlate.Add(cells.back());
+    }
+
+    IntegrationTypeTensorProduct<1> integrationTypeBoundary(2, eIntegrationMethod::GAUSS);
+    Group<CellInterface> cellsRight;
+    for (auto& element : meshGmsh.GetPhysicalGroup("Right"))
+    {
+        cells.push_back(new Cell(element, integrationTypeBoundary, 0));
+        cellsRight.Add(cells.back());
+    }
+
+    Group<CellInterface> cellsTop;
+    for (auto& element : meshGmsh.GetPhysicalGroup("Top"))
+    {
+        cells.push_back(new Cell(element, integrationTypeBoundary, 0));
+        cellsTop.Add(cells.back());
+    }
+
+    auto dispNodes = mesh.NodesTotal(disp);
+
+    auto constraints = FixBottomAndLeft(&mesh, disp);
+    auto dofInfo = DofNumbering::Build(dispNodes, disp, constraints);
+    auto assembler = SimpleAssembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+
+    auto hessian0 = assembler.BuildMatrix(cellsPlate, {disp}, Hessian0Plate);
+    auto gradient = assembler.BuildVector(cellsPlate, {disp}, GradientPlate);
+    gradient += assembler.BuildVector(cellsRight, {disp}, GradientRight);
+    gradient += assembler.BuildVector(cellsTop, {disp}, GradientTop);
+
+    // std::cout << gradient.J[disp] << std::endl;
+    std::cout << gradient.J[disp].norm() << std::endl;
+
+    Eigen::VectorXd displ = -Eigen::SimplicialLLT<Eigen::SparseMatrix<double>>()
+                                     .compute(hessian0.JJ(disp, disp))
+                                     .solve(gradient.J[disp]);
+
+
+    for (auto& node : dispNodes)
+    {
+        auto dofX = node.GetDofNumber(0);
+        auto dofY = node.GetDofNumber(1);
+
+        if (dofX < dofInfo.numIndependentDofs[disp])
+            node.SetValue(0, displ[dofX]);
+        if (dofY < dofInfo.numIndependentDofs[disp])
+            node.SetValue(1, displ[dofY]);
+    }
+    gradient = assembler.BuildVector(cellsPlate, {disp}, GradientPlate);
+    gradient += assembler.BuildVector(cellsRight, {disp}, GradientRight);
+    gradient += assembler.BuildVector(cellsTop, {disp}, GradientTop);
+
+    std::cout << gradient.J[disp].norm() << std::endl;
+
+    Visualize::Visualizer<Visualize::VoronoiHandler> visu(cellsPlate, Visualize::VoronoiGeometryQuad(3));
+    visu.DofValues(disp);
+    auto analyticDisplacement = [E, nu](Eigen::Vector2d coords) {
+        return Test::PlateWithHoleAnalytical::AnalyticDisplacement(coords, E, nu);
+    };
+    visu.PointData(analyticDisplacement, "analyticDisplacement");
+    visu.WriteVtuFile("PlateWithHole.vtu");
+
+    for (auto& element : meshGmsh.GetPhysicalGroup("Plate"))
+    {
+        const auto& coordElement = element.CoordinateElement();
+        const auto& displElement = element.DofElement(disp);
+
+        // we have isoparametric elements, so the nth coordinate node corresponds to the nth displacement node
+        for (int iNode = 0; iNode < displElement.GetNumNodes(); ++iNode)
+        {
+            Eigen::Vector2d coords = coordElement.GetNode(iNode).GetValues();
+            Eigen::Vector2d displs = displElement.GetNode(iNode).GetValues();
+            Eigen::Vector2d correctDispl = Test::PlateWithHoleAnalytical::AnalyticDisplacement(coords, E, nu);
+
+            BoostUnitTest::CheckEigenMatrix(displs, correctDispl, 1.e-5);
+        }
+    }
 }
