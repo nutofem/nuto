@@ -36,106 +36,137 @@
 
 using namespace NuTo;
 
-Constraint::Constraints FixBottomAndLeft(MeshFem* rMesh, DofType disp)
+class CellAndAssemblyHelper
 {
-    Constraint::Constraints constraints;
+public:
+    Group<CellInterface> AddCells(Group<ElementCollectionFem> elements, const IntegrationTypeBase& integrationType)
+    {
+        Group<CellInterface> cellGroup;
+        for (auto& element : elements)
+        {
+            mCells.push_back(new Cell(element, integrationType, 0));
+            cellGroup.Add(mCells.back());
+        }
+        return cellGroup;
+    }
 
-    auto nodesLeft = rMesh->NodesAtAxis(eDirection::X, disp, 0.);
-    auto nodesBottom = rMesh->NodesAtAxis(eDirection::Y, disp, 0.);
+    void AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f)
+    {
+        mGradientFunctions.push_back({group, f});
+    }
 
-    constraints.Add(disp, Constraint::Component(nodesLeft, {eDirection::X}));
-    constraints.Add(disp, Constraint::Component(nodesBottom, {eDirection::Y}));
+    void AddHessian0Function(Group<CellInterface> group, CellInterface::MatrixFunction f)
+    {
+        mHessian0Functions.push_back({group, f});
+    }
 
-    return constraints;
-}
+    template <typename TSolver>
+    void Solve(TSolver&& solver, Constraint::Constraints constraints, Group<NodeSimple> nodes, DofType dof)
+    {
+        auto dofInfo = DofNumbering::Build(nodes, dof, constraints);
 
-BOOST_AUTO_TEST_CASE(PlateWithHole)
+        SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+
+        auto hessianIterator = mHessian0Functions.begin();
+        auto hessian0 = assembler.BuildMatrix(hessianIterator->first, {dof}, hessianIterator->second);
+        hessianIterator++;
+        for (; hessianIterator != mHessian0Functions.end(); ++hessianIterator)
+            hessian0 += assembler.BuildMatrix(hessianIterator->first, {dof}, hessianIterator->second);
+
+        auto gradientIterator = mGradientFunctions.begin();
+        auto gradient = assembler.BuildVector(gradientIterator->first, {dof}, gradientIterator->second);
+        gradientIterator++;
+        for (; gradientIterator != mGradientFunctions.end(); ++gradientIterator)
+            gradient += assembler.BuildVector(gradientIterator->first, {dof}, gradientIterator->second);
+
+        Eigen::VectorXd newDisp = -solver.compute(hessian0.JJ(dof, dof)).solve(gradient.J[dof]);
+
+        for (auto& node : nodes)
+        {
+            auto dofX = node.GetDofNumber(0);
+            auto dofY = node.GetDofNumber(1);
+
+            if (dofX < dofInfo.numIndependentDofs[dof])
+                node.SetValue(0, newDisp[dofX]);
+            if (dofY < dofInfo.numIndependentDofs[dof])
+                node.SetValue(1, newDisp[dofY]);
+        }
+
+        gradientIterator = mGradientFunctions.begin();
+        gradient = assembler.BuildVector(gradientIterator->first, {dof}, gradientIterator->second);
+        gradientIterator++;
+        for (; gradientIterator != mGradientFunctions.end(); ++gradientIterator)
+            gradient += assembler.BuildVector(gradientIterator->first, {dof}, gradientIterator->second);
+
+        double gradientNorm = gradient.J[dof].norm();
+        if (gradientNorm > 1.e-10)
+        {
+            throw Exception(__PRETTY_FUNCTION__, "A single solve did not equilibrate the system.");
+        }
+    }
+
+
+private:
+    boost::ptr_vector<CellInterface> mCells;
+
+    using GradientPair = std::pair<Group<CellInterface>, CellInterface::VectorFunction>;
+    using Hessian0Pair = std::pair<Group<CellInterface>, CellInterface::MatrixFunction>;
+
+    std::vector<GradientPair> mGradientFunctions;
+    std::vector<Hessian0Pair> mHessian0Functions;
+};
+
+
+BOOST_AUTO_TEST_CASE(PlateWithHoleTest)
 {
     auto binary = boost::unit_test::framework::master_test_suite().argv[0];
     boost::filesystem::path binaryPath = std::string(binary);
     binaryPath.remove_filename();
 
     std::string meshFile = binaryPath.string() + "/meshes/PlateWithHole.msh";
-
-    auto meshGmsh = MeshGmsh(meshFile);
+    MeshGmsh meshGmsh(meshFile);
     auto& mesh = meshGmsh.GetMeshFEM();
-    DofType disp("displacements", 2);
-    AddDofInterpolation(&mesh, disp);
+    DofType dof("Displacements", 2);
+    AddDofInterpolation(&mesh, dof);
+
+    CellAndAssemblyHelper helper;
 
     const double E = 6174.;
     const double nu = 0.1415;
     Laws::LinearElastic<2> law(E, nu, ePlaneState::PLANE_STRESS);
-    Integrands::MomentumBalance<2> momentumBalance(disp, law);
+    Integrands::MomentumBalance<2> momentumBalance(dof, law);
 
-    Integrands::NeumannBc<2> neumannRight(disp, Test::PlateWithHoleAnalytical::PressureRight);
-    Integrands::NeumannBc<2> neumannTop(disp, Test::PlateWithHoleAnalytical::PressureTop);
+    Integrands::NeumannBc<2> neumannRight(dof, Test::PlateWithHoleAnalytical::PressureRight);
+    Integrands::NeumannBc<2> neumannTop(dof, Test::PlateWithHoleAnalytical::PressureTop);
 
     auto Hessian0Plate = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
     auto GradientPlate = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
     auto GradientRight = Bind(neumannRight, &Integrands::NeumannBc<2>::ExternalLoad);
     auto GradientTop = Bind(neumannTop, &Integrands::NeumannBc<2>::ExternalLoad);
 
-    boost::ptr_vector<CellInterface> cells;
-    Group<CellInterface> cellsPlate;
     IntegrationTypeTensorProduct<2> integrationTypeCells(2, eIntegrationMethod::GAUSS);
-    for (auto& element : meshGmsh.GetPhysicalGroup("Plate"))
-    {
-        cells.push_back(new Cell(element, integrationTypeCells, 0));
-        cellsPlate.Add(cells.back());
-    }
-
     IntegrationTypeTensorProduct<1> integrationTypeBoundary(2, eIntegrationMethod::GAUSS);
-    Group<CellInterface> cellsRight;
-    for (auto& element : meshGmsh.GetPhysicalGroup("Right"))
-    {
-        cells.push_back(new Cell(element, integrationTypeBoundary, 0));
-        cellsRight.Add(cells.back());
-    }
+    auto cellsPlate = helper.AddCells(meshGmsh.GetPhysicalGroup("Plate"), integrationTypeCells);
+    auto cellsRight = helper.AddCells(meshGmsh.GetPhysicalGroup("Right"), integrationTypeBoundary);
+    auto cellsTop = helper.AddCells(meshGmsh.GetPhysicalGroup("Top"), integrationTypeBoundary);
 
-    Group<CellInterface> cellsTop;
-    for (auto& element : meshGmsh.GetPhysicalGroup("Top"))
-    {
-        cells.push_back(new Cell(element, integrationTypeBoundary, 0));
-        cellsTop.Add(cells.back());
-    }
+    helper.AddHessian0Function(cellsPlate, Hessian0Plate);
+    helper.AddGradientFunction(cellsPlate, GradientPlate);
+    helper.AddGradientFunction(cellsRight, GradientRight);
+    helper.AddGradientFunction(cellsTop, GradientTop);
 
-    auto dispNodes = mesh.NodesTotal(disp);
+    Constraint::Constraints constraints;
+    auto nodesLeft = mesh.NodesAtAxis(eDirection::X, dof, 0.);
+    auto nodesBottom = mesh.NodesAtAxis(eDirection::Y, dof, 0.);
+    constraints.Add(dof, Constraint::Component(nodesLeft, {eDirection::X}));
+    constraints.Add(dof, Constraint::Component(nodesBottom, {eDirection::Y}));
 
-    auto constraints = FixBottomAndLeft(&mesh, disp);
-    auto dofInfo = DofNumbering::Build(dispNodes, disp, constraints);
-    auto assembler = SimpleAssembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    helper.Solve(solver, constraints, mesh.NodesTotal(dof), dof);
 
-    auto hessian0 = assembler.BuildMatrix(cellsPlate, {disp}, Hessian0Plate);
-    auto gradient = assembler.BuildVector(cellsPlate, {disp}, GradientPlate);
-    gradient += assembler.BuildVector(cellsRight, {disp}, GradientRight);
-    gradient += assembler.BuildVector(cellsTop, {disp}, GradientTop);
-
-    // std::cout << gradient.J[disp] << std::endl;
-    std::cout << gradient.J[disp].norm() << std::endl;
-
-    Eigen::VectorXd displ = -Eigen::SimplicialLLT<Eigen::SparseMatrix<double>>()
-                                     .compute(hessian0.JJ(disp, disp))
-                                     .solve(gradient.J[disp]);
-
-
-    for (auto& node : dispNodes)
-    {
-        auto dofX = node.GetDofNumber(0);
-        auto dofY = node.GetDofNumber(1);
-
-        if (dofX < dofInfo.numIndependentDofs[disp])
-            node.SetValue(0, displ[dofX]);
-        if (dofY < dofInfo.numIndependentDofs[disp])
-            node.SetValue(1, displ[dofY]);
-    }
-    gradient = assembler.BuildVector(cellsPlate, {disp}, GradientPlate);
-    gradient += assembler.BuildVector(cellsRight, {disp}, GradientRight);
-    gradient += assembler.BuildVector(cellsTop, {disp}, GradientTop);
-
-    std::cout << gradient.J[disp].norm() << std::endl;
 
     Visualize::Visualizer<Visualize::VoronoiHandler> visu(cellsPlate, Visualize::VoronoiGeometryQuad(3));
-    visu.DofValues(disp);
+    visu.DofValues(dof);
     auto analyticDisplacement = [E, nu](Eigen::Vector2d coords) {
         return Test::PlateWithHoleAnalytical::AnalyticDisplacement(coords, E, nu);
     };
@@ -145,14 +176,14 @@ BOOST_AUTO_TEST_CASE(PlateWithHole)
     for (auto& element : meshGmsh.GetPhysicalGroup("Plate"))
     {
         const auto& coordElement = element.CoordinateElement();
-        const auto& displElement = element.DofElement(disp);
+        const auto& displElement = element.DofElement(dof);
 
         // we have isoparametric elements, so the nth coordinate node corresponds to the nth displacement node
         for (int iNode = 0; iNode < displElement.GetNumNodes(); ++iNode)
         {
             Eigen::Vector2d coords = coordElement.GetNode(iNode).GetValues();
             Eigen::Vector2d displs = displElement.GetNode(iNode).GetValues();
-            Eigen::Vector2d correctDispl = Test::PlateWithHoleAnalytical::AnalyticDisplacement(coords, E, nu);
+            Eigen::Vector2d correctDispl = analyticDisplacement(coords);
 
             BoostUnitTest::CheckEigenMatrix(displs, correctDispl, 1.e-5);
         }
