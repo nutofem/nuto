@@ -2,6 +2,7 @@
 
 #include "base/Exception.h"
 #include "mechanics/interpolation/InterpolationTrussLinear.h"
+#include "mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
@@ -352,6 +353,8 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
         return rMesh.CreateInterpolation(InterpolationPrismLinear());
     case 7:
         return rMesh.CreateInterpolation(InterpolationPyramidLinear());
+    case 8:
+        return rMesh.CreateInterpolation(InterpolationTrussLobatto(2));
     case 9:
         return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
     case 16:
@@ -359,6 +362,24 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
     }
+}
+
+std::vector<NuTo::NodeSimple*> GetElementNodes(const std::unordered_map<int, NuTo::NodeSimple*>& nodePtrs,
+                                               const GmshElement& gmshElement)
+{
+    std::vector<NuTo::NodeSimple*> elementNodes(gmshElement.nodes.size());
+    for (unsigned int i = 0; i < elementNodes.size(); ++i)
+        elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
+
+    switch (gmshElement.type)
+    {
+    case 8: /* TrussQuadratic */
+        std::swap(elementNodes[1], elementNodes[2]);
+        break;
+    default:
+        break;
+    }
+    return elementNodes;
 }
 
 
@@ -369,7 +390,6 @@ std::string GetPhysicalGroupName(const GmshFileContent& fileContent, int groupId
             return gmshPhysicalName.physicalName;
     return "";
 }
-
 
 // Member functions
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -427,9 +447,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
             interpolationIter =
                     interpolationPtrMap.emplace(gmshElement.type, &CreateElementInterpolation(mMesh, gmshElement.type))
                             .first;
-        std::vector<NodeSimple*> elementNodes(gmshElement.nodes.size());
-        for (unsigned int i = 0; i < elementNodes.size(); ++i)
-            elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
+        auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
         NuTo::ElementCollectionFem& element = mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}});
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
