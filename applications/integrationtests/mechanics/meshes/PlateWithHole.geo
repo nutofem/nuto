@@ -34,8 +34,6 @@ Line Loop(10) = {5, 7, 3, 4};
 //+
 Plane Surface(11) = {10};
 //+
-Physical Surface(12) = {11, 9};
-//+
 Transfinite Line {1, 2, 3, 4, 5, 6, 7} = NTrainsfinite;
 //+
 Transfinite Surface {11};
@@ -43,3 +41,13 @@ Transfinite Surface {11};
 Transfinite Surface {9};
 //+
 Recombine Surface {11, 9};
+//+
+Physical Surface("Plate") = {11, 9};
+//+
+Physical Line("Top") = {3};
+//+
+Physical Line("Right") = {2};
+//+
+Physical Line("Left") = {4};
+//+
+Physical Line("Bottom") = {1};
