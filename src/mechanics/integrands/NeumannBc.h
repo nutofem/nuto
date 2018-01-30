@@ -32,6 +32,13 @@ public:
     {
     }
 
+    NeumannBc(NuTo::DofType dofType, Eigen::Matrix<double, TDim, 1> pressure)
+        : mDofType(dofType)
+        , mLoadFunction(Constant(pressure))
+    {
+    }
+
+
     NuTo::DofVector<double> ExternalLoad(const NuTo::CellData&, const NuTo::CellIpData& cellIpData)
     {
         NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);
