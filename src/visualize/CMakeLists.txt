@@ -1,6 +1,5 @@
 set(VisualizeSources
     Cell.cpp
-    ComponentName.cpp
     Point.cpp
     UnstructuredGrid.cpp
     XMLWriter.cpp

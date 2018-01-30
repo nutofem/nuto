@@ -26,6 +26,13 @@ public:
         this->K += rhs.K;
         return *this;
     }
+
+    GlobalDofVector& operator-=(const GlobalDofVector& rhs)
+    {
+        this->J.AddScaled(rhs.J, -1.);
+        this->K.AddScaled(rhs.K, -1.);
+        return *this;
+    }
 };
 
 } /* NuTo */

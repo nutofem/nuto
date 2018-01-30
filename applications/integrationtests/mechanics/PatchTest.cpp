@@ -21,6 +21,7 @@
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"
+#include "mechanics/integrands/Bind.h"
 
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
@@ -31,26 +32,8 @@
 #include "visualize/VoronoiGeometries.h"
 #include "visualize/Visualizer.h"
 
-using namespace NuTo;
 
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
-    };
-}
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData);
-    };
-}
+using namespace NuTo;
 
 
 MeshFem QuadPatchTestMesh()
@@ -161,7 +144,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
     Eigen::Vector2d pressureBC(1, 0);
-    Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
+    Integrands::NeumannBc<2> neumannBc(displ, Integrands::NeumannBc<2>::Constant(pressureBC));
     auto NeumannLoad = Bind(neumannBc, &Integrands::NeumannBc<2>::ExternalLoad);
 
     cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, cellId++));
