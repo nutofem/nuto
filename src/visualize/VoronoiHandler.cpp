@@ -49,3 +49,15 @@ void VoronoiHandler::CellData(int cellId, std::vector<Eigen::VectorXd> values, s
     for (size_t iValue = 0; iValue < values.size(); ++iValue)
         grid->SetCellData(mSubCells[cellId][iValue], name, values[iValue]);
 }
+
+void VoronoiHandler::PointData(const CellInterface& cell, std::function<Eigen::VectorXd(Eigen::VectorXd)> f,
+                               std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
+{
+    grid->DefinePointData(name);
+    for (size_t iPoint = 0; iPoint < mGeometry.pointCoordinates.size(); ++iPoint)
+    {
+        auto coords = cell.Interpolate(mGeometry.pointCoordinates[iPoint]);
+        auto value = f(coords);
+        grid->SetPointData(pointIds[iPoint], name, value);
+    }
+}
