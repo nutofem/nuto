@@ -49,7 +49,7 @@ public:
         double st = std::sin(theta);
         double s3t = std::sin(3 * theta);
 
-        double mu = E / (1. - 2. * nu);
+        double mu = E / (2. + 2. * nu);
         double k = (3. - nu) / (1. + nu);
 
         double ux = ((T * a) / (8. * mu)) * ((r / a) * (k + 1.) * ct + ((2. * a) / r) * ((1. + k) * ct + c3t) -
