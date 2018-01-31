@@ -54,10 +54,9 @@ public:
             {
                 Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2,1>(nodeValues, derivativeShapeFunctions);
                 Eigen::Matrix<double, 2,2> extendedJacobian;
+                Eigen::Vector2d normal(-jacobian(1,0),jacobian(0,0));
                 extendedJacobian.col(0) = jacobian;
-                Eigen::Vector2d normal( -jacobian(1,0), jacobian(0,0));
-                normal /= normal.norm();
-                extendedJacobian.col(1) = normal;
+                extendedJacobian.col(1) = normal.normalized();
                 mJacobian = extendedJacobian;
                 mInvJacobian = extendedJacobian.inverse();
                 mDetJacobian = extendedJacobian.determinant();
@@ -67,10 +66,9 @@ public:
             {
                 Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3,2>(nodeValues, derivativeShapeFunctions);
                 Eigen::Matrix<double, 3,3> extendedJacobian;
+                Eigen::Vector3d normal = (jacobian.col(0)).cross(jacobian.col(1)).normalized();
                 extendedJacobian.col(0) = jacobian.col(0);
                 extendedJacobian.col(1) = jacobian.col(1);
-                Eigen::Vector3d normal = (jacobian.col(0)).cross(jacobian.col(1));
-                normal /= normal.norm();
                 extendedJacobian.col(2) = normal;
                 mJacobian = extendedJacobian;
                 mInvJacobian = extendedJacobian.inverse();
