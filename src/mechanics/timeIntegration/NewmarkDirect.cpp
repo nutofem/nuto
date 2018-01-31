@@ -131,6 +131,12 @@ std::pair<int, BlockScalar> NewmarkDirect::FindEquilibrium(StructureOutputBlockV
         }
         else
             iteration = mMaxNumIterations;
+        for (auto& dof : dofStatus.GetActiveDofTypes())
+            if (residualNorm[dof] > 1e10)
+            {
+                std::cout << "Residual too high! aborting iteration to avoid solver exception!" << std::endl;
+                iteration = mMaxNumIterations;
+            }
     }
     return std::make_pair(iteration, residualNorm);
 }

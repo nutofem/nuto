@@ -21,6 +21,7 @@
 #include "mechanics/constitutive/laws/MoistureTransport.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
+#include "mechanics/constitutive/laws/ShrinkageSAWStressBased.h"
 #include "mechanics/constitutive/laws/ThermalStrains.h"
 
 // create a new constitutive law
@@ -111,6 +112,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED:
             ConstitutiveLawPtr = new NuTo::ShrinkageCapillaryStressBased();
+            break;
+
+        case eConstitutiveType::SHRINKAGE_SAW_STRESS_BASED:
+            ConstitutiveLawPtr = new NuTo::ShrinkageSAWStressBased();
             break;
 
         case eConstitutiveType::THERMAL_STRAINS:

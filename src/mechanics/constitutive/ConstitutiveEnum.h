@@ -36,6 +36,7 @@ enum class eConstitutiveType
     PHASE_FIELD, //!< phase field model
     SHRINKAGE_CAPILLARY_STRAIN_BASED, //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED, //!< stress based drying shrinkage - capillary term
+    SHRINKAGE_SAW_STRESS_BASED, //!< stress based surface adsorbed water shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and
     //! plasticity are function of nonlocal total strain)
     THERMAL_STRAINS, //!< strain induced by temperature change

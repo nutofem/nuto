@@ -28,6 +28,7 @@ set(MechanicsConstitutiveSources
     constitutive/laws/MoistureTransport.cpp
     constitutive/laws/ShrinkageCapillaryStrainBased.cpp
     constitutive/laws/ShrinkageCapillaryStressBased.cpp
+    constitutive/laws/ShrinkageSAWStressBased.cpp
     constitutive/laws/ThermalStrains.cpp
     constitutive/staticData/DataAdditiveInputImplicit.cpp
     constitutive/staticData/DataCreep.cpp

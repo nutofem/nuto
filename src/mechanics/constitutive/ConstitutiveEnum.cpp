@@ -34,7 +34,9 @@ const std::map<NuTo::Constitutive::eConstitutiveType, std::string> NuTo::Constit
             {eConstitutiveType::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,
              "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS"},
             {eConstitutiveType::PHASE_FIELD, "PHASE_FIELD"},
+            {eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED, "SHRINKAGE_CAPILLARY_STRAIN_BASED"},
             {eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED, "SHRINKAGE_CAPILLARY_STRESS_BASED"},
+            {eConstitutiveType::SHRINKAGE_SAW_STRESS_BASED, "SHRINKAGE_SAW_STRESS_BASED"},
             {eConstitutiveType::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,
              "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS"},
             {eConstitutiveType::THERMAL_STRAINS, "THERMAL_STRAINS"}};

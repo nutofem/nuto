@@ -49,6 +49,31 @@ void NuTo::Plot::GNUPlot::AddPlot(Eigen::VectorXd x, Eigen::VectorXd y, std::arr
     fclose(dataFile);
 }
 
+void NuTo::Plot::GNUPlot::AddPlot(std::vector<double> x, std::vector<double> y, std::array<unsigned char, 3> lineColor,
+                                  NuTo::Plot::eLineType lineType, std::string title)
+{
+    assert(x.size() == y.size());
+
+    std::string tmpFileName = GNUPLOTDATAFILENAME + std::to_string(mSetupCurrentPlots.size()) + ".dat";
+
+    std::FILE* dataFile = fopen(tmpFileName.c_str(), "w");
+    if (!dataFile)
+        throw Exception(__PRETTY_FUNCTION__, "Could not open temporary data file!");
+
+    mSetupCurrentPlots.push_back({title, lineColor, lineType});
+    std::string DataString;
+    for (unsigned int i = 0; i < x.size(); ++i)
+    {
+        DataString.append(std::to_string(x[i]));
+        DataString.append(" ");
+        DataString.append(std::to_string(y[i]));
+        DataString.append("\n");
+    }
+    fwrite(DataString.c_str(), sizeof(char), DataString.length(), dataFile);
+
+    fclose(dataFile);
+}
+
 
 void NuTo::Plot::GNUPlot::Show() const
 {
