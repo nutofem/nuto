@@ -194,3 +194,22 @@ BOOST_AUTO_TEST_CASE(Export2ndOrderElements)
     auto asciiFile = "Export2ndOrderElementsAscii.vtu";
     visu.ExportVtuDataFile(asciiFile, false);
 }
+
+BOOST_AUTO_TEST_CASE(ExportSmallNumbers)
+{
+    NuTo::Visualize::UnstructuredGrid grid;
+
+    std::vector<int> pIds;
+    pIds.push_back(grid.AddPoint(Eigen::Vector2d(0., 0.)));
+    pIds.push_back(grid.AddPoint(Eigen::Vector2d(1., 0.)));
+
+    grid.AddCell(pIds, NuTo::eCellTypes::LINE);
+
+    // Point data
+    std::string name = "Data";
+    grid.DefinePointData(name);
+    for (int pId : pIds)
+        grid.SetPointData(pId, name, 5e-8);
+
+    grid.ExportVtuDataFile("ExportSmallNumbersAscii.vtu", false);
+}

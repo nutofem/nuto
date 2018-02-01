@@ -43,6 +43,23 @@ std::string DataArray<uint8_t>::VtkTypeString() const
     static_assert(sizeof(uint8_t) == 1, "unexpected type size");
     return "UInt8";
 }
+
+template <>
+void DataArray<uint8_t>::WriteAscii(std::ostream& file) const
+{
+    WriteCommonHeader(file);
+    file << "format=\""
+         << "ascii"
+         << "\" ";
+    file << ">\n";
+
+    // https://stackoverflow.com/questions/14644716/how-to-output-a-character-as-an-integer-through-cout
+    for (auto data : mData)
+        file << " " << static_cast<int>(data);
+
+    file << "\n</DataArray>";
+}
+
 } // namespace Visualize
 } // namespace NuTo
 
@@ -72,7 +89,7 @@ void DataArray<TDataType>::WriteAscii(std::ostream& file) const
     file << ">\n";
 
     for (auto data : mData)
-        file << " " << std::to_string(data);
+        file << " " << data;
 
     file << "\n</DataArray>";
 }
