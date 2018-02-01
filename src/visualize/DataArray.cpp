@@ -1,6 +1,7 @@
 #include "visualize/DataArray.h"
 #include <iostream>
 #include <fstream>
+#include <type_traits>
 
 using namespace NuTo::Visualize;
 
@@ -43,6 +44,7 @@ std::string DataArray<uint8_t>::VtkTypeString() const
     static_assert(sizeof(uint8_t) == 1, "unexpected type size");
     return "UInt8";
 }
+
 } // namespace Visualize
 } // namespace NuTo
 
@@ -72,7 +74,11 @@ void DataArray<TDataType>::WriteAscii(std::ostream& file) const
     file << ">\n";
 
     for (auto data : mData)
-        file << " " << std::to_string(data);
+        // https://stackoverflow.com/questions/14644716/how-to-output-a-character-as-an-integer-through-cout
+        if (std::is_same<TDataType, uint8_t>::value)
+            file << " " << static_cast<int>(data);
+        else
+            file << " " << data;
 
     file << "\n</DataArray>";
 }
