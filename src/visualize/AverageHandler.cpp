@@ -1,4 +1,5 @@
 #include "visualize/AverageHandler.h"
+#include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
 
@@ -22,9 +23,16 @@ void AverageHandler::WriteDofValues(const CellInterface& cell, const DofType dof
                                     UnstructuredGrid* grid)
 {
     grid->DefinePointData(dof.GetName());
+    bool as3d = dof.GetNum() == 2; // allows _warp by vector for 2d displacements
     for (size_t iCorner = 0; iCorner < mGeometry.cornerCoordinates.size(); ++iCorner)
-        grid->SetPointData(pointIds[iCorner], dof.GetName(),
-                           cell.Interpolate(mGeometry.cornerCoordinates[iCorner], dof));
+    {
+        auto dofValues = cell.Interpolate(mGeometry.cornerCoordinates[iCorner], dof);
+
+        if (as3d)
+            dofValues = EigenCompanion::To3D(dofValues);
+
+        grid->SetPointData(pointIds[iCorner], dof.GetName(), dofValues);
+    }
 }
 
 void AverageHandler::CellData(int cellId, std::vector<Eigen::VectorXd> values, std::string name, UnstructuredGrid* grid)
@@ -38,7 +46,7 @@ void AverageHandler::CellData(int cellId, std::vector<Eigen::VectorXd> values, s
 }
 
 void AverageHandler::PointData(const CellInterface& cell, std::function<Eigen::VectorXd(Eigen::VectorXd)> f,
-                   std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
+                               std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
 {
     grid->DefinePointData(name);
     for (size_t iCorner = 0; iCorner < mGeometry.cornerCoordinates.size(); ++iCorner)
