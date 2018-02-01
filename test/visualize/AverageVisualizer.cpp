@@ -34,6 +34,6 @@ BOOST_AUTO_TEST_CASE(GroupAverage)
 
     std::string filename = "AverageOutput.vtu";
     Visualizer<AverageHandler> visualize(cells, AverageGeometryQuad());
-    visualize.WriteVtuFile(filename);
+    visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::Average(filename);
 }
