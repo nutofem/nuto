@@ -1,7 +1,7 @@
 #include "visualize/DataArray.h"
 #include <iostream>
 #include <fstream>
-#include <typeinfo>
+#include <type_traits>
 
 using namespace NuTo::Visualize;
 
@@ -75,7 +75,7 @@ void DataArray<TDataType>::WriteAscii(std::ostream& file) const
 
     for (auto data : mData)
         // https://stackoverflow.com/questions/14644716/how-to-output-a-character-as-an-integer-through-cout
-        if (typeid(TDataType) == typeid(uint8_t))
+        if (std::is_same<TDataType, uint8_t>::value)
             file << " " << static_cast<int>(data);
         else
             file << " " << data;
