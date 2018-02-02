@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/Exception.h"
 #include <vector>
 
 namespace NuTo
@@ -27,6 +28,16 @@ std::vector<double> LegendreRoots(int n);
 //! @param n polynomial order
 //! @return vector of the n-2 roots
 std::vector<double> LegendreDerivRoots(int n);
+
+//! @brief computes points and weights for Lobatto quadrature in 1D
+//! @param numIPs number of integration points
+//! @return pair of quadrature weights and points range [-1,1] including boundary points
+std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DLobatto(int nIps);
+
+//! @brief computes points and weights for Gauss quadrature in 1D
+//! @param numIPs number of integration points
+//! @return pair of quadrature weights and points range (-1,1)
+std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1DGauss(int nIps);
 
 } // namespace Polynomial
 } // namespace Math
