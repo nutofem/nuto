@@ -57,8 +57,8 @@ public:
                 Eigen::Vector2d normal(-jacobian(1,0),jacobian(0,0));
                 extendedJacobian.col(0) = jacobian;
                 extendedJacobian.col(1) = normal.normalized();
-                mJacobian = extendedJacobian;
-                mInvJacobian = extendedJacobian.inverse();
+                mJacobian = jacobian;
+                mInvJacobian = extendedJacobian.inverse().block<1,2>(0,0);
                 mDetJacobian = extendedJacobian.determinant();
                 break;
             }
@@ -70,8 +70,8 @@ public:
                 extendedJacobian.col(0) = jacobian.col(0);
                 extendedJacobian.col(1) = jacobian.col(1);
                 extendedJacobian.col(2) = normal;
-                mJacobian = extendedJacobian;
-                mInvJacobian = extendedJacobian.inverse();
+                mJacobian = jacobian;
+                mInvJacobian = extendedJacobian.inverse().block<2,3>(0,0);;
                 mDetJacobian = extendedJacobian.determinant();
                 break;
 
