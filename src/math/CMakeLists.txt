@@ -4,6 +4,7 @@ set(MathSources
     Interpolation.cpp
     LinearInterpolation.cpp
     Legendre.cpp
+    Quadrature.cpp
 )
 
 create_nuto_module(Math "${MathSources}")

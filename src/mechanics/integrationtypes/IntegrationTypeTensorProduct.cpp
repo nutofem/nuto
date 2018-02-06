@@ -1,13 +1,13 @@
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "math/Legendre.h"
+#include "math/Quadrature.h"
 
 std::pair<std::vector<double>, std::vector<double>> ComputeWeightsAndPoints1D(size_t nIps,
                                                                               NuTo::eIntegrationMethod method)
 {
     if (method == NuTo::eIntegrationMethod::GAUSS)
-        return NuTo::Math::Polynomial::ComputeWeightsAndPoints1DGauss(nIps);
+        return NuTo::Math::ComputeWeightsAndPoints1DGauss(nIps);
     if (method == NuTo::eIntegrationMethod::LOBATTO)
-        return NuTo::Math::Polynomial::ComputeWeightsAndPoints1DLobatto(nIps);
+        return NuTo::Math::ComputeWeightsAndPoints1DLobatto(nIps);
     throw NuTo::Exception(__PRETTY_FUNCTION__, "Integration method not supported.");
 }
 

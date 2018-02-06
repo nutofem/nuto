@@ -1,5 +1,5 @@
 #include "VoronoiGeometries.h"
-#include "math/Legendre.h"
+#include "math/Quadrature.h"
 
 using namespace NuTo::Visualize;
 
@@ -16,7 +16,7 @@ std::vector<double> Linspace(double s, double e, size_t num)
 
 std::vector<double> Gaussspaced(size_t num)
 {
-    std::vector<double> pts = NuTo::Math::Polynomial::ComputeWeightsAndPoints1DGauss(num).second;
+    std::vector<double> pts = NuTo::Math::ComputeWeightsAndPoints1DGauss(num).second;
     std::vector<double> result;
     result.push_back(-1.);
     for (size_t i = 0; i < pts.size() - 1; ++i)
@@ -27,7 +27,7 @@ std::vector<double> Gaussspaced(size_t num)
 
 std::vector<double> Lobattospaced(size_t num)
 {
-    std::vector<double> pts = NuTo::Math::Polynomial::ComputeWeightsAndPoints1DLobatto(num).second;
+    std::vector<double> pts = NuTo::Math::ComputeWeightsAndPoints1DLobatto(num).second;
     std::vector<double> result;
     result.push_back(-1.);
     for (size_t i = 0; i < pts.size() - 1; ++i)
