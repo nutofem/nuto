@@ -65,3 +65,21 @@ VoronoiGeometry NuTo::Visualize::VoronoiGeometryBrick(int num)
     }
     return geometry;
 }
+
+VoronoiGeometry NuTo::Visualize::VoronoiGeometryTriangle3Ip()
+{
+    VoronoiGeometry geometry;
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(0, 0));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(0.5, 0));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(1, 0));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(0, 0.5));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(1. / 3., 1. / 3.));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(0.5, 0.5));
+    geometry.pointCoordinates.push_back(Eigen::Vector2d(0, 1));
+
+    geometry.voronoiCells.push_back({{0, 1, 4, 3}, NuTo::eCellTypes::QUAD});
+    geometry.voronoiCells.push_back({{1, 2, 5, 4}, NuTo::eCellTypes::QUAD});
+    geometry.voronoiCells.push_back({{4, 5, 6, 3}, NuTo::eCellTypes::QUAD});
+
+    return geometry;
+}
