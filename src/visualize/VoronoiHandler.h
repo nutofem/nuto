@@ -50,6 +50,15 @@ public:
     //! @param grid Pointer to the grid where the geometry should be written to.
     void CellData(int cellId, std::vector<Eigen::VectorXd> values, std::string name, UnstructuredGrid* grid);
 
+    //! Write point data into the grid.
+    //! @param cell Cell to be visualized.
+    //! @param f Function to be visualized.
+    //! @param pointIds IDs of the visualization points belonging to the cell.
+    //! @param name Name to be used in the resulting output file for the data array.
+    //! @param grid Pointer to the grid where the geometry should be written to.
+    void PointData(const CellInterface& cell, std::function<Eigen::VectorXd(Eigen::VectorXd)> f,
+                   std::vector<int> pointIds, std::string name, UnstructuredGrid* grid);
+
 private:
     VoronoiGeometry mGeometry;
     std::vector<std::vector<int>> mSubCells;

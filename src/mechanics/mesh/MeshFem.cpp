@@ -21,7 +21,7 @@ NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, d
         {
             NaturalCoords dofNodeCoords = dofInterpolation.GetLocalCoords(iNode);
             Eigen::VectorXd globalNodeCoords = Interpolate(element.CoordinateElement(), dofNodeCoords);
-            if ((globalNodeCoords - coords).isMuchSmallerThan(tol))
+            if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
                 return dofElement.GetNode(iNode);
         }
     }
@@ -39,7 +39,7 @@ NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.
         for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
         {
             Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
-            if ((globalNodeCoords - coords).isMuchSmallerThan(tol))
+            if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
                 return coordinateElement.GetNode(iNode);
         }
     }

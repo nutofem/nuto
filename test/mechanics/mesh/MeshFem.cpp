@@ -55,7 +55,8 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
     {
         const auto& n = mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3));
         BoostUnitTest::CheckEigenMatrix(n.GetValues(), Eigen::Vector2d(0, 3));
-        BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0)), NuTo::Exception);
+        BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001)), NuTo::Exception);
+        BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), 1e-4));
     }
 
 
@@ -63,7 +64,8 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
     {
         const auto& n = mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3), d);
         BOOST_CHECK_CLOSE(n.GetValues()[0], 6174, 1.e-10);
-        BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), d), NuTo::Exception);
+        BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), d), NuTo::Exception);
+        BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), d, 1e-4));
     }
 }
 
