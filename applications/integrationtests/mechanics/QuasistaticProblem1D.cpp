@@ -60,6 +60,7 @@ Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
     return c;
 }
 
+
 std::vector<double> DamageField1D(int numElements, double initialKappa)
 {
     MeshFem mesh = UnitMeshFem::CreateLines(numElements);

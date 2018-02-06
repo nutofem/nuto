@@ -20,12 +20,12 @@ std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd>
 QuasistaticProblem::TrialSystem(const Eigen::VectorXd& x, double globalTime, double timeStep)
 {
     Eigen::VectorXd deltaBrhs =
-            mConstraints.GetRhs(mDof, globalTime) - mConstraints.GetRhs(mDof, globalTime + timeStep);
+            mConstraints.GetRhs(mDof, globalTime + timeStep) - mConstraints.GetRhs(mDof, globalTime);
 
     auto hessian0 = mEquations.Hessian0(ToGlobalDofVector(x), {mDof});
 
     Eigen::VectorXd residualConstrained =
-            (hessian0.JK(mDof, mDof) - mCmat.transpose() * hessian0.KK(mDof, mDof)) * deltaBrhs;
+            -(hessian0.JK(mDof, mDof) - mCmat.transpose() * hessian0.KK(mDof, mDof)) * deltaBrhs;
 
     Eigen::SparseMatrix<double> hessianMod = hessian0.JJ(mDof, mDof) - mCmat.transpose() * hessian0.KJ(mDof, mDof) -
                                              hessian0.JK(mDof, mDof) * mCmat +
@@ -54,7 +54,7 @@ void QuasistaticProblem::UpdateHistory(const Eigen::VectorXd& x)
 
 double QuasistaticProblem::Norm(const Eigen::VectorXd& residual) const
 {
-    return residual.norm();
+    return residual.cwiseAbs().maxCoeff();
 }
 
 void QuasistaticProblem::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const

@@ -95,6 +95,10 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterat
 
     int iteration = 0;
     problem.Info(iteration, x, r);
+
+    if (problem.Norm(r) < problem.mTolerance)
+        return x;
+
     while (iteration < maxIterations)
     {
         auto dr = problem.Derivative(x);
