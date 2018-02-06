@@ -16,7 +16,7 @@ set(MechanicsSources
     tools/CellStorage.cpp
     tools/EquationSystem.cpp
     tools/Merger.cpp
-
+    tools/QuasistaticProblem.cpp
 
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp

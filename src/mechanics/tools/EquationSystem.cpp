@@ -19,6 +19,11 @@ void EquationSystem::AddHessian0Function(Group<CellInterface> group, CellInterfa
     mHessian0Functions.push_back({group, f});
 }
 
+void EquationSystem::AddUpdateFunction(Group<CellInterface> group, CellInterface::VoidFunction f)
+{
+    mUpdateFunctions.push_back({group, f});
+}
+
 GlobalDofVector EquationSystem::Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs)
 {
     mMerger.Merge(dofValues, dofs);
@@ -35,4 +40,12 @@ GlobalDofMatrixSparse EquationSystem::Hessian0(GlobalDofVector dofValues, std::v
     for (auto& hessian0Function : mHessian0Functions)
         hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs, hessian0Function.second);
     return hessian0;
+}
+
+void EquationSystem::UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs)
+{
+    mMerger.Merge(dofValues, dofs);
+    for (auto& updateFunction : mUpdateFunctions)
+        for (auto& cell : updateFunction.first)
+            cell.Apply(updateFunction.second);
 }

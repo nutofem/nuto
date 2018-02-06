@@ -18,9 +18,12 @@ public:
 
     void AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f);
     void AddHessian0Function(Group<CellInterface> group, CellInterface::MatrixFunction f);
+    void AddUpdateFunction(Group<CellInterface> group, CellInterface::VoidFunction f);
 
     GlobalDofVector Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs);
     GlobalDofMatrixSparse Hessian0(GlobalDofVector dofValues, std::vector<DofType> dofs);
+
+    void UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs);
 
 private:
     SimpleAssembler& mAssembler;
@@ -28,8 +31,10 @@ private:
 
     using GradientPair = std::pair<Group<CellInterface>, CellInterface::VectorFunction>;
     using Hessian0Pair = std::pair<Group<CellInterface>, CellInterface::MatrixFunction>;
+    using UpdatePair = std::pair<Group<CellInterface>, CellInterface::VoidFunction>;
 
     std::vector<GradientPair> mGradientFunctions;
     std::vector<Hessian0Pair> mHessian0Functions;
+    std::vector<UpdatePair> mUpdateFunctions;
 };
 } /* NuTo */
