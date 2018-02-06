@@ -90,12 +90,17 @@ BOOST_AUTO_TEST_CASE(UsingJacobianToComputeFiniteStrainDeformationGradient)
     /* Want to describe the deformation / movement of a triangle (p->q)
      * (90deg rotation and uniform stretch)
      *
-     *     p3
-     *     | \             90°, x 2.1   q1----------q3
-     *     |   \            ------>      |         /
-     *     |     \                       |      /
-     *     |       \                     |   /
-     *     p1 ----- p2                   q2/
+     *   z
+     *   ^
+     *   |
+     *   |         p3
+     *   |         | \             90°, x 2.1   q1----------q3
+     *   |         |   \            ------>      |         /
+     *   |         |     \                       |      /
+     *   |         |       \                     |   /
+     *   |         p1 ----- p2                   q2/
+     *   |
+     *   o----------------> y
      *
      * To do this: use a reference placement, e.g. x and a current placement, say y
      * Then the deformation gradient F is:
@@ -115,17 +120,17 @@ BOOST_AUTO_TEST_CASE(UsingJacobianToComputeFiniteStrainDeformationGradient)
      * */
 
     Eigen::Vector3d p1(0., 0., 0.);
-    Eigen::Vector3d p2(1., 0., 0.);
-    Eigen::Vector3d p3(0., 1., 0.);
+    Eigen::Vector3d p2(0., 1., 0.);
+    Eigen::Vector3d p3(0., 0., 1.);
 
     double scale = 2.1;
 
     Eigen::VectorXd xReference = Eigen::VectorXd(9);
     xReference << p1, p2, p3;
 
-    Eigen::Vector3d q1(0., scale, 0.);
+    Eigen::Vector3d q1(0., 0., scale);
     Eigen::Vector3d q2(0., 0., 0.);
-    Eigen::Vector3d q3(scale, scale, 0.);
+    Eigen::Vector3d q3(0., scale, scale);
 
     Eigen::VectorXd xDeformed = Eigen::VectorXd(9);
     xDeformed << q1, q2, q3;
@@ -145,9 +150,9 @@ BOOST_AUTO_TEST_CASE(UsingJacobianToComputeFiniteStrainDeformationGradient)
     double stretchX = sqrt(eigvals[0]).real();
     double stretchY = sqrt(eigvals[1]).real();
     double stretchZ = sqrt(eigvals[2]).real();
-    BOOST_CHECK_CLOSE(stretchX, scale, 1.e-10);
+    BOOST_CHECK_CLOSE(stretchX, 1.0, 1.e-10);
     BOOST_CHECK_CLOSE(stretchY, scale, 1.e-10);
-    BOOST_CHECK_CLOSE(stretchZ, 1.0, 1.e-10);
+    BOOST_CHECK_CLOSE(stretchZ, scale, 1.e-10);
 }
 
 BOOST_AUTO_TEST_CASE(JacobianTransform)
