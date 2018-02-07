@@ -107,7 +107,7 @@ public:
     Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, int cellId,
                                                              int ipId) const
     {
-        if (mStrainNorm.Value(strain) > mKappas[Ip(cellId, ipId)])
+        if (mStrainNorm.Value(strain) >= mKappas[Ip(cellId, ipId)])
             return mStrainNorm.Derivative(strain).transpose();
         return Eigen::Matrix<double, 1, Voigt::Dim(TDim)>::Zero();
     }
