@@ -146,16 +146,16 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
     for (auto& elementCollection : rMesh->Elements)
     {
         const NuTo::ElementFem& coordinateElement = elementCollection.CoordinateElement();
-        if (elementCollection.Has(dofType))
+
+        if (!elementCollection.Has(dofType))
+            continue;
+
+        for (int iNode = 0; iNode < elementCollection.DofElement(dofType).GetNumNodes(); ++iNode)
         {
-            for (int iNode = 0; iNode < elementCollection.DofElement(dofType).GetNumNodes(); ++iNode)
-            {
-                Eigen::Vector3d coord =
-                        To3D(Interpolate(coordinateElement,
-                                         elementCollection.DofElement(dofType).Interpolation().GetLocalCoords(iNode)));
-                NuTo::NodeSimple& node = elementCollection.DofElement(dofType).GetNode(iNode);
-                nodePoints.push_back(NodePoint(coord, node));
-            }
+            Eigen::Vector3d coord = To3D(Interpolate(
+                    coordinateElement, elementCollection.DofElement(dofType).Interpolation().GetLocalCoords(iNode)));
+            NuTo::NodeSimple& node = elementCollection.DofElement(dofType).GetNode(iNode);
+            nodePoints.push_back(NodePoint(coord, node));
         }
     }
     return nodePoints;
