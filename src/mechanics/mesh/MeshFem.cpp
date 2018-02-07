@@ -99,7 +99,19 @@ Group<NodeSimple> MeshFem::NodesTotal(DofType d)
 {
     Group<NodeSimple> group;
     for (auto& element : this->Elements)
+    {
+        if (!element.Has(d))
+            continue;
         for (int iNode = 0; iNode < element.DofElement(d).Interpolation().GetNumNodes(); ++iNode)
             group.Add(element.DofElement(d).GetNode(iNode));
+    }
     return group;
+}
+
+Group<ElementCollectionFem> MeshFem::ElementsTotal()
+{
+    Group<ElementCollectionFem> elements;
+    for (auto& element : this->Elements)
+        elements.Add(element);
+    return elements;
 }

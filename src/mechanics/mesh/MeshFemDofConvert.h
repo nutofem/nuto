@@ -14,5 +14,8 @@ namespace NuTo
 void AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
                          boost::optional<const InterpolationSimple&> optionalInterpolation = boost::none);
 
+//! @brief add a new _layer_ of nodes for `dofType` but only for elements in given group
+void AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<ElementCollectionFem> elements,
+                         boost::optional<const InterpolationSimple&> optionalInterpolation = boost::none);
 
 } /* NuTo */

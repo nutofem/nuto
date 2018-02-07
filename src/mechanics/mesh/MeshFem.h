@@ -65,6 +65,10 @@ public:
     //! @return group containing all selected nodes
     Group<NodeSimple> NodesTotal();
 
+    //! @brief selects all element collections
+    //! @return group containing all element collections
+    Group<ElementCollectionFem> ElementsTotal();
+
 
 public:
     ValueVector<NodeSimple> Nodes;
