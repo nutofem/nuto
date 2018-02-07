@@ -38,24 +38,24 @@ auto builtInSolverNames = {"EigenSparseLU",       "EigenSparseQR",          "Eig
 BOOST_DATA_TEST_CASE(builtInSolvers, bdata::make(builtInSolverNames), solver)
 {
     LinearSystem sys;
-    auto x =EigenSparseSolve(sys.A, sys.b, solver);
+    auto x = EigenSparseSolve(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 }
 
-auto suiteSparseSolverNames = {"EigenUmfPackLU", "EigenCholmodSupernodalLLT"};
+auto suiteSparseSolverNames = {"SuiteSparseLU", "SuiteSparseSupernodalLLT"};
 
 BOOST_DATA_TEST_CASE(suiteSparse, bdata::make(suiteSparseSolverNames), solver)
 {
     LinearSystem sys;
 #ifdef HAVE_SUITESPARSE
-    auto x =EigenSparseSolve(sys.A, sys.b, solver);
+    auto x = EigenSparseSolve(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 #else
     BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, solver), Exception);
 #endif
 }
 
-auto mumpsSolverNames = {"MumpsLU", "MumpsLDLT" };
+auto mumpsSolverNames = {"MumpsLU", "MumpsLDLT"};
 
 BOOST_DATA_TEST_CASE(mumps, bdata::make(mumpsSolverNames), solver)
 {

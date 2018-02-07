@@ -12,20 +12,26 @@ namespace NuTo
 //!
 //! Choose among the following solvers:
 //!
-//! Built-in direct solvers:
+//! ## Built-in
+//! ### Direct solvers:
 //! - `EigenSparseLU`
 //! - `EigenSparseQR`
 //! - `EigenSimplicialLLT`
 //! - `EigenSimplicialLDLT`
 //! 
-//! Built-in iteratitive solvers:
+//! ### Iteratitive solvers:
 //! - `EigenConjugateGradient`
 //! - `EigenLeastSquaresConjugateGradient`
-//! - `EigenBiCGSTAB.
+//! - `EigenBiCGSTAB`
 //! 
-//! and [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html) solvers (need to be installed seperately):
-//! - `EigenUmfPackLU`
-//! - `EigenCholmodSupernodalLLT`
+//! ## External (need to be installed seperately)
+//! ### [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html) solvers:
+//! - `SuiteSparseLU`
+//! - `SuiteSparseSupernodalLLT`
+//!
+//! ### [MUMPS](http://mumps.enseeiht.fr/) solvers:
+//! - `MumpsLU`
+//! - `MumpsLDLT`
 Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver);
 
 } // namespace NuTo
