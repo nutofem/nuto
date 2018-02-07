@@ -11,7 +11,6 @@ set(MechanicsSources
     mesh/MeshFem.cpp
     mesh/MeshGmsh.cpp
     solver/Solve.cpp
-    solver/EigenSolver.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
@@ -30,15 +29,5 @@ set(MechanicsSources
     integrationtypes/IntegrationTypeEnum.cpp
     )
 
-if(MUMPS_FOUND)
-    list(APPEND MechanicsSources solver/MumpsSolver.cpp)
-endif()
-
 create_nuto_module(Mechanics "${MechanicsSources}")
 target_link_libraries(Mechanics PRIVATE Base Math Boost::filesystem Ann::Ann)
-if(SUITESPARSE_FOUND)
-    target_link_libraries(Mechanics PRIVATE SuiteSparse::UmfPack SuiteSparse::Cholmod)
-endif()
-if(MUMPS_FOUND)
-    target_link_libraries(Mechanics PRIVATE EigenMumpsSupport)
-endif()

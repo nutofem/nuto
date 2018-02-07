@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/solver/EigenSolver.h"
+#include "math/EigenSparseSolve.h"
 #include "base/Exception.h"
 #include <boost/test/data/test_case.hpp>
 
@@ -38,19 +38,32 @@ auto builtInSolverNames = {"EigenSparseLU",       "EigenSparseQR",          "Eig
 BOOST_DATA_TEST_CASE(builtInSolvers, bdata::make(builtInSolverNames), solver)
 {
     LinearSystem sys;
-    auto x = EigenSolver(sys.A, sys.b, solver);
+    auto x =EigenSparseSolve(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 }
 
-auto suiteSparseSolversNames = {"EigenUmfPackLU", "EigenCholmodSupernodalLLT"};
+auto suiteSparseSolverNames = {"EigenUmfPackLU", "EigenCholmodSupernodalLLT"};
 
-BOOST_DATA_TEST_CASE(suiteSparse, bdata::make(suiteSparseSolversNames), solver)
+BOOST_DATA_TEST_CASE(suiteSparse, bdata::make(suiteSparseSolverNames), solver)
 {
     LinearSystem sys;
 #ifdef HAVE_SUITESPARSE
-    auto x = EigenSolver(sys.A, sys.b, solver);
+    auto x =EigenSparseSolve(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 #else
-    BOOST_CHECK_THROW(EigenSolver(sys.A, sys.b, solver), Exception);
+    BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, solver), Exception);
+#endif
+}
+
+auto mumpsSolverNames = {"MumpsLU", "MumpsLDLT" };
+
+BOOST_DATA_TEST_CASE(mumps, bdata::make(mumpsSolverNames), solver)
+{
+    LinearSystem sys;
+#ifdef HAVE_MUMPS
+    auto x = EigenSparseSolve(sys.A, sys.b, solver);
+    BoostUnitTest::CheckVector(x, sys.expected_x, 3);
+#else
+    BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, solver), Exception);
 #endif
 }

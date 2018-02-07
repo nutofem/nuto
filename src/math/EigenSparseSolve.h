@@ -26,6 +26,6 @@ namespace NuTo
 //! and [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html) solvers (need to be installed seperately):
 //! - `EigenUmfPackLU`
 //! - `EigenCholmodSupernodalLLT`
-Eigen::VectorXd EigenSolver(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver);
+Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver);
 
 } // namespace NuTo

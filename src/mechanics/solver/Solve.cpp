@@ -1,22 +1,8 @@
 #include "Solve.h"
-#include "EigenSolver.h"
-
-bool isPrefix(std::string input, std::string prefix)
-{
-    return input.compare(0, prefix.length(), prefix) == 0;
-}
-
+#include "math/EigenSparseSolve.h"
 
 namespace NuTo
 {
-
-Eigen::VectorXd Solve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver)
-{
-    if (isPrefix(solver, "Eigen"))
-        return EigenSolver(A, b, solver);
-    throw Exception("Que?");
-}
-
 
 GlobalDofVector Solve(GlobalDofMatrixSparse K, GlobalDofVector f, Constraint::Constraints bcs, DofType dof,
                       int numIndependentDofs, double time, std::string solver)
@@ -28,7 +14,7 @@ GlobalDofVector Solve(GlobalDofMatrixSparse K, GlobalDofVector f, Constraint::Co
     Eigen::VectorXd fmod_constrained = (K.JK(dof, dof) - cmat.transpose() * K.KK(dof, dof)) * (-bcs.GetRhs(dof, time));
 
     GlobalDofVector u;
-    u.J[dof] = Solve(Kmod, fmod + fmod_constrained, solver);
+    u.J[dof] = EigenSparseSolve(Kmod, fmod + fmod_constrained, solver);
     u.K[dof] = -cmat * u.J[dof] + bcs.GetRhs(dof, time);
 
     return u;
