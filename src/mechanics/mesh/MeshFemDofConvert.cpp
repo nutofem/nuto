@@ -138,6 +138,74 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
     return d;
 }
 
+//! @brief returns all Dof Nodes with their coordinates (NodePoints).
+std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofType)
+{
+    std::vector<NodePoint> nodePoints;
+
+    for (auto& elementCollection : rMesh->Elements)
+    {
+        const NuTo::ElementFem& coordinateElement = elementCollection.CoordinateElement();
+        NuTo::ElementFem* dofElementPtr;
+        try
+        {
+            dofElementPtr = &(elementCollection.DofElement(dofType));
+        }
+        catch (std::out_of_range)
+        { // ignore elements that do not have this dof type
+            continue;
+        }
+        for (int iNode = 0; iNode < (*dofElementPtr).GetNumNodes(); ++iNode)
+        {
+            Eigen::Vector3d coord =
+                    To3D(Interpolate(coordinateElement, dofElementPtr->Interpolation().GetLocalCoords(iNode)));
+            NuTo::NodeSimple& node = dofElementPtr->GetNode(iNode);
+            nodePoints.push_back(NodePoint(coord, node));
+        }
+    }
+    return nodePoints;
+}
+
+void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<ElementCollectionFem> elements,
+                               boost::optional<const InterpolationSimple&> optionalInterpolation)
+{
+    // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on
+    // the dimensions of the mesh.
+    SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
+
+    // Fill subboxes with nodes that are already there
+    for (NodePoint np : NodePointsTotal(rMesh, dofType))
+    {
+        subBoxes.Add(np);
+    }
+
+    for (auto& elementCollection : elements)
+    {
+        std::vector<NodeSimple*> nodesForTheNewlyCreatedElement;
+
+        const auto& coordinateElement = elementCollection.CoordinateElement();
+        const auto& interpolation = optionalInterpolation.value_or(coordinateElement.Interpolation());
+        for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
+        {
+            Eigen::Vector3d coord = To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));
+
+            boost::optional<NodePoint> nodePoint = subBoxes.FindAt(coord);
+            if (nodePoint)
+            {
+                nodesForTheNewlyCreatedElement.push_back(&nodePoint->mNode);
+            }
+            else
+            {
+                auto& node = rMesh->Nodes.Add(Eigen::VectorXd::Zero(dofType.GetNum()));
+                subBoxes.Add(NodePoint(coord, node));
+                nodesForTheNewlyCreatedElement.push_back(&node);
+            }
+        }
+        elementCollection.AddDofElement(dofType, ElementFem(nodesForTheNewlyCreatedElement, interpolation));
+    }
+}
+
+
 void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
                                boost::optional<const InterpolationSimple&> optionalInterpolation)
 {

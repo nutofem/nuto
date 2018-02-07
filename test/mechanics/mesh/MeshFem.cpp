@@ -226,3 +226,32 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 
     BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 2);
 }
+
+BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
+{
+    NuTo::MeshFem mesh;
+    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+
+    auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
+
+    // Add coordinate elements
+    auto& tri = mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    auto& line1 = mesh.Elements.Add({{{n0, n1}, interpolationTruss}});
+    auto& line2 = mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
+    auto& line3 = mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
+
+    // Add dof element in steps
+    NuTo::DofType dof1("dof1", 1);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {line1}, interpolationTruss);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 2);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {line2, line3}, interpolationTruss);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 3);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {tri}, interpolationTriangle);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 3);
+}
