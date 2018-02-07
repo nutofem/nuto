@@ -103,3 +103,11 @@ Group<NodeSimple> MeshFem::NodesTotal(DofType d)
             group.Add(element.DofElement(d).GetNode(iNode));
     return group;
 }
+
+Group<ElementCollectionFem> MeshFem::ElementsTotal()
+{
+    Group<ElementCollectionFem> elements;
+    for (auto& element : this->Elements)
+        elements.Add(element);
+    return elements;
+}
