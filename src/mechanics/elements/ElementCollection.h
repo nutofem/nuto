@@ -86,6 +86,11 @@ public:
         return mDofElements.At(dofType);
     }
 
+    bool Has(DofType dof) const
+    {
+        return mDofElements.Has(dof);
+    }
+
 private:
     TElement mCoordinateElement;
     DofContainer<TElement> mDofElements;

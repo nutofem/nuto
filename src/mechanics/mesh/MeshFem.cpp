@@ -100,17 +100,11 @@ Group<NodeSimple> MeshFem::NodesTotal(DofType d)
     Group<NodeSimple> group;
     for (auto& element : this->Elements)
     {
-        const ElementFem* dofElm;
-        try
+        if (element.Has(d))
         {
-            dofElm = &(element.DofElement(d));
+            for (int iNode = 0; iNode < element.DofElement(d).Interpolation().GetNumNodes(); ++iNode)
+                group.Add(element.DofElement(d).GetNode(iNode));
         }
-        catch (std::out_of_range)
-        { // ignore elements that do not have this dof type
-            continue;
-        }
-        for (int iNode = 0; iNode < dofElm->Interpolation().GetNumNodes(); ++iNode)
-            group.Add(element.DofElement(d).GetNode(iNode));
     }
     return group;
 }
