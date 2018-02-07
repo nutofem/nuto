@@ -4,6 +4,7 @@ message(STATUS "Checking for SuiteSparse Solver package ...")
 find_path(SUITESPARSE_INCLUDE_DIR NAMES umfpack.h HINTS /usr/include/suitesparse)
 
 find_library(SUITESPARSE_UMFPACK NAMES umfpack)
+find_library(SUITESPARSE_CHOLMOD NAMES cholmod)
 
 set(SUITESPARSE_LIBRARIES ${SUITESPARSE_UMFPACK} ${SUITESPARSE_CHOLMOD})
 
