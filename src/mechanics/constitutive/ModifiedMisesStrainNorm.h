@@ -73,7 +73,8 @@ inline ModifiedMisesStrainNorm<TDim>::ModifiedMisesStrainNorm(double nu, double 
 
 
 template <>
-inline EngineeringStrain<3> ModifiedMisesStrainNorm<1>::Strain3D(const EngineeringStrain<1>& strain, double nu, ePlaneState) const
+inline EngineeringStrain<3> ModifiedMisesStrainNorm<1>::Strain3D(const EngineeringStrain<1>& strain, double nu,
+                                                                 ePlaneState) const
 {
     EngineeringStrain<3> v;
     v[0] = strain[0];
@@ -87,7 +88,7 @@ inline EngineeringStrain<3> ModifiedMisesStrainNorm<1>::Strain3D(const Engineeri
 
 template <>
 inline EngineeringStrain<3> ModifiedMisesStrainNorm<2>::Strain3D(const EngineeringStrain<2>& strain, double nu,
-                                                       ePlaneState planeState) const
+                                                                 ePlaneState planeState) const
 {
     EngineeringStrain<3> v;
     if (planeState == ePlaneState::PLANE_STRAIN)
@@ -114,7 +115,8 @@ inline EngineeringStrain<3> ModifiedMisesStrainNorm<2>::Strain3D(const Engineeri
 }
 
 template <>
-inline EngineeringStrain<3> ModifiedMisesStrainNorm<3>::Strain3D(const EngineeringStrain<3>& strain, double, ePlaneState) const
+inline EngineeringStrain<3> ModifiedMisesStrainNorm<3>::Strain3D(const EngineeringStrain<3>& strain, double,
+                                                                 ePlaneState) const
 {
     return strain;
 }
@@ -134,7 +136,8 @@ inline double ModifiedMisesStrainNorm<TDim>::Value(const NuTo::EngineeringStrain
 
 
 template <>
-inline Eigen::Matrix<double, 1, 1> ModifiedMisesStrainNorm<1>::Derivative(const NuTo::EngineeringStrain<1>& strain) const
+inline Eigen::Matrix<double, 1, 1>
+ModifiedMisesStrainNorm<1>::Derivative(const NuTo::EngineeringStrain<1>& strain) const
 {
     Eigen::Matrix<double, 1, 1> derivative;
     double dJ2dexx = 2. / 3. * strain[0] * (1 + mNu) * (1 + mNu);
@@ -155,7 +158,8 @@ inline Eigen::Matrix<double, 1, 1> ModifiedMisesStrainNorm<1>::Derivative(const 
 }
 
 template <>
-inline Eigen::Matrix<double, 3, 1> ModifiedMisesStrainNorm<2>::Derivative(const NuTo::EngineeringStrain<2>& strain) const
+inline Eigen::Matrix<double, 3, 1>
+ModifiedMisesStrainNorm<2>::Derivative(const NuTo::EngineeringStrain<2>& strain) const
 {
     Eigen::Matrix<double, 3, 1> derivative;
 
@@ -185,7 +189,7 @@ inline Eigen::Matrix<double, 3, 1> ModifiedMisesStrainNorm<2>::Derivative(const 
             derivative[1] = mK1 + 1. / (2 * A) * (2 * mK1 * mK1 * I1 + mK2 * dJ2deyy);
             derivative[2] = 1. / (2 * A) * (mK2 * dJ2dgxy);
         }
-        return derivative;
+        break;
     }
     case ePlaneState::PLANE_STRESS:
     {
@@ -207,15 +211,15 @@ inline Eigen::Matrix<double, 3, 1> ModifiedMisesStrainNorm<2>::Derivative(const 
             derivative[1] = dI1dexxeyy * mK1 + 1. / (2. * A) * (2. * dI1dexxeyy * mK1 * mK1 * I1 + mK2 * dJ2deyy);
             derivative[2] = 1. / (2. * A) * (mK2 * dJ2dgxy);
         }
-        return derivative;
+        break;
     }
-    default:
-        Exception(__PRETTY_FUNCTION__, "PlaneState unknown. Choose either PLANE_STRAIN or PLANE_STRESS.");
     }
+    return derivative;
 }
 
 template <>
-inline Eigen::Matrix<double, 6, 1> ModifiedMisesStrainNorm<3>::Derivative(const NuTo::EngineeringStrain<3>& strain) const
+inline Eigen::Matrix<double, 6, 1>
+ModifiedMisesStrainNorm<3>::Derivative(const NuTo::EngineeringStrain<3>& strain) const
 {
     Eigen::Matrix<double, 6, 1> derivative;
 

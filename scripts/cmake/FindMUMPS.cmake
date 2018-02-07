@@ -25,6 +25,7 @@ add_library(Mumps::Mumps SHARED IMPORTED)
 set_target_properties(Mumps::Mumps PROPERTIES
     IMPORTED_LOCATION "${_mumps_LIB_DMUMPS}"
     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}"
+    INTERFACE_COMPILE_DEFINITIONS "HAVE_MUMPS"
     INTERFACE_LINK_LIBRARIES "${link_libs}")
 
 include(FindPackageHandleStandardArgs)
