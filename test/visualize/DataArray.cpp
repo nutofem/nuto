@@ -2,6 +2,7 @@
 #include "visualize/DataArray.h"
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 BOOST_AUTO_TEST_CASE(DataArrayFormatString)
 {
@@ -55,6 +56,27 @@ BOOST_AUTO_TEST_CASE(DataArrayAscii)
     BOOST_CHECK(asciiData.find(R"( format="ascii" )") != std::string::npos);
     BOOST_CHECK(asciiData.find(R"( 1 2 3 4 5 6)") != std::string::npos);
     BOOST_CHECK(asciiData.find(R"(</DataArray>)") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(DataArrayAsciiSmallDouble)
+{
+    NuTo::Visualize::DataArray<double> dataArray("Name", 1, {5.1e-8});
+    std::stringstream ss;
+    dataArray.WriteAscii(ss);
+    std::string asciiData = ss.str();
+
+    BOOST_CHECK(asciiData.find(R"(5.1e-08)") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(DataArrayAsciiUint8t)
+{
+    uint8_t val = 3;
+    NuTo::Visualize::DataArray<uint8_t> dataArray("Name", 1, {val});
+    std::stringstream ss;
+    dataArray.WriteAscii(ss);
+    std::string asciiData = ss.str();
+
+    BOOST_CHECK(asciiData.find(R"(3)") != std::string::npos);
 }
 
 BOOST_AUTO_TEST_CASE(DataArrayBinaryHeader)

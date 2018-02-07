@@ -10,6 +10,8 @@ set(MechanicsSources
     mesh/MeshGmsh.cpp
     mesh/UnitMeshFem.cpp
 
+    solver/Solve.cpp
+
     timeIntegration/TimeControl.cpp
 
     tools/GlobalFractureEnergyIntegrator.cpp
@@ -37,4 +39,4 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics Base Math Boost::filesystem Ann::Ann)
+target_link_libraries(Mechanics PRIVATE Base Math Boost::filesystem Ann::Ann)

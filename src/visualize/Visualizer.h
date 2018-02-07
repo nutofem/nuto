@@ -69,9 +69,10 @@ public:
 
     //! Write out a VTK unstructured grid file.
     //! @param filename Name of the resulting file.
-    void WriteVtuFile(std::string filename)
+    //! @param asBinary ... true for output as binary vtu file
+    void WriteVtuFile(std::string filename,bool asBinary = true)
     {
-        mGrid.ExportVtuDataFile(filename, false);
+        mGrid.ExportVtuDataFile(filename, asBinary);
     }
 
 private:

@@ -1,0 +1,48 @@
+// This file is part of Eigen, a lightweight C++ template library
+// for linear algebra.
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#ifndef EIGEN_MUMPSSUPPORT_MODULE_H
+#define EIGEN_MUMPSSUPPORT_MODULE_H
+
+#include "Eigen/SparseCore"
+
+#include "Eigen/src/Core/util/DisableStupidWarnings.h"
+
+#include <smumps_c.h>
+#include <dmumps_c.h>
+#include <cmumps_c.h>
+#include <zmumps_c.h>
+
+#ifdef complex
+#undef complex
+#endif
+
+/** \ingroup Support_modules
+ * \defgroup MUMPSSupport_Module MUMPSSupport module
+ *
+ * This module provides an interface to the <a href="http://mumps.enseeiht.fr/">MUMPS</a>
+ * library. MUMPS is a general \b multifrontal, \b parallel and \b open-source sparse solver. It
+ * provides the two following main factorization classes:
+ * - class MUMPSLDLT: a multifrontal LDLt Cholesky factorization.
+ * - class MUMPSLU : a multifrontal LU factorization (optimized for a symmetric pattern).
+ *
+ * \code
+ * #include <Eigen/MUMPSSupport>
+ * \endcode
+ *
+ * In order to use this module, the MUMPS headers must be accessible from the
+ * include paths, and your binary must be linked to the MUMPS library and its
+ * dependencies. This wrapper requires MUMPS version 5.1.x compiled without MPI
+ * support.  For a CMake based project, you can use our FindMUMPS.cmake module
+ * to help you in this task.
+ */
+
+#include "src/MUMPSSupport/MUMPSSupport.h"
+
+#include "Eigen/src/Core/util/ReenableStupidWarnings.h"
+
+#endif // EIGEN_MUMPSSUPPORT_MODULE_H
