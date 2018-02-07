@@ -64,10 +64,6 @@ Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
 std::vector<double> DamageField1D(int numElements, double initialKappa)
 {
     MeshFem mesh = UnitMeshFem::CreateLines(numElements);
-    Group<ElementCollectionFem> elements;
-    for (auto& element : mesh.Elements)
-        elements.Add(element);
-
     DofType disp("Displacement", 1);
     AddDofInterpolation(&mesh, disp);
 
@@ -77,7 +73,7 @@ std::vector<double> DamageField1D(int numElements, double initialKappa)
     CellStorage cells;
     IntegrationTypeTensorProduct<1> integrationType(2, eIntegrationMethod::GAUSS);
 
-    auto cellGroup = cells.AddCells(elements, integrationType);
+    auto cellGroup = cells.AddCells(mesh.ElementsTotal(), integrationType);
     auto law = ConstitutiveLaw(cellGroup.Size(), integrationType.GetNumIntegrationPoints());
 
     // impose imperfection:
