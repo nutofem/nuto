@@ -31,6 +31,8 @@
 #include "visualize/VoronoiGeometries.h"
 #include "visualize/Visualizer.h"
 
+#include "mechanics/solver/Solve.h"
+
 using namespace NuTo;
 
 //! @brief automatically create the lambda
@@ -282,29 +284,11 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
 
-    Eigen::MatrixXd kJJ = Eigen::MatrixXd(hessian.JJ(displ, displ));
-    Eigen::MatrixXd kJK = Eigen::MatrixXd(hessian.JK(displ, displ));
-    Eigen::MatrixXd kKJ = Eigen::MatrixXd(hessian.KJ(displ, displ));
-    Eigen::MatrixXd kKK = Eigen::MatrixXd(hessian.KK(displ, displ));
-    BOOST_TEST_MESSAGE("hessian JJ \n" << kJJ);
-    BOOST_TEST_MESSAGE("hessian JK \n" << kJK);
-    BOOST_TEST_MESSAGE("hessian KJ \n" << kKJ);
-    BOOST_TEST_MESSAGE("hessian KK \n" << kKK);
+    int numIndependentDofs = dofInfo.numIndependentDofs[displ];
+    GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);
 
-
-    BOOST_TEST_MESSAGE("GradientJ \n" << gradient.J);
-    BOOST_TEST_MESSAGE("GradientK \n" << gradient.K);
-
-    //      have a look at DISS_UNGER, page 28 for all that CMat stuff.
-    Eigen::MatrixXd Kmod = kJJ - CMat.transpose() * kKJ - kJK * CMat + CMat.transpose() * kKK * CMat;
-    Eigen::VectorXd Rmod = gradient.J[displ] - CMat.transpose() * gradient.K[displ];
-    Eigen::VectorXd RmodConstrained = (kJK - CMat.transpose() * kKK) * (-constraints.GetRhs(displ, 0));
-
-    Eigen::VectorXd newDisplacementsJ = Kmod.ldlt().solve(Rmod + RmodConstrained);
-    Eigen::VectorXd newDisplacementsK = -CMat * newDisplacementsJ + constraints.GetRhs(displ, 0);
-
-    BOOST_TEST_MESSAGE("DeltaD J \n" << newDisplacementsJ);
-    BOOST_TEST_MESSAGE("DeltaD K \n" << newDisplacementsK);
+    Eigen::VectorXd newDisplacementsJ = u.J[displ];
+    Eigen::VectorXd newDisplacementsK = u.K[displ];
 
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues

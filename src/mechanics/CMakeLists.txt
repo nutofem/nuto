@@ -10,6 +10,7 @@ set(MechanicsSources
     tools/GlobalFractureEnergyIntegrator.cpp
     mesh/MeshFem.cpp
     mesh/MeshGmsh.cpp
+    solver/Solve.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
     integrationtypes/IntegrationType2D3NGauss13Ip.cpp
@@ -29,4 +30,4 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics Base Math Boost::filesystem Ann::Ann)
+target_link_libraries(Mechanics PRIVATE Base Math Boost::filesystem Ann::Ann)
