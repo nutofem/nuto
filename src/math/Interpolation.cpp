@@ -18,7 +18,7 @@ NuTo::Math::Interpolation::Interpolation(std::vector<std::array<double, 2>> data
     std::sort(mData.begin(), mData.end(), CompareDataPairs);
 }
 
-unsigned NuTo::Math::Interpolation::bisection(double x)
+unsigned NuTo::Math::Interpolation::bisection(double x) const
 {
     unsigned lower = 0;
     unsigned upper = mData.size() - 1;

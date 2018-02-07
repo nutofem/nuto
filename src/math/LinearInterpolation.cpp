@@ -1,7 +1,7 @@
 #include "math/LinearInterpolation.h"
 #include "base/Exception.h"
 
-double NuTo::Math::LinearInterpolation::operator()(double x)
+double NuTo::Math::LinearInterpolation::operator()(double x) const
 {
     if (x < mData[0][0] or x > mData.back()[0])
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Input x is not within data range of supplied array");
@@ -13,7 +13,7 @@ double NuTo::Math::LinearInterpolation::operator()(double x)
     return m * x_tmp + n;
 }
 
-double NuTo::Math::LinearInterpolation::derivative(double x)
+double NuTo::Math::LinearInterpolation::derivative(double x) const
 {
     if (x < mData[0][0] or x > mData.back()[0])
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Input x is not within data range of supplied array");
