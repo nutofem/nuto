@@ -3,6 +3,9 @@ target_link_libraries(UnstructuredGrid Visualize)
 
 add_unit_test(DataArray)
 
+add_unit_test(VoronoiGeometries)
+target_link_libraries(VoronoiGeometries Math)
+
 add_unit_test(AverageVisualizer
     mechanics/elements/ElementShapeFunctions.cpp)
 target_link_libraries(AverageVisualizer Visualize)

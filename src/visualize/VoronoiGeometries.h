@@ -6,18 +6,24 @@ namespace NuTo
 {
 namespace Visualize
 {
+enum Spacing
+{
+    EQUIDISTANT,
+    LOBATTO,
+    GAUSS
+};
 
 //! Creates a voronoi geometry for equidistant lines in 1D
 //! @param numCellsPerDirection Number of cells "per Direction" i.e. 3 --> 3 voronoi cells
-VoronoiGeometry VoronoiGeometryLine(int numCellsPerDirection);
+VoronoiGeometry VoronoiGeometryLine(int numCellsPerDirection, Spacing s = EQUIDISTANT);
 
 //! Creates a voronoi geometry for equidistant quads in 2D
 //! @param numCellsPerDirection Number of cells "per Direction" i.e. 3 --> 9 num voronoi cells
-VoronoiGeometry VoronoiGeometryQuad(int numCellsPerDirection);
+VoronoiGeometry VoronoiGeometryQuad(int numCellsPerDirection, Spacing s = EQUIDISTANT);
 
 //! Creates a voronoi geometry for equidistant bricks in 3D
 //! @param numCellsPerDirection Number of cells "per Direction" i.e. 3 --> 27 num voronoi cells
-VoronoiGeometry VoronoiGeometryBrick(int numCellsPerDirection);
+VoronoiGeometry VoronoiGeometryBrick(int numCellsPerDirection, Spacing s = EQUIDISTANT);
 
 //! Creates a voronoi geometry for a triangle with 3 integration points at 1/6* ( 1,1; 4,1; 1,4 )
 VoronoiGeometry VoronoiGeometryTriangle3Ip();
