@@ -5,7 +5,7 @@
 #include "mechanics/dofs/GlobalDofVector.h"
 #include "mechanics/dofs/GlobalDofMatrixSparse.h"
 
-#include "mechanics/tools/Merger.h"
+#include "mechanics/tools/NodalValueMerger.h"
 
 namespace NuTo
 {
@@ -14,7 +14,7 @@ namespace NuTo
 class EquationSystem
 {
 public:
-    EquationSystem(SimpleAssembler* rAssembler, Merger* rMerger);
+    EquationSystem(SimpleAssembler* rAssembler, MeshFem* rMesh);
 
     void AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f);
     void AddHessian0Function(Group<CellInterface> group, CellInterface::MatrixFunction f);
@@ -27,7 +27,7 @@ public:
 
 private:
     SimpleAssembler& mAssembler;
-    Merger& mMerger;
+    NodalValueMerger mMerger;
 
     using GradientPair = std::pair<Group<CellInterface>, CellInterface::VectorFunction>;
     using Hessian0Pair = std::pair<Group<CellInterface>, CellInterface::MatrixFunction>;

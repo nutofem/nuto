@@ -15,7 +15,7 @@ set(MechanicsSources
     tools/GlobalFractureEnergyIntegrator.cpp
     tools/CellStorage.cpp
     tools/EquationSystem.cpp
-    tools/Merger.cpp
+    tools/NodalValueMerger.cpp
     tools/QuasistaticProblem.cpp
 
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp

@@ -2,12 +2,11 @@
 
 using namespace NuTo;
 
-EquationSystem::EquationSystem(SimpleAssembler* assembler, Merger* rMerger)
+EquationSystem::EquationSystem(SimpleAssembler* assembler, MeshFem* rMesh)
     : mAssembler(*assembler)
-    , mMerger(*rMerger)
+    , mMerger(rMesh)
 {
 }
-
 
 void EquationSystem::AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f)
 {

@@ -1,13 +1,13 @@
-#include "mechanics/tools/Merger.h"
+#include "mechanics/tools/NodalValueMerger.h"
 
 using namespace NuTo;
 
-Merger::Merger(MeshFem* rMesh)
+NodalValueMerger::NodalValueMerger(MeshFem* rMesh)
     : mMesh(*rMesh)
 {
 }
 
-Group<NodeSimple>& Merger::Nodes(DofType dof)
+Group<NodeSimple>& NodalValueMerger::Nodes(DofType dof)
 {
     if (!mNodes.Has(dof))
         mNodes[dof] = mMesh.NodesTotal(dof);
@@ -15,7 +15,7 @@ Group<NodeSimple>& Merger::Nodes(DofType dof)
     return mNodes[dof];
 }
 
-void Merger::Merge(GlobalDofVector newValues, std::vector<DofType> dofs)
+void NodalValueMerger::Merge(GlobalDofVector newValues, std::vector<DofType> dofs)
 {
     for (auto dof : dofs)
         for (auto& node : Nodes(dof))

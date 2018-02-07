@@ -81,10 +81,10 @@ std::vector<double> DamageField1D(int numElements, double initialKappa)
     const int imperfectionIp = law.mEvolution.Ip(imperfectionCell, 0);
     law.mEvolution.mKappas[imperfectionIp] = initialKappa;
 
-    Integrands::MomentumBalance<1> momenumBalance(disp, law);
+    Integrands::MomentumBalance<1> momentumBalance(disp, law);
 
-    auto Gradient = Bind(momenumBalance, &Integrands::MomentumBalance<1>::Gradient);
-    auto Hessian0 = Bind(momenumBalance, &Integrands::MomentumBalance<1>::Hessian0);
+    auto Gradient = Bind(momentumBalance, &Integrands::MomentumBalance<1>::Gradient);
+    auto Hessian0 = Bind(momentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
 
     CellInterface::VoidFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData) {
         EngineeringStrain<1> strain = cellIpData.GetBMatrixStrain(disp) * cellData.GetNodeValues(disp);
@@ -92,8 +92,7 @@ std::vector<double> DamageField1D(int numElements, double initialKappa)
     };
 
     SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
-    Merger merger(&mesh);
-    EquationSystem system(&assembler, &merger);
+    EquationSystem system(&assembler, &mesh);
     system.AddGradientFunction(cellGroup, Gradient);
     system.AddHessian0Function(cellGroup, Hessian0);
     system.AddUpdateFunction(cellGroup, UpdateHistory);

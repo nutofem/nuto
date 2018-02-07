@@ -5,10 +5,10 @@
 namespace NuTo
 {
 //! Performs our good old "NodeMerge" and should be replaced by any solution from issue #141 PDE nodal values
-class Merger
+class NodalValueMerger
 {
 public:
-    Merger(MeshFem* rMesh);
+    NodalValueMerger(MeshFem* rMesh);
 
     //! Performs "NodeMerge", writes values from the global solution vector to the nodes
     //! @param newValues complete vector (J/K) of new dof values
