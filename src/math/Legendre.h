@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/Exception.h"
 #include <vector>
 
 namespace NuTo
