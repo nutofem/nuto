@@ -62,6 +62,8 @@ double QuasistaticProblem::Norm(const Eigen::VectorXd& residual) const
 
 void QuasistaticProblem::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const
 {
+    if (mQuiet)
+        return;
     std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 

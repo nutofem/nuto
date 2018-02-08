@@ -55,6 +55,12 @@ public:
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
     double mTolerance = 1.e-10;
 
+    //! shut up the Info() method
+    void SetQuiet()
+    {
+        mQuiet = true;
+    }
+
 private:
     GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
 
@@ -65,6 +71,8 @@ private:
     Eigen::SparseMatrix<double> mCmat;
 
     double mGlobalTime = 0;
+
+    bool mQuiet = false;
 };
 
 } /* NuTo */
