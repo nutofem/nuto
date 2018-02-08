@@ -1,7 +1,6 @@
 #include "BoostUnitTest.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include "visualize/VoronoiHandler.h"
 #include "visualize/VoronoiGeometries.h"
 #include "visualize/Visualizer.h"
 #include "visualize/XMLWriter.h"
@@ -32,7 +31,7 @@ BOOST_AUTO_TEST_CASE(GroupVoronoiTensorProduct2D)
     auto cells = s.Cells();
 
     std::string filename = "VoronoiOutput.vtu";
-    Visualizer<VoronoiHandler> visualize(cells, VoronoiGeometryQuad(2));
+    Visualizer visualize(cells, VoronoiGeometryQuad(2));
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::Voronoi(filename);
 }

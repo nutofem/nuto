@@ -2,7 +2,11 @@
 
 #include "base/Group.h"
 #include "mechanics/cell/CellInterface.h"
+#include "visualize/HandlerInterface.h"
 #include "visualize/UnstructuredGrid.h"
+
+#include "visualize/AverageHandler.h"
+#include "visualize/VoronoiHandler.h"
 
 namespace NuTo
 {
@@ -10,23 +14,39 @@ namespace Visualize
 {
 
 //! Class to write visualization files of DOF values and cell data.
-//! @tparam THandler Cell handler class that converts computation cell into visualize output.
-//!                  For examples, see QuadAverageHandler and TensorProductVoronoiHandler.
-template <typename THandler>
 class Visualizer
 {
 public:
     //! Construct a visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
-    //! @param ...args Additional arguments that get passed on to the constructor of the cell handler.
-    template<typename... HandlerArguments>
-    Visualizer(Group<CellInterface>& cells, HandlerArguments&&... args)
+    //! @param handler implementation of the HandlerInterface
+    Visualizer(Group<CellInterface>& cells, const HandlerInterface& handler)
         : mCells(cells)
-        , mHandler(std::forward<HandlerArguments>(args)...)
+        , mHandler(handler.Clone())
     {
-        for (auto& cell : mCells)
-            mPointIds.push_back(mHandler.WriteGeometry(cell, &mGrid));
+        WriteGeometry();
     }
+
+    //! Construct an average visualizer with a group of cells to be visualized.
+    //! @param cells Group of cells you want to visualize.
+    //! @param geometry average geometry
+    Visualizer(Group<CellInterface>& cells, AverageGeometry geometry)
+        : mCells(cells)
+        , mHandler(std::make_unique<AverageHandler>(geometry))
+    {
+        WriteGeometry();
+    }
+
+    //! Construct an voronoi visualizer with a group of cells to be visualized.
+    //! @param cells Group of cells you want to visualize.
+    //! @param geometry voronoi geometry
+    Visualizer(Group<CellInterface>& cells, VoronoiGeometry geometry)
+        : mCells(cells)
+        , mHandler(std::make_unique<VoronoiHandler>(geometry))
+    {
+        WriteGeometry();
+    }
+
 
     //! Define DOF values that should be visualized.
     //! @param dof DofType to visualize.
@@ -35,7 +55,7 @@ public:
         int i = 0;
         for (const auto& cell : mCells)
         {
-            mHandler.WriteDofValues(cell, dof, mPointIds[i], &mGrid);
+            mHandler->WriteDofValues(cell, dof, mPointIds[i], &mGrid);
             ++i;
         }
     }
@@ -49,7 +69,7 @@ public:
         for (const auto& cell : mCells)
         {
             auto values = cell.Eval(f);
-            mHandler.CellData(i, values, name, &mGrid);
+            mHandler->CellData(i, values, name, &mGrid);
             ++i;
         }
     }
@@ -62,7 +82,7 @@ public:
         int i = 0;
         for (const auto& cell : mCells)
         {
-            mHandler.PointData(cell, f, mPointIds[i], name, &mGrid);
+            mHandler->PointData(cell, f, mPointIds[i], name, &mGrid);
             ++i;
         }
     }
@@ -70,7 +90,7 @@ public:
     //! Write out a VTK unstructured grid file.
     //! @param filename Name of the resulting file.
     //! @param asBinary ... true for output as binary vtu file
-    void WriteVtuFile(std::string filename,bool asBinary = true)
+    void WriteVtuFile(std::string filename, bool asBinary = true)
     {
         mGrid.ExportVtuDataFile(filename, asBinary);
     }
@@ -78,8 +98,15 @@ public:
 private:
     Group<CellInterface>& mCells;
     std::vector<std::vector<int>> mPointIds;
-    THandler mHandler;
+    std::unique_ptr<HandlerInterface> mHandler;
     UnstructuredGrid mGrid;
+
+
+    void WriteGeometry()
+    {
+        for (auto& cell : mCells)
+            mPointIds.push_back(mHandler->WriteGeometry(cell, &mGrid));
+    }
 };
 
 } // namespace Visualize
