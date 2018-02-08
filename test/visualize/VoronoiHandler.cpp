@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include "visualize/AverageGeometries.h"
+#include "visualize/VoronoiGeometries.h"
 #include "visualize/Visualizer.h"
 #include "visualize/XMLWriter.h"
 #include "TestStructure.h"
@@ -12,27 +12,26 @@ using namespace NuTo;
 struct UnstructuredGridCheck
 {
 public:
-    static void Average(std::string filename)
+    static void Voronoi(std::string filename)
     {
         pt::ptree tree;
         pt::read_xml(filename, tree);
         int numOfPoints = tree.get<int>("VTKFile.UnstructuredGrid.Piece.<xmlattr>.NumberOfPoints");
         int numOfCells = tree.get<int>("VTKFile.UnstructuredGrid.Piece.<xmlattr>.NumberOfCells");
-        BOOST_CHECK_EQUAL(numOfPoints, 8);
-        BOOST_CHECK_EQUAL(numOfCells, 2);
+        BOOST_CHECK_EQUAL(numOfPoints, 18);
+        BOOST_CHECK_EQUAL(numOfCells, 8);
     }
 };
 
-
-BOOST_AUTO_TEST_CASE(GroupAverage)
+BOOST_AUTO_TEST_CASE(GroupVoronoiTensorProduct2D)
 {
-    using namespace Visualize;
+    using namespace NuTo::Visualize;
     NuTo::DofType dof("NodeCoordinatesDiv10", 2);
     NuTo::Test::VisualizeTestStructure s(dof);
     auto cells = s.Cells();
 
-    std::string filename = "AverageOutput.vtu";
-    Visualizer visualize(cells, AverageGeometryQuad());
+    std::string filename = "VoronoiOutput.vtu";
+    Visualizer visualize(cells, VoronoiGeometryQuad(2));
     visualize.WriteVtuFile(filename, false);
-    UnstructuredGridCheck::Average(filename);
+    UnstructuredGridCheck::Voronoi(filename);
 }
