@@ -5,6 +5,7 @@ set(VisualizeSources
     XMLWriter.cpp
     DataArray.cpp
     AverageHandler.cpp
+    Visualizer.cpp
     VoronoiHandler.cpp
     VoronoiGeometries.cpp
 )

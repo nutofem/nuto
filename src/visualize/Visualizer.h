@@ -20,80 +20,38 @@ public:
     //! Construct a visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param handler implementation of the HandlerInterface
-    Visualizer(Group<CellInterface>& cells, const HandlerInterface& handler)
-        : mCells(cells)
-        , mHandler(handler.Clone())
-    {
-        WriteGeometry();
-    }
+    Visualizer(Group<CellInterface>& cells, const HandlerInterface& handler);
 
     //! Construct an average visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param geometry average geometry
-    Visualizer(Group<CellInterface>& cells, AverageGeometry geometry)
-        : mCells(cells)
-        , mHandler(std::make_unique<AverageHandler>(geometry))
-    {
-        WriteGeometry();
-    }
+    Visualizer(Group<CellInterface>& cells, AverageGeometry geometry);
 
     //! Construct an voronoi visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param geometry voronoi geometry
-    Visualizer(Group<CellInterface>& cells, VoronoiGeometry geometry)
-        : mCells(cells)
-        , mHandler(std::make_unique<VoronoiHandler>(geometry))
-    {
-        WriteGeometry();
-    }
+    Visualizer(Group<CellInterface>& cells, VoronoiGeometry geometry);
 
 
     //! Define DOF values that should be visualized.
     //! @param dof DofType to visualize.
-    void DofValues(DofType dof)
-    {
-        int i = 0;
-        for (const auto& cell : mCells)
-        {
-            mHandler->WriteDofValues(cell, dof, mPointIds[i], &mGrid);
-            ++i;
-        }
-    }
+    void DofValues(DofType dof);
 
     //! Define cell data that should be visualized.
     //! @param f Function that is passed to the cell for evaluation.
     //! @param name Name to be used in the resulting output file for the data array.
-    void CellData(std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> f, std::string name)
-    {
-        int i = 0;
-        for (const auto& cell : mCells)
-        {
-            auto values = cell.Eval(f);
-            mHandler->CellData(i, values, name, &mGrid);
-            ++i;
-        }
-    }
+    void CellData(std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> f, std::string name);
 
     //! Visualize a function y = f(x) over a collection of cells
     //! @param f Function taking the coordinates as an Eigen vector and returning an Eigen vector
     //! @param name Name to be used in the resulting output file for the data array.
-    void PointData(std::function<Eigen::VectorXd(Eigen::VectorXd)> f, std::string name)
-    {
-        int i = 0;
-        for (const auto& cell : mCells)
-        {
-            mHandler->PointData(cell, f, mPointIds[i], name, &mGrid);
-            ++i;
-        }
-    }
+    void PointData(std::function<Eigen::VectorXd(Eigen::VectorXd)> f, std::string name);
 
     //! Write out a VTK unstructured grid file.
     //! @param filename Name of the resulting file.
     //! @param asBinary ... true for output as binary vtu file
-    void WriteVtuFile(std::string filename, bool asBinary = true)
-    {
-        mGrid.ExportVtuDataFile(filename, asBinary);
-    }
+    void WriteVtuFile(std::string filename, bool asBinary = true);
+
 
 private:
     Group<CellInterface>& mCells;
@@ -102,11 +60,7 @@ private:
     UnstructuredGrid mGrid;
 
 
-    void WriteGeometry()
-    {
-        for (auto& cell : mCells)
-            mPointIds.push_back(mHandler->WriteGeometry(cell, &mGrid));
-    }
+    void WriteGeometry();
 };
 
 } // namespace Visualize
