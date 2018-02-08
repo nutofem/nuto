@@ -3,21 +3,21 @@
 using namespace NuTo;
 using namespace NuTo::Visualize;
 
-Visualizer::Visualizer(Group<CellInterface>& cells, const HandlerInterface& handler)
+Visualizer::Visualizer(const Group<CellInterface>& cells, const HandlerInterface& handler)
     : mCells(cells)
     , mHandler(handler.Clone())
 {
     WriteGeometry();
 }
 
-Visualizer::Visualizer(Group<CellInterface>& cells, AverageGeometry geometry)
+Visualizer::Visualizer(const Group<CellInterface>& cells, AverageGeometry geometry)
     : mCells(cells)
     , mHandler(std::make_unique<AverageHandler>(geometry))
 {
     WriteGeometry();
 }
 
-Visualizer::Visualizer(Group<CellInterface>& cells, VoronoiGeometry geometry)
+Visualizer::Visualizer(const Group<CellInterface>& cells, VoronoiGeometry geometry)
     : mCells(cells)
     , mHandler(std::make_unique<VoronoiHandler>(geometry))
 {
@@ -58,6 +58,14 @@ void Visualizer::PointData(std::function<Eigen::VectorXd(Eigen::VectorXd)> f, st
 void Visualizer::WriteVtuFile(std::string filename, bool asBinary)
 {
     mGrid.ExportVtuDataFile(filename, asBinary);
+}
+
+void Visualizer::SetCells(const Group<CellInterface>& cells)
+{
+    mCells = cells;
+    mPointIds.clear();
+    mGrid = UnstructuredGrid();
+    WriteGeometry();
 }
 
 void Visualizer::WriteGeometry()

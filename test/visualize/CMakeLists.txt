@@ -14,5 +14,10 @@ add_unit_test(VoronoiHandler
     mechanics/elements/ElementShapeFunctions.cpp)
 target_link_libraries(VoronoiHandler Visualize)
 
+add_unit_test(Visualizer
+    mechanics/elements/ElementShapeFunctions.cpp)
+target_link_libraries(Visualizer Visualize)
+
+
 add_unit_test(MeshFunction)
 target_link_libraries(MeshFunction Mechanics Visualize)

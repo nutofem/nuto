@@ -20,17 +20,17 @@ public:
     //! Construct a visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param handler implementation of the HandlerInterface
-    Visualizer(Group<CellInterface>& cells, const HandlerInterface& handler);
+    Visualizer(const Group<CellInterface>& cells, const HandlerInterface& handler);
 
     //! Construct an average visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param geometry average geometry
-    Visualizer(Group<CellInterface>& cells, AverageGeometry geometry);
+    Visualizer(const Group<CellInterface>& cells, AverageGeometry geometry);
 
     //! Construct an voronoi visualizer with a group of cells to be visualized.
     //! @param cells Group of cells you want to visualize.
     //! @param geometry voronoi geometry
-    Visualizer(Group<CellInterface>& cells, VoronoiGeometry geometry);
+    Visualizer(const Group<CellInterface>& cells, VoronoiGeometry geometry);
 
 
     //! Define DOF values that should be visualized.
@@ -52,9 +52,12 @@ public:
     //! @param asBinary ... true for output as binary vtu file
     void WriteVtuFile(std::string filename, bool asBinary = true);
 
+    //! Overrides the cell group with `cells`
+    //! @param cells new cell group
+    void SetCells(const Group<CellInterface>& cells);
 
 private:
-    Group<CellInterface>& mCells;
+    Group<CellInterface> mCells;
     std::vector<std::vector<int>> mPointIds;
     std::unique_ptr<HandlerInterface> mHandler;
     UnstructuredGrid mGrid;
