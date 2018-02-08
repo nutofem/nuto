@@ -2,10 +2,14 @@
 
 using namespace NuTo;
 
-EquationSystem::EquationSystem(SimpleAssembler* assembler, MeshFem* rMesh)
-    : mAssembler(*assembler)
-    , mMerger(rMesh)
+EquationSystem::EquationSystem(MeshFem* rMesh)
+    : mMerger(rMesh)
 {
+}
+
+void EquationSystem::SetDofInfo(DofInfo dofInfo)
+{
+    mAssembler.SetDofInfo(dofInfo);
 }
 
 void EquationSystem::AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f)

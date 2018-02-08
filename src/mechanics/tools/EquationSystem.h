@@ -14,7 +14,9 @@ namespace NuTo
 class EquationSystem
 {
 public:
-    EquationSystem(SimpleAssembler* rAssembler, MeshFem* rMesh);
+    EquationSystem(MeshFem* rMesh);
+
+    void SetDofInfo(DofInfo dofInfo);
 
     void AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f);
     void AddHessian0Function(Group<CellInterface> group, CellInterface::MatrixFunction f);
@@ -26,7 +28,7 @@ public:
     void UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs);
 
 private:
-    SimpleAssembler& mAssembler;
+    SimpleAssembler mAssembler;
     NodalValueMerger mMerger;
 
     using GradientPair = std::pair<Group<CellInterface>, CellInterface::VectorFunction>;
