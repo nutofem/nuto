@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     AddDofInterpolation(&mesh, displ, interpolation);
 
     Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
     // ************************************************************************
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
     //                  assemble and solve
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     const double boundaryDisplacement = 1.;
     constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
     const int numDepDofs = dofInfo.numDependentDofs[displ];
     Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
