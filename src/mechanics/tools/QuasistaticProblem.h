@@ -10,11 +10,12 @@ class QuasistaticProblem
 public:
     //! Ctor
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
+    //! @param dof dof type
+    QuasistaticProblem(EquationSystem& equations, DofType dof);
+
     //! @param constraints linear constraints
     //! @param numIndepententDofs number of independent dofs to build the constraint matrix
-    //! @param dof dof type
-    QuasistaticProblem(EquationSystem& equations, Constraint::Constraints constraints, int numIndependentDofs,
-                       DofType dof);
+    void SetConstraints(Constraint::Constraints constraints, int numIndependentDofs);
 
     //! sets the global time required for evaluating the constraint right hand side
     //! @param globalTime global time

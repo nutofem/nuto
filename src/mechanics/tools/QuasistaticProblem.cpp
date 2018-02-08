@@ -2,13 +2,16 @@
 
 using namespace NuTo;
 
-QuasistaticProblem::QuasistaticProblem(EquationSystem& s, Constraint::Constraints constraints, int numIndependentDofs,
-                                       DofType dof)
+QuasistaticProblem::QuasistaticProblem(EquationSystem& s, DofType dof)
     : mEquations(s)
-    , mConstraints(constraints)
     , mDof(dof)
-    , mCmat(mConstraints.BuildConstraintMatrix(mDof, numIndependentDofs))
 {
+}
+
+void QuasistaticProblem::SetConstraints(Constraint::Constraints constraints, int numIndependentDofs)
+{
+    mConstraints = constraints;
+    mCmat = constraints.BuildConstraintMatrix(mDof, numIndependentDofs);
 }
 
 void QuasistaticProblem::SetGlobalTime(double globalTime)
