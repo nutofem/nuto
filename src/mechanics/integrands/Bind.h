@@ -25,4 +25,5 @@ auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const Nu
     };
 }
 
+
 } /* NuTo */

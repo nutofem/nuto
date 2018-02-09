@@ -50,11 +50,12 @@ public:
         mLaw.mEvolution.ResizeHistoryData(mCellGroup.Size(), mIntegrationType.GetNumIntegrationPoints());
 
 
-        auto Gradient = Bind(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
-        auto Hessian0 = Bind(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
-        CellInterface::VoidFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData) {
+        auto Gradient = EquationSystem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
+        auto Hessian0 = EquationSystem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
+        EquationSystem::UpdateFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData,
+                                                           double, double dt) {
             EngineeringStrain<1> strain = cellIpData.GetBMatrixStrain(mDof) * cellData.GetNodeValues(mDof);
-            mLaw.Update(strain, 0, cellData.GetCellId(), cellIpData.GetIpId());
+            mLaw.Update(strain, dt, cellData.GetCellId(), cellIpData.GetIpId());
         };
 
         mEquations.AddGradientFunction(mCellGroup, Gradient);

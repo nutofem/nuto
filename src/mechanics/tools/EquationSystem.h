@@ -14,29 +14,66 @@ namespace NuTo
 class EquationSystem
 {
 public:
+    using GradientFunction = std::function<DofVector<double>(const CellData&, const CellIpData&, double t, double dt)>;
+    using HessianFunction = std::function<DofMatrix<double>(const CellData&, const CellIpData&, double t, double dt)>;
+    using UpdateFunction = std::function<void(const CellData&, const CellIpData&, double t, double dt)>;
+
     EquationSystem(MeshFem* rMesh);
 
     void SetDofInfo(DofInfo dofInfo);
 
-    void AddGradientFunction(Group<CellInterface> group, CellInterface::VectorFunction f);
-    void AddHessian0Function(Group<CellInterface> group, CellInterface::MatrixFunction f);
-    void AddUpdateFunction(Group<CellInterface> group, CellInterface::VoidFunction f);
+    void AddGradientFunction(Group<CellInterface> group, GradientFunction f);
+    void AddHessian0Function(Group<CellInterface> group, HessianFunction f);
+    void AddUpdateFunction(Group<CellInterface> group, UpdateFunction f);
 
-    GlobalDofVector Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs);
-    GlobalDofMatrixSparse Hessian0(GlobalDofVector dofValues, std::vector<DofType> dofs);
+    GlobalDofVector Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt);
+    GlobalDofMatrixSparse Hessian0(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt);
 
-    void UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs);
+    void UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt);
+
 
 private:
     SimpleAssembler mAssembler;
     NodalValueMerger mMerger;
 
-    using GradientPair = std::pair<Group<CellInterface>, CellInterface::VectorFunction>;
-    using Hessian0Pair = std::pair<Group<CellInterface>, CellInterface::MatrixFunction>;
-    using UpdatePair = std::pair<Group<CellInterface>, CellInterface::VoidFunction>;
+    using GradientPair = std::pair<Group<CellInterface>, GradientFunction>;
+    using Hessian0Pair = std::pair<Group<CellInterface>, HessianFunction>;
+    using UpdatePair = std::pair<Group<CellInterface>, UpdateFunction>;
 
     std::vector<GradientPair> mGradientFunctions;
     std::vector<Hessian0Pair> mHessian0Functions;
     std::vector<UpdatePair> mUpdateFunctions;
+
+
+    /*
+     *
+     * We better hide these two beauties in the basement of this class
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     */
+
+public:
+    template <typename TObject, typename TReturn>
+    static auto Bind_dt(TObject& object,
+                        TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double dt))
+    {
+        return [&object, f](const CellData& cellData, const CellIpData& cellIpData, double, double dt) {
+            return (object.*f)(cellData, cellIpData, dt);
+        };
+    }
+
+    template <typename TObject, typename TReturn>
+    static auto Bind_t(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double t))
+    {
+        return [&object, f](const CellData& cellData, const CellIpData& cellIpData, double t, double) {
+            return (object.*f)(cellData, cellIpData, t);
+        };
+    }
 };
 } /* NuTo */
