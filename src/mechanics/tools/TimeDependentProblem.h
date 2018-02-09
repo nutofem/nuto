@@ -10,10 +10,15 @@
 namespace NuTo
 {
 
-//! Equation system that contains Gradient(u) and its derivative with respect to u
+//! Equation system that contains R(u, u') + M u'' = 0 with
+//! R = Gradient
+//! dR/du = Hessian0
+//! dR/du' = Hessian1
+//! M = Hessian2
 class TimeDependentProblem
 {
 public:
+    // let us call these "time dependent functions"
     using GradientFunction = std::function<DofVector<double>(const CellData&, const CellIpData&, double t, double dt)>;
     using HessianFunction = std::function<DofMatrix<double>(const CellData&, const CellIpData&, double t, double dt)>;
     using UpdateFunction = std::function<void(const CellData&, const CellIpData&, double t, double dt)>;
@@ -31,7 +36,6 @@ public:
 
     void UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt);
 
-
 private:
     SimpleAssembler mAssembler;
     NodalValueMerger mMerger;
@@ -47,6 +51,10 @@ private:
 
     /*
      *
+     *
+     *
+     *
+     *
      * We better hide these two beauties in the basement of this class
      *
      *
@@ -59,6 +67,7 @@ private:
      */
 
 public:
+    //! @brief binds a dt dependent integrand to a time dependent function
     template <typename TObject, typename TReturn>
     static auto Bind_dt(TObject& object,
                         TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double dt))
@@ -68,6 +77,7 @@ public:
         };
     }
 
+    //! @brief binds a t dependent integrand to a time dependent function
     template <typename TObject, typename TReturn>
     static auto Bind_t(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double t))
     {

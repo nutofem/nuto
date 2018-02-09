@@ -72,10 +72,6 @@ public:
 
     void Solve(double tEnd)
     {
-        Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> pureSolver;
-        auto solver = NewtonRaphson::CreateWrappedSolver(pureSolver);
-        Eigen::VectorXd x = Eigen::VectorXd::Zero(mNumIndependentDofs);
-
         double globalTime = 0;
         double timeStep = 0.01;
         double maxTimeStep = 0.1;
@@ -84,40 +80,25 @@ public:
         while (globalTime < tEnd && timeStep > 1.e-6)
         {
             std::cout << "Step " << iStep << " at t = " << globalTime << std::endl;
-            try
-            {
-                auto trialSystem = mProblem.TrialSystem(x, globalTime, timeStep);
-                Eigen::VectorXd trialX = x + solver.Solve(trialSystem.first, trialSystem.second);
 
-                mProblem.SetGlobalTime(globalTime + timeStep);
+            auto numIterations = mProblem.DoStep(globalTime + timeStep);
 
-                int numIterations = 0;
-                // Some solvers return values > 1e30 as valid solutions. Thus, we store the
-                // solution into tmpX (instead of x directly) and check afterwards.
-                Eigen::VectorXd tmpX =
-                        NewtonRaphson::Solve(mProblem, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
-                if (tmpX.norm() > 1.e30)
-                    throw NewtonRaphson::NoConvergence("", "floating point exception");
-
-                mProblem.UpdateHistory(tmpX);
-
-                globalTime += timeStep;
-                x = tmpX;
-                iStep++;
-
-                std::cout << "Convergence after " << numIterations << " iterations.\n";
-                if (numIterations < 3)
-                {
-                    timeStep *= 1.5;
-                    timeStep = std::min(timeStep, maxTimeStep);
-                    std::cout << "--> Increasing time step to " << timeStep << ".\n";
-                }
-            }
-            catch (NewtonRaphson::NoConvergence& e)
+            if (not numIterations)
             {
                 timeStep *= 0.5;
                 std::cout << "No convergence!\n";
-                std::cout << "--> Reducing time step to " << timeStep << ".\n";
+                continue; // without updating the global time
+            }
+
+            std::cout << "Converence after " << numIterations.get() << " iterations.\n";
+            globalTime += timeStep;
+            iStep++;
+
+            if (numIterations < 3)
+            {
+                timeStep *= 1.5;
+                timeStep = std::min(timeStep, maxTimeStep);
+                std::cout << "--> Increasing time step to " << timeStep << ".\n";
             }
         }
     }
