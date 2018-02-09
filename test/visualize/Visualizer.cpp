@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(EmptyCells)
     NuTo::Test::VisualizeTestStructure s(dof);
     auto cells = s.Cells();
 
-    visualize.SetCells(cells);
+    visualize = Visualizer(cells, AverageHandler(AverageGeometryQuad()));
     std::string filename = "EmptyCellsOutput.vtu";
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 2);
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(ReplacingCells)
     auto cells = s.Cells();
 
     Visualizer visualize(cells, AverageHandler(AverageGeometryQuad()));
-    visualize.SetCells(cells);
+    visualize = Visualizer(cells, AverageHandler(AverageGeometryQuad()));
     std::string filename = "ReplacingCellsOutput.vtu";
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 2);

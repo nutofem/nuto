@@ -46,14 +46,6 @@ void Visualizer::WriteVtuFile(std::string filename, bool asBinary)
     mGrid.ExportVtuDataFile(filename, asBinary);
 }
 
-void Visualizer::SetCells(const Group<CellInterface>& cells)
-{
-    mCells = cells;
-    mPointIds.clear();
-    mGrid = UnstructuredGrid();
-    WriteGeometry();
-}
-
 void Visualizer::WriteGeometry()
 {
     for (auto& cell : mCells)

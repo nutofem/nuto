@@ -19,6 +19,9 @@ public:
     //! @param handler implementation of the HandlerInterface
     Visualizer(const Group<CellInterface>& cells, const HandlerInterface& handler);
 
+    //! assigment operator that allows overriding an existing visualizer to e.g. change the cells
+    Visualizer& operator=(Visualizer&&) = default;
+
     //! Define DOF values that should be visualized.
     //! @param dof DofType to visualize.
     void DofValues(DofType dof);
@@ -38,19 +41,13 @@ public:
     //! @param asBinary ... true for output as binary vtu file
     void WriteVtuFile(std::string filename, bool asBinary = true);
 
-    //! Overrides the cell group with `cells`
-    //! @param cells new cell group
-    void SetCells(const Group<CellInterface>& cells);
-
 private:
     Group<CellInterface> mCells;
     std::vector<std::vector<int>> mPointIds;
     std::unique_ptr<HandlerInterface> mHandler;
     UnstructuredGrid mGrid;
 
-
     void WriteGeometry();
 };
-
 } // namespace Visualize
 } // namespace NuTo
