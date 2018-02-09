@@ -27,7 +27,7 @@ int main()
         visualizationCells.Add(cells.back());
     }
 
-    Visualize::Visualizer visualize(visualizationCells, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer visualize(visualizationCells, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
 
     auto sine_function = [](Eigen::VectorXd x) { return Eigen::Vector3d(sin(x[0]), sin(x[1]), sin(x[0] * x[1])); };
     visualize.PointData(sine_function, "Sine");

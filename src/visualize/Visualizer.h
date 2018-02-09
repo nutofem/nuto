@@ -5,9 +5,6 @@
 #include "visualize/HandlerInterface.h"
 #include "visualize/UnstructuredGrid.h"
 
-#include "visualize/AverageHandler.h"
-#include "visualize/VoronoiHandler.h"
-
 namespace NuTo
 {
 namespace Visualize
@@ -21,17 +18,6 @@ public:
     //! @param cells Group of cells you want to visualize.
     //! @param handler implementation of the HandlerInterface
     Visualizer(const Group<CellInterface>& cells, const HandlerInterface& handler);
-
-    //! Construct an average visualizer with a group of cells to be visualized.
-    //! @param cells Group of cells you want to visualize.
-    //! @param geometry average geometry
-    Visualizer(const Group<CellInterface>& cells, AverageGeometry geometry);
-
-    //! Construct an voronoi visualizer with a group of cells to be visualized.
-    //! @param cells Group of cells you want to visualize.
-    //! @param geometry voronoi geometry
-    Visualizer(const Group<CellInterface>& cells, VoronoiGeometry geometry);
-
 
     //! Define DOF values that should be visualized.
     //! @param dof DofType to visualize.

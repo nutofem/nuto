@@ -197,7 +197,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
     pointsPerDirection += 1; // one point per direction doesn't do much Voronoiying
-    Visualize::Visualizer visualize(momentumBalanceCells, Visualize::VoronoiGeometryQuad(pointsPerDirection));
+    Visualize::Visualizer visualize(momentumBalanceCells,
+                                    Visualize::VoronoiHandler(Visualize::VoronoiGeometryQuad(pointsPerDirection)));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
@@ -309,7 +310,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    Visualize::Visualizer visualize(cellGroup, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {

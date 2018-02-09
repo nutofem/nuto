@@ -10,20 +10,6 @@ Visualizer::Visualizer(const Group<CellInterface>& cells, const HandlerInterface
     WriteGeometry();
 }
 
-Visualizer::Visualizer(const Group<CellInterface>& cells, AverageGeometry geometry)
-    : mCells(cells)
-    , mHandler(std::make_unique<AverageHandler>(geometry))
-{
-    WriteGeometry();
-}
-
-Visualizer::Visualizer(const Group<CellInterface>& cells, VoronoiGeometry geometry)
-    : mCells(cells)
-    , mHandler(std::make_unique<VoronoiHandler>(geometry))
-{
-    WriteGeometry();
-}
-
 void Visualizer::DofValues(DofType dof)
 {
     int i = 0;
