@@ -11,14 +11,14 @@ namespace NuTo
 {
 
 //! Equation system that contains Gradient(u) and its derivative with respect to u
-class EquationSystem
+class TimeDependentProblem
 {
 public:
     using GradientFunction = std::function<DofVector<double>(const CellData&, const CellIpData&, double t, double dt)>;
     using HessianFunction = std::function<DofMatrix<double>(const CellData&, const CellIpData&, double t, double dt)>;
     using UpdateFunction = std::function<void(const CellData&, const CellIpData&, double t, double dt)>;
 
-    EquationSystem(MeshFem* rMesh);
+    TimeDependentProblem(MeshFem* rMesh);
 
     void SetDofInfo(DofInfo dofInfo);
 

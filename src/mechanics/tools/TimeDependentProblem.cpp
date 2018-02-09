@@ -1,28 +1,28 @@
-#include "mechanics/tools/EquationSystem.h"
+#include "mechanics/tools/TimeDependentProblem.h"
 
 using namespace NuTo;
 
-EquationSystem::EquationSystem(MeshFem* rMesh)
+TimeDependentProblem::TimeDependentProblem(MeshFem* rMesh)
     : mMerger(rMesh)
 {
 }
 
-void EquationSystem::SetDofInfo(DofInfo dofInfo)
+void TimeDependentProblem::SetDofInfo(DofInfo dofInfo)
 {
     mAssembler.SetDofInfo(dofInfo);
 }
 
-void EquationSystem::AddGradientFunction(Group<CellInterface> group, GradientFunction f)
+void TimeDependentProblem::AddGradientFunction(Group<CellInterface> group, GradientFunction f)
 {
     mGradientFunctions.push_back({group, f});
 }
 
-void EquationSystem::AddHessian0Function(Group<CellInterface> group, HessianFunction f)
+void TimeDependentProblem::AddHessian0Function(Group<CellInterface> group, HessianFunction f)
 {
     mHessian0Functions.push_back({group, f});
 }
 
-void EquationSystem::AddUpdateFunction(Group<CellInterface> group, UpdateFunction f)
+void TimeDependentProblem::AddUpdateFunction(Group<CellInterface> group, UpdateFunction f)
 {
     mUpdateFunctions.push_back({group, f});
 }
@@ -34,7 +34,8 @@ TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
     return std::bind(f, _1, _2, t, dt);
 };
 
-GlobalDofVector EquationSystem::Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt)
+GlobalDofVector TimeDependentProblem::Gradient(GlobalDofVector dofValues, std::vector<DofType> dofs, double t,
+                                               double dt)
 {
     mMerger.Merge(dofValues, dofs);
     GlobalDofVector gradient;
@@ -44,8 +45,8 @@ GlobalDofVector EquationSystem::Gradient(GlobalDofVector dofValues, std::vector<
     return gradient;
 }
 
-GlobalDofMatrixSparse EquationSystem::Hessian0(GlobalDofVector dofValues, std::vector<DofType> dofs, double t,
-                                               double dt)
+GlobalDofMatrixSparse TimeDependentProblem::Hessian0(GlobalDofVector dofValues, std::vector<DofType> dofs, double t,
+                                                     double dt)
 {
     mMerger.Merge(dofValues, dofs);
     GlobalDofMatrixSparse hessian0;
@@ -55,7 +56,7 @@ GlobalDofMatrixSparse EquationSystem::Hessian0(GlobalDofVector dofValues, std::v
     return hessian0;
 }
 
-void EquationSystem::UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt)
+void TimeDependentProblem::UpdateHistory(GlobalDofVector dofValues, std::vector<DofType> dofs, double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
     for (auto& updateFunction : mUpdateFunctions)

@@ -16,7 +16,7 @@ set(MechanicsSources
 
     tools/GlobalFractureEnergyIntegrator.cpp
     tools/CellStorage.cpp
-    tools/EquationSystem.cpp
+    tools/TimeDependentProblem.cpp
     tools/NodalValueMerger.cpp
     tools/QuasistaticProblem.cpp
 

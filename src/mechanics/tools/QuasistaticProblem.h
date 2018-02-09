@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mechanics/tools/EquationSystem.h"
+#include "mechanics/tools/TimeDependentProblem.h"
 #include "mechanics/constraints/Constraints.h"
 
 namespace NuTo
@@ -11,7 +11,7 @@ public:
     //! Ctor
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
-    QuasistaticProblem(EquationSystem& equations, DofType dof);
+    QuasistaticProblem(TimeDependentProblem& equations, DofType dof);
 
     //! @param constraints linear constraints
     //! @param numIndepententDofs number of independent dofs to build the constraint matrix
@@ -65,7 +65,7 @@ private:
     GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
 
 
-    EquationSystem& mEquations;
+    TimeDependentProblem& mProblem;
     Constraint::Constraints mConstraints;
     DofType mDof;
     Eigen::SparseMatrix<double> mCmat;

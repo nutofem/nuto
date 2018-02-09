@@ -50,10 +50,10 @@ public:
         mLaw.mEvolution.ResizeHistoryData(mCellGroup.Size(), mIntegrationType.GetNumIntegrationPoints());
 
 
-        auto Gradient = EquationSystem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
-        auto Hessian0 = EquationSystem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
-        EquationSystem::UpdateFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData,
-                                                           double, double dt) {
+        auto Gradient = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
+        auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
+        TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData,
+                                                                 double, double dt) {
             EngineeringStrain<1> strain = cellIpData.GetBMatrixStrain(mDof) * cellData.GetNodeValues(mDof);
             mLaw.Update(strain, dt, cellData.GetCellId(), cellIpData.GetIpId());
         };
@@ -153,7 +153,7 @@ private:
     Law mLaw;
     Integrands::MomentumBalance<1> mMomentumBalance;
 
-    EquationSystem mEquations;
+    TimeDependentProblem mEquations;
     QuasistaticProblem mProblem;
     int mNumIndependentDofs;
 

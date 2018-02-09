@@ -2,8 +2,8 @@
 
 using namespace NuTo;
 
-QuasistaticProblem::QuasistaticProblem(EquationSystem& s, DofType dof)
-    : mEquations(s)
+QuasistaticProblem::QuasistaticProblem(TimeDependentProblem& s, DofType dof)
+    : mProblem(s)
     , mDof(dof)
 {
 }
@@ -25,7 +25,7 @@ QuasistaticProblem::TrialSystem(const Eigen::VectorXd& x, double globalTime, dou
     Eigen::VectorXd deltaBrhs =
             mConstraints.GetRhs(mDof, globalTime + timeStep) - mConstraints.GetRhs(mDof, globalTime);
 
-    auto hessian0 = mEquations.Hessian0(ToGlobalDofVector(x), {mDof}, globalTime, timeStep);
+    auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), {mDof}, globalTime, timeStep);
 
     Eigen::VectorXd residualConstrained =
             -(hessian0.JK(mDof, mDof) - mCmat.transpose() * hessian0.KK(mDof, mDof)) * deltaBrhs;
@@ -39,20 +39,20 @@ QuasistaticProblem::TrialSystem(const Eigen::VectorXd& x, double globalTime, dou
 
 Eigen::VectorXd QuasistaticProblem::Residual(const Eigen::VectorXd& x)
 {
-    auto gradient = mEquations.Gradient(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
+    auto gradient = mProblem.Gradient(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
     return gradient.J[mDof] - mCmat.transpose() * gradient.K[mDof];
 }
 
 Eigen::SparseMatrix<double> QuasistaticProblem::Derivative(const Eigen::VectorXd& x)
 {
-    auto hessian0 = mEquations.Hessian0(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
+    auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
     return hessian0.JJ(mDof, mDof) - mCmat.transpose() * hessian0.KJ(mDof, mDof) - hessian0.JK(mDof, mDof) * mCmat +
            mCmat.transpose() * hessian0.KK(mDof, mDof) * mCmat;
 }
 
 void QuasistaticProblem::UpdateHistory(const Eigen::VectorXd& x)
 {
-    mEquations.UpdateHistory(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
+    mProblem.UpdateHistory(ToGlobalDofVector(x), {mDof}, mGlobalTime, 0.);
 }
 
 double QuasistaticProblem::Norm(const Eigen::VectorXd& residual) const
