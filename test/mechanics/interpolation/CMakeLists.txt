@@ -23,3 +23,6 @@ add_unit_test(InterpolationQuadLobatto
 add_unit_test(InterpolationBrickLobatto
     math/Legendre.cpp)
 
+add_unit_test(InterpolationCompanion
+    mechanics/elements/ElementShapeFunctions.cpp
+    )
