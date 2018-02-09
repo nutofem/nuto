@@ -14,6 +14,13 @@ add_unit_test(VoronoiHandler
     mechanics/elements/ElementShapeFunctions.cpp)
 target_link_libraries(VoronoiHandler Visualize)
 
+add_unit_test(PointHandler
+    mechanics/elements/ElementShapeFunctions.cpp
+    mechanics/integrationtypes/IntegrationTypeBase.cpp
+    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp)
+
+target_link_libraries(PointHandler Visualize Math)
+
 add_unit_test(Visualizer
     mechanics/elements/ElementShapeFunctions.cpp)
 target_link_libraries(Visualizer Visualize)

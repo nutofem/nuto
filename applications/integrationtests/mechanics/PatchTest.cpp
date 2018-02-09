@@ -27,6 +27,7 @@
 
 #include "visualize/AverageGeometries.h"
 #include "visualize/VoronoiGeometries.h"
+#include "visualize/PointHandler.h"
 #include "visualize/Visualizer.h"
 
 #include "mechanics/solver/Solve.h"
@@ -321,7 +322,12 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     visualize.CellData(
             [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
             "CellId");
-    visualize.WriteVtuFile("output.vtu");
+    visualize.WriteVtuFile("PatchTestVoronoi.vtu");
+
+    Visualize::Visualizer pointVisualizer(cellGroup, Visualize::PointHandler(integrationType));
+    pointVisualizer.DofValues(displ);
+    pointVisualizer.CellData(stress, "Stress");
+    pointVisualizer.WriteVtuFile("PatchTestPoint.vtu");
 
     // ************************************************************************
     //             check solution
