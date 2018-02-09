@@ -5,13 +5,13 @@
 
 namespace NuTo
 {
-class QuasistaticProblem
+class QuasistaticSolver
 {
 public:
     //! Ctor
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
-    QuasistaticProblem(TimeDependentProblem& equations, DofType dof);
+    QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
 
     //! @param constraints linear constraints
     //! @param numIndepententDofs number of independent dofs to build the constraint matrix

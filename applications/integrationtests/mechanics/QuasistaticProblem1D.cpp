@@ -11,7 +11,7 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/tools/CellStorage.h"
-#include "mechanics/tools/QuasistaticProblem.h"
+#include "mechanics/tools/QuasistaticSolver.h"
 
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/LocalIsotropicDamage.h"
@@ -154,7 +154,7 @@ private:
     Integrands::MomentumBalance<1> mMomentumBalance;
 
     TimeDependentProblem mEquations;
-    QuasistaticProblem mProblem;
+    QuasistaticSolver mProblem;
     int mNumIndependentDofs;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;

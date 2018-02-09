@@ -18,7 +18,7 @@ set(MechanicsSources
     tools/CellStorage.cpp
     tools/TimeDependentProblem.cpp
     tools/NodalValueMerger.cpp
-    tools/QuasistaticProblem.cpp
+    tools/QuasistaticSolver.cpp
 
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
