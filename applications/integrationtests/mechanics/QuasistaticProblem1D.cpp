@@ -38,13 +38,6 @@ public:
         , mIntegrationType(2, eIntegrationMethod::GAUSS)
     {
         AddDofInterpolation(&mMesh, mDof);
-        auto constraints = DefineConstraints(mMesh, mDof);
-        auto dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
-
-        mEquations.SetDofInfo(dofInfo);
-        mNumIndependentDofs = dofInfo.numIndependentDofs[mDof];
-        mProblem.SetConstraints(constraints, mNumIndependentDofs);
-        mProblem.mTolerance = 1.e-12;
 
         mCellGroup = mCells.AddCells(mMesh.ElementsTotal(), mIntegrationType);
         mLaw.mEvolution.ResizeHistoryData(mCellGroup.Size(), mIntegrationType.GetNumIntegrationPoints());
@@ -61,6 +54,11 @@ public:
         mEquations.AddGradientFunction(mCellGroup, Gradient);
         mEquations.AddHessian0Function(mCellGroup, Hessian0);
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
+
+        auto constraints = DefineConstraints(mMesh, mDof);
+
+        mProblem.SetConstraints(constraints);
+        mProblem.mTolerance = 1.e-12;
     }
 
     void SetImperfection(double kappaImperfection)
@@ -136,7 +134,6 @@ private:
 
     TimeDependentProblem mEquations;
     QuasistaticSolver mProblem;
-    int mNumIndependentDofs;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;

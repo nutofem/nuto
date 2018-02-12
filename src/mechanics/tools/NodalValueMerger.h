@@ -13,15 +13,20 @@ public:
     //! Performs "NodeMerge", writes values from the global solution vector to the nodes
     //! @param newValues complete vector (J/K) of new dof values
     //! @param dofs dof types to merge
-    void Merge(GlobalDofVector newValues, std::vector<DofType> dofs);
+    void Merge(const GlobalDofVector& newValues, std::vector<DofType> dofs);
 
-private:
-    MeshFem& mMesh;
-    DofContainer<Group<NodeSimple>> mNodes;
+    //! Performs "NodeExtract", writes values from the global solution vector to the nodes
+    //! @param rNewValues complete vector (J/K) of new dof values
+    //! @param dofs dof types to extract
+    void Extract(GlobalDofVector* rNewValues, std::vector<DofType> dofs);
 
     //! node group memoizer
     //! @param dof dof type
     //! @return a memoized node group
     Group<NodeSimple>& Nodes(DofType dof);
+
+private:
+    MeshFem& mMesh;
+    DofContainer<Group<NodeSimple>> mNodes;
 };
 } /* NuTo */

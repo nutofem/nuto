@@ -20,6 +20,15 @@ public:
             return K[dof][globalDofNumber - numIndependent];
     }
 
+    double operator()(DofType dof, int globalDofNumber) const
+    {
+        const int numIndependent = J[dof].size();
+        if (globalDofNumber < numIndependent)
+            return J[dof][globalDofNumber];
+        else
+            return K[dof][globalDofNumber - numIndependent];
+    }
+
     GlobalDofVector& operator+=(const GlobalDofVector& rhs)
     {
         this->J += rhs.J;

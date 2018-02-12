@@ -10,11 +10,15 @@ QuasistaticSolver::QuasistaticSolver(TimeDependentProblem& s, DofType dof)
 {
 }
 
-void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints, int numIndependentDofs)
+void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
 {
     mConstraints = constraints;
-    mCmat = constraints.BuildConstraintMatrix(mDof, numIndependentDofs);
-    mX.setZero(numIndependentDofs);
+    if (mX.rows() == 0)
+        mX = mProblem.RenumberDofs(constraints, {mDof}, GlobalDofVector()).J[mDof];
+    else
+        mX = mProblem.RenumberDofs(constraints, {mDof}, ToGlobalDofVector(mX)).J[mDof];
+
+    mCmat = constraints.BuildConstraintMatrix(mDof, mX.rows());
 }
 
 void QuasistaticSolver::SetGlobalTime(double globalTime)

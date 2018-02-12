@@ -15,8 +15,7 @@ public:
     QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
 
     //! @param constraints linear constraints
-    //! @param numIndepententDofs number of independent dofs to build the constraint matrix
-    void SetConstraints(Constraint::Constraints constraints, int numIndependentDofs);
+    void SetConstraints(Constraint::Constraints constraints);
 
     //! sets the global time required for evaluating the constraint right hand side
     //! @param globalTime global time
