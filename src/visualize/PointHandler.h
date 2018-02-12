@@ -1,27 +1,23 @@
 #pragma once
 
 #include "visualize/HandlerInterface.h"
-#include "visualize/VisualizeEnum.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
 namespace Visualize
 {
-
-//! Geometry description of one cell for the AverageHandler
-struct AverageGeometry
-{
-    std::vector<Eigen::VectorXd> cornerCoordinates;
-    eCellTypes cellType;
-};
-
-//! Cell handler that averages the cell values over each cell.
-class AverageHandler : public HandlerInterface
+//! Visualizes cell and point data only at the integration points (no visualization cells)
+class PointHandler : public HandlerInterface
 {
 public:
-    //! Construct for a given AverageGeometry
-    //! @param geometry geometry description of one averaged cell
-    AverageHandler(AverageGeometry geometry);
+    //! ctor
+    //! @param ipCoords vector of integration point coordinates
+    PointHandler(std::vector<Eigen::VectorXd> ipCoords);
+
+    //! ctor
+    //! @param integrationType integration type
+    PointHandler(const IntegrationTypeBase& integrationType);
 
     virtual std::unique_ptr<HandlerInterface> Clone() const override;
 
@@ -37,8 +33,8 @@ public:
                            std::vector<int> pointIds, std::string name, UnstructuredGrid* grid) override;
 
 private:
-    AverageGeometry mGeometry;
+    std::vector<Eigen::VectorXd> mIntegrationPointCoords;
 };
 
-} // namespace Visualize
-} // namespace NuTo
+} /* Visualize */
+} /* NuTo */

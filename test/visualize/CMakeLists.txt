@@ -6,13 +6,25 @@ add_unit_test(DataArray)
 add_unit_test(VoronoiGeometries)
 target_link_libraries(VoronoiGeometries Math)
 
-add_unit_test(AverageVisualizer
+add_unit_test(AverageHandler
     mechanics/elements/ElementShapeFunctions.cpp)
-target_link_libraries(AverageVisualizer Visualize)
+target_link_libraries(AverageHandler Visualize)
 
-add_unit_test(VoronoiVisualizer
+add_unit_test(VoronoiHandler
     mechanics/elements/ElementShapeFunctions.cpp)
-target_link_libraries(VoronoiVisualizer Visualize)
+target_link_libraries(VoronoiHandler Visualize)
+
+add_unit_test(PointHandler
+    mechanics/elements/ElementShapeFunctions.cpp
+    mechanics/integrationtypes/IntegrationTypeBase.cpp
+    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp)
+
+target_link_libraries(PointHandler Visualize Math)
+
+add_unit_test(Visualizer
+    mechanics/elements/ElementShapeFunctions.cpp)
+target_link_libraries(Visualizer Visualize)
+
 
 add_unit_test(MeshFunction)
 target_link_libraries(MeshFunction Mechanics Visualize)

@@ -25,10 +25,9 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
-#include "visualize/AverageHandler.h"
 #include "visualize/AverageGeometries.h"
-#include "visualize/VoronoiHandler.h"
 #include "visualize/VoronoiGeometries.h"
+#include "visualize/PointHandler.h"
 #include "visualize/Visualizer.h"
 
 #include "mechanics/solver/Solve.h"
@@ -198,8 +197,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
     pointsPerDirection += 1; // one point per direction doesn't do much Voronoiying
-    Visualize::Visualizer<Visualize::VoronoiHandler> visualize(momentumBalanceCells,
-                                                               Visualize::VoronoiGeometryQuad(pointsPerDirection));
+    Visualize::Visualizer visualize(momentumBalanceCells,
+                                    Visualize::VoronoiHandler(Visualize::VoronoiGeometryQuad(pointsPerDirection)));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
@@ -311,7 +310,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
             node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
     }
 
-    Visualize::Visualizer<Visualize::AverageHandler> visualize(cellGroup, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
@@ -324,7 +323,12 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     visualize.CellData(
             [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
             "CellId");
-    visualize.WriteVtuFile("output.vtu");
+    visualize.WriteVtuFile("PatchTestVoronoi.vtu");
+
+    Visualize::Visualizer pointVisualizer(cellGroup, Visualize::PointHandler(integrationType));
+    pointVisualizer.DofValues(displ);
+    pointVisualizer.CellData(stress, "Stress");
+    pointVisualizer.WriteVtuFile("PatchTestPoint.vtu");
 
     // ************************************************************************
     //             check solution
