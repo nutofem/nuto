@@ -7,14 +7,6 @@
 namespace NuTo
 {
 
-class IntegrationPointBase;
-
-namespace ElementOld
-{
-enum class eElementType;
-} // namespace Element
-
-
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
 //! @brief ... standard abstract class for all integration types

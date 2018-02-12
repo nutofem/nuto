@@ -1,4 +1,6 @@
 #include "visualize/AverageHandler.h"
+#include "visualize/UnstructuredGrid.h"
+#include "mechanics/cell/CellInterface.h"
 #include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
@@ -6,6 +8,11 @@ using namespace NuTo::Visualize;
 AverageHandler::AverageHandler(AverageGeometry geometry)
     : mGeometry(geometry)
 {
+}
+
+std::unique_ptr<HandlerInterface> AverageHandler::Clone() const
+{
+    return std::make_unique<AverageHandler>(*this);
 }
 
 std::vector<int> AverageHandler::WriteGeometry(const CellInterface& cell, UnstructuredGrid* grid)
