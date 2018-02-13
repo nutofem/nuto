@@ -21,6 +21,7 @@
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"
+#include "mechanics/integrands/Bind.h"
 
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
@@ -33,26 +34,6 @@
 #include "mechanics/solver/Solve.h"
 
 using namespace NuTo;
-
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
-    };
-}
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData);
-    };
-}
-
 
 MeshFem QuadPatchTestMesh()
 {
@@ -116,7 +97,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     AddDofInterpolation(&mesh, displ, interpolation);
 
     Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
     // ************************************************************************
@@ -171,7 +152,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
     //                  assemble and solve
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
@@ -246,7 +227,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     const double boundaryDisplacement = 1.;
     constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
     const int numDepDofs = dofInfo.numDependentDofs[displ];
     Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
@@ -278,7 +259,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
@@ -286,28 +267,13 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     int numIndependentDofs = dofInfo.numIndependentDofs[displ];
     GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);
 
-    Eigen::VectorXd newDisplacementsJ = u.J[displ];
-    Eigen::VectorXd newDisplacementsK = u.K[displ];
-
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues
     // ************************************************************************
-    int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
     for (auto& node : mesh.NodesTotal(displ))
     {
-        int dofX = node.GetDofNumber(0);
-        int dofY = node.GetDofNumber(1);
-
-        if (dofX < numUnconstrainedDofs)
-            node.SetValue(0, newDisplacementsJ[dofX]);
-        else
-            node.SetValue(0, newDisplacementsK[dofX - numUnconstrainedDofs]);
-
-
-        if (dofY < numUnconstrainedDofs)
-            node.SetValue(1, newDisplacementsJ[dofY]);
-        else
-            node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
+        node.SetValue(0, u(displ, node.GetDofNumber(0)));
+        node.SetValue(1, u(displ, node.GetDofNumber(1)));
     }
 
     Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));

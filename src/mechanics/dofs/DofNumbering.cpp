@@ -29,8 +29,7 @@ std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints
     return dofStatus;
 }
 
-DofNumbering::DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof,
-                                          const Constraint::Constraints& constraints)
+DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints)
 {
     int numDependentDofs = constraints.GetNumEquations(dof);
 

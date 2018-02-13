@@ -34,7 +34,8 @@ BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStress)
 
 BOOST_AUTO_TEST_CASE(LinearElastic2DPlaneStrain)
 {
-    NuTo::Laws::LinearElastic<2> law(E, nu, NuTo::ePlaneState::PLANE_STRAIN);
+    NuTo::Laws::LinearElastic<2> law(E, nu);
+    law.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
     NuTo::EngineeringStrain<2> strain = NuTo::EngineeringStrain<2>::Random();
     auto C = law.Tangent(strain);
 
