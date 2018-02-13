@@ -9,7 +9,7 @@ namespace EngineeringStrainInvariants
 {
 using Tensor = Eigen::Matrix3d;
 
-Tensor ToTensor(EngineeringStrain<3>& v)
+inline Tensor ToTensor(EngineeringStrain<3>& v)
 {
     Tensor t = Tensor::Zero();
     t(0, 0) = v[0];
@@ -29,14 +29,14 @@ Tensor ToTensor(EngineeringStrain<3>& v)
 
 //! @brief returns I1 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double I1(const EngineeringStrain<3>& v)
+inline double I1(const EngineeringStrain<3>& v)
 {
     return v.segment<3>(0).sum();
 }
 
 //! @brief returns I2 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double I2(const EngineeringStrain<3>& v)
+inline double I2(const EngineeringStrain<3>& v)
 {
     // e_xx = v[0]     || e_yy = v[1]     || e_zz = v[2]
     // e_yz = v[3] / 2 || e_zx = v[4] / 2 || e_xy = v[5] / 2
@@ -45,7 +45,7 @@ double I2(const EngineeringStrain<3>& v)
 
 //! @brief returns I3 - the first strain invariant of the characteristic equation
 //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
-double I3(const EngineeringStrain<3>& v)
+inline double I3(const EngineeringStrain<3>& v)
 {
     // e_xx = v[0]     || e_yy = v[1]     || e_zz = v[2]
     // e_yz = v[3] / 2 || e_zx = v[4] / 2 || e_xy = v[5] / 2
@@ -56,7 +56,7 @@ double I3(const EngineeringStrain<3>& v)
 //! @brief returns J2 - the second deviatoric strain invariant of the characteristic equation
 //! \f[ \lambda^3 - J_1 \lambda^2 - J_2 \lambda - J_3  \f] Note the minus sign in front of J2. This is not
 //! consistent with the I2 invariant but apparently common practice.
-double J2(const EngineeringStrain<3>& v)
+inline double J2(const EngineeringStrain<3>& v)
 {
     const double eps_xx = v[0];
     const double eps_yy = v[1];
@@ -72,7 +72,7 @@ double J2(const EngineeringStrain<3>& v)
 
 
 //! @brief returns the deviatoric part
-EngineeringStrain<3> Deviatoric(EngineeringStrain<3> v)
+inline EngineeringStrain<3> Deviatoric(EngineeringStrain<3> v)
 {
     double I1_3 = I1(v) / 3.;
     v[0] -= I1_3;
