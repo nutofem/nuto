@@ -18,12 +18,12 @@ namespace NuTo
 //! - `EigenSparseQR`
 //! - `EigenSimplicialLLT`
 //! - `EigenSimplicialLDLT`
-//! 
+//!
 //! ### Iteratitive solvers:
 //! - `EigenConjugateGradient`
 //! - `EigenLeastSquaresConjugateGradient`
 //! - `EigenBiCGSTAB`
-//! 
+//!
 //! ## External (need to be installed seperately)
 //! ### [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html) solvers:
 //! - `SuiteSparseLU`
@@ -32,6 +32,17 @@ namespace NuTo
 //! ### [MUMPS](http://mumps.enseeiht.fr/) solvers:
 //! - `MumpsLU`
 //! - `MumpsLDLT`
-Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver);
+Eigen::VectorXd EigenSparseSolve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, std::string solver);
+
+//! Solver usable by NewtonRaphson::Solve(...)
+class EigenSparseSolver
+{
+public:
+    EigenSparseSolver(std::string solver);
+    Eigen::VectorXd Solve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b) const;
+
+private:
+    std::string mSolver;
+};
 
 } // namespace NuTo

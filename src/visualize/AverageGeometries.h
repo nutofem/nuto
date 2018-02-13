@@ -7,6 +7,13 @@ namespace NuTo
 namespace Visualize
 {
 //! @return quad geometry from (-1,-1) to (1,1)
+inline AverageGeometry AverageGeometryLine()
+{
+    std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(-1, 0, 0), Eigen::Vector3d(1, 0, 0)};
+    return {cornerCoordinates, eCellTypes::LINE};
+}
+
+//! @return quad geometry from (-1,-1) to (1,1)
 inline AverageGeometry AverageGeometryQuad()
 {
     std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(-1, -1, 0), Eigen::Vector3d(1, -1, 0),

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Sparse>
 #include "base/Exception.h"
 #include "math/LineSearch.h"
 
@@ -27,6 +28,33 @@ struct DoubleSolver
     }
 };
 
+//! @brief Wrapper for Eigen::SparseMatrix
+template <typename TSolver>
+struct WrappedSolver
+{
+public:
+    WrappedSolver(TSolver& solver)
+        : mSolver(solver)
+    {
+    }
+
+    Eigen::VectorXd Solve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b)
+    {
+        mSolver.compute(A);
+        return mSolver.solve(b);
+    }
+
+private:
+    TSolver& mSolver;
+};
+
+template <typename TSolver>
+WrappedSolver<TSolver> CreateWrappedSolver(TSolver& solver)
+{
+    return WrappedSolver<TSolver>(solver);
+}
+
+
 //! @brief problem definition
 //! @tparam TR residual function
 //! @tparam TDR derivative of the residual function
@@ -36,11 +64,11 @@ struct DoubleSolver
 template <typename TR, typename TDR, typename TNorm, typename TTol, typename TInfo>
 struct Problem
 {
-    TR ResidualFunction;
-    TDR DerivativeFunction;
-    TNorm NormFunction;
+    TR Residual;
+    TDR Derivative;
+    TNorm Norm;
     TTol mTolerance;
-    TInfo InfoFunction;
+    TInfo Info;
 };
 
 //! @brief defines the problem, basically just to enable automatic template deduction. If you
@@ -63,24 +91,29 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterat
            TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
 {
     auto x = x0;
-    auto r = problem.ResidualFunction(x);
+    auto r = problem.Residual(x);
 
     int iteration = 0;
-    problem.InfoFunction(iteration, x, r);
+    problem.Info(iteration, x, r);
+
+    if (problem.Norm(r) < problem.mTolerance)
+        return x;
+
     while (iteration < maxIterations)
     {
-        auto dr = problem.DerivativeFunction(x);
+        auto dr = problem.Derivative(x);
         auto dx = solver.Solve(dr, r);
 
         ++iteration;
-        problem.InfoFunction(iteration, x, r);
 
         if (lineSearch(problem, &r, &x, dx))
         {
             if (numIterations)
                 *numIterations = iteration;
+            problem.Info(iteration, x, r);
             return x;
         }
+        problem.Info(iteration, x, r);
     }
     if (numIterations)
         *numIterations = iteration;

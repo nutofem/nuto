@@ -1,16 +1,32 @@
 #include "mechanics/cell/SimpleAssembler.h"
+#include "base/Exception.h"
 
 using namespace NuTo;
 
-SimpleAssembler::SimpleAssembler(DofContainer<int> numIndependentDofs, DofContainer<int> numDependentDofs)
-    : mNumIndependentDofs(numIndependentDofs)
-    , mNumDependentDofs(numDependentDofs)
+SimpleAssembler::SimpleAssembler(DofInfo dofInfo)
+    : mDofInfo(dofInfo)
 {
+}
+
+void SimpleAssembler::SetDofInfo(DofInfo dofInfo)
+{
+    mDofInfo = dofInfo;
+}
+
+void SimpleAssembler::ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) const
+{
+    for (auto dof : dofTypes)
+        if (not mDofInfo.numIndependentDofs.Has(dof))
+            throw Exception("[NuTo::SimpleAssembler]",
+                            "You did not provide a dof numbering for DofType " + dof.GetName() +
+                                    ". Please do so by SimpleAssembler::calling SetDofInfo(...).");
 }
 
 GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                              CellInterface::VectorFunction f) const
 {
+    ThrowOnZeroDofNumbering(dofTypes);
+
     GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
     for (NuTo::CellInterface& cell : cells)
     {
@@ -55,6 +71,8 @@ GlobalDofVector SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInt
 GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                                    CellInterface::MatrixFunction f) const
 {
+    ThrowOnZeroDofNumbering(dofTypes);
+
     using TripletList = std::vector<Eigen::Triplet<double>>;
     DofMatrixContainer<TripletList> tripletsJJ;
     DofMatrixContainer<TripletList> tripletsJK;
@@ -73,8 +91,8 @@ GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& c
                 Eigen::VectorXi numberingDofJ = cell.DofNumbering(dofJ);
                 const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
 
-                const int numIndependentDofsI = mNumIndependentDofs[dofI];
-                const int numIndependentDofsJ = mNumIndependentDofs[dofJ];
+                const int numIndependentDofsI = mDofInfo.numIndependentDofs[dofI];
+                const int numIndependentDofsJ = mDofInfo.numIndependentDofs[dofJ];
 
                 for (int i = 0; i < numberingDofI.rows(); ++i)
                 {
@@ -137,8 +155,8 @@ GlobalDofVector SimpleAssembler::ProperlyResizedGlobalVector(std::vector<DofType
     GlobalDofVector v;
     for (auto dof : dofTypes)
     {
-        v.J[dof].setZero(mNumIndependentDofs[dof]);
-        v.K[dof].setZero(mNumDependentDofs[dof]);
+        v.J[dof].setZero(mDofInfo.numIndependentDofs[dof]);
+        v.K[dof].setZero(mDofInfo.numDependentDofs[dof]);
     }
     return v;
 }
@@ -149,10 +167,10 @@ GlobalDofMatrixSparse SimpleAssembler::ProperlyResizedGlobalMatrix(std::vector<D
     for (auto dofI : dofTypes)
         for (auto dofJ : dofTypes)
         {
-            m.JJ(dofI, dofJ).resize(mNumIndependentDofs[dofI], mNumIndependentDofs[dofJ]);
-            m.JK(dofI, dofJ).resize(mNumIndependentDofs[dofI], mNumDependentDofs[dofJ]);
-            m.KJ(dofI, dofJ).resize(mNumDependentDofs[dofI], mNumIndependentDofs[dofJ]);
-            m.KK(dofI, dofJ).resize(mNumDependentDofs[dofI], mNumDependentDofs[dofJ]);
+            m.JJ(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI], mDofInfo.numIndependentDofs[dofJ]);
+            m.JK(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI], mDofInfo.numDependentDofs[dofJ]);
+            m.KJ(dofI, dofJ).resize(mDofInfo.numDependentDofs[dofI], mDofInfo.numIndependentDofs[dofJ]);
+            m.KK(dofI, dofJ).resize(mDofInfo.numDependentDofs[dofI], mDofInfo.numDependentDofs[dofJ]);
         }
     return m;
 }
