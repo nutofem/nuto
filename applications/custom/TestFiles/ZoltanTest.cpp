@@ -16,10 +16,18 @@
 #include <Teuchos_DefaultComm.hpp>
 
 #include <zoltan.h>
+#include <zoltan_types.h>
 
-#include "mechanics/mesh/MeshFem.h"
+//#include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/constitutive/LinearElastic.h"
+#include "mechanics/cell/Cell.h"
+#include "mechanics/cell/SimpleAssembler.h"
+#include "mechanics/dofs/DofNumbering.h"
+#include "mechanics/constraints/Constraints.h"
+#include "mechanics/constraints/ConstraintCompanion.h"
+#include "base/Group.h"
 
 #include "../TestClasses/ZoltanMesh.h"
 
@@ -63,7 +71,7 @@ MyMeshFem testMesh_1D(int rNodeCount)
     mesh.numLocalPins = 2*nodeCount - 3;
     mesh.numGlobalPins = 2*nodeCount - 3;
 
-    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear(dim));
+    const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
     for (int i = 0; i < elementCount; ++i)
     {
 //        auto& n_i0 = mesh.Nodes.Add(Eigen::Vector2d(i*h, 0));
@@ -491,481 +499,6 @@ void showSimpleMeshPartitions_1D(int numIDs, int numGlobalIDs, ZOLTAN_ID_PTR GID
 }
 
 
-static int get_number_of_vertices(void *data, int *ierr);
-static void get_vertex_list(void *data, int sizeGID, int sizeLID, ZOLTAN_ID_PTR globalID, ZOLTAN_ID_PTR localID, int wgt_dim, float *obj_wgts, int *ierr);
-static void get_hypergraph_size(void *data, int *num_lists, int *num_nonzeroes, int *format, int *ierr);
-static void get_hypergraph(void *data, int sizeGID, int num_edges, int num_nonzeroes, int format, ZOLTAN_ID_PTR edgeGID, int *vtxPtr, ZOLTAN_ID_PTR vtxGID, int *ierr);
-static void showHypergraph_1D(int myProc, int numProcs, int numLocalIDs, int numGlobalIDs, ZOLTAN_ID_TYPE *GIDs, int *parts);
-
-void generateMesh_HyperPartition(int myRank, int numProcs, MyMeshFem* mesh)
-{
-    int numGlobalVertices, numGlobalEdges, numGlobalNZ;
-    int num, count, nnbors, ack=0;
-    int to=-1, from, remaining;
-    int vGID;
-    int i, j;
-    int vals[128], send_count[3];
-    ZOLTAN_ID_TYPE *idx;
-    unsigned int id;
-    MPI_Status status;
-    int ack_tag = 5, count_tag = 10, id_tag = 15;
-    MyMeshFem* send_hg;
-    MyMeshFem* send_mesh;
-    int numGlobalElements = 0;
-    int numGlobalNodes = 0;
-    numGlobalVertices = mesh->numGlobalElements;
-    numGlobalEdges = mesh->numGlobalNodes;
-    numGlobalNZ = mesh->numGlobalPins;
-//    numGlobalElements = mesh->numGlobalElements;
-//    numGlobalNodes = mesh->numGlobalNodes;
-
-    if (myRank == 0)
-    {
-        /* Create a sub graph for each process */
-
-        send_hg = (MyMeshFem *)calloc(sizeof(MyMeshFem) , numProcs);
-
-        /*
-        * Divide the vertices across the processes
-        *            (elements)*/
-
-        remaining = numGlobalVertices;
-//        remaining = numGlobalEdges;
-        count = (numGlobalVertices / numProcs) + 1;
-        idx = mesh->myGlobalElementIDs;
-
-        for (i=0; i < numProcs; i++){
-
-            if (remaining == 0) count = 0;
-            if (count > remaining) count = remaining;
-
-            send_hg[i].numLocalElements = count;
-
-            if (count){
-
-                send_hg[i].myGlobalElementIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * count);
-
-                for (j=0; j < count; j++){
-                    send_hg[i].myGlobalElementIDs[j] = *idx++;
-                }
-            }
-
-            remaining -= count;
-        }
-
-        /*
-* Assign hyperedges to processes, and create a sub-hypergraph for each process.
-*/
-
-        remaining = numGlobalEdges;
-        count = (numGlobalEdges / numProcs) + 1;
-        from = 0;
-
-        for (i=0; i < numProcs; i++){
-
-            if (remaining == 0) count = 0;
-            if (count > remaining) count = remaining;
-
-            send_hg[i].numLocalNodes = count;
-            send_hg[i].numLocalPins = 0;
-//            send_hg[i].numLocalElements = 0;
-
-            if (count > 0){
-
-                to = from + count;
-//                to = from + count - 1;
-
-//                nnbors = global_hg.nborIndex[to] - global_hg.nborIndex[from];
-                nnbors = mesh->neighborIndex[to] - mesh->neighborIndex[from];
-
-                send_hg[i].numLocalPins = nnbors;
-
-                send_hg[i].myGlobalNodeIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * count);
-                memcpy(send_hg[i].myGlobalNodeIDs, mesh->myGlobalNodeIDs + from, sizeof(ZOLTAN_ID_TYPE) * count);
-
-                send_hg[i].neighborIndex = (int *)malloc(sizeof(int) * (count + 1));
-                send_hg[i].neighborIndex[0] = 0;
-
-                if (nnbors > 0){
-
-//                    num = global_hg.nborIndex[from];
-                    num = mesh->neighborIndex[from];
-
-                    for (j=1; j <= count; j++){
-                        send_hg[i].neighborIndex[j] = mesh->neighborIndex[from+j] - num;
-                    }
-
-//                    send_hg[i].nborGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                    send_hg[i].myPinGIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * nnbors);
-//                    memcpy(send_hg[i].nborGID,
-//                           global_hg.nborGID + global_hg.nborIndex[from],
-//                           sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                    memcpy(send_hg[i].myPinGIDs,
-                           mesh->myPinGIDs + mesh->neighborIndex[from],
-                           sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                }
-            }
-
-            remaining -= count;
-            from = to;
-        }
-
-        /* Send each process its hyperedges and the vertices in its partition */
-
-//        *hg = send_hg[0];
-        *mesh = std::move(send_hg[0]);
-        mesh->numGlobalElements = numGlobalVertices;
-        mesh->numGlobalNodes = numGlobalEdges;
-        mesh->numGlobalPins = numGlobalNZ;
-
-        for (i=1; i < numProcs; i++){
-//            send_count[0] = send_hg[i].numMyVertices;
-//            send_count[1] = send_hg[i].numMyHEdges;
-//            send_count[2] = send_hg[i].numAllNbors;
-            send_count[0] = send_hg[i].numLocalElements;
-            send_count[1] = send_hg[i].numLocalNodes;
-            send_count[2] = send_hg[i].numLocalPins;
-
-            MPI_Send(send_count, 3, MPI_INT, i, count_tag, MPI_COMM_WORLD);
-            MPI_Recv(&ack, 1, MPI_INT, i, ack_tag, MPI_COMM_WORLD, &status);
-
-            if (send_count[0] > 0){
-//                MPI_Send(send_hg[i].vtxGID, send_count[0], ZOLTAN_ID_MPI_TYPE, i, id_tag, MPI_COMM_WORLD);
-//                free(send_hg[i].vtxGID);
-                MPI_Send(send_hg[i].myGlobalElementIDs, send_count[0], ZOLTAN_ID_MPI_TYPE, i, id_tag, MPI_COMM_WORLD);
-                free(send_hg[i].myGlobalElementIDs);
-            }
-
-            if (send_count[1] > 0){
-//                MPI_Send(send_hg[i].edgeGID, send_count[1], ZOLTAN_ID_MPI_TYPE, i, id_tag + 1, MPI_COMM_WORLD);
-//                free(send_hg[i].edgeGID);
-                MPI_Send(send_hg[i].myGlobalNodeIDs, send_count[1], ZOLTAN_ID_MPI_TYPE, i, id_tag + 1, MPI_COMM_WORLD);
-                free(send_hg[i].myGlobalNodeIDs);
-
-//                MPI_Send(send_hg[i].nborIndex, send_count[1] + 1, MPI_INT, i, id_tag + 2, MPI_COMM_WORLD);
-//                free(send_hg[i].nborIndex);
-                MPI_Send(send_hg[i].neighborIndex, send_count[1] + 1, MPI_INT, i, id_tag + 2, MPI_COMM_WORLD);
-                free(send_hg[i].neighborIndex);
-
-                if (send_count[2] > 0){
-//                    MPI_Send(send_hg[i].nborGID, send_count[2], ZOLTAN_ID_MPI_TYPE, i, id_tag + 3, MPI_COMM_WORLD);
-//                    free(send_hg[i].nborGID);
-                    MPI_Send(send_hg[i].myPinGIDs, send_count[2], ZOLTAN_ID_MPI_TYPE, i, id_tag + 3, MPI_COMM_WORLD);
-                    free(send_hg[i].myPinGIDs);
-                }
-            }
-        }
-
-        free(send_hg);
-
-        /* signal all procs it is OK to go on */
-        ack = 0;
-        for (i=1; i < numProcs; i++){
-            MPI_Send(&ack, 1, MPI_INT, i, ack_tag, MPI_COMM_WORLD);
-        }
-    }
-    else{
-
-        MPI_Recv(send_count, 3, MPI_INT, 0, count_tag, MPI_COMM_WORLD, &status);
-
-        if (send_count[0] < 0){
-            MPI_Finalize();
-            exit(1);
-        }
-
-        ack = 0;
-
-        memset(mesh, 0, sizeof(MyMeshFem));
-        mesh->numGlobalElements = numGlobalVertices;
-        mesh->numGlobalNodes = numGlobalEdges;
-        mesh->numGlobalPins = numGlobalNZ;
-
-//        hg->numMyVertices = send_count[0];
-//        hg->numMyHEdges = send_count[1];
-//        hg->numAllNbors = send_count[2];
-        mesh->numLocalElements = send_count[0];
-        mesh->numLocalNodes = send_count[1];
-        mesh->numLocalPins = send_count[2];
-
-        if (send_count[0] > 0){
-//            hg->vtxGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[0]);
-            mesh->myGlobalElementIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[0]);
-        }
-
-        if (send_count[1] > 0){
-//            hg->edgeGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[1]);
-//            hg->nborIndex = (int *)malloc(sizeof(int) * (send_count[1] + 1));
-            mesh->myGlobalNodeIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[1]);
-            mesh->neighborIndex = (int *)malloc(sizeof(int) * (send_count[1] + 1));
-
-            if (send_count[2] > 0){
-//                hg->nborGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[2]);
-                mesh->myPinGIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[2]);
-            }
-        }
-
-        MPI_Send(&ack, 1, MPI_INT, 0, ack_tag, MPI_COMM_WORLD);
-
-        if (send_count[0] > 0){
-//            MPI_Recv(hg->vtxGID,send_count[0], ZOLTAN_ID_MPI_TYPE, 0, id_tag, MPI_COMM_WORLD, &status);
-            MPI_Recv(mesh->myGlobalElementIDs,send_count[0], ZOLTAN_ID_MPI_TYPE, 0, id_tag, MPI_COMM_WORLD, &status);
-
-            if (send_count[1] > 0){
-                MPI_Recv(mesh->myGlobalNodeIDs,send_count[1], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 1, MPI_COMM_WORLD, &status);
-                MPI_Recv(mesh->neighborIndex,send_count[1] + 1, MPI_INT, 0, id_tag + 2, MPI_COMM_WORLD, &status);
-
-                if (send_count[2] > 0){
-//                    MPI_Recv(hg->nborGID,send_count[2], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 3, MPI_COMM_WORLD, &status);
-                    MPI_Recv(mesh->myPinGIDs,send_count[2], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 3, MPI_COMM_WORLD, &status);
-                }
-            }
-        }
-
-        /* ok to go on? */
-
-        MPI_Recv(&ack, 1, MPI_INT, 0, ack_tag, MPI_COMM_WORLD, &status);
-        if (ack < 0){
-            MPI_Finalize();
-            exit(1);
-        }
-    }
-}
-
-void generateMesh_HyperPartition_z(int myRank, int numProcs, ZoltanMesh* mesh)
-{
-    int numGlobalVertices, numGlobalEdges, numGlobalNZ;
-    int num, count, nnbors, ack=0;
-    int to=-1, from, remaining;
-    int vGID;
-    int i, j;
-    int vals[128], send_count[3];
-    ZOLTAN_ID_TYPE *idx;
-    unsigned int id;
-    MPI_Status status;
-    int ack_tag = 5, count_tag = 10, id_tag = 15;
-    ZoltanMesh* send_hg;
-    ZoltanMesh* send_mesh;
-    int numGlobalElements = 0;
-    int numGlobalNodes = 0;
-    numGlobalVertices = mesh->numGlobalElements;
-    numGlobalEdges = mesh->numGlobalNodes;
-    numGlobalNZ = mesh->numGlobalPins;
-//    numGlobalElements = mesh->numGlobalElements;
-//    numGlobalNodes = mesh->numGlobalNodes;
-
-    if (myRank == 0)
-    {
-        /* Create a sub graph for each process */
-
-        send_hg = (ZoltanMesh *)calloc(sizeof(ZoltanMesh) , numProcs);
-
-        /*
-        * Divide the vertices across the processes
-        *            (elements)*/
-
-        remaining = numGlobalVertices;
-//        remaining = numGlobalEdges;
-        count = (numGlobalVertices / numProcs) + 1;
-        idx = mesh->myGlobalElementIDs;
-
-        for (i=0; i < numProcs; i++){
-
-            if (remaining == 0) count = 0;
-            if (count > remaining) count = remaining;
-
-            send_hg[i].numLocalElements = count;
-
-            if (count){
-
-                send_hg[i].myGlobalElementIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * count);
-
-                for (j=0; j < count; j++){
-                    send_hg[i].myGlobalElementIDs[j] = *idx++;
-                }
-            }
-
-            remaining -= count;
-        }
-
-        /*
-* Assign hyperedges to processes, and create a sub-hypergraph for each process.
-*/
-
-        remaining = numGlobalEdges;
-        count = (numGlobalEdges / numProcs) + 1;
-        from = 0;
-
-        for (i=0; i < numProcs; i++){
-
-            if (remaining == 0) count = 0;
-            if (count > remaining) count = remaining;
-
-            send_hg[i].numLocalNodes = count;
-            send_hg[i].numLocalPins = 0;
-//            send_hg[i].numLocalElements = 0;
-
-            if (count > 0){
-
-                to = from + count;
-//                to = from + count - 1;
-
-//                nnbors = global_hg.nborIndex[to] - global_hg.nborIndex[from];
-                nnbors = mesh->neighborIndex[to] - mesh->neighborIndex[from];
-
-                send_hg[i].numLocalPins = nnbors;
-
-                send_hg[i].myGlobalNodeIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * count);
-                memcpy(send_hg[i].myGlobalNodeIDs, mesh->myGlobalNodeIDs + from, sizeof(ZOLTAN_ID_TYPE) * count);
-
-                send_hg[i].neighborIndex = (int *)malloc(sizeof(int) * (count + 1));
-                send_hg[i].neighborIndex[0] = 0;
-
-                if (nnbors > 0){
-
-//                    num = global_hg.nborIndex[from];
-                    num = mesh->neighborIndex[from];
-
-                    for (j=1; j <= count; j++){
-                        send_hg[i].neighborIndex[j] = mesh->neighborIndex[from+j] - num;
-                    }
-
-//                    send_hg[i].nborGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                    send_hg[i].myPinGIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * nnbors);
-//                    memcpy(send_hg[i].nborGID,
-//                           global_hg.nborGID + global_hg.nborIndex[from],
-//                           sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                    memcpy(send_hg[i].myPinGIDs,
-                           mesh->myPinGIDs + mesh->neighborIndex[from],
-                           sizeof(ZOLTAN_ID_TYPE) * nnbors);
-                }
-            }
-
-            remaining -= count;
-            from = to;
-        }
-
-        /* Send each process its hyperedges and the vertices in its partition */
-
-//        *hg = send_hg[0];
-        *mesh = std::move(send_hg[0]);
-        mesh->numGlobalElements = numGlobalVertices;
-        mesh->numGlobalNodes = numGlobalEdges;
-        mesh->numGlobalPins = numGlobalNZ;
-
-        for (i=1; i < numProcs; i++){
-//            send_count[0] = send_hg[i].numMyVertices;
-//            send_count[1] = send_hg[i].numMyHEdges;
-//            send_count[2] = send_hg[i].numAllNbors;
-            send_count[0] = send_hg[i].numLocalElements;
-            send_count[1] = send_hg[i].numLocalNodes;
-            send_count[2] = send_hg[i].numLocalPins;
-
-            MPI_Send(send_count, 3, MPI_INT, i, count_tag, MPI_COMM_WORLD);
-            MPI_Recv(&ack, 1, MPI_INT, i, ack_tag, MPI_COMM_WORLD, &status);
-
-            if (send_count[0] > 0){
-//                MPI_Send(send_hg[i].vtxGID, send_count[0], ZOLTAN_ID_MPI_TYPE, i, id_tag, MPI_COMM_WORLD);
-//                free(send_hg[i].vtxGID);
-                MPI_Send(send_hg[i].myGlobalElementIDs, send_count[0], ZOLTAN_ID_MPI_TYPE, i, id_tag, MPI_COMM_WORLD);
-                free(send_hg[i].myGlobalElementIDs);
-            }
-
-            if (send_count[1] > 0){
-//                MPI_Send(send_hg[i].edgeGID, send_count[1], ZOLTAN_ID_MPI_TYPE, i, id_tag + 1, MPI_COMM_WORLD);
-//                free(send_hg[i].edgeGID);
-                MPI_Send(send_hg[i].myGlobalNodeIDs, send_count[1], ZOLTAN_ID_MPI_TYPE, i, id_tag + 1, MPI_COMM_WORLD);
-                free(send_hg[i].myGlobalNodeIDs);
-
-//                MPI_Send(send_hg[i].nborIndex, send_count[1] + 1, MPI_INT, i, id_tag + 2, MPI_COMM_WORLD);
-//                free(send_hg[i].nborIndex);
-                MPI_Send(send_hg[i].neighborIndex, send_count[1] + 1, MPI_INT, i, id_tag + 2, MPI_COMM_WORLD);
-                free(send_hg[i].neighborIndex);
-
-                if (send_count[2] > 0){
-//                    MPI_Send(send_hg[i].nborGID, send_count[2], ZOLTAN_ID_MPI_TYPE, i, id_tag + 3, MPI_COMM_WORLD);
-//                    free(send_hg[i].nborGID);
-                    MPI_Send(send_hg[i].myPinGIDs, send_count[2], ZOLTAN_ID_MPI_TYPE, i, id_tag + 3, MPI_COMM_WORLD);
-                    free(send_hg[i].myPinGIDs);
-                }
-            }
-        }
-
-        free(send_hg);
-
-        /* signal all procs it is OK to go on */
-        ack = 0;
-        for (i=1; i < numProcs; i++){
-            MPI_Send(&ack, 1, MPI_INT, i, ack_tag, MPI_COMM_WORLD);
-        }
-    }
-    else{
-
-        MPI_Recv(send_count, 3, MPI_INT, 0, count_tag, MPI_COMM_WORLD, &status);
-
-        if (send_count[0] < 0){
-            MPI_Finalize();
-            exit(1);
-        }
-
-        ack = 0;
-
-        memset(mesh, 0, sizeof(ZoltanMesh));
-        mesh->numGlobalElements = numGlobalVertices;
-        mesh->numGlobalNodes = numGlobalEdges;
-        mesh->numGlobalPins = numGlobalNZ;
-
-//        hg->numMyVertices = send_count[0];
-//        hg->numMyHEdges = send_count[1];
-//        hg->numAllNbors = send_count[2];
-        mesh->numLocalElements = send_count[0];
-        mesh->numLocalNodes = send_count[1];
-        mesh->numLocalPins = send_count[2];
-
-        if (send_count[0] > 0){
-//            hg->vtxGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[0]);
-            mesh->myGlobalElementIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[0]);
-        }
-
-        if (send_count[1] > 0){
-//            hg->edgeGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[1]);
-//            hg->nborIndex = (int *)malloc(sizeof(int) * (send_count[1] + 1));
-            mesh->myGlobalNodeIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[1]);
-            mesh->neighborIndex = (int *)malloc(sizeof(int) * (send_count[1] + 1));
-
-            if (send_count[2] > 0){
-//                hg->nborGID = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[2]);
-                mesh->myPinGIDs = (ZOLTAN_ID_TYPE *)malloc(sizeof(ZOLTAN_ID_TYPE) * send_count[2]);
-            }
-        }
-
-        MPI_Send(&ack, 1, MPI_INT, 0, ack_tag, MPI_COMM_WORLD);
-
-        if (send_count[0] > 0){
-//            MPI_Recv(hg->vtxGID,send_count[0], ZOLTAN_ID_MPI_TYPE, 0, id_tag, MPI_COMM_WORLD, &status);
-            MPI_Recv(mesh->myGlobalElementIDs,send_count[0], ZOLTAN_ID_MPI_TYPE, 0, id_tag, MPI_COMM_WORLD, &status);
-
-            if (send_count[1] > 0){
-                MPI_Recv(mesh->myGlobalNodeIDs,send_count[1], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 1, MPI_COMM_WORLD, &status);
-                MPI_Recv(mesh->neighborIndex,send_count[1] + 1, MPI_INT, 0, id_tag + 2, MPI_COMM_WORLD, &status);
-
-                if (send_count[2] > 0){
-//                    MPI_Recv(hg->nborGID,send_count[2], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 3, MPI_COMM_WORLD, &status);
-                    MPI_Recv(mesh->myPinGIDs,send_count[2], ZOLTAN_ID_MPI_TYPE, 0, id_tag + 3, MPI_COMM_WORLD, &status);
-                }
-            }
-        }
-
-        /* ok to go on? */
-
-        MPI_Recv(&ack, 1, MPI_INT, 0, ack_tag, MPI_COMM_WORLD, &status);
-        if (ack < 0){
-            MPI_Finalize();
-            exit(1);
-        }
-    }
-}
-
-
 void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
 {
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
@@ -983,6 +516,7 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
     int *importProcs, *importToPart, *exportProcs, *exportToPart;
     int *parts;
     ZOLTAN_ID_PTR lids;
+
     int globalNodeCount = 5;
     if (argc > 1)
         globalNodeCount = atoi(argv[1]);
@@ -990,13 +524,27 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
 //    MyMeshFem myMesh = testMesh_1D(globalNodeCount);
 //    generateMesh_HyperPartition(myRank, numProcs, &myMesh);
 
-    ZoltanMesh myMesh_z = ZoltanMesh::create_1D_mesh(globalNodeCount);
+//    ZoltanMesh myMesh_z = ZoltanMesh::create_1D_mesh(globalNodeCount);
+//    ZoltanMesh<zoltanElementFEM_2D_QUAD> myMesh_z = ZoltanMesh<zoltanElementFEM_2D_QUAD>::create_2D_mesh();
+    ZoltanMesh<zoltanElementFEM_1D> myMesh_z = ZoltanMesh<zoltanElementFEM_1D>::create_1D_mesh(globalNodeCount);
+    myMesh_z.convert2NuToEntities_1D();
+//    NuTo::NodeSimple n1(4);
+//    NuTo::NodeSimple n2(14);
+//    std::vector<NuTo::NodeSimple> nodes;
+//    nodes.push_back(n1);
+//    nodes.push_back(n2);
+//    auto& interp = myMesh_z.CreateInterpolation(NuTo::InterpolationQuadLinear());
+//    zoltanElementFEM elem(1, nodes, interp);
+//    zoltanElementFEM elem2(elem.GetID(), elem.GetNodes(), elem.Interpolation());
+//    std::cout << elem2.GetNodes().size() << std::endl;
+//    myMesh_z.zoltanFEMElements.push_back(elem);
+
 //    ZoltanMesh myMesh_z = ZoltanMesh::create_2D_mesh();
 //    generateMesh_HyperPartition_z(myRank, numProcs, &myMesh_z);
 //    ZoltanMesh::distribute(myRank, numProcs, &myMesh_z);
-    ZoltanMesh::distributeToRoot(myRank, numProcs, &myMesh_z);
-    myMesh_z.copyElements();
-    std::cout << "Elements = " << myMesh_z.femElements.size() << std::endl;
+
+//    ZoltanMesh<zoltanElementFEM_2D_QUAD>::distributeToRoot(myRank, numProcs, &myMesh_z);
+    ZoltanMesh<zoltanElementFEM_1D>::distributeToRoot(myRank, numProcs, &myMesh_z);
     rc = Zoltan_Initialize(argc, argv, &ver);
 
     if (rc != ZOLTAN_OK){
@@ -1008,7 +556,7 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
     parts = (int*)malloc(sizeof(int)* myMesh_z.numLocalElements);
     lids = (ZOLTAN_ID_PTR)malloc(sizeof(ZOLTAN_ID_TYPE) * myMesh_z.numLocalElements);
 
-    rc = Zoltan_DD_Create(&dd, MPI_COMM_WORLD, 1, 1, 0, myMesh_z.numLocalElements, 0);
+//    rc = Zoltan_DD_Create(&dd, MPI_COMM_WORLD, 1, 1, 0, myMesh_z.numLocalElements, 0);
 
     for (int i = 0; i < myMesh_z.numLocalElements; ++i)
     {
@@ -1016,8 +564,8 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
         lids[i] = (ZOLTAN_ID_TYPE)i;
     }
 
-    rc = Zoltan_DD_Update(dd, myMesh_z.myGlobalElementIDs, lids, NULL, parts, myMesh_z.numLocalElements);
-    myMesh_z.zoltan_dd = dd;
+//    rc = Zoltan_DD_Update(dd, myMesh_z.myGlobalElementIDs, lids, NULL, parts, myMesh_z.numLocalElements);
+//    myMesh_z.zoltan_dd = dd;
 
 //    read_input_file(myRank, numProcs, fname, &hg);
 
@@ -1043,6 +591,7 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
 //    Zoltan_Set_Param(zz, "LB_APPROACH", "REPARTITION");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
     Zoltan_Set_Param(zz, "AUTO_MIGRATE", "TRUE");
+//    Zoltan_Set_Param(zz, "ORDER_METHOD", "PARMETIS");
 
     /* Application defined query functions */
 //    Zoltan_Set_Num_Obj_Fn(zz, get_number_of_vertices, &myMesh);
@@ -1057,15 +606,21 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
 
     //Query functions for migration
 //    Zoltan_Set_Obj_Size_Multi_Fn(zz, myMesh_z.get_element_sizes, &myMesh_z);
-    Zoltan_Set_Obj_Size_Fn(zz, myMesh_z.get_element_size, &myMesh_z);
 //    Zoltan_Set_Pack_Obj_Multi_Fn(zz, myMesh_z.pack_elements, &myMesh_z);
-    Zoltan_Set_Pack_Obj_Fn(zz, myMesh_z.pack_element, &myMesh_z);
 //    Zoltan_Set_Unpack_Obj_Multi_Fn(zz, myMesh_z.unpack_elements, &myMesh_z);
-    Zoltan_Set_Unpack_Obj_Fn(zz, myMesh_z.unpack_element, &myMesh_z);
-    Zoltan_Set_Mid_Migrate_PP_Fn(zz, myMesh_z.mid_migrate, &myMesh_z);
 
-    ZoltanMesh::printMesh(myRank, &myMesh_z);
+//    Zoltan_Set_Obj_Size_Fn(zz, myMesh_z.get_element_size, &myMesh_z);
+//    Zoltan_Set_Pack_Obj_Fn(zz, myMesh_z.pack_element, &myMesh_z);
+//    Zoltan_Set_Unpack_Obj_Fn(zz, myMesh_z.unpack_element, &myMesh_z);
+//    Zoltan_Set_Mid_Migrate_PP_Fn(zz, myMesh_z.mid_migrate, &myMesh_z);
 
+    Zoltan_Set_Obj_Size_Fn(zz, myMesh_z.get_element_size_elementFEM, &myMesh_z);
+    Zoltan_Set_Pack_Obj_Fn(zz, myMesh_z.pack_element_elementFEM, &myMesh_z);
+    Zoltan_Set_Unpack_Obj_Fn(zz, myMesh_z.unpack_element_elementFEM, &myMesh_z);
+    Zoltan_Set_Mid_Migrate_PP_Fn(zz, myMesh_z.mid_migrate_elementFEM, &myMesh_z);
+
+//    ZoltanMesh<zoltanElementFEM_2D_QUAD>::printMesh(myRank, &myMesh_z);
+    ZoltanMesh<zoltanElementFEM_1D>::printMesh(myRank, &myMesh_z);
     rc = Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
                              &changes,        /* 1 if partitioning was changed, 0 otherwise */
                              &numGidEntries,  /* Number of integers used for a global ID */
@@ -1087,6 +642,8 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
         Zoltan_Destroy(&zz);
         exit(0);
     }
+
+    myMesh_z.convert2NuToEntities_1D();
 
     if (myRank == 0)
     {
@@ -1173,18 +730,20 @@ void Zoltan_HyperGraphPartitioning_test(int argc, char** argv)
     }
 
 
-    rc = Zoltan_DD_Update(dd, myMesh_z.myGlobalElementIDs, lids, NULL, parts, myMesh_z.numLocalElements);
+//    rc = Zoltan_DD_Update(dd, myMesh_z.myGlobalElementIDs, lids, NULL, parts, myMesh_z.numLocalElements);
+
 //    rc = Zoltan_Invert_Lists(zz, numImport, importGlobalGids, importLocalGids, importProcs, importToPart, &numExport, &exportGlobalGids, &exportLocalGids, &exportProcs, &exportToPart);
 //    rc = Zoltan_Migrate(zz, numImport, importGlobalGids, importLocalGids, importProcs, importToPart, numExport,
 //                        exportGlobalGids, exportLocalGids, exportProcs, exportToPart);
 
     if (myRank == 0){
-        printf("Graph partition after calling Zoltan\n");
+        printf("Hypergraph partition after calling Zoltan\n");
     }
 //    showHypergraph_1D(myRank, numProcs, myMesh.numLocalElements, myMesh.numGlobalElements, myMesh.myGlobalElementIDs, parts);
 //    showHypergraph_1D(myRank, numProcs, myMesh_z.numLocalElements, myMesh_z.numGlobalElements, myMesh_z.myGlobalElementIDs, parts);
 //    ZoltanMesh::showHypergraph_1D(myRank, numProcs, myMesh_z.numLocalElements, myMesh_z.numGlobalElements, myMesh_z.myGlobalElementIDs, parts);
-    ZoltanMesh::printMesh(myRank, &myMesh_z);
+//    ZoltanMesh<zoltanElementFEM_2D_QUAD>::printMesh(myRank, &myMesh_z);
+    ZoltanMesh<zoltanElementFEM_1D>::printMesh(myRank, &myMesh_z);
 
 //    std::cout << "NumElements = " << myMesh_z.Elements.Size() << std::endl;
 //    std::cout << "NumNodes = " << myMesh_z.Elements[0].CoordinateElement().GetNumNodes() << std::endl;
@@ -1300,11 +859,297 @@ static void showHypergraph_1D(int myProc, int numProcs, int numLocalIDs, int num
 }
 
 
+std::map<int, int> local2GlobalDofNumbering(std::map<int, std::vector<int>> globalDofs, std::map<int, std::vector<int>> localDofs)
+{
+    std::map<int,int> local2Global;
+    for (std::pair<int, std::vector<int>> nodeDofs : localDofs)
+    {
+        for (int i = 0; i < nodeDofs.second.size(); ++i)
+        {
+            local2Global[nodeDofs.second[i]] = globalDofs[nodeDofs.first][i];
+        }
+    }
+    return local2Global;
+}
+
+
+using Teuchos::RCP;
+using Teuchos::rcp;
+
+void AssemblerZoltanTest_1D(int argc, char** argv)
+{
+    Teuchos::GlobalMPISession mpiSession(&argc, &argv);
+    RCP<const Teuchos::Comm<int>> commTeuchos = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+
+    int myRank = commTeuchos->getRank();
+    int nodeCount = 5;
+
+    if (argc > 1)
+        nodeCount = atoi(argv[1]);
+
+    std::cout << "Before partition" << std::endl;
+//    ZoltanMesh<zoltanElementFEM_1D> myMesh_z = ZoltanMesh<zoltanElementFEM_1D>::create_1D_mesh(nodeCount);
+//    myMesh_z.convert2NuToEntities_1D();
+    ZoltanMesh<zoltanElementFEM_2D_QUAD> myMesh_z = ZoltanMesh<zoltanElementFEM_2D_QUAD>::create_2D_mesh();
+    myMesh_z.convert2NuToEntities_2D();
+
+    std::cout << myMesh_z.Elements[0].CoordinateElement().GetNode(0).GetValues() << std::endl;
+//    std::map<int, std::vector<int>> globalDofs = myMesh_z.getDofNumbering_1D();
+    std::map<int, std::vector<int>> globalDofs = myMesh_z.getDofNumbering_2D();
+
+    DofType displ("displacements", 2);
+    const auto& interpolation = myMesh_z.CreateInterpolation(InterpolationQuadLinear());
+
+    AddDofInterpolation(&myMesh_z, displ, interpolation);
+
+    Constraint::Constraints constraints;
+//    Group<NodeSimple> nodesConstrainedInX = mesh.NodesAtAxis(eDirection::X, dof);
+    Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(myMesh_z.NodeAtCoordinate(Eigen::Vector2d(0, 0), displ));
+
+//    constraints.Add(dof, Constraint::Component(nodesConstrainedInX, {eDirection::X}));
+    constraints.Add(displ, Constraint::Component(nodesConstrainedInY, {eDirection::Y}));
+
+    DofNumbering::DofInfo dofInfo = DofNumbering::Build(myMesh_z.NodesTotal(displ), displ, constraints);
+
+    //-------------- mesh partitioning
+
+    int i, rc;
+    float ver;
+    struct Zoltan_Struct *zz;
+    struct Zoltan_DD_Struct *dd;
+    int changes, numGidEntries, numLidEntries, numImport, numExport;
+    int numProcs = commTeuchos->getSize();
+    ZOLTAN_ID_PTR importGlobalGids, importLocalGids, exportGlobalGids, exportLocalGids;
+    int *importProcs, *importToPart, *exportProcs, *exportToPart;
+    int *parts;
+    ZOLTAN_ID_PTR lids;
+
+//    ZoltanMesh<zoltanElementFEM_1D>::distributeToRoot(myRank, numProcs, &myMesh_z);
+    ZoltanMesh<zoltanElementFEM_2D_QUAD>::distributeToRoot(myRank, numProcs, &myMesh_z);
+    rc = Zoltan_Initialize(argc, argv, &ver);
+
+    if (rc != ZOLTAN_OK){
+        printf("sorry...\n");
+        MPI_Finalize();
+        exit(0);
+    }
+
+    zz = Zoltan_Create(MPI_COMM_WORLD);
+
+    /* General parameters */
+    Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
+    Zoltan_Set_Param(zz, "LB_METHOD", "HYPERGRAPH");   /* partitioning method */
+    Zoltan_Set_Param(zz, "HYPERGRAPH_PACKAGE", "PHG"); /* version of method */
+    Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1");/* global IDs are integers */
+    Zoltan_Set_Param(zz, "NUM_LID_ENTRIES", "1");/* local IDs are integers */
+    Zoltan_Set_Param(zz, "RETURN_LISTS", "ALL"); /* export AND import lists */
+    Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "0"); /* use Zoltan default vertex weights */
+    Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "0");/* use Zoltan default hyperedge weights */
+
+//    Zoltan_Set_Param(zz, "LB_APPROACH", "REPARTITION");
+    Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
+    Zoltan_Set_Param(zz, "AUTO_MIGRATE", "TRUE");
+//    Zoltan_Set_Param(zz, "ORDER_METHOD", "PARMETIS");
+
+    /* Application defined query functions */
+    Zoltan_Set_Num_Obj_Fn(zz, myMesh_z.get_number_of_localElements, &myMesh_z);
+    Zoltan_Set_Obj_List_Fn(zz, myMesh_z.get_localElement_list, &myMesh_z);
+    Zoltan_Set_HG_Size_CS_Fn(zz, myMesh_z.get_number_of_localNodes_localPins, &myMesh_z);
+    Zoltan_Set_HG_CS_Fn(zz, myMesh_z.get_hypergraph, &myMesh_z);
+
+    //Query functions for migration
+    Zoltan_Set_Obj_Size_Fn(zz, myMesh_z.get_element_size_elementFEM, &myMesh_z);
+    Zoltan_Set_Pack_Obj_Fn(zz, myMesh_z.pack_element_elementFEM, &myMesh_z);
+    Zoltan_Set_Unpack_Obj_Fn(zz, myMesh_z.unpack_element_elementFEM, &myMesh_z);
+    Zoltan_Set_Mid_Migrate_PP_Fn(zz, myMesh_z.mid_migrate_elementFEM, &myMesh_z);
+
+    rc = Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
+                             &changes,        /* 1 if partitioning was changed, 0 otherwise */
+                             &numGidEntries,  /* Number of integers used for a global ID */
+                             &numLidEntries,  /* Number of integers used for a local ID */
+                             &numImport,      /* Number of vertices to be sent to me */
+                             &importGlobalGids,  /* Global IDs of vertices to be sent to me */
+                             &importLocalGids,   /* Local IDs of vertices to be sent to me */
+                             &importProcs,    /* Process rank for source of each incoming vertex */
+                             &importToPart,   /* New partition for each incoming vertex */
+                             &numExport,      /* Number of vertices I must send to other processes*/
+                             &exportGlobalGids,  /* Global IDs of the vertices I must send */
+                             &exportLocalGids,   /* Local IDs of the vertices I must send */
+                             &exportProcs,    /* Process to which I send each of the vertices */
+                             &exportToPart);  /* Partition to which each vertex will belong */
+
+    if (rc != ZOLTAN_OK){
+        printf("sorry...\n");
+        MPI_Finalize();
+        Zoltan_Destroy(&zz);
+        exit(0);
+    }
+
+    std::cout << "After partition" << std::endl;
+//    myMesh_z.convert2NuToEntities_1D();
+    myMesh_z.convert2NuToEntities_2D();
+
+    const auto& interpolation_sub = myMesh_z.CreateInterpolation(InterpolationQuadLinear());
+    AddDofInterpolation(&myMesh_z, displ, interpolation_sub);
+
+    DofNumbering::DofInfo currDofInfo = DofNumbering::Build(myMesh_z.NodesTotal(displ), displ, constraints);
+//    std::map<int, std::vector<int>> localDofs = myMesh_z.getDofNumbering_1D();
+    std::map<int, std::vector<int>> localDofs = myMesh_z.getDofNumbering_2D();
+//    std::vector<std::map<int, int>> local2GlobalDofs = local2GlobalNumbering(&mesh, &subMesh0, &subMesh1, displ);
+    std::map<int, int> local2GlobalDofs = local2GlobalDofNumbering(globalDofs, localDofs);
+
+//    //--------- do the following steps for every part of the mesh
+
+//    // ************************************************************************
+//    //                 add continuum cells
+//    // ************************************************************************
+//    constexpr double E = 20000;
+//    constexpr double nu = 0.2;
+//    Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
+//    Integrands::TimeDependent::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+
+//    boost::ptr_vector<CellInterface> cellContainer;
+//    IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
+
+//    NuTo::Groups::Group<CellInterface> cellGroup;
+//    for (auto& element : subMeshes[rank].Elements)
+//    {
+//        cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
+//        cellGroup.Add(cellContainer.back());
+//    }
+
+//    // ************************************************************************
+//    //                 add boundary cells
+//    // ************************************************************************
+
+//    // manually add the boundary element
+//    const auto& interpolationBc = subMeshes[rank].CreateInterpolation(InterpolationTrussLinear(2));
+
+//    IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
+//    Eigen::Vector2d pressureBC(1, 0);
+//    Integrands::TimeDependent::NeumannBc<2> neumannBc(displ, pressureBC);
+
+//    // extract existing nodes
+//    NuTo::Groups::Group<NodeSimple> boundaryCoordNodes = subMeshes[rank].NodesAtAxis(eDirection::X, 10);
+//    if (boundaryCoordNodes.Size() == 2)
+//    {
+//        NodeSimple& nc1 = *boundaryCoordNodes.begin();
+//        NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
+
+//        auto boundaryDisplNodes = subMeshes[rank].NodesAtAxis(eDirection::X, displ, 10);
+//        NodeSimple& nd1 = *boundaryDisplNodes.begin();
+//        NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
+
+//        // add the boundary element
+//        auto& boundaryElement = subMeshes[rank].Elements.Add({{{nc1, nc2}, interpolationBc}});
+//        boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
+
+//        cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, neumannBc));
+//        cellGroup.Add(cellContainer.back());
+//    }
+
+//    // ************************************************************************
+//    //                  assemble
+//    // ************************************************************************
+//    SimpleAssembler assembler(currDofInfo.numIndependentDofs, currDofInfo.numDependentDofs);
+
+//    auto gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
+//    auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
+//    Eigen::SparseMatrix<double> A_JJ = hessian.JJ(displ,displ);
+//    Eigen::VectorXd r_J = gradient.J[displ];
+
+//    //-----------
+
+//    //******************************************
+//    //*     create overlapping index map       *
+//    //******************************************
+//    std::vector<int> myGlobalDofIDs = getAllDofNumbers(local2GlobalDofs, rank);
+//    int* myGlobalDofIDs_arr = &myGlobalDofIDs[0];
+//    RCP<Tpetra::Map<int, int>> overlappingMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myGlobalDofIDs_arr, myGlobalDofIDs.size(), 0, commTeuchos));
+
+
+//    //******************************************
+//    //*       create owning index map          *
+//    //******************************************
+//    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
+//    int* myOwningGlobalActiveDofIDs_arr = &myOwningGlobalActiveDofIDs[0];
+//    RCP<Tpetra::Map<int, int>> owningMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myOwningGlobalActiveDofIDs_arr, myOwningGlobalActiveDofIDs.size(), 0, commTeuchos));
+
+////    std::ostream &out = std::cout;
+////    RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(out));
+////    *fos << "OwningMap :" << std::endl;
+////    owningMap_tpetra->describe(*fos,Teuchos::VERB_EXTREME);
+////    *fos << std::endl;
+////    *fos << "OverlappingMap :" << std::endl;
+////    overlappingMap_tpetra->describe(*fos,Teuchos::VERB_EXTREME);
+////    *fos << std::endl;
+
+//    //******************************************
+//    //*         create index graphs            *
+//    //******************************************
+//    int maxNonZeros = 18;   //got by interpolation type (order), e.g. QUAD2 + EQUIDISTANT1 => 18
+//    RCP<Tpetra::CrsGraph<int, int>> owningGraph_tpetra = rcp(new Tpetra::CrsGraph<int,int>(owningMap_tpetra, maxNonZeros, Tpetra::ProfileType::DynamicProfile));
+//    RCP<Tpetra::CrsGraph<int, int>> overlappingGraph_tpetra = rcp(new Tpetra::CrsGraph<int, int>(overlappingMap_tpetra, maxNonZeros, Tpetra::ProfileType::DynamicProfile));
+//    std::vector<int> columnIndices;
+//    for (int k=0; k<A_JJ.outerSize(); ++k)
+//    {
+//        columnIndices.clear();
+//        for (Eigen::SparseMatrix<double>::InnerIterator it(A_JJ,k); it; ++it)
+//        {
+//            // describe position of entries
+//            overlappingGraph_tpetra->insertGlobalIndices(myGlobalDofIDs_arr[it.row()], 1, &myGlobalDofIDs_arr[it.col()]);
+//        }
+//    }
+
+//    //******************************************
+//    //*   define inter-process communication   *
+//    //*      for local-to-global indices       *
+//    //******************************************
+//    RCP<const Tpetra::Export<int, int>> exporter_tpetra = rcp(new Tpetra::Export<int, int>(overlappingMap_tpetra, owningMap_tpetra));
+//    overlappingGraph_tpetra->fillComplete();
+//    owningGraph_tpetra->doExport(*overlappingGraph_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::INSERT);
+//    owningGraph_tpetra->fillComplete();
+
+
+//    //******************************************
+//    //*  initialize Trilinos matrix and vector *
+//    //******************************************
+//    RCP<Tpetra::CrsMatrix<double, int, int>> globalA_JJ_tpetra = rcp(new Tpetra::CrsMatrix<double, int, int>(owningGraph_tpetra));
+//    RCP<Tpetra::Vector<double, int, int>> globalRhsVector_tpetra = rcp(new Tpetra::Vector<double, int, int>(owningMap_tpetra));
+//    globalRhsVector_tpetra->putScalar(0.0);
+
+//    Eigen::SparseMatrix<double, Eigen::RowMajor> A_JJ_rowMajor(A_JJ);
+
+//    //******************************************
+//    //*    conversion from NuTo to Trilinos    *
+//    //******************************************
+//    ConversionTools converter2;
+//    Teuchos::RCP<Tpetra::CrsMatrix<double, int, int>> localA_JJ_tpetra = converter2.convertEigen2TpetraCrsMatrix(A_JJ_rowMajor, overlappingGraph_tpetra, true);
+//    Teuchos::RCP<Tpetra::Vector<double, int, int>> localRhsVector_tpetra = converter2.convertEigen2TpetraVector(r_J, overlappingMap_tpetra);
+//    globalA_JJ_tpetra->doExport(*localA_JJ_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::ADD);
+//    globalRhsVector_tpetra->doExport(*localRhsVector_tpetra.get(), *exporter_tpetra.get(), Tpetra::CombineMode::INSERT);
+//    globalRhsVector_tpetra->scale(-1.);
+
+//    //******************************************
+//    //*        solve complete problem          *
+//    //******************************************
+//    Teuchos::RCP<Tpetra::MultiVector<double, int, int>> sol_tpetra = solveSystem_tpetra(globalA_JJ_tpetra, globalRhsVector_tpetra, false);
+}
+
+
+void AssemblerZoltanTest_2D()
+{
+
+}
+
+
 int main(int argc, char **argv)
 {
 //    Zoltan_RCB_test(argc, argv);
 
-    Zoltan_HyperGraphPartitioning_test(argc, argv);
+//    Zoltan_HyperGraphPartitioning_test(argc, argv);
+
+    AssemblerZoltanTest_1D(argc, argv);
     return 0;
 }
 

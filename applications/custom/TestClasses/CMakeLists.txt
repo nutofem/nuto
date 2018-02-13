@@ -15,17 +15,17 @@ foreach(mesh jsonMesh_Test)
     endforeach()
 endforeach()
 
-foreach(myTestFiles
-    nuto_trilinos
-    1D_Test
-    2D_Test
-    MeshJson_Test)
-#    LoadBalancing)
+#foreach(myTestFiles
+#    1D_Test
+#    2D_Test)
+##    nuto_trilinos
+##    MeshJson_Test)
+##    LoadBalancing)
 
-    add_executable(${myTestFiles} ${myTestFiles}.cpp)
-#    target_link_libraries(${myTestFiles} NuToMechanics NuToVisualize ${MPI_Libraries})
+#    add_executable(${myTestFiles} ${myTestFiles}.cpp)
+##    target_link_libraries(${myTestFiles} NuToMechanics NuToVisualize ${MPI_Libraries})
 
-endforeach()
+#endforeach()
 
 
 SET(Trilinos_useInstalledLibs False)
@@ -59,37 +59,40 @@ else()
         trilinos_belos
         trilinos_belosepetra
         trilinos_belostpetra
+        trilinos_zoltan
         )
 endif()
 
 INCLUDE_DIRECTORIES(${Trilinos_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Trilinos_TPL_INCLUDE_DIRS})
 
-foreach(myTestFiles
-    nuto_trilinos
-    1D_Test
-    2D_Test
-    MeshJson_Test)
-#    LoadBalancing)
+#foreach(myTestFiles
+#    1D_Test
+#    2D_Test)
+##    nuto_trilinos
+##    MeshJson_Test)
+##    LoadBalancing)
 
-    target_link_libraries(${myTestFiles} Mechanics Math Visualize ${MPI_Libraries})
-    #target_link_libraries(${myTestFiles} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
-    target_link_libraries(${myTestFiles} ${MyTrilinos_LIBRARIES} ${Boost_LIBRARIES})
+#    target_link_libraries(${myTestFiles} Mechanics Math Visualize ${MPI_Libraries})
+#    #target_link_libraries(${myTestFiles} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+#    target_link_libraries(${myTestFiles} ${MyTrilinos_LIBRARIES} ${Boost_LIBRARIES})
 
-endforeach()
+#endforeach()
 
-add_library(StructureMesh STATIC StructureMesh.cpp)
+#target_link_libraries(1D_Test ConversionTools PrintTools)
+#target_link_libraries(2D_Test ConversionTools PrintTools TrilinosUtils)
+
+
+#add_library(StructureMesh STATIC StructureMesh.cpp)
+#target_link_libraries(StructureMesh Mechanics Math Visualize ${Boost_LIBRARIES})
 #target_link_libraries(StructureMesh Mechanics Math Visualize ${Trilinos_LIBRARIES})
-target_link_libraries(StructureMesh Mechanics Math Visualize ${Boost_LIBRARIES})
 
 add_library(ConversionTools STATIC ConversionTools.cpp)
 #target_link_libraries(ConversionTools ${Trilinos_LIBRARIES})
 add_library(PrintTools PrintTools.cpp)
 add_library(TrilinosUtils TrilinosUtils.cpp)
-target_link_libraries(1D_Test ConversionTools PrintTools)
-target_link_libraries(2D_Test ConversionTools PrintTools TrilinosUtils)
 
-target_link_libraries(MeshJson_Test ConversionTools PrintTools FetiLib)
+#target_link_libraries(MeshJson_Test ConversionTools PrintTools FetiLib)
 
 add_library(ZoltanMesh ZoltanMesh.cpp)
 target_link_libraries(ZoltanMesh Mechanics Math Visualize)

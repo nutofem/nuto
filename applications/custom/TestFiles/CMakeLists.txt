@@ -57,13 +57,13 @@ endif()
 #add_library(StructureMesh ../TestClasses/StructureMesh.cpp)
 
 foreach(myTestFiles
-    StructureMeshTest
     ZoltanTest)
+#    StructureMeshTest
 #    LoadBalancing)
 
     add_executable(${myTestFiles} ${myTestFiles}.cpp)
-    #target_link_libraries(${myTestFiles} Mechanics Math Visualize ${Trilinos_LIBRARIES} StructureMesh ConversionTools FetiLib ${MPI_Libraries})
-    target_link_libraries(${myTestFiles} Mechanics Math Visualize StructureMesh ConversionTools ZoltanMesh FetiLib ${MPI_Libraries} ${MyTrilinos_LIBRARIES})
+    target_link_libraries(${myTestFiles} Mechanics Math Visualize ConversionTools ZoltanMesh ${MPI_LIBRARIES} ${MyTrilinos_LIBRARIES})
+#    target_link_libraries(${myTestFiles} Mechanics Math Visualize StructureMesh ConversionTools ZoltanMesh FetiLib ${MPI_Libraries} ${MyTrilinos_LIBRARIES})
     target_include_directories(${myTestFiles} PRIVATE ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
 #    target_link_libraries(${myTestFiles} NuToMechanics NuToVisualize ${MPI_Libraries})
 

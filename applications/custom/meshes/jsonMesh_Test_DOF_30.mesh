@@ -1,0 +1,48 @@
+{
+   "Elements" : [
+      {
+         "Indices" : [ 0 ],
+         "Name" : "Domain",
+         "NodalConnectivity" : [
+            [ 0, 1, 4, 5 ]
+         ],
+         "Type" : 3,
+         "TypeName" : "Quad2D"
+      }
+   ],
+   "Interface" : [
+      {
+         "ID" : 0,
+         "Master" : 0,
+         "NodeIds" : [
+            [ 1, 4 ]
+         ]
+      }
+   ],
+   "NumInterfaceNodes" : [ 2 ],
+   "Nodes" : [
+      {
+         "Coordinates" : [
+            [ 0, 0, 0 ],
+            [ 30, 0, 0 ],
+            [ 30, 10, 0 ],
+            [ 0, 10, 0 ]
+         ],
+         "Displacements" : [
+            [ 0, 0, 0 ],
+            [ 0, 0, 0 ],
+            [ 0, 0, 0 ],
+            [ 0, 0, 0 ]
+         ],
+         "Indices" : [
+            0,
+            1,
+            4,
+            5
+         ],
+         "InnerNodeIDs" : [ 0, 5 ],
+         "MasterNodeIDs" : [ 0, 1, 4, 5 ],
+         "SlaveNodeIDs" : []
+      }
+   ]
+}

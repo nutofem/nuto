@@ -86,7 +86,8 @@ public:
         return mDofElements.At(dofType);
     }
 
-private:
+//private:
+public:
     TElement mCoordinateElement;
     DofContainer<TElement> mDofElements;
 };

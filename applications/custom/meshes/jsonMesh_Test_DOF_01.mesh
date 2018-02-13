@@ -1,0 +1,73 @@
+{
+   "Elements" : [
+      {
+         "Indices" : [ 1, 2 ],
+         "Name" : "Domain",
+         "NodalConnectivity" : [
+            [ 1, 2, 5, 6 ],
+            [ 2, 3, 4, 5 ]
+         ],
+         "Type" : 3
+      }
+   ],
+   "Interface" : [
+      {
+         "GlobalStartId" : [ 0 ],
+         "Master" : 0,
+         "NodeIds" : [
+            [ 1, 6 ]
+         ],
+         "Slave" : 1
+      }
+   ],
+   "LocalToGlobalMap" : [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+   ],
+   "Nodes" : [
+      {
+         "Coordinates" : [
+            [ 30, 0, 0 ],
+	    [ 60, 0, 0 ],
+            [ 90, 0, 0 ],
+            [ 90, 10, 0 ],
+	    [ 60, 10, 0 ],
+            [ 30, 10, 0 ]
+         ],
+         "Indices" : [
+            1,
+	    2,
+	    3,
+            4,
+            5,
+            6
+         ]
+      }
+   ],
+   "NumInterfaceNodes" : [ 2 ],
+   "DOFs_Displacement" : [
+      {
+         "NodeToDofID" : [
+            {
+               "1" : [ 0, 1 ],
+               "2" : [ 8, 9 ],
+               "3" : [ 12, 13 ],
+               "4" : [ 14, 15 ],
+               "5" : [ 10, 11 ],
+               "6" : [ 2, 3 ]
+            }
+         ],
+         "DofIDs" : [ 0, 1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15 ],
+         "InnerDofIDs" : [ 8, 9, 10, 11, 12, 13, 14, 15 ],
+         "MasterDofIDs" : [],
+         "SlaveDofIDs" : [ 0, 1, 2, 3],
+         "ActiveDofIDs" : [ 0, 1, 2, 3, 8, 9, 10, 11, 12, 14 ],
+         "DependentDofIDs" : [ 13, 15 ],
+         "DependentDofValues" : [ 2, 2]
+      }
+   ]
+}

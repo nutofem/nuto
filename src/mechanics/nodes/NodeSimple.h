@@ -10,6 +10,8 @@ namespace NuTo
 class NodeSimple
 {
 public:
+    NodeSimple() = default;
+
     //! @brief initizalizes the node values with `values` and initializes the dof numbers to zero
     //! @param values inititial node values
     //! @remark this magic number `-1` indicates an uninitialized state. I was not able to declare a static variable
@@ -25,6 +27,11 @@ public:
     NodeSimple(double value)
         : mValues(Eigen::VectorXd::Constant(1, value))
         , mDofNumbers(Eigen::VectorXi::Zero(1))
+    {
+    }
+
+
+    NodeSimple(const NodeSimple& rNode) : mValues(rNode.mValues), mDofNumbers(rNode.mDofNumbers)
     {
     }
 
@@ -63,7 +70,7 @@ public:
         return mValues.rows();
     }
 
-private:
+public:
     Eigen::VectorXd mValues;
     Eigen::VectorXi mDofNumbers;
 };

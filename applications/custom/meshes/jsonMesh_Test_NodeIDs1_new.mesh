@@ -1,0 +1,56 @@
+{
+   "Elements" : [
+      {
+         "Indices" : [ 1 ],
+         "Name" : "Domain",
+         "NodalConnectivity" : [
+            [ 1, 2, 3, 4 ]
+         ],
+         "Type" : 3,
+         "TypeName" : "Quad2D"
+      }
+   ],
+   "Nodes" : [
+      {
+         "Coordinates" : [
+            [ 30, 0, 0 ],
+	    [ 60, 0, 0 ],
+	    [ 60, 10, 0 ],
+            [ 30, 10, 0 ]
+         ],
+         "Indices" : [
+            1,
+            2,
+            3,
+            4
+         ],
+         "MasterNodeIDs" : [ 2, 3 ]
+      }
+   ],
+   "DofNodes" : [
+      {
+         "DofType": "DISPLACEMENTS",
+         "InterpolationOrder" : "EQUIDISTANT1",
+         "MasterNodeIDs" : [ 2, 3 ],
+         "Interfaces" : [
+            {
+               "ID" : 0,
+               "Master" : 0,
+               "NodeIds" : [ 1, 4 ]
+            }
+         ]
+      },
+      {
+         "DofType": "TEMPERATURE",
+         "InterpolationOrder" : "EQUIDISTANT2",
+         "MasterNodeIDs" : [ 3, 4, 5, 6, 7 ],
+         "Interfaces" : [
+            {
+               "ID" : 0,
+               "Master" : 0,
+               "NodeIds" : [ 2, 8, 12 ]
+            }
+         ]
+      }
+   ]
+}

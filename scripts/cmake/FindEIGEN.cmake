@@ -9,6 +9,10 @@ message(STATUS "Checking for Eigen3 headers ...")
 
 find_path(EIGEN_INCLUDE_DIR NAMES Eigen/Core PATH_SUFFIXES eigen3)
 
+SET(EIGEN_INCLUDE_DIR /usr/include/eigen3)
+MESSAGE(STATUS ${EIGEN_INCLUDE_DIR})
+
+
 # automatically parse the version number
 file(READ "${EIGEN_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h"
     _eigen_version_header)
