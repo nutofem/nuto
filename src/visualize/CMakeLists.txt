@@ -7,6 +7,7 @@ set(VisualizeSources
     AverageHandler.cpp
     Visualizer.cpp
     PointHandler.cpp
+    PostProcess.cpp
     VoronoiHandler.cpp
     VoronoiGeometries.cpp
 )
