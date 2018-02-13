@@ -19,6 +19,17 @@ public:
     GlobalDofMatrixSparse BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                       CellInterface::MatrixFunction f) const;
 
+    //! @brief Assembles a diagonally lumped matrix from local matrices calculated by f
+    //! @param cells group of cells to be used for assembly
+    //! @param dofTypes vector of dofTypes
+    //! @return a global dof vector that represents a collection of diagonal matrices
+    //! @remark HRZ lumping is used here, the assumptions made are:
+    //! - shape functions sum to 1, only then the total mass for a cell can be calculated by
+    //!   summing over all entries of the local mass matrix
+    //! - the total mass of a cell is the same for all components of the considered dof
+    GlobalDofVector BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+                                                CellInterface::MatrixFunction f) const;
+
 private:
     GlobalDofVector ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const;
     GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const;
