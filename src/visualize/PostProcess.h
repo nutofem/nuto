@@ -47,7 +47,7 @@ private:
 
     std::map<std::string, VisualizationInfo> mVisualize;
 
-    std::string mResultDir;
+    std::string mResultDir = "not set";
 
     int mStep = 0;
 

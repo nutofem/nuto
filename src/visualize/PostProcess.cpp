@@ -40,11 +40,13 @@ void PostProcess::ThrowOnUnknownName(std::string name)
 
 void PostProcess::DefineVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
 {
-    mVisualize.emplace(name, Visualizer(cells, handler));
+    DefineVisualizer(name, Visualizer(cells, handler));
 }
 
 void PostProcess::DefineVisualizer(std::string name, Visualizer&& visualizer)
 {
+    if (mVisualize.find(name) != mVisualize.end())
+        throw Exception(__PRETTY_FUNCTION__, "You already defined " + name + ". Pick a new name for a new Visualizer.");
     mVisualize.emplace(name, std::move(visualizer));
 }
 
@@ -77,8 +79,15 @@ std::string FormatTime(double t)
     return timeFormatted.str();
 }
 
-void WritePvdFile(std::string pvdFileName, std::string vtuFileName, double t, bool isNew)
+//! Adds the vtuFileName to the pvdFileName with the time step t
+//! @param pvdFileName full pvd file name including ".pvd"
+//! @param vtuFileName full vtu file name including ".vtu" that is added to the pvdFileName
+//! @param double t corresponding time
+//! @remark This might as well be a general purpose function/class to be used outside of this class, YAGNI for now.
+void AddToPvdFile(std::string pvdFileName, std::string vtuFileName, double t)
 {
+    boost::filesystem::path p(pvdFileName);
+    bool isNew = not boost::filesystem::exists(p);
 
     std::fstream file;
     if (isNew)
@@ -90,14 +99,14 @@ void WritePvdFile(std::string pvdFileName, std::string vtuFileName, double t, bo
         throw Exception(__PRETTY_FUNCTION__, "Error opening file " + pvdFileName);
 
     std::stringstream endOfXML;
-    endOfXML << "</Collection>" << std::endl;
-    endOfXML << "</VTKFile>" << std::endl;
+    endOfXML << "</Collection>\n";
+    endOfXML << "</VTKFile>\n";
     if (isNew)
     {
         // header /////////////////////////////////////////////////////////////////
-        file << "<?xml version=\"1.0\"?>" << std::endl;
-        file << "<VTKFile type=\"Collection\">" << std::endl;
-        file << "<Collection>" << std::endl;
+        file << "<?xml version=\"1.0\"?>\n";
+        file << "<VTKFile type=\"Collection\">\n";
+        file << "<Collection>\n";
     }
     else
     {
@@ -110,6 +119,9 @@ void WritePvdFile(std::string pvdFileName, std::string vtuFileName, double t, bo
 
 void PostProcess::Plot(double t, bool asBinary)
 {
+    if (mResultDir == "not set")
+        throw Exception(__PRETTY_FUNCTION__, "You have to set the result directory by calling ResultDirectory(name).");
+
     for (auto& visuInfo : mVisualize)
     {
         auto& info = visuInfo.second;
@@ -132,7 +144,7 @@ void PostProcess::Plot(double t, bool asBinary)
 
         visu.WriteVtuFile(vtuFile.string(), asBinary);
 
-        WritePvdFile(pvdFile.string(), vtuFileName, t, mStep == 0);
+        AddToPvdFile(pvdFile.string(), vtuFileName, t);
     }
     mStep++;
 }

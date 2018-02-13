@@ -45,3 +45,22 @@ BOOST_AUTO_TEST_CASE(PostProcessTest)
     BOOST_CHECK_CLOSE(timeStep0, 42., 1.e-10);
     BOOST_CHECK(file0 == "blub0.vtu");
 }
+
+BOOST_AUTO_TEST_CASE(PostProcessEdgyMcEdge)
+{
+    NuTo::Test::VisualizeTestStructure s;
+    auto cells = s.Cells();
+
+    // Add visualize object before defining the visualizer
+    DofType dof("stuff", 1);
+    PostProcess postprocess;
+    BOOST_CHECK_THROW(postprocess.Add("edge", dof), Exception);
+
+    postprocess.DefineVisualizer("edge", cells, AverageHandler(AverageGeometryQuad()));
+
+    // defining the same visualizer twice
+    BOOST_CHECK_THROW(postprocess.DefineVisualizer("edge", cells, AverageHandler(AverageGeometryQuad())), Exception);
+
+    // call `Plot` without setting a result directory
+    BOOST_CHECK_THROW(postprocess.Plot(0), Exception);
+}
