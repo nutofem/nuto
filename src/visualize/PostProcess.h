@@ -80,7 +80,7 @@ private:
 
     std::map<std::string, VisualizationInfo> mVisualize;
 
-    std::string mResultDir = "not set";
+    std::string mResultDir = "";
 
     int mStep = 0;
 

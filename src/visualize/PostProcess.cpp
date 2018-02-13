@@ -11,6 +11,9 @@ PostProcess::PostProcess(std::string resultDir)
 
 void PostProcess::ResultDirectory(std::string resultDir)
 {
+    if (resultDir.empty())
+        throw Exception(__PRETTY_FUNCTION__, "You have to pick a non-empty name.");
+
     namespace fs = boost::filesystem;
 
     fs::path p(resultDir);
@@ -119,8 +122,9 @@ void AddToPvdFile(std::string pvdFileName, std::string vtuFileName, double t)
 
 void PostProcess::Plot(double t, bool asBinary)
 {
-    if (mResultDir == "not set")
-        throw Exception(__PRETTY_FUNCTION__, "You have to set the result directory by calling ResultDirectory(name).");
+    if (mResultDir.empty())
+        throw Exception(__PRETTY_FUNCTION__,
+                        "You have to set the result directory by calling ResultDirectory(name) with a non-empty name.");
 
     for (auto& visuInfo : mVisualize)
     {

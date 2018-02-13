@@ -63,4 +63,7 @@ BOOST_AUTO_TEST_CASE(PostProcessEdgyMcEdge)
 
     // call `Plot` without setting a result directory
     BOOST_CHECK_THROW(postprocess.Plot(0), Exception);
+
+    // call `ResultDirectory` with an emptry string
+    BOOST_CHECK_THROW(postprocess.ResultDirectory(""), Exception);
 }
