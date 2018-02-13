@@ -6,10 +6,10 @@ using namespace NuTo::Visualize;
 
 PostProcess::PostProcess(std::string resultDir)
 {
-    SetResultDirectory(resultDir);
+    ResultDirectory(resultDir);
 }
 
-void PostProcess::SetResultDirectory(std::string resultDir)
+void PostProcess::ResultDirectory(std::string resultDir)
 {
     namespace fs = boost::filesystem;
 
@@ -23,6 +23,13 @@ void PostProcess::SetResultDirectory(std::string resultDir)
 
     if (not fs::exists(p))
         fs::create_directory(p);
+
+    mResultDir = p.string();
+}
+
+std::string PostProcess::ResultDirectory() const
+{
+    return mResultDir;
 }
 
 void PostProcess::ThrowOnUnknownName(std::string name)
@@ -33,32 +40,32 @@ void PostProcess::ThrowOnUnknownName(std::string name)
 
 void PostProcess::DefineVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
 {
-    mVisualize[name].mVisualizer = Visualizer(cells, handler);
+    mVisualize.emplace(name, Visualizer(cells, handler));
 }
 
 void PostProcess::DefineVisualizer(std::string name, Visualizer&& visualizer)
 {
-    mVisualize[name].mVisualizer = std::move(visualizer);
+    mVisualize.emplace(name, std::move(visualizer));
 }
 
 void PostProcess::Add(std::string name, DofType dof)
 {
     ThrowOnUnknownName(name);
-    mVisualize[name].mDofs.push_back(dof);
+    mVisualize.at(name).mDofs.push_back(dof);
 }
 
 void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
                       std::string cellFunctionName)
 {
     ThrowOnUnknownName(name);
-    mVisualize[name].mCellFunctions.push_back({cellFunction, cellFunctionName});
+    mVisualize.at(name).mCellFunctions.push_back({cellFunction, cellFunctionName});
 }
 
 void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
                       std::string pointFunctionName)
 {
     ThrowOnUnknownName(name);
-    mVisualize[name].mPointFunctions.push_back({pointFunction, pointFunctionName});
+    mVisualize.at(name).mPointFunctions.push_back({pointFunction, pointFunctionName});
 }
 
 std::string FormatTime(double t)
@@ -118,15 +125,14 @@ void PostProcess::Plot(double t, bool asBinary)
             visu.PointData(pointFunction.first, pointFunction.second);
 
         boost::filesystem::path resultFile(mResultDir);
-        boost::filesystem::path vtuFile = resultFile;
-        vtuFile /= visuInfo.first + std::to_string(mStep) + ".vtu";
 
-        boost::filesystem::path pvdFile = resultFile;
-        pvdFile /= visuInfo.first + ".pvd";
+        std::string vtuFileName = visuInfo.first + std::to_string(mStep) + ".vtu";
+        boost::filesystem::path vtuFile = resultFile / vtuFileName;
+        boost::filesystem::path pvdFile = resultFile / std::string(visuInfo.first + ".pvd");
 
         visu.WriteVtuFile(vtuFile.string(), asBinary);
 
-        WritePvdFile(pvdFile.string(), vtuFile.string(), t, mStep == 0);
+        WritePvdFile(pvdFile.string(), vtuFileName, t, mStep == 0);
     }
     mStep++;
 }

@@ -14,7 +14,8 @@ public:
     PostProcess() = default;
     PostProcess(std::string resultDir);
 
-    void SetResultDirectory(std::string resultDir);
+    void ResultDirectory(std::string resultDir);
+    std::string ResultDirectory() const;
 
     void DefineVisualizer(std::string name, Visualizer&& visualizer);
     void DefineVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler);
@@ -32,6 +33,11 @@ public:
 private:
     struct VisualizationInfo
     {
+        VisualizationInfo(Visualizer&& visu)
+            : mVisualizer(std::move(visu))
+        {
+        }
+
         Visualizer mVisualizer;
         std::vector<DofType> mDofs;
         std::vector<std::pair<std::function<Eigen::VectorXd(const CellData&, const CellIpData&)>, std::string>>

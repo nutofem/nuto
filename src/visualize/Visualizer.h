@@ -19,6 +19,9 @@ public:
     //! @param handler implementation of the HandlerInterface
     Visualizer(const Group<CellInterface>& cells, const HandlerInterface& handler);
 
+    //! copy ctor that allows overriding an existing visualizer to e.g. change the cells
+    Visualizer(Visualizer&&) = default;
+
     //! assigment operator that allows overriding an existing visualizer to e.g. change the cells
     Visualizer& operator=(Visualizer&&) = default;
 

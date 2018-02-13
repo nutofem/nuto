@@ -12,4 +12,4 @@ set(VisualizeSources
 )
 
 create_nuto_module(Visualize "${VisualizeSources}")
-target_link_libraries(Visualize Math)
+target_link_libraries(Visualize Math Boost::filesystem)

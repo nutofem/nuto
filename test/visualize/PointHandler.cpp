@@ -10,8 +10,7 @@ using namespace NuTo::Visualize;
 
 BOOST_AUTO_TEST_CASE(PointVisualizer)
 {
-    NuTo::DofType dof("NodeCoordinatesDiv10", 2);
-    NuTo::Test::VisualizeTestStructure s(dof);
+    NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
