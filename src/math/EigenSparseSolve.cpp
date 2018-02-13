@@ -18,7 +18,7 @@ namespace NuTo
 {
 
 template <typename TSolver>
-Eigen::VectorXd SolveWithSolver(Eigen::SparseMatrix<double> A, Eigen::VectorXd b)
+Eigen::VectorXd SolveWithSolver(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b)
 {
     TSolver solver;
     solver.analyzePattern(A);
@@ -26,7 +26,7 @@ Eigen::VectorXd SolveWithSolver(Eigen::SparseMatrix<double> A, Eigen::VectorXd b
     return solver.solve(b);
 }
 
-Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, std::string solver)
+Eigen::VectorXd EigenSparseSolve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, std::string solver)
 {
     // direct solvers
     if (solver == "EigenSparseLU")
@@ -46,7 +46,7 @@ Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd 
     if (solver == "EigenBiCGSTAB")
         return SolveWithSolver<Eigen::BiCGSTAB<Eigen::SparseMatrix<double>>>(A, b);
 
-    // external solvers
+// external solvers
 #ifdef HAVE_SUITESPARSE
     if (solver == "SuiteSparseLU")
         return SolveWithSolver<Eigen::UmfPackLU<Eigen::SparseMatrix<double>>>(A, b);
@@ -67,6 +67,17 @@ Eigen::VectorXd EigenSparseSolve(Eigen::SparseMatrix<double> A, Eigen::VectorXd 
         throw Exception("NuTo has not been compiled with MUMPS.");
 #endif
     throw Exception("Unknown solver. Are you sure you spelled it correctly?");
+}
+
+
+EigenSparseSolver::EigenSparseSolver(std::string solver)
+    : mSolver(solver)
+{
+}
+
+Eigen::VectorXd EigenSparseSolver::Solve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b) const
+{
+    return EigenSparseSolve(A, b, mSolver);
 }
 
 } // namespace NuTo

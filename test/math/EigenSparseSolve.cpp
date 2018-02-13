@@ -21,6 +21,7 @@ struct LinearSystem
         A.insert(1, 2) = -1.0;
         A.insert(2, 1) = -1.0;
         A.insert(2, 2) = 2.0;
+        A.makeCompressed();
 
         b << 3.0, -3.0, -2.0;
         expected_x << 1.0, -2.0, -2.0;

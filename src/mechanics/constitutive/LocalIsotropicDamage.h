@@ -92,7 +92,7 @@ public:
     //! @param strainNorm strain norm, see class documentation
     //! @param numCells number of cells for the history data allocation
     //! @param numIpsPerCell nummer of integraiton points per cell for the history data allocation
-    EvolutionImplicit(TStrainNorm strainNorm, size_t numCells, size_t numIpsPerCell)
+    EvolutionImplicit(TStrainNorm strainNorm, size_t numCells = 0, size_t numIpsPerCell = 0)
         : mStrainNorm(strainNorm)
         , mNumIpsPerCell(numIpsPerCell)
         , mKappas(std::vector<double>(numCells * numIpsPerCell, 0.))
@@ -104,11 +104,12 @@ public:
         return std::max(mStrainNorm.Value(strain), mKappas[Ip(cellId, ipId)]);
     }
 
-    double DkappaDstrain(EngineeringStrain<TDim> strain, double, int cellId, int ipId) const
+    Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, int cellId,
+                                                             int ipId) const
     {
-        if (mStrainNorm.Value(strain) > mKappas[Ip(cellId, ipId)])
-            return 1.;
-        return 0;
+        if (mStrainNorm.Value(strain) >= mKappas[Ip(cellId, ipId)])
+            return mStrainNorm.Derivative(strain).transpose();
+        return Eigen::Matrix<double, 1, Voigt::Dim(TDim)>::Zero();
     }
 
     void Update(EngineeringStrain<TDim> strain, double deltaT, int cellId, int ipId)
@@ -119,6 +120,12 @@ public:
     size_t Ip(int cellId, int ipId) const
     {
         return cellId * mNumIpsPerCell + ipId;
+    }
+
+    void ResizeHistoryData(size_t numCells, size_t numIpsPerCell)
+    {
+        mNumIpsPerCell = numIpsPerCell;
+        mKappas.resize(numIpsPerCell * numCells);
     }
 
 public:

@@ -41,12 +41,12 @@ public:
         double alpha = 1.;
         int lineSearchStep = 0;
         const auto x0 = *x;
-        const auto previousNorm = problem.NormFunction(problem.ResidualFunction(*x));
+        const auto previousNorm = problem.Norm(problem.Residual(*x));
         while (lineSearchStep < mMaxNumLineSearchStep)
         {
             *x = x0 - alpha * dx;
-            *r = problem.ResidualFunction(*x);
-            const auto trialNorm = problem.NormFunction(*r);
+            *r = problem.Residual(*x);
+            const auto trialNorm = problem.Norm(*r);
 
             mInfo(lineSearchStep, alpha, trialNorm);
 
@@ -83,8 +83,8 @@ public:
     bool operator()(TProblem&& problem, TX* r, TX* x, TX dx) const
     {
         *x -= dx;
-        *r = problem.ResidualFunction(*x);
-        return problem.NormFunction(*r) < problem.mTolerance;
+        *r = problem.Residual(*x);
+        return problem.Norm(*r) < problem.mTolerance;
     }
 };
 

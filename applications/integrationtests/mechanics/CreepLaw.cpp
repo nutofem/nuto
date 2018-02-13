@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
 
     // DOF numbering %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
     // Create law %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
 
     // Get gradient %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
     VectorXd displacements = VectorXd::Zero(dofInfo.numIndependentDofs[displ]);
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
