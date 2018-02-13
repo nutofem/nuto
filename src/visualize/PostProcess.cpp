@@ -1,15 +1,15 @@
-#include "visualize/Companion.h"
+#include "visualize/PostProcess.h"
 #include <boost/filesystem.hpp>
 
 using namespace NuTo;
 using namespace NuTo::Visualize;
 
-Companion::Companion(std::string resultDir)
+PostProcess::PostProcess(std::string resultDir)
 {
     SetResultDirectory(resultDir);
 }
 
-void Companion::SetResultDirectory(std::string resultDir)
+void PostProcess::SetResultDirectory(std::string resultDir)
 {
     namespace fs = boost::filesystem;
 
@@ -25,38 +25,38 @@ void Companion::SetResultDirectory(std::string resultDir)
         fs::create_directory(p);
 }
 
-void Companion::ThrowOnUnknownName(std::string name)
+void PostProcess::ThrowOnUnknownName(std::string name)
 {
     if (mVisualize.find(name) == mVisualize.end())
         throw Exception(__PRETTY_FUNCTION__, "You have to call AddVisualizer for " + name + " first.");
 }
 
-void Companion::AddVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
+void PostProcess::AddVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
 {
     mVisualize[name].mVisualizer = Visualizer(cells, handler);
 }
 
-void Companion::AddVisualizer(std::string name, Visualizer&& visualizer)
+void PostProcess::AddVisualizer(std::string name, Visualizer&& visualizer)
 {
     mVisualize[name].mVisualizer = std::move(visualizer);
 }
 
-void Companion::AddDof(std::string name, DofType dof)
+void PostProcess::AddDof(std::string name, DofType dof)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mDofs.push_back(dof);
 }
 
-void Companion::AddCellFunction(std::string name,
-                                std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
-                                std::string cellFunctionName)
+void PostProcess::AddCellFunction(std::string name,
+                                  std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
+                                  std::string cellFunctionName)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mCellFunctions.push_back({cellFunction, cellFunctionName});
 }
 
-void Companion::AddPointFunction(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
-                                 std::string pointFunctionName)
+void PostProcess::AddPointFunction(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
+                                   std::string pointFunctionName)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mPointFunctions.push_back({pointFunction, pointFunctionName});
@@ -102,7 +102,7 @@ void WritePvdFile(std::string pvdFileName, std::string vtuFileName, double t, bo
     file << endOfXML.str();
 }
 
-void Companion::Plot(double t, bool asBinary)
+void PostProcess::Plot(double t, bool asBinary)
 {
     for (auto& visuInfo : mVisualize)
     {

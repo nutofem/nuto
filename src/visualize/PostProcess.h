@@ -7,12 +7,12 @@ namespace NuTo
 {
 namespace Visualize
 {
-class Companion
+class PostProcess
 {
 
 public:
-    Companion() = default;
-    Companion(std::string resultDir);
+    PostProcess() = default;
+    PostProcess(std::string resultDir);
 
     void SetResultDirectory(std::string resultDir);
 
