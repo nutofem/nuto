@@ -16,17 +16,16 @@ public:
 
     void SetResultDirectory(std::string resultDir);
 
-    void AddVisualizer(std::string name, Visualizer&& visualizer);
-    void AddVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler);
+    void DefineVisualizer(std::string name, Visualizer&& visualizer);
+    void DefineVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler);
 
-    void AddDof(std::string name, DofType dof);
+    void Add(std::string name, DofType dof);
 
-    void AddCellFunction(std::string name,
-                         std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
-                         std::string cellFunctionName);
+    void Add(std::string name, std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
+             std::string cellFunctionName);
 
-    void AddPointFunction(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
-                          std::string pointFunctionName);
+    void Add(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
+             std::string pointFunctionName);
 
     void Plot(double t, bool asBinary = true);
 

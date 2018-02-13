@@ -28,35 +28,34 @@ void PostProcess::SetResultDirectory(std::string resultDir)
 void PostProcess::ThrowOnUnknownName(std::string name)
 {
     if (mVisualize.find(name) == mVisualize.end())
-        throw Exception(__PRETTY_FUNCTION__, "You have to call AddVisualizer for " + name + " first.");
+        throw Exception(__PRETTY_FUNCTION__, "You have to call DefineVisualizer for " + name + " first.");
 }
 
-void PostProcess::AddVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
+void PostProcess::DefineVisualizer(std::string name, Group<CellInterface> cells, const HandlerInterface& handler)
 {
     mVisualize[name].mVisualizer = Visualizer(cells, handler);
 }
 
-void PostProcess::AddVisualizer(std::string name, Visualizer&& visualizer)
+void PostProcess::DefineVisualizer(std::string name, Visualizer&& visualizer)
 {
     mVisualize[name].mVisualizer = std::move(visualizer);
 }
 
-void PostProcess::AddDof(std::string name, DofType dof)
+void PostProcess::Add(std::string name, DofType dof)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mDofs.push_back(dof);
 }
 
-void PostProcess::AddCellFunction(std::string name,
-                                  std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
-                                  std::string cellFunctionName)
+void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
+                      std::string cellFunctionName)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mCellFunctions.push_back({cellFunction, cellFunctionName});
 }
 
-void PostProcess::AddPointFunction(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
-                                   std::string pointFunctionName)
+void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
+                      std::string pointFunctionName)
 {
     ThrowOnUnknownName(name);
     mVisualize[name].mPointFunctions.push_back({pointFunction, pointFunctionName});
