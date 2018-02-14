@@ -1,6 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include "math/NewtonRaphson.h"
+#include "math/EigenCompanion.h"
 
 #include "mechanics/dofs/DofNumbering.h"
 
@@ -160,12 +161,20 @@ private:
 
     Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
     {
-        auto nodesLeft = mesh.NodesAtAxis(eDirection::X, disp);
-        auto nodesRight = mesh.NodesAtAxis(eDirection::X, disp, 1);
+        using namespace NuTo::EigenCompanion;
+        auto& nodeLeft = mesh.NodeAtCoordinate(ToEigen(0), disp);
+        auto& nodeRight = mesh.NodeAtCoordinate(ToEigen(1), disp);
+
+        auto& nodeMiddle = mesh.NodeAtCoordinate(ToEigen(0.4), disp);
 
         Constraint::Constraints c;
-        c.Add(disp, Constraint::Component(nodesLeft, {eDirection::X}));
-        c.Add(disp, Constraint::Component(nodesRight, {eDirection::X}, Constraint::RhsRamp(1., 0.01)));
+
+
+        Constraint::Equation periodic(nodeRight, 0, Constraint::RhsRamp(1., 0.01));
+        periodic.AddTerm({nodeLeft, 0, -1});
+
+        c.Add(disp, Constraint::Component(nodeMiddle, {eDirection::X}));
+        c.Add(disp, periodic);
         return c;
     }
 };
