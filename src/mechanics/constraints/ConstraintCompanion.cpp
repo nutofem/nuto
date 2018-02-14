@@ -9,6 +9,15 @@ namespace NuTo
 namespace Constraint
 {
 
+RhsFunction RhsRamp(double timeEnd, double valueEnd)
+{
+    if (timeEnd == 0)
+        throw Exception(__PRETTY_FUNCTION__, "The first parameter must be != 0. If you wanted a constant rhs, use "
+                                             "Constraint::RhsConstant(constant).");
+    return [=](double time) { return valueEnd * time / timeEnd; };
+}
+
+
 std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, double value)
 {
     return Component(node, directions, RhsConstant(value));
