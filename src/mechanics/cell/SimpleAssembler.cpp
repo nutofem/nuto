@@ -43,6 +43,31 @@ GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, 
     return gradient;
 }
 
+GlobalDofVector SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells,
+                                                             std::vector<DofType> dofTypes,
+                                                             CellInterface::MatrixFunction f) const
+{
+    GlobalDofVector lumpedMatrix = ProperlyResizedGlobalVector(dofTypes);
+    for (NuTo::CellInterface& cell : cells)
+    {
+        const DofMatrix<double> localMatrix = cell.Integrate(f);
+
+        for (DofType dof : dofTypes)
+        {
+            Eigen::VectorXd localDiagonalDof = localMatrix(dof, dof).diagonal();
+            double diagonalSum = localDiagonalDof.sum();
+            double fullSum = localMatrix(dof, dof).sum();
+            localDiagonalDof *= (fullSum / diagonalSum) / dof.GetNum();
+
+            Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
+
+            for (int i = 0; i < numberingDof.rows(); ++i)
+                lumpedMatrix(dof, numberingDof[i]) += localDiagonalDof[i];
+        }
+    }
+    return lumpedMatrix;
+}
+
 GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                                    CellInterface::MatrixFunction f) const
 {
