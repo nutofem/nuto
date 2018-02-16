@@ -11,8 +11,7 @@ BOOST_AUTO_TEST_CASE(EmptyCells)
 {
     Visualizer visualize({}, AverageHandler(AverageGeometryQuad()));
 
-    NuTo::DofType dof("NodeCoordinatesDiv10", 2);
-    NuTo::Test::VisualizeTestStructure s(dof);
+    NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
     visualize = Visualizer(cells, AverageHandler(AverageGeometryQuad()));
@@ -23,9 +22,7 @@ BOOST_AUTO_TEST_CASE(EmptyCells)
 
 BOOST_AUTO_TEST_CASE(ReplacingCells)
 {
-
-    NuTo::DofType dof("NodeCoordinatesDiv10", 2);
-    NuTo::Test::VisualizeTestStructure s(dof);
+    NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
     Visualizer visualize(cells, AverageHandler(AverageGeometryQuad()));
