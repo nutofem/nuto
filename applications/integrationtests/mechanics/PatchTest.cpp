@@ -25,6 +25,7 @@
 
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/CellMatrixEntries.h"
+#include "mechanics/cell/CellVectorEntries.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
 #include "visualize/AverageGeometries.h"
@@ -154,12 +155,13 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     //                  assemble and solve
     // ************************************************************************
     SimpleAssembler assembler(dofInfo);
-
-    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
-
+    CellVectorEntries momentumBalanceGradientEntries(momentumBalanceCells, MomentumGradientF, {displ});
+    CellVectorEntries neumannGradientEntries({neumannCell}, NeumannLoad, {displ});
     CellMatrixEntries matrixEntries(momentumBalanceCells, MomentumHessian0F, {displ});
-    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(matrixEntries, {displ});
+
+    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceGradientEntries);
+    gradient += assembler.BuildVector(neumannGradientEntries);
+    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(matrixEntries);
     // no hessian for the neumann bc integrand (external load)
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
@@ -262,10 +264,11 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
     SimpleAssembler assembler(dofInfo);
-
-    auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
+    CellVectorEntries vectorEntries(cellGroup, GradientF, {displ});
     CellMatrixEntries matrixEntries(cellGroup, Hessian0F, {displ});
-    auto hessian = assembler.BuildMatrix(matrixEntries, {displ});
+
+    auto gradient = assembler.BuildVector(vectorEntries);
+    auto hessian = assembler.BuildMatrix(matrixEntries);
 
     int numIndependentDofs = dofInfo.numIndependentDofs[displ];
     GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);

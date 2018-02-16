@@ -1,7 +1,8 @@
 #pragma once
+#include "base/Group.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/cell/SimpleAssembler.h"
-#include "base/Group.h"
+#include "mechanics/constraints/Constraints.h"
 #include "mechanics/dofs/GlobalDofVector.h"
 #include "mechanics/dofs/GlobalDofMatrixSparse.h"
 

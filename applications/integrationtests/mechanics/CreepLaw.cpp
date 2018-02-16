@@ -4,6 +4,8 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/CellInterface.h"
 #include "mechanics/cell/SimpleAssembler.h"
+#include "mechanics/cell/CellMatrixEntries.h"
+#include "mechanics/cell/CellVectorEntries.h"
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/MechanicsInterface.h"
 #include "mechanics/constraints/Constraints.h"
@@ -309,7 +311,8 @@ BOOST_AUTO_TEST_CASE(History_Data)
         time += delta_t;
 
         // Calculate residual %%%%%%%%%%%%%%%%%%%
-        GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+        CellVectorEntries gradientEntries(momentumBalanceCells, MomentumGradientF, {displ});
+        GlobalDofVector gradient = assembler.BuildVector(gradientEntries);
         Eigen::VectorXd residual = gradient.J[displ] - extF.J[displ];
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
@@ -317,7 +320,8 @@ BOOST_AUTO_TEST_CASE(History_Data)
         {
             numIter++;
             // Build and solve system %%%%%%%%%%%
-            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+            CellMatrixEntries hessianEntries(momentumBalanceCells, MomentumHessian0F, {displ});
+            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(hessianEntries);
             Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
             Eigen::VectorXd deltaDisplacements = hessianDense.ldlt().solve(residual);
             displacements -= deltaDisplacements;
@@ -332,7 +336,8 @@ BOOST_AUTO_TEST_CASE(History_Data)
             }
 
             // Calculate new residual %%%%%%%%%%%
-            gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+            CellVectorEntries gradientEntries(momentumBalanceCells, MomentumGradientF, {displ});
+            gradient = assembler.BuildVector(gradientEntries);
             residual = gradient.J[displ] - extF.J[displ];
         }
         if (numIter >= maxIter)

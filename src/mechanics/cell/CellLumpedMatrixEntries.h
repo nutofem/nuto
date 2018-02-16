@@ -11,8 +11,7 @@ namespace NuTo
 class CellLumpedMatrixEntries : public DofVectorGenerator
 {
 public:
-    CellLumpedMatrixEntries(const Group<CellInterface>& cells, CellInterface::MatrixFunction f,
-                            std::vector<DofType> dofs)
+    CellLumpedMatrixEntries(Group<CellInterface> cells, CellInterface::MatrixFunction f, std::vector<DofType> dofs)
         : mCells(cells)
         , mF(f)
         , mDofs(dofs)
@@ -58,7 +57,7 @@ public:
     }
 
 private:
-    const Group<CellInterface>& mCells;
+    Group<CellInterface> mCells;
     CellInterface::MatrixFunction mF;
     std::vector<DofType> mDofs;
 

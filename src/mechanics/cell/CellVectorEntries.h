@@ -11,7 +11,7 @@ namespace NuTo
 class CellVectorEntries : public DofVectorGenerator
 {
 public:
-    CellVectorEntries(const Group<CellInterface>& cells, CellInterface::VectorFunction f, std::vector<DofType> dofs)
+    CellVectorEntries(Group<CellInterface> cells, CellInterface::VectorFunction f, std::vector<DofType> dofs)
         : mCells(cells)
         , mF(f)
         , mDofs(dofs)
@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    const Group<CellInterface>& mCells;
+    Group<CellInterface> mCells;
     CellInterface::VectorFunction mF;
     std::vector<DofType> mDofs;
 

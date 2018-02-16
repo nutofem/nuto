@@ -1,5 +1,7 @@
 #include "mechanics/tools/TimeDependentProblem.h"
 #include "mechanics/dofs/DofNumbering.h"
+#include "mechanics/cell/CellVectorEntries.h"
+#include "mechanics/cell/CellMatrixEntries.h"
 
 using namespace NuTo;
 
@@ -60,8 +62,11 @@ GlobalDofVector TimeDependentProblem::Gradient(const GlobalDofVector& dofValues,
     mMerger.Merge(dofValues, dofs);
     GlobalDofVector gradient;
     for (auto& gradientFunction : mGradientFunctions)
-        gradient += mAssembler.BuildVector(gradientFunction.first, dofs,
-                                           Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt));
+    {
+        CellVectorEntries entries(gradientFunction.first,
+                                  Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt), dofs);
+        gradient += mAssembler.BuildVector(entries);
+    }
     return gradient;
 }
 
@@ -71,8 +76,11 @@ GlobalDofMatrixSparse TimeDependentProblem::Hessian0(const GlobalDofVector& dofV
     mMerger.Merge(dofValues, dofs);
     GlobalDofMatrixSparse hessian0;
     for (auto& hessian0Function : mHessian0Functions)
-        hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs,
-                                           Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt));
+    {
+        CellMatrixEntries entries(hessian0Function.first,
+                                  Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt), dofs);
+        hessian0 += mAssembler.BuildMatrix(entries);
+    }
     return hessian0;
 }
 
