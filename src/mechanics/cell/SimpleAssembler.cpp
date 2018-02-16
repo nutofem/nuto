@@ -13,10 +13,35 @@ void SimpleAssembler::SetDofInfo(DofInfo dofInfo)
     mDofInfo = dofInfo;
 }
 
-void SimpleAssembler::ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) const
+GlobalDofVector ProperlyResizedGlobalVector(DofInfo dofInfo, std::vector<DofType> dofTypes)
+{
+    GlobalDofVector v;
+    for (auto dof : dofTypes)
+    {
+        v.J[dof].setZero(dofInfo.numIndependentDofs[dof]);
+        v.K[dof].setZero(dofInfo.numDependentDofs[dof]);
+    }
+    return v;
+}
+
+GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(DofInfo dofInfo, std::vector<DofType> dofTypes)
+{
+    GlobalDofMatrixSparse m;
+    for (auto dofI : dofTypes)
+        for (auto dofJ : dofTypes)
+        {
+            m.JJ(dofI, dofJ).resize(dofInfo.numIndependentDofs[dofI], dofInfo.numIndependentDofs[dofJ]);
+            m.JK(dofI, dofJ).resize(dofInfo.numIndependentDofs[dofI], dofInfo.numDependentDofs[dofJ]);
+            m.KJ(dofI, dofJ).resize(dofInfo.numDependentDofs[dofI], dofInfo.numIndependentDofs[dofJ]);
+            m.KK(dofI, dofJ).resize(dofInfo.numDependentDofs[dofI], dofInfo.numDependentDofs[dofJ]);
+        }
+    return m;
+}
+
+void ThrowOnZeroDofNumbering(DofInfo dofInfo, std::vector<DofType> dofTypes)
 {
     for (auto dof : dofTypes)
-        if (not mDofInfo.numIndependentDofs.Has(dof))
+        if (not dofInfo.numIndependentDofs.Has(dof))
             throw Exception("[NuTo::SimpleAssembler]",
                             "You did not provide a dof numbering for DofType " + dof.GetName() +
                                     ". Please do so by SimpleAssembler::calling SetDofInfo(...).");
@@ -25,9 +50,9 @@ void SimpleAssembler::ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) con
 GlobalDofVector SimpleAssembler::BuildVector(DofVectorGenerator& entries) const
 {
     auto dofTypes = entries.Dofs();
-    ThrowOnZeroDofNumbering(dofTypes);
+    ThrowOnZeroDofNumbering(mDofInfo, dofTypes);
 
-    GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
+    GlobalDofVector gradient = ProperlyResizedGlobalVector(mDofInfo, dofTypes);
     for (VectorEntry& entry : entries)
     {
         const DofVector<double>& cellGradient = entry.first;
@@ -46,7 +71,7 @@ GlobalDofVector SimpleAssembler::BuildVector(DofVectorGenerator& entries) const
 GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(DofMatrixGenerator& entries) const
 {
     auto dofTypes = entries.Dofs();
-    ThrowOnZeroDofNumbering(dofTypes);
+    ThrowOnZeroDofNumbering(mDofInfo, dofTypes);
 
     using TripletList = std::vector<Eigen::Triplet<double>>;
     DofMatrixContainer<TripletList> tripletsJJ;
@@ -116,7 +141,7 @@ GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(DofMatrixGenerator& entries) 
             }
         }
     }
-    GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(dofTypes);
+    GlobalDofMatrixSparse hessian = ProperlyResizedGlobalMatrix(mDofInfo, dofTypes);
     for (DofType dofI : dofTypes)
         for (DofType dofJ : dofTypes)
         {
@@ -126,29 +151,4 @@ GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(DofMatrixGenerator& entries) 
             hessian.KK(dofI, dofJ).setFromTriplets(tripletsKK(dofI, dofJ).begin(), tripletsKK(dofI, dofJ).end());
         }
     return hessian;
-}
-
-GlobalDofVector SimpleAssembler::ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const
-{
-    GlobalDofVector v;
-    for (auto dof : dofTypes)
-    {
-        v.J[dof].setZero(mDofInfo.numIndependentDofs[dof]);
-        v.K[dof].setZero(mDofInfo.numDependentDofs[dof]);
-    }
-    return v;
-}
-
-GlobalDofMatrixSparse SimpleAssembler::ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const
-{
-    GlobalDofMatrixSparse m;
-    for (auto dofI : dofTypes)
-        for (auto dofJ : dofTypes)
-        {
-            m.JJ(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI], mDofInfo.numIndependentDofs[dofJ]);
-            m.JK(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI], mDofInfo.numDependentDofs[dofJ]);
-            m.KJ(dofI, dofJ).resize(mDofInfo.numDependentDofs[dofI], mDofInfo.numIndependentDofs[dofJ]);
-            m.KK(dofI, dofJ).resize(mDofInfo.numDependentDofs[dofI], mDofInfo.numDependentDofs[dofJ]);
-        }
-    return m;
 }

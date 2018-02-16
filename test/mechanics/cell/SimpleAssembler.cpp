@@ -56,6 +56,10 @@ BOOST_AUTO_TEST_CASE(AssemblerGradient)
 
     fakeit::When(Method(entries, Dofs)).AlwaysReturn({d});
     fakeit::When(Method(entries, Next)).AlwaysReturn();
+
+    // Why true, true, true, true, false? Well, this is pure trial and error.
+    // boost::iterator_facade calls IsValid() _somehow/somewhen_. But at some
+    // point, we have to return false to stop the generator.
     fakeit::When(Method(entries, IsValid)).Return(true, true, true, true, false);
     fakeit::When(Method(entries, Get)).Return(entry1).Return(entry2);
 

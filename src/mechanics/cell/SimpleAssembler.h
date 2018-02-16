@@ -21,11 +21,6 @@ public:
     void SetDofInfo(DofInfo dofInfo);
 
 private:
-    GlobalDofVector ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const;
-    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const;
-
     DofInfo mDofInfo;
-
-    void ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) const;
 };
 } /* NuTo */
