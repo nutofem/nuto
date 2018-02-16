@@ -118,6 +118,25 @@ public:
 //        }
     }
 
+
+    void copyDofNumbering(NuTo::DofType rDof)
+    {
+        for (int iElem = 0; iElem < this->Elements.Size(); ++iElem)
+        {
+            NuTo::ElementCollectionFem& elem = this->Elements[iElem];
+            for (int i = 0; i < elem.DofElement(rDof).GetNumNodes(); ++i)
+            {
+                NuTo::NodeSimple currNode = elem.DofElement(rDof).GetNode(i);
+                Eigen::VectorXi dofs = currNode.mDofNumbers;
+                for (int iDofs = 0; iDofs < dofs.rows(); ++iDofs)
+                {
+                    this->zoltanFEMElements[iElem].getNode(i).setDofNumber(iDofs, dofs(iDofs));
+                }
+            }
+        }
+    }
+
+
     std::map<int, std::vector<int>> getDofNumbering_1D()
     {
         std::map<int, std::vector<int>> dofMapping;

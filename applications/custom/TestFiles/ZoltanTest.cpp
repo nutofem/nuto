@@ -1,3 +1,5 @@
+#include "boost/ptr_container/ptr_vector.hpp"
+
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_CrsMatrixFactory.hpp>
 
@@ -21,7 +23,11 @@
 //#include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/interpolation/InterpolationTrussLinear.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/constitutive/LinearElastic.h"
+#include "mechanics/integrands/MomentumBalance.h"
+#include "mechanics/integrands/NeumannBc.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
 #include "mechanics/dofs/DofNumbering.h"
@@ -872,6 +878,45 @@ std::map<int, int> local2GlobalDofNumbering(std::map<int, std::vector<int>> glob
     return local2Global;
 }
 
+std::vector<int> local2GlobalDofNumbering_vector(std::map<int, std::vector<int>> globalDofs, std::map<int, std::vector<int>> localDofs)
+{
+    int completeSize = 0;
+    for (std::pair<int, std::vector<int>> loc : localDofs)
+    {
+        completeSize += loc.second.size();
+    }
+
+    std::vector<int> local2Global(completeSize);
+    for (std::pair<int, std::vector<int>> nodeDofs : localDofs)
+    {
+        for (int i = 0; i < nodeDofs.second.size(); ++i)
+        {
+            local2Global[nodeDofs.second[i]] = globalDofs[nodeDofs.first][i];
+        }
+    }
+    return local2Global;
+}
+
+
+//! @brief automatically create the lambda
+//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
+template <typename TObject, typename TReturn>
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
+{
+    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
+    };
+}
+//! @brief automatically create the lambda
+//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
+template <typename TObject, typename TReturn>
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
+{
+    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
+        return (object.*f)(cellData, cellIpData);
+    };
+}
+
 
 using Teuchos::RCP;
 using Teuchos::rcp;
@@ -895,7 +940,6 @@ void AssemblerZoltanTest_1D(int argc, char** argv)
 
     std::cout << myMesh_z.Elements[0].CoordinateElement().GetNode(0).GetValues() << std::endl;
 //    std::map<int, std::vector<int>> globalDofs = myMesh_z.getDofNumbering_1D();
-    std::map<int, std::vector<int>> globalDofs = myMesh_z.getDofNumbering_2D();
 
     DofType displ("displacements", 2);
     const auto& interpolation = myMesh_z.CreateInterpolation(InterpolationQuadLinear());
@@ -910,6 +954,8 @@ void AssemblerZoltanTest_1D(int argc, char** argv)
     constraints.Add(displ, Constraint::Component(nodesConstrainedInY, {eDirection::Y}));
 
     DofNumbering::DofInfo dofInfo = DofNumbering::Build(myMesh_z.NodesTotal(displ), displ, constraints);
+    myMesh_z.copyDofNumbering(displ);
+    std::map<int, std::vector<int>> globalDofs = myMesh_z.getDofNumbering_2D();
 
     //-------------- mesh partitioning
 
@@ -985,95 +1031,114 @@ void AssemblerZoltanTest_1D(int argc, char** argv)
         exit(0);
     }
 
-    std::cout << "After partition" << std::endl;
+    std::cout << "After partition and migration" << std::endl;
 //    myMesh_z.convert2NuToEntities_1D();
     myMesh_z.convert2NuToEntities_2D();
 
     const auto& interpolation_sub = myMesh_z.CreateInterpolation(InterpolationQuadLinear());
     AddDofInterpolation(&myMesh_z, displ, interpolation_sub);
 
-    DofNumbering::DofInfo currDofInfo = DofNumbering::Build(myMesh_z.NodesTotal(displ), displ, constraints);
+    Constraint::Constraints constraintsPart;
+//    Group<NodeSimple> nodesConstrainedInX = mesh.NodesAtAxis(eDirection::X, dof);
+    Group<NodeSimple> nodesConstrainedInYPart = Group<NodeSimple>(myMesh_z.NodeAtCoordinate(Eigen::Vector2d(0, 0), displ));
+//    constraints.Add(dof, Constraint::Component(nodesConstrainedInX, {eDirection::X}));
+    constraintsPart.Add(displ, Constraint::Component(nodesConstrainedInYPart, {eDirection::Y}));
+
+    DofNumbering::DofInfo currDofInfo = DofNumbering::Build(myMesh_z.NodesTotal(displ), displ, constraintsPart);
+    myMesh_z.copyDofNumbering(displ);
 //    std::map<int, std::vector<int>> localDofs = myMesh_z.getDofNumbering_1D();
     std::map<int, std::vector<int>> localDofs = myMesh_z.getDofNumbering_2D();
 //    std::vector<std::map<int, int>> local2GlobalDofs = local2GlobalNumbering(&mesh, &subMesh0, &subMesh1, displ);
-    std::map<int, int> local2GlobalDofs = local2GlobalDofNumbering(globalDofs, localDofs);
+//    std::map<int, int> local2GlobalDofs = local2GlobalDofNumbering(globalDofs, localDofs);
+    std::vector<int> local2GlobalDofs = local2GlobalDofNumbering_vector(globalDofs, localDofs);
 
-//    //--------- do the following steps for every part of the mesh
+    for (int i = 0; i < local2GlobalDofs.size(); ++i)
+    {
+        std::cout << i << " : " << local2GlobalDofs[i] << std::endl;
+    }
 
-//    // ************************************************************************
-//    //                 add continuum cells
-//    // ************************************************************************
-//    constexpr double E = 20000;
-//    constexpr double nu = 0.2;
-//    Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
-//    Integrands::TimeDependent::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    //--------- do the following steps for every part of the mesh
 
-//    boost::ptr_vector<CellInterface> cellContainer;
-//    IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
+    // ************************************************************************
+    //                 add continuum cells
+    // ************************************************************************
+    constexpr double E = 20000;
+    constexpr double nu = 0.2;
+    Laws::LinearElastic<2> linearElasticLaw(E, nu, ePlaneState::PLANE_STRESS);
+    Integrands::MomentumBalance<2> momentumBalance(displ, linearElasticLaw);
+    auto MomentumGradientF = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Gradient);
+    auto MomentumHessian0F = Bind(momentumBalance, &Integrands::MomentumBalance<2>::Hessian0);
 
-//    NuTo::Groups::Group<CellInterface> cellGroup;
-//    for (auto& element : subMeshes[rank].Elements)
-//    {
-//        cellContainer.push_back(new Cell(element, integrationType, momentumBalance));
-//        cellGroup.Add(cellContainer.back());
-//    }
+    boost::ptr_vector<CellInterface> cellContainer;
+    IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
 
-//    // ************************************************************************
-//    //                 add boundary cells
-//    // ************************************************************************
+    Group<CellInterface> momentumBalanceCells;
+    int cellId = 0;
+    for (ElementCollection& element : myMesh_z.Elements)
+    {
+        cellContainer.push_back(new Cell(element, integrationType, cellId++));
+        momentumBalanceCells.Add(cellContainer.back());
+    }
 
-//    // manually add the boundary element
-//    const auto& interpolationBc = subMeshes[rank].CreateInterpolation(InterpolationTrussLinear(2));
+    // ************************************************************************
+    //                 add boundary cells
+    // ************************************************************************
 
-//    IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
-//    Eigen::Vector2d pressureBC(1, 0);
-//    Integrands::TimeDependent::NeumannBc<2> neumannBc(displ, pressureBC);
+    // manually add the boundary element
+    const InterpolationSimple& interpolationBc = myMesh_z.CreateInterpolation(InterpolationTrussLinear());
 
-//    // extract existing nodes
-//    NuTo::Groups::Group<NodeSimple> boundaryCoordNodes = subMeshes[rank].NodesAtAxis(eDirection::X, 10);
-//    if (boundaryCoordNodes.Size() == 2)
-//    {
-//        NodeSimple& nc1 = *boundaryCoordNodes.begin();
-//        NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
+    IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
+    Eigen::Vector2d pressureBC(1, 0);
+    Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
+    auto NeumannLoad = Bind(neumannBc, &Integrands::NeumannBc<2>::ExternalLoad);
 
-//        auto boundaryDisplNodes = subMeshes[rank].NodesAtAxis(eDirection::X, displ, 10);
-//        NodeSimple& nd1 = *boundaryDisplNodes.begin();
-//        NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
+    Group<NodeSimple> boundaryCoordNodes = myMesh_z.NodesAtAxis(eDirection::X, 10);
+    if (boundaryCoordNodes.Size() == 2)
+    {
+        // extract existing nodes
+        NodeSimple& nc1 = *boundaryCoordNodes.begin();
+        NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
 
-//        // add the boundary element
-//        auto& boundaryElement = subMeshes[rank].Elements.Add({{{nc1, nc2}, interpolationBc}});
-//        boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
+        Group<NodeSimple> boundaryDisplNodes = myMesh_z.NodesAtAxis(eDirection::X, displ, 10);
+        NodeSimple& nd1 = *boundaryDisplNodes.begin();
+        NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
 
-//        cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, neumannBc));
-//        cellGroup.Add(cellContainer.back());
-//    }
+        // add the boundary element
+        ElementCollectionFem& boundaryElement = myMesh_z.Elements.Add({{{nc1, nc2}, interpolationBc}});
+        boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
-//    // ************************************************************************
-//    //                  assemble
-//    // ************************************************************************
-//    SimpleAssembler assembler(currDofInfo.numIndependentDofs, currDofInfo.numDependentDofs);
+        cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, cellId++));
+        auto& neumannCell = cellContainer.back();
+    }
 
-//    auto gradient = assembler.BuildVector(cellGroup, {&displ}, Integrands::TimeDependent::Gradient());
-//    auto hessian = assembler.BuildMatrix(cellGroup, {&displ}, Integrands::TimeDependent::Hessian0());
-//    Eigen::SparseMatrix<double> A_JJ = hessian.JJ(displ,displ);
-//    Eigen::VectorXd r_J = gradient.J[displ];
+    // ************************************************************************
+    //                  assemble
+    // ************************************************************************
+    SimpleAssembler assembler(currDofInfo.numIndependentDofs, currDofInfo.numDependentDofs);
 
-//    //-----------
+    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+//    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
+    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+    Eigen::SparseMatrix<double> A_JJ = hessian.JJ(displ,displ);
+    Eigen::VectorXd r_J = gradient.J[displ];
 
-//    //******************************************
-//    //*     create overlapping index map       *
-//    //******************************************
+    //-----------
+
+    //******************************************
+    //*     create overlapping index map       *
+    //******************************************
 //    std::vector<int> myGlobalDofIDs = getAllDofNumbers(local2GlobalDofs, rank);
-//    int* myGlobalDofIDs_arr = &myGlobalDofIDs[0];
-//    RCP<Tpetra::Map<int, int>> overlappingMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myGlobalDofIDs_arr, myGlobalDofIDs.size(), 0, commTeuchos));
+    std::vector<int> myGlobalDofIDs = local2GlobalDofs;
+    int* myGlobalDofIDs_arr = &myGlobalDofIDs[0];
+    RCP<Tpetra::Map<int, int>> overlappingMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myGlobalDofIDs_arr, myGlobalDofIDs.size(), 0, commTeuchos));
 
 
-//    //******************************************
-//    //*       create owning index map          *
-//    //******************************************
-//    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
-//    int* myOwningGlobalActiveDofIDs_arr = &myOwningGlobalActiveDofIDs[0];
-//    RCP<Tpetra::Map<int, int>> owningMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myOwningGlobalActiveDofIDs_arr, myOwningGlobalActiveDofIDs.size(), 0, commTeuchos));
+    //******************************************
+    //*       create owning index map          *
+    //******************************************
+    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
+    int* myOwningGlobalActiveDofIDs_arr = &myOwningGlobalActiveDofIDs[0];
+    RCP<Tpetra::Map<int, int>> owningMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myOwningGlobalActiveDofIDs_arr, myOwningGlobalActiveDofIDs.size(), 0, commTeuchos));
 
 ////    std::ostream &out = std::cout;
 ////    RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(out));
