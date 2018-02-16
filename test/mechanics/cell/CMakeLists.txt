@@ -10,6 +10,8 @@ add_unit_test(CellData)
 
 add_unit_test(SimpleAssembler)
 
+add_unit_test(CellLumpedMatrixEntries)
+
 add_unit_test(Matrix)
 
 add_unit_test(CellIpData

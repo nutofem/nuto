@@ -22,19 +22,19 @@ void SimpleAssembler::ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) con
                                     ". Please do so by SimpleAssembler::calling SetDofInfo(...).");
 }
 
-GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                             CellInterface::VectorFunction f) const
+GlobalDofVector SimpleAssembler::BuildVector(DofVectorGenerator& entries) const
 {
+    auto dofTypes = entries.Dofs();
     ThrowOnZeroDofNumbering(dofTypes);
 
     GlobalDofVector gradient = ProperlyResizedGlobalVector(dofTypes);
-    for (NuTo::CellInterface& cell : cells)
+    for (VectorEntry& entry : entries)
     {
-        const DofVector<double> cellGradient = cell.Integrate(f);
+        const DofVector<double>& cellGradient = entry.first;
 
         for (DofType dof : dofTypes)
         {
-            Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
+            const Eigen::VectorXi& numberingDof = entry.second[dof];
             const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
             for (int i = 0; i < numberingDof.rows(); ++i)
                 gradient(dof, numberingDof[i]) += cellGradientDof[i];
@@ -43,34 +43,9 @@ GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, 
     return gradient;
 }
 
-GlobalDofVector SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells,
-                                                             std::vector<DofType> dofTypes,
-                                                             CellInterface::MatrixFunction f) const
+GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(DofMatrixGenerator& entries) const
 {
-    GlobalDofVector lumpedMatrix = ProperlyResizedGlobalVector(dofTypes);
-    for (NuTo::CellInterface& cell : cells)
-    {
-        const DofMatrix<double> localMatrix = cell.Integrate(f);
-
-        for (DofType dof : dofTypes)
-        {
-            Eigen::VectorXd localDiagonalDof = localMatrix(dof, dof).diagonal();
-            double diagonalSum = localDiagonalDof.sum();
-            double fullSum = localMatrix(dof, dof).sum();
-            localDiagonalDof *= (fullSum / diagonalSum) / dof.GetNum();
-
-            Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
-
-            for (int i = 0; i < numberingDof.rows(); ++i)
-                lumpedMatrix(dof, numberingDof[i]) += localDiagonalDof[i];
-        }
-    }
-    return lumpedMatrix;
-}
-
-GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                                   CellInterface::MatrixFunction f) const
-{
+    auto dofTypes = entries.Dofs();
     ThrowOnZeroDofNumbering(dofTypes);
 
     using TripletList = std::vector<Eigen::Triplet<double>>;
@@ -79,16 +54,19 @@ GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& c
     DofMatrixContainer<TripletList> tripletsKJ;
     DofMatrixContainer<TripletList> tripletsKK;
 
-    for (NuTo::CellInterface& cell : cells)
+    for (MatrixEntry& entry : entries)
     {
-        const DofMatrix<double> cellHessian = cell.Integrate(f);
+        const DofMatrix<double>& cellHessian = entry.first;
+        ;
+        const DofVector<int>& dofNumbering = entry.second;
+        ;
 
         for (DofType dofI : dofTypes)
         {
-            Eigen::VectorXi numberingDofI = cell.DofNumbering(dofI);
+            const Eigen::VectorXi& numberingDofI = dofNumbering[dofI];
             for (DofType dofJ : dofTypes)
             {
-                Eigen::VectorXi numberingDofJ = cell.DofNumbering(dofJ);
+                const Eigen::VectorXi& numberingDofJ = dofNumbering[dofJ];
                 const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
 
                 const int numIndependentDofsI = mDofInfo.numIndependentDofs[dofI];

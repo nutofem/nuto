@@ -24,6 +24,7 @@
 #include "mechanics/integrands/Bind.h"
 
 #include "mechanics/cell/Cell.h"
+#include "mechanics/cell/CellMatrixEntries.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
 #include "visualize/AverageGeometries.h"
@@ -157,7 +158,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
-    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+    CellMatrixEntries matrixEntries(momentumBalanceCells, MomentumHessian0F, {displ});
+    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(matrixEntries, {displ});
     // no hessian for the neumann bc integrand (external load)
 
     Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
@@ -262,7 +264,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     SimpleAssembler assembler(dofInfo);
 
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
-    auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
+    CellMatrixEntries matrixEntries(cellGroup, Hessian0F, {displ});
+    auto hessian = assembler.BuildMatrix(matrixEntries, {displ});
 
     int numIndependentDofs = dofInfo.numIndependentDofs[displ];
     GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);
