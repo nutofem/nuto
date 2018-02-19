@@ -9,8 +9,7 @@ using namespace NuTo;
 BOOST_AUTO_TEST_CASE(GroupVoronoiTensorProduct2D)
 {
     using namespace NuTo::Visualize;
-    NuTo::DofType dof("NodeCoordinatesDiv10", 2);
-    NuTo::Test::VisualizeTestStructure s(dof);
+    NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
     std::string filename = "VoronoiOutput.vtu";
