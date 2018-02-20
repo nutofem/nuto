@@ -30,3 +30,20 @@ BOOST_AUTO_TEST_CASE(DofMatrixExportEigen)
 
     BOOST_CHECK_SMALL((ToEigen(m, {dof0, dof1}) - e).norm(), 1.e-10);
 }
+
+BOOST_AUTO_TEST_CASE(DofMatrixZeros)
+{
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
+
+    NuTo::DofMatrixSparse<double> m;
+    m(dof0, dof0) = Eigen::SparseMatrix<double>(2, 8);
+    m(dof0, dof1) = Eigen::SparseMatrix<double>(0, 0);
+    m(dof1, dof0) = Eigen::SparseMatrix<double>(0, 0);
+    m(dof1, dof1) = Eigen::SparseMatrix<double>(0, 10);
+
+    Eigen::SparseMatrix<double> e;
+    BOOST_CHECK_NO_THROW(e = ToEigen(m, {dof0, dof1}));
+    BOOST_CHECK_EQUAL(e.rows(), 2);
+    BOOST_CHECK_EQUAL(e.cols(), 18);
+}
