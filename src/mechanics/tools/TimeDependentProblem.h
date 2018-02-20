@@ -86,5 +86,14 @@ public:
             return (object.*f)(cellData, cellIpData, t);
         };
     }
+
+    //! @brief binds nothing
+    template <typename TObject, typename TReturn>
+    static auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
+    {
+        return [&object, f](const CellData& cellData, const CellIpData& cellIpData, double, double) {
+            return (object.*f)(cellData, cellIpData);
+        };
+    }
 };
 } /* NuTo */
