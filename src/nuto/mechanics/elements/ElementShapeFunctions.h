@@ -139,6 +139,7 @@ Eigen::Matrix<double, 25, 1> ShapeFunctionsQuadSpectralOrder4(const Eigen::Vecto
 Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Eigen::VectorXd& rCoordinates);
 
 
+bool IsNodeOnSurfaceQuadSpectralOrderX(int rNodeIndex, int surfaceid);
 bool IsNodeOnSurfaceQuadSpectralOrder2(int rNodeIndex, int surfaceid);
 bool IsNodeOnSurfaceQuadSpectralOrder3(int rNodeIndex, int surfaceid);
 bool IsNodeOnSurfaceQuadSpectralOrder4(int rNodeIndex, int surfaceid);

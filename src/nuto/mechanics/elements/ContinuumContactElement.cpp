@@ -79,6 +79,8 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
 
     mKnots.push_back(knotsX);
 
+    std::cout << "KnotsX: " << mKnots[0].transpose() << std::endl;
+
     // initialize the knot values in y direction
     if (TDimSlave == 3)
     {
@@ -89,10 +91,10 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
 
         knotsY(i) = mElementsMaster(i - 1, 0).first->GetKnots()(1, 1);
         mKnots.push_back(knotsY);
+
+        std::cout << "KnotsY: " << mKnots[1].transpose() << std::endl;
     }
 
-    std::cout << "KnotsX: " << mKnots[0].transpose() << std::endl;
-    std::cout << "KnotsY: " << mKnots[1].transpose() << std::endl;
 
     for (unsigned int dim = 0; dim < mKnots.size(); dim++)
     {

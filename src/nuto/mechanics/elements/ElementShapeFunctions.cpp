@@ -1088,6 +1088,11 @@ Eigen::Matrix<double, 25, 2> DerivativeShapeFunctionsQuadSpectralOrder4(const Ei
     return derivativeShapeFunctions;
 }
 
+bool IsNodeOnSurfaceQuadSpectralOrderX(int rNodeIndex, int surfaceid)
+{
+    throw NuTo::MechanicsException("[IsNodeOnSurfaceQuadSpectralOrderX] Not implemented!");
+}
+
 bool IsNodeOnSurfaceQuadSpectralOrder2(int rNodeIndex, int surfaceid)
 {
     switch (surfaceid)
