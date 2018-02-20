@@ -13,6 +13,7 @@ public:
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
     QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
+    QuasistaticSolver(TimeDependentProblem& equations, std::vector<DofType> dofs);
 
     //! @param constraints linear constraints
     void SetConstraints(Constraint::Constraints constraints);
@@ -70,12 +71,13 @@ public:
 private:
     GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
 
-    Eigen::VectorXd mX;
+    DofVector<double> mX;
 
     TimeDependentProblem& mProblem;
     Constraint::Constraints mConstraints;
-    DofType mDof;
-    Eigen::SparseMatrix<double> mCmat;
+
+    std::vector<DofType> mDofs;
+    DofMatrixSparse<double> mCmat;
 
     double mGlobalTime = 0;
     double mTimeStep = 0;
