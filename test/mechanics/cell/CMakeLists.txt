@@ -14,5 +14,4 @@ add_unit_test(SimpleAssembler)
 
 add_unit_test(Matrix)
 
-add_unit_test(CellIpData
-    mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(CellIpData)
