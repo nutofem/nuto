@@ -137,3 +137,10 @@ BOOST_AUTO_TEST_CASE(ConstraintTwoDependentDofsInOneEquation)
     equation.AddTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
     BOOST_CHECK_THROW(constraints.Add(dof, equation), Exception);
 }
+
+BOOST_AUTO_TEST_CASE(ConstraintEmptyEquations)
+{
+    Constraint::Constraints constraints;
+    // passing an empty vector is _most likely_ not intended and should throw
+    BOOST_CHECK_THROW(constraints.Add(dof, {}), Exception);
+}
