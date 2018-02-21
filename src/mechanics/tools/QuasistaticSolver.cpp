@@ -118,7 +118,7 @@ GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x)
     return v;
 }
 
-boost::optional<int> QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
+int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
     EigenSparseSolver solver(solverType);
 
@@ -129,21 +129,13 @@ boost::optional<int> QuasistaticSolver::DoStep(double newGlobalTime, std::string
 
     int numIterations = 0;
 
-    try
-    {
-        Eigen::VectorXd tmpX =
-                NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
-        if (tmpX.norm() > 1.e10)
-            throw NewtonRaphson::NoConvergence("", "floating point exception");
+    Eigen::VectorXd tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+    if (tmpX.norm() > 1.e10)
+        throw NewtonRaphson::NoConvergence("", "floating point exception");
 
-        UpdateHistory(tmpX);
-        mGlobalTime = newGlobalTime;
-        FromEigen(tmpX, mDofs, &mX);
-    }
-    catch (NewtonRaphson::NoConvergence& e)
-    {
-        return boost::none;
-    }
+    UpdateHistory(tmpX);
+    mGlobalTime = newGlobalTime;
+    FromEigen(tmpX, mDofs, &mX);
 
     return numIterations;
 }

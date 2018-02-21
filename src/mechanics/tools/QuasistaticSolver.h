@@ -2,7 +2,6 @@
 
 #include "mechanics/tools/TimeDependentProblem.h"
 #include "mechanics/constraints/Constraints.h"
-#include "boost/optional.hpp"
 
 namespace NuTo
 {
@@ -65,8 +64,8 @@ public:
     //! Updates mProblem to time `newGlobalTime` and saves the new state mX upon convergence
     //! @param newGlobalTime new global time
     //! @param solverType solver type from NuTo::EigenSparseSolve(...)
-    //! @return number of iterations required by the newton algorithm or boost::none upon failure to converge
-    boost::optional<int> DoStep(double newGlobalTime, std::string solverType = "EigenSparseLU");
+    //! @return number of iterations required by the newton algorithm, throws upon failure to converge
+    int DoStep(double newGlobalTime, std::string solverType = "EigenSparseLU");
 
 private:
     GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
