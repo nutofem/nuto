@@ -19,5 +19,3 @@ add_unit_test(NewtonRaphson
     )
 
 add_unit_test(Gmres)
-add_unit_test(SpatialContainer)
-target_link_libraries(SpatialContainer Ann::Ann)
