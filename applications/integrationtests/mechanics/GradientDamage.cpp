@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential>;
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
 
-    /* something like "FUNCTION SPACE" */
+    /* mesh, interpolations, constraints */
     double L = 40;
     MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(40),
                                           [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
@@ -56,18 +56,18 @@ BOOST_AUTO_TEST_CASE(Integrand)
     constraints.Add(d, Constraint::Component(mesh.NodesAtAxis(eDirection::X, d, L), {eDirection::X},
                                              Constraint::RhsRamp(1, 0.2)));
 
-    /* INTEGRATION CELLS */
+    /* integration cells */
     IntegrationTypeTensorProduct<1> integration(2, eIntegrationMethod::GAUSS);
     const int nIp = integration.GetNumIntegrationPoints();
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(mesh.ElementsTotal(), integration);
 
-    /* RESIZE HISTORY AND APPLY IMPERFECTION IN THE MIDDLE */
+    /* resize history and apply imperfection in the middle */
     gdm.mKappas.resize(cells.Size(), nIp);
     gdm.mKappas.row(cells.Size() / 2) = Eigen::VectorXd::Constant(nIp, 3 * k0);
     gdm.mKappas.row(cells.Size() / 2 + 1) = Eigen::VectorXd::Constant(nIp, 3 * k0);
 
-    /* SOLVE */
+    /* define time dependent functions */
     TimeDependentProblem equations(&mesh);
     equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
     equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
              },
              "strain");
 
+    /* solve adaptively */
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
     auto postProcessF = [&](double t) { visu.Plot(t, true); };
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -101,20 +102,20 @@ BOOST_AUTO_TEST_CASE(Integrand)
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
     //
-    //  DAMAGE:
+    //  damage:
     //           _
     //          / \
     //         |   |
     //  _______|   |_______
     //
-    // DISPLACEMENTS:
+    // displacements:
     //             ________
     //            ,
     //           |
     //           |
     // _________,
     //
-    // NONLOCAL EQUIVALENT STRAINS:
+    // nonlocal equivalent strains:
     //
     //          |
     //          |
