@@ -9,10 +9,22 @@ namespace NuTo
 namespace Integrands
 {
 
+//! Implicit gradient enhanced damage model
+//! Peerlings RHJ et al.
+//! https://dx.doi.org/10.1002/(SICI)1097-0207(19961015)39:19<3391::AID-NME7>3.0.CO;2-D
+//! @param TDim global dimension
+//! @tparam TDamageLaw damage law that provides .Damage(double) and .Derivative(double)
 template <int TDim, typename TDamageLaw>
 class GradientDamage
 {
 public:
+    //! ctor
+    //! @param disp dof type associated with displacements
+    //! @param eeq dof type associated with nonlocal equivalent strains
+    //! @param c nonlocal parameter unit length squared
+    //! @param linearElasticLaw linear elastic law
+    //! @param damageLaw damage law that provides .Damage(double) and .Derivative(double)
+    //! @param strainNorm modified mises strain norm
     GradientDamage(DofType disp, DofType eeq, double c, Laws::LinearElastic<TDim> linearElasticLaw,
                    TDamageLaw damageLaw, Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm)
         : mDisp(disp)
@@ -35,14 +47,15 @@ public:
 
         // node values
         double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
+        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
+        double omega = mDamageLaw.Damage(kappa);
+
         Eigen::Matrix<double, TDim, 1> eeqGradient = Beeq * cellData.GetNodeValues(mEeq);
         NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
 
         // build terms
-        gradient[mDisp] = Bdisp.transpose() * Stress(cellData, cellIpData);
+        gradient[mDisp] = Bdisp.transpose() * (1 - omega) * mElasticLaw.Stress(strain, 0, 0);
         gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
-
-        gradient *= mCrossSectionParameter;
 
         return gradient;
     }
@@ -75,8 +88,6 @@ public:
 
         hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
 
-        hessian0 *= mCrossSectionParameter;
-
         return hessian0;
     }
 
@@ -89,24 +100,7 @@ public:
         oldKappa = std::max(oldKappa, eeq);
     }
 
-    EngineeringStress<TDim> Stress(const CellData& cellData, const CellIpData& cellIpData)
-    {
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
-        double omega = mDamageLaw.Damage(kappa);
-
-        BMatrixStrain Bdisp = cellIpData.GetBMatrixStrain(mDisp);
-        NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
-        return (1 - omega) * mElasticLaw.Stress(strain, 0, 0);
-    }
-
     Eigen::MatrixXd mKappas;
-
-    void SetCrossSection(double crossSectionParameter)
-    {
-        mCrossSectionParameter = crossSectionParameter;
-    }
 
 private:
     DofType mDisp;
@@ -115,8 +109,6 @@ private:
     Laws::LinearElastic<TDim> mElasticLaw;
     TDamageLaw mDamageLaw;
     Constitutive::ModifiedMisesStrainNorm<TDim> mNorm;
-
-    double mCrossSectionParameter = 1.;
 };
 } /* Integrand */
 } /* NuTo */

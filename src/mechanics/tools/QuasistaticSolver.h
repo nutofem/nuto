@@ -12,6 +12,10 @@ public:
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
     QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
+
+    //! Ctor
+    //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
+    //! @param dofs multiple dof types
     QuasistaticSolver(TimeDependentProblem& equations, std::vector<DofType> dofs);
 
     //! @param constraints linear constraints

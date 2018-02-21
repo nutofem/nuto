@@ -18,8 +18,6 @@
 #include "visualize/PostProcess.h"
 #include "visualize/VoronoiGeometries.h"
 
-#include "mechanics/integrands/Bind.h"
-
 using namespace NuTo;
 
 
@@ -35,7 +33,6 @@ BOOST_AUTO_TEST_CASE(Integrand)
     double fc = 40;
     double gf = 0.021;
     double c = 1;
-    double area = 10;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
@@ -44,7 +41,6 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential>;
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
-    gdm.SetCrossSection(area);
 
     /* something like "FUNCTION SPACE" */
     double L = 40;
@@ -96,7 +92,6 @@ BOOST_AUTO_TEST_CASE(Integrand)
                  return s;
              },
              "strain");
-    visu.Add("GDM", Bind(gdm, &Gdm::Stress), "Stress");
 
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
     auto postProcessF = [&](double t) { visu.Plot(t, true); };
