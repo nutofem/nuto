@@ -38,12 +38,8 @@ public:
         Eigen::Matrix<double, TDim, 1> eeqGradient = Beeq * cellData.GetNodeValues(mEeq);
         NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
 
-        // evaluate new kappa
-        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
-        double omega = mDamageLaw.Damage(kappa);
-
         // build terms
-        gradient[mDisp] = (1 - omega) * Bdisp.transpose() * mElasticLaw.Stress(strain, 0, 0);
+        gradient[mDisp] = Bdisp.transpose() * Stress(cellData, cellIpData);
         gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
 
         gradient *= mCrossSectionParameter;
@@ -91,6 +87,18 @@ public:
 
         double& oldKappa = mKappas(cellData.GetCellId(), cellIpData.GetIpId());
         oldKappa = std::max(oldKappa, eeq);
+    }
+
+    EngineeringStress<TDim> Stress(const CellData& cellData, const CellIpData& cellIpData)
+    {
+        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
+        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
+        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
+        double omega = mDamageLaw.Damage(kappa);
+
+        BMatrixStrain Bdisp = cellIpData.GetBMatrixStrain(mDisp);
+        NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
+        return (1 - omega) * mElasticLaw.Stress(strain, 0, 0);
     }
 
     Eigen::MatrixXd mKappas;
