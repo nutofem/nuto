@@ -70,7 +70,6 @@ make test
 | MUMPS    | 4.10    | Parallel sparse direct solver                               |
 | OpenMP   | ≥ 3.7   | Management of multiple OpenMP threads                       |
 | ARPACK   | ≥ 3.1.5 | Solver for large scale eigenvalue problems                  |
-| ANN      | ≥ 1.1.2 | Approximate nearest neighbour searching                     |
 
 # Examples
 
