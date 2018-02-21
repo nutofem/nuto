@@ -85,77 +85,26 @@ BOOST_AUTO_TEST_CASE(Jacobian2Din3D)
     BOOST_CHECK_CLOSE(TriangleAreaViaJacobian(V(0, 4, 0), V(0, 0, 3), V(0, 4, 3)), 3. * 4 / 2, 1.e-10);
 }
 
-BOOST_AUTO_TEST_CASE(UsingJacobianToComputeFiniteStrainDeformationGradient)
+BOOST_AUTO_TEST_CASE(Jacobian2Din3DComputeNormal)
 {
-    /* Want to describe the deformation / movement of a triangle (p->q)
-     * (90deg rotation and uniform stretch)
-     *
-     *   z
-     *   ^
-     *   |
-     *   |         p3
-     *   |         | \             90°, x 2.1   q1----------q3
-     *   |         |   \            ------>      |         /
-     *   |         |     \                       |      /
-     *   |         |       \                     |   /
-     *   |         p1 ----- p2                   q2/
-     *   |
-     *   o----------------> y
-     *
-     * To do this: use a reference placement, e.g. x and a current placement, say y
-     * Then the deformation gradient F is:
-     *
-     *      F = dy / dx
-     *
-     * Both configurations are connected by local coordinates (mesh coordinates if you want):
-     * y(xi) and x(xi)
-     *
-     * Then the deformation gradient at a specific mesh coordinate xi can be computed as:
-     *
-     *  F(xi) = (dy / dxi) * (dxi / dx) = JacobianY * InverseJacobianX
-     *
-     * The deformation gradient is an important concept in finite strain theories and
-     * the starting point for various deformation measures.
-     *
-     * */
-
-    Eigen::Vector3d p1(0., 0., 0.);
+    Eigen::Vector3d p1(1., 0., 0.);
     Eigen::Vector3d p2(0., 1., 0.);
     Eigen::Vector3d p3(0., 0., 1.);
 
-    double scale = 2.1;
+    Eigen::MatrixXd B = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(Eigen::Vector2d::Zero());
+    Eigen::VectorXd coordinates = Eigen::VectorXd(9);
+    coordinates << p1, p2, p3;
 
-    Eigen::VectorXd xReference = Eigen::VectorXd(9);
-    xReference << p1, p2, p3;
+    NuTo::Jacobian jacobian(coordinates, B, 3);
 
-    Eigen::Vector3d q1(0., 0., scale);
-    Eigen::Vector3d q2(0., 0., 0.);
-    Eigen::Vector3d q3(0., scale, scale);
+    Eigen::Vector3d basisVec1 = jacobian.Get().col(0);
+    Eigen::Vector3d basisVec2 = jacobian.Get().col(1);
 
-    Eigen::VectorXd xDeformed = Eigen::VectorXd(9);
-    xDeformed << q1, q2, q3;
-
-    // Analyze deformation at some internal material point
-    Eigen::Vector2d localCoordinate(0.3, 0.3);
-
-    Eigen::MatrixXd B = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(localCoordinate);
-    NuTo::Jacobian jacobianReference(xReference, B, 3);
-    NuTo::Jacobian jacobianDeformed(xDeformed, B, 3);
-
-    Eigen::MatrixXd AA = jacobianDeformed.Get();
-    Eigen::MatrixXd BB = jacobianReference.Inv();
-
-    Eigen::Matrix3d deformationGradient = jacobianDeformed.Get() * jacobianReference.Inv();
-    // Compute a deformation measure that does not depend on the rotation
-    Eigen::Matrix3d rightCauchyGreen = deformationGradient.transpose() * deformationGradient;
-    // Principal stretches
-    Eigen::Vector3cd eigvals = rightCauchyGreen.eigenvalues();
-    double stretchX = sqrt(eigvals[0]).real();
-    double stretchY = sqrt(eigvals[1]).real();
-    double stretchZ = sqrt(eigvals[2]).real();
-    // There will be a zero eigenvalue in normal direction. Ignore this one
-    BOOST_CHECK_CLOSE(stretchY, scale, 1.e-10);
-    BOOST_CHECK_CLOSE(stretchZ, scale, 1.e-10);
+    Eigen::Vector3d normal = basisVec1.cross(basisVec2).normalized();
+    double expectedNormalComponents = 1. / sqrt(3.);
+    BOOST_CHECK_CLOSE(normal[0], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[1], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[2], expectedNormalComponents, 1.e-8);
 }
 
 BOOST_AUTO_TEST_CASE(JacobianTransform)
