@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense> // for determinant
 #include "mechanics/interpolation/TypeDefs.h"
+#include "base/Exception.h"
 
 namespace NuTo
 {
@@ -10,6 +11,7 @@ class Jacobian
 {
 public:
     using Dynamic3by3 = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 3>;
+    using Dynamic3by1 = Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor, 3, 1>;
 
     Jacobian(const NodeValues& nodeValues, const DerivativeShapeFunctionsNatural& derivativeShapeFunctions,
              int globalDimension)
@@ -54,22 +56,22 @@ public:
             {
                 Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2,1>(nodeValues, derivativeShapeFunctions);
                 Eigen::Matrix<double, 2,2> extendedJacobian;
-                Eigen::Vector2d normal(-jacobian(1,0),jacobian(0,0));
+                mNormal = Eigen::Vector2d(jacobian(1,0),-jacobian(0,0)).normalized();
                 extendedJacobian.col(0) = jacobian;
-                extendedJacobian.col(1) = normal.normalized();
+                extendedJacobian.col(1) = mNormal;
                 mJacobian = jacobian;
                 mInvJacobian = extendedJacobian.inverse().block<1,2>(0,0);
-                mDetJacobian = extendedJacobian.determinant();
+                mDetJacobian = -extendedJacobian.determinant();
                 break;
             }
             case 3:
             {
                 Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3,2>(nodeValues, derivativeShapeFunctions);
                 Eigen::Matrix<double, 3,3> extendedJacobian;
-                Eigen::Vector3d normal = (jacobian.col(0)).cross(jacobian.col(1)).normalized();
+                mNormal = (jacobian.col(0)).cross(jacobian.col(1)).normalized();
                 extendedJacobian.col(0) = jacobian.col(0);
                 extendedJacobian.col(1) = jacobian.col(1);
-                extendedJacobian.col(2) = normal;
+                extendedJacobian.col(2) = mNormal;
                 mJacobian = jacobian;
                 mInvJacobian = extendedJacobian.inverse().block<2,3>(0,0);;
                 mDetJacobian = extendedJacobian.determinant();
@@ -103,6 +105,15 @@ public:
         return mJacobian;
     }
 
+    Dynamic3by1 Normal()
+    {
+        if (mJacobian.cols() != (mJacobian.rows() - 1)) {
+            throw Exception(__PRETTY_FUNCTION__,
+                                  "Normal not available for elements with SpaceDimension - LocalDimension != 1");
+        }
+        return mNormal;
+    }
+
     double Det() const
     {
         return mDetJacobian;
@@ -127,6 +138,7 @@ private:
         return jacobian;
     }
 
+    Dynamic3by1 mNormal;
     Dynamic3by3 mJacobian;
     Dynamic3by3 mInvJacobian;
     double mDetJacobian;

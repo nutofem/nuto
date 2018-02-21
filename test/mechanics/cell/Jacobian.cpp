@@ -97,14 +97,28 @@ BOOST_AUTO_TEST_CASE(Jacobian2Din3DComputeNormal)
 
     NuTo::Jacobian jacobian(coordinates, B, 3);
 
-    Eigen::Vector3d basisVec1 = jacobian.Get().col(0);
-    Eigen::Vector3d basisVec2 = jacobian.Get().col(1);
-
-    Eigen::Vector3d normal = basisVec1.cross(basisVec2).normalized();
+    Eigen::Vector3d normal = jacobian.Normal();
     double expectedNormalComponents = 1. / sqrt(3.);
     BOOST_CHECK_CLOSE(normal[0], expectedNormalComponents, 1.e-8);
     BOOST_CHECK_CLOSE(normal[1], expectedNormalComponents, 1.e-8);
     BOOST_CHECK_CLOSE(normal[2], expectedNormalComponents, 1.e-8);
+}
+
+BOOST_AUTO_TEST_CASE(Jacobian1Din2DComputeNormal)
+{
+    Eigen::Vector2d p1(1., 0.);
+    Eigen::Vector2d p2(0., 1.);
+
+    Eigen::MatrixXd B = NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1();
+    Eigen::VectorXd coordinates = Eigen::VectorXd(4);
+    coordinates << p1, p2;
+
+    NuTo::Jacobian jacobian(coordinates, B, 2);
+
+    Eigen::Vector2d normal = jacobian.Normal();
+    double expectedNormalComponents = 1. / sqrt(2.);
+    BOOST_CHECK_CLOSE(normal[0], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[1], expectedNormalComponents, 1.e-8);
 }
 
 BOOST_AUTO_TEST_CASE(JacobianTransform)
