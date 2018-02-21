@@ -45,6 +45,9 @@ public:
         // build terms
         gradient[mDisp] = (1 - omega) * Bdisp.transpose() * mElasticLaw.Stress(strain, 0, 0);
         gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
+
+        gradient *= mCrossSectionParameter;
+
         return gradient;
     }
 
@@ -72,9 +75,12 @@ public:
         hessian0(mDisp, mEeq) = Bdisp.transpose() * (-mDamageLaw.Derivative(kappa) * dKappa_dEeq) *
                                 mElasticLaw.Stress(strain, 0, 0) * Neeq;
 
-        hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain) * Bdisp;
+        hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
 
         hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
+
+        hessian0 *= mCrossSectionParameter;
+
         return hessian0;
     }
 
@@ -89,6 +95,11 @@ public:
 
     Eigen::MatrixXd mKappas;
 
+    void SetCrossSection(double crossSectionParameter)
+    {
+        mCrossSectionParameter = crossSectionParameter;
+    }
+
 private:
     DofType mDisp;
     DofType mEeq;
@@ -96,6 +107,8 @@ private:
     Laws::LinearElastic<TDim> mElasticLaw;
     TDamageLaw mDamageLaw;
     Constitutive::ModifiedMisesStrainNorm<TDim> mNorm;
+
+    double mCrossSectionParameter = 1.;
 };
 } /* Integrand */
 } /* NuTo */
