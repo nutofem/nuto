@@ -48,7 +48,7 @@ public:
         auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
         TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData,
                                                                  double, double dt) {
-            EngineeringStrain<1> strain = cellIpData.GetBMatrixStrain(mDof) * cellData.GetNodeValues(mDof);
+            EngineeringStrain<1> strain = cellIpData.B(mDof, B::Strain()) * cellData.GetNodeValues(mDof);
             mLaw.Update(strain, dt, cellData.GetCellId(), cellIpData.GetIpId());
         };
 

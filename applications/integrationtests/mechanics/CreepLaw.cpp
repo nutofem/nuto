@@ -169,7 +169,7 @@ public:
         auto& hisData = GetIpHistoryData(cellData.GetCellId(), cellIpData.GetIpId());
 
         // Calculate necessary values for update
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
+        NuTo::BMatrixStrain B = cellIpData.B(dofType, B::Strain());
         NuTo::NodeValues u = cellData.GetNodeValues(dofType);
         EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
         NuTo::EngineeringStrain<1> strain = B * u;

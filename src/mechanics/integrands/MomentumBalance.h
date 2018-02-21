@@ -25,7 +25,7 @@ public:
 
     DofVector<double> Gradient(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        BMatrixStrain B = cellIpData.B(mDofType, B::Strain());
         NodeValues u = cellData.GetNodeValues(mDofType);
         DofVector<double> gradient;
 
@@ -36,7 +36,7 @@ public:
 
     DofMatrix<double> Hessian0(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
     {
-        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
+        BMatrixStrain B = cellIpData.B(mDofType, B::Strain());
         NodeValues u = cellData.GetNodeValues(mDofType);
         DofMatrix<double> hessian0;
 
