@@ -1,0 +1,24 @@
+# Creates IMPORTED target SuiteSparse::SuiteSparse
+message(STATUS "Checking for SuiteSparse Solver package ...")
+
+find_path(SUITESPARSE_INCLUDE_DIR NAMES umfpack.h HINTS /usr/include/suitesparse)
+
+find_library(SUITESPARSE_UMFPACK NAMES umfpack)
+find_library(SUITESPARSE_CHOLMOD NAMES cholmod)
+
+set(SUITESPARSE_LIBRARIES ${SUITESPARSE_UMFPACK} ${SUITESPARSE_CHOLMOD})
+
+add_library(SuiteSparse::UmfPack SHARED IMPORTED)
+set_target_properties(SuiteSparse::UmfPack PROPERTIES
+    IMPORTED_LOCATION "${SUITESPARSE_UMFPACK}"
+    INTERFACE_COMPILE_DEFINITIONS "HAVE_SUITESPARSE"
+    INTERFACE_INCLUDE_DIRECTORIES "${SUITESPARSE_INCLUDE_DIR}")
+
+add_library(SuiteSparse::Cholmod SHARED IMPORTED)
+set_target_properties(SuiteSparse::Cholmod PROPERTIES
+    IMPORTED_LOCATION "${SUITESPARSE_CHOLMOD}"
+    INTERFACE_COMPILE_DEFINITIONS "HAVE_SUITESPARSE"
+    INTERFACE_INCLUDE_DIRECTORIES "${SUITESPARSE_INCLUDE_DIR}")
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(SUITESPARSE DEFAULT_MSG SUITESPARSE_LIBRARIES SUITESPARSE_INCLUDE_DIR)

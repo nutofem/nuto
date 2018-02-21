@@ -1,40 +1,48 @@
+#include <iostream>
 #include "BoostUnitTest.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include "visualize/VoronoiHandler.h"
 #include "visualize/VoronoiGeometries.h"
-#include "visualize/Visualizer.h"
-#include "visualize/XMLWriter.h"
-#include "TestStructure.h"
 
-namespace pt = boost::property_tree;
 using namespace NuTo;
 
-struct UnstructuredGridCheck
+BOOST_AUTO_TEST_CASE(VoronoiGeometryLine)
 {
-public:
-    static void Voronoi(std::string filename)
-    {
-        pt::ptree tree;
-        pt::read_xml(filename, tree);
-        int numOfPoints = tree.get<int>("VTKFile.UnstructuredGrid.Piece.<xmlattr>.NumberOfPoints");
-        int numOfCells = tree.get<int>("VTKFile.UnstructuredGrid.Piece.<xmlattr>.NumberOfCells");
-        BOOST_CHECK_EQUAL(numOfPoints, 18);
-        BOOST_CHECK_EQUAL(numOfCells, 8);
-    }
-};
+    int numDivisions = 3;
 
-BOOST_AUTO_TEST_CASE(GroupVoronoiTensorProduct2D)
+    auto v1 = Visualize::VoronoiGeometryLine(numDivisions, Visualize::EQUIDISTANT);
+    auto v2 = Visualize::VoronoiGeometryLine(numDivisions, Visualize::LOBATTO);
+    auto v3 = Visualize::VoronoiGeometryLine(numDivisions, Visualize::GAUSS);
+
+    BOOST_CHECK_EQUAL(v1.pointCoordinates.size(), numDivisions + 1);
+    BOOST_CHECK_EQUAL(v2.pointCoordinates.size(), numDivisions + 1);
+    BOOST_CHECK_EQUAL(v3.pointCoordinates.size(), numDivisions + 1);
+}
+
+BOOST_AUTO_TEST_CASE(VoronoiGeometryQuad)
 {
-    using namespace NuTo::Visualize;
-    NuTo::DofType dof("NodeCoordinatesDiv10", 2);
-    NuTo::Test::VisualizeTestStructure s(dof);
-    auto cells = s.Cells();
+    int numDivisions = 3;
+    int numPoints = (numDivisions + 1) * (numDivisions + 1);
 
-    std::string filename = "VoronoiOutput.vtu";
-    Visualizer<VoronoiHandler> visualize(cells, VoronoiGeometryQuad(2));
-    visualize.WriteVtuFile(filename, false);
-    UnstructuredGridCheck::Voronoi(filename);
+    auto v1 = Visualize::VoronoiGeometryQuad(numDivisions, Visualize::EQUIDISTANT);
+    auto v2 = Visualize::VoronoiGeometryQuad(numDivisions, Visualize::LOBATTO);
+    auto v3 = Visualize::VoronoiGeometryQuad(numDivisions, Visualize::GAUSS);
+
+    BOOST_CHECK_EQUAL(v1.pointCoordinates.size(), numPoints);
+    BOOST_CHECK_EQUAL(v2.pointCoordinates.size(), numPoints);
+    BOOST_CHECK_EQUAL(v3.pointCoordinates.size(), numPoints);
+}
+
+BOOST_AUTO_TEST_CASE(VoronoiGeometryBrick)
+{
+    int numDivisions = 3;
+    int numPoints = (numDivisions + 1) * (numDivisions + 1) * (numDivisions + 1);
+
+    auto v1 = Visualize::VoronoiGeometryBrick(numDivisions, Visualize::EQUIDISTANT);
+    auto v2 = Visualize::VoronoiGeometryBrick(numDivisions, Visualize::LOBATTO);
+    auto v3 = Visualize::VoronoiGeometryBrick(numDivisions, Visualize::GAUSS);
+
+    BOOST_CHECK_EQUAL(v1.pointCoordinates.size(), numPoints);
+    BOOST_CHECK_EQUAL(v2.pointCoordinates.size(), numPoints);
+    BOOST_CHECK_EQUAL(v3.pointCoordinates.size(), numPoints);
 }
 
 BOOST_AUTO_TEST_CASE(Voronoi2D_1)

@@ -21,37 +21,19 @@
 
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/integrands/NeumannBc.h"
+#include "mechanics/integrands/Bind.h"
 
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
-#include "visualize/AverageHandler.h"
 #include "visualize/AverageGeometries.h"
-#include "visualize/VoronoiHandler.h"
 #include "visualize/VoronoiGeometries.h"
+#include "visualize/PointHandler.h"
 #include "visualize/Visualizer.h"
 
+#include "mechanics/solver/Solve.h"
+
 using namespace NuTo;
-
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
-    };
-}
-//! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
-template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
-{
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData);
-    };
-}
-
 
 MeshFem QuadPatchTestMesh()
 {
@@ -115,7 +97,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     AddDofInterpolation(&mesh, displ, interpolation);
 
     Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
 
     // ************************************************************************
@@ -170,7 +152,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     // ************************************************************************
     //                  assemble and solve
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
@@ -196,8 +178,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
     pointsPerDirection += 1; // one point per direction doesn't do much Voronoiying
-    Visualize::Visualizer<Visualize::VoronoiHandler> visualize(momentumBalanceCells,
-                                                               Visualize::VoronoiGeometryQuad(pointsPerDirection));
+    Visualize::Visualizer visualize(momentumBalanceCells,
+                                    Visualize::VoronoiHandler(Visualize::VoronoiGeometryQuad(pointsPerDirection)));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
@@ -245,7 +227,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     const double boundaryDisplacement = 1.;
     constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
-    DofNumbering::DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
     const int numDepDofs = dofInfo.numDependentDofs[displ];
     Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
@@ -277,57 +259,24 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
-    SimpleAssembler assembler(dofInfo.numIndependentDofs, dofInfo.numDependentDofs);
+    SimpleAssembler assembler(dofInfo);
 
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
 
-    Eigen::MatrixXd kJJ = Eigen::MatrixXd(hessian.JJ(displ, displ));
-    Eigen::MatrixXd kJK = Eigen::MatrixXd(hessian.JK(displ, displ));
-    Eigen::MatrixXd kKJ = Eigen::MatrixXd(hessian.KJ(displ, displ));
-    Eigen::MatrixXd kKK = Eigen::MatrixXd(hessian.KK(displ, displ));
-    BOOST_TEST_MESSAGE("hessian JJ \n" << kJJ);
-    BOOST_TEST_MESSAGE("hessian JK \n" << kJK);
-    BOOST_TEST_MESSAGE("hessian KJ \n" << kKJ);
-    BOOST_TEST_MESSAGE("hessian KK \n" << kKK);
-
-
-    BOOST_TEST_MESSAGE("GradientJ \n" << gradient.J);
-    BOOST_TEST_MESSAGE("GradientK \n" << gradient.K);
-
-    //      have a look at DISS_UNGER, page 28 for all that CMat stuff.
-    Eigen::MatrixXd Kmod = kJJ - CMat.transpose() * kKJ - kJK * CMat + CMat.transpose() * kKK * CMat;
-    Eigen::VectorXd Rmod = gradient.J[displ] - CMat.transpose() * gradient.K[displ];
-    Eigen::VectorXd RmodConstrained = (kJK - CMat.transpose() * kKK) * (-constraints.GetRhs(displ, 0));
-
-    Eigen::VectorXd newDisplacementsJ = Kmod.ldlt().solve(Rmod + RmodConstrained);
-    Eigen::VectorXd newDisplacementsK = -CMat * newDisplacementsJ + constraints.GetRhs(displ, 0);
-
-    BOOST_TEST_MESSAGE("DeltaD J \n" << newDisplacementsJ);
-    BOOST_TEST_MESSAGE("DeltaD K \n" << newDisplacementsK);
+    int numIndependentDofs = dofInfo.numIndependentDofs[displ];
+    GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);
 
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues
     // ************************************************************************
-    int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
     for (auto& node : mesh.NodesTotal(displ))
     {
-        int dofX = node.GetDofNumber(0);
-        int dofY = node.GetDofNumber(1);
-
-        if (dofX < numUnconstrainedDofs)
-            node.SetValue(0, newDisplacementsJ[dofX]);
-        else
-            node.SetValue(0, newDisplacementsK[dofX - numUnconstrainedDofs]);
-
-
-        if (dofY < numUnconstrainedDofs)
-            node.SetValue(1, newDisplacementsJ[dofY]);
-        else
-            node.SetValue(1, newDisplacementsK[dofY - numUnconstrainedDofs]);
+        node.SetValue(0, u(displ, node.GetDofNumber(0)));
+        node.SetValue(1, u(displ, node.GetDofNumber(1)));
     }
 
-    Visualize::Visualizer<Visualize::AverageHandler> visualize(cellGroup, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
@@ -340,7 +289,12 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     visualize.CellData(
             [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
             "CellId");
-    visualize.WriteVtuFile("output.vtu");
+    visualize.WriteVtuFile("PatchTestVoronoi.vtu");
+
+    Visualize::Visualizer pointVisualizer(cellGroup, Visualize::PointHandler(integrationType));
+    pointVisualizer.DofValues(displ);
+    pointVisualizer.CellData(stress, "Stress");
+    pointVisualizer.WriteVtuFile("PatchTestPoint.vtu");
 
     // ************************************************************************
     //             check solution

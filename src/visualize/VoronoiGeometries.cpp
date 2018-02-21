@@ -1,6 +1,10 @@
 #include "VoronoiGeometries.h"
+#include "math/Quadrature.h"
 
 using namespace NuTo::Visualize;
+
+// Helper functions (cpp only)
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 std::vector<double> Linspace(double s, double e, size_t num)
 {
@@ -10,10 +14,35 @@ std::vector<double> Linspace(double s, double e, size_t num)
     return linspace;
 }
 
-VoronoiGeometry NuTo::Visualize::VoronoiGeometryLine(int num)
+std::vector<double> CenteredPointsWithBoundary(std::vector<double> pts)
+{
+    std::vector<double> result;
+    result.push_back(-1.);
+    for (size_t i = 0; i < pts.size() - 1; ++i)
+        result.push_back((pts[i] + pts[i + 1]) / 2);
+    result.push_back(1.);
+    return result;
+}
+
+std::vector<double> Gaussspaced(size_t num)
+{
+    std::vector<double> pts = NuTo::Math::ComputeWeightsAndPoints1DGauss(num).second;
+    return CenteredPointsWithBoundary(pts);
+}
+
+std::vector<double> Lobattospaced(size_t num)
+{
+    std::vector<double> pts = NuTo::Math::ComputeWeightsAndPoints1DLobatto(num).second;
+    return CenteredPointsWithBoundary(pts);
+}
+
+
+VoronoiGeometry VoronoiGeometryLineHelper(std::vector<double> gridPoints)
 {
     VoronoiGeometry geometry;
-    for (auto x : Linspace(-1, 1, num + 1))
+    int num = gridPoints.size() - 1;
+
+    for (auto x : gridPoints)
         geometry.pointCoordinates.push_back(Eigen::VectorXd::Constant(1, x));
 
     for (int i = 0; i < num; i++)
@@ -22,11 +51,13 @@ VoronoiGeometry NuTo::Visualize::VoronoiGeometryLine(int num)
     return geometry;
 }
 
-VoronoiGeometry NuTo::Visualize::VoronoiGeometryQuad(int num)
+VoronoiGeometry VoronoiGeometryQuadHelper(std::vector<double> gridPoints)
 {
     VoronoiGeometry geometry;
-    for (auto y : Linspace(-1, 1, num + 1))
-        for (auto x : Linspace(-1, 1, num + 1))
+    int num = gridPoints.size() - 1;
+
+    for (auto y : gridPoints)
+        for (auto x : gridPoints)
             geometry.pointCoordinates.push_back(Eigen::Vector2d(x, y));
 
     for (int row = 0; row < num; row++)
@@ -41,12 +72,14 @@ VoronoiGeometry NuTo::Visualize::VoronoiGeometryQuad(int num)
     return geometry;
 }
 
-VoronoiGeometry NuTo::Visualize::VoronoiGeometryBrick(int num)
+VoronoiGeometry VoronoiGeometryBrickHelper(std::vector<double> gridPoints)
 {
     VoronoiGeometry geometry;
-    for (auto z : Linspace(-1, 1, num + 1))
-        for (auto y : Linspace(-1, 1, num + 1))
-            for (auto x : Linspace(-1, 1, num + 1))
+    int num = gridPoints.size() - 1;
+
+    for (auto z : gridPoints)
+        for (auto y : gridPoints)
+            for (auto x : gridPoints)
                 geometry.pointCoordinates.push_back(Eigen::Vector3d(x, y, z));
 
     for (int height = 0; height < num; height++)
@@ -64,6 +97,54 @@ VoronoiGeometry NuTo::Visualize::VoronoiGeometryBrick(int num)
         }
     }
     return geometry;
+}
+
+// Member functions
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+VoronoiGeometry NuTo::Visualize::VoronoiGeometryLine(int num, Spacing s)
+{
+    switch (s)
+    {
+    case EQUIDISTANT:
+        return VoronoiGeometryLineHelper(Linspace(-1, 1, num + 1));
+    case LOBATTO:
+        return VoronoiGeometryLineHelper(Lobattospaced(num));
+    case GAUSS:
+        return VoronoiGeometryLineHelper(Gaussspaced(num));
+    default:
+        throw Exception("Unknown spacing");
+    }
+}
+
+VoronoiGeometry NuTo::Visualize::VoronoiGeometryQuad(int num, Spacing s)
+{
+    switch (s)
+    {
+    case EQUIDISTANT:
+        return VoronoiGeometryQuadHelper(Linspace(-1, 1, num + 1));
+    case LOBATTO:
+        return VoronoiGeometryQuadHelper(Lobattospaced(num));
+    case GAUSS:
+        return VoronoiGeometryQuadHelper(Gaussspaced(num));
+    default:
+        throw Exception("Unknown spacing");
+    }
+}
+
+VoronoiGeometry NuTo::Visualize::VoronoiGeometryBrick(int num, Spacing s)
+{
+    switch (s)
+    {
+    case EQUIDISTANT:
+        return VoronoiGeometryBrickHelper(Linspace(-1, 1, num + 1));
+    case LOBATTO:
+        return VoronoiGeometryBrickHelper(Lobattospaced(num));
+    case GAUSS:
+        return VoronoiGeometryBrickHelper(Gaussspaced(num));
+    default:
+        throw Exception("Unknown spacing");
+    }
 }
 
 VoronoiGeometry NuTo::Visualize::VoronoiGeometryTriangle3Ip()

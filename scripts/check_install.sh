@@ -7,4 +7,4 @@ printf "#include <iostream>\n#include <nuto/base/Version.h>\nint main(){\nstd::c
 mkdir -p build && cd build
 cmake ..
 make
-./printVersion
+LD_LIBRARY_PATH=/usr/local/lib ./printVersion

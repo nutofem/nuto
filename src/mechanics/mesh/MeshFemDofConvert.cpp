@@ -138,14 +138,43 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
     return d;
 }
 
-void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
+//! @brief returns all Dof Nodes with their coordinates (NodePoints).
+std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofType)
+{
+    std::vector<NodePoint> nodePoints;
+
+    for (auto& elementCollection : rMesh->Elements)
+    {
+        const NuTo::ElementFem& coordinateElement = elementCollection.CoordinateElement();
+
+        if (!elementCollection.Has(dofType))
+            continue;
+
+        for (int iNode = 0; iNode < elementCollection.DofElement(dofType).GetNumNodes(); ++iNode)
+        {
+            Eigen::Vector3d coord = To3D(Interpolate(
+                    coordinateElement, elementCollection.DofElement(dofType).Interpolation().GetLocalCoords(iNode)));
+            NuTo::NodeSimple& node = elementCollection.DofElement(dofType).GetNode(iNode);
+            nodePoints.push_back(NodePoint(coord, node));
+        }
+    }
+    return nodePoints;
+}
+
+void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<ElementCollectionFem> elements,
                                boost::optional<const InterpolationSimple&> optionalInterpolation)
 {
     // Setup subbox. These argument values are quite arbibrary and should maybe be chosen based on
     // the dimensions of the mesh.
     SubBoxes<NodePoint> subBoxes(SetupSubBoxDomain(*rMesh, /*numBoxesPerDirection=*/300, /*eps=*/1.e-10));
 
-    for (auto& elementCollection : rMesh->Elements)
+    // Fill subboxes with nodes that are already there
+    for (NodePoint np : NodePointsTotal(rMesh, dofType))
+    {
+        subBoxes.Add(np);
+    }
+
+    for (auto& elementCollection : elements)
     {
         std::vector<NodeSimple*> nodesForTheNewlyCreatedElement;
 
@@ -169,4 +198,12 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
         }
         elementCollection.AddDofElement(dofType, ElementFem(nodesForTheNewlyCreatedElement, interpolation));
     }
+}
+
+
+void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType,
+                               boost::optional<const InterpolationSimple&> optionalInterpolation)
+{
+    auto elements = rMesh->ElementsTotal();
+    AddDofInterpolation(rMesh, dofType, elements, optionalInterpolation);
 }

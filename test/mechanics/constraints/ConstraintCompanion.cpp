@@ -222,3 +222,8 @@ BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
     }
     BOOST_CHECK(eqs == expectedEquations);
 }
+
+BOOST_AUTO_TEST_CASE(ConstraintRhsDiv0)
+{
+    BOOST_CHECK_THROW(Constraint::RhsRamp(0, 42.), Exception);
+}

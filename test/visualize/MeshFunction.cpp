@@ -3,7 +3,6 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "visualize/AverageHandler.h"
 #include "visualize/AverageGeometries.h"
 #include "visualize/Visualizer.h"
 
@@ -28,11 +27,9 @@ int main()
         visualizationCells.Add(cells.back());
     }
 
-    Visualize::Visualizer<Visualize::AverageHandler> visualize(visualizationCells, Visualize::AverageGeometryQuad());
+    Visualize::Visualizer visualize(visualizationCells, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
 
-    auto sine_function = [](Eigen::VectorXd x) {
-        return Eigen::Vector3d(sin(x[0]), sin(x[1]), sin(x[0] * x[1]));
-    };
+    auto sine_function = [](Eigen::VectorXd x) { return Eigen::Vector3d(sin(x[0]), sin(x[1]), sin(x[0] * x[1])); };
     visualize.PointData(sine_function, "Sine");
     visualize.WriteVtuFile("output.vtu");
 }

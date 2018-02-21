@@ -1,4 +1,6 @@
 #include "visualize/VoronoiHandler.h"
+#include "visualize/UnstructuredGrid.h"
+#include "mechanics/cell/CellInterface.h"
 #include "math/EigenCompanion.h"
 
 using namespace NuTo::Visualize;
@@ -6,6 +8,11 @@ using namespace NuTo::Visualize;
 VoronoiHandler::VoronoiHandler(VoronoiGeometry geometry)
     : mGeometry(geometry)
 {
+}
+
+std::unique_ptr<HandlerInterface> VoronoiHandler::Clone() const
+{
+    return std::make_unique<VoronoiHandler>(*this);
 }
 
 std::vector<int> VoronoiHandler::WriteGeometry(const CellInterface& cell, UnstructuredGrid* grid)

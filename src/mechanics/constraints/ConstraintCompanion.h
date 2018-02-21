@@ -16,11 +16,7 @@ namespace Constraint
 //! @param timeEnd ... end time
 //! @param valueEnd ... end value
 //! @return ... linear function crossing (0,0) and (timeEnd, valueEnd)
-inline RhsFunction RhsRamp(double timeEnd, double valueEnd)
-{
-    return [=](double time) { return valueEnd * time / timeEnd; };
-}
-
+RhsFunction RhsRamp(double timeEnd, double valueEnd);
 
 //! @brief constant function
 //! @param constantValue ... constant value

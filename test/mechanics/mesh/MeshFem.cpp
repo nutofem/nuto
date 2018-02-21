@@ -1,6 +1,7 @@
 #include "BoostUnitTest.h"
 #include "mechanics/mesh/MeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
+#include "mechanics/interpolation/InterpolationTrussLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
@@ -197,4 +198,60 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
 
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
+}
+
+BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
+{
+    NuTo::MeshFem mesh;
+    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+
+    auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
+
+    // Add coordinate elements
+    auto& tri = mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    auto& line1 = mesh.Elements.Add({{{n0, n1}, interpolationTruss}});
+    auto& line2 = mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
+    auto& line3 = mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
+
+    // Add a dof element
+    NuTo::DofType dof1("dof1", 1);
+
+    auto& nD0 = mesh.Nodes.Add(1.2);
+    auto& nD1 = mesh.Nodes.Add(2.2);
+
+    line1.AddDofElement(dof1, {{nD0, nD1}, interpolationTruss});
+
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 2);
+}
+
+BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
+{
+    NuTo::MeshFem mesh;
+    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+
+    auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
+
+    // Add coordinate elements
+    auto& tri = mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    auto& line1 = mesh.Elements.Add({{{n0, n1}, interpolationTruss}});
+    auto& line2 = mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
+    auto& line3 = mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
+
+    // Add dof element in steps
+    NuTo::DofType dof1("dof1", 1);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {line1}, interpolationTruss);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 2);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {line2, line3}, interpolationTruss);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 3);
+
+    NuTo::AddDofInterpolation(&mesh, dof1, {tri}, interpolationTriangle);
+    BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 3);
 }

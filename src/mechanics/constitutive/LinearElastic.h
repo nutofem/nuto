@@ -15,16 +15,7 @@ class LinearElastic : public MechanicsInterface<TDim>
 public:
     using typename MechanicsInterface<TDim>::MechanicsTangent;
 
-    template <int U = TDim, typename std::enable_if<U != 2, int>::type = 0>
-    LinearElastic(double E, double Nu)
-        : mE(E)
-        , mNu(Nu)
-        , mC(CalculateC(E, Nu))
-    {
-    }
-
-    template <int U = TDim, typename std::enable_if<U == 2, int>::type = 0>
-    LinearElastic(double E, double Nu, ePlaneState planeState)
+    LinearElastic(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS)
         : mE(E)
         , mNu(Nu)
         , mC(CalculateC(E, Nu, planeState))
@@ -41,6 +32,11 @@ public:
         return mC;
     }
 
+    void SetPlaneState(ePlaneState planeState)
+    {
+        mC = CalculateC(mE, mNu, planeState);
+    }
+
 private:
     double mE;
     double mNu;
@@ -53,7 +49,7 @@ private:
 //! @param E ... Young's modulus
 //! @param Nu ... Poisson's ratio
 //! @return tuple <C11, C12, C33>
-std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(double E, double Nu)
+inline std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(double E, double Nu)
 {
     double factor = E / (1.0 - (Nu * Nu));
     return std::make_tuple(factor, // C11
@@ -65,7 +61,7 @@ std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(double E, 
 //! @param E ... Young's modulus
 //! @param Nu ... Poisson's ratio
 //! @return tuple <C11, C12, C33>
-std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
+inline std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
 {
     double factor = E / ((1.0 + Nu) * (1.0 - 2.0 * Nu));
     return std::make_tuple(factor * (1.0 - Nu), // C11
@@ -74,13 +70,13 @@ std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
 }
 
 template <>
-LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double, ePlaneState)
+inline LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double, ePlaneState)
 {
     return MechanicsTangent::Constant(E);
 }
 
 template <>
-LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
+inline LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
 {
     double C11 = 0, C12 = 0, C33 = 0;
     if (planeState == ePlaneState::PLANE_STRESS)
@@ -101,7 +97,7 @@ LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E, double
 }
 
 template <>
-LinearElastic<3>::MechanicsTangent LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
+inline LinearElastic<3>::MechanicsTangent LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
 {
     double C11 = 0, C12 = 0, C44 = 0;
     std::tie(C11, C12, C44) = CalculateCoefficients3D(E, Nu);
