@@ -117,7 +117,7 @@ public:
 
     void ResizeHistoryData(size_t numCells, size_t numIpsPerCell)
     {
-        mKappas.resize(numCells, numIpsPerCell);
+        mKappas.setZero(numCells, numIpsPerCell);
     }
 
 public:

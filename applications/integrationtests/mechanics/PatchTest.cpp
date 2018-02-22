@@ -3,6 +3,8 @@
 #include <eigen3/Eigen/Dense> // for solve
 #include "boost/ptr_container/ptr_vector.hpp"
 
+#include "math/EigenCompanion.h"
+
 #include "base/Group.h"
 
 #include "mechanics/dofs/DofNumbering.h"
@@ -182,16 +184,13 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
                                     Visualize::VoronoiHandler(Visualize::VoronoiGeometryQuad(pointsPerDirection)));
     visualize.DofValues(displ);
 
-    auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
-        EngineeringStrain<2> strain = cellIpData.B(displ, B::Strain()) * cellData.GetNodeValues(displ);
-        return linearElasticLaw.Stress(strain, 0.0, 0, 0);
+    auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {
+        return linearElasticLaw.Stress(cellIpData.Gradient(displ, B::Strain()));
     };
     visualize.CellData(stress, "Stress");
 
-    visualize.CellData([](const CellData&, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(7.0); }, "Seven");
-    visualize.CellData(
-            [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
-            "CellId");
+    visualize.CellData([](const CellIpData&) { return EigenCompanion::ToEigen(7.0); }, "Seven");
+    visualize.CellData([](const CellIpData& cipd) { return EigenCompanion::ToEigen(cipd.Ids().cellId); }, "CellId");
     visualize.WriteVtuFile("outputVoronoi.vtu");
 
     auto analyticDisplacementField = [=](Eigen::Vector2d coord) {
@@ -279,16 +278,13 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
     visualize.DofValues(displ);
 
-    auto stress = [linearElasticLaw, displ](const CellData& cellData, const CellIpData& cellIpData) {
-        EngineeringStrain<2> strain = cellIpData.B(displ, B::Strain()) * cellData.GetNodeValues(displ);
-        return linearElasticLaw.Stress(strain, 0.0, 0, 0);
+    auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {
+        return linearElasticLaw.Stress(cellIpData.Gradient(displ, B::Strain()));
     };
     visualize.CellData(stress, "Stress");
 
-    visualize.CellData([](const CellData&, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(7.0); }, "Seven");
-    visualize.CellData(
-            [](const CellData& cd, const CellIpData&) { return Eigen::Matrix<double, 1, 1>(cd.GetCellId()); },
-            "CellId");
+    visualize.CellData([](const CellIpData&) { return Eigen::Matrix<double, 1, 1>(7.0); }, "Seven");
+    visualize.CellData([](const CellIpData& cipd) { return EigenCompanion::ToEigen(cipd.Ids().cellId); }, "CellId");
     visualize.WriteVtuFile("PatchTestVoronoi.vtu");
 
     Visualize::Visualizer pointVisualizer(cellGroup, Visualize::PointHandler(integrationType));
