@@ -30,7 +30,7 @@ public:
         return mElements.CoordinateElement().ExtractNodeValues();
     }
 
-    NodeValues GetNodeValues(const DofType& dofType) const
+    NodeValues GetNodeValues(DofType dofType) const
     {
         NodeValues& nodeValues = mNodeValues[dofType];
         if (nodeValues.size() == 0)
