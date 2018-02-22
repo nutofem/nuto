@@ -17,7 +17,7 @@ First, you need some external dependencies
 ```
 sudo apt-get install git swig3.0 cmake doxygen python3-dev python3-numpy \
 libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev \
-libann-dev libarpack2-dev libomp-dev gmsh
+libarpack2-dev libomp-dev gmsh
 ```
 
 Then, you need to check out the source code
@@ -70,7 +70,6 @@ make test
 | MUMPS    | 4.10    | Parallel sparse direct solver                               |
 | OpenMP   | ≥ 3.7   | Management of multiple OpenMP threads                       |
 | ARPACK   | ≥ 3.1.5 | Solver for large scale eigenvalue problems                  |
-| ANN      | ≥ 1.1.2 | Approximate nearest neighbour searching                     |
 
 # Examples
 

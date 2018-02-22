@@ -39,4 +39,4 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics PRIVATE Base Math Boost::filesystem Ann::Ann)
+target_link_libraries(Mechanics PRIVATE Base Math Boost::filesystem)
