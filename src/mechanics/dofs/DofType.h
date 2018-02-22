@@ -40,4 +40,12 @@ struct CompareDofType
         return a.Id() < b.Id();
     }
 };
+
+struct ScalarDofType : DofType
+{
+    ScalarDofType(std::string name)
+        : DofType(name, 1)
+    {
+    }
+};
 } /* NuTo */

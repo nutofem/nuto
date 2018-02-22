@@ -49,6 +49,11 @@ public:
         return N(dofType) * NodeValueVector(dofType);
     }
 
+    double Value(ScalarDofType dofType) const
+    {
+        return Value(DofType(dofType))[0];
+    }
+
     //! Calculates the gradient (derivative of the value with respect to x) for a given dof type at the integration
     //! point
     //! @param dofType dof type that is evaluated
