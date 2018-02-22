@@ -122,7 +122,7 @@ public:
     //! @param delta_t: Time increment
     //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
     //! @return Stress at integration point
-    EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, Ids ids) const override
+    EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, CellIds ids) const override
     {
         // Get history data
         const auto& hisData = GetIpHistoryData(ids.cellId, ids.ipId);
@@ -144,7 +144,7 @@ public:
     //! @param delta_t: Time increment
     //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, Ids) const override
+    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, CellIds) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;

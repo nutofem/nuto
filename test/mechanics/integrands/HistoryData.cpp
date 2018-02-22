@@ -16,7 +16,7 @@ constexpr int cellId = 354;
 class CustomIntegrand
 {
     std::set<int> mIpIds;
-    void CheckIds(Ids ids)
+    void CheckIds(CellIds ids)
     {
         int cId = ids.cellId;
         int ipId = ids.ipId;

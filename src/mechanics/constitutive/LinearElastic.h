@@ -22,12 +22,12 @@ public:
     {
     }
 
-    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double = 0, Ids = Ids{}) const override
+    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double = 0, CellIds = CellIds{}) const override
     {
         return mC * strain;
     }
 
-    MechanicsTangent Tangent(EngineeringStrain<TDim>, double = 0, Ids = Ids{}) const override
+    MechanicsTangent Tangent(EngineeringStrain<TDim>, double = 0, CellIds = CellIds{}) const override
     {
         return mC;
     }

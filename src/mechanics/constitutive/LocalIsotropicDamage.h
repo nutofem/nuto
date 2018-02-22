@@ -41,14 +41,14 @@ public:
     {
     }
 
-    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, Ids ids) const override
+    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
         auto kappa = mEvolution.Kappa(strain, deltaT, ids);
         return (1 - mDamageLaw.Damage(kappa)) * mElasticLaw.Stress(strain);
     }
 
     typename MechanicsInterface<TDim>::MechanicsTangent Tangent(EngineeringStrain<TDim> strain, double deltaT,
-                                                                Ids ids) const override
+                                                                CellIds ids) const override
     {
         auto C = mElasticLaw.Tangent(strain, deltaT, ids);
         auto sigma = mElasticLaw.Stress(strain, deltaT, ids);
@@ -60,7 +60,7 @@ public:
         return (1 - omega) * C - sigma * dOmegadKappa * mEvolution.DkappaDstrain(strain, deltaT, ids);
     }
 
-    void Update(EngineeringStrain<TDim> strain, double deltaT, Ids ids)
+    void Update(EngineeringStrain<TDim> strain, double deltaT, CellIds ids)
     {
         mEvolution.Update(strain, deltaT, ids);
     }
@@ -98,19 +98,19 @@ public:
         ResizeHistoryData(numCells, numIpsPerCell);
     }
 
-    double Kappa(EngineeringStrain<TDim> strain, double, Ids ids) const
+    double Kappa(EngineeringStrain<TDim> strain, double, CellIds ids) const
     {
         return std::max(mStrainNorm.Value(strain), mKappas(ids.cellId, ids.ipId));
     }
 
-    Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, Ids ids) const
+    Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, CellIds ids) const
     {
         if (mStrainNorm.Value(strain) >= mKappas(ids.cellId, ids.ipId))
             return mStrainNorm.Derivative(strain).transpose();
         return Eigen::Matrix<double, 1, Voigt::Dim(TDim)>::Zero();
     }
 
-    void Update(EngineeringStrain<TDim> strain, double deltaT, Ids ids)
+    void Update(EngineeringStrain<TDim> strain, double deltaT, CellIds ids)
     {
         mKappas(ids.cellId, ids.ipId) = Kappa(strain, deltaT, ids);
     }

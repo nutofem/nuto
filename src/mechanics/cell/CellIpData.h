@@ -26,7 +26,7 @@ public:
         return Interpolate(mCellData.Elements().CoordinateElement(), mIPCoords);
     }
 
-    Ids Ids() const
+    CellIds Ids() const
     {
         return {mCellData.GetCellId(), mIpId};
     }
@@ -41,9 +41,12 @@ public:
         return B(dofType, b) * mCellData.GetNodeValues(dofType);
     }
 
-    NMatrix N(const DofType& dofType) const
+    const Eigen::MatrixXd& N(const DofType& dofType) const
     {
-        return mCellData.Elements().DofElement(dofType).GetNMatrix(mIPCoords);
+        Eigen::MatrixXd& N = mNs[dofType];
+        if (N.size() == 0) // simplest memoization using a mutable mNs to keep it const
+            N = mCellData.Elements().DofElement(dofType).GetNMatrix(mIPCoords);
+        return N;
     }
 
     const Eigen::MatrixXd& B(DofType dofType, const B::Interface& b = B::Gradient()) const
