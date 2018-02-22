@@ -16,18 +16,18 @@ public:
     using typename MechanicsInterface<TDim>::MechanicsTangent;
 
     LinearElastic(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS)
-        : mE(E)
+        : mC(CalculateC(E, Nu, planeState))
+        , mE(E)
         , mNu(Nu)
-        , mC(CalculateC(E, Nu, planeState))
     {
     }
 
-    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double = 0, int = 0, int = 0) const override
+    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double = 0, Ids = Ids{}) const override
     {
         return mC * strain;
     }
 
-    MechanicsTangent Tangent(EngineeringStrain<TDim>, double = 0, int = 0, int = 0) const override
+    MechanicsTangent Tangent(EngineeringStrain<TDim>, double = 0, Ids = Ids{}) const override
     {
         return mC;
     }
@@ -37,12 +37,12 @@ public:
         mC = CalculateC(mE, mNu, planeState);
     }
 
+    static MechanicsTangent CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
+
 private:
+    MechanicsTangent mC;
     double mE;
     double mNu;
-    MechanicsTangent mC;
-
-    static MechanicsTangent CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
 };
 
 //! @brief calculate coefficients of the PLANE_STRESS 2D material matrix

@@ -7,22 +7,18 @@ namespace NuTo
 {
 
 //! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
+//! [&](cellIpData) {return integrand.Gradient(cellIpData, 0); }
 template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double))
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellIpData&, double))
 {
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData, /* deltaT = */ 0.);
-    };
+    return [&object, f](const NuTo::CellIpData& cellIpData) { return (object.*f)(cellIpData, /* deltaT = */ 0.); };
 }
 //! @brief automatically create the lambda
-//! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData); }
+//! [&](cellIpData) {return integrand.Gradient(cellIpData); }
 template <typename TObject, typename TReturn>
-auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&))
+auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellIpData&))
 {
-    return [&object, f](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return (object.*f)(cellData, cellIpData);
-    };
+    return [&object, f](const NuTo::CellIpData& cellIpData) { return (object.*f)(cellIpData); };
 }
 
 
