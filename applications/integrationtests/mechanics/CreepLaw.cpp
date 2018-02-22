@@ -165,9 +165,9 @@ public:
         auto& hisData = GetIpHistoryData(cellIpData.Ids().cellId, cellIpData.Ids().ipId);
 
         // Calculate necessary values for update
-        NuTo::BMatrixStrain B = cellIpData.B(dofType, B::Strain());
+        NuTo::BMatrixStrain B = cellIpData.B(dofType, Nabla::Strain());
         EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
-        NuTo::EngineeringStrain<1> strain = cellIpData.Gradient(dofType, B::Strain());
+        NuTo::EngineeringStrain<1> strain = cellIpData.Apply(dofType, Nabla::Strain());
         NuTo::EngineeringStress<1> stress = Stress(strain, delta_t, cellIpData.Ids());
         MechanicsTangent E = Tangent(strain, delta_t, cellIpData.Ids());
         NuTo::EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;

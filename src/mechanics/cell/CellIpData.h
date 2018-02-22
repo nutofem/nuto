@@ -55,7 +55,7 @@ public:
     //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
     //! B::Strain() for engineering strains)
     //! @return gradient of the dof
-    Eigen::VectorXd Gradient(DofType dofType, const B::Interface& b = B::Gradient()) const
+    Eigen::VectorXd Apply(DofType dofType, const Nabla::Interface& b) const
     {
         return B(dofType, b) * NodeValueVector(dofType);
     }
@@ -76,7 +76,7 @@ public:
     //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
     //! B::Strain() for engineering strains)
     //! @return B matrix
-    const Eigen::MatrixXd& B(DofType dofType, const B::Interface& b = B::Gradient()) const
+    const Eigen::MatrixXd& B(DofType dofType, const Nabla::Interface& b) const
     {
         Eigen::MatrixXd& B = mBs[dofType];
         if (B.size() == 0) // simplest memoization using a mutable mBs to keep it const

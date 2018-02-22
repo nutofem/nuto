@@ -6,7 +6,7 @@
 namespace NuTo
 {
 
-namespace B
+namespace Nabla
 {
 struct Interface
 {

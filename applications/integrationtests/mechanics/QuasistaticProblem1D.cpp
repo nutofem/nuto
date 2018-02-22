@@ -47,7 +47,7 @@ public:
         auto Gradient = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
         auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
         TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellIpData& cellIpData, double, double dt) {
-            mLaw.Update(cellIpData.Gradient(mDof, B::Strain()), dt, cellIpData.Ids());
+            mLaw.Update(cellIpData.Apply(mDof, Nabla::Strain()), dt, cellIpData.Ids());
         };
 
         mEquations.AddGradientFunction(mCellGroup, Gradient);

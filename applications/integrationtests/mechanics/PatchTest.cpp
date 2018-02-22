@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {
-        return linearElasticLaw.Stress(cellIpData.Gradient(displ, B::Strain()));
+        return linearElasticLaw.Stress(cellIpData.Apply(displ, Nabla::Strain()));
     };
     visualize.CellData(stress, "Stress");
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {
-        return linearElasticLaw.Stress(cellIpData.Gradient(displ, B::Strain()));
+        return linearElasticLaw.Stress(cellIpData.Apply(displ, Nabla::Strain()));
     };
     visualize.CellData(stress, "Stress");
 

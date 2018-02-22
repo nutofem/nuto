@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
     fakeit::Mock<NuTo::ElementCollection> elements;
     Method(elements, DofElement) = mockElement.get();
 
-    fakeit::Mock<NuTo::B::Interface> mockGradientOperator;
+    fakeit::Mock<NuTo::Nabla::Interface> mockGradientOperator;
     Method(mockGradientOperator, operator()) = Eigen::Matrix3d::Ones();
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});

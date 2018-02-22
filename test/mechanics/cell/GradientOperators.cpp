@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_CASE(Gradients1D)
     dNdX(1, 0) = dN1dX;
     dNdX(2, 0) = dN2dX;
 
-    BoostUnitTest::CheckEigenMatrix(dNdX.transpose(), NuTo::B::Gradient()(dNdX));
-    BoostUnitTest::CheckEigenMatrix(dNdX.transpose(), NuTo::B::Strain()(dNdX));
+    BoostUnitTest::CheckEigenMatrix(dNdX.transpose(), NuTo::Nabla::Gradient()(dNdX));
+    BoostUnitTest::CheckEigenMatrix(dNdX.transpose(), NuTo::Nabla::Strain()(dNdX));
 }
 
 BOOST_AUTO_TEST_CASE(Gradients2D)
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(Gradients2D)
     correctGradient(1, 0) = dN0dY;
     correctGradient(1, 1) = dN1dY;
     correctGradient(1, 2) = dN2dY;
-    BoostUnitTest::CheckEigenMatrix(correctGradient, NuTo::B::Gradient()(dNdX));
+    BoostUnitTest::CheckEigenMatrix(correctGradient, NuTo::Nabla::Gradient()(dNdX));
 
 
     Eigen::MatrixXd correctStrain = Eigen::MatrixXd::Zero(3, 6);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(Gradients2D)
     correctStrain(2, 4) = dN2dY;
     correctStrain(2, 5) = dN2dX;
 
-    BoostUnitTest::CheckEigenMatrix(correctStrain, NuTo::B::Strain()(dNdX));
+    BoostUnitTest::CheckEigenMatrix(correctStrain, NuTo::Nabla::Strain()(dNdX));
 }
 
 BOOST_AUTO_TEST_CASE(Gradients3D)
@@ -105,5 +105,5 @@ BOOST_AUTO_TEST_CASE(Gradients3D)
     correctStrain(5, 6) = dN2dY;
     correctStrain(5, 7) = dN2dX;
 
-    BoostUnitTest::CheckEigenMatrix(correctStrain, NuTo::B::Strain()(dNdX));
+    BoostUnitTest::CheckEigenMatrix(correctStrain, NuTo::Nabla::Strain()(dNdX));
 }
