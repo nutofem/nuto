@@ -48,6 +48,11 @@ public:
     {
         return N(dofType) * NodeValueVector(dofType);
     }
+  
+    const NuTo::Jacobian& GetJacobian() const
+    {
+        return mJacobian;
+    }
 
     double Value(ScalarDofType dofType) const
     {
