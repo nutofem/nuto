@@ -67,18 +67,18 @@ BOOST_AUTO_TEST_CASE(OneDimensional)
     };
 
     double stress = ft * 0.99;
-    auto R = [&](double strain) { return localDamageLaw.Stress(EigenCompanion::ToEigen(strain), 0, 0, 0)[0] - stress; };
-    auto DR = [&](double strain) { return localDamageLaw.Tangent(EigenCompanion::ToEigen(strain), 0, 0, 0)[0] - 1; };
+    auto R = [&](double strain) { return localDamageLaw.Stress(EigenCompanion::ToEigen(strain), 0, {})[0] - stress; };
+    auto DR = [&](double strain) { return localDamageLaw.Tangent(EigenCompanion::ToEigen(strain), 0, {})[0] - 1; };
     auto Norm = [&](double stress) { return std::abs(stress); };
     auto Info = [](int i, double x, double R) { BOOST_TEST_MESSAGE("" << i << ": x = " << x << " R = " << R); };
     auto problem = NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, 1.e-14, Info);
 
     double strain = kappa0;
-    localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, 0, 0);
+    localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, {});
     for (; stress > 0; stress -= ft * 0.1)
     {
         strain = NuTo::NewtonRaphson::Solve(problem, strain, NuTo::NewtonRaphson::DoubleSolver());
-        localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, 0, 0);
+        localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, {});
         BOOST_CHECK_CLOSE(stress, analyticStress(strain), 1.e-10);
     }
 }
@@ -87,19 +87,19 @@ void CheckTangent(std::initializer_list<double> values, double kappa)
 {
     EngineeringStrain<3> strain = NuTo::EigenCompanion::ToEigen(values);
     auto law = TestLaw<3>();
-    law.mEvolution.mKappas[0] = kappa;
+    law.mEvolution.mKappas(0, 0) = kappa;
 
-    Eigen::Matrix<double, 6, 6> tangent = law.Tangent(strain, 0, 0, 0);
-    Eigen::Matrix<double, 6, 6> tangent_cdf = law.Tangent(strain, 0, 0, 0) * 0.;
+    Eigen::Matrix<double, 6, 6> tangent = law.Tangent(strain, 0, {});
+    Eigen::Matrix<double, 6, 6> tangent_cdf = law.Tangent(strain, 0, {}) * 0.;
 
     const double delta = 1.e-8;
 
     for (int i = 0; i < 6; ++i)
     {
         strain[i] -= delta / 2.;
-        auto s0 = law.Stress(strain, 0, 0, 0);
+        auto s0 = law.Stress(strain, 0, {});
         strain[i] += delta;
-        auto s1 = law.Stress(strain, 0, 0, 0);
+        auto s1 = law.Stress(strain, 0, {});
         strain[i] -= delta / 2.;
         tangent_cdf.col(i) = (s1 - s0) / delta;
     }
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(EvolutionEdgeCase)
     auto law = TestLaw<3>();
     EngineeringStrain<3> strain = EigenCompanion::ToEigen({1, 2, 3, 4, 5, 6}) * 1.e-5;
     double kappa = law.mEvolution.mStrainNorm.Value(strain);
-    law.mEvolution.mKappas[0] = kappa;
+    law.mEvolution.mKappas(0, 0) = kappa;
 
-    BOOST_CHECK_GT(law.mEvolution.DkappaDstrain(strain, 0, 0, 0)(0, 0), 0.);
+    BOOST_CHECK_GT(law.mEvolution.DkappaDstrain(strain, 0, {})(0, 0), 0.);
 }
