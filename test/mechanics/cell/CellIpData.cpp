@@ -2,7 +2,7 @@
 #include <fakeit.hpp>
 #include "mechanics/cell/CellIpData.h"
 
-BOOST_AUTO_TEST_CASE(CellIpDataMemoization)
+BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 {
     NuTo::DerivativeShapeFunctionsNatural dNdXi = Eigen::MatrixXd::Random(3, 2);
 

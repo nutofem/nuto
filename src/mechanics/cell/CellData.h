@@ -39,6 +39,11 @@ public:
         return nodeValues;
     }
 
+    const ElementCollection& Elements() const
+    {
+        return mElements;
+    }
+
 private:
     mutable DofContainer<NodeValues> mNodeValues;
     const ElementCollection& mElements;
