@@ -3,7 +3,7 @@
 #include "mechanics/dofs/DofContainer.h"
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/Jacobian.h"
-#include "mechanics/cell/GradientOperators.h"
+#include "mechanics/cell/DifferentialOperators.h"
 #include "mechanics/cell/CellIds.h"
 
 namespace NuTo

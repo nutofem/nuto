@@ -8,7 +8,7 @@ add_unit_test(Jacobian
 
 add_unit_test(CellData)
 
-add_unit_test(GradientOperators)
+add_unit_test(DifferentialOperators)
 
 add_unit_test(SimpleAssembler)
 

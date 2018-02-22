@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/cell/GradientOperators.h"
+#include "mechanics/cell/DifferentialOperators.h"
 
 constexpr double dN0dX = 1;
 constexpr double dN0dY = 2;
