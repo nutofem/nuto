@@ -47,14 +47,13 @@ public:
 
         // node values
         double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
-        double omega = mDamageLaw.Damage(kappa);
+        double omega = mDamageLaw.Damage(Kappa(cellData, cellIpData));
 
         Eigen::Matrix<double, TDim, 1> eeqGradient = Beeq * cellData.GetNodeValues(mEeq);
         NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
 
         // build terms
-        gradient[mDisp] = Bdisp.transpose() * (1 - omega) * mElasticLaw.Stress(strain, 0, 0);
+        gradient[mDisp] = Bdisp.transpose() * (1 - omega) * mElasticLaw.Stress(strain);
         gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
 
         return gradient;
@@ -70,19 +69,18 @@ public:
         BMatrixStrain Bdisp = cellIpData.GetBMatrixStrain(mDisp);
 
         // node values
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
         NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
 
         // evaluate new kappa
-        double kappa = std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
+        double kappa = Kappa(cellData, cellIpData);
         double omega = mDamageLaw.Damage(kappa);
 
-        double dKappa_dEeq = kappa == eeq ? 1 : 0;
+        double dKappa_dEeq = DkappaDeeq(cellData, cellIpData);
 
-        hessian0(mDisp, mDisp) = Bdisp.transpose() * (1 - omega) * mElasticLaw.Tangent(strain, 0, 0) * Bdisp;
+        hessian0(mDisp, mDisp) = Bdisp.transpose() * (1 - omega) * mElasticLaw.Tangent(strain) * Bdisp;
 
-        hessian0(mDisp, mEeq) = Bdisp.transpose() * (-mDamageLaw.Derivative(kappa) * dKappa_dEeq) *
-                                mElasticLaw.Stress(strain, 0, 0) * Neeq;
+        hessian0(mDisp, mEeq) =
+                Bdisp.transpose() * (-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain) * Neeq;
 
         hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
 
@@ -93,16 +91,27 @@ public:
 
     void Update(const CellData& cellData, const CellIpData& cellIpData)
     {
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-
-        double& oldKappa = mKappas(cellData.GetCellId(), cellIpData.GetIpId());
-        oldKappa = std::max(oldKappa, eeq);
+        mKappas(cellData.GetCellId(), cellIpData.GetIpId()) = Kappa(cellData, cellIpData);
     }
 
     Eigen::MatrixXd mKappas;
 
-private:
+protected:
+    virtual double Kappa(const CellData& cellData, const CellIpData& cellIpData) const
+    {
+        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
+        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
+        return std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
+    }
+
+    virtual double DkappaDeeq(const CellData& cellData, const CellIpData& cellIpData) const
+    {
+        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
+        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
+        double oldKappa = mKappas(cellData.GetCellId(), cellIpData.GetIpId());
+        return eeq >= oldKappa ? 1 : 0;
+    }
+
     DofType mDisp;
     DofType mEeq;
     double mC;

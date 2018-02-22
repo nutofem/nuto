@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     double ft = 4;
     double fc = 40;
     double gf = 0.021;
-    double c = 1;
+    double c = 1.25;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
@@ -97,7 +97,8 @@ BOOST_AUTO_TEST_CASE(Integrand)
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
     auto postProcessF = [&](double t) { visu.Plot(t, true); };
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    BOOST_CHECK_NO_THROW(adaptiveSolve.Solve(2.));
+    adaptiveSolve.dt = 0.01;
+    BOOST_CHECK_NO_THROW(adaptiveSolve.Solve(3.));
 
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
@@ -117,16 +118,16 @@ BOOST_AUTO_TEST_CASE(Integrand)
     //
     // nonlocal equivalent strains:
     //
-    //          |
-    //          |
-    // ________/ \________
+    //           |
+    //           |
+    // _________/ \________
     //
     //
     // ZoneA: from x = [0 .. middle - damaged zone width]
     //      - displacements ~ 0
     //      - eeq ~ 0
     // ZoneB: from x = [middle + damaged zone width .. L]
-    //      - displacements ~ 0.4  ( boundary condition 0.2 / s * 2s )
+    //      - displacements ~ 0.6  ( boundary condition 0.2 / s * 3s )
     //      - eeq ~ 0
     //
     auto& dNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 4), d);
@@ -138,7 +139,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     auto& dNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), d);
     auto& eeqNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), eeq);
 
-    BOOST_CHECK_CLOSE(dNodeFromZoneB.GetValues()[0], 0.4, 1.e-4);
+    BOOST_CHECK_CLOSE(dNodeFromZoneB.GetValues()[0], 0.6, 1.e-4);
     BOOST_CHECK_SMALL(eeqNodeFromZoneB.GetValues()[0], 1.e-4);
 }
 
