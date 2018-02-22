@@ -48,7 +48,7 @@ public:
     //! @param name Name of an existint visualizer.
     //! @param f Function that is passed to the cell for evaluation.
     //! @param cellFunctionName Name to be used in the resulting output file for the data array.
-    void Add(std::string name, std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
+    void Add(std::string name, std::function<Eigen::VectorXd(const CellIpData&)> cellFunction,
              std::string cellFunctionName);
 
     //! Visualize a function y = f(x) over a collection of cells
@@ -73,8 +73,7 @@ private:
 
         Visualizer mVisualizer;
         std::vector<DofType> mDofs;
-        std::vector<std::pair<std::function<Eigen::VectorXd(const CellData&, const CellIpData&)>, std::string>>
-                mCellFunctions;
+        std::vector<std::pair<std::function<Eigen::VectorXd(const CellIpData&)>, std::string>> mCellFunctions;
         std::vector<std::pair<std::function<Eigen::VectorXd(Eigen::VectorXd)>, std::string>> mPointFunctions;
     };
 

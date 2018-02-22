@@ -7,7 +7,6 @@
 
 namespace NuTo
 {
-class CellData;
 class CellIpData;
 
 class CellInterface

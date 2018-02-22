@@ -32,7 +32,7 @@ public:
     //! Define cell data that should be visualized.
     //! @param f Function that is passed to the cell for evaluation.
     //! @param name Name to be used in the resulting output file for the data array.
-    void CellData(std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> f, std::string name);
+    void CellData(std::function<Eigen::VectorXd(const CellIpData&)> f, std::string name);
 
     //! Visualize a function y = f(x) over a collection of cells
     //! @param f Function taking the coordinates as an Eigen vector and returning an Eigen vector
