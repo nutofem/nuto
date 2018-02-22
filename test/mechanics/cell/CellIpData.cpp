@@ -1,16 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
 #include "mechanics/cell/CellIpData.h"
-
-void AcceptDouble(double, NuTo::DofType d)
-{
-    BOOST_CHECK(d.GetName() == "Scalar");
-}
-void AcceptVector(Eigen::VectorXd, NuTo::DofType d)
-{
-    BOOST_CHECK(d.GetName() != "Scalar");
-}
-
+#include <type_traits>
 
 BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 {
@@ -46,6 +37,6 @@ BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
     BOOST_CHECK_NO_THROW(fakeit::Verify(Method(mockGradientOperator, operator())).Exactly(1));
 
     NuTo::ScalarDofType d1("Scalar");
-    AcceptDouble(ipData.Value(d1), d1);
-    AcceptVector(ipData.Value(d0), d0);
+    BOOST_CHECK((std::is_same<decltype(ipData.Value(d0)), Eigen::VectorXd>::value));
+    BOOST_CHECK((std::is_same<decltype(ipData.Value(d1)), double>::value));
 }
