@@ -54,6 +54,7 @@ add_integrationtest(SurfaceLoad)
 add_integrationtest(ThermoElasticity1D)
 add_integrationtest(TrussIn2D)
 add_integrationtest(TrussIn3D)
+add_integrationtest(WaveEquation1D)
 
 
 

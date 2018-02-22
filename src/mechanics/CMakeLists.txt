@@ -192,6 +192,7 @@ set(MechanicsTimeIntegrationSources
     timeIntegration/RungeKuttaCashKarp.cpp
     timeIntegration/RungeKuttaDormandPrince.cpp
     timeIntegration/RungeKuttaBase.cpp
+    timeIntegration/StructureExplicit2ndOrder.cpp    
     timeIntegration/TimeControl.cpp
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
