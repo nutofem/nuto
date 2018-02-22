@@ -4,16 +4,10 @@
 #include "mechanics/cell/CellData.h"
 #include "mechanics/cell/Jacobian.h"
 #include "mechanics/cell/GradientOperators.h"
+#include "mechanics/cell/CellIds.h"
 
 namespace NuTo
 {
-
-//! named pair for cellId and ipId to make the argument list shorter and avoid accidental mixup of both
-struct Ids
-{
-    int cellId;
-    int ipId;
-};
 
 //! @brief Similar to NuTo::CellData, but for N and B
 class CellIpData
@@ -32,7 +26,7 @@ public:
         return Interpolate(mCellData.Elements().CoordinateElement(), mIPCoords);
     }
 
-    Ids GetIpId() const
+    Ids Ids() const
     {
         return {mCellData.GetCellId(), mIpId};
     }
