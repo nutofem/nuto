@@ -46,7 +46,7 @@ public:
     //! @return interpolated dof value
     Eigen::VectorXd Value(DofType dofType) const
     {
-        return N(dofType) * mCellData.GetNodeValues(dofType);
+        return N(dofType) * NodeValueVector(dofType);
     }
 
     //! Calculates the gradient (derivative of the value with respect to x) for a given dof type at the integration
@@ -57,7 +57,7 @@ public:
     //! @return gradient of the dof
     Eigen::VectorXd Gradient(DofType dofType, const B::Interface& b = B::Gradient()) const
     {
-        return B(dofType, b) * mCellData.GetNodeValues(dofType);
+        return B(dofType, b) * NodeValueVector(dofType);
     }
 
     //! Returns a memoized copy of the N matrix for a given dof type
@@ -82,6 +82,14 @@ public:
         if (B.size() == 0) // simplest memoization using a mutable mBs to keep it const
             B = b(CalculateDerivativeShapeFunctionsGlobal(dofType));
         return B;
+    }
+
+    //! Returns memoized nodal values
+    //! @param dofType
+    //! @return nodal values for dofType
+    const NodeValues& NodeValueVector(DofType dofType) const
+    {
+        return mCellData.GetNodeValues(dofType);
     }
 
 private:
