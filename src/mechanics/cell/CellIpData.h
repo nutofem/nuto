@@ -36,7 +36,7 @@ public:
         return N(dofType) * mCellData.GetNodeValues(dofType);
     }
 
-    Eigen::VectorXd Gradient(DofType dofType, const B::Interface& b = B::Gradient())
+    Eigen::VectorXd Gradient(DofType dofType, const B::Interface& b = B::Gradient()) const
     {
         return B(dofType, b) * mCellData.GetNodeValues(dofType);
     }

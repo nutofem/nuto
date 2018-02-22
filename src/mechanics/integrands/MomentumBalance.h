@@ -28,7 +28,8 @@ public:
         DofVector<double> gradient;
 
         BMatrixStrain B = cellIpData.B(mDofType, B::Strain());
-        gradient[mDofType] = B.transpose() * mLaw.Stress(cellIpData.B(mDofType, B::Strain()), deltaT, cellIpData.Ids());
+        gradient[mDofType] =
+                B.transpose() * mLaw.Stress(cellIpData.Gradient(mDofType, B::Strain()), deltaT, cellIpData.Ids());
 
         return gradient;
     }
@@ -39,7 +40,7 @@ public:
 
         BMatrixStrain B = cellIpData.B(mDofType, B::Strain());
         hessian0(mDofType, mDofType) =
-                B.transpose() * mLaw.Tangent(cellIpData.B(mDofType, B::Strain()), deltaT, cellIpData.Ids()) * B;
+                B.transpose() * mLaw.Tangent(cellIpData.Gradient(mDofType, B::Strain()), deltaT, cellIpData.Ids()) * B;
 
         return hessian0;
     }
