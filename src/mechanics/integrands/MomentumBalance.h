@@ -45,8 +45,10 @@ public:
         return hessian0;
     }
 
-private:
+protected:
     DofType mDofType;
+
+private:
     const Laws::MechanicsInterface<TDim>& mLaw;
 };
 } /* Integrand */
