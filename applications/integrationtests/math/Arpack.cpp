@@ -59,13 +59,11 @@ BOOST_AUTO_TEST_CASE(ArpackUsage)
     Eigen::ArpackGeneralizedSelfAdjointEigenSolver<Eigen::SparseMatrix<double>> arpack;
     Eigen::SparseMatrix<double> A = GetA();
 
-    // find smallest EV: - smallest magnitude ("SM") or smallest amplitude ("SA")
+    // find smallest EV: - smallest magnitude ("SM")
     BOOST_CHECK_CLOSE(arpack.compute(A, 1, "SM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).minCoeff(), 1.e-10);
-    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "SA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).minCoeff(), 1.e-10);
 
-    // find largest EV: - largest magnitude ("LM") or largest amplitude ("LA")
+    // find largest EV: - largest magnitude ("LM")
     BOOST_CHECK_CLOSE(arpack.compute(A, 1, "LM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).maxCoeff(), 1.e-10);
-    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "LA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).maxCoeff(), 1.e-10);
 }
 
 BOOST_AUTO_TEST_CASE(ArpackUsageGeneral)
@@ -74,15 +72,11 @@ BOOST_AUTO_TEST_CASE(ArpackUsageGeneral)
     Eigen::SparseMatrix<double> A = GetA();
     Eigen::SparseMatrix<double> M = GetM();
 
-    // find smallest EV: - smallest magnitude ("SM") or smallest amplitude ("SA")
+    // find smallest EV: - smallest magnitude ("SM")
     BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "SM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).minCoeff(),
                       1.e-10);
-    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "SA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).minCoeff(),
-                      1.e-10);
 
-    // find largest EV: - largest magnitude ("LM") or largest amplitude ("LA")
+    // find largest EV: - largest magnitude ("LM")
     BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "LM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).maxCoeff(),
-                      1.e-10);
-    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "LA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).maxCoeff(),
                       1.e-10);
 }
