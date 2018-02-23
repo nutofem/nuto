@@ -13,4 +13,4 @@ set(VisualizeSources
 )
 
 create_nuto_module(Visualize "${VisualizeSources}")
-target_link_libraries(Visualize Math Boost::filesystem)
+target_link_libraries(Visualize PRIVATE Math Boost::filesystem)
