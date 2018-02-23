@@ -1,94 +1,88 @@
 #include "BoostUnitTest.h"
 #include <Eigen/Eigenvalues>
-#include <iostream>
+#include <iostream> // ArpackSupport writes to std::cout without including <iostream> (bug?). So we have to include it.
 #include <Eigen/Sparse>
 
 #include <unsupported/Eigen/ArpackSupport>
 
-struct ArpackTestFixture
+Eigen::SparseMatrix<double> GetA()
 {
-    ArpackTestFixture()
-    {
-        BOOST_TEST_MESSAGE("setup fixture");
-        auto A_Full = GetA();
-        auto M_Full = GetM();
-
-        mEvs = Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd>(A_Full).eigenvalues();
-        mEvsGeneral = Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd>(A_Full, M_Full).eigenvalues();
-    }
-
-    static Eigen::SparseMatrix<double> GetA()
-    {
-        Eigen::SparseMatrix<double> a(8, 8);
-        a.insert(0, 0) = 8.;
-        a.insert(1, 1) = 2.;
-        a.insert(2, 2) = 4.;
-        a.insert(3, 3) = 7.;
-        a.insert(4, 4) = 10.;
-        a.insert(5, 5) = 6.;
-        a.insert(6, 6) = 5.;
-        a.insert(7, 7) = 1.;
-        a.insert(0, 1) = 1.;
-        a.insert(1, 0) = 1.;
-        a.insert(0, 3) = -1.;
-        a.insert(3, 0) = -1.;
-        a.insert(2, 4) = 2.;
-        a.insert(4, 2) = 2.;
-        a.insert(6, 1) = -3.;
-        a.insert(1, 6) = -3.;
-        return a;
-    }
-
-    static Eigen::SparseMatrix<double> GetM()
-    {
-        Eigen::SparseMatrix<double> m(8, 8);
-        m.insert(0, 0) = 1.;
-        m.insert(1, 1) = 1.;
-        m.insert(2, 2) = 1.;
-        m.insert(3, 3) = 1.;
-        m.insert(4, 4) = 1.;
-        m.insert(5, 5) = 1.;
-        m.insert(6, 6) = 1.;
-        m.insert(7, 7) = 1.;
-
-        m.insert(0, 1) = 0.5;
-        m.insert(1, 0) = 0.5;
-        return m;
-    }
-
-    Eigen::ArpackGeneralizedSelfAdjointEigenSolver<Eigen::SparseMatrix<double>> mArpack;
-
-    Eigen::VectorXd mEvs;
-    Eigen::VectorXd mEvsGeneral;
-};
-
-BOOST_FIXTURE_TEST_CASE(Info, ArpackTestFixture)
-{
-    BOOST_TEST_MESSAGE("FullMatrix\n" << GetA());
-    BOOST_TEST_MESSAGE("EVs of standard eigenvalue problem.\n" << mEvs.transpose());
-    BOOST_TEST_MESSAGE("EVs of generalized eigenvalue problem.\n" << mEvsGeneral.transpose());
+    Eigen::SparseMatrix<double> a(8, 8);
+    a.insert(0, 0) = 8.;
+    a.insert(1, 1) = 2.;
+    a.insert(2, 2) = 4.;
+    a.insert(3, 3) = 7.;
+    a.insert(4, 4) = 10.;
+    a.insert(5, 5) = 6.;
+    a.insert(6, 6) = 5.;
+    a.insert(7, 7) = 1.;
+    a.insert(0, 1) = 1.;
+    a.insert(1, 0) = 1.;
+    a.insert(0, 3) = -1.;
+    a.insert(3, 0) = -1.;
+    a.insert(2, 4) = 2.;
+    a.insert(4, 2) = 2.;
+    a.insert(6, 1) = -3.;
+    a.insert(1, 6) = -3.;
+    return a;
 }
 
-BOOST_FIXTURE_TEST_CASE(LargestAmplitude, ArpackTestFixture)
+Eigen::SparseMatrix<double> GetM()
 {
-    auto solution = mArpack.compute(GetA(), 3, "LA", Eigen::EigenvaluesOnly);
-    BoostUnitTest::CheckEigenMatrix(solution.eigenvalues(), mEvs.segment(5, 3));
+    Eigen::SparseMatrix<double> m(8, 8);
+    m.insert(0, 0) = 1.;
+    m.insert(1, 1) = 1.;
+    m.insert(2, 2) = 1.;
+    m.insert(3, 3) = 1.;
+    m.insert(4, 4) = 1.;
+    m.insert(5, 5) = 1.;
+    m.insert(6, 6) = 1.;
+    m.insert(7, 7) = 1.;
+
+    m.insert(0, 1) = 0.5;
+    m.insert(1, 0) = 0.5;
+    return m;
 }
 
-BOOST_FIXTURE_TEST_CASE(SmallestMagnitude, ArpackTestFixture)
+Eigen::VectorXd EVs(Eigen::MatrixXd A, Eigen::MatrixXd M)
 {
-    auto solution = mArpack.compute(GetA(), 3, "SM", Eigen::EigenvaluesOnly);
-    BoostUnitTest::CheckEigenMatrix(solution.eigenvalues(), mEvs.segment(0, 3));
+    return Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd>(A, M).eigenvalues();
 }
 
-BOOST_FIXTURE_TEST_CASE(LargestAmplitudeGeneral, ArpackTestFixture)
+Eigen::VectorXd EVs(Eigen::MatrixXd A)
 {
-    auto solution = mArpack.compute(GetA(), GetM(), 3, "LA", Eigen::EigenvaluesOnly);
-    BoostUnitTest::CheckEigenMatrix(solution.eigenvalues(), mEvsGeneral.segment(5, 3));
+    return Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd>(A).eigenvalues();
 }
 
-BOOST_FIXTURE_TEST_CASE(SmallestMagnitudeGeneral, ArpackTestFixture)
+BOOST_AUTO_TEST_CASE(ArpackUsage)
 {
-    auto solution = mArpack.compute(GetA(), GetM(), 3, "SM", Eigen::EigenvaluesOnly);
-    BoostUnitTest::CheckEigenMatrix(solution.eigenvalues(), mEvsGeneral.segment(0, 3));
+    Eigen::ArpackGeneralizedSelfAdjointEigenSolver<Eigen::SparseMatrix<double>> arpack;
+    Eigen::SparseMatrix<double> A = GetA();
+
+    // find smallest EV: - smallest magnitude ("SM") or smallest amplitude ("SA")
+    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "SM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).minCoeff(), 1.e-10);
+    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "SA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).minCoeff(), 1.e-10);
+
+    // find largest EV: - largest magnitude ("LM") or largest amplitude ("LA")
+    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "LM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).maxCoeff(), 1.e-10);
+    BOOST_CHECK_CLOSE(arpack.compute(A, 1, "LA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A).maxCoeff(), 1.e-10);
+}
+
+BOOST_AUTO_TEST_CASE(ArpackUsageGeneral)
+{
+    Eigen::ArpackGeneralizedSelfAdjointEigenSolver<Eigen::SparseMatrix<double>> arpack;
+    Eigen::SparseMatrix<double> A = GetA();
+    Eigen::SparseMatrix<double> M = GetM();
+
+    // find smallest EV: - smallest magnitude ("SM") or smallest amplitude ("SA")
+    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "SM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).minCoeff(),
+                      1.e-10);
+    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "SA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).minCoeff(),
+                      1.e-10);
+
+    // find largest EV: - largest magnitude ("LM") or largest amplitude ("LA")
+    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "LM", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).maxCoeff(),
+                      1.e-10);
+    BOOST_CHECK_CLOSE(arpack.compute(A, M, 1, "LA", Eigen::EigenvaluesOnly).eigenvalues()[0], EVs(A, M).maxCoeff(),
+                      1.e-10);
 }
