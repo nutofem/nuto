@@ -9,7 +9,7 @@ inline int TotalRows(const DofMatrixSparse<T>& v, std::vector<DofType> dofs)
 {
     int total = 0;
     for (auto dof : dofs)
-        total += v(dof, dofs.front()).rows();
+        total += v(dof, dof).rows();
     return total;
 }
 
@@ -18,7 +18,7 @@ inline int TotalCols(const DofMatrixSparse<T>& v, std::vector<DofType> dofs)
 {
     int total = 0;
     for (auto dof : dofs)
-        total += v(dofs.front(), dof).cols();
+        total += v(dof, dof).cols();
     return total;
 }
 

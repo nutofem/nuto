@@ -14,6 +14,7 @@ set(MechanicsSources
 
     timeIntegration/TimeControl.cpp
 
+    tools/AdaptiveSolve.cpp
     tools/GlobalFractureEnergyIntegrator.cpp
     tools/CellStorage.cpp
     tools/TimeDependentProblem.cpp
