@@ -211,10 +211,10 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
 
     // Add coordinate elements
-    auto& tri = mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
     auto& line1 = mesh.Elements.Add({{{n0, n1}, interpolationTruss}});
-    auto& line2 = mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
-    auto& line3 = mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
+    mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
+    mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
 
     // Add a dof element
     NuTo::DofType dof1("dof1", 1);
