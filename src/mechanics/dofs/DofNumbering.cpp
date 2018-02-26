@@ -24,17 +24,23 @@ std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints
     for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
     {
         int dependentDofNumber = constraints.GetEquation(dof, iEquation).GetDependentDofNumber();
-        dofStatus[dependentDofNumber] = iEquation;
+        dofStatus.at(dependentDofNumber) = iEquation;
     }
     return dofStatus;
 }
 
 DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints)
 {
+    for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
+        for (const auto& term : constraints.GetEquation(dof, iEquation).GetTerms())
+            if (not dofNodes.Contains(term.GetNode()))
+                throw Exception(__PRETTY_FUNCTION__, "The constraints for dof " + dof.GetName() +
+                                                             " contain nodes that are not included in _dofNodes_. You "
+                                                             "may have selected the wrong nodes (coordinate nodes?) "
+                                                             "from the mesh.");
+
     int numDependentDofs = constraints.GetNumEquations(dof);
-
     const int numDofs = InitialUnconstrainedNumbering(dofNodes);
-
     std::vector<int> dofStatus = GetStatusOfDofNumber(constraints, dof, numDofs);
     // It is _very_ important that the dependent dofs are ordered _exactly_ like the equations. Only this feature will
     // produce an identity matrix for T2.
@@ -50,7 +56,7 @@ DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, cons
         for (int iComponent = 0; iComponent < node.GetNumValues(); ++iComponent)
         {
             int dofNumber = node.GetDofNumber(iComponent);
-            if (dofStatus[dofNumber] == INDEPENDENT)
+            if (dofStatus.at(dofNumber) == INDEPENDENT)
             {
                 node.SetDofNumber(iComponent, countIndependentDofs++);
             }
