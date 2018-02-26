@@ -2,8 +2,6 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/cell/Cell.h"
-#include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 #include "visualize/Visualizer.h"
@@ -21,8 +19,7 @@ struct TestCells
     TestCells(int num)
         : mesh(NuTo::UnitMeshFem::CreateQuads(num, num))
     {
-        const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
-        NuTo::AddDofInterpolation(&mesh, dof, interpolation);
+        NuTo::AddDofInterpolation(&mesh, dof);
 
         for (size_t id = 0; id < mesh.Elements.Size(); ++id)
             cells.push_back(NuTo::Cell(mesh.Elements[id], integrationType, id));
@@ -45,7 +42,7 @@ void VisualizeQuadGeometry(benchmark::State& state)
     using namespace NuTo::Visualize;
     TestCells s(state.range(0));
     for (auto _ : state)
-        Visualizer<VoronoiHandler> visu(s.cellInterfaces, VoronoiGeometryQuad(2));
+        Visualizer visu(s.cellInterfaces, VoronoiHandler(VoronoiGeometryQuad(2)));
 
     state.SetComplexityN(state.range(0) * state.range(0));
 }
@@ -58,7 +55,7 @@ void VisualizeQuadPointData(benchmark::State& state)
     using namespace NuTo::Visualize;
     TestCells s(state.range(0));
 
-    Visualizer<VoronoiHandler> visu(s.cellInterfaces, VoronoiGeometryQuad(2));
+    Visualizer visu(s.cellInterfaces, VoronoiHandler(VoronoiGeometryQuad(2)));
 
     for (auto _ : state)
         visu.DofValues(s.dof);
@@ -74,8 +71,8 @@ void VisualizeQuadCellData(benchmark::State& state)
     using namespace NuTo::Visualize;
     TestCells s(state.range(0));
 
-    Visualizer<VoronoiHandler> visu(s.cellInterfaces, VoronoiGeometryQuad(2));
-    auto f = [&](const NuTo::CellData&, const NuTo::CellIpData&) { return Eigen::Vector2d(1, 2); };
+    Visualizer visu(s.cellInterfaces, VoronoiHandler(VoronoiGeometryQuad(2)));
+    auto f = [&](const NuTo::CellIpData&) { return Eigen::Vector2d(1, 2); };
 
     for (auto _ : state)
         visu.CellData(f, "1 and 2");
@@ -91,8 +88,8 @@ void VisualizeQuadWriteVtu(benchmark::State& state)
     using namespace NuTo::Visualize;
     TestCells s(state.range(0));
 
-    Visualizer<VoronoiHandler> visu(s.cellInterfaces, VoronoiGeometryQuad(2));
-    auto f = [&](const NuTo::CellData&, const NuTo::CellIpData& cipd) {
+    Visualizer visu(s.cellInterfaces, VoronoiHandler(VoronoiGeometryQuad(2)));
+    auto f = [&](const NuTo::CellIpData& cipd) {
         auto coords = cipd.GlobalCoordinates();
         return Eigen::VectorXd::Constant(1, std::sin(10 * coords.x()) * std::cos(5 * coords.y()));
     };

@@ -109,8 +109,8 @@ struct Lobatto
     }
 };
 
-auto testFunction = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder4;
-using result = Eigen::Matrix<double, 125, 3>;
+auto testFunction = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2;
+using result = Eigen::MatrixXd;
 
 template <typename TMemoizer>
 void Run(benchmark::State& state)
