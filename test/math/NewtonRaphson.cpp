@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include "math/NewtonRaphson.h"
+#include "math/EigenSparseSolve.h"
 #include <cmath>
 #include <iostream>
 #include <complex>
@@ -102,30 +103,16 @@ auto ValidMatrixProblem()
     return DefineProblem(R, DR, Norm, tolerance);
 }
 
-struct EigenWrapper
-{
-    Eigen::VectorXd Solve(Eigen::SparseMatrix<double>& DR, const Eigen::VectorXd& R)
-    {
-        Eigen::VectorXd v;
-        Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-        solver.analyzePattern(DR);
-        solver.factorize(DR);
-        return solver.solve(R);
-    }
-};
-
 BOOST_AUTO_TEST_CASE(NewtonSparse)
 {
-    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
     Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
-    auto result = Solve(ValidMatrixProblem(), x0, CreateWrappedSolver(solver), 100);
+    auto result = Solve(ValidMatrixProblem(), x0, NuTo::EigenSparseSolver("EigenSparseLU"), 100);
     BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
 }
 
 BOOST_AUTO_TEST_CASE(NewtonSparseLineSearch)
 {
-    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
     Eigen::VectorXd x0 = Eigen::VectorXd::Zero(2);
-    auto result = Solve(ValidMatrixProblem(), x0, CreateWrappedSolver(solver), 20, LineSearch());
+    auto result = Solve(ValidMatrixProblem(), x0, NuTo::EigenSparseSolver("EigenSparseLU"), 20, LineSearch());
     BoostUnitTest::CheckVector(result, std::vector<double>{-2., 1.}, 2);
 }
