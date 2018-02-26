@@ -17,6 +17,8 @@ void AdaptiveSolve::Solve(double tEnd)
     double t = 0;
     int iStep = 0;
 
+    mPostProcess(t);
+
     while (true)
     {
         std::cout << "Step " << iStep << " at t = " << t << " with dt = " << dt << ".\n";
