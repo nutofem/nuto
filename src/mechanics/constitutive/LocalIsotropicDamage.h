@@ -41,28 +41,28 @@ public:
     {
     }
 
-    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, int cellId, int ipId) const override
+    EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
-        auto kappa = mEvolution.Kappa(strain, deltaT, cellId, ipId);
+        auto kappa = mEvolution.Kappa(strain, deltaT, ids);
         return (1 - mDamageLaw.Damage(kappa)) * mElasticLaw.Stress(strain);
     }
 
     typename MechanicsInterface<TDim>::MechanicsTangent Tangent(EngineeringStrain<TDim> strain, double deltaT,
-                                                                int cellId, int ipId) const override
+                                                                CellIds ids) const override
     {
-        auto C = mElasticLaw.Tangent(strain, deltaT, cellId, ipId);
-        auto sigma = mElasticLaw.Stress(strain, deltaT, cellId, ipId);
+        auto C = mElasticLaw.Tangent(strain, deltaT, ids);
+        auto sigma = mElasticLaw.Stress(strain, deltaT, ids);
 
-        auto kappa = mEvolution.Kappa(strain, deltaT, cellId, ipId);
+        auto kappa = mEvolution.Kappa(strain, deltaT, ids);
         auto omega = mDamageLaw.Damage(kappa);
         auto dOmegadKappa = mDamageLaw.Derivative(kappa);
 
-        return (1 - omega) * C - sigma * dOmegadKappa * mEvolution.DkappaDstrain(strain, deltaT, cellId, ipId);
+        return (1 - omega) * C - sigma * dOmegadKappa * mEvolution.DkappaDstrain(strain, deltaT, ids);
     }
 
-    void Update(EngineeringStrain<TDim> strain, double deltaT, int cellId, int ipId)
+    void Update(EngineeringStrain<TDim> strain, double deltaT, CellIds ids)
     {
-        mEvolution.Update(strain, deltaT, cellId, ipId);
+        mEvolution.Update(strain, deltaT, ids);
     }
 
 public:
@@ -94,44 +94,35 @@ public:
     //! @param numIpsPerCell nummer of integraiton points per cell for the history data allocation
     EvolutionImplicit(TStrainNorm strainNorm, size_t numCells = 0, size_t numIpsPerCell = 0)
         : mStrainNorm(strainNorm)
-        , mNumIpsPerCell(numIpsPerCell)
-        , mKappas(std::vector<double>(numCells * numIpsPerCell, 0.))
     {
+        ResizeHistoryData(numCells, numIpsPerCell);
     }
 
-    double Kappa(EngineeringStrain<TDim> strain, double, int cellId, int ipId) const
+    double Kappa(EngineeringStrain<TDim> strain, double, CellIds ids) const
     {
-        return std::max(mStrainNorm.Value(strain), mKappas[Ip(cellId, ipId)]);
+        return std::max(mStrainNorm.Value(strain), mKappas(ids.cellId, ids.ipId));
     }
 
-    Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, int cellId,
-                                                             int ipId) const
+    Eigen::Matrix<double, 1, Voigt::Dim(TDim)> DkappaDstrain(EngineeringStrain<TDim> strain, double, CellIds ids) const
     {
-        if (mStrainNorm.Value(strain) >= mKappas[Ip(cellId, ipId)])
+        if (mStrainNorm.Value(strain) >= mKappas(ids.cellId, ids.ipId))
             return mStrainNorm.Derivative(strain).transpose();
         return Eigen::Matrix<double, 1, Voigt::Dim(TDim)>::Zero();
     }
 
-    void Update(EngineeringStrain<TDim> strain, double deltaT, int cellId, int ipId)
+    void Update(EngineeringStrain<TDim> strain, double deltaT, CellIds ids)
     {
-        mKappas[Ip(cellId, ipId)] = Kappa(strain, deltaT, cellId, ipId);
-    }
-
-    size_t Ip(int cellId, int ipId) const
-    {
-        return cellId * mNumIpsPerCell + ipId;
+        mKappas(ids.cellId, ids.ipId) = Kappa(strain, deltaT, ids);
     }
 
     void ResizeHistoryData(size_t numCells, size_t numIpsPerCell)
     {
-        mNumIpsPerCell = numIpsPerCell;
-        mKappas.resize(numIpsPerCell * numCells);
+        mKappas.setZero(numCells, numIpsPerCell);
     }
 
 public:
     TStrainNorm mStrainNorm;
-    size_t mNumIpsPerCell;
-    std::vector<double> mKappas;
+    Eigen::MatrixXd mKappas;
 };
 
 } /* Laws */

@@ -26,9 +26,9 @@ public:
     {
     }
 
-    NuTo::DofVector<double> ExternalLoad(const NuTo::CellData&, const NuTo::CellIpData& cellIpData)
+    NuTo::DofVector<double> ExternalLoad(const NuTo::CellIpData& cellIpData)
     {
-        NuTo::NMatrix N = cellIpData.GetNMatrix(mDofType);
+        NuTo::NMatrix N = cellIpData.N(mDofType);
         NuTo::DofVector<double> gradient;
 
         gradient[mDofType] = N.transpose() * mFactor;

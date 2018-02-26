@@ -19,9 +19,9 @@ class TimeDependentProblem
 {
 public:
     // let us call these "time dependent functions"
-    using GradientFunction = std::function<DofVector<double>(const CellData&, const CellIpData&, double t, double dt)>;
-    using HessianFunction = std::function<DofMatrix<double>(const CellData&, const CellIpData&, double t, double dt)>;
-    using UpdateFunction = std::function<void(const CellData&, const CellIpData&, double t, double dt)>;
+    using GradientFunction = std::function<DofVector<double>(const CellIpData&, double t, double dt)>;
+    using HessianFunction = std::function<DofMatrix<double>(const CellIpData&, double t, double dt)>;
+    using UpdateFunction = std::function<void(const CellIpData&, double t, double dt)>;
 
     TimeDependentProblem(MeshFem* rMesh);
 
@@ -70,21 +70,16 @@ private:
 public:
     //! @brief binds a dt dependent integrand to a time dependent function
     template <typename TObject, typename TReturn>
-    static auto Bind_dt(TObject& object,
-                        TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double dt))
+    static auto Bind_dt(TObject& object, TReturn (TObject::*f)(const CellIpData&, double dt))
     {
-        return [&object, f](const CellData& cellData, const CellIpData& cellIpData, double, double dt) {
-            return (object.*f)(cellData, cellIpData, dt);
-        };
+        return [&object, f](const CellIpData& cellIpData, double, double dt) { return (object.*f)(cellIpData, dt); };
     }
 
     //! @brief binds a t dependent integrand to a time dependent function
     template <typename TObject, typename TReturn>
-    static auto Bind_t(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const NuTo::CellIpData&, double t))
+    static auto Bind_t(TObject& object, TReturn (TObject::*f)(const NuTo::CellIpData&, double t))
     {
-        return [&object, f](const CellData& cellData, const CellIpData& cellIpData, double t, double) {
-            return (object.*f)(cellData, cellIpData, t);
-        };
+        return [&object, f](const CellIpData& cellIpData, double t, double) { return (object.*f)(cellIpData, t); };
     }
 };
 } /* NuTo */

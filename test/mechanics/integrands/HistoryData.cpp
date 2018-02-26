@@ -16,8 +16,10 @@ constexpr int cellId = 354;
 class CustomIntegrand
 {
     std::set<int> mIpIds;
-    void CheckIds(int cId, int ipId)
+    void CheckIds(CellIds ids)
     {
+        int cId = ids.cellId;
+        int ipId = ids.ipId;
         BOOST_CHECK_EQUAL(cId, cellId);
 
         // Each IP Id should only be passed once per cell and values have to be 0 and 1 (2 ips)
@@ -32,15 +34,15 @@ public:
         mIpIds.clear();
     }
 
-    DofVector<double> Vector(const CellData& cellData, const CellIpData& cellIpData)
+    DofVector<double> Vector(const CellIpData& cellIpData)
     {
-        CheckIds(cellData.GetCellId(), cellIpData.GetIpId());
+        CheckIds(cellIpData.Ids());
         return DofVector<double>();
     }
 
-    DofMatrix<double> Matrix(const CellData& cellData, const CellIpData& cellIpData)
+    DofMatrix<double> Matrix(const CellIpData& cellIpData)
     {
-        CheckIds(cellData.GetCellId(), cellIpData.GetIpId());
+        CheckIds(cellIpData.Ids());
         return DofMatrix<double>();
     }
 };
@@ -55,8 +57,8 @@ BOOST_AUTO_TEST_CASE(Pass_Data_To_Integrand)
 
     CustomIntegrand integrand;
     using namespace std::placeholders;
-    auto vectorF = std::bind(&CustomIntegrand::Vector, integrand, _1, _2);
-    auto matrixF = std::bind(&CustomIntegrand::Matrix, integrand, _1, _2);
+    auto vectorF = std::bind(&CustomIntegrand::Vector, integrand, _1);
+    auto matrixF = std::bind(&CustomIntegrand::Matrix, integrand, _1);
 
     IntegrationTypeTensorProduct<1> integrationType(2, eIntegrationMethod::GAUSS);
     Cell cell(element, integrationType, cellId);

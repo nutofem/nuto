@@ -120,13 +120,12 @@ public:
     //! @brief Calculates the stress at an integration point
     //! @param strain: Strain at integration point
     //! @param delta_t: Time increment
-    //! @param cellNum: Number of currently evaluated cell
-    //! @param ipNum: Number of currently evaluated integration point
+    //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
     //! @return Stress at integration point
-    EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, int cellNum, int ipNum) const override
+    EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, CellIds ids) const override
     {
         // Get history data
-        const auto& hisData = GetIpHistoryData(cellNum, ipNum);
+        const auto& hisData = GetIpHistoryData(ids.cellId, ids.ipId);
 
         // Calc strain increment
         EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;
@@ -136,17 +135,16 @@ public:
 
 
         // Calc Stress
-        EngineeringStress<1> deltaStress = Tangent(strain, delta_t, cellNum, ipNum) * (deltaStrain - deltaCreep);
+        EngineeringStress<1> deltaStress = Tangent(strain, delta_t, ids) * (deltaStrain - deltaCreep);
         return hisData.prevStress + deltaStress;
     }
 
     //! @brief Calculates the mechanical tangent(stiffness) at an integration point
     //! @param strain: Strain at integration point
     //! @param delta_t: Time increment
-    //! @param cellNum: Number of currently evaluated cell
-    //! @param ipNum: Number of currently evaluated integration point
+    //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, int, int) const override
+    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, CellIds) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;
@@ -158,23 +156,20 @@ public:
     }
 
     //! @brief Updates the history data
-    //! @param cellData: Cell related data
     //! @param cellIpData: IP related data
     //! @param dofType: Dof type (needed to calculate strains)
     //! @param delta_t: Time increment
-    void UpdateHistoryData(const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData, DofType dofType,
-                           double delta_t)
+    void UpdateHistoryData(const NuTo::CellIpData& cellIpData, DofType dofType, double delta_t)
     {
         // Get history data
-        auto& hisData = GetIpHistoryData(cellData.GetCellId(), cellIpData.GetIpId());
+        auto& hisData = GetIpHistoryData(cellIpData.Ids().cellId, cellIpData.Ids().ipId);
 
         // Calculate necessary values for update
-        NuTo::BMatrixStrain B = cellIpData.GetBMatrixStrain(dofType);
-        NuTo::NodeValues u = cellData.GetNodeValues(dofType);
+        NuTo::BMatrixStrain B = cellIpData.B(dofType, Nabla::Strain());
         EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
-        NuTo::EngineeringStrain<1> strain = B * u;
-        NuTo::EngineeringStress<1> stress = Stress(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
-        MechanicsTangent E = Tangent(strain, delta_t, cellData.GetCellId(), cellIpData.GetIpId());
+        NuTo::EngineeringStrain<1> strain = cellIpData.Apply(dofType, Nabla::Strain());
+        NuTo::EngineeringStress<1> stress = Stress(strain, delta_t, cellIpData.Ids());
+        MechanicsTangent E = Tangent(strain, delta_t, cellIpData.Ids());
         NuTo::EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;
 
         // The actual update
@@ -258,11 +253,11 @@ BOOST_AUTO_TEST_CASE(History_Data)
     Integrands::MomentumBalance<1> momentumBalance(displ, creepLaw);
     double delta_t = 0.1;
     auto MomentumGradientF =
-            std::bind(&Integrands::MomentumBalance<1>::Gradient, momentumBalance, _1, _2, std::ref(delta_t));
+            std::bind(&Integrands::MomentumBalance<1>::Gradient, momentumBalance, _1, std::ref(delta_t));
     auto MomentumHessian0F =
-            std::bind(&Integrands::MomentumBalance<1>::Hessian0, momentumBalance, _1, _2, std::ref(delta_t));
+            std::bind(&Integrands::MomentumBalance<1>::Hessian0, momentumBalance, _1, std::ref(delta_t));
     auto MomentumUpdateHistoryDataF =
-            std::bind(&CreepLaw::UpdateHistoryData, std::ref(creepLaw), _1, _2, displ, std::ref(delta_t));
+            std::bind(&CreepLaw::UpdateHistoryData, std::ref(creepLaw), _1, displ, std::ref(delta_t));
 
     // Create integration type %%%%%%%%%%%%%%%%%%
     IntegrationTypeTensorProduct<1> integrationType(2, eIntegrationMethod::GAUSS);
