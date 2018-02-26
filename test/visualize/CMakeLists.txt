@@ -25,5 +25,5 @@ add_unit_test(MeshFunction)
 target_link_libraries(MeshFunction Mechanics Visualize)
 
 add_unit_test(PostProcess)
-target_link_libraries(PostProcess Visualize)
+target_link_libraries(PostProcess Visualize Boost::filesystem)
 
