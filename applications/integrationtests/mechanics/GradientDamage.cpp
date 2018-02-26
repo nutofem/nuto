@@ -24,7 +24,7 @@ using namespace NuTo;
 BOOST_AUTO_TEST_CASE(Integrand)
 {
     DofType d("Displacements", 1);
-    DofType eeq("NonlocalEquivalentStrains", 1);
+    ScalarDofType eeq("NonlocalEquivalentStrains");
 
     /* MATERIAL */
     double E = 30000;
@@ -81,17 +81,8 @@ BOOST_AUTO_TEST_CASE(Integrand)
     visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(2)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
-    visu.Add("GDM",
-             [&](const CellData& cd, const CellIpData& cipd) {
-                 return EigenCompanion::ToEigen(gdm.mKappas(cd.GetCellId(), cipd.GetIpId()));
-             },
-             "Kappa");
-    visu.Add("GDM",
-             [&](const CellData& cd, const CellIpData& cipd) {
-                 EngineeringStrain<1> s = cipd.GetBMatrixStrain(d) * cd.GetNodeValues(d);
-                 return s;
-             },
-             "strain");
+    visu.Add("GDM", [&](const CellIpData& cipd) { return EigenCompanion::ToEigen(gdm.Kappa(cipd)); }, "Kappa");
+    visu.Add("GDM", [&](const CellIpData& cipd) { return cipd.Apply(d, Nabla::Strain()); }, "strain");
 
     /* solve adaptively */
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
@@ -164,7 +155,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
 
     DofType d("Displacements", 2);
-    DofType eeq("NonlocalEquivalentStrains", 1);
+    ScalarDofType eeq("NonlocalEquivalentStrains");
 
     double c = 1.;
     using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential>;
@@ -181,8 +172,8 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
                       element.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                       element.CoordinateElement().GetDofDimension());
     CellData cd(element, 0);
-    CellIpData cipd(element, jacobian, ipCoords, 0);
+    CellIpData cipd(cd, jacobian, ipCoords, 0);
 
-    BOOST_CHECK_NO_THROW(gdm.Gradient(cd, cipd));
-    BOOST_CHECK_NO_THROW(gdm.Hessian0(cd, cipd));
+    BOOST_CHECK_NO_THROW(gdm.Gradient(cipd));
+    BOOST_CHECK_NO_THROW(gdm.Hessian0(cipd));
 }

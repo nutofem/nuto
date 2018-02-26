@@ -48,30 +48,30 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
     // On integration point (-1) all the force contribution should be at f0 == p
     {
         Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, -1.0);
-        CellIpData cellIpData(element, dummyJac, ip, ipNum);
+        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
 
         Eigen::Vector4d expected(p[0], p[1], 0, 0);
-        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
     // On integration point (+1) all the force contribution should be at f1 == p
     {
         Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, 1.0);
-        CellIpData cellIpData(element, dummyJac, ip, ipNum);
+        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
 
         Eigen::Vector4d expected(0, 0, p[0], p[1]);
-        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 
     // On integration point (0) all the force contribution should be spread equally
     {
         Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, 0.0);
-        CellIpData cellIpData(element, dummyJac, ip, ipNum);
+        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
 
         Eigen::Vector4d expected(p[0] / 2, p[1] / 2, p[0] / 2, p[1] / 2);
-        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
         BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
     }
 }
@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     for (int ip = 0; ip < 3; ip++)
     {
-        CellIpData cellIpData(element, dummyJac, points[ip], ipNum);
+        CellIpData cellIpData(cellData, dummyJac, points[ip], ipNum);
 
-        auto gradient = neumannIntegrand.ExternalLoad(cellData, cellIpData);
+        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
 
         Eigen::VectorXd referenceResultOnIP = (1. / 6.) * Eigen::VectorXd::Ones(9);
         referenceResultOnIP.block(3 * ip, 0, 3, 1) = (2. / 3.) * Eigen::VectorXd::Ones(3);

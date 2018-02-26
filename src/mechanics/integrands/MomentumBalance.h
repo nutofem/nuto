@@ -23,26 +23,25 @@ public:
     {
     }
 
-    DofVector<double> Gradient(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
+    DofVector<double> Gradient(const CellIpData& cellIpData, double deltaT)
     {
-        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NodeValues u = cellData.GetNodeValues(mDofType);
         DofVector<double> gradient;
 
-        NuTo::EngineeringStrain<TDim> strain = B * u;
-        gradient[mDofType] = B.transpose() * mLaw.Stress(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId());
+        BMatrixStrain B = cellIpData.B(mDofType, Nabla::Strain());
+        gradient[mDofType] =
+                B.transpose() * mLaw.Stress(cellIpData.Apply(mDofType, Nabla::Strain()), deltaT, cellIpData.Ids());
+
         return gradient;
     }
 
-    DofMatrix<double> Hessian0(const CellData& cellData, const CellIpData& cellIpData, double deltaT)
+    DofMatrix<double> Hessian0(const CellIpData& cellIpData, double deltaT)
     {
-        BMatrixStrain B = cellIpData.GetBMatrixStrain(mDofType);
-        NodeValues u = cellData.GetNodeValues(mDofType);
         DofMatrix<double> hessian0;
 
-        NuTo::EngineeringStrain<TDim> strain = B * u;
+        BMatrixStrain B = cellIpData.B(mDofType, Nabla::Strain());
         hessian0(mDofType, mDofType) =
-                B.transpose() * mLaw.Tangent(strain, deltaT, cellData.GetCellId(), cellIpData.GetIpId()) * B;
+                B.transpose() * mLaw.Tangent(cellIpData.Apply(mDofType, Nabla::Strain()), deltaT, cellIpData.Ids()) * B;
+
         return hessian0;
     }
 

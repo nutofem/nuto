@@ -43,8 +43,8 @@ public:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
-            f(cellData, cellipData);
+            CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
+            f(cellipData);
         }
     }
 
@@ -68,8 +68,7 @@ public:
         return NuTo::Interpolate(mElements.DofElement(dof), naturalCoords);
     }
 
-    std::vector<Eigen::VectorXd>
-    Eval(EvalFunction f) const override
+    std::vector<Eigen::VectorXd> Eval(EvalFunction f) const override
     {
         CellData cellData(mElements, Id());
         std::vector<Eigen::VectorXd> result;
@@ -79,8 +78,8 @@ public:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
-            result.push_back(f(cellData, cellipData));
+            CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
+            result.push_back(f(cellipData));
         }
         return result;
     }
@@ -101,8 +100,8 @@ private:
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
                               mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
                               mElements.CoordinateElement().GetDofDimension());
-            CellIpData cellipData(mElements, jacobian, ipCoords, iIP);
-            result += f(cellData, cellipData) * jacobian.Det() * ipWeight;
+            CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
+            result += f(cellipData) * jacobian.Det() * ipWeight;
         }
         return result;
     }

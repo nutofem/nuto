@@ -85,6 +85,42 @@ BOOST_AUTO_TEST_CASE(Jacobian2Din3D)
     BOOST_CHECK_CLOSE(TriangleAreaViaJacobian(V(0, 4, 0), V(0, 0, 3), V(0, 4, 3)), 3. * 4 / 2, 1.e-10);
 }
 
+BOOST_AUTO_TEST_CASE(Jacobian2Din3DComputeNormal)
+{
+    Eigen::Vector3d p1(1., 0., 0.);
+    Eigen::Vector3d p2(0., 1., 0.);
+    Eigen::Vector3d p3(0., 0., 1.);
+
+    Eigen::MatrixXd B = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder1(Eigen::Vector2d::Zero());
+    Eigen::VectorXd coordinates = Eigen::VectorXd(9);
+    coordinates << p1, p2, p3;
+
+    NuTo::Jacobian jacobian(coordinates, B, 3);
+
+    Eigen::Vector3d normal = jacobian.Normal();
+    double expectedNormalComponents = 1. / sqrt(3.);
+    BOOST_CHECK_CLOSE(normal[0], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[1], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[2], expectedNormalComponents, 1.e-8);
+}
+
+BOOST_AUTO_TEST_CASE(Jacobian1Din2DComputeNormal)
+{
+    Eigen::Vector2d p1(1., 0.);
+    Eigen::Vector2d p2(0., 1.);
+
+    Eigen::MatrixXd B = NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1();
+    Eigen::VectorXd coordinates = Eigen::VectorXd(4);
+    coordinates << p1, p2;
+
+    NuTo::Jacobian jacobian(coordinates, B, 2);
+
+    Eigen::Vector2d normal = jacobian.Normal();
+    double expectedNormalComponents = 1. / sqrt(2.);
+    BOOST_CHECK_CLOSE(normal[0], expectedNormalComponents, 1.e-8);
+    BOOST_CHECK_CLOSE(normal[1], expectedNormalComponents, 1.e-8);
+}
+
 BOOST_AUTO_TEST_CASE(JacobianTransform)
 {
     // TODO! How?

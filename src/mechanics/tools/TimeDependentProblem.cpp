@@ -51,7 +51,7 @@ template <typename TCellInterfaceFunction, typename TTimeDepFunction>
 TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
 {
     using namespace std::placeholders;
-    return std::bind(f, _1, _2, t, dt);
+    return std::bind(f, _1, t, dt);
 }
 
 GlobalDofVector TimeDependentProblem::Gradient(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t,

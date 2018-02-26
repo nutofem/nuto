@@ -47,10 +47,8 @@ public:
 
         auto Gradient = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
         auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
-        TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellData& cellData, const CellIpData& cellIpData,
-                                                                 double, double dt) {
-            EngineeringStrain<1> strain = cellIpData.GetBMatrixStrain(mDof) * cellData.GetNodeValues(mDof);
-            mLaw.Update(strain, dt, cellData.GetCellId(), cellIpData.GetIpId());
+        TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellIpData& cellIpData, double, double dt) {
+            mLaw.Update(cellIpData.Apply(mDof, Nabla::Strain()), dt, cellIpData.Ids());
         };
 
         mEquations.AddGradientFunction(mCellGroup, Gradient);
@@ -66,8 +64,7 @@ public:
     void SetImperfection(double kappaImperfection)
     {
         const int imperfectionCell = mMesh.Elements.Size() / 2;
-        const int imperfectionIp = mLaw.mEvolution.Ip(imperfectionCell, 0);
-        mLaw.mEvolution.mKappas[imperfectionIp] = kappaImperfection;
+        mLaw.mEvolution.mKappas(imperfectionCell, 0) = kappaImperfection;
     }
 
     void Solve(double tEnd)
@@ -80,9 +77,8 @@ public:
 
     std::vector<double> DamageField()
     {
-        auto Damage = [&](const CellData& cellData, const CellIpData& cellIpData) {
-            int ip = mLaw.mEvolution.Ip(cellData.GetCellId(), cellIpData.GetIpId());
-            double kappa = mLaw.mEvolution.mKappas[ip];
+        auto Damage = [&](const CellIpData& cellIpData) {
+            double kappa = mLaw.mEvolution.mKappas(cellIpData.Ids().cellId, cellIpData.Ids().ipId);
             return Eigen::VectorXd::Constant(1, mLaw.mDamageLaw.Damage(kappa));
         };
 

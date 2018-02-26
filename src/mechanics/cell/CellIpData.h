@@ -1,126 +1,123 @@
 #pragma once
 
 #include "mechanics/dofs/DofContainer.h"
-#include "mechanics/elements/ElementCollection.h"
+#include "mechanics/cell/CellData.h"
 #include "mechanics/cell/Jacobian.h"
+#include "mechanics/cell/DifferentialOperators.h"
+#include "mechanics/cell/CellIds.h"
 
 namespace NuTo
 {
 
-
-//! @brief Similar to NuTo::CellData, but for N and B
+//! @brief Similar to NuTo::CellData. Memoizes N and B and allows access to the values and gradients of a dof at this
+//! integration point
 class CellIpData
 {
 public:
-    CellIpData(const ElementCollection& elements, NuTo::Jacobian jacobian, NaturalCoords ipCoords, int ipId)
-        : mElements(elements)
+    //! ctor
+    //! @param cellData cell data that is constant for all integration points of a cell (cellId, node values)
+    //! @param jacobian transformation from the natural (xi, eta,...) system to the global system (x,y,..)
+    //! @param ipCoords coordinates of the current integration point
+    //! @param ipId id of the current integration point
+    CellIpData(const CellData& cellData, NuTo::Jacobian jacobian, NaturalCoords ipCoords, int ipId)
+        : mCellData(cellData)
         , mJacobian(std::move(jacobian))
         , mIPCoords(std::move(ipCoords))
         , mIpId(ipId)
     {
     }
 
+    //! Caluclate the global integration point coordinates
+    //! @return global integration point coordinates
     Eigen::VectorXd GlobalCoordinates() const
     {
-        return Interpolate(mElements.CoordinateElement(), mIPCoords);
+        return Interpolate(mCellData.Elements().CoordinateElement(), mIPCoords);
     }
 
-    int GetIpId() const
+    //! Access to the cellId and ipId, compressed in CellIds
+    //! @return named pair of cellId and ipId
+    CellIds Ids() const
     {
-        return mIpId;
+        return {mCellData.GetCellId(), mIpId};
     }
 
-    NMatrix GetNMatrix(const DofType& dofType) const
+    //! Calculates the value of a dof at the integration point
+    //! @param dofType dof type that is interpolated
+    //! @return interpolated dof value
+    Eigen::VectorXd Value(DofType dofType) const
     {
-        return mElements.DofElement(dofType).GetNMatrix(mIPCoords);
+        return N(dofType) * NodeValueVector(dofType);
+    }
+  
+    const NuTo::Jacobian& GetJacobian() const
+    {
+        return mJacobian;
     }
 
-    BMatrixGradient GetBMatrixGradient(const DofType& dofType) const
+    double Value(ScalarDofType dofType) const
     {
-        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(dofType);
-        return dShapeGlobal.transpose();
+        return Value(DofType(dofType))[0];
     }
 
-    BMatrixStrain GetBMatrixStrain(const DofType& dofType) const
+    //! Calculates the gradient (derivative of the value with respect to x) for a given dof type at the integration
+    //! point
+    //! @param dofType dof type that is evaluated
+    //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
+    //! B::Strain() for engineering strains)
+    //! @return gradient of the dof
+    Eigen::VectorXd Apply(DofType dofType, const Nabla::Interface& b) const
     {
-        DerivativeShapeFunctionsGlobal dShapeGlobal = CalculateDerivativeShapeFunctionsGlobal(dofType);
-        const int dim = dShapeGlobal.cols();
-        const int numNodes = dShapeGlobal.rows();
-        switch (dim)
-        {
-        case 1:
-            return dShapeGlobal.transpose();
-        case 2:
-        {
-            BMatrixStrain B = Eigen::MatrixXd::Zero(3, numNodes * 2);
-            for (int iNode = 0, iColumn = 0; iNode < numNodes; ++iNode, iColumn += 2)
-            {
-                double dNdX = dShapeGlobal(iNode, 0);
-                double dNdY = dShapeGlobal(iNode, 1);
+        return B(dofType, b) * NodeValueVector(dofType);
+    }
 
-                B(0, iColumn) = dNdX;
-                B(1, iColumn + 1) = dNdY;
-                B(2, iColumn) = dNdY;
-                B(2, iColumn + 1) = dNdX;
-            }
-            return B;
-        }
-        case 3:
-        {
+    //! Returns a memoized copy of the N matrix for a given dof type
+    //! @param dofType
+    //! @return N matrix
+    const Eigen::MatrixXd& N(DofType dofType) const
+    {
+        Eigen::MatrixXd& N = mNs[dofType];
+        if (N.size() == 0) // simplest memoization using a mutable mNs to keep it const
+            N = mCellData.Elements().DofElement(dofType).GetNMatrix(mIPCoords);
+        return N;
+    }
 
-            BMatrixStrain B = Eigen::MatrixXd::Zero(6, numNodes * 3);
+    //! Returns a memoized copy of the B matrix for a given dof type
+    //! @param dofType
+    //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
+    //! B::Strain() for engineering strains)
+    //! @return B matrix
+    const Eigen::MatrixXd& B(DofType dofType, const Nabla::Interface& b) const
+    {
+        Eigen::MatrixXd& B = mBs[dofType];
+        if (B.size() == 0) // simplest memoization using a mutable mBs to keep it const
+            B = b(CalculateDerivativeShapeFunctionsGlobal(dofType));
+        return B;
+    }
 
-            for (int iNode = 0, iColumn = 0; iNode < numNodes; ++iNode, iColumn += 3)
-            {
-                double dNdX = dShapeGlobal(iNode, 0);
-                double dNdY = dShapeGlobal(iNode, 1);
-                double dNdZ = dShapeGlobal(iNode, 2);
-
-                /* according to Jirásek
-                 *
-                 *     +0  +1  +2
-                 *    -------------
-                 * 0 |  dx  0   0  |     - e_x
-                 * 1 |  0   dy  0  |     - e_y
-                 * 2 |  0   0   dz |     - e_z
-                 * 3 |  0   dz  dy |     - g_yz
-                 * 4 |  dz  0   dx |     - g_xz
-                 * 5 |  dy  dx  0  |     - g_xy
-                 *    -------------
-                 */
-
-
-                B(0, iColumn) = dNdX;
-                B(1, iColumn + 1) = dNdY;
-                B(2, iColumn + 2) = dNdZ;
-
-                B(3, iColumn + 1) = dNdZ;
-                B(3, iColumn + 2) = dNdY;
-
-                B(4, iColumn) = dNdZ;
-                B(4, iColumn + 2) = dNdX;
-
-                B(5, iColumn) = dNdY;
-                B(5, iColumn + 1) = dNdX;
-            }
-            return B;
-        }
-        default:
-            throw Exception(__PRETTY_FUNCTION__, "c'mon.");
-        }
+    //! Returns memoized nodal values
+    //! @param dofType
+    //! @return nodal values for dofType
+    const NodeValues& NodeValueVector(DofType dofType) const
+    {
+        return mCellData.GetNodeValues(dofType);
     }
 
 private:
-    DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(const DofType& dofType) const
+    //! Transforms the derivative shape functions from the natural coordinate system (dN_d(xi, eta, ...)) to the global
+    //! coordinate system (dN_d(x,y,...))
+    DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(DofType dofType) const
     {
         DerivativeShapeFunctionsNatural dShapeNatural =
-                mElements.DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
+                mCellData.Elements().DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
-    const ElementCollection& mElements;
+    const CellData& mCellData;
     NuTo::Jacobian mJacobian;
     NaturalCoords mIPCoords;
     int mIpId;
+
+    mutable DofContainer<Eigen::MatrixXd> mBs;
+    mutable DofContainer<Eigen::MatrixXd> mNs;
 };
 } /* NuTo */

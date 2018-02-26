@@ -7,7 +7,7 @@
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/constitutive/LinearElastic.h"
 
-double VolumeF(const NuTo::CellData&, const NuTo::CellIpData&)
+double VolumeF(const NuTo::CellIpData&)
 {
     return 1.;
 }
@@ -50,12 +50,12 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     using namespace NuTo::Integrands;
     MomentumBalance<2> integrand({dofDispl}, law);
     // bind the functions Gradient and Hessian
-    auto GradientF = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return integrand.Gradient(cellData, cellIpData, /*deltaT = */ 0);
+    auto GradientF = [&](const NuTo::CellIpData& cellIpData) {
+        return integrand.Gradient(cellIpData, /*deltaT = */ 0);
 
     };
-    auto Hessian0F = [&](const NuTo::CellData& cellData, const NuTo::CellIpData& cellIpData) {
-        return integrand.Hessian0(cellData, cellIpData, /*deltaT = */ 0);
+    auto Hessian0F = [&](const NuTo::CellIpData& cellIpData) {
+        return integrand.Hessian0(cellIpData, /*deltaT = */ 0);
     };
 
 

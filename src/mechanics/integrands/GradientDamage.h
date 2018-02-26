@@ -20,12 +20,12 @@ class GradientDamage
 public:
     //! ctor
     //! @param disp dof type associated with displacements
-    //! @param eeq dof type associated with nonlocal equivalent strains
+    //! @param eeq scalar dof type associated with nonlocal equivalent strains
     //! @param c nonlocal parameter unit length squared
     //! @param linearElasticLaw linear elastic law
     //! @param damageLaw damage law that provides .Damage(double) and .Derivative(double)
     //! @param strainNorm modified mises strain norm
-    GradientDamage(DofType disp, DofType eeq, double c, Laws::LinearElastic<TDim> linearElasticLaw,
+    GradientDamage(DofType disp, ScalarDofType eeq, double c, Laws::LinearElastic<TDim> linearElasticLaw,
                    TDamageLaw damageLaw, Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm)
         : mDisp(disp)
         , mEeq(eeq)
@@ -36,84 +36,69 @@ public:
     {
     }
 
-    DofVector<double> Gradient(const CellData& cellData, const CellIpData& cellIpData)
+    DofVector<double> Gradient(const CellIpData& data)
     {
         DofVector<double> gradient;
 
-        // shape functions and their derivatives
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        BMatrixGradient Beeq = cellIpData.GetBMatrixGradient(mEeq);
-        BMatrixStrain Bdisp = cellIpData.GetBMatrixStrain(mDisp);
+        double eeq = data.Value(mEeq);
+        double omega = mDamageLaw.Damage(Kappa(data));
 
-        // node values
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-        double omega = mDamageLaw.Damage(Kappa(cellData, cellIpData));
+        auto eeqGradient = data.Apply(mEeq, Nabla::Gradient());
+        NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
 
-        Eigen::Matrix<double, TDim, 1> eeqGradient = Beeq * cellData.GetNodeValues(mEeq);
-        NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
+        NMatrix Neeq = data.N(mEeq);
+        NMatrix Beeq = data.B(mEeq, Nabla::Gradient());
+        BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
-        // build terms
         gradient[mDisp] = Bdisp.transpose() * (1 - omega) * mElasticLaw.Stress(strain);
         gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
 
         return gradient;
     }
 
-    DofMatrix<double> Hessian0(const CellData& cellData, const CellIpData& cellIpData)
+    DofMatrix<double> Hessian0(const CellIpData& data)
     {
         DofMatrix<double> hessian0;
 
-        // shape functions and their derivatives
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        BMatrixGradient Beeq = cellIpData.GetBMatrixGradient(mEeq);
-        BMatrixStrain Bdisp = cellIpData.GetBMatrixStrain(mDisp);
-
-        // node values
-        NuTo::EngineeringStrain<TDim> strain = Bdisp * cellData.GetNodeValues(mDisp);
-
-        // evaluate new kappa
-        double kappa = Kappa(cellData, cellIpData);
+        double kappa = Kappa(data);
         double omega = mDamageLaw.Damage(kappa);
+        double dKappa_dEeq = DkappaDeeq(data);
 
-        double dKappa_dEeq = DkappaDeeq(cellData, cellIpData);
+        NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
+
+        NMatrix Neeq = data.N(mEeq);
+        BMatrixGradient Beeq = data.B(mEeq, Nabla::Gradient());
+        BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
         hessian0(mDisp, mDisp) = Bdisp.transpose() * (1 - omega) * mElasticLaw.Tangent(strain) * Bdisp;
-
+        hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
+        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
         hessian0(mDisp, mEeq) =
                 Bdisp.transpose() * (-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain) * Neeq;
-
-        hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
-
-        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
 
         return hessian0;
     }
 
-    void Update(const CellData& cellData, const CellIpData& cellIpData)
+    void Update(const CellIpData& data)
     {
-        mKappas(cellData.GetCellId(), cellIpData.GetIpId()) = Kappa(cellData, cellIpData);
+        mKappas(data.Ids().cellId, data.Ids().ipId) = Kappa(data);
+    }
+
+    virtual double Kappa(const CellIpData& data) const
+    {
+        return std::max(mKappas(data.Ids().cellId, data.Ids().ipId), data.Value(mEeq));
+    }
+
+    virtual double DkappaDeeq(const CellIpData& data) const
+    {
+        return data.Value(mEeq) >= mKappas(data.Ids().cellId, data.Ids().ipId) ? 1 : 0;
     }
 
     Eigen::MatrixXd mKappas;
 
 protected:
-    virtual double Kappa(const CellData& cellData, const CellIpData& cellIpData) const
-    {
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-        return std::max(mKappas(cellData.GetCellId(), cellIpData.GetIpId()), eeq);
-    }
-
-    virtual double DkappaDeeq(const CellData& cellData, const CellIpData& cellIpData) const
-    {
-        NMatrix Neeq = cellIpData.GetNMatrix(mEeq);
-        double eeq = (Neeq * cellData.GetNodeValues(mEeq))[0];
-        double oldKappa = mKappas(cellData.GetCellId(), cellIpData.GetIpId());
-        return eeq >= oldKappa ? 1 : 0;
-    }
-
     DofType mDisp;
-    DofType mEeq;
+    ScalarDofType mEeq;
     double mC;
     Laws::LinearElastic<TDim> mElasticLaw;
     TDamageLaw mDamageLaw;

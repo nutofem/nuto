@@ -59,7 +59,7 @@ void PostProcess::Add(std::string name, DofType dof)
     mVisualize.at(name).mDofs.push_back(dof);
 }
 
-void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(const CellData&, const CellIpData&)> cellFunction,
+void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(const CellIpData&)> cellFunction,
                       std::string cellFunctionName)
 {
     ThrowOnUnknownName(name);

@@ -20,7 +20,7 @@ void Visualizer::DofValues(DofType dof)
     }
 }
 
-void Visualizer::CellData(std::function<Eigen::VectorXd(const class CellData&, const CellIpData&)> f, std::string name)
+void Visualizer::CellData(std::function<Eigen::VectorXd(const CellIpData&)> f, std::string name)
 {
     int i = 0;
     for (const auto& cell : mCells)
