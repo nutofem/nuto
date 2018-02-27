@@ -22,6 +22,19 @@ void SimpleAssembler::ThrowOnZeroDofNumbering(std::vector<DofType> dofTypes) con
                                     ". Please do so by SimpleAssembler::calling SetDofInfo(...).");
 }
 
+std::vector<DofType> DofIntersection(std::vector<DofType> one, std::vector<DofType> two)
+{
+    std::vector<DofType> intersection;
+    for (DofType d1 : one)
+        for (DofType d2 : two)
+            if (d1.Id() == d2.Id())
+            {
+                intersection.push_back(d1);
+                continue;
+            }
+    return intersection;
+}
+
 GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                              CellInterface::VectorFunction f) const
 {
@@ -32,7 +45,7 @@ GlobalDofVector SimpleAssembler::BuildVector(const Group<CellInterface>& cells, 
     {
         const DofVector<double> cellGradient = cell.Integrate(f);
 
-        for (DofType dof : dofTypes)
+        for (DofType dof : DofIntersection(cellGradient.DofTypes(), dofTypes))
         {
             Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
             const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
@@ -52,7 +65,7 @@ GlobalDofVector SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInt
     {
         const DofMatrix<double> localMatrix = cell.Integrate(f);
 
-        for (DofType dof : dofTypes)
+        for (DofType dof : DofIntersection(localMatrix.DofTypes(), dofTypes))
         {
             Eigen::VectorXd localDiagonalDof = localMatrix(dof, dof).diagonal();
             double diagonalSum = localDiagonalDof.sum();
@@ -82,11 +95,12 @@ GlobalDofMatrixSparse SimpleAssembler::BuildMatrix(const Group<CellInterface>& c
     for (NuTo::CellInterface& cell : cells)
     {
         const DofMatrix<double> cellHessian = cell.Integrate(f);
+        auto dofTypesToAssemble = DofIntersection(cellHessian.DofTypes(), dofTypes);
 
-        for (DofType dofI : dofTypes)
+        for (DofType dofI : dofTypesToAssemble)
         {
             Eigen::VectorXi numberingDofI = cell.DofNumbering(dofI);
-            for (DofType dofJ : dofTypes)
+            for (DofType dofJ : dofTypesToAssemble)
             {
                 Eigen::VectorXi numberingDofJ = cell.DofNumbering(dofJ);
                 const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
