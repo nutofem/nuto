@@ -1,13 +1,17 @@
 #include "BoostUnitTest.h"
 
+#include <boost/filesystem.hpp>
+
 #include "math/EigenCompanion.h"
 
 #include "mechanics/integrands/GradientDamage.h"
-#include "mechanics/constitutive/damageLaws/DamageLawLinear.h"
+#include "mechanics/integrands/NeumannBc.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/mesh/UnitMeshFem.h"
+#include "mechanics/mesh/MeshGmsh.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTrussLobatto.h"
+#include "mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/tools/CellStorage.h"
 #include "mechanics/tools/TimeDependentProblem.h"
@@ -137,11 +141,12 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
 BOOST_AUTO_TEST_CASE(Integrand2D)
 {
-    /**
-     * This just evaluates the gradient and hessian once
-     * to make sure all the dimensions in the matrix calculations
-     * match.
-     */
+    auto binary = boost::unit_test::framework::master_test_suite().argv[0];
+    boost::filesystem::path binaryPath = std::string(binary);
+    binaryPath.remove_filename();
+    std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
+
+
     double E = 30000;
     double nu = 0.2;
     Laws::LinearElastic<2> elasticLaw(E, nu);
@@ -157,23 +162,63 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     DofType d("Displacements", 2);
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
-    double c = 1.;
+    double c = 0.1;
     using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential>;
+    using Neumann = Integrands::NeumannBc<2>;
+
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
-    gdm.mKappas.resize(1, 1);
+    Neumann neumann(d, Eigen::Vector2d(.42, .12));
 
-    MeshFem mesh = UnitMeshFem::CreateQuads(1, 1);
-    AddDofInterpolation(&mesh, d);
-    AddDofInterpolation(&mesh, eeq);
+    MeshGmsh gmsh(meshFile);
 
-    auto& element = mesh.Elements[0];
-    Eigen::Vector2d ipCoords(0, 0);
-    Jacobian jacobian(element.CoordinateElement().ExtractNodeValues(),
-                      element.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                      element.CoordinateElement().GetDofDimension());
-    CellData cd(element, 0);
-    CellIpData cipd(cd, jacobian, ipCoords, 0);
+    auto& mesh = gmsh.GetMeshFEM();
+    auto& matrixElements = gmsh.GetPhysicalGroup("matrix");
+    auto& leftElements = gmsh.GetPhysicalGroup("left");
+    AddDofInterpolation(&mesh, d, matrixElements);
+    AddDofInterpolation(&mesh, d, leftElements);
+    AddDofInterpolation(&mesh, eeq, matrixElements);
+    AddDofInterpolation(&mesh, eeq, leftElements);
 
-    BOOST_CHECK_NO_THROW(gdm.Gradient(cipd));
-    BOOST_CHECK_NO_THROW(gdm.Hessian0(cipd));
+    IntegrationType2D3NGauss12Ip integration;
+    CellStorage cellStorage;
+    auto cells = cellStorage.AddCells(matrixElements, integration);
+    auto cellsLeft = cellStorage.AddCells(leftElements, integration);
+    gdm.mKappas.setZero(cells.Size(), integration.GetNumIntegrationPoints());
+
+    TimeDependentProblem equations(&mesh);
+
+    equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
+    equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
+    equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
+    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
+
+    QuasistaticSolver problem(equations, {d, eeq});
+
+    using namespace Constraint;
+    Constraints constraints;
+    constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d::Zero(), d), {eDirection::X}));
+    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::Y}));
+    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d, 16), {eDirection::Y}, RhsRamp(1, 0.01)));
+
+    problem.SetConstraints(constraints);
+    problem.mTolerance = 1.e-6;
+
+
+    using namespace NuTo::Visualize;
+    PostProcess visu("./GDMout");
+    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
+    visu.Add("GDM", d);
+    visu.Add("GDM", eeq);
+    visu.Add("GDM",
+             [&](const NuTo::CellIpData& data) {
+                 return EigenCompanion::ToEigen(gdm.mDamageLaw.Damage(gdm.Kappa(data)));
+             },
+             "Damage");
+
+    auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
+    auto postProcess = [&](double t) { return visu.Plot(t, true); };
+
+    NuTo::AdaptiveSolve adaptive(doStep, postProcess);
+    adaptive.dt = 0.01;
+    adaptive.Solve(0.01); // Only one step for this test. Increase to 1., if you want to see magic happen.
 }
