@@ -70,9 +70,9 @@ public:
 
     //! @brief returns the value of the function for the given arguments.
     //!        Repeated calls of Get() with the same arguments will return the memoized
-    //!        result.
+    //!        Eigen::MatrixXd.
     //! @param v ... argument
-    //! @return reference to the 'memoized' result
+    //! @return reference to the 'memoized' Eigen::MatrixXd
     const TResult& Get(const TNaturalCoords& v) const
     {
         size_t id = TIdHash()(v);
@@ -110,7 +110,6 @@ struct Lobatto
 };
 
 auto testFunction = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2;
-using result = Eigen::MatrixXd;
 
 template <typename TMemoizer>
 void Run(benchmark::State& state)
@@ -171,9 +170,9 @@ public:
 
     //! @brief returns the value of the function for the given arguments.
     //!        Repeated calls of Get() with the same arguments will return the memoized
-    //!        result.
+    //!        Eigen::MatrixXd.
     //! @param v ... argument
-    //! @return reference to the 'memoized' result
+    //! @return reference to the 'memoized' Eigen::MatrixXd
     const TResult& Get(const TNaturalCoords& v) const
     {
         auto it = mCache.find(v);
@@ -195,8 +194,8 @@ private:
     std::function<TResult(TNaturalCoords)> mFunction;
 };
 
-BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizer<result, Eigen::Vector3d>);
-BENCHMARK_TEMPLATE(Run, NuTo::NaturalCoordinateMemoizerMap<result, Eigen::Vector3d>);
-BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizerUnorderedMap<result, Eigen::Vector3d>);
+BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizer<Eigen::MatrixXd, Eigen::Vector3d>);
+BENCHMARK_TEMPLATE(Run, NuTo::NaturalCoordinateMemoizerMap<Eigen::MatrixXd, Eigen::Vector3d>);
+BENCHMARK_TEMPLATE(Run, NaturalCoordinateMemoizerUnorderedMap<Eigen::MatrixXd, Eigen::Vector3d>);
 
 BENCHMARK_MAIN();

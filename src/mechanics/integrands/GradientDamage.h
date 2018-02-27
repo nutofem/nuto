@@ -79,7 +79,7 @@ public:
         return hessian0;
     }
 
-    void Update(const CellIpData& data)
+    virtual void Update(const CellIpData& data)
     {
         mKappas(data.Ids().cellId, data.Ids().ipId) = Kappa(data);
     }

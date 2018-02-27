@@ -57,16 +57,6 @@ void AdaptiveSolve::Solve(double tEnd)
                                 "Time step smaller than prescribed minimal time step " + std::to_string(dtMin) + ".");
             continue; // without updating the global time
         }
-        catch (Exception& e)
-        {
-            std::cout << e.what() << std::endl;
-            return;
-        }
-        catch (std::exception& e)
-        {
-            std::cout << e.what() << std::endl;
-            return;
-        }
     }
     std::cout << "Sucessfully reached time t = " << tEnd << "!\n";
 }
