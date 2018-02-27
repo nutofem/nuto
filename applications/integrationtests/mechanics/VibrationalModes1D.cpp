@@ -43,7 +43,6 @@ public:
     Eigen::VectorXd Solve()
     {
         DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, mConstraints);
-        Eigen::SparseMatrix<double> cmat = mConstraints.BuildConstraintMatrix(mDof, dofInfo.numIndependentDofs[mDof]);
         SimpleAssembler asmbl = SimpleAssembler(dofInfo);
 
         auto stiffnessF = [&](const auto& cipd) { return mPDE.Hessian0(cipd, 0.0); };
