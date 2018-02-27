@@ -31,9 +31,6 @@ public:
     //! @return rCoordinates (result)
     virtual Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const = 0;
 
-
-    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const;
-
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
     virtual int GetNumIntegrationPoints() const = 0;
@@ -42,9 +39,5 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
-
-    //! @brief info about the integration type
-    //! @param rVerboseLevel determines how detailed the information is
-    void Info(int rVerboseLevel) const;
 };
 } // namespace NuTo

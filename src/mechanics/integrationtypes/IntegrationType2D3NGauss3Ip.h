@@ -19,9 +19,6 @@ public:
     //! @return rCoordinates (result)
     Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
 
-    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const override;
-
-
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
     int GetNumIntegrationPoints() const override;

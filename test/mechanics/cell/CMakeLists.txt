@@ -1,5 +1,4 @@
 add_unit_test(Cell
-    mechanics/integrationtypes/IntegrationTypeBase.cpp
     mechanics/integrationtypes/IntegrationTypeEnum.cpp
     mechanics/elements/ElementShapeFunctions.cpp)
 

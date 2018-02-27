@@ -35,7 +35,6 @@ set(MechanicsSources
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     integrationtypes/IntegrationTypeTensorProduct.cpp
-    integrationtypes/IntegrationTypeBase.cpp
     integrationtypes/IntegrationTypeEnum.cpp
     )
 

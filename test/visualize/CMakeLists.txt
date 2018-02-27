@@ -13,7 +13,6 @@ add_unit_test(VoronoiHandler)
 target_link_libraries(VoronoiHandler Visualize)
 
 add_unit_test(PointHandler
-    mechanics/integrationtypes/IntegrationTypeBase.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp)
 
 target_link_libraries(PointHandler Visualize Math)
