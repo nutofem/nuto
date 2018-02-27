@@ -50,8 +50,8 @@ public:
 
         using namespace std::placeholders;
 
-        auto stiffnessF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian0, &mPDE, _1, _2, 0.);
-        auto massF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian2, &mPDE, _1, _2);
+        auto stiffnessF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian0, &mPDE, _1, 0.);
+        auto massF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian2, &mPDE, _1);
 
         Eigen::SparseMatrix<double> K = asmbl.BuildMatrix(mCellGroup, {mDof}, stiffnessF).JJ(mDof, mDof);
         Eigen::SparseMatrix<double> M = asmbl.BuildMatrix(mCellGroup, {mDof}, massF).JJ(mDof, mDof);

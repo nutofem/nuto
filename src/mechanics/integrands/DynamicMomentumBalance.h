@@ -17,10 +17,10 @@ public:
     {
     }
 
-    DofMatrix<double> Hessian2(const CellData& /* cellData */, const CellIpData& cellIpData)
+    DofMatrix<double> Hessian2(const CellIpData& cellIpData)
     {
 
-        NMatrix N = cellIpData.GetNMatrix(MomentumBalance<TDim>::mDofType);
+        NMatrix N = cellIpData.N(MomentumBalance<TDim>::mDofType);
         DofMatrix<double> hessian2;
 
         hessian2(MomentumBalance<TDim>::mDofType, MomentumBalance<TDim>::mDofType) = N.transpose() * N * mRho;
