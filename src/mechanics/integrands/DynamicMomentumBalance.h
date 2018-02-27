@@ -10,6 +10,8 @@ namespace Integrands
 template <int TDim>
 class DynamicMomentumBalance : public MomentumBalance<TDim>
 {
+using MomentumBalance<TDim>::mDofType;
+
 public:
     DynamicMomentumBalance(DofType dofType, const Laws::MechanicsInterface<TDim>& law, double rho)
         : MomentumBalance<TDim>(dofType, law)
@@ -20,10 +22,10 @@ public:
     DofMatrix<double> Hessian2(const CellIpData& cellIpData)
     {
 
-        NMatrix N = cellIpData.N(MomentumBalance<TDim>::mDofType);
+        NMatrix N = cellIpData.N(mDofType);
         DofMatrix<double> hessian2;
 
-        hessian2(MomentumBalance<TDim>::mDofType, MomentumBalance<TDim>::mDofType) = N.transpose() * N * mRho;
+        hessian2(mDofType, mDofType) = N.transpose() * N * mRho;
         return hessian2;
     }
 
