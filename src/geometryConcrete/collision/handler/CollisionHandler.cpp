@@ -136,7 +136,7 @@ double NuTo::CollisionHandler::Simulate(const long rNumEventsMax, const double r
         }
         catch (NuTo::Exception& e)
         {
-            std::cout << e.ErrorMessage() << std::endl;
+            std::cout << e.what() << std::endl;
             std::cout << " fail timestep: " << numEvents << std::endl;
             caughtException = e;
             break;
@@ -177,9 +177,9 @@ double NuTo::CollisionHandler::Simulate(const long rNumEventsMax, const double r
 
 
     // rethrow exceptions for proper test failure
-    if (caughtException.ErrorMessage() != "")
+    if (strcmp(caughtException.what(), ""))
         throw Exception(__PRETTY_FUNCTION__,
-                        "Simulation ended with the exception: \n" + caughtException.ErrorMessage());
+                        "Simulation ended with the exception: \n" + std::string(caughtException.what()));
 
     return finalTimeDifference;
 }
