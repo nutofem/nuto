@@ -15,6 +15,9 @@ NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, d
 {
     for (auto& element : this->Elements)
     {
+        if (!element.Has(dofType))
+            continue;
+
         auto& dofElement = element.DofElement(dofType);
         const auto& dofInterpolation = dofElement.Interpolation();
         for (int iNode = 0; iNode < dofInterpolation.GetNumNodes(); ++iNode)
@@ -72,6 +75,9 @@ Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, do
     const int directionComponent = ToComponentIndex(direction);
     for (auto& element : this->Elements)
     {
+        if (!element.Has(dofType))
+            continue;
+
         auto& dofElement = element.DofElement(dofType);
         const auto& dofInterpolation = dofElement.Interpolation();
         for (int iNode = 0; iNode < dofInterpolation.GetNumNodes(); ++iNode)
