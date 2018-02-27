@@ -17,7 +17,7 @@ public:
     {
     }
 
-    DofMatrix<double> Hessian2(const CellData& cellData, const CellIpData& cellIpData)
+    DofMatrix<double> Hessian2(const CellData& /* cellData */, const CellIpData& cellIpData)
     {
 
         NMatrix N = cellIpData.GetNMatrix(MomentumBalance<TDim>::mDofType);
