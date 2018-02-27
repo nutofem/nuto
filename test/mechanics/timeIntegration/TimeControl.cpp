@@ -11,7 +11,8 @@ using namespace NuTo;
 
 bool CheckExceptionMessageCorrect(Exception const& ex, std::string expectedMsg)
 {
-    std::string refinedErrorMessage = ex.ErrorMessage().substr(ex.ErrorMessage().find_first_of("]") + 2);
+    std::string errorMessage = ex.what();
+    std::string refinedErrorMessage = errorMessage.substr(errorMessage.find_first_of("]") + 2);
 
     if (expectedMsg.compare(refinedErrorMessage))
     {
