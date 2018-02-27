@@ -26,6 +26,12 @@ NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 
     auto& e0 = mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
     e0.AddDofElement(dofType, {{nd0, nd1, nd2}, interpolation});
+
+    // Add another element without a interpolation for `dofType`. This must not
+    // trigger exceptions in node select methods, when they try to find
+    // the missing DofElement.
+    mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
+
     return mesh;
 }
 
