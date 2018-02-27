@@ -1,6 +1,7 @@
 #include <iostream>
 #include "base/Timer.h"
 #include "base/Exception.h"
+#include "math/NewtonRaphson.h"
 #include "mechanics/tools/AdaptiveSolve.h"
 
 using namespace NuTo;
@@ -45,9 +46,9 @@ void AdaptiveSolve::Solve(double tEnd)
             if (t + dt > tEnd)
                 dt = tEnd - t;
         }
-        catch (...)
+        catch (NewtonRaphson::NoConvergence& e)
         {
-            std::cout << "No convergence!\n";
+            std::cout << e.what() << '\n';
             dt *= decreaseFactor;
             std::cout << "--> Decreasing time step to " << dt << ".\n";
 
@@ -55,6 +56,16 @@ void AdaptiveSolve::Solve(double tEnd)
                 throw Exception(__PRETTY_FUNCTION__,
                                 "Time step smaller than prescribed minimal time step " + std::to_string(dtMin) + ".");
             continue; // without updating the global time
+        }
+        catch (Exception& e)
+        {
+            std::cout << e.what() << std::endl;
+            return;
+        }
+        catch (std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+            return;
         }
     }
     std::cout << "Sucessfully reached time t = " << tEnd << "!\n";
