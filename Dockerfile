@@ -1,7 +1,7 @@
 FROM debian:stretch
 
 # generic C++ stuff
-RUN apt-get update && apt-get install -y --no-install-recommends g++ clang cmake make libboost-filesystem-dev libboost-mpi-dev libboost-test-dev lcov curl sudo && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends g++ clang cmake make libboost-filesystem-dev libboost-mpi-dev libboost-test-dev lcov curl sudo ca-certificates && rm -rf /var/lib/apt/lists/*
 # scientific stuff
 RUN apt-get update && apt-get install -y --no-install-recommends libeigen3-dev libiomp-dev python3-dev python3-numpy libopenblas-dev libmetis-dev libmumps-seq-dev libarpack2-dev gmsh && rm -rf /var/lib/apt/lists/*
 

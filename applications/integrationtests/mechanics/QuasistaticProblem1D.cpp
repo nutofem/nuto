@@ -13,6 +13,7 @@
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/tools/CellStorage.h"
 #include "mechanics/tools/QuasistaticSolver.h"
+#include "mechanics/tools/AdaptiveSolve.h"
 
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/LocalIsotropicDamage.h"
@@ -68,35 +69,10 @@ public:
 
     void Solve(double tEnd)
     {
-        double globalTime = 0;
-        double timeStep = 0.01;
-        double maxTimeStep = 0.1;
-
-        int iStep = 0;
-        while (globalTime < tEnd && timeStep > 1.e-6)
-        {
-            std::cout << "Step " << iStep << " at t = " << globalTime << std::endl;
-
-            auto numIterations = mProblem.DoStep(globalTime + timeStep);
-
-            if (not numIterations)
-            {
-                timeStep *= 0.5;
-                std::cout << "No convergence!\n";
-                continue; // without updating the global time
-            }
-
-            std::cout << "Converence after " << numIterations.get() << " iterations.\n";
-            globalTime += timeStep;
-            iStep++;
-
-            if (numIterations < 3)
-            {
-                timeStep *= 1.5;
-                timeStep = std::min(timeStep, maxTimeStep);
-                std::cout << "--> Increasing time step to " << timeStep << ".\n";
-            }
-        }
+        auto doStep = [&](double t) { return mProblem.DoStep(t, "EigenSparseLU"); };
+        AdaptiveSolve adaptive(doStep);
+        adaptive.dt = 0.01;
+        adaptive.Solve(tEnd);
     }
 
     std::vector<double> DamageField()

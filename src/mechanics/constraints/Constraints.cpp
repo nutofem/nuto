@@ -13,6 +13,9 @@ void Constraints::Add(DofType dof, Equation equation)
 
 void Constraints::Add(DofType dof, std::vector<Equation> equations)
 {
+    if (equations.empty())
+        throw Exception(__PRETTY_FUNCTION__, "You called this method with an empty collection of equations. Maybe "
+                                             "check the node selection for empty node groups.");
     for (auto equation : equations)
         Add(dof, equation);
 }

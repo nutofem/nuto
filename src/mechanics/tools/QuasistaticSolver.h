@@ -2,7 +2,6 @@
 
 #include "mechanics/tools/TimeDependentProblem.h"
 #include "mechanics/constraints/Constraints.h"
-#include "boost/optional.hpp"
 
 namespace NuTo
 {
@@ -13,6 +12,11 @@ public:
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
     QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
+
+    //! Ctor
+    //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
+    //! @param dofs multiple dof types
+    QuasistaticSolver(TimeDependentProblem& equations, std::vector<DofType> dofs);
 
     //! @param constraints linear constraints
     void SetConstraints(Constraint::Constraints constraints);
@@ -64,18 +68,19 @@ public:
     //! Updates mProblem to time `newGlobalTime` and saves the new state mX upon convergence
     //! @param newGlobalTime new global time
     //! @param solverType solver type from NuTo::EigenSparseSolve(...)
-    //! @return number of iterations required by the newton algorithm or boost::none upon failure to converge
-    boost::optional<int> DoStep(double newGlobalTime, std::string solverType = "EigenSparseLU");
+    //! @return number of iterations required by the newton algorithm, throws upon failure to converge
+    int DoStep(double newGlobalTime, std::string solverType = "EigenSparseLU");
 
 private:
     GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
 
-    Eigen::VectorXd mX;
+    DofVector<double> mX;
 
     TimeDependentProblem& mProblem;
     Constraint::Constraints mConstraints;
-    DofType mDof;
-    Eigen::SparseMatrix<double> mCmat;
+
+    std::vector<DofType> mDofs;
+    DofMatrixSparse<double> mCmat;
 
     double mGlobalTime = 0;
     double mTimeStep = 0;
