@@ -29,9 +29,9 @@ void AdaptiveSolve::Solve(double tEnd)
             int numIterations = mDoStepFunction(t + dt);
 
             std::cout << "Converence after " << numIterations << " iterations.\n";
-            mPostProcess(t);
             t += dt;
             iStep++;
+            mPostProcess(t);
 
             if (t >= tEnd)
                 break;

@@ -50,8 +50,8 @@ public:
         NMatrix Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
-        gradient[mDisp] = Bdisp.transpose() * (1 - omega) * mElasticLaw.Stress(strain);
-        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * mC * eeqGradient;
+        gradient[mDisp] = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Stress(strain));
+        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * (mC * eeqGradient);
 
         return gradient;
     }
@@ -70,11 +70,11 @@ public:
         BMatrixGradient Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
-        hessian0(mDisp, mDisp) = Bdisp.transpose() * (1 - omega) * mElasticLaw.Tangent(strain) * Bdisp;
+        hessian0(mDisp, mDisp) = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Tangent(strain)) * Bdisp;
         hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
         hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
         hessian0(mDisp, mEeq) =
-                Bdisp.transpose() * (-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain) * Neeq;
+                Bdisp.transpose() * ((-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain)) * Neeq;
 
         return hessian0;
     }
@@ -96,7 +96,6 @@ public:
 
     Eigen::MatrixXd mKappas;
 
-protected:
     DofType mDisp;
     ScalarDofType mEeq;
     double mC;
