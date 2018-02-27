@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/dofs/DofType.h"
 
@@ -78,6 +79,15 @@ public:
         }
         out << "====" << std::endl;
         return out;
+    }
+
+    std::vector<DofType> DofTypes() const
+    {
+        std::vector<DofType> dofTypes;
+        for (const auto& data : mData)
+            if (data.first.first.Id() == data.first.second.Id())
+                dofTypes.push_back(data.first.first);
+        return dofTypes;
     }
 
 private:
