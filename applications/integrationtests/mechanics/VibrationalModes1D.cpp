@@ -15,8 +15,6 @@
 
 #include <Eigen/Eigenvalues>
 
-#include <functional>
-
 using namespace NuTo;
 
 struct Steel
@@ -48,10 +46,8 @@ public:
         Eigen::SparseMatrix<double> cmat = mConstraints.BuildConstraintMatrix(mDof, dofInfo.numIndependentDofs[mDof]);
         SimpleAssembler asmbl = SimpleAssembler(dofInfo);
 
-        using namespace std::placeholders;
-
-        auto stiffnessF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian0, &mPDE, _1, 0.);
-        auto massF = std::bind(&Integrands::DynamicMomentumBalance<1>::Hessian2, &mPDE, _1);
+        auto stiffnessF = [&](const auto& cipd) { return mPDE.Hessian0(cipd, 0.0); };
+        auto massF = [&](const auto& cipd) { return mPDE.Hessian2(cipd); };
 
         Eigen::SparseMatrix<double> K = asmbl.BuildMatrix(mCellGroup, {mDof}, stiffnessF).JJ(mDof, mDof);
         Eigen::SparseMatrix<double> M = asmbl.BuildMatrix(mCellGroup, {mDof}, massF).JJ(mDof, mDof);
