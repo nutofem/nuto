@@ -15,7 +15,7 @@ endif()
 add_unit_test(Legendre)
 add_unit_test(NaturalCoordinateMemoizer)
 add_unit_test(NewtonRaphson
-    base/Timer.cpp
+    math/EigenSparseSolve.cpp
     )
 
 add_unit_test(Gmres)

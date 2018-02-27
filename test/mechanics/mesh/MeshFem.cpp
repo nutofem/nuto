@@ -26,6 +26,12 @@ NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 
     auto& e0 = mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
     e0.AddDofElement(dofType, {{nd0, nd1, nd2}, interpolation});
+
+    // Add another element without a interpolation for `dofType`. This must not
+    // trigger exceptions in node select methods, when they try to find
+    // the missing DofElement.
+    mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
+
     return mesh;
 }
 
@@ -211,10 +217,10 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
 
     // Add coordinate elements
-    auto& tri = mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
     auto& line1 = mesh.Elements.Add({{{n0, n1}, interpolationTruss}});
-    auto& line2 = mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
-    auto& line3 = mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
+    mesh.Elements.Add({{{n0, n1, n2}, interpolationTriangle}});
+    mesh.Elements.Add({{{n1, n2}, interpolationTruss}});
+    mesh.Elements.Add({{{n2, n0}, interpolationTruss}});
 
     // Add a dof element
     NuTo::DofType dof1("dof1", 1);

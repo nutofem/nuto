@@ -40,3 +40,13 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
     BOOST_CHECK_EQUAL(nodeConstrained.GetDofNumber(0), 5);
     BOOST_CHECK_EQUAL(nodeConstrained.GetDofNumber(1), 4);
 }
+
+BOOST_AUTO_TEST_CASE(InvalidDofTypes)
+{
+    NodeSimple n0(0);
+    NodeSimple n1(1);
+
+    Constraint::Constraints constraints;
+    constraints.Add(d, {n0, 0, rhs});
+    BOOST_CHECK_THROW(DofNumbering::Build({n1}, d, constraints), Exception);
+}

@@ -28,33 +28,6 @@ struct DoubleSolver
     }
 };
 
-//! @brief Wrapper for Eigen::SparseMatrix
-template <typename TSolver>
-struct WrappedSolver
-{
-public:
-    WrappedSolver(TSolver& solver)
-        : mSolver(solver)
-    {
-    }
-
-    Eigen::VectorXd Solve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b)
-    {
-        mSolver.compute(A);
-        return mSolver.solve(b);
-    }
-
-private:
-    TSolver& mSolver;
-};
-
-template <typename TSolver>
-WrappedSolver<TSolver> CreateWrappedSolver(TSolver& solver)
-{
-    return WrappedSolver<TSolver>(solver);
-}
-
-
 //! @brief problem definition
 //! @tparam TR residual function
 //! @tparam TDR derivative of the residual function
