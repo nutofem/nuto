@@ -81,11 +81,11 @@ BOOST_AUTO_TEST_CASE(Integrand)
     problem.mTolerance = 1.e-6;
     problem.SetConstraints(constraints);
 
-    Visualize::PostProcess visu("GradientDamageOut");
+    Visualize::PostProcess visu("GradientDamageOut1D");
     visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(2)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
-    visu.Add("GDM", [&](const CellIpData& cipd) { return EigenCompanion::ToEigen(gdm.Kappa(cipd)); }, "Kappa");
+    visu.Add("GDM", [&](const CellIpData& cipd) { return gdm.Kappa(cipd); }, "Kappa");
     visu.Add("GDM", [&](const CellIpData& cipd) { return cipd.Apply(d, Nabla::Strain()); }, "strain");
 
     /* solve adaptively */
@@ -141,11 +141,9 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
 BOOST_AUTO_TEST_CASE(Integrand2D)
 {
-    auto binary = boost::unit_test::framework::master_test_suite().argv[0];
-    boost::filesystem::path binaryPath = std::string(binary);
+    boost::filesystem::path binaryPath = boost::unit_test::framework::master_test_suite().argv[0];
     binaryPath.remove_filename();
     std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
-
 
     double E = 30000;
     double nu = 0.2;
@@ -205,15 +203,11 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
 
     using namespace NuTo::Visualize;
-    PostProcess visu("./GDMout");
+    PostProcess visu("./GradientDamageOut2D");
     visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
-    visu.Add("GDM",
-             [&](const NuTo::CellIpData& data) {
-                 return EigenCompanion::ToEigen(gdm.mDamageLaw.Damage(gdm.Kappa(data)));
-             },
-             "Damage");
+    visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
 
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
     auto postProcess = [&](double t) { return visu.Plot(t, true); };
