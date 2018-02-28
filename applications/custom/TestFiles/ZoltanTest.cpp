@@ -1,4 +1,7 @@
 #include "boost/ptr_container/ptr_vector.hpp"
+#include "boost/mpi.hpp"
+#include "boost/serialization/map.hpp"
+#include "boost/serialization/vector.hpp"
 
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_CrsMatrixFactory.hpp>
@@ -897,6 +900,59 @@ std::vector<int> local2GlobalDofNumbering_vector(std::map<int, std::vector<int>>
     return local2Global;
 }
 
+std::vector<int> owningGlobalDofs_2D(ZoltanMesh<zoltanElementFEM_2D_QUAD> &rMesh, int rRank, int rNumProc)
+{
+    std::vector<int> dofs;
+    std::vector<zoltanElementFEM_2D_QUAD> elements = rMesh.zoltanFEMElements;
+    int nodeValCount = elements[0].getNodeValueCount();
+    int nodeDofCount = elements[0].getNodeDofCount();
+    std::vector<std::vector<zoltanNode<nodeValCount, nodeDofCount>>> globalNodes(rNumProc);
+    std::vector<zoltanNode<nodeValCount, nodeDofCount>> myNodes;
+    std::set<int> nodeIndices;
+
+    for (zoltanElementFEM_2D_QUAD elem : elements)
+    {
+        auto &nodes = elem.getNodes();
+        for (auto &node : nodes)
+        {
+            //if node ID is not included
+            if (nodeIndices.find(node.mId) == nodeIndices.end())
+            {
+                myNodes.push_back(node);
+                nodeIndices.insert(node.mId);
+            }
+        }
+    }
+
+    boost::mpi::communicator world;
+    boost::mpi::all_gather<std::vector<zoltanNode<nodeValCount, nodeDofCount>>(world, myNodes, globalNodes);
+
+    std::map<int, int> nodeToRank;
+    nodeIndices.clear();
+
+    for (int i = 0; i < rNumProc; ++i)
+    {
+        for (auto &nodes : globalNodes[i])
+        {
+            for (auto &node : nodes)
+            {
+                if (nodeIndices.find(node.mId) == nodeIndices.end())
+                {
+//                    nodeToRank[node.mId] = i;
+                    nodeIndices.insert(node.mId);
+                    if (i == rRank)
+                    {
+                        for (int j = 0; j < node.getNumDofs(); ++j)
+                        {
+                            dofs.push_back(node.getDofNumber(j));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 //! @brief automatically create the lambda
 //! [&](cellData, cellIpData) {return integrand.Gradient(cellData, cellIpData, 0); }
@@ -921,7 +977,7 @@ auto Bind(TObject& object, TReturn (TObject::*f)(const NuTo::CellData&, const Nu
 using Teuchos::RCP;
 using Teuchos::rcp;
 
-void AssemblerZoltanTest_1D(int argc, char** argv)
+void AssemblerZoltanTest_2D(int argc, char** argv)
 {
     Teuchos::GlobalMPISession mpiSession(&argc, &argv);
     RCP<const Teuchos::Comm<int>> commTeuchos = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
@@ -1136,7 +1192,8 @@ void AssemblerZoltanTest_1D(int argc, char** argv)
     //******************************************
     //*       create owning index map          *
     //******************************************
-    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
+//    std::vector<int> myOwningGlobalActiveDofIDs = getGlobalOwningActiveDofNumbers(local2GlobalDofs, rank, currDofInfo.activeDofs);
+    std::vector<int> myOwningGlobalActiveDofIDs = owningGlobalDofs_2D(myMesh_z, myRank, numProcs);
     int* myOwningGlobalActiveDofIDs_arr = &myOwningGlobalActiveDofIDs[0];
     RCP<Tpetra::Map<int, int>> owningMap_tpetra = rcp(new Tpetra::Map<int, int>(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(), myOwningGlobalActiveDofIDs_arr, myOwningGlobalActiveDofIDs.size(), 0, commTeuchos));
 
@@ -1202,11 +1259,6 @@ void AssemblerZoltanTest_1D(int argc, char** argv)
 }
 
 
-void AssemblerZoltanTest_2D()
-{
-
-}
-
 
 int main(int argc, char **argv)
 {
@@ -1214,7 +1266,7 @@ int main(int argc, char **argv)
 
 //    Zoltan_HyperGraphPartitioning_test(argc, argv);
 
-    AssemblerZoltanTest_1D(argc, argv);
+    AssemblerZoltanTest_2D(argc, argv);
     return 0;
 }
 

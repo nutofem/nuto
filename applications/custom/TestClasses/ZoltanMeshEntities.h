@@ -16,11 +16,12 @@ private:
     int mId;
     zoltanVector_double<valueCount> mValues;
     zoltanVector_int<dofNumberCount> mDofNumbers;
+    bool mMasterNode;
 
 public:
-    zoltanNode() : mId(0), mValues(zoltanVector_double<valueCount>::Constant(valueCount, 0.0)) {}
-    zoltanNode(int rId, double rValue) : mId(rId), mValues(zoltanVector_double<valueCount>::Constant(valueCount, rValue)) {}
-    zoltanNode(int rId, zoltanVector_double<valueCount> rValues) : mId(rId), mValues(rValues) {}
+    zoltanNode() : mId(0), mValues(zoltanVector_double<valueCount>::Constant(valueCount, 0.0)), mMasterNode(false) {}
+    zoltanNode(int rId, double rValue) : mId(rId), mValues(zoltanVector_double<valueCount>::Constant(valueCount, rValue)), mMasterNode(false) {}
+    zoltanNode(int rId, zoltanVector_double<valueCount> rValues) : mId(rId), mValues(rValues), mMasterNode(false) {}
 //    zoltanNode(int rId, Eigen::Vector4d rValues) : mId(rId), mValues(rValues) {}
 
     zoltanNode& operator=(zoltanNode rNode)
@@ -30,6 +31,7 @@ public:
             this->mId = rNode.mId;
             this->mValues = rNode.mValues;
             this->mDofNumbers = rNode.mDofNumbers;
+            this->mMasterNode = rNode.mMasterNode;
         }
         return *this;
     }
@@ -69,6 +71,16 @@ public:
     zoltanVector_int<dofNumberCount> getDofNumbers()
     {
         return mDofNumbers;
+    }
+
+    void setIsMaster()
+    {
+        mMasterNode = true;
+    }
+
+    bool isMaster()
+    {
+        return mMasterNode;
     }
 
     std::string toString()
