@@ -7,14 +7,15 @@
 
 double NuTo::Math::Polynomial::Legendre(int n, double x, int k)
 {
-    auto Factorial = [=](int i) -> int { return std::tgamma(i + 1); };
+    auto Factorial = [](int i) -> int { return std::tgamma(i + 1); };
 
     std::vector<double> vals(n + 1, 0.);
     if (n >= k)
         vals[k] = Factorial(2 * k) / (std::pow(2, k) * Factorial(k));
     for (int i = k + 1; i <= n; i++)
     {
-        vals[i] = ((2. * i - 1.) * x * vals[i - 1] - (i - 1. + k) * vals[i - 2]) / (i - k);
+        double vals_i_minus_2 = i >= 2 ? vals[i - 2] : 0;
+        vals[i] = ((2. * i - 1.) * x * vals[i - 1] - (i - 1. + k) * vals_i_minus_2) / (i - k);
     }
     return vals.back();
 }
@@ -35,7 +36,7 @@ double FindLegendreRoot(double guess, int n, int derivative)
 
 std::vector<double> FindLegendreRoots(std::vector<double> guess, int n, int derivative)
 {
-    auto findRoot = [=](double guess) { return FindLegendreRoot(guess, n, derivative); };
+    auto findRoot = [n, derivative](double rootGuess) { return FindLegendreRoot(rootGuess, n, derivative); };
     boost::range::transform(guess, guess.begin(), findRoot);
     return boost::range::sort(guess);
 }
