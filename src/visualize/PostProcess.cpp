@@ -66,6 +66,14 @@ void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(const Cell
     mVisualize.at(name).mCellFunctions.push_back({cellFunction, cellFunctionName});
 }
 
+void PostProcess::Add(std::string name, std::function<double(const CellIpData&)> cellFunction,
+                      std::string cellFunctionName)
+{
+    Add(name, [cellFunction](const CellIpData& data) { return Eigen::VectorXd::Constant(1, cellFunction(data)); },
+        cellFunctionName);
+}
+
+
 void PostProcess::Add(std::string name, std::function<Eigen::VectorXd(Eigen::VectorXd)> pointFunction,
                       std::string pointFunctionName)
 {
