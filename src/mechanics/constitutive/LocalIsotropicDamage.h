@@ -41,6 +41,8 @@ public:
     {
     }
 
+    virtual ~LocalIsotropicDamage() = default;
+
     EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
         auto kappa = mEvolution.Kappa(strain, deltaT, ids);

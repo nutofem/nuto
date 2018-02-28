@@ -19,6 +19,8 @@ class UnstructuredGrid;
 class HandlerInterface
 {
 public:
+    virtual ~HandlerInterface() = default;
+
     virtual std::unique_ptr<HandlerInterface> Clone() const = 0;
 
     //! Generate a visualize geometry for each cell and write it to the grid.
