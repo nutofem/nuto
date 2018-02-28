@@ -1,0 +1,282 @@
+\documentclass[10pt,a4paper,final,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\author{Bernd Riedel}
+\title{Short Trilinos Documentation}
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introduction to Trilinos}
+Shortly explained Trilinos is an object-oriented framework for the solution of large-scale, complex multi-physics engineering and scientific problems. It contains a lot of independent packages which provide specific functionalities such as
+\begin{enumerate}
+\item Basic linear algebra computation
+\item Linear/Nonlinear solving and preconditioning
+\item Solving of eigenvalue problems
+\item Optimization
+\item Partitioning and load balancing
+\item Mesh generation and adaption
+\end{enumerate}
+\ \newline
+This documention will mainly focus on features 1 and 5 to show and explain the usage, advantages/disadvantages and some critical points. One important capability which is not mentioned yet, because it is more or less availabe in each package, is the parallilization of code. Trilinos enables in the most packages the use of a MPI library (e.g. OpenMPI or MPICH).
+\newline
+In addition to this documentation it is recommended to have a look at the example files located in the "NuTo-Trilinos" branch on GitHub, which will also be referenced a few times within this paper.
+
+\section{Main data structure packages}
+The core of many computations consists of some basic linear algebra objects like matrices and vectors. The corresponding types and methods are defined in the Petra package collection. Roughly spoken this collection are divided into two packages, called Epetra and Tpetra.
+
+\subsection{Epetra}
+The package Epetra ("E" for essential) contains concrete classes for (multi-)vectors, matrices and graphs, in sparse or dense format. Furthermore it provides serial and parallel capabilities. As backend it uses BLAS and LAPACK where possible to achive good performance results.
+
+The important classes for the most tasks are \textbf{Epetra\_Vector}, \textbf{Epetra\_MultiVector}, \textbf{Epetra\_CrsMatrix} (sparse matrix) and \textbf{Epetra\_VbrMatrix} (sparse block matrix). To construct these objects a communicator, \textbf{Epetra\_Comm} (abstract class), is needed at first. Depending on the desired functionality, serial or parallel, you have to use the correct implementation of this communicator, \textbf{Epetra\_SerialComm} or \textbf{Epetra\_MpiComm}. Afterwards one has to create an \textbf{Epetra\_Map} object with the help of the used communicator. This map describes the mapping of process specific indices to global indices, for example if a matrix should be distributed over more processes. In simple cases the map constructors build linear mappings, i.e. the first processor contains the global IDs $0,..,m$ and the second processor the IDs $m+1,..,n$. But in general an arbitrary mapping is possible, also with overlapping indices. The created map object can be used to create an \textbf{Epetra\_Graph} which represents the sparse structure of a matrix or a matrix (or a vector) can be constructed directly (see example below).
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 1:}}
+\begin{minted}[escapeinside=||]{c++}
+void createSparseMatrix()
+{
+  |\textcolor{purple}{Epetra\_MpiComm}| Comm(MPI_COMM_WORLD);  //MPI communicator
+  int myProcID = Comm.MyPID();         //process ID
+  int numProc = Comm.NumProc();        //complete number of processes
+  int numGlobalEntries = 10;           //number of global IDs
+  |\textcolor{purple}{Epetra\_Map}| map(numGlobalEntries, 0, Comm);
+  int entriesPerRow = 3;               //estimated or known number of nonzeros per row
+  |\textcolor{purple}{Epetra\_CrsMatrix}| mat(|\textcolor{purple}{Epetra\_DataAccess}|::Copy, map, entriesPerRow, true);  //global size |\textnormal{10 x 10}|
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newpage \ \newline
+\textbf{\textit{Remark:}} The last parameter in the matrix constructor describes the memory profile. If it is set to true, the value of \textit{entriesPerRow} will be interpreted as maximal and the needed memory will be allocated at this point. This leads to a performance improvement in multiplication and solving routines. But you are not able to add more entries if necessary. If the parameter is set to false, the memory is dynamically determined. You have to use this parameter carefully, because some strange errors can occur, if you want to add more values than prescribed the profile is static.
+\newline \newline
+If the matrix is not created with the help of a \textbf{Epetra\_CrsGraph} (like in the example above) the entries have to be specified to compute the underlying sparse structure. That can be done with different functions for local and global insertion like \textbf{InsertMyValues()}, \textbf{InsertGlobalValues()}, \textbf{ReplaceMyValues()}, \textbf{ReplaceGlobalValues()}, \textbf{SumIntoMyValues()} or \textbf{SumIntoGlobalValues()}.
+
+At the end the method \textbf{FillComplete()} should be called to signal the final sparse structure. That is necessary for correct interaction with other objects. Although no parameters are needed it is recommended to specify the domain and range map to describe the index spaces.
+\newline \newline
+A further important feature is the export between local objects. Unfortunately the correct addition of overlapping matrices or vectors is not easily done by map construction (the term \textit{overlap} means that local indices of different processes map to the same global index). For this purpose two \textbf{Epetra\_Map}'s are needed. One describing a disjoint mapping of indices (called here and in the example \textit{owningMap}), like in a simple linear map as mentioned above. The other (called \textit{overlappingMap}) discribes the overlap of indices. With these two maps an \textbf{Epetra\_Export} object can be constructed which itself represents the actual overlap. All local algebra objects will be created with the overlappingMap. In the end or if the global objects are needed, respectively, one can call an export method with the desired interaction behavior (see example below):
+
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 2:}}
+\begin{minted}[escapeinside=||]{c++}
+void createOverlappingMatrix()
+{
+  //owningMap and overlappingMap created previously
+  int entriesPerRowLocal = 5;
+  int entriesPerRowGlobal = 10
+  |\textcolor{purple}{Epetra\_CrsMatrix}| matLocal(|\textcolor{purple}{Epetra\_DataAccess}|::Copy, overlappingMap, entriesPerRowLocal, true);
+  //set values of matLocal
+  matLocal.FillComplete();  //fix sparse structure
+  |\textcolor{purple}{Epetra\_CrsMatrix}| matGlobal(|\textcolor{purple}{Epetra\_DataAccess}|::Copy, owningMap, entriesPerRowGlobal, true);
+  |\textcolor{purple}{Epetra\_Export}| exporter(overlappingMap, owningMap);
+  matGlobal.Export(matLocal, exporter, |\textcolor{purple}{Epetra\_CombineMode}|::Add);  //add overlapping entries
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newline \newline
+Overlapping indices may be a result of computations on a partitioned domain. In this case the entries in a corresponding stiffness matrix have to be added together, if the local degrees of freedom on a subdomain describe the same global degrees of freedom. Therefore make use of \textbf{Epetra\_CombineMode::Add}. How such owning and overlapping maps are constructed is shown for example in the "StructureMeshTest.cpp" file.
+
+Beside the mentioned important features there are some basic methods of course, for value manipulation, multiplication/addition, scaling and inversion.
+
+\subsection{Tpetra and Xpetra}
+The Tpetra package ("T" stands for template) offers the same capabilities in general except the default usage in methods (smart pointers are needed). Due to that an additional package is necessary, \textbf{Teuchos}. This package provides some helpful tools and wrappers. The main features for the use of Tpetra are \textbf{Teuchos::Comm} and \textbf{Teuchos::RCP}. The first one represents the communicator (similar to \textbf{Epetra\_Comm}) and the second one supports the construction of smart pointers for Tpetra objects. The same method as in code example 1 reads here:
+\newpage
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 3:}}
+\begin{minted}[escapeinside=||]{c++}
+using Teuchos::RCP;
+using Teuchos::rcp;
+void createSparseMatrix_Tpetra()
+{
+  RCP<const |\textcolor{purple}{Teuchos}|::Comm<int>> Comm = |\textcolor{purple}{Tpetra}|::DefaultPlatform::getDefaultPlatform().getComm();
+  int myProcID = Comm->getRank();         //process ID
+  int numProc = Comm->getSize();        //complete number of processes
+  int numGlobalEntries = 10;           //number of global IDs
+  RCP<|\textcolor{purple}{Tpetra}|::Map<int, int>> map = rcp(new |\textcolor{purple}{Tpetra}|::Map<int, int>(numGlobalEntries, 0, Comm);
+  int entriesPerRow = 3;               //estimated or known number of nonzeros per row
+  RCP<|\textcolor{purple}{Tpetra}|::CrsMatrix<double, int, int>> mat =
+    rcp(new |\textcolor{purple}{Tpetra}|::CrsMatrix(map, entriesPerRow, |\textcolor{purple}{Tpetra}|::ProfileType::StaticProfile);
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newline \newline
+\textbf{\textit{Remark:}} At first it is noticeable that a distinction between a serial or parallel communicator is not absolutely required, because both (\textbf{Teuchos::SerialComm} and \textbf{Teuchos::MpiComm}) inherit from \textbf{Teuchos::Comm}. Furthermore it is also possible to prescribe the memory storage behavior with the \textbf{ProfileType} (\textbf{StaticProfile} or \textbf{DynamicProfile}). The template arguments describe the ordinal type of the corresponding indices (here all \textbf{int}'s, i.e. process IDs in \textbf{Comm} object, local and global IDs in the map and the matrix) and the type of the values in the matrix (here \textbf{double}).
+
+The second code example can analogously be recreated by substituting the Epetra objects with Teuchos smart pointers of Tpetra objects, because all objects and methods are name very similar.
+\newline \newline
+At the end of this section the Xpetra package will be mentioned. Probably in future versions of Trilinos this package will be used instead of Epetra and Tpetra, because it wraps both (not completely yet), but nowadays Tpetra is still the better choice. The syntax of Xpetra objects and methods is the same as for Tpetra, therefore a later adjustment should be straightforward. 
+
+
+\section{Main solver packages}
+Although the Petra package provide some simple solve methods the use of explicitly solvers is recommended. In this section two important Trilinos packages will be presented. On the one hand \textbf{Amesos}/\textbf{Amesos2} (direct solvers) and on the other hand \textbf{Belos} (iterative solvers). Both offer serial and parallel computations.
+\newline \newline
+In this section it is always assumed that the matrices and vectors which represent the problems are known.
+
+\subsection{Amesos/Amesos2}
+\textbf{Amesos} is a lightweight interface to different solver libraries which have to be installed external, e.g. LAPACK, SuperLU or MUMPS. Furhtermore it includes internal solvers called KLU (serial) and Paraklete (parallel). To run a solver you have to define an \textbf{Epetra\_LinearProblem} at first. Hence it only works for \textbf{Epetra} objects. How that can be done is shown in the next example:\newline
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 4:}}
+\begin{minted}[escapeinside=||]{c++}
+void solve_Amesos(|\textcolor{purple}{Epetra\_CrsMatrix}| rA, |\textcolor{purple}{Epetra\_MultiVector}| rLhs, |\textcolor{purple}{Epetra\_MultiVector}| rRhs)
+{
+  |\textcolor{purple}{Epetra\_LinearProblem}| problem(&rA, &rLhs, &rRhs);
+  |\textcolor{purple}{Amesos}| Factory;
+  |\textcolor{purple}{Amesos\_BaseSolver}|* solver;
+  std::string solverType = "Klu";  //or "Paraklete", "Mumps", etc.
+  solver = Factory.Create(solverType, problem);
+  solver->Solve();
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newline \newline
+The future of \textbf{Amesos} is the \textbf{Amesos2} package. It provides the similar internal solvers as well as wrappers to external solvers. Since \textbf{Amesos2} is able to handle templates for the underlying objects it is possible to solve problems formulated with Epeta, Tpetra or Xpetra backend (see example 5 for the use of Tpetra). Furthermore if you are not sure if the desired (external) solver is installed, you can check it before with the \textbf{query()} function.
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 5:}}
+\begin{minted}[escapeinside=||]{c++}
+using |\textcolor{purple}{Teuchos}|::RCP;
+using |\textcolor{purple}{Teuchos}|::rcp;
+void solve_Amesos2(RCP<const |\textcolor{purple}{Tpetra}|::CrsMatrix<double, int, int>> rA,
+     RCP<const |\textcolor{purple}{Tpetra}|::Vector<double, int, int>> rRhs,
+     RCP<|\textcolor{purple}{Tpetra}|::Vector<double, int, int>> rLhs)
+{
+  typedef |\textcolor{purple}{Tpetra}|::CrsMatrix<double, int, int> matType;
+  typedef |\textcolor{purple}{Tpetra}|::MultiVector<double, int, int> vecType;
+  std::string solverType = "KLU2";  //or "Basker", "Mumps", "SuperLU", etc.
+  if(|\textcolor{purple}{Amesos2}|::query(solverType)){
+    RCP<|\textcolor{purple}{Amesos2}|::Solver<matType, vecType>> solver =
+      |\textcolor{purple}{Amesos2}|::create<matType, vecType>(solverType, rA, rLhs, rRhs);
+    solver->symbolicFactorization();//can be done
+    solver->numericFactorization(); //in one line by
+    solver->solve();                //solver->symbolicFactorization().numericFactorization().solve()
+  }
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newline \newline
+\textbf{\textit{Remark:}} It is also possible to define some solver specific options with the help of another \textbf{Teuchos} functionality, called \textbf{ParameterList}. How it works in general see example 6. The names of the third library solvers can be found in the corresponding documentations.
+
+
+\subsection{Belos}
+As mentioned in the introduction to this section \textbf{Belos} is a package which offers the iterative solution of problems. There are different solvers available, for example GMRES, Block GMRES, CG and BiCGStab. Similar to \textbf{Amesos} it is necessary to define a specific linear problem object to compute a solution. Besides it is also able to use templates such that it does not matter which concrete objects you use for the matrices and vectors. It is again possible to set some solver specific options. A short example with \textbf{Tpetra} backend is shown below, a more complex can be found in "StructureMeshTest.cpp" in the repository.
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Code example 6:}}
+\begin{minted}[escapeinside=||]{c++}
+using |\textcolor{purple}{Teuchos}|::RCP;
+using |\textcolor{purple}{Teuchos}|::rcp;
+void solve_Belos(RCP<const |\textcolor{purple}{Tpetra}|::CrsMatrix<double, int, int>> rA,
+     RCP<const |\textcolor{purple}{Tpetra}|::Vector<double, int, int>> rRhs,
+     RCP<|\textcolor{purple}{Tpetra}|::Vector<double, int, int>> rLhs)
+{
+  RCP<|\textcolor{purple}{Teuchos}|::ParameterList> params = |\textcolor{purple}{Teuchos}|::parameterList();
+  params->set("Maximum Iterations", 500);
+  typedef |\textcolor{purple}{Tpetra}|::CrsMatrix<double, int, int> matType;
+  typedef |\textcolor{purple}{Tpetra}|::MultiVector<double, int, int> vecType;
+  typedef |\textcolor{purple}{Belos}|::LinearProblem<double, vecType, matType> problemType;
+  RCP<problemType> problem = rcp(new problemType(rA, rLhs, rRhs);
+  std::string solverType = "GMRES";  //or "CG", "MINRES", "Block CG", etc.
+  typedef |\textcolor{purple}{Belos}|::SolverFactory<double, vecType, matType> factory;
+  
+  if(factory.isSupported(solverType)){
+    RCP<typedef |\textcolor{purple}{Belos}|::SolverManager<double, vecType, matType> solver = factory.create(solverType);
+    solver->setProblem(problem);
+    |\textcolor{purple}{Belos}|::ReturnType result = solver->solve();
+  }
+}
+\end{minted}
+\newpage \ \newline
+\textbf{\textit{Remark:}} The parameters are always pairs of the parameter's name and the corresponding value. Further parameters (e.g. "Num Blocks", "Convergence Tolerance") are found in the example files or in the \textbf{Belos} documentation. Besides the complete list of supported solvers (with corresponding aliases) are found there in \textbf{Belos::SolverFactory}.
+
+\section{Partitioning and load balancing with Zoltan package}
+This section shows how to partition and migrate data between processes, e.g. for problem which should be solved on a few subdomains. Of course it is possible to do this more or less by hand by create all maps carefully and compute overlapping data on your own. But the following package, \textbf{Zoltan}, provides some methods which perform the partition and also the data migration with a little help by the user. For understanding it is recommended to have a look at the "ZoltanTest.cpp" (e.g. method \textit{AssemblerZoltanTest\_1D}) file. In the future it is possible that the new version \textbf{Zoltan2} will replace the current package but now are just a few partition and ordering methods impemented.
+
+The main method for the mentioned purposes is \textbf{Zoltan\_LB\_Partition} which produces (of course) the partition of the prescribed complete structure. Although it is possible to run a separate migration function, there is a parameter to perform an automatic migration (how it is set see below). Though the \textbf{Zoltan} package provides general functionalities, the explicit handling with your data is unknown. Firstly it has to be clear what exactly should be migrated, i.e. which objects of the complete structure and what are the connections between these objects. In the example files a mesh will be partitioned. Therefore elements, which are connected by nodes, will migrate. Besides some so called query functions have to be defined by the user to describe how the objects can be handled. For each main step, partition and migration, four query functions are required.\newline
+\underline{For partition:}
+\begin{itemize}
+\item \textbf{Zoltan\_Set\_Num\_Obj\_Fn} $\rightarrow$ prescribe (process) local number of data objects
+\item \textbf{Zoltan\_Set\_Obj\_List\_Fn} $\rightarrow$ prescribe local and global IDs of data objects
+\item \textbf{Zoltan\_Set\_HG\_Size\_CS\_Fn} $\rightarrow$ prescribe number of data connections and connection IDs
+\item \textbf{Zoltan\_Set\_HG\_CS\_Fn} $\rightarrow$ prescribe local IDs of objects and connections
+\end{itemize}
+\ \newline
+\underline{For migration:}
+\begin{itemize}
+\item \textbf{Zoltan\_Set\_Obj\_Size\_Fn} $\rightarrow$ prescribe size of data objects
+\item \textbf{Zoltan\_Set\_Pack\_Obj\_Fn} $\rightarrow$ prescribe how/where to save data objects
+\item \textbf{Zoltan\_Set\_Unpack\_Obj\_Fn} $\rightarrow$ prescribe how to rebuild saved data objects
+\item \textbf{Zoltan\_Set\_Mid\_Migrate\_PP\_Fn} $\rightarrow$ prescribe adaption of global structure
+\end{itemize}
+\ \newline
+The last method \textbf{Zoltan\_Set\_Mid\_Migrate\_PP\_Fn} is not absolutely need, but again recommended. There two further methods \textbf{Zoltan\_Set\_Pre\_Migrate\_PP\_Fn} and \textbf{Zoltan\_Set\_Post\_Migrate\_PP\_Fn} where some pre- and postprocessing steps can be declared. The first three functions for migration handle only one object at once. These can be replaced by \textbf{Zoltan\_Set\_Obj\_Size\_Multi\_Fn}, \textbf{Zoltan\_Set\_Pack\_Obj\_Multi\_Fn} and \textbf{Zoltan\_Set\_Unpack\_Obj\_Multi\_Fn} to provide multiple data handling.
+
+If the necessary query functions are created the complete procedure reads as in the example below.
+\newpage
+\noindent\rule{\textwidth}{0.5pt}
+\textbf{\underline{Zoltan demonstration:}}
+\begin{minted}[escapeinside=||]{c++}
+void Zoltan_partition_migration(int argc, char* argv)
+{
+  |\textcolor{purple}{MeshType}| mesh();  //here the structure to partition
+  float version;
+  int returnVal = |\textcolor{purple}{Zoltan\_Initialize}|(argc, argv, &version);  //if returnVal == ZOLTAN_OK go on
+  struct |\textcolor{purple}{Zoltan\_Struct}|* zolt = |\textcolor{purple}{Zoltan\_Create}|(MPI_COMM_WORLD);
+  |\textcolor{purple}{Zoltan\_Set\_Param}|(zolt, "LB_METHOD", "HYPERGRAPH");
+  |\textcolor{purple}{Zoltan\_Set\_Param}|(zolt, "LB_APPROACH", "PARTITION");  //or "REPARTITION"
+  |\textcolor{purple}{Zoltan\_Set\_Param}|(zolt, "AUTO_MIGRATE", "TRUE");  //auto migration after partition
+  
+  |\textcolor{purple}{Zoltan\_Set\_Num\_Obj\_Fn}|(zolt, ..., &mesh);  //necessary methods have to be defined by user
+  |\textcolor{purple}{Zoltan\_Set\_Obj\_List\_Fn}|(zolt, ..., &mesh);
+  |\textcolor{purple}{Zoltan\_Set\_HG\_Size\_CS\_Fn}|(zolt, ..., &mesh);
+  |\textcolor{purple}{Zoltan\_Set\_HG\_CS\_Fn}|(zolt, ..., &mesh);
+  
+  |\textcolor{purple}{Zoltan\_Set\_Obj\_Size\_Fn}|(zolt, ..., &mesh);
+  |\textcolor{purple}{Zoltan\_Set\_Pack\_Obj\_Fn}|(zolt, ..., &mesh);
+  |\textcolor{purple}{Zoltan\_Set\_Unpack\_Obj\_Fn}|(zolt, ..., &mesh);
+  |\textcolor{purple}{Zoltan\_Set\_Mid\_Migrate\_PP\_Fn}|(zolt, ..., &mesh);
+  
+  rc = Zoltan_LB_Partition(zolt, /* input (all remaining fields are output) */  //all output
+              &changes,        /* 1 if partitioning was changed, 0 otherwise */ //objects have
+              &numGidEntries,  /* Number of integers used for a global ID */    //to be declared
+              &numLidEntries,  /* Number of integers used for a local ID */     //at the beginning
+              &numImport,      /* Number of vertices to be sent to me */
+              &importGlobalGids,  /* Global IDs of vertices to be sent to me */
+              &importLocalGids,   /* Local IDs of vertices to be sent to me */
+              &importProcs,    /* Process rank for source of each incoming vertex */
+              &importToPart,   /* New partition for each incoming vertex */
+              &numExport,      /* Number of vertices I must send to other processes*/
+              &exportGlobalGids,  /* Global IDs of the vertices I must send */
+              &exportLocalGids,   /* Local IDs of the vertices I must send */
+              &exportProcs,    /* Process to which I send each of the vertices */
+              &exportToPart); /* Partition to which each vertex will belong */
+              
+  |\textcolor{purple}{Zoltan\_Destroy}|(&zolt);
+}
+\end{minted}
+\noindent\rule{\textwidth}{0.5pt}
+\newline \newline
+\textbf{\textit{Remark:}} There are also some other values for the paramater \textit{LB\_METHOD}, but the most practical one is the hypergraph method because this enables the most general cases. There are no further assumptions made on the data and it is on your own what are the so called hyperedges and hypervertices (in the example files it is vice-versa, hyperedges are nodes and hypervertices are elements). Beside the shown parameters there exist a few others for possible graph weights, underlying ordering method, debug levels and so on. A full list can be found in the official \textbf{Zoltan} User's Guide. In some experiments it turns out that dynamic size objects (e.g. std::vector, Eigen::VectorXd, etc.) are not easy to use in the pack and unpack routines. Because of not clearly allocated memory it can happen that \textbf{Zoltan} is not able to find the correct and complete saved object. Therefore use at first fixed size objects or write complete save routines by hand. After the partition and the migration is done correctly, the structure object holds the right objects and information on each process.
+\newline \newline
+{\large\textbf{\textit{Final remark:}}} In the example files especially in \textit{ZoltanTest.cpp} is a complete procedure implemented where at first a simple mesh object is created an distributed over the processes. Afterwards the partition/migration routine is called to get submeshes. The IDs of the degrees of freedom can then be locally enumerated but also know their global number. According to this a \textit{Local-To-Global-Mapping} can be build used to generate owning and overlapping maps (see section 2) for the system matrices and right hand sides. If this mapping is created in the right way you can use a direct or iterative solver to get a parallel solution on the global problem.
+
+\section{Package documentations}
+Here is a short list where to find the documentation to the mentioned packages.
+\begin{itemize}
+\item Trilinos: \url{https://trilinos.org/about/documentation/}
+\item Epetra: \url{https://trilinos.org/docs/dev/packages/epetra/doc/html/index.html}
+\item Tpetra: \url{https://trilinos.org/docs/dev/packages/tpetra/doc/html/index.html}
+\item Xpetra: \url{https://trilinos.org/docs/dev/packages/xpetra/doc/html/index.html}
+\item Amesos2: \url{https://trilinos.org/docs/dev/packages/amesos2/doc/html/index.html}
+\item Belos: \url{https://trilinos.org/docs/dev/packages/belos/doc/html/index.html}
+\item Zoltan: \url{http://www.cs.sandia.gov/Zoltan/ug_html/ug.html}
+\end{itemize}
+
+Unfortunately some documentations are brief such that some try and error is the only way to get something right. A few little tutorials (\url{https://github.com/trilinos/Trilinos_tutorial/wiki/TrilinosHandsOnTutorial}) and other documents can help, e.g. Epetra Performance Optimization Guide (\url{https://trilinos.org/wordpress/wp-content/uploads/2014/10/EpetraPerformanceGuide.pdf}) or TriBITS Developers Guide (\url{https://tribits.org/doc/TribitsDevelopersGuide.html}).
+
+\end{document}

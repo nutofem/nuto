@@ -1,0 +1,6 @@
+Using std::vector in Zoltan-Migration not possible without manual adaptions -> memory allocation on stack needed
+
+default constructor in NuTo::NodeSimple for std::array<NuTo::NodeSimple,2> - creation
+
+use Eigen::Matrices/Vectors of fixed size for node data -> Eigen::Matrices/Vectors of variable size a allocated on the heap => Error
+
