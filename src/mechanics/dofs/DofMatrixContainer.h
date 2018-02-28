@@ -85,12 +85,27 @@ public:
     {
         std::vector<DofType> dofTypes;
         for (const auto& data : mData)
-            if (data.first.first.Id() == data.first.second.Id())
-                dofTypes.push_back(data.first.first);
+        {
+            AddUnique(&dofTypes, data.first.first);
+            AddUnique(&dofTypes, data.first.second);
+        }
         return dofTypes;
     }
 
 private:
+    static void AddUnique(std::vector<DofType>* dofTypes, DofType dofType)
+    {
+        bool isNew = true;
+        for (const auto& d : *dofTypes)
+            if (d.Id() == dofType.Id())
+            {
+                isNew = false;
+                break;
+            }
+        if (isNew)
+            dofTypes->push_back(dofType);
+    }
+
     using DofPair = std::pair<DofType, DofType>;
     struct CompareDofPairs
     {

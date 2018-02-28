@@ -76,3 +76,17 @@ BOOST_AUTO_TEST_CASE(DofTypeAccess)
     BOOST_CHECK_EQUAL(dofTypes[0].Id(), dof0.Id());
     BOOST_CHECK_EQUAL(dofTypes[1].Id(), dof1.Id());
 }
+
+BOOST_AUTO_TEST_CASE(UnusualDofTypeAccess)
+{
+    NuTo::DofType dof0("foo", 1);
+    NuTo::DofType dof1("bar", 1);
+    NuTo::DofMatrix<int> partiallyFilledDofMatrix;
+    partiallyFilledDofMatrix(dof1, dof0) = Eigen::Matrix2i::Zero();
+    auto dofTypes = partiallyFilledDofMatrix.DofTypes();
+
+    BOOST_CHECK_EQUAL(dofTypes.size(), 2);
+    std::sort(dofTypes.begin(), dofTypes.end(), NuTo::CompareDofType());
+    BOOST_CHECK_EQUAL(dofTypes[0].Id(), dof0.Id());
+    BOOST_CHECK_EQUAL(dofTypes[1].Id(), dof1.Id());
+}
