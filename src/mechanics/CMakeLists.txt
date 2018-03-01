@@ -37,6 +37,7 @@ set(MechanicsSources
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeEnum.cpp
+    integrationtypes/IntegrationCompanion.cpp    
     interpolation/InterpolationCompanion.cpp
     )
 
