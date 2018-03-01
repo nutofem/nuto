@@ -3,12 +3,21 @@
 namespace NuTo
 {
 
-class ShapeVisitor;
+enum class eShape
+{
+    Line,
+    Triangle,
+    Quadrilateral,
+    Tetrahedron,
+    Hexahedron,
+    Prism,
+    Pyramid
+};
 
 class Shape
 {
 public:
-    virtual void accept(ShapeVisitor& visitor) const = 0;
+    virtual eShape Enum() const = 0;
 };
 
 } // namespace NuTo

@@ -2,62 +2,46 @@
 
 #include "base/Exception.h"
 
-#include "math/shapes/ShapeVisitor.h"
-#include "math/shapes/Triangle.h"
-#include "math/shapes/Hexahedron.h"
-
 #include "InterpolationTriangleLinear.h"
 #include "InterpolationTriangleQuadratic.h"
 #include "InterpolationBrickLinear.h"
 
 using namespace NuTo;
 
-class InterpolationFactory : public ShapeVisitor
+std::unique_ptr<InterpolationSimple> CreateTriangleInterpolation(int order)
 {
-public:
-    void visit(const Triangle&) override
+    switch (order)
     {
-        switch (mOrder)
-        {
-        case 1:
-            mOutput = std::make_unique<InterpolationTriangleLinear>();
-            break;
-        case 2:
-            mOutput = std::make_unique<InterpolationTriangleQuadratic>();
-            break;
-        default:
-            throw Exception(__PRETTY_FUNCTION__,
-                            "Triangle interpolation of order " + std::to_string(mOrder) + " is not defined.");
-        }
+    case 1:
+        return std::make_unique<InterpolationTriangleLinear>();
+    case 2:
+        return std::make_unique<InterpolationTriangleQuadratic>();
+    default:
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Triangle interpolation of order " + std::to_string(order) + " is not defined.");
     }
+}
 
-    void visit(const Hexahedron&) override
+std::unique_ptr<InterpolationSimple> CreateHexInterpolation(int order)
+{
+    switch (order)
     {
-        switch (mOrder)
-        {
-        case 1:
-            mOutput = std::make_unique<InterpolationBrickLinear>();
-            break;
-        default:
-            throw Exception(__PRETTY_FUNCTION__,
-                            "Triangle interpolation of order " + std::to_string(mOrder) + " is not defined.");
-        }
+    case 1:
+        return std::make_unique<InterpolationBrickLinear>();
+    default:
+        throw Exception(__PRETTY_FUNCTION__,
+                        "Hex interpolation of order " + std::to_string(order) + " is not defined.");
     }
+}
 
-    std::unique_ptr<InterpolationSimple> Create(const Shape& shape, int order)
-    {
-        mOrder = order;
-        shape.accept(*this);
-        return std::move(mOutput);
-    }
-
-private:
-    std::unique_ptr<InterpolationSimple> mOutput;
-    int mOrder;
-};
 
 std::unique_ptr<InterpolationSimple> NuTo::CreateInterpolation(const Shape& shape, int order)
 {
-    InterpolationFactory tmpFactory;
-    return tmpFactory.Create(shape, order);
+    switch (shape.Enum())
+    {
+    case eShape::Triangle:
+        return CreateTriangleInterpolation(order);
+    case eShape::Hexahedron:
+        return CreateHexInterpolation(order);
+    }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Shape.h"
-#include "ShapeVisitor.h"
 
 namespace NuTo
 {
@@ -9,9 +8,9 @@ namespace NuTo
 class Hexahedron : public Shape
 {
 public:
-    void accept(ShapeVisitor& visitor) const override
+    eShape Enum() const override
     {
-        visitor.visit(*this);
+        return eShape::Hexahedron;
     }
 };
 
