@@ -51,6 +51,12 @@ public:
     void Add(std::string name, std::function<Eigen::VectorXd(const CellIpData&)> cellFunction,
              std::string cellFunctionName);
 
+    //! Add a cell data function that should be visualized.
+    //! @param name Name of an existint visualizer.
+    //! @param f Function that is passed to the cell for evaluation.
+    //! @param cellFunctionName Name to be used in the resulting output file for the data array.
+    void Add(std::string name, std::function<double(const CellIpData&)> cellFunction, std::string cellFunctionName);
+
     //! Visualize a function y = f(x) over a collection of cells
     //! @param name Name of an existint visualizer.
     //! @param f Function taking the coordinates as an Eigen vector and returning an Eigen vector

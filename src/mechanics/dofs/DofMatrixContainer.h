@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/dofs/DofType.h"
 
@@ -80,7 +81,31 @@ public:
         return out;
     }
 
+    std::vector<DofType> DofTypes() const
+    {
+        std::vector<DofType> dofTypes;
+        for (const auto& data : mData)
+        {
+            AddUnique(&dofTypes, data.first.first);
+            AddUnique(&dofTypes, data.first.second);
+        }
+        return dofTypes;
+    }
+
 private:
+    static void AddUnique(std::vector<DofType>* dofTypes, DofType dofType)
+    {
+        bool isNew = true;
+        for (const auto& d : *dofTypes)
+            if (d.Id() == dofType.Id())
+            {
+                isNew = false;
+                break;
+            }
+        if (isNew)
+            dofTypes->push_back(dofType);
+    }
+
     using DofPair = std::pair<DofType, DofType>;
     struct CompareDofPairs
     {

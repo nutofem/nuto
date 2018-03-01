@@ -1,6 +1,7 @@
 #pragma once
 
 #include "visualize/VoronoiHandler.h"
+#include "mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
@@ -25,8 +26,8 @@ VoronoiGeometry VoronoiGeometryQuad(int numCellsPerDirection, Spacing s = EQUIDI
 //! @param numCellsPerDirection Number of cells "per Direction" i.e. 3 --> 27 num voronoi cells
 VoronoiGeometry VoronoiGeometryBrick(int numCellsPerDirection, Spacing s = EQUIDISTANT);
 
-//! Creates a voronoi geometry for a triangle with 3 integration points at 1/6* ( 1,1; 4,1; 1,4 )
-VoronoiGeometry VoronoiGeometryTriangle3Ip();
+//! Creates a voronoi geometry for an arbitrary triangle integration type
+VoronoiGeometry VoronoiGeometryTriangle(const IntegrationTypeBase& integrationType);
 
 } // namespace Visualize
 } // namespace NuTo

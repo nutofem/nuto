@@ -36,6 +36,8 @@ public:
     {
     }
 
+    virtual ~GradientDamage() = default;
+
     DofVector<double> Gradient(const CellIpData& data)
     {
         DofVector<double> gradient;

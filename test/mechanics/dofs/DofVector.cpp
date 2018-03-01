@@ -55,3 +55,12 @@ BOOST_FIXTURE_TEST_CASE(DofVectorStream, TestVectors)
     std::stringstream ss;
     ss << v0;
 }
+
+BOOST_FIXTURE_TEST_CASE(DofTypeAccess, TestVectors)
+{
+    auto dofTypes = v0.DofTypes();
+    BOOST_CHECK_EQUAL(dofTypes.size(), 2);
+    std::sort(dofTypes.begin(), dofTypes.end(), CompareDofType());
+    BOOST_CHECK_EQUAL(dofTypes[0].Id(), dof0.Id());
+    BOOST_CHECK_EQUAL(dofTypes[1].Id(), dof1.Id());
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <eigen3/Eigen/Core>
 #include "mechanics/dofs/DofType.h"
 
@@ -86,11 +87,18 @@ public:
         }
     }
 
+    std::vector<DofType> DofTypes() const
+    {
+        std::vector<DofType> dofTypes;
+        for (const auto& data : mData)
+            dofTypes.push_back(data.first);
+        return dofTypes;
+    }
+
 
 protected:
     //! @brief data container
-    std::map<DofType, Eigen::Matrix<T, Eigen::Dynamic, 1>, CompareDofType>
-            mData;
+    std::map<DofType, Eigen::Matrix<T, Eigen::Dynamic, 1>, CompareDofType> mData;
 };
 
 } /* NuTo */
