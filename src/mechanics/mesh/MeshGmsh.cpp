@@ -6,7 +6,7 @@
 #include "mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "mechanics/interpolation/InterpolationQuadQuadratic.h"
 #include "mechanics/interpolation/InterpolationTetrahedronLinear.h"
 #include "mechanics/interpolation/InterpolationBrickLinear.h"
 #include "mechanics/interpolation/InterpolationPrismLinear.h"
@@ -95,8 +95,9 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
     std::getline(rFile, line); // endl
     if (header.version < 2.)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
-                                                           std::to_string(header.version));
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Gmsh version 2.0 or higher requiered. - File version is " +
+                                      std::to_string(header.version));
     }
 
     if (binary)
@@ -358,7 +359,7 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
     case 9:
         return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
     case 16:
-        return rMesh.CreateInterpolation(InterpolationQuadSerendipity());
+        return rMesh.CreateInterpolation(InterpolationQuadQuadratic());
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
     }

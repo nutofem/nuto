@@ -13,15 +13,15 @@ using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(CreateTriangleInterpolation)
 {
-    auto linearTriangle = CreateInterpolation(Triangle(), 1);
+    auto linearTriangle = CreateSerendipityInterpolation(Triangle(), 1);
     BOOST_CHECK(typeid(*linearTriangle) == typeid(InterpolationTriangleLinear));
 
-    auto quadraticTriangle = CreateInterpolation(Triangle(), 2);
+    auto quadraticTriangle = CreateSerendipityInterpolation(Triangle(), 2);
     BOOST_CHECK(typeid(*quadraticTriangle) == typeid(InterpolationTriangleQuadratic));
 }
 
 BOOST_AUTO_TEST_CASE(CreateHexInterpolation)
 {
-    auto linearBrick = CreateInterpolation(Hexahedron(), 1);
+    auto linearBrick = CreateSerendipityInterpolation(Hexahedron(), 1);
     BOOST_CHECK(typeid(*linearBrick) == typeid(InterpolationBrickLinear));
 }
