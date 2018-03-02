@@ -10,9 +10,13 @@ matrix:
         - compiler: g++
           env: BUILD_TYPE=Release OPENMP=FALSE
         - compiler: g++
-          env: BUILD_TYPE=Release OPENMP=TRUE
-        - compiler: g++
           env: BUILD_TYPE=Debug OPENMP=FALSE COVERAGE=--coverage
+        - compiler: clang
+          env: BUILD_TYPE=Release OPENMP=FALSE WERROR=-Werror
+        - compiler: g++
+          env: BUILD_TYPE=Release OPENMP=FALSE WERROR=-Werror
+    allow_failures:
+        - env: BUILD_TYPE=Release OPENMP=FALSE WERROR=-Werror
 
 before_install:
     - CI_ENV=`bash <(curl -s https://codecov.io/env)`
@@ -22,7 +26,7 @@ before_install:
 script:
     # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.
     # - The source code from travis is 'mounted' as /home/nuto/source via the -v option in the docker run command above
-    - docker exec dock cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS=$COVERAGE ../source
+    - docker exec dock cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_OPENMP=$OPENMP -DCMAKE_CXX_FLAGS="$COVERAGE $WERROR" ../source
     - docker exec dock make -j2 unit
     - docker exec dock make -j2 integrationtests
     - docker exec dock ctest -R integration --output-on-failure
