@@ -8,7 +8,7 @@ namespace NuTo
 {
 //! @author Jörg F. Unger, NU
 //! @date July 2011
-//! @brief ... logger class for redirecting output to different locations/files
+//! @brief logger class for redirecting output to different locations/files
 class Logger
 {
 

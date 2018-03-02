@@ -5,7 +5,7 @@ using namespace NuTo::EigenCompanion;
 
 //! @brief container that performs O(1) addition and O(1) lookup based on subboxes. These subboxes divide the domain
 //! with a given number of subdivisions.
-//! @tparam value type of the container that provides coordinate access `double operator[](int dim)`
+//! @tparam T value type of the container that provides coordinate access `double operator[](int dim)`
 template <typename T>
 class SubBoxes
 {

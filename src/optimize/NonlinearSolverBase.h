@@ -8,7 +8,7 @@ namespace NuTo
 
 //! @author Kindrachuk
 //! @date December 2015
-//! @brief ... standard abstract class for all solvers of nonlinear systems of equations
+//! @brief standard abstract class for all solvers of nonlinear systems of equations
 class NonlinearSolverBase
 {
 public:
@@ -21,12 +21,10 @@ public:
     }
 
     //! @brief perform solving
-    //! @param rUnknown ... unknown vector
+    //! @param rUnknown unknown vector
     virtual void Solve(Eigen::VectorXd& rUnknown) = 0;
 
     //! @brief sets the pointer to the residual function
-    //! @param rParam ... parameters necessary to evaluate the residual
-    //! @param rUnknown ... unknown vector
     void
     SetResidualFunction(boost::function<Eigen::VectorXd(const Eigen::VectorXd&, Eigen::VectorXd)> rResidualFunction)
     {
@@ -78,15 +76,15 @@ public:
         mParameter = rParameter;
     }
 
-    //! @brief ... numerical differentiation of the residual function mResidualFunction (numerical Jacobi matrix)
-    //! @param rUnknown ... position at which the derivative is taken
-    //! @param rFvec ... residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
+    //! @brief numerical differentiation of the residual function mResidualFunction (numerical Jacobi matrix)
+    //! @param rUnknown position at which the derivative is taken
+    //! @param rFvec residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
     Eigen::MatrixXd DResidualNum(Eigen::VectorXd rUnknown, Eigen::VectorXd& rFvec) const;
 
-    //! @brief ... calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(mParameter,rUnknown)
+    //! @brief calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(mParameter,rUnknown)
     double Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd& rFvec) const;
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    //! @brief Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;
 
 protected:

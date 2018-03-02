@@ -34,7 +34,7 @@ class NaturalCoordinateMemoizerMap
 {
 public:
     //! @brief ctor
-    //! @param function ... function for memoization
+    //! @param function function for memoization
     NaturalCoordinateMemoizerMap(std::function<TResult(TNaturalCoords)> function)
         : mFunction(function)
     {
@@ -43,7 +43,7 @@ public:
     //! @brief returns the value of the function for the given arguments.
     //!        Repeated calls of Get() with the same arguments will return the memoized
     //!        result.
-    //! @param v ... argument
+    //! @param v argument
     //! @return reference to the 'memoized' result
     const TResult& Get(const TNaturalCoords& v) const
     {

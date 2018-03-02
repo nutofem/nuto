@@ -12,13 +12,13 @@ class Timer
 {
 public:
     //! @brief ctor, saves the current time
-    //! @param rMsg ... msg to print on destruction
-    //! @param rShowTime ... false: no output
+    //! @param rMsg msg to print on destruction
+    //! @param rShowTime false: no output
     Timer(std::string rMsg, bool rShowTime = true);
 
     //! @brief ctor, saves the current time
-    //! @param rMsg ... msg to print on destruction
-    //! @param rShowTime ... false: no output
+    //! @param rMsg msg to print on destruction
+    //! @param rShowTime false: no output
     Timer(std::string rMsg, bool rShowTime, Logger& rLogger);
 
     Timer(const Timer&) = delete;

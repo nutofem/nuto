@@ -754,10 +754,10 @@ public:
     }
 
     //! @brief calculates the polygon visualization cells and triangulates them again
-    //! @param rVisuPoints ... vector of unique visualization points
-    //! @param rVisuCellIndices ... vector of triangular visualization cells. Each cell contains a vector of visuPoint
+    //! @param rVisuPoints vector of unique visualization points
+    //! @param rVisuCellIndices vector of triangular visualization cells. Each cell contains a vector of visuPoint
     //! indices
-    //! @param rCellIPIndex ... contains the index of the integration point of each visualization cell
+    //! @param rCellIPIndex contains the index of the integration point of each visualization cell
     void CalculateVisualizationCellsTriangle(std::vector<Eigen::Vector2d>& rVisuPoints,
                                              std::vector<std::array<unsigned int, 3>>& rVisuCellIndices,
                                              std::vector<unsigned int>& rCellIPIndex)

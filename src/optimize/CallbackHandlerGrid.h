@@ -8,7 +8,7 @@ namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
-//! @brief ... abstract class to handle callback routines
+//! @brief abstract class to handle callback routines
 class CallbackHandlerGrid
 {
 
@@ -67,7 +67,6 @@ public:
     }
 
     //! @brief correct solution for hanging nodes
-    //! @param displacement solution
     virtual void HangingNodesCorrection(std::vector<double>&)
     {
         throw Exception("[CallbackHandlerGrid::HangingNodesCorrection] HangingNodesCorrection function not "

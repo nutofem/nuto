@@ -70,11 +70,11 @@ public:
     }
 
     //! @brief append a transformation for input points
-    //! @brief in general, the order is orig_input -> outputtrans1 -> outputtrans2 -> trans_input
+    //! in general, the order is orig_input -> outputtrans1 -> outputtrans2 -> trans_input
     void AppendTransformationInput(Transformation* rTransformation);
 
     //! @brief append a transformation for output points
-    //! @brief in general, order is orig_output -> outputtrans1 -> outputtrans2 -> trans_output
+    //! in general, order is orig_output -> outputtrans1 -> outputtrans2 -> trans_output
     void AppendTransformationOutput(Transformation* rTransformation);
 
     //! @brief checks, if the transformation has been build
@@ -105,7 +105,7 @@ public:
     }
 
     //! @brief perform forward transformation for inputs (from orig to transformed)
-    //! @brief in general, the forward direction is orig_input -> inputtrans1 ->inputtrans2 -> metamodel -> outputtrans2
+    //! in general, the forward direction is orig_input -> inputtrans1 ->inputtrans2 -> metamodel -> outputtrans2
     //! -> outputtrans1 -> orig_output
     void TransformForwardInput(Eigen::MatrixXd& rCoordinates) const;
 
@@ -113,7 +113,7 @@ public:
     void TransformBackwardInput(Eigen::MatrixXd& rCoordinates) const;
 
     //! @brief perform forward transformation for outputs (from transformed to orig)
-    //! @brief attention, this is exactly the backwards order, since transformations for outputs are given in revers
+    //! @note attention, this is exactly the backwards order, since transformations for outputs are given in reverse
     //! order
     void TransformForwardOutput(Eigen::MatrixXd& rCoordinates) const;
 
@@ -123,61 +123,61 @@ public:
 #endif
 
     //! @brief calculate the mean value of the original inputs
-    //! @param rMean ... vector of mean values (output)
+    //! @param rMean vector of mean values (output)
     void GetMeanValueOriginalInput(Eigen::MatrixXd& rMean) const;
 
     //! @brief calculate the mean value of the transformed inputs
-    //! @param rMean ... vector of mean values (output)
+    //! @param rMean vector of mean values (output)
     void GetMeanValueTransformedInput(Eigen::MatrixXd& rMean) const;
 
     //! @brief calculate the mean value of the original outputs
-    //! @param rMean ... vector of mean values (output)
+    //! @param rMean vector of mean values (output)
     void GetMeanValueOriginalOutput(Eigen::MatrixXd& rMean) const;
 
     //! @brief calculate the mean value of the transformed outputs
-    //! @param rMean ... vector of mean values (output)
+    //! @param rMean vector of mean values (output)
     void GetMeanValueTransformedOutput(Eigen::MatrixXd& rMean) const;
 
     //! @brief calculate the variance of the original inputs
-    //! @param rVariance ... vector of variances (output)
+    //! @param rVariance vector of variances (output)
     void GetVarianceOriginalInput(Eigen::MatrixXd& rVariance) const;
 
     //! @brief calculate the variance of the transformed inputs
-    //! @param rVariance ... vector of variances (output)
+    //! @param rVariance vector of variances (output)
     void GetVarianceTransformedInput(Eigen::MatrixXd& rVariance) const;
 
     //! @brief calculate the variance of the transformed outputs
-    //! @param rVariance ... vector of variances (output)
+    //! @param rVariance vector of variances (output)
     void GetVarianceOriginalOutput(Eigen::MatrixXd& rVariance) const;
 
     //! @brief calculate the variance of the original outputs
-    //! @param rVariance ... vector of variances (output)
+    //! @param rVariance vector of variances (output)
     void GetVarianceTransformedOutput(Eigen::MatrixXd& rVariance) const;
 
     //! @brief calculate the covariance matrix of original inputs and outputs
-    //! @param rCovarianceMatrix ... covariance matrix
+    //! @param rCovarianceMatrix covariance matrix
     void GetCovarianceMatrixOriginal(Eigen::MatrixXd& rCovarianceMatrix) const;
 
     //! @brief calculate the covariance matrix of transformed inputs and outputs
-    //! @param rCovarianceMatrix ... covariance matrix
+    //! @param rCovarianceMatrix covariance matrix
     void GetCovarianceMatrixTransformed(Eigen::MatrixXd& rCovarianceMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix
-    //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
+    //! @param rCorrelationMatrix  Pearson's correlation matrix using original support point coordinates
     void GetPearsonCorrelationMatrixOriginal(Eigen::MatrixXd& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix using transformed support point coordinates
-    //! @param rCorrelationMatrix  ... Pearsons correlation matrix
+    //! @param rCorrelationMatrix  Pearsons correlation matrix
     void GetPearsonCorrelationMatrixTransformed(Eigen::MatrixXd& rCorrelationMatrix) const;
 
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using original support point
     //! coordinates
-    //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
-    //! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's
+    //! @param rCorrelationMatrix  Pearson's correlation matrix using original support point coordinates
+    //! @param rMinCorrelationMatrix lower bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's
+    //! @param rMaxCorrelationMatrix upper bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    //! @param rAlpha the confidence level is defined as (1-rAlpha)
     void GetPearsonCorrelationMatrixConfidenceIntervalsOriginal(Eigen::MatrixXd& rCorrelationMatrix,
                                                                 Eigen::MatrixXd& rMinCorrelationMatrix,
                                                                 Eigen::MatrixXd& rMaxCorrelationMatrix,
@@ -185,12 +185,12 @@ public:
 
     //! @brief calculate the confidence interval on Pearson's correlation coefficient using transformed support point
     //! coordinates
-    //! @param rCorrelationMatrix  ... Pearson's correlation matrix using original support point coordinates
-    //! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's
+    //! @param rCorrelationMatrix  Pearson's correlation matrix using original support point coordinates
+    //! @param rMinCorrelationMatrix lower bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rMaxCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's
+    //! @param rMaxCorrelationMatrix upper bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    //! @param rAlpha the confidence level is defined as (1-rAlpha)
     void GetPearsonCorrelationMatrixConfidenceIntervalsTransformed(Eigen::MatrixXd& rCorrelationMatrix,
                                                                    Eigen::MatrixXd& rMinCorrelationMatrix,
                                                                    Eigen::MatrixXd& rMaxCorrelationMatrix,
@@ -210,38 +210,38 @@ private:
     bool mTransformationBuild;
 
     //! @brief calculate the mean values of given data
-    //! @param rData ... matrix of data points, each sample after another
-    //! @param rMean ... vector of mean values (output)
+    //! @param rData matrix of data points, each sample after another
+    //! @param rMean vector of mean values (output)
     void CalculateMeanValues(const Eigen::MatrixXd& rData, Eigen::MatrixXd& rMean) const;
 
     //! @brief calculate the variance in data
-    //! @param rData ... matrix of data points, each sample after another
-    //! @param rVariance ... vector of variances
+    //! @param rData matrix of data points, each sample after another
+    //! @param rVariance vector of variances
     void CalculateVariance(const Eigen::MatrixXd& rData, Eigen::MatrixXd& rVariance) const;
 
     //! @brief calculate the covariance matrix
-    //! @param rInputData ... matrix of input data points, each sample after another
-    //! @param rOutputData ... matrix of output data points, each sample after another
-    //! @param rCovarianceMatrix ... covariance matrix
+    //! @param rInputData matrix of input data points, each sample after another
+    //! @param rOutputData matrix of output data points, each sample after another
+    //! @param rCovarianceMatrix covariance matrix
     void CalculateCovarianceMatrix(const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData,
                                    Eigen::MatrixXd& rCovarianceMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix
-    //! @param rInputData ... matrix of input data points, each sample after another
-    //! @param rOutputData ... matrix of output data points, each sample after another
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+    //! @param rInputData matrix of input data points, each sample after another
+    //! @param rOutputData matrix of output data points, each sample after another
+    //! @param rCorrelationMatrix Pearson's correlation matrix
     void CalculatePearsonCorrelationMatrix(const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData,
                                            Eigen::MatrixXd& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix
-    //! @param rInputData ... matrix of input data points, each sample after another
-    //! @param rOutputData ... matrix of output data points, each sample after another
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
-    //! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's
+    //! @param rInputData matrix of input data points, each sample after another
+    //! @param rOutputData matrix of output data points, each sample after another
+    //! @param rCorrelationMatrix Pearson's correlation matrix
+    //! @param rMinCorrelationMatrix lower bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's
+    //! @param rMaxCorrelationMatrix upper bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    //! @param rAlpha the confidence level is defined as (1-rAlpha)
     void CalculatePearsonCorrelationMatrixConfidenceIntervals(
             const Eigen::MatrixXd& rInputData, const Eigen::MatrixXd& rOutputData, Eigen::MatrixXd& rCorrelationMatrix,
             Eigen::MatrixXd& rMinCorrelationMatrix, Eigen::MatrixXd& rMaxCorrelationMatrix, double rAlpha) const;

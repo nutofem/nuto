@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Thomas Titscher, ISM
 //! @date January 2017
-//! @brief ... integration types in 3D with 6 nodes Gauss integration and 2x3 integration points
+//! @brief integration types in 3D with 6 nodes Gauss integration and 2x3 integration points
 class IntegrationType3D6NGauss2x3Ip : public IntegrationType3D
 {
 

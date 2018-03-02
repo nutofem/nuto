@@ -31,7 +31,7 @@ constexpr double SpecimenLength = 1.;
 constexpr unsigned int numElements = 4;
 
 //! @brief Standard history data management object.
-//! @tparam T: Data type of the history data
+//! @tparam T Data type of the history data
 template <typename T>
 class HistoryDataContiguousMemory
 {
@@ -40,8 +40,8 @@ class HistoryDataContiguousMemory
 
 public:
     //! @brief Returns the history data for a specific integration point
-    //! @param cellNum: Number of the cell containing the integration point
-    //! @param ipNum: Number of the integration point
+    //! @param cellNum Number of the cell containing the integration point
+    //! @param ipNum Number of the integration point
     //! @return History data of the integration point
     const T& GetIpHistoryData(const unsigned int cellNum, const unsigned int ipNum) const
     {
@@ -51,8 +51,8 @@ public:
     }
 
     //! @brief Returns the history data for a specific integration point
-    //! @param cellNum: Number of the cell containing the integration point
-    //! @param ipNum: Number of the integration point
+    //! @param cellNum Number of the cell containing the integration point
+    //! @param ipNum Number of the integration point
     //! @return History data of the integration point
     T& GetIpHistoryData(const unsigned int cellNum, const unsigned int ipNum)
     {
@@ -62,8 +62,8 @@ public:
     }
 
     //! @brief Initializes the history data
-    //! @param numCells: Number of cells that access the history data
-    //! @param ipsPerCell: Number of integration points per cell
+    //! @param numCells Number of cells that access the history data
+    //! @param ipsPerCell Number of integration points per cell
     void InitializeHistoryData(const unsigned int numCells, const unsigned int ipsPerCell)
     {
         if (mIpsPerCell > 0)
@@ -106,9 +106,9 @@ public:
 
 
     //! @brief Ctor
-    //! @param E: Youngs modulus
-    //! @param E_KC: Kelvin chain stiffness
-    //! @param T_KC: Kelvin chain retardation time
+    //! @param E Youngs modulus
+    //! @param E_KC Kelvin chain stiffness
+    //! @param T_KC Kelvin chain retardation time
     CreepLaw(double E, VectorXd E_KC, VectorXd T_KC)
         : mE(E)
         , mE_KC(E_KC)
@@ -118,9 +118,9 @@ public:
     }
 
     //! @brief Calculates the stress at an integration point
-    //! @param strain: Strain at integration point
-    //! @param delta_t: Time increment
-    //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
+    //! @param strain Strain at integration point
+    //! @param delta_t Time increment
+    //! @param ids Number of currently evaluated cell and Number of currently evaluated integration point
     //! @return Stress at integration point
     EngineeringStress<1> Stress(EngineeringStrain<1> strain, double delta_t, CellIds ids) const override
     {
@@ -140,9 +140,7 @@ public:
     }
 
     //! @brief Calculates the mechanical tangent(stiffness) at an integration point
-    //! @param strain: Strain at integration point
-    //! @param delta_t: Time increment
-    //! @param Ids: Number of currently evaluated cell and Number of currently evaluated integration point
+    //! @param delta_t Time increment
     //! @return Mechanical tangent(stiffness) at an integration point
     MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, CellIds) const override
     {
@@ -156,9 +154,9 @@ public:
     }
 
     //! @brief Updates the history data
-    //! @param cellIpData: IP related data
-    //! @param dofType: Dof type (needed to calculate strains)
-    //! @param delta_t: Time increment
+    //! @param cellIpData IP related data
+    //! @param dofType Dof type (needed to calculate strains)
+    //! @param delta_t Time increment
     void UpdateHistoryData(const NuTo::CellIpData& cellIpData, DofType dofType, double delta_t)
     {
         // Get history data
@@ -182,8 +180,8 @@ public:
 
 private:
     //! @brief Calculates the algorithm specific parameter beta
-    //! @param delta_t: Time increment
-    //! @param index: Index of the Kelvin Unit
+    //! @param delta_t Time increment
+    //! @param index Index of the Kelvin Unit
     //! @return Algorithm specific parameter beta
     double Beta(double delta_t, unsigned int index) const
     {
@@ -192,8 +190,8 @@ private:
     }
 
     //! @brief Calculates the algorithm specific parameter lambda
-    //! @param delta_t: Time increment
-    //! @param index: Index of the Kelvin Unit
+    //! @param delta_t Time increment
+    //! @param index Index of the Kelvin Unit
     //! @return Algorithm specific parameter lambda
     double Lambda(double delta_t, unsigned int index) const
     {
@@ -202,8 +200,8 @@ private:
     }
 
     //! @brief Calculates the creep strain increment
-    //! @param hisData: History data object
-    //! @param delta_t: Time increment
+    //! @param hisData History data object
+    //! @param delta_t Time increment
     //! @return Creep strain increment
     EngineeringStrain<1> DeltaCreep(const CreepHistoryData& hisData, double delta_t) const
     {
@@ -224,8 +222,6 @@ BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     MeshFem mesh = UnitMeshFem::CreateLines(numElements);
-    //    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(numElements),
-    //                                          [](Eigen::VectorXd vec) { return SpecimenLength * vec; });
 
     DofType displ("displacements", 1);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear());

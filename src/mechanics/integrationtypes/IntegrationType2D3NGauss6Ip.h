@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Philip Huschke
 //! @date July 2015
-//! @brief ... fourth order integration in 2D with six points
+//! @brief fourth order integration in 2D with six points
 class IntegrationType2D3NGauss6Ip : public IntegrationType2D
 {
 

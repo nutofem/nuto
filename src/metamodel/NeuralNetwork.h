@@ -32,7 +32,7 @@ public:
     };
 
     //! @brief constructor
-    //! @param rvNumNeurons ... number of neurons in each hidden layer
+    //! @param rvNumNeurons number of neurons in each hidden layer
     NeuralNetwork(std::vector<int> rvNumNeurons);
 
     void BuildDerived() override;
@@ -48,20 +48,20 @@ public:
     void SetParameters(const Eigen::MatrixXd& Parameters) override;
     virtual void Info() const override;
 
-    //! @brief ... get the inverse noise covariance matrix
-    //! @param rInverseCovariance ... inverse noise covariance matrix
+    //! @brief get the inverse noise covariance matrix
+    //! @param rInverseCovariance inverse noise covariance matrix
     void GetInverseNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rInverseCovariance) const;
 
-    //! @brief ... get the noise covariance matrix
-    //! @param rCovariance ... noise covariance matrix
+    //! @brief get the noise covariance matrix
+    //! @param rCovariance noise covariance matrix
     void GetNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rCovariance) const;
 
-    //! @brief ... get noise correlation matrix
-    //! @param rNoiseCorrelation ... noise correlation matrix
+    //! @brief get noise correlation matrix
+    //! @param rNoiseCorrelation noise correlation matrix
     void GetNoiseCorrelationMatrix(Eigen::MatrixXd& rNoiseCorrelation) const;
 
-    //! @brief ... get precision (alpha) parameters
-    //! @param rPrecisionParameters ... precision parameters
+    //! @brief get precision (alpha) parameters
+    //! @param rPrecisionParameters precision parameters
     void GetPrecisionParametersTransformed(Eigen::MatrixXd& rPrecisionParameters) const;
 
     int GetNumParameters() const

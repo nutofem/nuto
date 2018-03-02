@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Thomas Titscher
 //! @date Jan 2015
-//! @brief ... integration types in 0D, more like a dummy integration type
+//! @brief integration types in 0D, more like a dummy integration type
 class IntegrationType0DBoundary : public IntegrationTypeBase
 {
 

@@ -19,35 +19,34 @@ class CollidableWallCylinder;
 class ParticleHandler;
 
 
-//! @brief ... builds and handles sub boxes
+//! @brief builds and handles sub boxes
 class SubBoxHandler
 {
 public:
-    //! @brief ... constructor, initializes the handler with a given number of sub box divisions
-    //! @param rSpheres ... spheres to be added to the sub boxes
-    //! @param rDivisions ... sets divs[0]*divs[1]*divs[2] sub boxes
+    //! @brief constructor, initializes the handler with a given number of sub box divisions
+    //! @param rSpheres spheres to be added to the sub boxes
+    //! @param rDivisions sets divs[0]*divs[1]*divs[2] sub boxes
     SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, Eigen::Vector3i rDivisions);
 
-    //! @brief ... constructor, initializes the handler, calculates the number of sub boxes
-    //! @param rSpheres ... spheres to be added to the sub boxes
-    //! @param rBox ... sets the number of sub boxes according to the rBox size
+    //! @brief constructor, initializes the handler, calculates the number of sub boxes
+    //! @param rSpheres spheres to be added to the sub boxes
     SubBoxHandler(ParticleHandler& rSpheres, Specimen& rSpecimen, int rParticlesPerSubBox);
 
-    //! @brief ... getter for specimen volume
+    //! @brief getter for specimen volume
     double GetVolume() const;
 
-    //! @brief ... prints all sub boxes and the particles inside of them
+    //! @brief prints all sub boxes and the particles inside of them
     void PrintBoxes();
 
-    //! @brief ... visualizes the sub boxes
-    //! @param rFile ... output file
+    //! @brief visualizes the sub boxes
+    //! @param rFile output file
     void VisualizeBorders(std::string rFile);
 
-    //! @brief ... getter for the sub box list
+    //! @brief getter for the sub box list
     std::vector<SubBox>& GetSubBoxes();
 
-    //! @brief ... adds a sub box to the sub box list
-    //! @rSubBox ... sub box to add
+    //! @brief adds a sub box to the sub box list
+    //! @rSubBox sub box to add
     void AddSubBox(SubBox& rSubBox);
 
 private:
@@ -58,12 +57,10 @@ private:
 
     void Build();
 
-    //! @brief ... build a cubic specimen
-    //! @param rBox ... size of the specimen
+    //! @brief build a cubic specimen
     void BuildBox();
 
-    //! @brief ... build a cylindric specimen
-    //! @param rBox ... size of the specimen
+    //! @brief build a cylindric specimen
     void BuildCylinder();
 
     void AddSpheresToBoxes();

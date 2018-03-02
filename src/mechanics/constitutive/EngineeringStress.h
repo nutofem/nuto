@@ -6,7 +6,7 @@
 namespace NuTo
 {
 /**
- * @brief ... Engineering stress
+ * @brief Engineering stress
  *
  *  3D case:
  *  \f[

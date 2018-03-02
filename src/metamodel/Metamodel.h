@@ -13,7 +13,7 @@ namespace NuTo
 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
-//! @brief ... standard abstract class for all metamodels in NuTo
+//! @brief standard abstract class for all metamodels in NuTo
 class Metamodel
 {
 
@@ -30,22 +30,22 @@ public:
     void AppendMinMaxTransformationOutput(double min, double max);
     void AppendMinMaxTransformationOutput(int coordinate, double min, double max);
 
-    //! @brief ... append for all coordinates of the input points a transformation to zero mean and unit variance to the
+    //! @brief append for all coordinates of the input points a transformation to zero mean and unit variance to the
     //! list of transformations.
     void AppendZeroMeanUnitVarianceTransformationInput();
 
-    //! @brief ... append for a specific coordinate of the input points a transformation to zero mean and unit variance
+    //! @brief append for a specific coordinate of the input points a transformation to zero mean and unit variance
     //! to the list of transformations.
-    //! @param rCoordinate ... coordinate for which the transformation is performed
+    //! @param rCoordinate coordinate for which the transformation is performed
     void AppendZeroMeanUnitVarianceTransformationInput(int rCoordinate);
 
-    //! @brief ... append for all coordinates of the output points a transformation to zero mean and unit variance to
+    //! @brief append for all coordinates of the output points a transformation to zero mean and unit variance to
     //! the list of transformations.
     void AppendZeroMeanUnitVarianceTransformationOutput();
 
-    //! @brief ... append for a specific coordinate of the output points a transformation to zero mean and unit variance
+    //! @brief append for a specific coordinate of the output points a transformation to zero mean and unit variance
     //! to the list of transformations.
-    //! @param rCoordinate ... coordinate for which the transformation is performed
+    //! @param rCoordinate coordinate for which the transformation is performed
     void AppendZeroMeanUnitVarianceTransformationOutput(int rCoordinate);
 
     Eigen::MatrixXd GetOriginalSupportPointsInput() const;
@@ -70,60 +70,60 @@ public:
     }
 
     //! @brief calculate the sample mean for each support point using original support point coordinates
-    //! @param rInputMean ... vector of mean values of the input support point coordinates
-    //! @param rOutputMean ... vector of mean values of the output support point coordinates
+    //! @param rInputMean vector of mean values of the input support point coordinates
+    //! @param rOutputMean vector of mean values of the output support point coordinates
     void GetOriginalSupportPointsMeanValue(Eigen::MatrixXd& rInputMean, Eigen::MatrixXd& rOutputMean) const;
 
     //! @brief calculate the sample mean for each support point using transformed support point coordinates
-    //! @param rInputMean ... vector of mean values of the input support point coordinates
-    //! @param rOutputMean ... vector of mean values of the output support point coordinates
+    //! @param rInputMean vector of mean values of the input support point coordinates
+    //! @param rOutputMean vector of mean values of the output support point coordinates
     void GetTransformedSupportPointsMeanValue(Eigen::MatrixXd& rInputMean, Eigen::MatrixXd& rOutputMean) const;
 
     //! @brief calculate the sample variance for each support point using original support point coordinates
-    //! @param rInputVariance ... vector of sample variances of the input support point coordinates
-    //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
+    //! @param rInputVariance vector of sample variances of the input support point coordinates
+    //! @param rOutputVariance vector of sample variances of the output support point coordinates
     void GetOriginalSupportPointsVariance(Eigen::MatrixXd& rInputVariance, Eigen::MatrixXd& rOutputVariance) const;
 
     //! @brief calculate the sample variance for each support point using transformed support point coordinates
-    //! @param rInputVariance ... vector of sample variances of the input support point coordinates
-    //! @param rOutputVariance ... vector of sample variances of the output support point coordinates
+    //! @param rInputVariance vector of sample variances of the input support point coordinates
+    //! @param rOutputVariance vector of sample variances of the output support point coordinates
     void GetTransformedSupportPointsVariance(Eigen::MatrixXd& rInputVariance, Eigen::MatrixXd& rOutputVariance) const;
 
     //! @brief calculate the covariance matrix of the support points using original support point coordinates
-    //! @param rCovarianceMatrix ... covariance matrix
+    //! @param rCovarianceMatrix covariance matrix
     void GetOriginalSupportPointsCovarianceMatrix(Eigen::MatrixXd& rCovarianceMatrix) const;
 
     //! @brief calculate the covariance matrix of the support points using transformed support point coordinates
-    //! @param rCovarianceMatrix ... covariance matrix
+    //! @param rCovarianceMatrix covariance matrix
     void GetTransformedSupportPointsCovarianceMatrix(Eigen::MatrixXd& rCovarianceMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+    //! @param rCorrelationMatrix Pearson's correlation matrix
     void GetOriginalSupportPointsPearsonCorrelationMatrix(Eigen::MatrixXd& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
+    //! @param rCorrelationMatrix Pearson's correlation matrix
     void GetTransformedSupportPointsPearsonCorrelationMatrix(Eigen::MatrixXd& rCorrelationMatrix) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using original support point coordinates
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
-    //! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's
+    //! @param rCorrelationMatrix Pearson's correlation matrix
+    //! @param rMinCorrelationMatrix lower bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's
+    //! @param rMaxCorrelationMatrix upper bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    //! @param rAlpha the confidence level is defined as (1-rAlpha)
     void GetOriginalSupportPointsPearsonCorrelationMatrixConfidenceInterval(Eigen::MatrixXd& rCorrelationMatrix,
                                                                             Eigen::MatrixXd& rMinCorrelationMatrix,
                                                                             Eigen::MatrixXd& rMaxCorrelationMatrix,
                                                                             double rAlpha = 0.05) const;
 
     //! @brief calculate Pearson's correlation matrix of the support points using transformed support point coordinates
-    //! @param rCorrelationMatrix ... Pearson's correlation matrix
-    //! @param rMinCorrelationMatrix ... lower bound of the confidence interval on the coefficients of Pearson's
+    //! @param rCorrelationMatrix Pearson's correlation matrix
+    //! @param rMinCorrelationMatrix lower bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rCorrelationMatrix ... upper bound of the confidence interval on the coefficients of Pearson's
+    //! @param rMaxCorrelationMatrix upper bound of the confidence interval on the coefficients of Pearson's
     //! correlation matrix
-    //! @param rAlpha ... the confidence level is defined as (1-rAlpha)
+    //! @param rAlpha the confidence level is defined as (1-rAlpha)
     void GetTransformedSupportPointsPearsonCorrelationMatrixConfidenceInterval(Eigen::MatrixXd& rCorrelationMatrix,
                                                                                Eigen::MatrixXd& rMinCorrelationMatrix,
                                                                                Eigen::MatrixXd& rMaxCorrelationMatrix,

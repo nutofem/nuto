@@ -46,8 +46,8 @@ private:
 };
 
 //! @brief calculate coefficients of the PLANE_STRESS 2D material matrix
-//! @param E ... Young's modulus
-//! @param Nu ... Poisson's ratio
+//! @param E Young's modulus
+//! @param Nu Poisson's ratio
 //! @return tuple <C11, C12, C33>
 inline std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(double E, double Nu)
 {
@@ -58,8 +58,8 @@ inline std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(dou
 }
 
 //! @brief calculate coefficients of the 3D material matrix
-//! @param E ... Young's modulus
-//! @param Nu ... Poisson's ratio
+//! @param E Young's modulus
+//! @param Nu Poisson's ratio
 //! @return tuple <C11, C12, C33>
 inline std::tuple<double, double, double> CalculateCoefficients3D(double E, double Nu)
 {

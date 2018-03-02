@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Stefan Eckardt, IFF
 //! @date July 2010
-//! @brief ... integration types in 1D with two nodes Gauss integration and 3 integration points
+//! @brief integration types in 1D with two nodes Gauss integration and 3 integration points
 class IntegrationType1D2NBoundaryGauss3Ip : public IntegrationType1D
 {
 

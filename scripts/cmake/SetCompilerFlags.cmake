@@ -28,6 +28,8 @@ macro(set_compiler_flags)
         # prevent warnings from boost and eigen
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=eigen3/")
+        # warn about missing/inconsistent documentation
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation")
         # prevent "suggest braces around initialization of subobject" warning
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -Wno-missing-braces -Wno-zero-length-array")
