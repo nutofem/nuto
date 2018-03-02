@@ -24,7 +24,6 @@
 
 using namespace NuTo;
 
-
 BOOST_AUTO_TEST_CASE(Integrand)
 {
     DofType d("Displacements", 1);
@@ -48,7 +47,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     /* mesh, interpolations, constraints */
     double L = 40;
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(40),
+    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(320),
                                           [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
 
     InterpolationTrussLobatto interpolationD(2);
@@ -93,7 +92,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     auto postProcessF = [&](double t) { visu.Plot(t, true); };
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
     adaptiveSolve.dt = 0.01;
-    BOOST_CHECK_NO_THROW(adaptiveSolve.Solve(3.));
+    adaptiveSolve.Solve(3.);
 
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
@@ -188,7 +187,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
     equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
-    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
+    // equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
 
     QuasistaticSolver problem(equations, {d, eeq});
 
@@ -214,5 +213,5 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);
     adaptive.dt = 0.01;
-    adaptive.Solve(0.01); // Only one step for this test. Increase to 1., if you want to see magic happen.
+    adaptive.Solve(10); // Only one step for this test. Increase to 1., if you want to see magic happen.
 }
