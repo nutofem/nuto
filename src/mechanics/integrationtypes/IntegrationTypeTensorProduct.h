@@ -8,14 +8,14 @@ namespace NuTo
 {
 //! @author Philipp Müller, Peter Otto, BAM
 //! @date Jul 2017
-//! @brief ... integration types in 1,2,3D; tensor product of 1D Lobatto or Gauss
+//! @brief integration types in 1,2,3D; tensor product of 1D Lobatto or Gauss
 
 template <int TDim>
 class IntegrationTypeTensorProduct : public IntegrationTypeBase
 {
 public:
     //! @brief constructor
-    //! @param numIPs number of integration points
+    //! @param numIps number of integration points
     //! @param method integration method (currently either GAUSS or LOBATTO)
     IntegrationTypeTensorProduct(size_t numIps, NuTo::eIntegrationMethod method);
 
@@ -40,11 +40,11 @@ public:
     double GetIntegrationPointWeight(int rIpNum) const override;
 
 private:
-    //! @brief ... 1D integration points coordinates
+    //! @brief 1D integration points coordinates
     std::vector<double> mIPts1D;
-    //! @brief ... tensor product integration points coordinates
+    //! @brief tensor product integration points coordinates
     std::vector<Eigen::Matrix<double, TDim, 1>> mIPts;
-    //! @brief ... weights for the integration
+    //! @brief weights for the integration
     std::vector<double> mWeights;
 };
 } // namespace

@@ -93,7 +93,7 @@ std::string FormatTime(double t)
 //! Adds the vtuFileName to the pvdFileName with the time step t
 //! @param pvdFileName full pvd file name including ".pvd"
 //! @param vtuFileName full vtu file name including ".vtu" that is added to the pvdFileName
-//! @param double t corresponding time
+//! @param t corresponding time
 //! @remark This might as well be a general purpose function/class to be used outside of this class, YAGNI for now.
 void AddToPvdFile(std::string pvdFileName, std::string vtuFileName, double t)
 {

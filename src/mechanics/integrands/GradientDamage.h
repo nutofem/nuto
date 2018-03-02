@@ -12,7 +12,7 @@ namespace Integrands
 //! Implicit gradient enhanced damage model
 //! Peerlings RHJ et al.
 //! https://dx.doi.org/10.1002/(SICI)1097-0207(19961015)39:19<3391::AID-NME7>3.0.CO;2-D
-//! @param TDim global dimension
+//! @tparam TDim global dimension
 //! @tparam TDamageLaw damage law that provides .Damage(double) and .Derivative(double)
 template <int TDim, typename TDamageLaw>
 class GradientDamage

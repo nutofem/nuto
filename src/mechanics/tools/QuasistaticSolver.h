@@ -52,7 +52,7 @@ public:
 
 
     //! prints values during the newton iterations, part of NuTo::NewtonRaphson::Problem
-    //! @param residual residual vector
+    //! @param r residual residual vector
     void Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const;
 
 

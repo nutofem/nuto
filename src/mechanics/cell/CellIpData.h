@@ -48,7 +48,7 @@ public:
     {
         return N(dofType) * NodeValueVector(dofType);
     }
-  
+
     const NuTo::Jacobian& GetJacobian() const
     {
         return mJacobian;
@@ -71,7 +71,6 @@ public:
     }
 
     //! Returns a memoized copy of the N matrix for a given dof type
-    //! @param dofType
     //! @return N matrix
     const Eigen::MatrixXd& N(DofType dofType) const
     {
@@ -82,7 +81,6 @@ public:
     }
 
     //! Returns a memoized copy of the B matrix for a given dof type
-    //! @param dofType
     //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
     //! B::Strain() for engineering strains)
     //! @return B matrix
@@ -95,7 +93,6 @@ public:
     }
 
     //! Returns memoized nodal values
-    //! @param dofType
     //! @return nodal values for dofType
     const NodeValues& NodeValueVector(DofType dofType) const
     {

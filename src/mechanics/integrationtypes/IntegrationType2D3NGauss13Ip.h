@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Joerg F. Unger
 //! @date June 2010
-//! @brief ... integration types in 2D with three nodes Gauss integration and 13 integration points (degree 6)
+//! @brief integration types in 2D with three nodes Gauss integration and 13 integration points (degree 6)
 class IntegrationType2D3NGauss13Ip : public IntegrationType2D
 {
 

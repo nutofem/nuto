@@ -11,9 +11,9 @@ namespace NuTo
 {
 //! @author Peter Otto, BAM
 //! @date September, 2017
-//! @brief ... class for NURBS curves, with IGA specific functions
-//! @brief ... NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
-//! @brief ... TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
+//! @brief Class for NURBS curves, with IGA specific functions.
+//! NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
+//! @tparam TDimParameter dimension of the parametric space: curve is 1D and surface is 2D
 template <int TDimParameter>
 class Nurbs
 {
@@ -26,10 +26,10 @@ public:
 
     /** Constructors **/
 
-    //! @brief ... constructor
-    //! @param rDegree ... degree of the polynomial
-    //! @param rKnots ... knot vector
-    //! @param rControlPoints ... control points
+    //! @brief constructor
+    //! @param degree degree of the polynomial
+    //! @param knots knot vector
+    //! @param controlPoints control points
     Nurbs(const std::array<std::vector<double>, TDimParameter>& knots,
           const std::vector<std::vector<NodeSimple*>>& controlPoints, const std::vector<std::vector<double>>& weights,
           const std::array<int, TDimParameter>& degree)
@@ -42,23 +42,23 @@ public:
 
     /** Getter **/
 
-    //! @brief ... get the dimension of the curve = dimension of each control point
-    //! @return ... dimension of the curve
+    //! @brief get the dimension of the curve = dimension of each control point
+    //! @return dimension of the curve
     int GetDimension() const
     {
         return mControlPoints[0][0]->GetNumValues();
     }
 
-    //! @brief ... get the number of control points for each IGA element (one parametric span) in a specific direction
-    //! @return ... degree + 1
+    //! @brief get the number of control points for each IGA element (one parametric span) in a specific direction
+    //! @return degree + 1
     int GetNumControlPointsElement(int dir) const
     {
         assert(dir <= TDimParameter && dir >= 0);
         return mDegree[dir] + 1;
     }
 
-    //! @brief ... get the number of control points for each IGA element (one parametric span)
-    //! @return ... product of the number of control points in each direction
+    //! @brief get the number of control points for each IGA element (one parametric span)
+    //! @return product of the number of control points in each direction
     int GetNumControlPointsElement() const
     {
         int numCPs = 1;
@@ -68,8 +68,8 @@ public:
         return numCPs;
     }
 
-    //! @brief ... get the knots to given knot ids
-    //! @return ... knots
+    //! @brief get the knots to given knot ids
+    //! @return knots
     std::array<Eigen::Vector2d, TDimParameter> GetKnotVectorElement(std::array<int, TDimParameter> knotIDs) const
     {
         std::array<Eigen::Vector2d, TDimParameter> knots;
@@ -143,13 +143,13 @@ public:
         return mid;
     }
 
-    //! @brief ... calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
-    //! @param der ... up to derivative der
-    //! @param parameter ... parameter at which the functions are calculated
-    //! @param spanIdx ... spanIdx to the parameter
-    //! @param degree ... degree of the given NURBS curve
-    //! @param knots ... knot vector
-    //! @return Eigen::MatrixXd ... matrix containing the shape functions up to derivative der, the row index represents
+    //! @brief calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
+    //! @param derivativeOrder up to order derivativeOrder
+    //! @param parameter parameter at which the functions are calculated
+    //! @param spanIdx spanIdx to the parameter
+    //! @param degree degree of the given NURBS curve
+    //! @param knots knot vector
+    //! @return Eigen::MatrixXd matrix containing the shape functions up to derivative der, the row index represents
     //! the derivative order
     static Eigen::MatrixXd BasisFunctionsAndDerivatives(int derivativeOrder, double parameter, int spanIdx, int degree,
                                                         const std::vector<double>& knots)
@@ -244,14 +244,14 @@ public:
         return basisFctsDerivatives;
     }
 
-    //! @brief ... calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
-    //! @param der ... up to derivative der
-    //! @param parameter ... parameter at which the functions are calculated
-    //! @param spanIdx ... spanIdx to the parameter
-    //! @param degree ... degree of the given NURBS curve
-    //! @param knots ... knot vector
-    //! @param weights ... weights vector
-    //! @return Eigen::VectorXd ... vector containing the shape functions (no derivatives)
+    //! @brief calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
+    //! @param derivativeOrder up to order derivativeOrder
+    //! @param parameter parameter at which the functions are calculated
+    //! @param spanIdx spanIdx to the parameter
+    //! @param degree degree of the given NURBS curve
+    //! @param knots knot vector
+    //! @param weights weights vector
+    //! @return Eigen::VectorXd vector containing the shape functions (no derivatives)
     static Eigen::VectorXd BasisFunctionsAndDerivativesRational(int derivativeOrder, double parameter, int spanIdx,
                                                                 int degree, const std::vector<double>& knots,
                                                                 const std::vector<double>& weights)
@@ -305,9 +305,9 @@ public:
         return basisFctsDerivativesRational;
     }
 
-    //! @brief ... calculates the knot span to given parameters
-    //! @param parameter ... parameter(s) at which the functions are calculated
-    //! @return std::array ... knot span(s) to given parameter(s)
+    //! @brief calculates the knot span to given parameters
+    //! @param parameter parameter(s) at which the functions are calculated
+    //! @return std::array knot span(s) to given parameter(s)
     const std::array<int, TDimParameter> FindSpan(const Eigen::Matrix<double, TDimParameter, 1>& parameter) const
     {
         std::array<int, TDimParameter> parameterIDs;
@@ -376,8 +376,8 @@ inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2
 }
 
 template <>
-inline Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
-                                                               const Eigen::Matrix<double, 1, 1>& parameter) const
+inline Eigen::MatrixXd
+Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 1, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
 
@@ -426,8 +426,8 @@ inline Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
 }
 
 template <>
-inline Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
-                                                               const Eigen::Matrix<double, 2, 1>& parameter) const
+inline Eigen::MatrixXd
+Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 2, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
 

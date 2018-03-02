@@ -18,7 +18,6 @@ public:
 
     //! @brief reads a matrix from a file
     //! @param rFileName file name
-    //! @param rDelimiter delimiters between the entries in each line, default = space
     //! @return matrix
     static Eigen::MatrixXd ReadFromFile(const std::string& rFileName);
 };

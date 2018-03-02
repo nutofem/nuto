@@ -86,7 +86,7 @@ public:
 
 private:
     //! @brief integrates various operations with various return types
-    //! @param op operation to perform
+    //! @param f operation to perform
     //! @param result result value. It is not clear how to properly initialize an arbitrary TResult to zero. Thus, the
     //! user has to provide it with this argument.
     template <typename TOperation, typename TReturn>

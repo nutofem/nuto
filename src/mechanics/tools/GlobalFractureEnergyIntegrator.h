@@ -17,14 +17,12 @@ public:
     //! @brief constructs from data vectors
     //! @param rForces vector containing forces
     //! @param rDisplacements vector container displacements
-    //! @return obj
     GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces, const Eigen::VectorXd& rDisplacements);
 
     //! @brief constructs from data files
-    //! @param rForces <path>/<file>.dat to container with force data
-    //! @param rDisplacements <path>/<file>.dat to container with force data
+    //! @param rFileForces <path>/<file>.dat to container with force data
+    //! @param rFileDisplacements <path>/<file>.dat to container with force data
     //! @param rColumn column to read from, hint for most cases: 1=x, 2=y, 3=z direction
-    //! @return obj
     GlobalFractureEnergyIntegrator(std::string rFileForces, std::string rFileDisplacements, int rColumn);
 
     //! @brief calculates the global fracture energy by integrating over the load-displacement curve
@@ -40,9 +38,6 @@ public:
 
 private:
     //! @brief integrates F[rIndexEnd]
-    //! @param rIndexEnd
-    //! @param rForceThreshold
-    //! @return
     double IntegrateIndexToForceThreshold(int rIndexEnd, double rForceThreshold) const;
 
     //! @brief finds the index where the force is just before the rForceThreshold

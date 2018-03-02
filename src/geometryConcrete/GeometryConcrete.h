@@ -33,27 +33,27 @@ public:
 
     //! @brief runs a RSA simulation with the desired phi
     //! afterwards, runs a EDMD simulation to maximize the particle distance
-    //! @param rParticleDistance ... desired particle distance
+    //! @param rParticleDistance desired particle distance
     void MaximizeParticleDistance(double rParticleDistance);
 
 
-    //! @brief ... runs a RSA simulation with smaller spheres
+    //! @brief runs a RSA simulation with smaller spheres
     //! afterwards, runs a EDMD simulation to reach the original sphere size
-    //! @param rShrinkage ... sphere distribution gets multiplied by (1-rShrinkage)
+    //! @param rShrinkage sphere distribution gets multiplied by (1-rShrinkage)
     void MaximizeParticleVolumeFraction(double rShrinkage);
 
 
-    //! @brief ... exports the geometry to a 2D mesh file
-    //! @param rGmshFile ... path (without .geo) for the gmsh file
-    //! @param rMeshSize ... mesh size parameter
-    //! @param rZSlice ... 3D --> 2D at z=rZSlice
-    //! @param rMinRadius ... sliced radiuses smaller than rMinRadius are not exported
+    //! @brief exports the geometry to a 2D mesh file
+    //! @param rGmshFile path (without .geo) for the gmsh file
+    //! @param rMeshSize mesh size parameter
+    //! @param rZSlice 3D --> 2D at z=rZSlice
+    //! @param rMinRadius sliced radiuses smaller than rMinRadius are not exported
     void ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice, double rMinRadius);
 
 
-    //! @brief ... exports the geometry to a 3D mesh file
-    //! @param rGmshFile ... path (without .geo) for the gmsh file
-    //! @param rMeshSize ... mesh size parameter
+    //! @brief exports the geometry to a 3D mesh file
+    //! @param rGmshFile path (without .geo) for the gmsh file
+    //! @param rMeshSize mesh size parameter
     void ExportGmshGeo3D(std::string rGmshFile, double rMeshSize);
 
 
@@ -61,13 +61,13 @@ public:
     void SetSpecimenCylinder(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe);
     void SetSpecimenCylinder(double radius, double height);
 
-    //! @brief ... sets the grading curve - DIN
-    //! @param rGradingCurveEnum ... enum
-    //! @param rNumClasses ... number of classes , beginning from the biggest particles, to consider
+    //! @brief sets the grading curve - DIN
+    //! @param rGradingCurveEnum enum
+    //! @param rNumClasses number of classes , beginning from the biggest particles, to consider
     void SetGradingCurve(eGradingCurve rGradingCurveEnum, int rNumClasses);
 
-    //! @brief ... sets the grading curve - self defined
-    //! @param rGradingCurve ... user defined grading curve
+    //! @brief sets the grading curve - self defined
+    //! @param rGradingCurve user defined grading curve
     void SetGradingCurve(const Eigen::MatrixXd& rGradingCurve);
 
 

@@ -32,7 +32,7 @@ public:
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type
     //! @param dof dof type
-    //! @param numIndepdententDofs number of independent dofs for the dof type dof, required for a proper resize
+    //! @param numIndependentDofs number of independent dofs for the dof type dof, required for a proper resize
     //!        of the sparse matrix
     //! @return sparse matrix containing the constraint terms where the last block with size (numDependent x
     //! numDependent is removed)
@@ -44,8 +44,8 @@ public:
     int GetNumEquations(DofType dof) const;
 
     //!@brief gets the specified equation
-    //! @param dof ... doftype of the equation
-    //! @param equationNumber ... number of the equation
+    //! @param dof doftype of the equation
+    //! @param equationNumber number of the equation
     //! @return selected equation
     const Equation& GetEquation(DofType dof, int equationNumber) const;
 

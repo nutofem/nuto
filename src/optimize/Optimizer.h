@@ -15,7 +15,7 @@ namespace NuTo
 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
-//! @brief ... standard abstract class for all optimizers in NuTo
+//! @brief standard abstract class for all optimizers in NuTo
 class Optimizer
 {
 public:

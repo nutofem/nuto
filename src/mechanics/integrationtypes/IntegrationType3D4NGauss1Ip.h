@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-//! @brief ... integration types in 3D with 4 nodes Gauss integration and 1 integration points
+//! @brief integration types in 3D with 4 nodes Gauss integration and 1 integration points
 class IntegrationType3D4NGauss1Ip : public IntegrationType3D
 {
 

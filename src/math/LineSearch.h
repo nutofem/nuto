@@ -20,7 +20,7 @@ class LineSearchImplementation
 {
 public:
     //! @brief ctor
-    //! @param maxNumLineSearchSteps ... maximal number of line search steps
+    //! @param maxNumLineSearchSteps maximal number of line search steps
     constexpr LineSearchImplementation(TInfo info, int maxNumLineSearchSteps)
         : mInfo(info)
         , mMaxNumLineSearchStep(maxNumLineSearchSteps)
@@ -31,10 +31,10 @@ public:
     //! @remark several return arguments are used to help inlining everything. A lot of time went into actual
     //! benchmarking. Dunno why, but the a previous version that avoids the return arguments and returns various values
     //! in a std::tuple was significantly slower (10%) in a benchmark for a scalar function
-    //! @param problem ... class that implements NormFunction, ResidualFunction and mTolerance
-    //! @param r ... residual, return argument, see remark
-    //! @param x ... value of the argument x, return argument, see remark
-    //! @param dx ... dx from the solver
+    //! @param problem class that implements NormFunction, ResidualFunction and mTolerance
+    //! @param r residual, return argument, see remark
+    //! @param x value of the argument x, return argument, see remark
+    //! @param dx dx from the solver
     template <typename TProblem, typename TX>
     bool operator()(TProblem&& problem, TX* r, TX* x, TX dx) const
     {

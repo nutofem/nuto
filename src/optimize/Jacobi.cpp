@@ -3,9 +3,6 @@
 #include "optimize/Jacobi.h"
 #include "base/Timer.h"
 
-//! @brief ... Optimize routine - optimize displacement or error according to input
-//! @brief ... Optimize residual if $|r|\inequal 0$
-//! @brief ... Optimize displacements if |r|=0, forces have to be added (at place of residuals)
 int NuTo::Jacobi::Optimize()
 {
     std::vector<double>& v = GetParametersVec();
@@ -16,11 +13,6 @@ int NuTo::Jacobi::Optimize()
     return returnValue;
 }
 
-//! @brief ... Optimize routine - optimize solution vector (displacements or error)
-//! @brief ... equation system: Kv=f or Ke=r
-//! @brief ... $v \leftarrow v - \omega D^{-1} K v + \omega D^{-1} f
-//! @param ... v - solution vector, f - right hand sight vector
-//! @return ... optimization_return_attribute
 int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__, mShowTime);
@@ -125,7 +117,7 @@ int NuTo::Jacobi::Optimize(std::vector<double>& v, std::vector<double>& f)
     return static_cast<int>(returnValue);
 }
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+//! @brief Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::Jacobi::Info() const
 {
     //    NuTo::Optimizer::InfoBase();

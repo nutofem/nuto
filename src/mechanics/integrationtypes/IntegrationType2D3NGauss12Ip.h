@@ -6,7 +6,7 @@ namespace NuTo
 {
 //! @author Philip Huschke
 //! @date July 2015
-//! @brief ... 6th order integration in 2D with 12 points
+//! @brief 6th order integration in 2D with 12 points
 class IntegrationType2D3NGauss12Ip : public IntegrationType2D
 {
 

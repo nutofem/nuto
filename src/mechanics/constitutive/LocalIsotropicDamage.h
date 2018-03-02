@@ -16,7 +16,7 @@ namespace Laws
   * \sigma_\text{elastic}(\boldsymbol \varepsilon)
   * \f]
   *
-  * ... following a policy based design (hopefully applied correctly...), where ...
+  * following a policy based design (hopefully applied correctly...), where ...
   *
   * @tparam TDamageLaw the damage law provides the \f$\omega(\kappa)\f$. This requires the methods `.Damage(double)` and
   * `.Derivative(double)` to be implemented, e.g.  NuTo::Constitutive::DamageLaw.
