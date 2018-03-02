@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     //
     //  damage:
     //           _
-    //          / \
+    //          ' '
     //         |   |
     //  _______|   |_______
     //
