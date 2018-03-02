@@ -42,8 +42,9 @@ std::unique_ptr<IntegrationTypeBase> S_Triangle(int order)
     case 4:
         return std::make_unique<IntegrationType2D3NGauss6Ip>();
     case 5:
-        return std::make_unique<IntegrationType2D3NGauss12Ip>();
     case 6:
+        return std::make_unique<IntegrationType2D3NGauss12Ip>();
+    case 7:
         return std::make_unique<IntegrationType2D3NGauss13Ip>();
     default:
         throw Exception(__PRETTY_FUNCTION__,

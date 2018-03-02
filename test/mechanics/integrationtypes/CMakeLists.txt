@@ -19,3 +19,39 @@ add_unit_test(IntegrationCompanion
     math/Quadrature.cpp
     math/Legendre.cpp
     )
+    
+add_unit_test(IntegrationTypesTriangle
+    mechanics/integrationtypes/IntegrationCompanion.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
+    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
+
+    math/Quadrature.cpp
+    math/Legendre.cpp
+    )
+    
+add_unit_test(IntegrationTypesTetrahedra
+    mechanics/integrationtypes/IntegrationCompanion.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss3Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.cpp
+    mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
+    mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
+
+    math/Quadrature.cpp
+    math/Legendre.cpp
+    )
