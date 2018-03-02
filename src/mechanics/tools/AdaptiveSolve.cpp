@@ -46,9 +46,9 @@ void AdaptiveSolve::Solve(double tEnd)
             if (t + dt > tEnd)
                 dt = tEnd - t;
         }
-        catch (NewtonRaphson::NoConvergence& e)
+        catch (...)
         {
-            std::cout << e.what() << '\n';
+            // std::cout << e.what() << '\n';
             dt *= decreaseFactor;
             std::cout << "--> Decreasing time step to " << dt << ".\n";
 

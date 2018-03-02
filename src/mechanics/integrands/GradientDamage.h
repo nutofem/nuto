@@ -4,6 +4,8 @@
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
+#include <iostream>
+
 namespace NuTo
 {
 namespace Integrands
@@ -36,6 +38,9 @@ public:
     {
     }
 
+    static constexpr double R = 0.01;
+    static constexpr double N = 5;
+
     virtual ~GradientDamage() = default;
 
     DofVector<double> Gradient(const CellIpData& data)
@@ -52,8 +57,11 @@ public:
         NMatrix Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
+        double g = ((1. - R) * std::exp(-N * omega) + R - std::exp(-N)) / (1 - std::exp(-N));
+        // g = 0.5;
+
         gradient[mDisp] = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Stress(strain));
-        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * (mC * eeqGradient);
+        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * (mC * g * eeqGradient);
 
         return gradient;
     }
@@ -65,6 +73,7 @@ public:
         double kappa = Kappa(data);
         double omega = mDamageLaw.Damage(kappa);
         double dKappa_dEeq = DkappaDeeq(data);
+        double dOmega_dKappa = mDamageLaw.Derivative(kappa);
 
         NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
 
@@ -72,11 +81,30 @@ public:
         BMatrixGradient Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
+
+        double g = ((1. - R) * std::exp(-N * omega) + R - std::exp(-N)) / (1 - std::exp(-N));
+        double dgdw = ((1. - R) * std::exp(-N * omega)) / (1 - std::exp(-N)) * -N;
+        auto eeqGradient = data.Apply(mEeq, Nabla::Gradient());
+
+        // g = 0.5;
+        // dgdw = 0;
+
         hessian0(mDisp, mDisp) = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Tangent(strain)) * Bdisp;
         hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
-        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
+        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * g * Beeq.transpose() * Beeq +
+                               Beeq.transpose() * mC * eeqGradient * dgdw * dOmega_dKappa * dKappa_dEeq * Neeq;
+
+        // std::cout << Neeq.transpose() * Neeq << std::endl;
+        // std::cout << mC * g * Beeq.transpose() * Beeq << std::endl;
+        // std::cout << Beeq.transpose() * mC * eeqGradient * dgdw * dOmega_dKappa * dKappa_dEeq * Neeq << std::endl;
+        //
+        // std::cout << eeqGradient << std::endl;
+        // std::cout << dgdw << std::endl;
+        // std::cout << dOmega_dKappa << std::endl;
+        // std::cout << dKappa_dEeq << std::endl;
+
         hessian0(mDisp, mEeq) =
-                Bdisp.transpose() * ((-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain)) * Neeq;
+                Bdisp.transpose() * ((-dOmega_dKappa * dKappa_dEeq) * mElasticLaw.Stress(strain)) * Neeq;
 
         return hessian0;
     }

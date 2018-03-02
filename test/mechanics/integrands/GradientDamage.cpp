@@ -1,136 +1,133 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrands/NeumannBc.h"
+#include "mechanics/integrands/GradientDamage.h"
 
 #include "mechanics/nodes/NodeSimple.h"
 #include "mechanics/elements/ElementCollection.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
-#include "mechanics/cell/Matrix.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
+#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "mechanics/interpolation/InterpolationTrussLobatto.h"
 
 using namespace NuTo;
 
-constexpr int cellID = 0;
-constexpr int ipNum = 0;
+void CheckHessian0(ElementCollectionFem& element,
+                   Integrands::GradientDamage<1, Constitutive::DamageLawExponential>& gdm, Eigen::VectorXd d,
+                   Eigen::VectorXd eeq, double kappa, double delta = 1.e-7, double tolerance = 1.e-4)
+{
+    gdm.mKappas(0, 0) = kappa;
+    for (int i = 0; i < 3; ++i)
+        element.DofElement(gdm.mDisp).GetNode(i).SetValue(0, d[i]);
+    for (int i = 0; i < 3; ++i)
+        element.DofElement(gdm.mEeq).GetNode(i).SetValue(0, eeq[i]);
+
+    CellData cellData(element, 0);
+    Eigen::VectorXd ip = Eigen::VectorXd::Ones(0) * 0.3333333333333;
+    Jacobian jac(element.CoordinateElement().ExtractNodeValues(),
+                 element.CoordinateElement().GetDerivativeShapeFunctions(ip), 1);
+
+    CellIpData cipd(cellData, jac, ip, 0);
+
+    auto hessian0 = gdm.Hessian0(cipd);
+    auto gradient = gdm.Gradient(cipd);
+
+    auto hessianDiff = hessian0;
+    hessianDiff *= 0;
+
+    BOOST_TEST_MESSAGE("D Kappa D Eeq " << gdm.DkappaDeeq(cipd));
+
+    for (int i = 0; i < 3; ++i)
+    {
+        CellData cellDataI(element, 0);
+        CellIpData cipdI(cellDataI, jac, ip, 0);
+        element.DofElement(gdm.mDisp).GetNode(i).SetValue(0, d[i] + delta);
+
+        auto diff = gdm.Gradient(cipdI);
+        diff.AddScaled(gradient, -1);
+        diff *= 1. / delta;
+
+        element.DofElement(gdm.mDisp).GetNode(i).SetValue(0, d[i]);
+
+        // BOOST_TEST_MESSAGE("Diff\n" << diff);
+
+        hessianDiff(gdm.mDisp, gdm.mDisp).col(i) = diff[gdm.mDisp];
+        hessianDiff(gdm.mEeq, gdm.mDisp).col(i) = diff[gdm.mEeq];
+    }
+
+    for (int i = 0; i < 3; ++i)
+    {
+        CellData cellDataI(element, 0);
+        CellIpData cipdI(cellDataI, jac, ip, 0);
+        element.DofElement(gdm.mEeq).GetNode(i).SetValue(0, eeq[i] + delta);
+
+        auto diff = gdm.Gradient(cipdI);
+        diff.AddScaled(gradient, -1);
+        diff *= 1. / delta;
+
+        element.DofElement(gdm.mEeq).GetNode(i).SetValue(0, eeq[i]);
+
+        // BOOST_TEST_MESSAGE("Diff\n" << diff);
+
+        hessianDiff(gdm.mDisp, gdm.mEeq).col(i) = diff[gdm.mDisp];
+        hessianDiff(gdm.mEeq, gdm.mEeq).col(i) = diff[gdm.mEeq];
+    }
+    // BOOST_TEST_MESSAGE("Hessian0\n" << hessian0);
+    // BOOST_TEST_MESSAGE("Hessian0Diff\n" << hessianDiff);
+
+    auto Check = [&](DofType d0, DofType d1) {
+        BOOST_TEST_MESSAGE("" << d0.GetName() << ", " << d1.GetName());
+        double absTolerance = std::max(tolerance, tolerance * hessian0(d0, d1).cwiseAbs().maxCoeff());
+        BoostUnitTest::CheckEigenMatrix(hessian0(d0, d1), hessianDiff(d0, d1), absTolerance);
+    };
+    // Check(gdm.mDisp, gdm.mDisp);
+    // Check(gdm.mDisp, gdm.mEeq);
+    // Check(gdm.mEeq, gdm.mDisp);
+    Check(gdm.mEeq, gdm.mEeq);
+}
 
 BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 {
     // coordinate element
-    NodeSimple nc0(Eigen::Vector2d(0, 0));
-    NodeSimple nc1(Eigen::Vector2d(2, 2));
-    InterpolationTrussLinear coordinateInterpolation;
-    ElementCollectionFem element({{nc0, nc1}, coordinateInterpolation});
+    NodeSimple n0(0);
+    NodeSimple n1(1);
+    NodeSimple n2(2);
 
-    // displacement nodes
-    DofType dof("displacements", 2);
-    NodeSimple nd0(Eigen::Vector2d(0, 0));
-    NodeSimple nd1(Eigen::Vector2d(0, 0));
-    InterpolationTrussLinear displacementInterpolation;
-    element.AddDofElement(dof, {{nd0, nd1}, displacementInterpolation});
+    InterpolationTrussLobatto interpolation(2);
+    ElementCollectionFem element({{n0, n1, n2}, interpolation});
 
-    Eigen::Vector2d p(4, 42);
+    // displacement element nodes
+    NodeSimple nd0(0);
+    NodeSimple nd1(0);
+    NodeSimple nd2(0);
+    DofType disp("displacements", 1);
+    element.AddDofElement(disp, {{nd0, nd1, nd2}, interpolation});
 
-    Integrands::NeumannBc<2> neumannIntegrand(dof, p);
+    NodeSimple ne0(0);
+    NodeSimple ne1(0);
+    NodeSimple ne2(0);
+    ScalarDofType eeq("eeq");
+    element.AddDofElement(eeq, {{ne0, ne1, ne2}, interpolation});
 
-    CellData cellData(element, cellID);
-    Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
-                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(1, 0.)), 2);
+    double E = 20000;
+    double nu = 0.2;
+    double k0 = 4. / E;
+    double beta = 360;
+    double alpha = 0.96;
+    double c = 200;
+    Laws::LinearElastic<1> elasticLaw(E, nu);
+    Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, 1);
+    Constitutive::DamageLawExponential damageLaw(k0, beta, alpha);
 
+    Integrands::GradientDamage<1, Constitutive::DamageLawExponential> gdm(disp, eeq, c, elasticLaw, damageLaw,
+                                                                          strainNorm);
+    gdm.mKappas.setZero(1, 1);
 
-    // Gradient. What should happen here?
-    //
-    // We are only dealing with N, dof values do not matter.
-    // We want a result vector of length 4 containing ( if we speak in forces f )
-    // [ f0x, f0y, f1x, f1y ]
-    //
-    // On integration point (-1) all the force contribution should be at f0 == p
-    {
-        Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, -1.0);
-        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
+    double delta = k0 / 200;
+    double tol = 1.e-7;
 
-        Eigen::Vector4d expected(p[0], p[1], 0, 0);
-        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
-        BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
-    }
-
-    // On integration point (+1) all the force contribution should be at f1 == p
-    {
-        Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, 1.0);
-        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
-
-        Eigen::Vector4d expected(0, 0, p[0], p[1]);
-        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
-        BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
-    }
-
-    // On integration point (0) all the force contribution should be spread equally
-    {
-        Eigen::VectorXd ip = Eigen::VectorXd::Constant(1, 0.0);
-        CellIpData cellIpData(cellData, dummyJac, ip, ipNum);
-
-        Eigen::Vector4d expected(p[0] / 2, p[1] / 2, p[0] / 2, p[1] / 2);
-        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
-        BoostUnitTest::CheckEigenMatrix(gradient[dof], expected);
-    }
-}
-
-
-BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
-{
-    std::vector<NodeSimple> nodesDisp;
-    for (int i = 0; i < 3; i++)
-        nodesDisp.push_back(NodeSimple(Eigen::Vector3d(0, 0, 0)));
-
-    std::vector<NodeSimple> nodes;
-    nodes.push_back(NodeSimple(Eigen::Vector3d(1, 0, 0)));
-    nodes.push_back(NodeSimple(Eigen::Vector3d(0, 1, 0)));
-    nodes.push_back(NodeSimple(Eigen::Vector3d(0, 0, 1)));
-
-    std::vector<NodeSimple*> nodePtrs;
-    std::vector<NodeSimple*> nodesDispPtrs;
-
-    nodePtrs.push_back(&nodes[0]);
-    nodePtrs.push_back(&nodes[1]);
-    nodePtrs.push_back(&nodes[2]);
-
-    nodesDispPtrs.push_back(&nodesDisp[0]);
-    nodesDispPtrs.push_back(&nodesDisp[1]);
-    nodesDispPtrs.push_back(&nodesDisp[2]);
-
-    // coordinate element
-    InterpolationTriangleLinear coordinateInterpolation;
-    ElementCollectionFem element({nodePtrs, coordinateInterpolation});
-
-    // displacement nodes
-    DofType dof("displacements", 3);
-    InterpolationTriangleLinear displacementInterpolation;
-    element.AddDofElement(dof, {nodesDispPtrs, displacementInterpolation});
-
-    Eigen::Vector3d p(1., 1., 1.);
-
-    Integrands::NeumannBc<3> neumannIntegrand(dof, p);
-
-    CellData cellData(element, cellID);
-    Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
-                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(2, 1, 0.)), 3);
-
-    std::vector<Eigen::Vector2d> points;
-    points.push_back(Eigen::Vector2d(1. / 6., 1. / 6.));
-    points.push_back(Eigen::Vector2d(4. / 6., 1. / 6.));
-    points.push_back(Eigen::Vector2d(1. / 6., 4. / 6.));
-
-    for (int ip = 0; ip < 3; ip++)
-    {
-        CellIpData cellIpData(cellData, dummyJac, points[ip], ipNum);
-
-        auto gradient = neumannIntegrand.ExternalLoad(cellIpData);
-
-        Eigen::VectorXd referenceResultOnIP = (1. / 6.) * Eigen::VectorXd::Ones(9);
-        referenceResultOnIP.block(3 * ip, 0, 3, 1) = (2. / 3.) * Eigen::VectorXd::Ones(3);
-
-        // results on each ip
-        BoostUnitTest::CheckEigenMatrix(gradient[dof], referenceResultOnIP);
-    }
+    CheckHessian0(element, gdm, Eigen::Vector3d(0.0, 0.01, 0.02), Eigen::Vector3d(0, 0, 0), 0, delta, tol);
+    CheckHessian0(element, gdm, Eigen::Vector3d(0.0, 0.01, 0.02), Eigen::Vector3d(k0, k0, k0), k0, delta, tol);
+    CheckHessian0(element, gdm, Eigen::Vector3d(0.0, 0.01, 0.02), Eigen::Vector3d(9 * k0, 10 * k0, 11 * k0), 9 * k0,
+                  delta, tol);
+    CheckHessian0(element, gdm, Eigen::Vector3d(0.0, 0.0, 0.0), Eigen::Vector3d(k0, k0, k0), k0, delta, tol);
+    CheckHessian0(element, gdm, Eigen::Vector3d(0.0, 0.0, 0.0), Eigen::Vector3d(9 * k0, 10 * k0, 11 * k0), 9 * k0,
+                  delta, tol);
 }

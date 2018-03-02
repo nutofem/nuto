@@ -2,7 +2,8 @@ add_unit_test(NeumannBc
     mechanics/elements/ElementShapeFunctions.cpp)
 
 add_unit_test(GradientDamage
-    mechanics/elements/ElementShapeFunctions.cpp)
+    math/Legendre.cpp
+    math/Quadrature.cpp)
 
 add_unit_test(HistoryData
     math/Legendre.cpp

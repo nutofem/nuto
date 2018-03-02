@@ -11,7 +11,7 @@
 #include "mechanics/mesh/MeshGmsh.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTrussLobatto.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/tools/CellStorage.h"
 #include "mechanics/tools/TimeDependentProblem.h"
@@ -34,12 +34,12 @@ BOOST_AUTO_TEST_CASE(Integrand)
     double nu = 0.2;
     double ft = 4;
     double fc = 40;
-    double gf = 0.021;
-    double c = 1.25;
+    double gf = 0.0021;
+    double c = 0.5;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
-    Constitutive::DamageLawExponential dmg(k0, ft / gf, 1.);
+    Constitutive::DamageLawExponential dmg(k0, 15, 0.99);
     Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
 
     using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential>;
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
                                              Constraint::RhsRamp(1, 0.2)));
 
     /* integration cells */
-    IntegrationTypeTensorProduct<1> integration(2, eIntegrationMethod::GAUSS);
+    IntegrationTypeTensorProduct<1> integration(3, eIntegrationMethod::GAUSS);
     const int nIp = integration.GetNumIntegrationPoints();
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(mesh.ElementsTotal(), integration);
@@ -81,12 +81,20 @@ BOOST_AUTO_TEST_CASE(Integrand)
     problem.SetConstraints(constraints);
 
     Visualize::PostProcess visu("GradientDamageOut1D");
-    visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(2)));
+    visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(3)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
     visu.Add("GDM", [&](const CellIpData& cipd) { return gdm.Kappa(cipd); }, "Kappa");
+    visu.Add("GDM", [&](const CellIpData& cipd) { return gdm.mDamageLaw.Damage(gdm.Kappa(cipd)); }, "Damage");
     visu.Add("GDM", [&](const CellIpData& cipd) { return cipd.Apply(d, Nabla::Strain()); }, "strain");
-
+    visu.Add("GDM",
+             [&](const CellIpData& cipd) {
+                 double omega = gdm.mDamageLaw.Damage(gdm.Kappa(cipd));
+                 double R = 0.1;
+                 double N = 5;
+                 return ((1. - R) * std::exp(-N * omega) + R - std::exp(-N)) / (1 - std::exp(-N));
+             },
+             "g");
     /* solve adaptively */
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
     auto postProcessF = [&](double t) { visu.Plot(t, true); };
@@ -176,7 +184,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     AddDofInterpolation(&mesh, eeq, matrixElements);
     AddDofInterpolation(&mesh, eeq, leftElements);
 
-    IntegrationType2D3NGauss12Ip integration;
+    IntegrationType2D3NGauss6Ip integration;
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(matrixElements, integration);
     auto cellsLeft = cellStorage.AddCells(leftElements, integration);
