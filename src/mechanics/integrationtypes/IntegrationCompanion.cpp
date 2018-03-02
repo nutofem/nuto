@@ -12,6 +12,10 @@
 
 #include "IntegrationType3D4NGauss1Ip.h"
 #include "IntegrationType3D4NGauss4Ip.h"
+#include "IntegrationTypeTet1.h"
+#include "IntegrationTypeTet2.h"
+#include "IntegrationTypeTet3.h"
+#include "IntegrationTypeTet4.h"
 
 #include "IntegrationType3D6NGauss1Ip.h"
 #include "IntegrationType3D6NGauss2x3Ip.h"
@@ -67,6 +71,14 @@ std::unique_ptr<IntegrationTypeBase> S_Tetrahedron(int order)
         return std::make_unique<IntegrationType3D4NGauss1Ip>();
     case 2:
         return std::make_unique<IntegrationType3D4NGauss4Ip>();
+    //    case 1:
+    //        return std::make_unique<IntegrationTypeTet1>();
+    //    case 2:
+    //        return std::make_unique<IntegrationTypeTet2>();
+    case 3:
+        return std::make_unique<IntegrationTypeTet3>();
+    case 4:
+        return std::make_unique<IntegrationTypeTet4>();
     default:
         throw Exception(__PRETTY_FUNCTION__, "Tet integration of order " + std::to_string(order) + " is not defined.");
     }

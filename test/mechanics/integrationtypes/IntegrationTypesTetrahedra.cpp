@@ -321,4 +321,8 @@ BOOST_AUTO_TEST_CASE(IntegrateTetrahedron)
     CheckTetrahedronIntegration(2, 1);
     std::cout << "Tet 2 " << std::endl;
     CheckTetrahedronIntegration(3, 2);
+    std::cout << "Tet 3 " << std::endl;
+    CheckTetrahedronIntegration(4, 3);
+    std::cout << "Tet 4 " << std::endl;
+    CheckTetrahedronIntegration(5, 4);
 }

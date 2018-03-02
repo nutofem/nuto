@@ -15,11 +15,16 @@ add_unit_test(IntegrationCompanion
     mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
+    mechanics/integrationtypes/IntegrationTypeTet1.cpp
+    mechanics/integrationtypes/IntegrationTypeTet2.cpp
+    mechanics/integrationtypes/IntegrationTypeTet3.cpp
+    mechanics/integrationtypes/IntegrationTypeTet4.cpp
+
 
     math/Quadrature.cpp
     math/Legendre.cpp
     )
-    
+
 add_unit_test(IntegrationTypesTriangle
     mechanics/integrationtypes/IntegrationCompanion.cpp
     mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -33,11 +38,14 @@ add_unit_test(IntegrationTypesTriangle
     mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
-
+    mechanics/integrationtypes/IntegrationTypeTet1.cpp
+    mechanics/integrationtypes/IntegrationTypeTet2.cpp
+    mechanics/integrationtypes/IntegrationTypeTet3.cpp
+    mechanics/integrationtypes/IntegrationTypeTet4.cpp
     math/Quadrature.cpp
     math/Legendre.cpp
     )
-    
+
 add_unit_test(IntegrationTypesTetrahedra
     mechanics/integrationtypes/IntegrationCompanion.cpp
     mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.cpp
@@ -51,7 +59,10 @@ add_unit_test(IntegrationTypesTetrahedra
     mechanics/integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
-
+    mechanics/integrationtypes/IntegrationTypeTet1.cpp
+    mechanics/integrationtypes/IntegrationTypeTet2.cpp
+    mechanics/integrationtypes/IntegrationTypeTet3.cpp
+    mechanics/integrationtypes/IntegrationTypeTet4.cpp
     math/Quadrature.cpp
     math/Legendre.cpp
     )
