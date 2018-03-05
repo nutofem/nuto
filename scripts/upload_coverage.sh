@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ev
 # get coverage information
-lcov --capture --directory /home/nuto/build --output-file ../coverage.info
+lcov --capture --directory /home/nuto/build --output-file ../coverage.info > /dev/null
 # filter out system stuff that we don't control
-lcov -r ../coverage.info '/usr/include/*' -o ../coverage.info
+lcov -r ../coverage.info '/usr/include/*' -o ../coverage.info > /dev/null
 # filter out external libraries
 lcov -r ../coverage.info '/home/nuto/source/external/*' -o ../coverage.info
 # upload to codecov, -F is the flag (unit or integration test)
