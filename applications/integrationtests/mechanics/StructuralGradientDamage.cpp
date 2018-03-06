@@ -236,5 +236,5 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);
     adaptive.dt = 0.01;
-    adaptive.Solve(10); // Only one step for this test. Increase to 1., if you want to see magic happen.
+    adaptive.Solve(adaptive.dt); // Only one step for this test. Increase to 1., if you want to see magic happen.
 }
