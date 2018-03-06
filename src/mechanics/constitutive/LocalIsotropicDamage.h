@@ -49,8 +49,7 @@ public:
         return (1 - mDamageLaw.Damage(kappa)) * mElasticLaw.Stress(strain);
     }
 
-    typename MechanicsInterface<TDim>::MechanicsTangent Tangent(EngineeringStrain<TDim> strain, double deltaT,
-                                                                CellIds ids) const override
+    EngineeringTangent<TDim> Tangent(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
         auto C = mElasticLaw.Tangent(strain, deltaT, ids);
         auto sigma = mElasticLaw.Stress(strain, deltaT, ids);

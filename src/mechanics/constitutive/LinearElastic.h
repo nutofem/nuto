@@ -13,8 +13,6 @@ template <int TDim>
 class LinearElastic : public MechanicsInterface<TDim>
 {
 public:
-    using typename MechanicsInterface<TDim>::MechanicsTangent;
-
     LinearElastic(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS)
         : mC(CalculateC(E, Nu, planeState))
         , mE(E)
@@ -27,7 +25,7 @@ public:
         return mC * strain;
     }
 
-    MechanicsTangent Tangent(EngineeringStrain<TDim>, double = 0, CellIds = CellIds{}) const override
+    EngineeringTangent<TDim> Tangent(EngineeringStrain<TDim>, double = 0, CellIds = CellIds{}) const override
     {
         return mC;
     }
@@ -37,10 +35,10 @@ public:
         mC = CalculateC(mE, mNu, planeState);
     }
 
-    static MechanicsTangent CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
+    static EngineeringTangent<TDim> CalculateC(double E, double Nu, ePlaneState planeState = ePlaneState::PLANE_STRESS);
 
 private:
-    MechanicsTangent mC;
+    EngineeringTangent<TDim> mC;
     double mE;
     double mNu;
 };
@@ -70,13 +68,13 @@ inline std::tuple<double, double, double> CalculateCoefficients3D(double E, doub
 }
 
 template <>
-inline LinearElastic<1>::MechanicsTangent LinearElastic<1>::CalculateC(double E, double, ePlaneState)
+inline EngineeringTangent<1> LinearElastic<1>::CalculateC(double E, double, ePlaneState)
 {
-    return MechanicsTangent::Constant(E);
+    return EngineeringTangent<1>::Constant(E);
 }
 
 template <>
-inline LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
+inline EngineeringTangent<2> LinearElastic<2>::CalculateC(double E, double Nu, ePlaneState planeState)
 {
     double C11 = 0, C12 = 0, C33 = 0;
     if (planeState == ePlaneState::PLANE_STRESS)
@@ -84,7 +82,7 @@ inline LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E,
     else
         std::tie(C11, C12, C33) = CalculateCoefficients3D(E, Nu);
 
-    MechanicsTangent C = MechanicsTangent::Zero();
+    EngineeringTangent<2> C = EngineeringTangent<2>::Zero();
     C = Eigen::Matrix3d::Zero();
     C(0, 0) = C11;
     C(1, 0) = C12;
@@ -97,11 +95,11 @@ inline LinearElastic<2>::MechanicsTangent LinearElastic<2>::CalculateC(double E,
 }
 
 template <>
-inline LinearElastic<3>::MechanicsTangent LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
+inline EngineeringTangent<3> LinearElastic<3>::CalculateC(double E, double Nu, ePlaneState)
 {
     double C11 = 0, C12 = 0, C44 = 0;
     std::tie(C11, C12, C44) = CalculateCoefficients3D(E, Nu);
-    MechanicsTangent C = MechanicsTangent::Zero();
+    EngineeringTangent<3> C = EngineeringTangent<3>::Zero();
     // C11 diagonal:
     C(0, 0) = C11;
     C(1, 1) = C11;
