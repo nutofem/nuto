@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 
 #include "math/EigenCompanion.h"
+#include "mechanics/dofs/DofVectorConvertEigen.h"
 
 #include "mechanics/integrands/GradientDamage.h"
 #include "mechanics/integrands/NeumannBc.h"
@@ -18,7 +19,6 @@
 #include "mechanics/tools/QuasistaticSolver.h"
 #include "mechanics/tools/AdaptiveSolve.h"
 #include "mechanics/constraints/ConstraintCompanion.h"
-
 #include "visualize/PostProcess.h"
 #include "visualize/VoronoiGeometries.h"
 
@@ -30,24 +30,24 @@ BOOST_AUTO_TEST_CASE(Integrand)
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
     /* MATERIAL */
-    double E = 30000;
+    double E = 20000;
     double nu = 0.2;
     double ft = 4;
     double fc = 40;
     double gf = 0.0021;
-    double c = 0.5;
+    double L = 40;
+    double c = 0.2;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
-    Constitutive::DamageLawExponential dmg(k0, 15, 0.99);
+    Constitutive::DamageLawExponential dmg(k0, ft / gf / 100, 0.99);
     Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
 
-    using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential>;
+    using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
 
     /* mesh, interpolations, constraints */
-    double L = 40;
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(320),
+    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(200),
                                           [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
 
     InterpolationTrussLobatto interpolationD(2);
@@ -80,6 +80,8 @@ BOOST_AUTO_TEST_CASE(Integrand)
     problem.mTolerance = 1.e-6;
     problem.SetConstraints(constraints);
 
+    int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
+
     Visualize::PostProcess visu("GradientDamageOut1D");
     visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(3)));
     visu.Add("GDM", d);
@@ -90,17 +92,24 @@ BOOST_AUTO_TEST_CASE(Integrand)
     visu.Add("GDM",
              [&](const CellIpData& cipd) {
                  double omega = gdm.mDamageLaw.Damage(gdm.Kappa(cipd));
-                 double R = 0.1;
+                 double R = 0.005;
                  double N = 5;
                  return ((1. - R) * std::exp(-N * omega) + R - std::exp(-N)) / (1 - std::exp(-N));
              },
              "g");
+
+    std::ofstream loadDisplacement(visu.ResultDirectory() + "/LD.dat");
+
     /* solve adaptively */
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
-    auto postProcessF = [&](double t) { visu.Plot(t, true); };
+    auto postProcessF = [&](double t) {
+        visu.Plot(t, true);
+        problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft});
+    };
+
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.dt = 0.01;
-    adaptiveSolve.Solve(3.);
+    adaptiveSolve.dt = 0.001;
+    adaptiveSolve.Solve(1.);
 
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
@@ -129,7 +138,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     //      - displacements ~ 0
     //      - eeq ~ 0
     // ZoneB: from x = [middle + damaged zone width .. L]
-    //      - displacements ~ 0.6  ( boundary condition 0.2 / s * 3s )
+    //      - displacements ~ 0.2  ( boundary condition 0.2 / s * 1s )
     //      - eeq ~ 0
     //
     auto& dNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 4), d);
@@ -141,7 +150,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     auto& dNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), d);
     auto& eeqNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), eeq);
 
-    BOOST_CHECK_CLOSE(dNodeFromZoneB.GetValues()[0], 0.6, 1.e-4);
+    BOOST_CHECK_CLOSE_FRACTION(dNodeFromZoneB.GetValues()[0], 0.2, 1.e-3);
     BOOST_CHECK_SMALL(eeqNodeFromZoneB.GetValues()[0], 1.e-4);
 }
 
@@ -158,7 +167,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     double ft = 4;
     double gf = 0.021;
-    Constitutive::DamageLawExponential dmg(ft / E, ft / gf, 1.);
+    Constitutive::DamageLawExponential dmg(ft / E, ft / gf / 10, 0.99);
 
     double fc = 40;
     Constitutive::ModifiedMisesStrainNorm<2> strainNorm(nu, fc / ft);
@@ -167,8 +176,8 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     DofType d("Displacements", 2);
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
-    double c = 0.1;
-    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential>;
+    double c = 1.0;
+    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
     using Neumann = Integrands::NeumannBc<2>;
 
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
@@ -203,7 +212,8 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     Constraints constraints;
     constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d::Zero(), d), {eDirection::X}));
     constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::Y}));
-    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d, 16), {eDirection::Y}, RhsRamp(1, 0.01)));
+    auto topNodes = mesh.NodesAtAxis(eDirection::Y, d, 16);
+    constraints.Add(d, Component(topNodes, {eDirection::Y}, RhsRamp(1, 0.01)));
 
     problem.SetConstraints(constraints);
     problem.mTolerance = 1.e-6;
@@ -216,8 +226,13 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     visu.Add("GDM", eeq);
     visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
 
+    std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
+
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
-    auto postProcess = [&](double t) { return visu.Plot(t, true); };
+    auto postProcess = [&](double t) {
+        visu.Plot(t, true);
+        problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)));
+    };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);
     adaptive.dt = 0.01;
