@@ -30,24 +30,24 @@ BOOST_AUTO_TEST_CASE(Integrand)
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
     /* MATERIAL */
-    double E = 20000;
+    double E = 30000;
     double nu = 0.2;
     double ft = 4;
     double fc = 40;
-    double gf = 0.0021;
+    double gf = 0.021;
     double L = 40;
-    double c = 0.2;
+    double c = 0.25;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
-    Constitutive::DamageLawExponential dmg(k0, ft / gf / 100, 0.99);
+    Constitutive::DamageLawExponential dmg(k0, ft / gf / 10, 1.);
     Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
 
     using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
 
     /* mesh, interpolations, constraints */
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(200),
+    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(80),
                                           [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
 
     InterpolationTrussLobatto interpolationD(2);
@@ -108,8 +108,8 @@ BOOST_AUTO_TEST_CASE(Integrand)
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.dt = 0.001;
-    adaptiveSolve.Solve(1.);
+    adaptiveSolve.dt = 0.01;
+    adaptiveSolve.Solve(3.);
 
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
@@ -138,19 +138,19 @@ BOOST_AUTO_TEST_CASE(Integrand)
     //      - displacements ~ 0
     //      - eeq ~ 0
     // ZoneB: from x = [middle + damaged zone width .. L]
-    //      - displacements ~ 0.2  ( boundary condition 0.2 / s * 1s )
+    //      - displacements ~ 0.6  ( boundary condition 0.2 / s * 3s )
     //      - eeq ~ 0
     //
-    auto& dNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 4), d);
-    auto& eeqNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 4), eeq);
+    auto& dNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 8), d);
+    auto& eeqNodeFromZoneA = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L / 8), eeq);
 
     BOOST_CHECK_SMALL(dNodeFromZoneA.GetValues()[0], 1.e-4);
     BOOST_CHECK_SMALL(eeqNodeFromZoneA.GetValues()[0], 1.e-4);
 
-    auto& dNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), d);
-    auto& eeqNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(3 * L / 4), eeq);
+    auto& dNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(7 * L / 8), d);
+    auto& eeqNodeFromZoneB = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(7 * L / 8), eeq);
 
-    BOOST_CHECK_CLOSE_FRACTION(dNodeFromZoneB.GetValues()[0], 0.2, 1.e-3);
+    BOOST_CHECK_CLOSE_FRACTION(dNodeFromZoneB.GetValues()[0], 0.6, 1.e-3);
     BOOST_CHECK_SMALL(eeqNodeFromZoneB.GetValues()[0], 1.e-4);
 }
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
     equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
-    // equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
+    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
 
     QuasistaticSolver problem(equations, {d, eeq});
 
