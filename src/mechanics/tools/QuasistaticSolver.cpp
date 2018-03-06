@@ -1,4 +1,8 @@
 #include "mechanics/tools/QuasistaticSolver.h"
+
+#include <ostream>
+#include <boost/range/numeric.hpp>
+
 #include "math/EigenSparseSolve.h"
 #include "math/NewtonRaphson.h"
 #include "mechanics/dofs/DofVectorConvertEigen.h"
@@ -76,6 +80,7 @@ Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
     return ToEigen(gradient.J, mDofs) - ToEigen(mCmat, mDofs).transpose() * ToEigen(gradient.K, mDofs);
 }
 
+
 Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd& x)
 {
     auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
@@ -104,7 +109,7 @@ void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::Vecto
     std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 
-GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x)
+GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) const
 {
     DofVector<double> xDof = mX; // for correct size
     FromEigen(x, mDofs, &xDof);
@@ -117,6 +122,21 @@ GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x)
     }
     return v;
 }
+
+void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
+{
+    mGlobalTime -= mTimeStep;
+    auto x = ToGlobalDofVector(ToEigen(mX, mDofs));
+    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime + mTimeStep, mTimeStep);
+
+    double dofMean = boost::accumulate(x(dofType, dofNumbers), 0.) / dofNumbers.size();
+    double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
+
+    out << mGlobalTime + mTimeStep << '\t' << dofMean << '\t' << residualSum << '\n';
+
+    mGlobalTime += mTimeStep;
+}
+
 
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
