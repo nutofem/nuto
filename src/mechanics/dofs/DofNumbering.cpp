@@ -72,3 +72,12 @@ DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, cons
     dofInfo.numIndependentDofs[dof] = numDofs - numDependentDofs;
     return dofInfo;
 }
+
+std::vector<int> DofNumbering::Get(const Group<NodeSimple>& dofNodes, int component)
+{
+    std::vector<int> dofNumbers;
+    dofNumbers.reserve(dofNodes.Size());
+    for (const auto& node : dofNodes)
+        dofNumbers.push_back(node.GetDofNumber(component));
+    return dofNumbers;
+}
