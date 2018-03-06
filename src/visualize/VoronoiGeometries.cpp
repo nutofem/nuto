@@ -266,6 +266,10 @@ NuTo::Visualize::VoronoiGeometry TransformedVoronoi(const NuTo::IntegrationTypeB
 
 VoronoiGeometry NuTo::Visualize::VoronoiGeometryTriangle(const NuTo::IntegrationTypeBase& integrationType)
 {
+    for (int i = 0; i < integrationType.GetNumIntegrationPoints(); ++i)
+        if (integrationType.GetLocalIntegrationPointCoordinates(i).sum() > 1.)
+            throw Exception(__PRETTY_FUNCTION__, "Only 2D triangle types are supported");
+
     Eigen::Vector2d p0(0, 0);
     Eigen::Vector2d p1(1, 0);
     Eigen::Vector2d p2(0, 1);

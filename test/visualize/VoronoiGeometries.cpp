@@ -1,6 +1,8 @@
 #include <iostream>
 #include "BoostUnitTest.h"
 #include "visualize/VoronoiGeometries.h"
+#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 using namespace NuTo;
 
@@ -79,4 +81,31 @@ BOOST_AUTO_TEST_CASE(Voronoi3D_1)
     BOOST_CHECK_EQUAL(vCellIds[5], 5);
     BOOST_CHECK_EQUAL(vCellIds[6], 7);
     BOOST_CHECK_EQUAL(vCellIds[7], 6);
+}
+
+BOOST_AUTO_TEST_CASE(VoronoiTriangle)
+{
+    IntegrationTypeTensorProduct<2> quadType(2, eIntegrationMethod::GAUSS);
+    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType), Exception);
+
+    IntegrationType2D3NGauss6Ip triangleType6Ip;
+    /*
+     *           x
+     *          / \
+     *         x   x
+     *        /\   /\
+     *       /   x   \
+     *      /    |    \
+     *     /     x     \
+     *    /    ,´ `,    \
+     *   x----x     x----x
+     *  /     |     |     \
+     * x______x_____x______x
+     *
+     *  Contains 6 cells and 13 points.
+     *
+     */
+    auto geometry = Visualize::VoronoiGeometryTriangle(triangleType6Ip);
+    BOOST_CHECK_EQUAL(geometry.voronoiCells.size(), 6);
+    BOOST_CHECK_EQUAL(geometry.pointCoordinates.size(), 13);
 }
