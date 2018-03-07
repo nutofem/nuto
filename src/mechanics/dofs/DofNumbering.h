@@ -13,7 +13,7 @@ namespace DofNumbering
 {
 
 //! Builds the dof numbering for type `dof` for all the `dofNodes` and stores it at the `dofNodes`.
-//! @remark Numbering starts at 0 with all the dofs that are not constrained. Constraned dofs have the highest numbers
+//! @remark Numbering starts at 0 with all the dofs that are not constrained. Constrained dofs have the highest numbers
 DofInfo Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints);
 
 //! Extracts the dof numbers from `dofNodes` for a given component (0 for scalar, x=0, y=1, z=2 for vector dofs)

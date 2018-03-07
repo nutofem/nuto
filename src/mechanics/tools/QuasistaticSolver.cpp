@@ -125,16 +125,22 @@ GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) c
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
 {
+    /* Disclaimer: The whole class is messy because of the time step handling via member variables. This itself is due
+     * to the fact that NewtonRaphson does not care about time or time steps, but the Residual function, it tries to
+     * minimize, does. So we slip that around the interface. */
     mGlobalTime -= mTimeStep;
     auto x = ToGlobalDofVector(ToEigen(mX, mDofs));
-    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime + mTimeStep, mTimeStep);
+    mGlobalTime += mTimeStep;
+    /* So each call to ToGlobalDofVector assumes that we solve for the step t + dt. But we are in postprocess right now.
+     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToGlobalDofVector to apply
+     * constraints for t + dt + dt. */
+
+    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime, mTimeStep);
 
     double dofMean = boost::accumulate(x(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
-    out << mGlobalTime + mTimeStep << '\t' << dofMean << '\t' << residualSum << '\n';
-
-    mGlobalTime += mTimeStep;
+    out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
 }
 
 
@@ -149,7 +155,16 @@ int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 
     int numIterations = 0;
 
-    Eigen::VectorXd tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+    Eigen::VectorXd tmpX;
+    try
+    {
+        tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+    }
+    catch (std::exception& e)
+    {
+        throw NewtonRaphson::NoConvergence(e.what());
+    }
+
     if (tmpX.norm() > 1.e10)
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 
