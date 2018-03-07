@@ -141,6 +141,7 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
     out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
+    out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or something.
 }
 
 
@@ -158,7 +159,7 @@ int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
     Eigen::VectorXd tmpX;
     try
     {
-        tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+        tmpX = NewtonRaphson::Solve(*this, trialX, solver, 6, NewtonRaphson::LineSearch(), &numIterations);
     }
     catch (std::exception& e)
     {
