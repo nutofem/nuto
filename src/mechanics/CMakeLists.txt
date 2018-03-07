@@ -33,4 +33,4 @@ set(MechanicsSources
     )
 
 create_nuto_module(Mechanics "${MechanicsSources}")
-target_link_libraries(Mechanics PRIVATE Base Math)
+target_link_libraries(Mechanics PRIVATE Base Math Rang)

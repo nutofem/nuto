@@ -4,6 +4,8 @@
 #include "math/NewtonRaphson.h"
 #include "mechanics/tools/AdaptiveSolve.h"
 
+#include <rang.hpp>
+
 using namespace NuTo;
 
 AdaptiveSolve::AdaptiveSolve(std::function<int(double)> doStepFunction, std::function<void(double)> postProcessFunction)
@@ -40,7 +42,8 @@ void AdaptiveSolve::Solve(double tEnd)
             {
                 dt *= increaseFactor;
                 dt = std::min(dt, dtMax);
-                std::cout << "--> Increasing time step to " << dt << ".\n";
+                std::cout << rang::fg::green << rang::style::bold << "Increasing time step to " << dt
+                          << rang::style::reset << '\n';
             }
 
             if (t + dt > tEnd)
@@ -49,7 +52,8 @@ void AdaptiveSolve::Solve(double tEnd)
         catch (NewtonRaphson::NoConvergence& e)
         {
             dt *= decreaseFactor;
-            std::cout << "--> Decreasing time step to " << dt << ".\n";
+            std::cout << rang::fg::red << rang::style::bold << "Decreasing time step to " << dt << rang::style::reset
+                      << '\n';
 
             if (dt < dtMin)
                 throw Exception(__PRETTY_FUNCTION__,
