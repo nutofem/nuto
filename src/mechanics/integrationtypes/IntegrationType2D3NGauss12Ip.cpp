@@ -13,10 +13,10 @@ Eigen::VectorXd NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoor
 {
     assert(rIpNum >= 0 && rIpNum < 12);
 
-    const double a = 0.063089104491502;
-    const double b = 0.249286745170910;
-    const double c = 0.310352451033785;
-    const double d = 0.053145049844816;
+    const double a = 0.063089014491502005;
+    const double b = 0.24928674517090998;
+    const double c = 0.310352451033784;
+    const double d = 0.053145049844816994;
 
     switch (rIpNum)
     {
@@ -63,9 +63,9 @@ int NuTo::IntegrationType2D3NGauss12Ip::GetNumIntegrationPoints() const
 double NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     assert(rIpNum >= 0 && rIpNum < 12);
-    const double e = 0.025422453185103;
-    const double f = 0.058393137863189;
-    const double g = 0.041425537809187;
+    const double e = 0.0254224531851035;
+    const double f = 0.058393137863189497;
+    const double g = 0.041425537809187001;
     switch (rIpNum)
     {
     case 0:

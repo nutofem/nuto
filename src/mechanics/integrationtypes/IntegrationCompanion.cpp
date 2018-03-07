@@ -47,7 +47,7 @@ std::unique_ptr<IntegrationTypeBase> G_Triangle(int order)
     case 6:
         return std::make_unique<IntegrationType2D3NGauss12Ip>();
     case 7:
-        return std::make_unique<IntegrationType2D3NGauss13Ip>();
+    // return std::make_unique<IntegrationType2D3NGauss13Ip>();
     case 8:
     case 9:
     case 10:

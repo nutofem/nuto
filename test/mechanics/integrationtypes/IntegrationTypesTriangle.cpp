@@ -83,7 +83,7 @@ void CheckTriangleIntegration(int polyOrder, int intTypeOrder)
         {
             auto f = [n, i](Eigen::VectorXd x) { return (std::pow(x[0], i) * std::pow(x[1], n - i)); };
             double computedResult = integrate(f, *intType);
-            BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTriangle(n, count), 1.e-7);
+            BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTriangle(n, count), 1.e-11);
             count++;
         }
     }
