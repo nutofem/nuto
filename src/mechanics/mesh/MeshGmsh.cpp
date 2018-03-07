@@ -361,7 +361,7 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
     case 16:
         return rMesh.CreateInterpolation(InterpolationQuadQuadratic());
     default:
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type.");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unhandled gmsh element type " + std::to_string(gmshType) + ".");
     }
 }
 
