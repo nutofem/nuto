@@ -2,6 +2,7 @@
 #include "BoostUnitTest.h"
 #include "visualize/VoronoiGeometries.h"
 #include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
+#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 using namespace NuTo;
@@ -85,8 +86,12 @@ BOOST_AUTO_TEST_CASE(Voronoi3D_1)
 
 BOOST_AUTO_TEST_CASE(VoronoiTriangle)
 {
-    IntegrationTypeTensorProduct<2> quadType(2, eIntegrationMethod::GAUSS);
-    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType), Exception);
+    IntegrationTypeTensorProduct<2> quadType1(1, eIntegrationMethod::GAUSS);
+    IntegrationTypeTensorProduct<2> quadType2(2, eIntegrationMethod::GAUSS);
+    IntegrationType3D4NGauss1Ip tetrahedonType;
+    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType1), Exception);
+    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType2), Exception);
+    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(tetrahedonType), Exception);
 
     IntegrationType2D3NGauss6Ip triangleType6Ip;
     /*

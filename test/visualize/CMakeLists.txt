@@ -6,6 +6,7 @@ add_unit_test(DataArray)
 add_unit_test(VoronoiGeometries 
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp
     mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.cpp
+    mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     )
 target_link_libraries(VoronoiGeometries Math)
 
