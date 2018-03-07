@@ -29,6 +29,15 @@ public:
             return K[dof][globalDofNumber - numIndependent];
     }
 
+    std::vector<double> operator()(DofType dof, std::vector<int> globalDofNumbers) const
+    {
+        std::vector<double> v;
+        v.reserve(globalDofNumbers.size());
+        for (int globalDofNumber : globalDofNumbers)
+            v.push_back((*this)(dof, globalDofNumber));
+        return v;
+    }
+
     GlobalDofVector& operator+=(const GlobalDofVector& rhs)
     {
         this->J += rhs.J;

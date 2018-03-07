@@ -6,15 +6,19 @@
 
 namespace NuTo
 {
+namespace NonlocalInteraction
+{
+struct Constant;
+}
+
 namespace Integrands
 {
-
 //! Implicit gradient enhanced damage model
 //! Peerlings RHJ et al.
 //! https://dx.doi.org/10.1002/(SICI)1097-0207(19961015)39:19<3391::AID-NME7>3.0.CO;2-D
 //! @tparam TDim global dimension
 //! @tparam TDamageLaw damage law that provides .Damage(double) and .Derivative(double)
-template <int TDim, typename TDamageLaw>
+template <int TDim, typename TDamageLaw, typename TInteraction = NonlocalInteraction::Constant>
 class GradientDamage
 {
 public:
@@ -26,15 +30,20 @@ public:
     //! @param damageLaw damage law that provides .Damage(double) and .Derivative(double)
     //! @param strainNorm modified mises strain norm
     GradientDamage(DofType disp, ScalarDofType eeq, double c, Laws::LinearElastic<TDim> linearElasticLaw,
-                   TDamageLaw damageLaw, Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm)
+                   TDamageLaw damageLaw, Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm,
+                   TInteraction interaction = TInteraction())
         : mDisp(disp)
         , mEeq(eeq)
         , mC(c)
         , mElasticLaw(linearElasticLaw)
         , mDamageLaw(damageLaw)
         , mNorm(strainNorm)
+        , mInteraction(interaction)
     {
     }
+
+    static constexpr double R = 0.005;
+    static constexpr double N = 5;
 
     virtual ~GradientDamage() = default;
 
@@ -52,8 +61,10 @@ public:
         NMatrix Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
-        gradient[mDisp] = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Stress(strain));
-        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * (mC * eeqGradient);
+        double g = mInteraction.Factor(omega);
+
+        gradient[mDisp] = Bdisp.transpose() * ((1. - omega) * mElasticLaw.Stress(strain));
+        gradient[mEeq] = Neeq.transpose() * (eeq - mNorm.Value(strain)) + Beeq.transpose() * (mC * g * eeqGradient);
 
         return gradient;
     }
@@ -65,6 +76,7 @@ public:
         double kappa = Kappa(data);
         double omega = mDamageLaw.Damage(kappa);
         double dKappa_dEeq = DkappaDeeq(data);
+        double dOmega_dKappa = mDamageLaw.Derivative(kappa);
 
         NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
 
@@ -72,11 +84,16 @@ public:
         BMatrixGradient Beeq = data.B(mEeq, Nabla::Gradient());
         BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
 
-        hessian0(mDisp, mDisp) = Bdisp.transpose() * ((1 - omega) * mElasticLaw.Tangent(strain)) * Bdisp;
+        double g = mInteraction.Factor(omega);
+        double dgdw = mInteraction.Derivative(omega);
+        auto eeqGradient = data.Apply(mEeq, Nabla::Gradient());
+
+        hessian0(mDisp, mDisp) = Bdisp.transpose() * ((1. - omega) * mElasticLaw.Tangent(strain)) * Bdisp;
         hessian0(mEeq, mDisp) = -Neeq.transpose() * mNorm.Derivative(strain).transpose() * Bdisp;
-        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * Beeq.transpose() * Beeq;
+        hessian0(mEeq, mEeq) = Neeq.transpose() * Neeq + mC * g * Beeq.transpose() * Beeq +
+                               Beeq.transpose() * mC * eeqGradient * dgdw * dOmega_dKappa * dKappa_dEeq * Neeq;
         hessian0(mDisp, mEeq) =
-                Bdisp.transpose() * ((-mDamageLaw.Derivative(kappa) * dKappa_dEeq) * mElasticLaw.Stress(strain)) * Neeq;
+                Bdisp.transpose() * ((-dOmega_dKappa * dKappa_dEeq) * mElasticLaw.Stress(strain)) * Neeq;
 
         return hessian0;
     }
@@ -104,6 +121,45 @@ public:
     Laws::LinearElastic<TDim> mElasticLaw;
     TDamageLaw mDamageLaw;
     Constitutive::ModifiedMisesStrainNorm<TDim> mNorm;
+    TInteraction mInteraction;
 };
 } /* Integrand */
+
+namespace NonlocalInteraction
+{
+
+//! Results in the model used by Peerlings et al.
+struct Constant
+{
+    double Factor(double) const
+    {
+        return 1;
+    }
+    double Derivative(double) const
+    {
+        return 0;
+    }
+};
+
+//! Results in the model used by Poh & Sun 2017, IJNME and limits the nonlocal parameter
+struct Decreasing
+{
+    Decreasing(double R = 0.005, double eta = 5)
+        : mR(R)
+        , mEta(eta)
+    {
+    }
+
+    double Factor(double omega) const
+    {
+        return ((1. - mR) * std::exp(-mEta * omega) + mR - std::exp(-mEta)) / (1. - std::exp(-mEta));
+    }
+    double Derivative(double omega) const
+    {
+        return ((1. - mR) * std::exp(-mEta * omega)) / (1. - std::exp(-mEta)) * -mEta;
+    }
+    double mR;
+    double mEta;
+};
+} /* NonlocalInteraction */
 } /* NuTo */

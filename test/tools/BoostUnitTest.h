@@ -31,7 +31,7 @@ void CheckEigenMatrix(const T1& r1, const T2& r2, double rTolerance = 1.e-10)
     bool isApprox = error < rTolerance;
     if (not isApprox)
     {
-        BOOST_TEST_MESSAGE("abs max difference: " << error);
+        BOOST_TEST_MESSAGE("abs max difference " << error << " exceeds tolerance " << rTolerance);
         BOOST_TEST_MESSAGE("1st matrix: \n" << r1);
         BOOST_TEST_MESSAGE("2nd matrix: \n" << r2);
     }

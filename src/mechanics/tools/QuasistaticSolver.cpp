@@ -1,4 +1,8 @@
 #include "mechanics/tools/QuasistaticSolver.h"
+
+#include <ostream>
+#include <boost/range/numeric.hpp>
+
 #include "math/EigenSparseSolve.h"
 #include "math/NewtonRaphson.h"
 #include "mechanics/dofs/DofVectorConvertEigen.h"
@@ -76,6 +80,7 @@ Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
     return ToEigen(gradient.J, mDofs) - ToEigen(mCmat, mDofs).transpose() * ToEigen(gradient.K, mDofs);
 }
 
+
 Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd& x)
 {
     auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
@@ -104,7 +109,7 @@ void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::Vecto
     std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 
-GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x)
+GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) const
 {
     DofVector<double> xDof = mX; // for correct size
     FromEigen(x, mDofs, &xDof);
@@ -118,6 +123,27 @@ GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x)
     return v;
 }
 
+void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
+{
+    /* Disclaimer: The whole class is messy because of the time step handling via member variables. This itself is due
+     * to the fact that NewtonRaphson does not care about time or time steps, but the Residual function, it tries to
+     * minimize, does. So we slip that around the interface. */
+    mGlobalTime -= mTimeStep;
+    auto x = ToGlobalDofVector(ToEigen(mX, mDofs));
+    mGlobalTime += mTimeStep;
+    /* So each call to ToGlobalDofVector assumes that we solve for the step t + dt. But we are in postprocess right now.
+     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToGlobalDofVector to apply
+     * constraints for t + dt + dt. */
+
+    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime, mTimeStep);
+
+    double dofMean = boost::accumulate(x(dofType, dofNumbers), 0.) / dofNumbers.size();
+    double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
+
+    out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
+}
+
+
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
     EigenSparseSolver solver(solverType);
@@ -129,7 +155,16 @@ int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 
     int numIterations = 0;
 
-    Eigen::VectorXd tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+    Eigen::VectorXd tmpX;
+    try
+    {
+        tmpX = NewtonRaphson::Solve(*this, trialX, solver, 12, NewtonRaphson::LineSearch(), &numIterations);
+    }
+    catch (std::exception& e)
+    {
+        throw NewtonRaphson::NoConvergence(e.what());
+    }
+
     if (tmpX.norm() > 1.e10)
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 

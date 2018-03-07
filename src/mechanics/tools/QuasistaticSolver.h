@@ -2,6 +2,7 @@
 
 #include "mechanics/tools/TimeDependentProblem.h"
 #include "mechanics/constraints/Constraints.h"
+#include <iosfwd>
 
 namespace NuTo
 {
@@ -71,8 +72,15 @@ public:
     //! @return number of iterations required by the newton algorithm, throws upon failure to converge
     int DoStep(double newGlobalTime, std::string solverType = "EigenSparseLU");
 
+    //! Writes the current time, the mean dof values and the sum of the residual into out, only for the given dof type
+    //! and given dof numbers
+    //! @param out output stream
+    //! @param dofType dof type
+    //! @param dofNumbers dof numbers that are considered
+    void WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers);
+
 private:
-    GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x);
+    GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x) const;
 
     DofVector<double> mX;
 
