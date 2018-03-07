@@ -1,4 +1,5 @@
 add_unit_test(LinearElastic)
+add_unit_test(LinearElasticDamage)
 add_unit_test(EngineeringStrainInvariants)
 add_unit_test(EngineeringStrain)
 add_unit_test(EngineeringStress)
