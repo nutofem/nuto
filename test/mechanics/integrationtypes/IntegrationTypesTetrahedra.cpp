@@ -295,7 +295,8 @@ double ExactIntegralMonomialTetrahedron(int order, int indx)
 
 void CheckTetrahedronIntegration(int polyOrder, int intTypeOrder)
 {
-    std::unique_ptr<NuTo::IntegrationTypeBase> intType = NuTo::CreateIntegrationType(NuTo::Tetrahedron(), intTypeOrder);
+    std::unique_ptr<NuTo::IntegrationTypeBase> intType =
+            NuTo::CreateGaussIntegrationType(NuTo::Tetrahedron(), intTypeOrder);
     for (int n = 0; n <= polyOrder; n++)
     {
         int count = 0;

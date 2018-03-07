@@ -75,7 +75,8 @@ double ExactIntegralMonomialTriangle(int order, int indx)
 
 void CheckTriangleIntegration(int polyOrder, int intTypeOrder)
 {
-    std::unique_ptr<NuTo::IntegrationTypeBase> intType = NuTo::CreateIntegrationType(NuTo::Triangle(), intTypeOrder);
+    std::unique_ptr<NuTo::IntegrationTypeBase> intType =
+            NuTo::CreateGaussIntegrationType(NuTo::Triangle(), intTypeOrder);
     for (int n = 0; n <= polyOrder; n++)
     {
         int count = 0;

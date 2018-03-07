@@ -138,9 +138,24 @@ std::unique_ptr<IntegrationTypeBase> G_Pyramid(int order)
                         "Prism integration of order " + std::to_string(order) + " is not defined.");
     }
 }
+
+std::unique_ptr<IntegrationTypeBase> L_Line(int order)
+{
+    return std::make_unique<IntegrationTypeTensorProduct<1>>(order, eIntegrationMethod::LOBATTO);
 }
 
-std::unique_ptr<IntegrationTypeBase> NuTo::CreateIntegrationType(const Shape& shape, int order)
+std::unique_ptr<IntegrationTypeBase> L_Quadrilateral(int order)
+{
+    return std::make_unique<IntegrationTypeTensorProduct<2>>(order, eIntegrationMethod::LOBATTO);
+}
+
+std::unique_ptr<IntegrationTypeBase> L_Hex(int order)
+{
+    return std::make_unique<IntegrationTypeTensorProduct<3>>(order, eIntegrationMethod::LOBATTO);
+}
+}
+
+std::unique_ptr<IntegrationTypeBase> NuTo::CreateGaussIntegrationType(const Shape& shape, int order)
 {
     switch (shape.Enum())
     {
@@ -158,6 +173,26 @@ std::unique_ptr<IntegrationTypeBase> NuTo::CreateIntegrationType(const Shape& sh
         return G_Prism(order);
     case eShape::Pyramid:
         return G_Pyramid(order);
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Shape enum is not known.");
+    }
+}
+
+std::unique_ptr<IntegrationTypeBase> NuTo::CreateLobattoIntegrationType(const Shape& shape, int order)
+{
+    switch (shape.Enum())
+    {
+    case eShape::Line:
+        return L_Line(order);
+    case eShape::Quadrilateral:
+        return L_Quadrilateral(order);
+    case eShape::Hexahedron:
+        return L_Hex(order);
+    case eShape::Triangle:
+    case eShape::Tetrahedron:
+    case eShape::Prism:
+    case eShape::Pyramid:
+        throw Exception(__PRETTY_FUNCTION__, "Lobatto integration for this shape is not defined.");
     default:
         throw Exception(__PRETTY_FUNCTION__, "Shape enum is not known.");
     }

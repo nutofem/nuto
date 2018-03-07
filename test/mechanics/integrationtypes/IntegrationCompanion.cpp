@@ -13,16 +13,23 @@ using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(CreateTriangleIntegration)
 {
-    auto triangle1ips = CreateIntegrationType(Triangle(), 1);
+    auto triangle1ips = CreateGaussIntegrationType(Triangle(), 1);
     BOOST_CHECK(typeid(*triangle1ips) == typeid(IntegrationType2D3NGauss1Ip));
 
-    auto triangle4ips = CreateIntegrationType(Triangle(), 3);
+    auto triangle4ips = CreateGaussIntegrationType(Triangle(), 3);
     BOOST_CHECK(typeid(*triangle4ips) == typeid(IntegrationType2D3NGauss4Ip));
 }
 
-BOOST_AUTO_TEST_CASE(CreateHexIntegration)
+BOOST_AUTO_TEST_CASE(CreateHexIntegrationGauss)
 {
-    auto brickOrder3 = CreateIntegrationType(Hexahedron(), 3);
+    auto brickOrder3 = CreateGaussIntegrationType(Hexahedron(), 3);
+    BOOST_CHECK(typeid(*brickOrder3) == typeid(IntegrationTypeTensorProduct<3>));
+    BOOST_CHECK((*brickOrder3).GetNumIntegrationPoints() == 3 * 3 * 3);
+}
+
+BOOST_AUTO_TEST_CASE(CreateHexIntegrationLobatto)
+{
+    auto brickOrder3 = CreateLobattoIntegrationType(Hexahedron(), 3);
     BOOST_CHECK(typeid(*brickOrder3) == typeid(IntegrationTypeTensorProduct<3>));
     BOOST_CHECK((*brickOrder3).GetNumIntegrationPoints() == 3 * 3 * 3);
 }
