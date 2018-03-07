@@ -307,7 +307,7 @@ void CheckTetrahedronIntegration(int polyOrder, int intTypeOrder)
                     return (std::pow(x[0], i) * std::pow(x[1], j) * std::pow(x[2], n - i - j));
                 };
                 double computedResult = integrate(f, *intType);
-                BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTetrahedron(n, count), 1.e-8);
+                BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTetrahedron(n, count), 1.e-9);
                 count++;
             }
         }

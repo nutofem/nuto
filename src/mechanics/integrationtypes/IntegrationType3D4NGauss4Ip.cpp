@@ -3,10 +3,10 @@
 
 NuTo::IntegrationType3D4NGauss4Ip::IntegrationType3D4NGauss4Ip()
 {
-    mCoordinates[0] = Eigen::Vector3d({0.13819660, 0.13819660, 0.13819660});
-    mCoordinates[1] = Eigen::Vector3d({0.58541020, 0.13819660, 0.13819660});
-    mCoordinates[2] = Eigen::Vector3d({0.13819660, 0.58541020, 0.13819660});
-    mCoordinates[3] = Eigen::Vector3d({0.13819660, 0.13819660, 0.58541020});
+    mCoordinates[0] = Eigen::Vector3d({0.13819660112501048, 0.13819660112501048, 0.13819660112501048});
+    mCoordinates[1] = Eigen::Vector3d({0.58541019662496852, 0.13819660112501048, 0.13819660112501048});
+    mCoordinates[2] = Eigen::Vector3d({0.13819660112501048, 0.58541019662496852, 0.13819660112501048});
+    mCoordinates[3] = Eigen::Vector3d({0.13819660112501048, 0.13819660112501048, 0.58541019662496852});
 }
 
 Eigen::VectorXd NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
