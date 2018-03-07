@@ -17,12 +17,17 @@ add_unit_test(InterpolationPyramidLinear
 add_unit_test(InterpolationQuadSerendipity
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationTrussLobatto
+    mechanics/elements/SpectralShapeFunctions.cpp
     math/Legendre.cpp)
 add_unit_test(InterpolationQuadLobatto
+    mechanics/elements/SpectralShapeFunctions.cpp
     math/Legendre.cpp)
 add_unit_test(InterpolationBrickLobatto
+    mechanics/elements/SpectralShapeFunctions.cpp
     math/Legendre.cpp)
 
 add_unit_test(InterpolationCompanion
     mechanics/elements/ElementShapeFunctions.cpp
+    mechanics/elements/SpectralShapeFunctions.cpp
+    math/Legendre.cpp
     )

@@ -12,9 +12,13 @@
 #include "InterpolationPrismLinear.h"
 #include "InterpolationPyramidLinear.h"
 
+#include "InterpolationTrussLobatto.h"
+#include "InterpolationQuadLobatto.h"
+#include "InterpolationBrickLobatto.h"
+
 using namespace NuTo;
 
-std::unique_ptr<InterpolationSimple> S_Line(int order)
+std::unique_ptr<InterpolationSimple> SerendipityLine(int order)
 {
     switch (order)
     {
@@ -27,7 +31,7 @@ std::unique_ptr<InterpolationSimple> S_Line(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Triangle(int order)
+std::unique_ptr<InterpolationSimple> SerendipityTriangle(int order)
 {
     switch (order)
     {
@@ -42,7 +46,7 @@ std::unique_ptr<InterpolationSimple> S_Triangle(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Quadrilateral(int order)
+std::unique_ptr<InterpolationSimple> SerendipityQuadrilateral(int order)
 {
     switch (order)
     {
@@ -57,7 +61,7 @@ std::unique_ptr<InterpolationSimple> S_Quadrilateral(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Tetrahedron(int order)
+std::unique_ptr<InterpolationSimple> SerendipityTetrahedron(int order)
 {
     switch (order)
     {
@@ -70,7 +74,7 @@ std::unique_ptr<InterpolationSimple> S_Tetrahedron(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Hex(int order)
+std::unique_ptr<InterpolationSimple> SerendipityHex(int order)
 {
     switch (order)
     {
@@ -83,7 +87,7 @@ std::unique_ptr<InterpolationSimple> S_Hex(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Prism(int order)
+std::unique_ptr<InterpolationSimple> SerendipityPrism(int order)
 {
     switch (order)
     {
@@ -96,7 +100,7 @@ std::unique_ptr<InterpolationSimple> S_Prism(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> S_Pyramid(int order)
+std::unique_ptr<InterpolationSimple> SerendipityPyramid(int order)
 {
     switch (order)
     {
@@ -114,18 +118,52 @@ std::unique_ptr<InterpolationSimple> NuTo::CreateSerendipityInterpolation(const 
     switch (shape.Enum())
     {
     case eShape::Line:
-        return S_Line(order);
+        return SerendipityLine(order);
     case eShape::Triangle:
-        return S_Triangle(order);
+        return SerendipityTriangle(order);
     case eShape::Quadrilateral:
-        return S_Quadrilateral(order);
+        return SerendipityQuadrilateral(order);
     case eShape::Tetrahedron:
-        return S_Tetrahedron(order);
+        return SerendipityTetrahedron(order);
     case eShape::Hexahedron:
-        return S_Hex(order);
+        return SerendipityHex(order);
     case eShape::Prism:
-        return S_Prism(order);
+        return SerendipityPrism(order);
     case eShape::Pyramid:
-        return S_Pyramid(order);
+        return SerendipityPyramid(order);
+    }
+}
+
+
+std::unique_ptr<InterpolationSimple> LobattoLine(int order)
+{
+    return std::make_unique<InterpolationTrussLobatto>(order);
+}
+
+
+std::unique_ptr<InterpolationSimple> LobattoQuadrilateral(int order)
+{
+    return std::make_unique<InterpolationQuadLobatto>(order);
+}
+
+
+std::unique_ptr<InterpolationSimple> LobattoHexahedron(int order)
+{
+    return std::make_unique<InterpolationBrickLobatto>(order);
+}
+
+
+std::unique_ptr<InterpolationSimple> NuTo::CreateLobattoInterpolation(const Shape& shape, int order)
+{
+    switch (shape.Enum())
+    {
+    case eShape::Line:
+        return LobattoLine(order);
+    case eShape::Quadrilateral:
+        return LobattoQuadrilateral(order);
+    case eShape::Hexahedron:
+        return LobattoHexahedron(order);
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Lobatto interpolations are not defined for this shape.");
     }
 }

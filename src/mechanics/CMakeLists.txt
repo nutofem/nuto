@@ -4,6 +4,7 @@ set(MechanicsSources
     constraints/ConstraintCompanion.cpp
     dofs/DofNumbering.cpp
     elements/ElementShapeFunctions.cpp
+    elements/SpectralShapeFunctions.cpp
 
     mesh/MeshFem.cpp
     mesh/MeshFemDofConvert.cpp
