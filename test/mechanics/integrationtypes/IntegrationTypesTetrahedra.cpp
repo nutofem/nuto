@@ -307,22 +307,19 @@ void CheckTetrahedronIntegration(int polyOrder, int intTypeOrder)
                     return (std::pow(x[0], i) * std::pow(x[1], j) * std::pow(x[2], n - i - j));
                 };
                 double computedResult = integrate(f, *intType);
-                BOOST_CHECK_SMALL(computedResult - ExactIntegralMonomialTetrahedron(n, count), 1.e-7);
+                BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTetrahedron(n, count), 1.e-8);
                 count++;
             }
         }
-        std::cout << "Done: order " << n << std::endl;
     }
 }
 
 BOOST_AUTO_TEST_CASE(IntegrateTetrahedron)
 {
-    std::cout << "Tet 1 " << std::endl;
-    CheckTetrahedronIntegration(2, 1);
-    std::cout << "Tet 2 " << std::endl;
-    CheckTetrahedronIntegration(3, 2);
-    std::cout << "Tet 3 " << std::endl;
-    CheckTetrahedronIntegration(4, 3);
-    std::cout << "Tet 4 " << std::endl;
-    CheckTetrahedronIntegration(5, 4);
+    int maxOrder = 18;
+    for (int i = 1; i <= maxOrder; i++)
+    {
+        CheckTetrahedronIntegration(i, i);
+        std::cout << "Done: order " << i << std::endl;
+    }
 }

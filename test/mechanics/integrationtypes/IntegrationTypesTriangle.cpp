@@ -83,27 +83,18 @@ void CheckTriangleIntegration(int polyOrder, int intTypeOrder)
         {
             auto f = [n, i](Eigen::VectorXd x) { return (std::pow(x[0], i) * std::pow(x[1], n - i)); };
             double computedResult = integrate(f, *intType);
-            BOOST_CHECK_SMALL(computedResult - ExactIntegralMonomialTriangle(n, count), 1.e-7);
+            BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTriangle(n, count), 1.e-7);
             count++;
         }
-        std::cout << "Done: order " << n << std::endl;
     }
 }
 
 BOOST_AUTO_TEST_CASE(IntegrateTriangle)
 {
-    std::cout << "Tri 1 " << std::endl;
-    CheckTriangleIntegration(2, 1);
-    std::cout << "Tri 2 " << std::endl;
-    CheckTriangleIntegration(3, 2);
-    std::cout << "Tri 3 " << std::endl;
-    CheckTriangleIntegration(4, 3);
-    std::cout << "Tri 4 " << std::endl;
-    CheckTriangleIntegration(5, 4);
-    std::cout << "Tri 5 " << std::endl;
-    CheckTriangleIntegration(6, 5);
-    std::cout << "Tri 6 " << std::endl;
-    CheckTriangleIntegration(7, 6);
-    std::cout << "Tri 7 " << std::endl;
-    CheckTriangleIntegration(8, 7);
+    int maxOrder = 19;
+    for (int i = 1; i <= maxOrder; i++)
+    {
+        CheckTriangleIntegration(i, i);
+        std::cout << "Done: order " << i << std::endl;
+    }
 }

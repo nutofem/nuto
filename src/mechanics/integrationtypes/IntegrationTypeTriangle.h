@@ -5,11 +5,15 @@
 namespace NuTo
 {
 //! @brief ... integration types for the triangle
-class IntegrationTypeTet1 : public IntegrationTypeBase
+class IntegrationTypeTriangle : public IntegrationTypeBase
 {
 
 public:
-    static const std::vector<Eigen::Vector4d> quadratureData;
+    static const std::vector<std::vector<Eigen::Vector3d>> quadratureData;
+    //! @brief constructor
+    //! @param order integration order
+    //! @param method integration method
+    IntegrationTypeTriangle(int order);
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -27,8 +31,11 @@ public:
 
     int GetDimension() const override
     {
-        return 3;
+        return 2;
     }
+
+private:
+    int mOrder;
 };
 
 
