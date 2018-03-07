@@ -3,6 +3,6 @@
 function(add_benchmark BenchmarkName)
     add_executable(${BenchmarkName} ${BenchmarkName}.cpp)
     target_include_directories(${BenchmarkName} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-    target_link_libraries(${BenchmarkName} benchmark Mechanics Math Base Visualize)
+    target_link_libraries(${BenchmarkName} benchmark::benchmark Mechanics Math Base Visualize)
     append_to_benchmarks(${BenchmarkName})
 endfunction()
