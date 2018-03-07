@@ -4,21 +4,21 @@
 #include "mechanics/constitutive/LinearElastic.h"
 #include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
-#include <iostream>
-
 namespace NuTo
 {
+namespace NonlocalInteraction
+{
+struct Constant;
+}
+
 namespace Integrands
 {
-
-struct ConstantInteraction;
-
 //! Implicit gradient enhanced damage model
 //! Peerlings RHJ et al.
 //! https://dx.doi.org/10.1002/(SICI)1097-0207(19961015)39:19<3391::AID-NME7>3.0.CO;2-D
 //! @tparam TDim global dimension
 //! @tparam TDamageLaw damage law that provides .Damage(double) and .Derivative(double)
-template <int TDim, typename TDamageLaw, typename TInteraction = ConstantInteraction>
+template <int TDim, typename TDamageLaw, typename TInteraction = NonlocalInteraction::Constant>
 class GradientDamage
 {
 public:
@@ -123,10 +123,13 @@ public:
     Constitutive::ModifiedMisesStrainNorm<TDim> mNorm;
     TInteraction mInteraction;
 };
+} /* Integrand */
 
+namespace NonlocalInteraction
+{
 
 //! Results in the model used by Peerlings et al.
-struct ConstantInteraction
+struct Constant
 {
     double Factor(double) const
     {
@@ -139,9 +142,9 @@ struct ConstantInteraction
 };
 
 //! Results in the model used by Poh & Sun 2017, IJNME and limits the nonlocal parameter
-struct DecreasingInteraction
+struct Decreasing
 {
-    DecreasingInteraction(double R = 0.005, double eta = 5)
+    Decreasing(double R = 0.005, double eta = 5)
         : mR(R)
         , mEta(eta)
     {
@@ -158,5 +161,5 @@ struct DecreasingInteraction
     double mR;
     double mEta;
 };
-} /* Integrand */
+} /* NonlocalInteraction */
 } /* NuTo */

@@ -34,16 +34,16 @@ BOOST_AUTO_TEST_CASE(Integrand)
     double nu = 0.2;
     double ft = 4;
     double fc = 40;
-    double gf = 0.021;
+    double gf = 0.021 * 10; // we have to adjust the material parameters due to nonlocal decreasing interaction
     double L = 40;
     double c = 0.25;
 
     double k0 = ft / E;
     Laws::LinearElastic<1> elasticLaw(E, nu);
-    Constitutive::DamageLawExponential dmg(k0, ft / gf / 10, 1.);
+    Constitutive::DamageLawExponential dmg(k0, ft / gf, 1.);
     Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
 
-    using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
+    using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, NonlocalInteraction::Decreasing>;
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
 
     /* mesh, interpolations, constraints */
@@ -166,8 +166,8 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     Laws::LinearElastic<2> elasticLaw(E, nu);
 
     double ft = 4;
-    double gf = 0.021;
-    Constitutive::DamageLawExponential dmg(ft / E, ft / gf / 10, 0.99);
+    double gf = 0.021 * 10;
+    Constitutive::DamageLawExponential dmg(ft / E, ft / gf, 0.99);
 
     double fc = 40;
     Constitutive::ModifiedMisesStrainNorm<2> strainNorm(nu, fc / ft);
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
     double c = 1.0;
-    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
+    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential>;
     using Neumann = Integrands::NeumannBc<2>;
 
     Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
