@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Eigen/Core>
+
 namespace NuTo
 {
 
@@ -18,6 +20,7 @@ class Shape
 {
 public:
     virtual eShape Enum() const = 0;
+    virtual bool IsWithinShape(Eigen::VectorXd xi) const = 0;
 };
 
 } // namespace NuTo
