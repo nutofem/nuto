@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <mechanics/constitutive/MechanicsInterface.h>
+#include "mechanics/constitutive/MechanicsInterface.h"
+#include "mechanics/constitutive/LinearElasticDamage.h"
 
 namespace NuTo
 {
@@ -24,20 +25,16 @@ namespace Laws
   * @tparam TEvolution the evolution equation \f$ \kappa(\boldsymbol \varepsilon) \f$. This requires the methods
   * `.Kappa(strain)` and `.DkappaDstrain(strain)` to be implemented, e.g. NuTo::Laws::EvolutionImplicit.
   *
-  * @tparam TElasticLaw the elastic constitutive law \f$ \sigma_\text{elastic}(\boldsymbol \varepsilon) \f$. This
-  * requires the methods `.Stress(strain, ...)` and `.Tangent(strain, ...)` to be implemented, e.g.
-  * NuTo::Laws::LinearElastic.
-  *
   * @tparam TDim dimension
   */
-template <int TDim, typename TDamageLaw, typename TEvolution, typename TElasticLaw>
+template <int TDim, typename TDamageLaw, typename TEvolution>
 class LocalIsotropicDamage : public MechanicsInterface<TDim>
 {
 public:
-    LocalIsotropicDamage(TDamageLaw damageLaw, TEvolution evolution, TElasticLaw elasticLaw)
-        : mDamageLaw(damageLaw)
+    LocalIsotropicDamage(LinearElasticDamage<TDim> elasticDamage, TDamageLaw damageLaw, TEvolution evolution)
+        : mElasticDamage(elasticDamage)
+        , mDamageLaw(damageLaw)
         , mEvolution(evolution)
-        , mElasticLaw(elasticLaw)
     {
     }
 
@@ -46,19 +43,19 @@ public:
     EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
         auto kappa = mEvolution.Kappa(strain, deltaT, ids);
-        return (1 - mDamageLaw.Damage(kappa)) * mElasticLaw.Stress(strain);
+        auto omega = mDamageLaw.Damage(kappa);
+        return mElasticDamage.Stress(strain, omega);
     }
 
     EngineeringTangent<TDim> Tangent(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
-        auto C = mElasticLaw.Tangent(strain, deltaT, ids);
-        auto sigma = mElasticLaw.Stress(strain, deltaT, ids);
-
         auto kappa = mEvolution.Kappa(strain, deltaT, ids);
         auto omega = mDamageLaw.Damage(kappa);
         auto dOmegadKappa = mDamageLaw.Derivative(kappa);
 
-        return (1 - omega) * C - sigma * dOmegadKappa * mEvolution.DkappaDstrain(strain, deltaT, ids);
+        return mElasticDamage.DstressDstrain(strain, omega) +
+               mElasticDamage.DstressDomega(strain, omega) * dOmegadKappa *
+                       mEvolution.DkappaDstrain(strain, deltaT, ids);
     }
 
     void Update(EngineeringStrain<TDim> strain, double deltaT, CellIds ids)
@@ -69,9 +66,9 @@ public:
 public:
     // Intentionally made public. I assume that we know what we do. And this avoids lots of code, either getters
     // (possibly nonconst) or forwarding functions like `double Kappa(...), double Damage(...)`
+    LinearElasticDamage<TDim> mElasticDamage;
     TDamageLaw mDamageLaw;
     TEvolution mEvolution;
-    TElasticLaw mElasticLaw;
 };
 
 /** Explicit evolution equation for the NuTo::LocalIsotropicDamageLaw that implements
