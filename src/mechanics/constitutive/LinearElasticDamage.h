@@ -47,8 +47,8 @@ public:
     {
         const double eV = 1. / 3. * D().transpose() * strain;
 
-        const auto dSigma_deV = (m3K * (1. - omega * H(eV))) * Iv;
-        const auto dSigma_de = (1. - omega) * m2G * pInvId;
+        const EngineeringTangent<TDim> dSigma_deV = m3K * (1. - omega * H(eV)) * mIv;
+        const EngineeringTangent<TDim> dSigma_de = (1. - omega) * m2G * mPinvId;
 
         return dSigma_deV + dSigma_de;
     }
@@ -90,8 +90,8 @@ public:
     bool mIsUnilateral;
     ePlaneState mPlaneState;
 
-    const EngineeringTangent<TDim> Iv = 1. / 3. * D() * D().transpose();
-    const EngineeringTangent<TDim> pInvId = PinvDiag().asDiagonal() * (EngineeringTangent<TDim>::Identity() - Iv);
+    const EngineeringTangent<TDim> mIv = 1. / 3. * D() * D().transpose();
+    const EngineeringTangent<TDim> mPinvId = PinvDiag().asDiagonal() * (EngineeringTangent<TDim>::Identity() - mIv);
 };
 
 } /* Laws */

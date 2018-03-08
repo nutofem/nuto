@@ -95,7 +95,7 @@ private:
     using ElasticDamage = Laws::LinearElasticDamage<1>;
     using DamageLaw = Constitutive::DamageLawExponential;
     using StrainNorm = Constitutive::ModifiedMisesStrainNorm<1>;
-    using Evolution = Laws::EvolutionImplicit<1, StrainNorm>;
+    using Evolution = Laws::EvolutionImplicit<1>;
     using Law = Laws::LocalIsotropicDamage<1, DamageLaw, Evolution>;
 
     MeshFem mMesh;

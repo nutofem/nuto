@@ -11,7 +11,6 @@ using namespace NuTo;
 // Material parameters
 const double E = 20000;
 const double nu = 0.2;
-NuTo::Laws::LinearElastic<1> elasticLaw(E, nu);
 
 const double ft = 4;
 const double fc = 10 * ft;
@@ -26,7 +25,7 @@ auto TestLaw()
     // Define the law using policy based design principles, hopefully applied correctly
     using Damage = Constitutive::DamageLawExponential;
     using StrainNorm = Constitutive::ModifiedMisesStrainNorm<TDim>;
-    using Evolution = Laws::EvolutionImplicit<TDim, StrainNorm>;
+    using Evolution = Laws::EvolutionImplicit<TDim>;
     using Law = Laws::LocalIsotropicDamage<TDim, Damage, Evolution>;
 
     Damage dmg(kappa0, beta, alpha);

@@ -3,6 +3,7 @@
 #include <vector>
 #include "mechanics/constitutive/MechanicsInterface.h"
 #include "mechanics/constitutive/LinearElasticDamage.h"
+#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
 namespace NuTo
 {
@@ -78,10 +79,8 @@ public:
  *
  * @tparam TDim dimension
  *
- * @tparam TStrainNorm strain norm \f$ \varepsilon_\text{eq}(\boldsymbol \varepsilon) \f$. This requires the methods
- * `Kappa(strain)` and `DkappaDstrain(strain)` to be implemented, e.g. NuTo::Constitutive::ModifiedMisesStrainNorm.
  */
-template <int TDim, typename TStrainNorm>
+template <int TDim>
 class EvolutionImplicit
 {
 
@@ -90,7 +89,8 @@ public:
     //! @param strainNorm strain norm, see class documentation
     //! @param numCells number of cells for the history data allocation
     //! @param numIpsPerCell nummer of integraiton points per cell for the history data allocation
-    EvolutionImplicit(TStrainNorm strainNorm, size_t numCells = 0, size_t numIpsPerCell = 0)
+    EvolutionImplicit(Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm, size_t numCells = 0,
+                      size_t numIpsPerCell = 0)
         : mStrainNorm(strainNorm)
     {
         ResizeHistoryData(numCells, numIpsPerCell);
@@ -119,7 +119,7 @@ public:
     }
 
 public:
-    TStrainNorm mStrainNorm;
+    Constitutive::ModifiedMisesStrainNorm<TDim> mStrainNorm;
     Eigen::MatrixXd mKappas;
 };
 
