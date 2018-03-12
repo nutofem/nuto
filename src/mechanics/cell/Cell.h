@@ -16,7 +16,7 @@ public:
         : mElements(elements)
         , mIntegrationType(integrationType)
         , mId(id)
-        , mShape(elements.Shape())
+        , mShape(elements.GetShape())
     {
     }
 

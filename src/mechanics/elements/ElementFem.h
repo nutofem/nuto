@@ -97,7 +97,7 @@ public:
         return mNodes[i];
     }
 
-    const Shape& Shape() const
+    const Shape& GetShape() const
     {
         return mShape;
     }
@@ -105,6 +105,6 @@ public:
 private:
     std::vector<std::reference_wrapper<NodeSimple>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
-    const class Shape& mShape;
+    const Shape& mShape;
 };
 } /* NuTo */

@@ -17,7 +17,7 @@ public:
     virtual ~ElementCollection() = default;
     virtual const ElementInterface& CoordinateElement() const = 0;
     virtual const ElementInterface& DofElement(DofType) const = 0;
-    virtual const Shape& Shape() const = 0;
+    virtual const Shape& GetShape() const = 0;
 };
 
 //! @brief implementation of the interface ElementCollection for arbitrary element types that are derived from
@@ -36,7 +36,7 @@ public:
 
     ElementCollectionImpl(TElement coordinateElement)
         : mCoordinateElement(coordinateElement)
-        , mShape(coordinateElement.Shape())
+        , mShape(coordinateElement.GetShape())
     {
     }
 
@@ -93,7 +93,7 @@ public:
         return mDofElements.Has(dof);
     }
 
-    const class Shape& Shape() const override
+    const Shape& GetShape() const override
     {
         return mShape;
     }
@@ -101,7 +101,7 @@ public:
 private:
     TElement mCoordinateElement;
     DofContainer<TElement> mDofElements;
-    const class Shape& mShape;
+    const Shape& mShape;
 };
 
 using ElementCollectionFem = ElementCollectionImpl<NuTo::ElementFem>;

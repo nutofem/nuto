@@ -131,6 +131,8 @@ std::unique_ptr<InterpolationSimple> NuTo::CreateSerendipityInterpolation(const 
         return SerendipityPrism(order);
     case eShape::Pyramid:
         return SerendipityPyramid(order);
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Unknown shape.");
     }
 }
 

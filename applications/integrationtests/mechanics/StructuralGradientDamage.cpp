@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
-    auto postProcess = [&](double t) {
+    auto postProcess = [&](double) {
         // visu.Plot(t, true);
         problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)));
     };
