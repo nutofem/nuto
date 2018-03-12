@@ -39,15 +39,15 @@ inline Eigen::Matrix<T, Eigen::Dynamic, 1> ToEigen(const DofVector<T>& v, std::v
 //! @param rDestination properly sized dof vector
 template <typename T>
 inline void FromEigen(const Eigen::Matrix<T, Eigen::Dynamic, 1>& source, std::vector<DofType> dofs,
-                      DofVector<T>* rDesination)
+                      DofVector<T>* rDestination)
 {
-    assert(rDesination != nullptr);
-    assert(TotalRows(*rDesination, dofs) == source.rows());
+    assert(rDestination != nullptr);
+    assert(TotalRows(*rDestination, dofs) == source.rows());
     int currentStartRow = 0;
     for (auto dof : dofs)
     {
-        const int rows = (*rDesination)[dof].rows();
-        (*rDesination)[dof] = source.segment(currentStartRow, rows);
+        const int rows = (*rDestination)[dof].rows();
+        (*rDestination)[dof] = source.segment(currentStartRow, rows);
         currentStartRow += rows;
     }
 }

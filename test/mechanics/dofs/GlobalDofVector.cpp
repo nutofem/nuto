@@ -20,6 +20,6 @@ BOOST_AUTO_TEST_CASE(Access)
     for (int i = 0; i < 5; ++i)
     {
         BOOST_CHECK_CLOSE(v(dof0, i), i, 1.e-10);
-        BOOST_CHECK_CLOSE(v(dof1, i), 10 + i, 1.e-10);
+        BOOST_CHECK_CLOSE(v(dof1, std::vector<int>{i})[0], 10 + i, 1.e-10);
     }
 }

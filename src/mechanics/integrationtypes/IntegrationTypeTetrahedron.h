@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-//! @brief ... integration types for the triangle
+//! @brief Integration types for the triangle
 class IntegrationTypeTetrahedron : public IntegrationTypeBase
 {
 
@@ -13,11 +13,10 @@ public:
     static const std::vector<int> orderToIndex;
     //! @brief constructor
     //! @param order integration order
-    //! @param method integration method
     IntegrationTypeTetrahedron(int order);
 
     //! @brief returns the local coordinates of an integration point
-    //! @param rIpNum integration point (counting from zero)
+    //! @param i integration point (counting from zero)
     //! @return rCoordinates (result)
     Eigen::VectorXd GetLocalIntegrationPointCoordinates(int i) const override;
 
@@ -26,7 +25,7 @@ public:
     int GetNumIntegrationPoints() const override;
 
     //! @brief returns the weight of an integration point
-    //! @param rIpNum integration point (counting from zero)
+    //! @param i integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int i) const override;
 

@@ -4,7 +4,7 @@
 
 namespace NuTo
 {
-//! @brief ... integration types for the triangle
+//! @brief Integration types for the triangle
 class IntegrationTypeTriangle : public IntegrationTypeBase
 {
 
@@ -12,11 +12,10 @@ public:
     static const std::vector<std::vector<Eigen::Vector3d>> quadratureData;
     //! @brief constructor
     //! @param order integration order
-    //! @param method integration method
     IntegrationTypeTriangle(int order);
 
     //! @brief returns the local coordinates of an integration point
-    //! @param rIpNum integration point (counting from zero)
+    //! @param i integration point (counting from zero)
     //! @return rCoordinates (result)
     Eigen::VectorXd GetLocalIntegrationPointCoordinates(int i) const override;
 
@@ -25,7 +24,7 @@ public:
     int GetNumIntegrationPoints() const override;
 
     //! @brief returns the weight of an integration point
-    //! @param rIpNum integration point (counting from zero)
+    //! @param i integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int i) const override;
 

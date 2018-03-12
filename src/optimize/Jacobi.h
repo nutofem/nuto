@@ -8,7 +8,7 @@ namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
-//! @brief ... standard class for jacobi method
+//! @brief standard class for jacobi method
 class Jacobi : public virtual Optimizer
 {
 
@@ -27,6 +27,9 @@ public:
     virtual ~Jacobi() = default;
 
 
+    //! @brief Optimize routine - optimize displacement or error according to input
+    //! Optimize residual if $|r|\inequal 0$
+    //! Optimize displacements if |r|=0, forces have to be added (at place of residuals)
     int Optimize() override;
 
     int Optimize(std::vector<double>& v, std::vector<double>& f);
@@ -66,7 +69,7 @@ public:
         mShowSteps = rShowSteps;
     }
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    //! @brief Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;
 
 

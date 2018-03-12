@@ -26,7 +26,7 @@ function(add_unit_test ClassName)
     target_link_libraries(${ClassName} Fakeit Eigen3::Eigen)
 
     # generate a ctest name for the test
-    string(REPLACE "." "::" testname ${relpath})
+    string(REPLACE "/" "::" testname ${relpath})
     add_test(unit::${testname}::${ClassName} ${ClassName} --log_level=message)
     set(all_unit_tests "${all_unit_tests};${ClassName}"
         CACHE INTERNAL "The names of all the unit tests")

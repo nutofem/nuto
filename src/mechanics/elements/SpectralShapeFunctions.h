@@ -19,11 +19,9 @@ namespace ShapeFunctions1D
 //! @return local node coordinates ordered from left to right
 Eigen::VectorXd NodeCoordinatesTrussLobatto(int order);
 
-
 //! @brief Compute barycentric weights from node coordinates
 //! @param nodes local node coordinates
 Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes);
-
 
 //! @brief Value of 1D Lagrange type shape functions with given nodes
 //!
@@ -32,7 +30,6 @@ Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes);
 //! @param nodes local node coordinates
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
 Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes);
-
 
 //! @brief Value of 1D Lagrange type shape function derivative with given nodes
 //! @param x local coordinate where shapes are evaluated
@@ -64,19 +61,15 @@ namespace ShapeFunctions2D
 //!
 //! local coordinate    -1   ,  .......... , +1
 //!
-//! @param nodeId
-//! @param nodes local node coords in interval [-1,1 ] used to build
-//! a quad grid
+//! @param nodes local node coords in interval [-1,1 ] used to build a quad grid
 //! @return coordinates of node with id nodeId
 Eigen::MatrixXd NodeCoordinatesQuadLobatto(int nodeId, const Eigen::VectorXd& nodes);
-
 
 //! @brief Value of Lagrange type shape functions with given 1D nodes (tensor product)
 //! @param x local coordinate where shapes are evaluated
 //! @param nodes local node coordinates
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
 Eigen::VectorXd ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
-
 
 Eigen::MatrixXd DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
 }
@@ -110,12 +103,9 @@ namespace ShapeFunctions3D
 //!
 //! local coordinate    -1   ,  .......... , +1
 //!
-//! @param nodeId
-//! @param nodes local node coords in interval [-1,1 ] used to build
-//! a brick grid
+//! @param nodes local node coords in interval [-1,1 ] used to build a brick grid
 //! @return coordinates of node with id nodeId
 Eigen::MatrixXd NodeCoordinatesBrickLobatto(int nodeId, const Eigen::VectorXd& nodes);
-
 
 //! @brief Value of Lagrange type shape functions with given 1D nodes (tensor product)
 //! @param x local coordinate where shapes are evaluated
@@ -123,8 +113,6 @@ Eigen::MatrixXd NodeCoordinatesBrickLobatto(int nodeId, const Eigen::VectorXd& n
 //! @return shapes evaluated at x. Fulfill interpolation condition fi(xj) = delta_ij
 Eigen::VectorXd ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes);
 
-
 Eigen::MatrixXd DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes);
 }
-
 } /* namespace NuTo */

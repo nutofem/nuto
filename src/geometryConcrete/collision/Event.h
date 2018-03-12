@@ -18,13 +18,13 @@ class CollidableBase;
 class EventListHandler;
 
 
-//! @brief ... class for storing events
+//! @brief class for storing events
 class Event
 {
 public:
     typedef std::vector<Event*> LocalEvents;
 
-    //! @brief ... statistics
+    //! @brief statistics
     enum EventType
     {
         SphereCollision,
@@ -32,16 +32,16 @@ public:
         WallTransfer
     };
 
-    //! @brief ... identifier for null events
+    //! @brief identifier for null events
     static const double EVENTNULL;
 
-    //! @brief ... constructor, initialized with the two CollidableBase objects  involved in this collision
-    //! @param rTime ... event time
-    //! @param rFirst ... first CollidableBase involved
-    //! @param rSecond ... second CollidableBase involved
+    //! @brief constructor, initialized with the two CollidableBase objects  involved in this collision
+    //! @param rTime event time
+    //! @param rFirst first CollidableBase involved
+    //! @param rSecond second CollidableBase involved
     Event(double rTime, CollidableBase* rFirst, CollidableBase* rSecond, int rType);
 
-    //! @brief ... copy constructor
+    //! @brief copy constructor
     Event(const Event& rEvent) = default;
 
 #ifndef SWIG
@@ -50,64 +50,64 @@ public:
     Event& operator=(Event&&) = default;
 #endif
 
-    //! @brief ... important operator for the event list sorting
-    //! ... sort priority: time >> collidables
+    //! @brief important operator for the event list sorting
+    //! sort priority: time >> collidables
     bool operator<(const Event& rOther) const;
 
-    //! @brief ... determines, whether two events are equal
+    //! @brief determines, whether two events are equal
     bool operator==(Event const& rRhs) const;
 
-    //! @brief ... determines, whether two events are unequal
+    //! @brief determines, whether two events are unequal
     bool operator!=(Event const& rRhs) const;
 
 
-    //! @brief ... destructor
+    //! @brief destructor
     //! removes itself (this) from the local event lists of both collidables
     ~Event();
 
-    //! @brief ... getter for mTime
-    //! @return ... time of event
+    //! @brief getter for mTime
+    //! @return time of event
     double GetTime() const;
 
-    //! @brief ... creates new events for mFirst and mSecond
+    //! @brief creates new events for mFirst and mSecond
     //! (--> automatically added to local event lists, see constructor)
     //! stores them to the global event list
-    //! @param rEvents ... global event list
+    //! @param rEvents global event list
     void AddNewEvents(EventListHandler& rEvents) const;
 
-    //! @brief ... removes all events in the local event lists of rEvent
-    //! @param rEvents ... global event list
+    //! @brief removes all events in the local event lists of rEvent
+    //! @param rEvents global event list
     void EraseOldEvents(EventListHandler& rEvents) const;
 
-    //! @brief ... performs the collision of mFirst vs. mSecond
+    //! @brief performs the collision of mFirst vs. mSecond
     void PerformCollision() const;
 
     //! @brief adds itself (this) to the local event lists of both collidables
     void AddLocalEvent();
 
-    //! @brief ... getter for type
+    //! @brief getter for type
     int GetType() const;
 
 protected:
-    //! @brief ... first CollidableBase involved
+    //! @brief first CollidableBase involved
     CollidableBase* mFirst;
 
-    //! @brief ... second CollidableBase involved
+    //! @brief second CollidableBase involved
     CollidableBase* mSecond;
 
 private:
-    //! @brief ... event time
+    //! @brief event time
     double mTime;
 
-    //! @brief ... member of CollidableBase::EventType
+    //! @brief member of CollidableBase::EventType
     int mType;
 
 #ifndef SWIG
     friend std::ostream& operator<<(std::ostream& rOutStream, const Event& rEvent);
 #endif
 
-    //! @brief ... output
-    //! @param rOutStream ... return argument, gets modified
+    //! @brief output
+    //! @param rOutStream return argument, gets modified
     void Print(std::ostream& rOutStream) const;
 };
 

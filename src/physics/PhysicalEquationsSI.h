@@ -8,9 +8,9 @@ namespace SI
 {
 
 
-//! @brief ... Density of liquid water at standard atmospheric pressure depending on the temperature. Values linear
+//! @brief Density of liquid water at standard atmospheric pressure depending on the temperature. Values linear
 //! interpolated from tables.
-//! @param rTemperature ... temperature in [K]
+//! @param rTemperature temperature in [K]
 //! @return density of liquid water
 //! SOURCE: https://en.wikipedia.org/wiki/Density
 constexpr double DensityLiquidWater(double rTemperature)

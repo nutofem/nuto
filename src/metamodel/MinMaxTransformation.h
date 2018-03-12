@@ -13,13 +13,13 @@ class MinMaxTransformation : public Transformation
 
 public:
     //! @brief constructor
-    //! @param rCoordinate ... coordinate within the point coordinates (0<=entry<dim)
-    //! @param rLb ... lower bound after the transformation
-    //! @param rUb ... upper bound after the transformation
+    //! @param rCoordinate coordinate within the point coordinates (0<=entry<dim)
+    //! @param rLb lower bound after the transformation
+    //! @param rUb upper bound after the transformation
     MinMaxTransformation(unsigned int rCoordinate, double rLb, double rUb);
 
     //! @brief copy constructor
-    //! @param rOther ... object which is copied
+    //! @param rOther object which is copied
     MinMaxTransformation(const MinMaxTransformation& rOther);
 
     //! @brief destructor
@@ -28,15 +28,15 @@ public:
     }
 
     //! @brief build the transformation using the given Points
-    //! @param rCoordinates ... input point coordinates
+    //! @param rCoordinates input point coordinates
     virtual void Build(const Eigen::MatrixXd& rCoordinates) override;
 
     //! @brief transform the given points in forward direction x = f(x)
-    //! @brief rCoordinates ... input point coordinates
+    //! @param rCoordinates input point coordinates
     virtual void TransformForward(Eigen::MatrixXd& rCoordinates) const override;
 
     //! @brief transform the given points in backward direction x = f^(-1)(x)
-    //! @brief rCoordinates ... input point coordinates
+    //! @param rCoordinates input point coordinates
     virtual void TransformBackward(Eigen::MatrixXd& rCoordinates) const override;
 
 protected:

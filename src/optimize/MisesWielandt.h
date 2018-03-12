@@ -7,7 +7,7 @@ namespace NuTo
 {
 //! @author Andrea Keszler, ISM
 //! @date July 2010
-//! @brief ... standard class for vonMises-Wielandt method
+//! @brief standard class for vonMises-Wielandt method
 class MisesWielandt : public virtual Optimizer
 {
 
@@ -103,7 +103,7 @@ public:
         mShowSteps = rShowSteps;
     }
 
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    //! @brief Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info() const;
 
 

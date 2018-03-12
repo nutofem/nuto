@@ -9,7 +9,7 @@ namespace NuTo
 
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-//! @brief ... standard abstract class for all integration types
+//! @brief standard abstract class for all integration types
 class IntegrationTypeBase
 {
 
@@ -21,7 +21,7 @@ public:
     IntegrationTypeBase& operator=(const IntegrationTypeBase&) = default;
     IntegrationTypeBase& operator=(IntegrationTypeBase&&) = default;
 
-    //! @brief ... destructor
+    //! @brief destructor
     virtual ~IntegrationTypeBase() = default;
 
     virtual int GetDimension() const = 0;

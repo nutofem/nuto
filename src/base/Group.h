@@ -11,7 +11,6 @@ namespace NuTo
 //! by value. The members are sorted in order of their insertion.
 //!
 //! @tparam T type of group members
-//! @tparam TCompare functor representing the comparison operation used for sorting
 template <typename T>
 class Group
 {

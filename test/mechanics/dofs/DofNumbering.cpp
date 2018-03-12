@@ -50,3 +50,15 @@ BOOST_AUTO_TEST_CASE(InvalidDofTypes)
     constraints.Add(d, {n0, 0, rhs});
     BOOST_CHECK_THROW(DofNumbering::Build({n1}, d, constraints), Exception);
 }
+
+BOOST_AUTO_TEST_CASE(Extract)
+{
+    NodeSimple n0(Eigen::Vector2d::Zero());
+    n0.SetDofNumber(0, 42);
+    n0.SetDofNumber(1, 4);
+
+    BOOST_CHECK_EQUAL(DofNumbering::Get({n0})[0], 42);
+    BOOST_CHECK_EQUAL(DofNumbering::Get({n0}, 1)[0], 4);
+    BOOST_CHECK_NO_THROW(DofNumbering::Get({}));
+    BOOST_CHECK(DofNumbering::Get({}).empty());
+}

@@ -5,8 +5,8 @@ namespace NuTo
 {
 //! @author Andrea Kessler, ISM
 //! @date June 2013
-//! @brief ... class for sorting in Morton order (z-order as space filling curve)
-//! @brief ... inspired by 	from http://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
+//! @brief class for sorting in Morton order (z-order as space filling curve)
+//! @brief inspired by 	from http://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
 
 class MortonOrder
 {
@@ -83,7 +83,7 @@ public:
     {
         return Compact1By2(code >> 2);
     }
-    //! @brief ... calculates neighbor of key shifted by +x+y+z
+    //! @brief calculates neighbor of key shifted by +x+y+z
     static uint32_t Neighbor3D(uint32_t key, uint32_t dx, uint32_t dy, uint32_t dz)
     {
         uint32_t x = DecodeMorton3X(key);
@@ -92,7 +92,7 @@ public:
         return EncodeMorton3D(x + dx, y + dy, z + dz);
         // return ((Part1By2(z+dz)<<2)+(Part1By2(y+dy)<<1)+Part1By2(x+dx));
     }
-    //! @brief ... calculates neighbor of key shifted by +x+y+z
+    //! @brief calculates neighbor of key shifted by +x+y+z
     static uint32_t NegNeighbor3D(uint32_t key, int32_t dx, int32_t dy, int32_t dz)
     {
         int32_t x = (int32_t)DecodeMorton3X(key);

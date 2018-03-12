@@ -13,8 +13,6 @@ set(MechanicsSources
 
     solver/Solve.cpp
 
-    timeIntegration/TimeControl.cpp
-
     tools/AdaptiveSolve.cpp
     tools/GlobalFractureEnergyIntegrator.cpp
     tools/CellStorage.cpp
