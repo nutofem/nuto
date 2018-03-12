@@ -5,7 +5,7 @@
 namespace NuTo
 {
 
-class Quad : public Shape
+class Quadrilateral : public Shape
 {
 public:
     eShape Enum() const override
@@ -17,7 +17,7 @@ public:
     {
         double x = xi[0];
         double y = xi[1];
-        return (-1.<x)&&(x<1.)&&(-1.<y)&&(y<1.);
+        return (-1. < x) && (x < 1.) && (-1. < y) && (y < 1.);
     }
 };
 

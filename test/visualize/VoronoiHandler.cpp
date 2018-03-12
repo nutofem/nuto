@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(GroupVoronoiTensorProduct2D)
     auto cells = s.Cells();
 
     std::string filename = "VoronoiOutput.vtu";
-    Visualizer visualize(cells, VoronoiHandler(VoronoiGeometryQuad(2)));
+    Visualizer visualize(cells, VoronoiHandler());
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 18, 8);
 }

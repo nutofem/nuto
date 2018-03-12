@@ -1,7 +1,9 @@
 #pragma once
 
+#include <map>
 #include "visualize/HandlerInterface.h"
 #include "visualize/VisualizeEnum.h"
+#include "math/shapes/Shape.h"
 
 namespace NuTo
 {
@@ -25,8 +27,7 @@ class VoronoiHandler : public HandlerInterface
 {
 public:
     //! Constructor.
-    //! @param geometry definition of arbitrary voronoi cells
-    VoronoiHandler(VoronoiGeometry geometry);
+    VoronoiHandler(){};
 
     virtual std::unique_ptr<HandlerInterface> Clone() const override;
 
@@ -43,7 +44,8 @@ public:
                            std::vector<int> pointIds, std::string name, UnstructuredGrid* grid) override;
 
 private:
-    VoronoiGeometry mGeometry;
+    VoronoiGeometry GetGeometry(const CellInterface& cell);
+    std::map<std::pair<eShape, int>, VoronoiGeometry> mGeometries;
     std::vector<std::vector<int>> mSubCells;
 };
 

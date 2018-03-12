@@ -7,7 +7,7 @@
 namespace NuTo
 {
 //! @brief interface for all the cell operations, simply forwarding the corresponding element interfaces
-//! @remark two benefits: a) avoids forwarding all the methods of ElementInterface for _both_ the 
+//! @remark two benefits: a) avoids forwarding all the methods of ElementInterface for _both_ the
 //                           coordinate element and the dof elements.
 //                        b) allows storing elements (implementations of ElementInterface) by value
 //                           in the class ElementCollectionImpl.
@@ -17,6 +17,7 @@ public:
     virtual ~ElementCollection() = default;
     virtual const ElementInterface& CoordinateElement() const = 0;
     virtual const ElementInterface& DofElement(DofType) const = 0;
+    virtual const Shape& Shape() const = 0;
 };
 
 //! @brief implementation of the interface ElementCollection for arbitrary element types that are derived from
@@ -35,6 +36,7 @@ public:
 
     ElementCollectionImpl(TElement coordinateElement)
         : mCoordinateElement(coordinateElement)
+        , mShape(coordinateElement.Shape())
     {
     }
 
@@ -91,9 +93,15 @@ public:
         return mDofElements.Has(dof);
     }
 
+    const class Shape& Shape() const override
+    {
+        return mShape;
+    }
+
 private:
     TElement mCoordinateElement;
     DofContainer<TElement> mDofElements;
+    const class Shape& mShape;
 };
 
 using ElementCollectionFem = ElementCollectionImpl<NuTo::ElementFem>;

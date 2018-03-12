@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include "math/shapes/Line.h"
 #include "math/shapes/Triangle.h"
-#include "math/shapes/Quad.h"
+#include "math/shapes/Quadrilateral.h"
 #include "math/shapes/Tetrahedron.h"
 #include "math/shapes/Hexahedron.h"
 #include "math/shapes/Prism.h"
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(TriangleIsInside)
 
 BOOST_AUTO_TEST_CASE(QuadIsInside)
 {
-    NuTo::Quad shape;
+    NuTo::Quadrilateral shape;
 
     Eigen::Vector2d pIn(0.1, 0.1);
     Eigen::Vector2d pOut(1.2, 1.);

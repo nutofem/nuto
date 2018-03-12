@@ -178,10 +178,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
             node.SetValue(1, newDisplacements[dofY]);
     }
 
-    int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
-    pointsPerDirection += 1; // one point per direction doesn't do much Voronoiying
-    Visualize::Visualizer visualize(momentumBalanceCells,
-                                    Visualize::VoronoiHandler(Visualize::VoronoiGeometryQuad(pointsPerDirection)));
+    Visualize::Visualizer visualize(momentumBalanceCells, Visualize::VoronoiHandler());
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {

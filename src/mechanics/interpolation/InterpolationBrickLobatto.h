@@ -1,6 +1,7 @@
 #pragma once
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/SpectralShapeFunctions.h"
+#include "math/shapes/Hexahedron.h"
 
 namespace NuTo
 {
@@ -37,7 +38,13 @@ public:
         return mNodes.size() * mNodes.size() * mNodes.size();
     }
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     Eigen::VectorXd mNodes;
+    Hexahedron mShape;
 };
 } /* NuTo */

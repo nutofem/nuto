@@ -2,6 +2,7 @@
 #include <Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "math/shapes/Triangle.h"
 
 namespace NuTo
 {
@@ -32,5 +33,13 @@ public:
     {
         return 3;
     }
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    Triangle mShape;
 };
 } /* NuTo */

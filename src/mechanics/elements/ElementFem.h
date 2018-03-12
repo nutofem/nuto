@@ -14,6 +14,7 @@ class ElementFem : public ElementInterface
 public:
     ElementFem(std::vector<NodeSimple*> nodes, const InterpolationSimple& interpolation)
         : mInterpolation(interpolation)
+        , mShape(interpolation.GetShape())
     {
         for (NodeSimple* node : nodes)
             mNodes.push_back(*node);
@@ -24,6 +25,7 @@ public:
                const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
+        , mShape(interpolation.GetShape())
     {
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
@@ -95,8 +97,14 @@ public:
         return mNodes[i];
     }
 
+    const Shape& Shape() const
+    {
+        return mShape;
+    }
+
 private:
     std::vector<std::reference_wrapper<NodeSimple>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
+    const class Shape& mShape;
 };
 } /* NuTo */

@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/SpectralShapeFunctions.h"
+#include "math/shapes/Line.h"
 
 namespace NuTo
 {
@@ -53,7 +54,13 @@ public:
         return mNodes.size();
     }
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     Eigen::VectorXd mNodes;
+    Line mShape;
 };
 } /* NuTo */

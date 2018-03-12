@@ -4,6 +4,7 @@
 #include "mechanics/dofs/DofVector.h"
 #include "mechanics/dofs/DofMatrix.h"
 #include <functional>
+#include "math/shapes/Shape.h"
 
 namespace NuTo
 {
@@ -34,5 +35,7 @@ public:
     virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords) const = 0;
     //! Dof interpolation
     virtual Eigen::VectorXd Interpolate(Eigen::VectorXd naturalCoords, DofType dof) const = 0;
+
+    virtual const Shape& GetShape() const = 0;
 };
 } /* NuTo */
