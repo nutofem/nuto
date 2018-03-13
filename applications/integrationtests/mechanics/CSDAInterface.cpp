@@ -5,21 +5,16 @@
  *      Author: Thomas Titscher
  */
 
-#include <cmath>
-#include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/ContinuumElement.h"
+#include "mechanics/mesh/MeshFem.h"
+#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "mechanics/interpolation/InterpolationQuadLinear.h"
+#include "mechanics/cell/Cell.h"
+#include "mechanics/integrands/MomentumBalance.h"
+#include "mechanics/constitutive/LocalIsotropicDamage.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
-#include "mechanics/mesh/MeshCompanion.h"
+#include "mechanics/tools/QuasistaticSolver.h"
+#include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 
 /*               3   2
  *   /|          /  /           \
@@ -34,78 +29,59 @@
  *
  */
 
-int FindLocalElementIndex(int rGlobalDof, Eigen::VectorXi rGlobalDofs)
+void CheckFractureEnergy2D(int angleDegree, double interfaceThickness)
 {
-    for (int i = 0; i < rGlobalDofs.rows(); ++i)
-    {
-        if (rGlobalDofs[i] == rGlobalDof)
-            return i;
-    }
-    throw;
-}
-
-void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
-{
-    NuTo::Structure s(2);
-    s.SetShowTime(false);
-    s.GetLogger().SetQuiet(true);
-
     const double ly2 = 2.; // half of Length_y
-    const double lz = 6.;
 
-    const double angleRad = M_PI / 180. * rAngleDegree;
+    const double angleRad = M_PI / 180. * angleDegree;
 
-    const double projectedThickness = rInterfaceThickness / std::sin(angleRad);
+    const double projectedThickness = interfaceThickness / std::sin(angleRad);
     const double xInterfaceOffset = ly2 / std::tan(angleRad);
     const double interfaceLength = 2 * ly2 / std::sin(angleRad);
 
-    s.GetLogger() << "projectedThickness " << projectedThickness << '\n';
-    s.GetLogger() << "xInterfaceOffset " << xInterfaceOffset << '\n';
-    s.GetLogger() << "interfaceLength " << interfaceLength << '\n';
+    std::cout << "projectedThickness " << projectedThickness << '\n';
+    std::cout << "xInterfaceOffset " << xInterfaceOffset << '\n';
+    std::cout << "interfaceLength " << interfaceLength << '\n';
 
     // lower nodes
-    s.NodeCreate(0, Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
-    s.NodeCreate(1, Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
-
+    NuTo::NodeSimple n0(Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
+    NuTo::NodeSimple n1(Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
     // upper nodes
-    s.NodeCreate(2, Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
-    s.NodeCreate(3, Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
+    NuTo::NodeSimple n2(Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
+    NuTo::NodeSimple n3(Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
 
+    NuTo::NodeSimple nd0(Eigen::Vector2d::Zero());
+    NuTo::NodeSimple nd1(Eigen::Vector2d::Zero());
+    NuTo::NodeSimple nd2(Eigen::Vector2d::Zero());
+    NuTo::NodeSimple nd3(Eigen::Vector2d::Zero());
+    NuTo::InterpolationQuadLinear interpolation;
 
-    int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    NuTo::ElementCollectionFem element({{n0, n1, n2, n3}, interpolation});
+    NuTo::DofType d("Displ", 2);
+    element.AddDofElement(d, {{nd0, nd1, nd2, nd3}, interpolation});
 
+    NuTo::Laws::LinearElasticDamage<2> elasticDamage(20000., 0.);
+    double k0 = 4. / 20000;
+    double Gf = 0.1;
+    double gf = 4. * interfaceThickness / Gf;
+    NuTo::Constitutive::DamageLawExponential damageLaw(k0, gf, 1.);
+    using Law = NuTo::Laws::LocalIsotropicDamage<2, NuTo::Constitutive::DamageLawExponential,
+                                                 NuTo::Laws::EvolutionImplicit<2>>;
+    Law law(elasticDamage, damageLaw, {{0., 10}});
 
-    std::vector<int> ids({0, 1, 2, 3});
-    s.ElementCreate(0, it, ids);
+    NuTo::Integrands::MomentumBalance<2> momentum(d, law);
 
-    s.ElementTotalConvertToInterpolationType();
+    NuTo::DofNumbering::Build({nd0, nd1, nd2, nd3}, d, {}); // numbering without constraints
 
-    auto mySection = NuTo::SectionPlane::Create(lz, false);
-    s.ElementTotalSetSection(mySection);
-    s.ElementTotalConvertToInterpolationType();
+    NuTo::IntegrationTypeTensorProduct<2> integration(2, NuTo::eIntegrationMethod::GAUSS);
 
-    using namespace NuTo::Constitutive;
-    s.ConstitutiveLawCreate(0, eConstitutiveType::LOCAL_DAMAGE_MODEL);
+    law.mEvolution.mKappas.setZero(1, integration.GetNumIntegrationPoints());
 
-    constexpr double fractureEnergy = 0.1;
+    NuTo::Cell cell(element, integration, 0);
+    auto Gradient = [&](const auto& data) { return momentum.Gradient(data, 0); };
 
-    s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::YOUNGS_MODULUS, 20000.);
-    s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::POISSONS_RATIO, 0.0);
-    s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    s.ConstitutiveLawSetParameterDouble(0, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4.);
-    s.ConstitutiveLawSetDamageLaw(0,
-                                  DamageLawExponential::Create(4. / 20000., 4. * rInterfaceThickness / fractureEnergy));
-
-    s.ElementSetConstitutiveLaw(0, 0);
-
-    s.NodeBuildGlobalDofs();
-    int dofBC1 = s.NodeGetNodePtr(1)->GetDof(NuTo::Node::eDof::DISPLACEMENTS, 0);
-    int dofBC2 = s.NodeGetNodePtr(2)->GetDof(NuTo::Node::eDof::DISPLACEMENTS, 0);
-
-    int localDofIndex1 = FindLocalElementIndex(dofBC1, s.ElementBuildGlobalDofsRow(0)[NuTo::Node::eDof::DISPLACEMENTS]);
-    int localDofIndex2 = FindLocalElementIndex(dofBC2, s.ElementBuildGlobalDofsRow(0)[NuTo::Node::eDof::DISPLACEMENTS]);
+    int dofBC1 = nd1.GetDofNumber(0);
+    int dofBC2 = nd2.GetDofNumber(0);
 
     int numLoadSteps = 200;
     double bcEnd = 0.4;
@@ -113,31 +89,26 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
     Eigen::VectorXd displ(numLoadSteps + 1);
     Eigen::VectorXd force(numLoadSteps + 1);
 
-    auto globalDofs = s.NodeExtractDofValues(0);
-    auto& globalDisplacementDofs = globalDofs.J[NuTo::Node::eDof::DISPLACEMENTS];
-
     for (int i = 0; i < numLoadSteps + 1; ++i)
     {
         double bc = bcEnd * i / (numLoadSteps);
         displ[i] = bc;
-        globalDisplacementDofs[dofBC1] = bc;
-        globalDisplacementDofs[dofBC2] = bc;
-
-        s.NodeMergeDofValues(globalDofs);
-        auto internalForces = s.ElementBuildInternalGradient(0)[NuTo::Node::eDof::DISPLACEMENTS];
-        force[i] = (internalForces[localDofIndex1] + internalForces[localDofIndex2]);
+        nd1.SetValue(0, bc);
+        nd2.SetValue(0, bc);
+        auto internalForces = cell.Integrate(Gradient);
+        force[i] = (internalForces[d][dofBC1] + internalForces[d][dofBC2]);
     }
 
     //    std::cout << force << std::endl;
 
     NuTo::Tools::GlobalFractureEnergyIntegrator integrator(force, displ);
-    double crackArea = lz * interfaceLength;
+    double crackArea = interfaceLength;
     double globalFractureEnergy = integrator.IntegrateSofteningCurve(crackArea, 0.01);
-    double error = std::abs(fractureEnergy - globalFractureEnergy);
-    double tolerance = fractureEnergy / 10.;
+    double error = std::abs(Gf - globalFractureEnergy);
+    double tolerance = Gf / 10.;
 
-    std::cout << "angle: " << rAngleDegree << "\t thickness: " << rInterfaceThickness
-              << "\t GF: " << globalFractureEnergy << "\t Error: " << error << std::endl;
+    std::cout << "angle: " << angleDegree << "\t thickness: " << interfaceThickness << "\t GF: " << globalFractureEnergy
+              << "\t Error: " << error << std::endl;
     if (error > tolerance)
     {
         throw;
@@ -145,114 +116,7 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
 }
 
 
-void CSDA2D()
-{
-
-    /*        \/
-     * 3    2  7     6
-     *
-     *
-     * 0    1  4     5
-     *
-     */
-
-
-    constexpr double thickness2 = 0.1;
-    constexpr double lx2 = 10;
-    constexpr double ly = 5;
-    constexpr double lz = 2;
-
-
-    NuTo::Structure s(2);
-
-    s.NodeCreate(0, Eigen::Vector2d({-lx2, 0}));
-    s.NodeCreate(1, Eigen::Vector2d({-thickness2, 0}));
-    s.NodeCreate(2, Eigen::Vector2d({-thickness2, ly}));
-    s.NodeCreate(3, Eigen::Vector2d({-lx2, ly}));
-
-    s.NodeCreate(4, Eigen::Vector2d({thickness2, 0}));
-    s.NodeCreate(5, Eigen::Vector2d({lx2, 0}));
-    s.NodeCreate(6, Eigen::Vector2d({lx2, ly}));
-    s.NodeCreate(7, Eigen::Vector2d({thickness2, ly}));
-
-
-    int it = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    s.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-
-    int it2 = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-    s.InterpolationTypeAdd(it2, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(it2, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-
-    s.ElementCreate(0, it, {0, 1, 2, 3});
-    s.ElementCreate(1, it, {4, 5, 6, 7});
-
-    s.ElementCreate(2, it, {1, 4, 7, 2});
-    //    s.ElementCreate(2, it2, {1, 4, 7});
-    //    s.ElementCreate(3, it2, {1, 7, 2});
-
-    using namespace NuTo::Constitutive;
-    int LIN = 0;
-    int CSDA = 1;
-    s.ConstitutiveLawCreate(LIN, eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::YOUNGS_MODULUS, 20000.);
-    s.ConstitutiveLawSetParameterDouble(LIN, eConstitutiveParameter::POISSONS_RATIO, 0.0);
-
-    s.ConstitutiveLawCreate(CSDA, eConstitutiveType::LOCAL_DAMAGE_MODEL);
-    constexpr double fractureEnergy = 0.1;
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::YOUNGS_MODULUS, 20000.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::POISSONS_RATIO, 0.0);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    s.ConstitutiveLawSetParameterDouble(CSDA, eConstitutiveParameter::COMPRESSIVE_STRENGTH, 40.);
-    s.ConstitutiveLawSetDamageLaw(CSDA,
-                                  DamageLawExponential::Create(4. / 20000., 4. * 2. * thickness2 / fractureEnergy));
-
-    s.ElementSetConstitutiveLaw(0, LIN);
-    s.ElementSetConstitutiveLaw(1, LIN);
-    s.ElementSetConstitutiveLaw(2, CSDA);
-    //    s.ElementSetConstitutiveLaw(3, CSDA);
-
-    auto mySection = NuTo::SectionPlane::Create(lz, true);
-    s.ElementTotalSetSection(mySection);
-    s.ElementTotalConvertToInterpolationType();
-
-
-    const auto& nodeFixXY = s.NodeGetAtCoordinate(Eigen::Vector2d({-lx2, 0}));
-    const auto& nodeFixY = s.NodeGetAtCoordinate(Eigen::Vector2d({lx2, 0}));
-    const auto& nodeBC = s.NodeGetAtCoordinate(Eigen::Vector2d({thickness2, ly}));
-
-    double deltaD = -.5;
-    using namespace NuTo::Constraint;
-    using NuTo::Node::eDof;
-    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixXY, {NuTo::eDirection::X, NuTo::eDirection::Y}));
-    s.Constraints().Add(eDof::DISPLACEMENTS, Component(nodeFixY, {NuTo::eDirection::Y}));
-    s.Constraints().Add(eDof::DISPLACEMENTS, Direction(nodeBC, Eigen::Vector2d::UnitY(), RhsRamp(1, deltaD)));
-
-    s.NodeBuildGlobalDofs();
-    std::cout << s.GetNumTotalActiveDofs() << std::endl;
-    std::cout << s.GetNumTotalDependentDofs() << std::endl;
-
-    s.AddVisualizationComponent(s.GroupGetElementsTotal(), NuTo::eVisualizeWhat::DISPLACEMENTS);
-
-    NuTo::NewmarkDirect newmark(&s);
-
-    s.SetShowTime(false);
-    newmark.SetShowTime(false);
-
-    newmark.SetTimeStep(0.1);
-    newmark.SetMinTimeStep(0.001);
-    newmark.SetMaxTimeStep(0.1);
-    newmark.SetToleranceForce(1e-6);
-    newmark.SetAutomaticTimeStepping(true);
-    newmark.SetPerformLineSearch(true);
-    newmark.SetMaxNumIterations(20);
-
-    bool deleteDirectory = true;
-    newmark.PostProcessing().SetResultDirectory("./CSDA2D", deleteDirectory);
-    newmark.Solve(1);
-}
-
-
+/*
 void PrismCreate(NuTo::Interpolation::eTypeOrder rCoordinateInterpolation)
 {
     constexpr double thickness = .1;
@@ -450,16 +314,15 @@ void CSDA3D(int order)
     newmark.PostProcessing().SetResultDirectory("./CSDA3D_" + std::to_string(order), deleteDirectory);
     newmark.Solve(1);
 }
-
+*/
 int main()
 {
 
-    CSDA2D();
-    CSDA3D(1);
-    CSDA3D(2);
+    // CSDA3D(1);
+    // CSDA3D(2);
 
-    PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    // PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    // PrismCreate(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     CheckFractureEnergy2D(90, .1);
     CheckFractureEnergy2D(90, .01);
