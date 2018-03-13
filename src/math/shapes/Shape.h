@@ -20,7 +20,7 @@ class Shape
 {
 public:
     virtual eShape Enum() const = 0;
-    virtual bool IsWithinShape(Eigen::VectorXd xi) const = 0;
+    virtual bool IsWithinShape(Eigen::VectorXd xi, double e = 1e-8) const = 0;
 };
 
 } // namespace NuTo
