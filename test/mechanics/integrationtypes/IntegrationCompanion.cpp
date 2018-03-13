@@ -2,8 +2,6 @@
 #include "mechanics/integrationtypes/IntegrationCompanion.h"
 
 #include "math/shapes/Triangle.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.h"
 
 #include "math/shapes/Hexahedron.h"
 #include "math/shapes/Quadrilateral.h"

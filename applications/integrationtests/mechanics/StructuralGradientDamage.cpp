@@ -12,7 +12,7 @@
 #include "mechanics/mesh/MeshGmsh.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
 #include "mechanics/interpolation/InterpolationTrussLobatto.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "mechanics/tools/CellStorage.h"
 #include "mechanics/tools/TimeDependentProblem.h"
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     AddDofInterpolation(&mesh, eeq, matrixElements);
     AddDofInterpolation(&mesh, eeq, leftElements);
 
-    IntegrationType2D3NGauss6Ip integration;
+    IntegrationTypeTriangle integration(4);
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(matrixElements, integration);
     auto cellsLeft = cellStorage.AddCells(leftElements, integration);
