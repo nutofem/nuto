@@ -25,13 +25,13 @@ using namespace NuTo;
 namespace
 {
 
-std::unique_ptr<IntegrationTypeBase> G_Line(int order)
+std::unique_ptr<IntegrationTypeBase> GaussLine(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<1>>(order, eIntegrationMethod::GAUSS);
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Triangle(int order)
+std::unique_ptr<IntegrationTypeBase> GaussTriangle(int order)
 {
     switch (order)
     {
@@ -69,13 +69,13 @@ std::unique_ptr<IntegrationTypeBase> G_Triangle(int order)
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Quadrilateral(int order)
+std::unique_ptr<IntegrationTypeBase> GaussQuadrilateral(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<2>>(order, eIntegrationMethod::GAUSS);
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Tetrahedron(int order)
+std::unique_ptr<IntegrationTypeBase> GaussTetrahedron(int order)
 {
     switch (order)
     {
@@ -108,13 +108,13 @@ std::unique_ptr<IntegrationTypeBase> G_Tetrahedron(int order)
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Hex(int order)
+std::unique_ptr<IntegrationTypeBase> GaussHex(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<3>>(order, eIntegrationMethod::GAUSS);
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Prism(int order)
+std::unique_ptr<IntegrationTypeBase> GaussPrism(int order)
 {
     switch (order)
     {
@@ -129,7 +129,7 @@ std::unique_ptr<IntegrationTypeBase> G_Prism(int order)
 }
 
 
-std::unique_ptr<IntegrationTypeBase> G_Pyramid(int order)
+std::unique_ptr<IntegrationTypeBase> GaussPyramid(int order)
 {
     switch (order)
     {
@@ -139,17 +139,17 @@ std::unique_ptr<IntegrationTypeBase> G_Pyramid(int order)
     }
 }
 
-std::unique_ptr<IntegrationTypeBase> L_Line(int order)
+std::unique_ptr<IntegrationTypeBase> LobattoLine(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<1>>(order, eIntegrationMethod::LOBATTO);
 }
 
-std::unique_ptr<IntegrationTypeBase> L_Quadrilateral(int order)
+std::unique_ptr<IntegrationTypeBase> LobattoQuadrilateral(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<2>>(order, eIntegrationMethod::LOBATTO);
 }
 
-std::unique_ptr<IntegrationTypeBase> L_Hex(int order)
+std::unique_ptr<IntegrationTypeBase> LobattoHex(int order)
 {
     return std::make_unique<IntegrationTypeTensorProduct<3>>(order, eIntegrationMethod::LOBATTO);
 }
@@ -160,19 +160,19 @@ std::unique_ptr<IntegrationTypeBase> NuTo::CreateGaussIntegrationType(const Shap
     switch (shape.Enum())
     {
     case eShape::Line:
-        return G_Line(order);
+        return GaussLine(order);
     case eShape::Triangle:
-        return G_Triangle(order);
+        return GaussTriangle(order);
     case eShape::Quadrilateral:
-        return G_Quadrilateral(order);
+        return GaussQuadrilateral(order);
     case eShape::Tetrahedron:
-        return G_Tetrahedron(order);
+        return GaussTetrahedron(order);
     case eShape::Hexahedron:
-        return G_Hex(order);
+        return GaussHex(order);
     case eShape::Prism:
-        return G_Prism(order);
+        return GaussPrism(order);
     case eShape::Pyramid:
-        return G_Pyramid(order);
+        return GaussPyramid(order);
     default:
         throw Exception(__PRETTY_FUNCTION__, "Shape enum is not known.");
     }
@@ -183,11 +183,11 @@ std::unique_ptr<IntegrationTypeBase> NuTo::CreateLobattoIntegrationType(const Sh
     switch (shape.Enum())
     {
     case eShape::Line:
-        return L_Line(order);
+        return LobattoLine(order);
     case eShape::Quadrilateral:
-        return L_Quadrilateral(order);
+        return LobattoQuadrilateral(order);
     case eShape::Hexahedron:
-        return L_Hex(order);
+        return LobattoHex(order);
     case eShape::Triangle:
     case eShape::Tetrahedron:
     case eShape::Prism:
