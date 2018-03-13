@@ -25,6 +25,34 @@ double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationType
     return (result);
 }
 
+
+//!@brief Exact values of integrating a monomial over a unit triangle
+//!
+//! The caluclations are the result of a sympy session (computer algebra package for python)
+//! with the following code
+//!
+//! \code{.py}
+//!
+//! from sympy import *
+//!
+//! x,y = symbols('x y')
+//! order = 21
+//! for n in range(order+1):
+//!   out = ''
+//!    for i in range(n+1):
+//!        term = x**i * y**(n-i)
+//!        intX = term.integrate(x)
+//!        result = intX.subs(x,1-y) - intX.subs(x,0)
+//!        intY = result.integrate(y)
+//!        result = intY.subs(y,1) - intY.subs(y,0)
+//!        out += str(result) + ', '
+//!    print out
+//!
+//! \endcode
+//!
+//! @param order, order of the monomial example: x^3 * y^2 has order 5
+//! @param indx Index to specify which monomial of the many of order
+//! order is meant.
 double ExactIntegralMonomialTriangle(int order, int indx)
 {
     std::vector<std::vector<double>> expectedResult = {

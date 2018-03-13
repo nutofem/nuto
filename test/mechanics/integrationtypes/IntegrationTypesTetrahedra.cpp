@@ -25,6 +25,37 @@ double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationType
     return (result);
 }
 
+//!@brief Exact values of integrating a monomial over a unit tetrahedron
+//!
+//! The caluclations are the result of a sympy session (computer algebra package for python)
+//! with the following code
+//!
+//! \code{.py}
+//!
+//! from sympy import *
+//!
+//! x,y,z = symbols('x y z')
+//! order = 21
+//!
+//! for n in range(order+1):
+//!    out = ''
+//!    for i in range(n+1):
+//!        for j in range(n+1-i):
+//!            term = x**i * y**j * z**(n-i-j)
+//!            intX = term.integrate(x)
+//!            result = intX.subs(x,1-y-z) - intX.subs(x,0)
+//!            intY = result.integrate(y)
+//!            result = intY.subs(y,1-z) - intY.subs(y,0)
+//!            intZ = result.integrate(z)
+//!            result = intZ.subs(z,1) - intZ.subs(z,0)
+//!            out += str(result) + ', '
+//!    print out
+//!
+//! \endcode
+//!
+//! @param order, order of the monomial example: x^3 * y^2 has order 5
+//! @param indx Index to specify which monomial of the many of order
+//! order is meant.
 double ExactIntegralMonomialTetrahedron(int order, int indx)
 {
     std::vector<std::vector<double>> expectedResult = {
