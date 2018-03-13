@@ -6,6 +6,7 @@
 #include "mechanics/integrands/GradientDamage.h"
 #include "mechanics/integrands/MomentumBalance.h"
 #include "mechanics/constitutive/LinearElastic.h"
+#include "mechanics/constitutive/LocalIsotropicDamage.h"
 #include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "mechanics/mesh/MeshGmsh.h"
 #include "mechanics/mesh/MeshFemDofConvert.h"
@@ -27,28 +28,45 @@ int main(int, char* argv[])
     binaryPath.remove_filename();
     std::string meshFile = binaryPath.string() + "/SingleInclusion.msh";
 
-    double E = 30000;
-    double nu = 0.2;
-    Laws::LinearElasticDamage<2> unilateral(E, nu, true);
+    double E = 26738;
+    double nu = 0.18;
+    Laws::LinearElasticDamage<2> unilateral(E, nu, false);
     Laws::LinearElastic<2> elasticLaw(2 * E, nu);
 
-    double ft = 4;
-    double gf = 0.021 * 10;
-    Constitutive::DamageLawExponential dmg(ft / E, ft / gf, 0.99);
+    double ft = 3.4;
+    double k0 = ft / E;
+    double Gf = 0.12; // global
+    double gf = 0.0216; // calibrated via 1D tensile
+    Constitutive::DamageLawExponential dmg(k0, ft / (gf * 10), 0.99);
 
-    double fc = 4;
+    double fc = ft * 10;
     Constitutive::ModifiedMisesStrainNorm<2> strainNorm(nu, fc / ft);
 
+    double F = 0.75;
+    double thickness = 0.1;
+
+    double ftItz = ft * F;
+    double gfItz = Gf / thickness * F;
+
+    double k0Itz = ftItz / E;
+    Constitutive::ModifiedMisesStrainNorm<2> strainNormItz(nu, 1);
+    Constitutive::DamageLawExponential iztDmg(k0Itz, ftItz / gfItz, 0.99);
+    Laws::LocalIsotropicDamage<2, Constitutive::DamageLawExponential, Laws::EvolutionImplicit<2>> itzLaw(
+            unilateral, iztDmg, strainNormItz);
 
     DofType d("Displacements", 2);
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
-    double c = 1.0;
-    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential, Integrands::DecreasingInteraction>;
-    Gdm gdm(d, eeq, c, unilateral, dmg, strainNorm);
+    double c = 2.0;
+    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential, NonlocalInteraction::Decreasing>;
+    Gdm gdm(d, eeq, c, unilateral, dmg, strainNorm, NonlocalInteraction::Decreasing(0.05, 5));
+    // using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential, NonlocalInteraction::Constant>;
+    // Gdm gdm(d, eeq, c, unilateral, dmg, strainNorm);
 
     using Mb = Integrands::MomentumBalance<2>;
-    Mb mb(d, elasticLaw);
+    Mb mbAggregates(d, elasticLaw);
+    // Mb mbItz(d, elasticLaw);
+    Mb mbItz(d, itzLaw);
 
 
     MeshGmsh gmsh(meshFile);
@@ -66,6 +84,7 @@ int main(int, char* argv[])
     auto cellsItz = cellStorage.AddCells(gmsh.GetPhysicalGroup("Interfaces"), integrationItz);
 
     gdm.mKappas.setZero(cellsMatrix.Size(), integration.GetNumIntegrationPoints());
+    itzLaw.mEvolution.mKappas.setZero(cellsItz.Size(), integrationItz.GetNumIntegrationPoints());
 
     TimeDependentProblem equations(&mesh);
 
@@ -73,17 +92,27 @@ int main(int, char* argv[])
     equations.AddGradientFunction(cellsMatrix, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
     equations.AddUpdateFunction(cellsMatrix, TimeDependentProblem::Bind(gdm, &Gdm::Update));
 
-    equations.AddHessian0Function(cellsAggregates, TimeDependentProblem::Bind_dt(mb, &Mb::Hessian0));
-    equations.AddGradientFunction(cellsAggregates, TimeDependentProblem::Bind_dt(mb, &Mb::Gradient));
+    equations.AddHessian0Function(cellsAggregates, TimeDependentProblem::Bind_dt(mbAggregates, &Mb::Hessian0));
+    equations.AddGradientFunction(cellsAggregates, TimeDependentProblem::Bind_dt(mbAggregates, &Mb::Gradient));
 
-    equations.AddHessian0Function(cellsItz, TimeDependentProblem::Bind_dt(mb, &Mb::Hessian0));
-    equations.AddGradientFunction(cellsItz, TimeDependentProblem::Bind_dt(mb, &Mb::Gradient));
+    equations.AddHessian0Function(cellsItz, TimeDependentProblem::Bind_dt(mbItz, &Mb::Hessian0));
+    equations.AddGradientFunction(cellsItz, TimeDependentProblem::Bind_dt(mbItz, &Mb::Gradient));
+    TimeDependentProblem::UpdateFunction UpdateItz = [&](const CellIpData& data, double, double) {
+        itzLaw.Update(data.Apply(d, Nabla::Strain()), 0., data.Ids());
+    };
+    equations.AddUpdateFunction(cellsItz, UpdateItz);
 
     QuasistaticSolver problem(equations, {d, eeq});
 
     using namespace Constraint;
     Constraints constraints;
-    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::X, eDirection::Y}));
+    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::Y}));
+    // constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::X}));
+    constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), d), {eDirection::X}));
+    // constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d(60, 0), d), {eDirection::X}));
+
+    // constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 60), d), {eDirection::X}));
+    // constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d(60, 60), d), {eDirection::X}));
 
     auto topNodes = mesh.NodesAtAxis(eDirection::Y, d, 60);
     // constraints.Add(d, Component(topNodes, {eDirection::X}, RhsRamp(1, -0.01)));
@@ -95,10 +124,27 @@ int main(int, char* argv[])
 
     using namespace NuTo::Visualize;
     PostProcess visu("./ConcreteCompressionWithInclusionOut");
-    visu.DefineVisualizer("GDM", cellsMatrix, VoronoiHandler(VoronoiGeometryTriangle(integration)));
-    visu.Add("GDM", d);
-    visu.Add("GDM", eeq);
-    visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
+    visu.DefineVisualizer("Matrix", cellsMatrix, VoronoiHandler(VoronoiGeometryTriangle(integration)));
+    visu.Add("Matrix", d);
+    visu.Add("Matrix", eeq);
+    visu.Add("Matrix", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
+    visu.Add("Matrix", [&](const NuTo::CellIpData& data) { return gdm.Kappa(data) / k0; }, "k0Factor");
+
+
+    visu.DefineVisualizer("Itz", cellsItz, VoronoiHandler(VoronoiGeometryQuad(3)));
+    visu.Add("Itz", d);
+    visu.Add("Itz",
+             [&](const NuTo::CellIpData& data) {
+                 double kappa = itzLaw.mEvolution.mKappas(data.Ids().cellId, data.Ids().ipId);
+                 return itzLaw.mDamageLaw.Damage(kappa);
+             },
+             "Damage");
+    visu.Add("Itz",
+             [&](const NuTo::CellIpData& data) {
+                 return itzLaw.mEvolution.mKappas(data.Ids().cellId, data.Ids().ipId) / k0Itz;
+             },
+             "k0Factor");
+
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
