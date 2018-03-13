@@ -9,8 +9,15 @@ class IntegrationTypeTetrahedron : public IntegrationTypeBase
 {
 
 public:
+    //! @brief data is taken from the attachment to the book "P. Solin, K. Segeth
+    //! and I. Dolezel: Higher-Order Finite Element Methods", Chapman & Hall/CRC Press, 2003.
+    //!
+    //! They use another reference cell (running from -1 to 1) so the
+    //! points and weights are changed accordingly
     static const std::vector<std::vector<Eigen::Vector4d>> quadratureData;
+
     static const std::vector<int> orderToIndex;
+
     //! @brief constructor
     //! @param order integration order
     IntegrationTypeTetrahedron(int order);
