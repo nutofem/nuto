@@ -2,60 +2,27 @@
 #include "visualize/UnstructuredGrid.h"
 #include "mechanics/cell/CellInterface.h"
 #include "math/EigenCompanion.h"
-#include "visualize/VoronoiGeometries.h"
 
-using namespace NuTo;
 using namespace NuTo::Visualize;
+
+VoronoiHandler::VoronoiHandler(VoronoiGeometry geometry)
+    : mGeometry(geometry)
+{
+}
 
 std::unique_ptr<HandlerInterface> VoronoiHandler::Clone() const
 {
     return std::make_unique<VoronoiHandler>(*this);
 }
 
-int GetNumSubCells(const CellInterface& cell)
-{
-    auto nullFct = [](const CellIpData&) { return Eigen::Matrix<double, 1, 1>(); };
-    auto results = cell.Eval(nullFct);
-    return results.size();
-}
-
-VoronoiGeometry CreateGeometry(const CellInterface& cell)
-{
-    switch (cell.GetShape().Enum())
-    {
-    case eShape::Line:
-        return VoronoiGeometryLine(GetNumSubCells(cell));
-    case eShape::Quadrilateral:
-        return VoronoiGeometryQuad(std::sqrt(GetNumSubCells(cell)));
-    case eShape::Hexahedron:
-        return VoronoiGeometryBrick(std::cbrt(GetNumSubCells(cell)));
-    default:
-        throw Exception(__PRETTY_FUNCTION__, "No Voronoi Geometry defined for this shape.");
-    }
-}
-
-VoronoiGeometry VoronoiHandler::GetGeometry(const CellInterface& cell)
-{
-    auto shapeNumSubCellsPair = std::make_pair(cell.GetShape().Enum(), GetNumSubCells(cell));
-    auto search = mGeometries.find(shapeNumSubCellsPair);
-    if (search != mGeometries.end())
-        return search->second;
-    else
-    {
-        mGeometries[shapeNumSubCellsPair] = CreateGeometry(cell);
-        return mGeometries[shapeNumSubCellsPair];
-    }
-}
-
 std::vector<int> VoronoiHandler::WriteGeometry(const CellInterface& cell, UnstructuredGrid* grid)
 {
     std::vector<int> pointIds;
-    VoronoiGeometry geometry = GetGeometry(cell);
-    for (auto pointCoords : geometry.pointCoordinates)
+    for (auto pointCoords : mGeometry.pointCoordinates)
         pointIds.push_back(grid->AddPoint(cell.Interpolate(pointCoords)));
 
     std::vector<int> localSubCells;
-    for (auto voronoiCell : geometry.voronoiCells)
+    for (auto voronoiCell : mGeometry.voronoiCells)
     {
         std::vector<int> localIds;
         for (int i : voronoiCell.cellCornerIds)
@@ -71,10 +38,9 @@ void VoronoiHandler::WriteDofValues(const CellInterface& cell, const DofType dof
 {
     grid->DefinePointData(dof.GetName());
     bool as3d = dof.GetNum() == 2; // allows _warp by vector for 2d displacements
-    VoronoiGeometry geometry = GetGeometry(cell);
-    for (size_t iPoint = 0; iPoint < geometry.pointCoordinates.size(); ++iPoint)
+    for (size_t iPoint = 0; iPoint < mGeometry.pointCoordinates.size(); ++iPoint)
     {
-        auto dofValues = cell.Interpolate(geometry.pointCoordinates[iPoint], dof);
+        auto dofValues = cell.Interpolate(mGeometry.pointCoordinates[iPoint], dof);
 
         if (as3d)
             dofValues = EigenCompanion::To3D(dofValues);
@@ -95,10 +61,9 @@ void VoronoiHandler::PointData(const CellInterface& cell, std::function<Eigen::V
                                std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
 {
     grid->DefinePointData(name);
-    VoronoiGeometry geometry = GetGeometry(cell);
-    for (size_t iPoint = 0; iPoint < geometry.pointCoordinates.size(); ++iPoint)
+    for (size_t iPoint = 0; iPoint < mGeometry.pointCoordinates.size(); ++iPoint)
     {
-        auto coords = cell.Interpolate(geometry.pointCoordinates[iPoint]);
+        auto coords = cell.Interpolate(mGeometry.pointCoordinates[iPoint]);
         auto value = f(coords);
         grid->SetPointData(pointIds[iPoint], name, value);
     }

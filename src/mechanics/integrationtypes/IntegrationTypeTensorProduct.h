@@ -3,6 +3,9 @@
 #include <vector>
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "math/shapes/Line.h"
+#include "math/shapes/Quadrilateral.h"
+#include "math/shapes/Hexahedron.h"
 
 namespace NuTo
 {
@@ -39,6 +42,11 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     //! @brief 1D integration points coordinates
     std::vector<double> mIPts1D;
@@ -46,5 +54,11 @@ private:
     std::vector<Eigen::Matrix<double, TDim, 1>> mIPts;
     //! @brief weights for the integration
     std::vector<double> mWeights;
+
+    using ShapeType =
+            typename std::conditional<TDim == 1, Line,
+                                      typename std::conditional<TDim == 2, Quadrilateral, Hexahedron>::type>::type;
+
+    ShapeType mShape;
 };
 } // namespace

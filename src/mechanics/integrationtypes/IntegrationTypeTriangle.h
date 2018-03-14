@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "math/shapes/Triangle.h"
 
 namespace NuTo
 {
@@ -39,8 +40,14 @@ public:
         return 2;
     }
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     int mOrder;
+    Triangle mShape;
 };
 
 

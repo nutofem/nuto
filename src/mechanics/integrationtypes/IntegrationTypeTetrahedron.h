@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "math/shapes/Tetrahedron.h"
 
 namespace NuTo
 {
@@ -41,8 +42,14 @@ public:
         return 3;
     }
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     int mDataIndex;
+    Tetrahedron mShape;
 };
 
 

@@ -48,7 +48,7 @@ double integrate(std::function<double(Eigen::VectorXd)> f, NuTo::IntegrationType
 //!
 //! \endcode
 //!
-//! @param order, order of the monomial example: x^3 * y^2 has order 5
+//! @param order order of the monomial example: x^3 * y^2 has order 5
 //! @param indx Index to specify which monomial of the many of order
 //! order is meant.
 double ExactIntegralMonomialTriangle(int order, int indx)

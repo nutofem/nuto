@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 
     Visualize::PostProcess visu("GradientDamageOut1D");
-    visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler());
+    visu.DefineVisualizer("GDM", cells, Visualize::VoronoiHandler(Visualize::VoronoiGeometryLine(3)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
     visu.Add("GDM", [&](const CellIpData& cipd) { return gdm.Kappa(cipd); }, "Kappa");
@@ -221,16 +221,16 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     using namespace NuTo::Visualize;
     PostProcess visu("./GradientDamageOut2D");
-    // visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
-    // visu.Add("GDM", d);
-    // visu.Add("GDM", eeq);
-    // visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
+    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
+    visu.Add("GDM", d);
+    visu.Add("GDM", eeq);
+    visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
     auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
-    auto postProcess = [&](double) {
-        // visu.Plot(t, true);
+    auto postProcess = [&](double t) {
+        visu.Plot(t, true);
         problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)));
     };
 

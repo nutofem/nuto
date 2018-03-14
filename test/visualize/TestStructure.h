@@ -3,7 +3,6 @@
 #include <fakeit.hpp>
 #include "base/Group.h"
 #include "mechanics/cell/CellInterface.h"
-#include "math/shapes/Quadrilateral.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -17,7 +16,6 @@ class VisualizeTestStructure
 {
     fakeit::Mock<NuTo::CellInterface> cell0;
     fakeit::Mock<NuTo::CellInterface> cell1;
-    Quadrilateral myQuad;
 
 public:
     NuTo::Group<NuTo::CellInterface> Cells()
@@ -25,10 +23,6 @@ public:
         Eigen::VectorXd bla = Eigen::Vector3d::Constant(1.0);
         fakeit::When(ConstOverloadedMethod(cell0, Interpolate, Eigen::VectorXd(Eigen::VectorXd))).AlwaysReturn(bla);
         fakeit::When(ConstOverloadedMethod(cell1, Interpolate, Eigen::VectorXd(Eigen::VectorXd))).AlwaysReturn(bla);
-        fakeit::When(Method(cell0, Eval)).AlwaysReturn({bla, bla, bla, bla});
-        fakeit::When(Method(cell1, Eval)).AlwaysReturn({bla, bla, bla, bla});
-        fakeit::When(Method(cell0, GetShape)).AlwaysReturn(myQuad);
-        fakeit::When(Method(cell1, GetShape)).AlwaysReturn(myQuad);
         return {cell0.get(), cell1.get()};
     }
 };

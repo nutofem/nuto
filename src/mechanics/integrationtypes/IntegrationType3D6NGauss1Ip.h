@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mechanics/integrationtypes/IntegrationType3D.h"
+#include "math/shapes/Prism.h"
 
 namespace NuTo
 {
@@ -24,5 +25,13 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum) const override;
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    Prism mShape;
 };
 }
