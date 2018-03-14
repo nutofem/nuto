@@ -18,7 +18,7 @@
 
 using namespace NuTo;
 
-std::unique_ptr<InterpolationSimple> SerendipityLine(int order)
+std::unique_ptr<InterpolationSimple> LagrangeLine(int order)
 {
     switch (order)
     {
@@ -31,7 +31,7 @@ std::unique_ptr<InterpolationSimple> SerendipityLine(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityTriangle(int order)
+std::unique_ptr<InterpolationSimple> LagrangeTriangle(int order)
 {
     switch (order)
     {
@@ -46,7 +46,7 @@ std::unique_ptr<InterpolationSimple> SerendipityTriangle(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityQuadrilateral(int order)
+std::unique_ptr<InterpolationSimple> LagrangeQuadrilateral(int order)
 {
     switch (order)
     {
@@ -61,7 +61,7 @@ std::unique_ptr<InterpolationSimple> SerendipityQuadrilateral(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityTetrahedron(int order)
+std::unique_ptr<InterpolationSimple> LagrangeTetrahedron(int order)
 {
     switch (order)
     {
@@ -74,7 +74,7 @@ std::unique_ptr<InterpolationSimple> SerendipityTetrahedron(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityHex(int order)
+std::unique_ptr<InterpolationSimple> LagrangeHex(int order)
 {
     switch (order)
     {
@@ -87,7 +87,7 @@ std::unique_ptr<InterpolationSimple> SerendipityHex(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityPrism(int order)
+std::unique_ptr<InterpolationSimple> LagrangePrism(int order)
 {
     switch (order)
     {
@@ -100,7 +100,7 @@ std::unique_ptr<InterpolationSimple> SerendipityPrism(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> SerendipityPyramid(int order)
+std::unique_ptr<InterpolationSimple> LagrangePyramid(int order)
 {
     switch (order)
     {
@@ -113,24 +113,24 @@ std::unique_ptr<InterpolationSimple> SerendipityPyramid(int order)
 }
 
 
-std::unique_ptr<InterpolationSimple> NuTo::CreateSerendipityInterpolation(const Shape& shape, int order)
+std::unique_ptr<InterpolationSimple> NuTo::CreateLagrangeInterpolation(const Shape& shape, int order)
 {
     switch (shape.Enum())
     {
     case eShape::Line:
-        return SerendipityLine(order);
+        return LagrangeLine(order);
     case eShape::Triangle:
-        return SerendipityTriangle(order);
+        return LagrangeTriangle(order);
     case eShape::Quadrilateral:
-        return SerendipityQuadrilateral(order);
+        return LagrangeQuadrilateral(order);
     case eShape::Tetrahedron:
-        return SerendipityTetrahedron(order);
+        return LagrangeTetrahedron(order);
     case eShape::Hexahedron:
-        return SerendipityHex(order);
+        return LagrangeHex(order);
     case eShape::Prism:
-        return SerendipityPrism(order);
+        return LagrangePrism(order);
     case eShape::Pyramid:
-        return SerendipityPyramid(order);
+        return LagrangePyramid(order);
     default:
         throw Exception(__PRETTY_FUNCTION__, "Unknown shape.");
     }

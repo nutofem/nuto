@@ -7,8 +7,8 @@
 namespace NuTo
 {
 
-//! Create a new serendipity interpolation from a given shape and order.
-std::unique_ptr<InterpolationSimple> CreateSerendipityInterpolation(const Shape& shape, int order);
+//! Create a new Lagrange interpolation from a given shape and order.
+std::unique_ptr<InterpolationSimple> CreateLagrangeInterpolation(const Shape& shape, int order);
 
 //! Create a new Lobatto interpolation from a given shape and order.
 std::unique_ptr<InterpolationSimple> CreateLobattoInterpolation(const Shape& shape, int order);

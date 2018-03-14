@@ -8,15 +8,15 @@ using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(CreateTriangleInterpolation)
 {
-    auto linearTriangle = CreateSerendipityInterpolation(Triangle(), 1);
+    auto linearTriangle = CreateLagrangeInterpolation(Triangle(), 1);
     BOOST_CHECK_EQUAL(linearTriangle->GetNumNodes(), 3);
 
-    auto quadraticTriangle = CreateSerendipityInterpolation(Triangle(), 2);
+    auto quadraticTriangle = CreateLagrangeInterpolation(Triangle(), 2);
     BOOST_CHECK_EQUAL(quadraticTriangle->GetNumNodes(), 6);
 }
 
 BOOST_AUTO_TEST_CASE(CreateHexInterpolation)
 {
-    auto linearBrick = CreateSerendipityInterpolation(Hexahedron(), 1);
+    auto linearBrick = CreateLagrangeInterpolation(Hexahedron(), 1);
     BOOST_CHECK_EQUAL(linearBrick->GetNumNodes(), 8);
 }
