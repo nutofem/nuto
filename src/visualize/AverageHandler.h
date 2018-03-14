@@ -8,21 +8,10 @@ namespace NuTo
 namespace Visualize
 {
 
-//! Geometry description of one cell for the AverageHandler
-struct AverageGeometry
-{
-    std::vector<Eigen::VectorXd> cornerCoordinates;
-    eCellTypes cellType;
-};
-
 //! Cell handler that averages the cell values over each cell.
 class AverageHandler : public HandlerInterface
 {
 public:
-    //! Construct for a given AverageGeometry
-    //! @param geometry geometry description of one averaged cell
-    AverageHandler(AverageGeometry geometry);
-
     virtual std::unique_ptr<HandlerInterface> Clone() const override;
 
     virtual std::vector<int> WriteGeometry(const CellInterface& cell, UnstructuredGrid* grid) override;
@@ -35,9 +24,6 @@ public:
 
     virtual void PointData(const CellInterface& cell, std::function<Eigen::VectorXd(Eigen::VectorXd)> f,
                            std::vector<int> pointIds, std::string name, UnstructuredGrid* grid) override;
-
-private:
-    AverageGeometry mGeometry;
 };
 
 } // namespace Visualize

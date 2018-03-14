@@ -1,11 +1,21 @@
 #pragma once
 
-#include "visualize/AverageHandler.h"
+#include <vector>
+#include "visualize/VisualizeEnum.h"
+#include "Eigen/Core"
 
 namespace NuTo
 {
 namespace Visualize
 {
+
+//! Geometry description of one cell for the AverageHandler
+struct AverageGeometry
+{
+    std::vector<Eigen::VectorXd> cornerCoordinates;
+    eCellTypes cellType;
+};
+
 //! @return quad geometry from (-1,-1) to (1,1)
 inline AverageGeometry AverageGeometryLine()
 {

@@ -28,7 +28,7 @@
 #include "mechanics/cell/Cell.h"
 #include "mechanics/cell/SimpleAssembler.h"
 
-#include "visualize/AverageGeometries.h"
+#include "visualize/AverageHandler.h"
 #include "visualize/VoronoiGeometries.h"
 #include "visualize/PointHandler.h"
 #include "visualize/Visualizer.h"
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
         node.SetValue(1, u(displ, node.GetDofNumber(1)));
     }
 
-    Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
+    Visualize::Visualizer visualize(cellGroup, Visualize::AverageHandler());
     visualize.DofValues(displ);
 
     auto stress = [linearElasticLaw, displ](const CellIpData& cellIpData) {

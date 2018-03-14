@@ -2,7 +2,7 @@
 #include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
-#include "math/shapes/Triangle.h"
+#include "math/shapes/Tetrahedron.h"
 
 namespace NuTo
 {
@@ -40,6 +40,6 @@ public:
     }
 
 private:
-    Triangle mShape;
+    Tetrahedron mShape;
 };
 } /* NuTo */

@@ -3,7 +3,7 @@
 #include "mechanics/mesh/UnitMeshFem.h"
 #include "mechanics/cell/Cell.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "visualize/AverageGeometries.h"
+#include "visualize/AverageHandler.h"
 #include "visualize/Visualizer.h"
 
 constexpr double pi()
@@ -27,7 +27,7 @@ int main()
         visualizationCells.Add(cells.back());
     }
 
-    Visualize::Visualizer visualize(visualizationCells, Visualize::AverageHandler(Visualize::AverageGeometryQuad()));
+    Visualize::Visualizer visualize(visualizationCells, Visualize::AverageHandler());
 
     auto sine_function = [](Eigen::VectorXd x) { return Eigen::Vector3d(sin(x[0]), sin(x[1]), sin(x[0] * x[1])); };
     visualize.PointData(sine_function, "Sine");
