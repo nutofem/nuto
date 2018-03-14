@@ -1,8 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "math/shapes/Tetrahedron.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/integrationtypes/IntegrationCompanion.h"
+#include "mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
 
 #include <vector>
 #include <iostream>
@@ -326,8 +324,7 @@ double ExactIntegralMonomialTetrahedron(int order, int indx)
 
 void CheckTetrahedronIntegration(int polyOrder, int intTypeOrder)
 {
-    std::unique_ptr<NuTo::IntegrationTypeBase> intType =
-            NuTo::CreateGaussIntegrationType(NuTo::Tetrahedron(), intTypeOrder);
+    NuTo::IntegrationTypeTetrahedron intType(intTypeOrder);
     for (int n = 0; n <= polyOrder; n++)
     {
         int count = 0;
@@ -338,7 +335,7 @@ void CheckTetrahedronIntegration(int polyOrder, int intTypeOrder)
                 auto f = [n, i, j](Eigen::VectorXd x) {
                     return (std::pow(x[0], i) * std::pow(x[1], j) * std::pow(x[2], n - i - j));
                 };
-                double computedResult = integrate(f, *intType);
+                double computedResult = integrate(f, intType);
                 BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTetrahedron(n, count), 1.e-9);
                 count++;
             }

@@ -1,8 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "math/shapes/Triangle.h"
-#include "mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "mechanics/integrationtypes/IntegrationCompanion.h"
+#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
 
 #include <vector>
 #include <iostream>
@@ -103,15 +101,14 @@ double ExactIntegralMonomialTriangle(int order, int indx)
 
 void CheckTriangleIntegration(int polyOrder, int intTypeOrder)
 {
-    std::unique_ptr<NuTo::IntegrationTypeBase> intType =
-            NuTo::CreateGaussIntegrationType(NuTo::Triangle(), intTypeOrder);
+    NuTo::IntegrationTypeTriangle intType(intTypeOrder);
     for (int n = 0; n <= polyOrder; n++)
     {
         int count = 0;
         for (int i = 0; i < n + 1; i++)
         {
             auto f = [n, i](Eigen::VectorXd x) { return (std::pow(x[0], i) * std::pow(x[1], n - i)); };
-            double computedResult = integrate(f, *intType);
+            double computedResult = integrate(f, intType);
             BOOST_CHECK_CLOSE(computedResult, ExactIntegralMonomialTriangle(n, count), 1.e-11);
             count++;
         }

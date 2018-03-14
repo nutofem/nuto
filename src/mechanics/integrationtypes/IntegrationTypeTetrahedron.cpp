@@ -3080,8 +3080,8 @@ const std::vector<std::vector<Eigen::Vector4d>> NuTo::IntegrationTypeTetrahedron
          Eigen::Vector4d(0.16666666666666652, 0.16666666666666652, 0.16666666666666652, -4.4087320125e-08),
          Eigen::Vector4d(0.25, 0.25, 0.25, 1.3258375e-11)}};
 
-const std::vector<int> NuTo::IntegrationTypeTetrahedron::orderToIndex = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
-                                                                         10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15};
+const std::vector<int> NuTo::IntegrationTypeTetrahedron::orderToIndex = {0, 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+                                                                         9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14};
 
 NuTo::IntegrationTypeTetrahedron::IntegrationTypeTetrahedron(int order)
     : mDataIndex(orderToIndex[order])
@@ -3091,18 +3091,18 @@ NuTo::IntegrationTypeTetrahedron::IntegrationTypeTetrahedron(int order)
 Eigen::VectorXd NuTo::IntegrationTypeTetrahedron::GetLocalIntegrationPointCoordinates(int i) const
 {
     // transform to standard triangle (lower left is origin)
-    return quadratureData[mDataIndex - 1][i].head(3);
+    return quadratureData[mDataIndex][i].head(3);
 }
 
 
 int NuTo::IntegrationTypeTetrahedron::GetNumIntegrationPoints() const
 {
-    return quadratureData[mDataIndex - 1].size();
+    return quadratureData[mDataIndex].size();
 }
 
 
 double NuTo::IntegrationTypeTetrahedron::GetIntegrationPointWeight(int i) const
 {
     // transform to standard triangle (lower left is origin)
-    return quadratureData[mDataIndex - 1][i][3];
+    return quadratureData[mDataIndex][i][3];
 }
