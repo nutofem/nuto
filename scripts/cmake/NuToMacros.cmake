@@ -5,7 +5,6 @@ include(CheckForDependencies)
 include(CreateSymlink)
 include(CreateNutoModule)
 include(GetGitRevisionDescription)
-include(NutoSwigModule)
 include(SetCompilerFlags)
 include(Warning)
 

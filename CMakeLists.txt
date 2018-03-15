@@ -4,7 +4,6 @@ project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
-option(ENABLE_PYTHON "create python wrapper for nuto" FALSE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
@@ -16,10 +15,6 @@ get_git_head_revision(git_refspec commit_nr)
 check_for_dependencies()
 
 add_subdirectory(external)
-
-if(ENABLE_PYTHON)
-    add_subdirectory(python/nuto)
-endif()
 
 # build nuto
 add_subdirectory(src)
