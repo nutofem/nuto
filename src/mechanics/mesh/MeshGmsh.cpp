@@ -11,6 +11,7 @@
 #include "mechanics/interpolation/InterpolationTetrahedronQuadratic.h"
 #include "mechanics/interpolation/InterpolationBrickLinear.h"
 #include "mechanics/interpolation/InterpolationPrismLinear.h"
+#include "mechanics/interpolation/InterpolationPrismQuadratic.h"
 #include "mechanics/interpolation/InterpolationPyramidLinear.h"
 
 #include <array>
@@ -361,6 +362,8 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
         return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
     case 11:
         return rMesh.CreateInterpolation(InterpolationTetrahedronQuadratic());
+    case 13:
+        return rMesh.CreateInterpolation(InterpolationPrismQuadratic());
     case 16:
         return rMesh.CreateInterpolation(InterpolationQuadQuadratic());
     default:
