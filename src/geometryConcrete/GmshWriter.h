@@ -30,18 +30,18 @@ public:
 
     struct Options
     {
-        static Options Default(double meshSizeAggregates, double meshSizeContainer, double interfaceThickness = 0.)
+        static Options Default(double meshSizeAggregates, double meshSizeMatrix, double interfaceThickness = 0.)
         {
             Options opt;
             opt.interfaceThickness = interfaceThickness;
             opt.meshSizeAggregates = meshSizeAggregates;
-            opt.meshSizeContainer = meshSizeContainer;
+            opt.meshSizeMatrix = meshSizeMatrix;
             return opt;
         }
 
         double interfaceThickness = 0;
         double meshSizeAggregates = 1;
-        double meshSizeContainer = 1;
+        double meshSizeMatrix = 1;
 
         int meshAlg = 6;
         int meshAlg3D = 4;

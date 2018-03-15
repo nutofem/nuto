@@ -152,8 +152,8 @@ Function Box3D
   lzS = newreg; Line Loop(lzS) = { lT0, lT1, lT2, lT3}; Plane Surface(newreg) = {lzS}; 
   lzE = newreg; Line Loop(lzE) = {-lB3,-lB2,-lB1,-lB0}; Plane Surface(newreg) = {lzE}; 
 
-  theContainer = newreg; 
-  Surface Loop(theContainer) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; 
+  theBox = newreg; 
+  Surface Loop(theBox) = {lxS+1, lyS+1, lxE+1, lyE+1, lzS+1, lzE+1}; 
 Return
 )";
 
@@ -183,8 +183,8 @@ Function Cylinder
     barrelSurfaceOne = news; Ruled Surface(barrelSurfaceOne) = {barrelLoopOne};
     barrelSurfaceTwo = news; Ruled Surface(barrelSurfaceTwo) = {barrelLoopTwo};
     // surface loop
-    theContainer = newreg;
-    Surface Loop(theContainer) = {barrelSurfaceOne, barrelSurfaceTwo, baseSurface, topSurface};
+    theBox = newreg;
+    Surface Loop(theBox) = {barrelSurfaceOne, barrelSurfaceTwo, baseSurface, topSurface};
 Return
 )";
 
@@ -201,7 +201,7 @@ Function Box2D
   l2 = newreg; Line(l2) = {p2, p3};
   l3 = newreg; Line(l3) = {p3, p0};
 
-  theContainer = newreg; Line Loop(theContainer) = { l0, l1, l2, l3};
+  theBox = newreg; Line Loop(theBox) = { l0, l1, l2, l3};
 Return
 )";
 
@@ -258,14 +258,14 @@ void Header(std::ostream& out, NuTo::GmshWriter::Options opt)
     out << "Mesh.Optimize = " << opt.meshOptimize << ";\n";
     out << "Mesh.Smoothing = " << opt.meshSmoothing << ";\n";
     out << opt.additionalOptions << "\n";
-    out << "meshSpecimen=" << opt.meshSizeContainer << ";\n";
+    out << "meshSpecimen=" << opt.meshSizeMatrix << ";\n";
     out << "meshCircle=" << opt.meshSizeAggregates << ";\n";
 }
 
 void Footer3D(std::ostream& out, NuTo::GmshWriter::Options opt)
 {
     out << "theMatrix = newv;";
-    out << "Volume(theMatrix) = {theContainer, theOuterInterface[]};\n";
+    out << "Volume(theMatrix) = {theBox, theOuterInterface[]};\n";
     out << "Physical Volume(\"" << opt.physicalGroupMatrix << "\") = {theMatrix};\n";
     out << "Physical Volume(\"" << opt.physicalGroupAggregates << "\") = {theAggregates[]};\n";
     if (opt.interfaceThickness != 0)
@@ -275,7 +275,7 @@ void Footer3D(std::ostream& out, NuTo::GmshWriter::Options opt)
 void Footer2D(std::ostream& out, NuTo::GmshWriter::Options opt)
 {
     out << "theMatrix = news;";
-    out << "Plane Surface(theMatrix) = {theContainer, theOuterInterface[]};\n";
+    out << "Plane Surface(theMatrix) = {theBox, theOuterInterface[]};\n";
     out << "Physical Surface(\"" << opt.physicalGroupMatrix << "\") = {theMatrix};\n";
     out << "Physical Surface(\"" << opt.physicalGroupAggregates << "\") = {theAggregates[]};\n";
     if (opt.interfaceThickness != 0)
