@@ -21,6 +21,7 @@ set(GeometryConcreteGradingCurveSources
 set(GeometryConcreteSources
     GeometryConcrete.cpp
     InputReader.cpp
+    GmshWriter.cpp
     Specimen.cpp
     ${GeometryConcreteCollisionSources}
     ${GeometryConcreteGradingCurveSources}

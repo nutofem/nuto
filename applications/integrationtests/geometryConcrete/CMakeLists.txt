@@ -31,14 +31,14 @@ if(ENABLE_PYTHON)
 endif()
 
 if(GMSH_PATH)
-    add_executable(GeometryConcreteAPI EXCLUDE_FROM_ALL GeometryConcreteAPI.cpp)
-    target_link_libraries(GeometryConcreteAPI
-        Math Base GeometryConcrete Boost::unit_test_framework)
-    target_include_directories(GeometryConcreteAPI
-        PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
-    add_test(integration::geometryConcrete::GeometryConcreteAPI.cpp
-        GeometryConcreteAPI ${GMSH_PATH})
-    append_to_tests(GeometryConcreteAPI)
+    add_integrationtest(GeometryConcreteAPI)
+    target_link_libraries(GeometryConcreteAPI GeometryConcrete)
+
+    add_executable(GmshWriter EXCLUDE_FROM_ALL GmshWriter.cpp)
+    target_link_libraries(GmshWriter Math Base Mechanics GeometryConcrete Boost::unit_test_framework Boost::filesystem)
+    target_include_directories(GmshWriter PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
+    add_test(integration::geometryConcrete::GmshWriter.cpp GmshWriter "--" ${GMSH_PATH})
+    append_to_tests(GmshWriter)
 else()
     message(STATUS
         "Gmsh not found. Skipping integration test GeometryConcreteAPI.cpp")

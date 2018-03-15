@@ -8,6 +8,7 @@
 #include "mechanics/interpolation/InterpolationQuadLinear.h"
 #include "mechanics/interpolation/InterpolationQuadQuadratic.h"
 #include "mechanics/interpolation/InterpolationTetrahedronLinear.h"
+#include "mechanics/interpolation/InterpolationTetrahedronQuadratic.h"
 #include "mechanics/interpolation/InterpolationBrickLinear.h"
 #include "mechanics/interpolation/InterpolationPrismLinear.h"
 #include "mechanics/interpolation/InterpolationPyramidLinear.h"
@@ -358,6 +359,8 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
         return rMesh.CreateInterpolation(InterpolationTrussLobatto(2));
     case 9:
         return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
+    case 11:
+        return rMesh.CreateInterpolation(InterpolationTetrahedronQuadratic());
     case 16:
         return rMesh.CreateInterpolation(InterpolationQuadQuadratic());
     default:
