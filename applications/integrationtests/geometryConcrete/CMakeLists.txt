@@ -28,5 +28,5 @@ if(GMSH_PATH)
     target_link_libraries(GmshWriter GeometryConcrete Boost::filesystem)
 else()
     message(STATUS
-        "Gmsh not found. Skipping integration test GeometryConcreteAPI.cpp")
+        "Gmsh not found. Skipping integration test GeometryConcreteAPI and GmshWriter.")
 endif()
