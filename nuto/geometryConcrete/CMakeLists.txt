@@ -1,5 +1,4 @@
-set(GeometryConcreteCollisionSources
-    collision/collidables/CollidableBase.cpp
+add_sources(collision/collidables/CollidableBase.cpp
     collision/collidables/CollidableParticleBase.cpp
     collision/collidables/CollidableParticleSphere.cpp
     collision/collidables/CollidableWallBase.cpp
@@ -12,20 +11,9 @@ set(GeometryConcreteCollisionSources
     collision/handler/CollisionHandler.cpp
     collision/handler/EventListHandler.cpp
     collision/handler/ParticleHandler.cpp
-    )
-
-set(GeometryConcreteGradingCurveSources
     takeAndPlace/ParticleCreator.cpp
-    )
-
-set(GeometryConcreteSources
     GeometryConcrete.cpp
     InputReader.cpp
     GmshWriter.cpp
     Specimen.cpp
-    ${GeometryConcreteCollisionSources}
-    ${GeometryConcreteGradingCurveSources}
     )
-
-create_nuto_module(GeometryConcrete "${GeometryConcreteSources}")
-target_link_libraries(GeometryConcrete Base Math Visualize)
