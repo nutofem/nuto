@@ -1,4 +1,3 @@
-#include <iostream>
 #include "BoostUnitTest.h"
 #include "visualize/VoronoiGeometries.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -111,8 +110,6 @@ BOOST_AUTO_TEST_CASE(VoronoiTriangle)
      *
      */
     auto geometry = Visualize::VoronoiGeometryTriangle(triangleTypeFourthOrder);
-    std::cout << geometry.voronoiCells.size() << std::endl;
-    std::cout << geometry.pointCoordinates.size() << std::endl;
     BOOST_CHECK_EQUAL(geometry.voronoiCells.size(), 6);
     BOOST_CHECK_EQUAL(geometry.pointCoordinates.size(), 13);
 }

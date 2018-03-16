@@ -1,9 +1,6 @@
 #include "BoostUnitTest.h"
-
 #include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
-
 #include <vector>
-#include <iostream>
 
 //!@brief Integrates function f by quadrature
 //!
@@ -121,6 +118,6 @@ BOOST_AUTO_TEST_CASE(IntegrateTriangle)
     for (int i = 1; i <= maxOrder; i++)
     {
         CheckTriangleIntegration(i, i);
-        std::cout << "Done: order " << i << std::endl;
+        BOOST_TEST_MESSAGE("Done: order " << i);
     }
 }
