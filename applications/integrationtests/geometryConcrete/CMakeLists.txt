@@ -24,11 +24,8 @@ if(GMSH_PATH)
     add_integrationtest(GeometryConcreteAPI)
     target_link_libraries(GeometryConcreteAPI GeometryConcrete)
 
-    add_executable(GmshWriter EXCLUDE_FROM_ALL GmshWriter.cpp)
-    target_link_libraries(GmshWriter Math Base Mechanics GeometryConcrete Boost::unit_test_framework Boost::filesystem)
-    target_include_directories(GmshWriter PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
-    add_test(integration::geometryConcrete::GmshWriter.cpp GmshWriter "--" ${GMSH_PATH})
-    append_to_tests(GmshWriter)
+    add_integrationtest(GmshWriter -- ${GMSH_PATH})
+    target_link_libraries(GmshWriter GeometryConcrete Boost::filesystem)
 else()
     message(STATUS
         "Gmsh not found. Skipping integration test GeometryConcreteAPI.cpp")
