@@ -2,6 +2,7 @@
 #include <Eigen/Core>
 #include "mechanics/interpolation/TypeDefs.h"
 #include <memory>
+#include "math/shapes/Shape.h"
 
 namespace NuTo
 {
@@ -34,6 +35,8 @@ public:
     //! @brief returns the number of nodes
     //! @return number of nodes
     virtual int GetNumNodes() const = 0;
+
+    virtual const Shape& GetShape() const = 0;
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself

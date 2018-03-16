@@ -1,15 +1,16 @@
 #pragma once
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "math/shapes/Quadrilateral.h"
 
 namespace NuTo
 {
-class InterpolationQuadSerendipity : public InterpolationSimple
+class InterpolationQuadQuadratic : public InterpolationSimple
 {
 public:
     std::unique_ptr<InterpolationSimple> Clone() const override
     {
-        return std::make_unique<InterpolationQuadSerendipity>(*this);
+        return std::make_unique<InterpolationQuadQuadratic>(*this);
     }
 
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
@@ -31,5 +32,13 @@ public:
     {
         return 8;
     }
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    Quadrilateral mShape;
 };
 } /* NuTo */

@@ -1,9 +1,8 @@
-#include <iostream>
 #include "BoostUnitTest.h"
 #include "visualize/VoronoiGeometries.h"
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss1Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
+#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
 
 using namespace NuTo;
 
@@ -88,12 +87,12 @@ BOOST_AUTO_TEST_CASE(VoronoiTriangle)
 {
     IntegrationTypeTensorProduct<2> quadType1(1, eIntegrationMethod::GAUSS);
     IntegrationTypeTensorProduct<2> quadType2(2, eIntegrationMethod::GAUSS);
-    IntegrationType3D4NGauss1Ip tetrahedonType;
+    IntegrationTypeTetrahedron tetrahedronType(1);
     BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType1), Exception);
     BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(quadType2), Exception);
-    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(tetrahedonType), Exception);
+    BOOST_CHECK_THROW(Visualize::VoronoiGeometryTriangle(tetrahedronType), Exception);
 
-    IntegrationType2D3NGauss6Ip triangleType6Ip;
+    IntegrationTypeTriangle triangleTypeFourthOrder(4);
     /*
      *           x
      *          / \
@@ -110,7 +109,7 @@ BOOST_AUTO_TEST_CASE(VoronoiTriangle)
      *  Contains 6 cells and 13 points.
      *
      */
-    auto geometry = Visualize::VoronoiGeometryTriangle(triangleType6Ip);
+    auto geometry = Visualize::VoronoiGeometryTriangle(triangleTypeFourthOrder);
     BOOST_CHECK_EQUAL(geometry.voronoiCells.size(), 6);
     BOOST_CHECK_EQUAL(geometry.pointCoordinates.size(), 13);
 }

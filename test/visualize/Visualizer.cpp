@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "visualize/AverageGeometries.h"
+#include "visualize/AverageHandler.h"
 #include "visualize/Visualizer.h"
 #include "TestStructure.h"
 
@@ -9,12 +9,12 @@ using namespace NuTo::Visualize;
 
 BOOST_AUTO_TEST_CASE(EmptyCells)
 {
-    Visualizer visualize({}, AverageHandler(AverageGeometryQuad()));
+    Visualizer visualize({}, AverageHandler());
 
     NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
-    visualize = Visualizer(cells, AverageHandler(AverageGeometryQuad()));
+    visualize = Visualizer(cells, AverageHandler());
     std::string filename = "EmptyCellsOutput.vtu";
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 2);
@@ -25,8 +25,8 @@ BOOST_AUTO_TEST_CASE(ReplacingCells)
     NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
-    Visualizer visualize(cells, AverageHandler(AverageGeometryQuad()));
-    visualize = Visualizer(cells, AverageHandler(AverageGeometryQuad()));
+    Visualizer visualize(cells, AverageHandler());
+    visualize = Visualizer(cells, AverageHandler());
     std::string filename = "ReplacingCellsOutput.vtu";
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 2);

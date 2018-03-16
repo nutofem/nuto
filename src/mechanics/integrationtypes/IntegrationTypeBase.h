@@ -3,6 +3,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include "base/Exception.h"
+#include "math/shapes/Shape.h"
 
 namespace NuTo
 {
@@ -39,5 +40,7 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
     virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
+
+    virtual const Shape& GetShape() const = 0;
 };
 } // namespace NuTo

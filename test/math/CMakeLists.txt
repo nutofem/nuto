@@ -19,3 +19,6 @@ add_unit_test(NewtonRaphson
     )
 
 add_unit_test(Gmres)
+add_unit_test(Shapes
+    mechanics/elements/ElementShapeFunctions.cpp
+    )

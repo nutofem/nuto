@@ -16,6 +16,7 @@ public:
         : mElements(elements)
         , mIntegrationType(integrationType)
         , mId(id)
+        , mShape(elements.GetShape())
     {
     }
 
@@ -84,6 +85,11 @@ public:
         return result;
     }
 
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
 private:
     //! @brief integrates various operations with various return types
     //! @param f operation to perform
@@ -110,5 +116,6 @@ private:
     const ElementCollection& mElements;
     const IntegrationTypeBase& mIntegrationType;
     const int mId;
+    const Shape& mShape;
 };
 } /* NuTo */

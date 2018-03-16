@@ -264,25 +264,9 @@ NuTo::Visualize::VoronoiGeometry TransformedVoronoi(const NuTo::IntegrationTypeB
     return geometry;
 }
 
-//! this should vanish with a "SHAPE" concept...
-bool IsTriangleType(const NuTo::IntegrationTypeBase& integrationType)
-{
-    if (integrationType.GetDimension() != 2)
-        return false;
-
-    for (int i = 0; i < integrationType.GetNumIntegrationPoints(); ++i)
-        if (integrationType.GetLocalIntegrationPointCoordinates(i).sum() > 1.)
-            return false;
-
-    if (integrationType.GetLocalIntegrationPointCoordinates(0).sum() < 1.e-10)
-        return false;
-
-    return true;
-}
-
 VoronoiGeometry NuTo::Visualize::VoronoiGeometryTriangle(const NuTo::IntegrationTypeBase& integrationType)
 {
-    if (not IsTriangleType(integrationType))
+    if (integrationType.GetShape().Enum() != eShape::Triangle)
         throw Exception(__PRETTY_FUNCTION__, "Only 2D triangle types are supported");
 
     Eigen::Vector2d p0(0, 0);

@@ -2,27 +2,41 @@
 #include "visualize/UnstructuredGrid.h"
 #include "mechanics/cell/CellInterface.h"
 #include "math/EigenCompanion.h"
+#include "visualize/AverageGeometries.h"
 
+using namespace NuTo;
 using namespace NuTo::Visualize;
-
-AverageHandler::AverageHandler(AverageGeometry geometry)
-    : mGeometry(geometry)
-{
-}
 
 std::unique_ptr<HandlerInterface> AverageHandler::Clone() const
 {
     return std::make_unique<AverageHandler>(*this);
 }
 
+AverageGeometry GetGeometry(const Shape& shape)
+{
+    switch (shape.Enum())
+    {
+    case eShape::Line:
+        return AverageGeometryLine();
+    case eShape::Quadrilateral:
+        return AverageGeometryQuad();
+    case eShape::Triangle:
+        return AverageGeometryTriangle();
+    case eShape::Tetrahedron:
+        return AverageGeometryTetrahedron();
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "No AverageGeometry defined for this shape.");
+    }
+}
 std::vector<int> AverageHandler::WriteGeometry(const CellInterface& cell, UnstructuredGrid* grid)
 {
     std::vector<int> pointIds;
-    pointIds.reserve(mGeometry.cornerCoordinates.size());
+    AverageGeometry geometry = GetGeometry(cell.GetShape());
+    pointIds.reserve(geometry.cornerCoordinates.size());
 
-    for (auto corner : mGeometry.cornerCoordinates)
+    for (auto corner : geometry.cornerCoordinates)
         pointIds.push_back(grid->AddPoint(cell.Interpolate(corner)));
-    grid->AddCell(pointIds, mGeometry.cellType);
+    grid->AddCell(pointIds, geometry.cellType);
     return pointIds;
 }
 
@@ -31,9 +45,10 @@ void AverageHandler::WriteDofValues(const CellInterface& cell, const DofType dof
 {
     grid->DefinePointData(dof.GetName());
     bool as3d = dof.GetNum() == 2; // allows _warp by vector for 2d displacements
-    for (size_t iCorner = 0; iCorner < mGeometry.cornerCoordinates.size(); ++iCorner)
+    AverageGeometry geometry = GetGeometry(cell.GetShape());
+    for (size_t iCorner = 0; iCorner < geometry.cornerCoordinates.size(); ++iCorner)
     {
-        auto dofValues = cell.Interpolate(mGeometry.cornerCoordinates[iCorner], dof);
+        auto dofValues = cell.Interpolate(geometry.cornerCoordinates[iCorner], dof);
 
         if (as3d)
             dofValues = EigenCompanion::To3D(dofValues);
@@ -56,9 +71,10 @@ void AverageHandler::PointData(const CellInterface& cell, std::function<Eigen::V
                                std::vector<int> pointIds, std::string name, UnstructuredGrid* grid)
 {
     grid->DefinePointData(name);
-    for (size_t iCorner = 0; iCorner < mGeometry.cornerCoordinates.size(); ++iCorner)
+    AverageGeometry geometry = GetGeometry(cell.GetShape());
+    for (size_t iCorner = 0; iCorner < geometry.cornerCoordinates.size(); ++iCorner)
     {
-        auto coords = cell.Interpolate(mGeometry.cornerCoordinates[iCorner]);
+        auto coords = cell.Interpolate(geometry.cornerCoordinates[iCorner]);
         auto value = f(coords);
         grid->SetPointData(pointIds[iCorner], name, value);
     }

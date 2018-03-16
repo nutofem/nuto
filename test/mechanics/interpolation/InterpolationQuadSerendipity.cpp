@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "InterpolationTests.h"
-#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "mechanics/interpolation/InterpolationQuadQuadratic.h"
 
 std::vector<Eigen::VectorXd> GetTestPoints()
 {
@@ -8,7 +8,7 @@ std::vector<Eigen::VectorXd> GetTestPoints()
     return {Eigen::Vector2d({-a, -a}), Eigen::Vector2d({-a, a}), Eigen::Vector2d({a, a}), Eigen::Vector2d({a, -a})};
 }
 
-BOOST_AUTO_TEST_CASE(InterpolationQuadSerendipity)
+BOOST_AUTO_TEST_CASE(InterpolationQuadQuadratic)
 {
-    NuTo::Test::RunTests<NuTo::InterpolationQuadSerendipity>(GetTestPoints());
+    NuTo::Test::RunTests<NuTo::InterpolationQuadQuadratic>(GetTestPoints());
 }

@@ -1,4 +1,4 @@
-#include "visualize/AverageGeometries.h"
+#include "visualize/AverageHandler.h"
 #include "visualize/PostProcess.h"
 #include "TestStructure.h"
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(PostProcessTest)
     auto cells = s.Cells();
 
     PostProcess postprocess("PostProcessOutput/");
-    postprocess.DefineVisualizer("blub", cells, AverageHandler(AverageGeometryQuad()));
+    postprocess.DefineVisualizer("blub", cells, AverageHandler());
     postprocess.Plot(42., false);
     postprocess.Plot(6174., false);
 
@@ -56,10 +56,10 @@ BOOST_AUTO_TEST_CASE(PostProcessEdgyMcEdge)
     PostProcess postprocess;
     BOOST_CHECK_THROW(postprocess.Add("edge", dof), Exception);
 
-    postprocess.DefineVisualizer("edge", cells, AverageHandler(AverageGeometryQuad()));
+    postprocess.DefineVisualizer("edge", cells, AverageHandler());
 
     // defining the same visualizer twice
-    BOOST_CHECK_THROW(postprocess.DefineVisualizer("edge", cells, AverageHandler(AverageGeometryQuad())), Exception);
+    BOOST_CHECK_THROW(postprocess.DefineVisualizer("edge", cells, AverageHandler()), Exception);
 
     // call `Plot` without setting a result directory
     BOOST_CHECK_THROW(postprocess.Plot(0), Exception);

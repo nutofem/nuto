@@ -27,4 +27,5 @@ endforeach()
 add_unit_test(MeshGmsh
     mechanics/mesh/MeshFem
     math/Legendre
+    mechanics/elements/SpectralShapeFunctions.cpp
     mechanics/elements/ElementShapeFunctions)

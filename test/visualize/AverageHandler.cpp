@@ -1,4 +1,4 @@
-#include "visualize/AverageGeometries.h"
+#include "visualize/AverageHandler.h"
 #include "visualize/Visualizer.h"
 #include "visualize/XMLWriter.h"
 #include "TestStructure.h"
@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(GroupAverage)
     auto cells = s.Cells();
 
     std::string filename = "AverageOutput.vtu";
-    Visualizer visualize(cells, AverageHandler(AverageGeometryQuad()));
+    Visualizer visualize(cells, AverageHandler());
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 2);
 }
