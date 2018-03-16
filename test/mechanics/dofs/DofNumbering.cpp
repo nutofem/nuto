@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/dofs/DofNumbering.h"
+#include "nuto/mechanics/dofs/DofNumbering.h"
 
 // wrap algorithm to provide range-like interface
 bool IsPermutation(std::vector<int> v0, std::vector<int> v1)

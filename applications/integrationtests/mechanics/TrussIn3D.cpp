@@ -12,15 +12,15 @@
  */
 #include "BoostUnitTest.h"
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>

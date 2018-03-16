@@ -1,9 +1,9 @@
 #pragma once
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "base/Group.h"
-#include "mechanics/cell/CellInterface.h"
-#include "math/shapes/Quadrilateral.h"
+#include "nuto/base/Group.h"
+#include "nuto/mechanics/cell/CellInterface.h"
+#include "nuto/math/shapes/Quadrilateral.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>

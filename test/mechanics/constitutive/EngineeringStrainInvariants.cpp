@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <eigen3/Eigen/Dense> // for Eigen::determinant()
-#include "mechanics/constitutive/EngineeringStrainInvariants.h"
+#include "nuto/mechanics/constitutive/EngineeringStrainInvariants.h"
 
 using namespace NuTo::EngineeringStrainInvariants;
 using Strain = NuTo::EngineeringStrain<3>;

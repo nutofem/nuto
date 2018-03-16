@@ -1,6 +1,6 @@
 #pragma once
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/damageLaws/DamageLaw.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLaw.h"
 
 namespace DamageLawHelper
 {

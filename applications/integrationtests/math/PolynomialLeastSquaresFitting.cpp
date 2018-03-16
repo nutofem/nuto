@@ -1,5 +1,5 @@
-#include "base/Exception.h"
-#include "math/PolynomialLeastSquaresFitting.h"
+#include "nuto/base/Exception.h"
+#include "nuto/math/PolynomialLeastSquaresFitting.h"
 
 using namespace NuTo;
 

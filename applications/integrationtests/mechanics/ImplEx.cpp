@@ -2,27 +2,27 @@
 
 #include <boost/filesystem.hpp>
 
-#include "base/Timer.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/sections/SectionTruss.h"
+#include "nuto/base/Timer.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
 
-#include "mechanics/groups/Group.h"
-#include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/timeIntegration/ImplEx.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/timeIntegration/ImplEx.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/MechanicsEnums.h"
 
-#include "mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
 
-#include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
-#include "visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)

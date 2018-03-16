@@ -2,15 +2,15 @@
 // Consider a retangular plate of dimension L x H.
 // On the left, T = 0, on the right T = T_0 * y.
 // Top and bottom are insulated (no heat flux).
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 

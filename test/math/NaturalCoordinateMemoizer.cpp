@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
 #include <iostream>
-#include "math/NaturalCoordinateMemoizer.h"
+#include "nuto/math/NaturalCoordinateMemoizer.h"
 
 int counter = 0;
 Eigen::Vector3d CountedFunction(const Eigen::Vector3d& v)

@@ -1,24 +1,24 @@
 #include "BoostUnitTest.h"
 
-#include "base/Timer.h"
+#include "nuto/base/Timer.h"
 #include <iostream>
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
 
-#include "math/SparseMatrixCSRVector2General.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 
 
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
-#include "mechanics/dofSubMatrixStorage/DofStatus.h"
-#include "base/Exception.h"
-#include "mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "nuto/base/Exception.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 
 //! @brief BlockFullVectorTest [BVT]

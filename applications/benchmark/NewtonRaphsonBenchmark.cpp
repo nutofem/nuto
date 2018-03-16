@@ -1,7 +1,7 @@
 #include <cmath>
 #include <benchmark/benchmark.h>
 
-#include "math/NewtonRaphson.h"
+#include "nuto/math/NewtonRaphson.h"
 
 /*
  * Shows that the performance of the NuTo::NewtonRaphson algorithm is very close to the performace of a handwritten

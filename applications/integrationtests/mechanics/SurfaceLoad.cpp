@@ -1,15 +1,15 @@
 #include <iomanip>
 #include <Eigen/Dense>
 
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "base/Exception.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/base/Exception.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseMatrixCSRVector2General.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
 
 #define PRINTRESULT false
 

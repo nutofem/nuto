@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
 using namespace NuTo;
 using namespace NuTo::Constraint;

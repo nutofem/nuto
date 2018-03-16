@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <iostream>
 
-#include "mechanics/iga/Nurbs.h"
+#include "nuto/mechanics/iga/Nurbs.h"
 
 BOOST_AUTO_TEST_CASE(NurbsCopyMove)
 {

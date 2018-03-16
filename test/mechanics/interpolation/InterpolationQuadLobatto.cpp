@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "InterpolationTests.h"
-#include "mechanics/interpolation/InterpolationQuadLobatto.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLobatto.h"
 
 std::vector<Eigen::VectorXd> GetTestPoints()
 {

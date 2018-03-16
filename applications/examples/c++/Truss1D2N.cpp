@@ -1,16 +1,16 @@
 #include <iostream>
 
-#include "math/SparseMatrixCSRGeneral.h"
-#include "math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
 
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 

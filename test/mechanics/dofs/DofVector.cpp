@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/dofs/DofVector.h"
+#include "nuto/mechanics/dofs/DofVector.h"
 #include <sstream>
 
 using namespace NuTo;

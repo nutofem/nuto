@@ -6,16 +6,16 @@
  */
 #include <boost/filesystem.hpp>
 #include <string>
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "visualize/VisualizeEnum.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
 
 void SetConstitutiveLaw(NuTo::Structure& s)

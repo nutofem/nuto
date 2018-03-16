@@ -1,7 +1,7 @@
 #include <iostream>
 #include "BoostUnitTest.h"
-#include "visualize/UnstructuredGrid.h"
-#include "base/Exception.h"
+#include "nuto/visualize/UnstructuredGrid.h"
+#include "nuto/base/Exception.h"
 
 BOOST_AUTO_TEST_CASE(Export)
 {

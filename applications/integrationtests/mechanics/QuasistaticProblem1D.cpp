@@ -1,28 +1,28 @@
 #include "BoostUnitTest.h"
 
-#include "math/NewtonRaphson.h"
-#include "math/EigenCompanion.h"
+#include "nuto/math/NewtonRaphson.h"
+#include "nuto/math/EigenCompanion.h"
 
-#include "mechanics/dofs/DofNumbering.h"
+#include "nuto/mechanics/dofs/DofNumbering.h"
 
-#include "mechanics/integrands/MomentumBalance.h"
-#include "mechanics/integrands/Bind.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/tools/CellStorage.h"
-#include "mechanics/tools/QuasistaticSolver.h"
-#include "mechanics/tools/AdaptiveSolve.h"
+#include "nuto/mechanics/integrands/MomentumBalance.h"
+#include "nuto/mechanics/integrands/Bind.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/tools/CellStorage.h"
+#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/AdaptiveSolve.h"
 
-#include "mechanics/constitutive/LinearElastic.h"
-#include "mechanics/constitutive/LocalIsotropicDamage.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
-#include "visualize/Visualizer.h"
-#include "visualize/AverageHandler.h"
-#include "visualize/AverageGeometries.h"
+#include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/AverageGeometries.h"
 
 using namespace NuTo;
 

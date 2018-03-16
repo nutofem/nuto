@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
+#include "nuto/mechanics/tools/GlobalFractureEnergyIntegrator.h"
 
 BOOST_AUTO_TEST_CASE(IntegrateFunction)
 {

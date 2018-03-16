@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
+#include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
 using namespace NuTo;
 using namespace NuTo::Constitutive;

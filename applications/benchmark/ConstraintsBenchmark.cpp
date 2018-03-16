@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-#include "mechanics/constraints/Constraints.h"
+#include "nuto/mechanics/constraints/Constraints.h"
 
 /*
  * The constraint creation requires checks with all previously created constraints. In a naive implementation, this has

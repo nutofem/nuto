@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/cell/CellIpData.h"
+#include "nuto/mechanics/cell/CellIpData.h"
 #include <type_traits>
 
 BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)

@@ -1,11 +1,11 @@
 #include "BoostUnitTest.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "base/Exception.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/base/Exception.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
 void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rTypeOrder)
 {

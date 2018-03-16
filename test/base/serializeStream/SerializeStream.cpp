@@ -3,10 +3,10 @@
 #include <memory>
 #include <Eigen/Core>
 
-#include "base/Exception.h"
+#include "nuto/base/Exception.h"
 
-#include "base/serializeStream/SerializeStreamOut.h"
-#include "base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
 
 BOOST_AUTO_TEST_CASE(RestartFile_InvalidFile)
 {

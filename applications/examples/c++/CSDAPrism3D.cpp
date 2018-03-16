@@ -5,16 +5,16 @@
  *      Author: Thomas Titscher
  */
 
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "visualize/VisualizeEnum.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
-#include "mechanics/mesh/MeshCompanion.h"
+#include "nuto/mechanics/mesh/MeshCompanion.h"
 
 int main()
 {

@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include <vector>
 #include <iostream>
 

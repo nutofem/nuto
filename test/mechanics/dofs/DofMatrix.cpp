@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/dofs/DofMatrix.h"
+#include "nuto/mechanics/dofs/DofMatrix.h"
 #include <sstream>
 
 NuTo::DofMatrix<int> Get(const NuTo::DofType& d0, const NuTo::DofType& d1)
