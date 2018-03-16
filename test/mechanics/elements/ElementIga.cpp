@@ -2,7 +2,7 @@
 #include <boost/test/output_test_stream.hpp>
 #include <type_traits>
 
-#include "mechanics/elements/ElementIga.h"
+#include "nuto/mechanics/elements/ElementIga.h"
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)
 {

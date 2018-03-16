@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include "math/EigenSparseSolve.h"
-#include "base/Exception.h"
+#include "nuto/math/EigenSparseSolve.h"
+#include "nuto/base/Exception.h"
 #include <boost/test/data/test_case.hpp>
 
 namespace bdata = boost::unit_test::data;

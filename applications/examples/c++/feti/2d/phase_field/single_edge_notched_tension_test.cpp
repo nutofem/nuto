@@ -3,14 +3,14 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 
-#include "mechanics/constitutive/laws/PhaseField.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/feti/FetiDirichletPreconditioner.h"
-#include "mechanics/feti/StructureFeti.h"
-#include "mechanics/feti/NewmarkFeti.h"
+#include "nuto/mechanics/constitutive/laws/PhaseField.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/feti/FetiDirichletPreconditioner.h"
+#include "nuto/mechanics/feti/StructureFeti.h"
+#include "nuto/mechanics/feti/NewmarkFeti.h"
 
-#include "visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 using std::cout;
 using std::endl;

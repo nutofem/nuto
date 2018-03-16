@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "base/Group.h"
+#include "nuto/base/Group.h"
 
 using namespace NuTo;
 

@@ -1,8 +1,8 @@
 #include "BoostUnitTest.h"
-#include "mechanics/interpolation/InterpolationCompanion.h"
+#include "nuto/mechanics/interpolation/InterpolationCompanion.h"
 
-#include "math/shapes/Triangle.h"
-#include "math/shapes/Hexahedron.h"
+#include "nuto/math/shapes/Triangle.h"
+#include "nuto/math/shapes/Hexahedron.h"
 
 using namespace NuTo;
 

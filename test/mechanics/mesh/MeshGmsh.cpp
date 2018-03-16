@@ -1,6 +1,6 @@
-#include "mechanics/mesh/MeshGmsh.h"
+#include "nuto/mechanics/mesh/MeshGmsh.h"
 #include "BoostUnitTest.h"
-#include "mechanics/cell/Jacobian.h"
+#include "nuto/mechanics/cell/Jacobian.h"
 
 using namespace NuTo;
 

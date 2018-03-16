@@ -1,5 +1,5 @@
 #include "DamageLawHelper.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 BOOST_AUTO_TEST_CASE(ExponentialDerivative)
 {

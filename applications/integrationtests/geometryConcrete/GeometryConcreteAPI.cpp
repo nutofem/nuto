@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include "geometryConcrete/GeometryConcrete.h"
-#include "base/Exception.h"
+#include "nuto/geometryConcrete/GeometryConcrete.h"
+#include "nuto/base/Exception.h"
 
 NuTo::GeometryConcrete DefineGeometry(int numClasses, double l = 16)
 {

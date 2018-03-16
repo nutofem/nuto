@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "visualize/DataArray.h"
+#include "nuto/visualize/DataArray.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>

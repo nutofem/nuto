@@ -4,18 +4,18 @@
 
 #include "BoostUnitTest.h"
 
-#include "mechanics/elements/ContinuumElement.h"
-#include "mechanics/elements/ElementEnum.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/nodes/NodeDof.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/constitutive/laws/HeatConduction.h"
-#include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
-#include "mechanics/elements/ElementOutputBlockVectorDouble.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ContinuumElement.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/laws/HeatConduction.h"
+#include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
+#include "nuto/mechanics/elements/ElementOutputBlockVectorDouble.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 using NuTo::Node::eDof;
 using NuTo::Interpolation::eTypeOrder;

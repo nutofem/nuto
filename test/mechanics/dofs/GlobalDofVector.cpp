@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/dofs/GlobalDofVector.h"
+#include "nuto/mechanics/dofs/GlobalDofVector.h"
 
 using namespace NuTo;
 

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 #include <Eigen/Core>
-#include "math/EigenCompanion.h"
+#include "nuto/math/EigenCompanion.h"
 
 #include <ctime>
 #ifdef _OPENMP

@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/dofs/DofMatrixSparseConvertEigen.h"
+#include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 
 BOOST_AUTO_TEST_CASE(DofMatrixExportEigen)
 {

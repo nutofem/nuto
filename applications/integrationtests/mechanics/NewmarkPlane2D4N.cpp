@@ -3,16 +3,16 @@
 #include <iomanip>
 #include <boost/filesystem.hpp>
 
-#include "math/EigenCompanion.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/math/EigenCompanion.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 void CheckResult(std::string resultDir, std::string file, Eigen::MatrixXd expected, double tolerance = 1.e-4)
 {

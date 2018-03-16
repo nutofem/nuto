@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-#include "mechanics/dofs/DofMatrixSparseConvertEigen.h"
+#include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 #include <iostream>
 
 using namespace NuTo;

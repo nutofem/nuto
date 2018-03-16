@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "math/Gmres.h"
+#include "nuto/math/Gmres.h"
 #include <iostream>
 
 

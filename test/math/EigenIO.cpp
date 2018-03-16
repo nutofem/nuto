@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "math/EigenIO.h"
+#include "nuto/math/EigenIO.h"
 
 BOOST_AUTO_TEST_CASE(ReadWriteFile)
 {

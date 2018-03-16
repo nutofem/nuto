@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/dofs/DofVectorConvertEigen.h"
+#include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
 
 using namespace NuTo;
 

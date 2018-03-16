@@ -1,5 +1,5 @@
-#include "visualize/AverageHandler.h"
-#include "visualize/PostProcess.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/PostProcess.h"
 #include "TestStructure.h"
 
 #include <boost/filesystem.hpp>

@@ -1,10 +1,10 @@
 #include "BoostUnitTest.h"
-#include "mechanics/mesh/MeshFem.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
-#include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
+#include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
 void SetStuff(NuTo::MeshFem& m)
 {

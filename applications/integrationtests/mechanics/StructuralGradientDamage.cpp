@@ -2,25 +2,25 @@
 
 #include <boost/filesystem.hpp>
 
-#include "math/EigenCompanion.h"
-#include "mechanics/dofs/DofVectorConvertEigen.h"
+#include "nuto/math/EigenCompanion.h"
+#include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
 
-#include "mechanics/integrands/GradientDamage.h"
-#include "mechanics/integrands/NeumannBc.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/mesh/MeshGmsh.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/interpolation/InterpolationTrussLobatto.h"
-#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/tools/CellStorage.h"
-#include "mechanics/tools/TimeDependentProblem.h"
-#include "mechanics/tools/QuasistaticSolver.h"
-#include "mechanics/tools/AdaptiveSolve.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "visualize/PostProcess.h"
-#include "visualize/VoronoiGeometries.h"
+#include "nuto/mechanics/integrands/GradientDamage.h"
+#include "nuto/mechanics/integrands/NeumannBc.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/MeshGmsh.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTriangle.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/tools/CellStorage.h"
+#include "nuto/mechanics/tools/TimeDependentProblem.h"
+#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/AdaptiveSolve.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/visualize/PostProcess.h"
+#include "nuto/visualize/VoronoiGeometries.h"
 
 using namespace NuTo;
 

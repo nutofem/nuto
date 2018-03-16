@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <Eigen/Core>
-#include "visualize/UnstructuredGrid.h"
+#include "nuto/visualize/UnstructuredGrid.h"
 
 BOOST_AUTO_TEST_CASE(TriangleAndQuad)
 {

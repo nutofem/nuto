@@ -3,37 +3,37 @@
 #include <eigen3/Eigen/Dense> // for solve
 #include "boost/ptr_container/ptr_vector.hpp"
 
-#include "math/EigenCompanion.h"
+#include "nuto/math/EigenCompanion.h"
 
-#include "base/Group.h"
+#include "nuto/base/Group.h"
 
-#include "mechanics/dofs/DofNumbering.h"
+#include "nuto/mechanics/dofs/DofNumbering.h"
 
-#include "mechanics/mesh/MeshFem.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 
-#include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
-#include "mechanics/constraints/Constraints.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constraints/Constraints.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
-#include "mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
 
-#include "mechanics/integrands/MomentumBalance.h"
-#include "mechanics/integrands/NeumannBc.h"
-#include "mechanics/integrands/Bind.h"
+#include "nuto/mechanics/integrands/MomentumBalance.h"
+#include "nuto/mechanics/integrands/NeumannBc.h"
+#include "nuto/mechanics/integrands/Bind.h"
 
-#include "mechanics/cell/Cell.h"
-#include "mechanics/cell/SimpleAssembler.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/cell/SimpleAssembler.h"
 
-#include "visualize/AverageHandler.h"
-#include "visualize/VoronoiGeometries.h"
-#include "visualize/PointHandler.h"
-#include "visualize/Visualizer.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/VoronoiGeometries.h"
+#include "nuto/visualize/PointHandler.h"
+#include "nuto/visualize/Visualizer.h"
 
-#include "mechanics/solver/Solve.h"
+#include "nuto/mechanics/solver/Solve.h"
 
 using namespace NuTo;
 

@@ -1,8 +1,8 @@
 #include "BoostUnitTest.h"
-#include "visualize/VoronoiGeometries.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
-#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
+#include "nuto/visualize/VoronoiGeometries.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTriangle.h"
 
 using namespace NuTo;
 

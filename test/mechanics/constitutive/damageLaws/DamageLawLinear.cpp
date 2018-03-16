@@ -1,5 +1,5 @@
 #include "DamageLawHelper.h"
-#include "mechanics/constitutive/damageLaws/DamageLawLinear.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawLinear.h"
 
 BOOST_AUTO_TEST_CASE(LinearDerivative)
 {

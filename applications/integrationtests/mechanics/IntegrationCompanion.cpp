@@ -1,12 +1,12 @@
 #include "BoostUnitTest.h"
-#include "mechanics/integrationtypes/IntegrationCompanion.h"
+#include "nuto/mechanics/integrationtypes/IntegrationCompanion.h"
 
-#include "math/shapes/Triangle.h"
+#include "nuto/math/shapes/Triangle.h"
 
-#include "math/shapes/Hexahedron.h"
-#include "math/shapes/Quadrilateral.h"
-#include "math/shapes/Line.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/math/shapes/Hexahedron.h"
+#include "nuto/math/shapes/Quadrilateral.h"
+#include "nuto/math/shapes/Line.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 using namespace NuTo;
 

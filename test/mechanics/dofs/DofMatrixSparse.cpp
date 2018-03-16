@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/dofs/DofMatrixSparse.h"
+#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 #include <sstream>
 
 Eigen::SparseMatrix<int> Constant(int rows, int cols, int val)

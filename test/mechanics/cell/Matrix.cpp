@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/cell/Matrix.h"
+#include "nuto/mechanics/cell/Matrix.h"
 
 
 void TestN(int dim)

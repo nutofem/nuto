@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTetrahedron.h"
 
 #include <vector>
 #include <iostream>

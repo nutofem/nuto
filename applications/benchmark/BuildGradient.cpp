@@ -1,11 +1,11 @@
 #include <benchmark/benchmark.h>
-#include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/elements/ElementFem.h"
-#include "mechanics/cell/Cell.h"
-#include "mechanics/interpolation/InterpolationQuadSerendipity.h"
-#include "mechanics/integrands/MomentumBalance.h"
-#include "mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/elements/ElementFem.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "nuto/mechanics/integrands/MomentumBalance.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
 
 /*
  * Measures/Compares time for the calculation of a linear elastic gradient with quadratic quad elements

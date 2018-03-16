@@ -1,10 +1,10 @@
 #include <cmath>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/cell/Cell.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "visualize/AverageHandler.h"
-#include "visualize/Visualizer.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/Visualizer.h"
 
 constexpr double pi()
 {

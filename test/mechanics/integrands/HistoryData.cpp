@@ -1,10 +1,10 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/cell/Cell.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
-#include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
 
 #include <set>
 #include <functional>

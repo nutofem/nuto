@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "math/EigenCompanion.h"
+#include "nuto/math/EigenCompanion.h"
 
 using namespace NuTo::EigenCompanion;
 

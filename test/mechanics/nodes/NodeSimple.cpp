@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "TypeTraits.h"
-#include "mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
 
 
 BOOST_AUTO_TEST_CASE(NodeSimpleCopyMove)

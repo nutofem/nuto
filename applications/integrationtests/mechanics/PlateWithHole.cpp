@@ -3,14 +3,14 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-#include "mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 
-#include "mechanics/groups/Group.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
 #include "PlateWithHoleAnalytic.h"
 

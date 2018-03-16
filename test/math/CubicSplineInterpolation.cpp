@@ -1,8 +1,8 @@
 #include "BoostUnitTest.h"
 
 #include <array>
-#include "math/CubicSplineInterpolation.h"
-#include "base/Exception.h"
+#include "nuto/math/CubicSplineInterpolation.h"
+#include "nuto/base/Exception.h"
 
 #define CHECK_CLOSE_COLLECTION(aa, bb, tolerance)                                                                      \
     {                                                                                                                  \

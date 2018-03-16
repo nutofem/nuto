@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 #include <chrono>
 
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 
 /*
  * Calculates the big O complexity of various, potentially expensive MeshFem methods.

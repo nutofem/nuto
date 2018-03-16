@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/cell/SimpleAssembler.h"
-#include "mechanics/cell/CellInterface.h"
+#include "nuto/mechanics/cell/SimpleAssembler.h"
+#include "nuto/mechanics/cell/CellInterface.h"
 
 fakeit::Mock<NuTo::CellInterface> MockCell(const NuTo::DofType& dof, Eigen::Vector3i numbering)
 {

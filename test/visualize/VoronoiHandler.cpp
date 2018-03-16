@@ -1,6 +1,6 @@
-#include "visualize/VoronoiGeometries.h"
-#include "visualize/Visualizer.h"
-#include "visualize/XMLWriter.h"
+#include "nuto/visualize/VoronoiGeometries.h"
+#include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/XMLWriter.h"
 #include "TestStructure.h"
 
 using namespace NuTo;

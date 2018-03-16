@@ -1,6 +1,6 @@
-#include "visualize/AverageHandler.h"
-#include "visualize/Visualizer.h"
-#include "visualize/XMLWriter.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/XMLWriter.h"
 #include "TestStructure.h"
 
 using namespace NuTo;

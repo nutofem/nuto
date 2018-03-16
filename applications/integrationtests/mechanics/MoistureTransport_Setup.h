@@ -1,19 +1,19 @@
 #pragma once
 
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "mechanics/constitutive/laws/MoistureTransport.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
-#include "visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

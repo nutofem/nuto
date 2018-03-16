@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 
-#include "mechanics/elements/ElementShapeFunctions.h"
-#include "math/NaturalCoordinateMemoizer.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/math/NaturalCoordinateMemoizer.h"
 
 #include <memory>
 #include <vector>

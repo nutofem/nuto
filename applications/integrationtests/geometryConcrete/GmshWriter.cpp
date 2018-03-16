@@ -2,8 +2,8 @@
 
 #include <boost/filesystem.hpp>
 #include <cstdlib> // std::system
-#include "geometryConcrete/GmshWriter.h"
-#include "mechanics/mesh/MeshGmsh.h"
+#include "nuto/geometryConcrete/GmshWriter.h"
+#include "nuto/mechanics/mesh/MeshGmsh.h"
 
 using namespace NuTo;
 

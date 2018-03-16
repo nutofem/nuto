@@ -17,7 +17,7 @@ check_for_dependencies()
 add_subdirectory(external)
 
 # build nuto
-add_subdirectory(src)
+add_subdirectory(nuto)
 
 # test Environment
 include(CTest)
@@ -29,7 +29,7 @@ if(benchmark_FOUND)
 endif()
 
 # Copy headers
-install(DIRECTORY src/
+install(DIRECTORY nuto/
     DESTINATION include/nuto
     FILES_MATCHING PATTERN "*.h"
     )

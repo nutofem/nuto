@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
-#include "base/Exception.h"
-#include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/constraints/Constraints.h"
+#include "nuto/base/Exception.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/constraints/Constraints.h"
 
 using namespace NuTo;
 using namespace Constraint;

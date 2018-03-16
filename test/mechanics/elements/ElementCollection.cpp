@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/elements/ElementCollection.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 
 BOOST_AUTO_TEST_CASE(ElementCollectionAccess)
 {

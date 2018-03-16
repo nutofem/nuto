@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/cell/CellData.h"
+#include "nuto/mechanics/cell/CellData.h"
 
 BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {

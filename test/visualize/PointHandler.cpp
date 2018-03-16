@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
-#include "visualize/Visualizer.h"
-#include "visualize/PointHandler.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/PointHandler.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
 #include "TestStructure.h"
 
