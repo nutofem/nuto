@@ -8,8 +8,10 @@
 #include "InterpolationQuadLinear.h"
 #include "InterpolationQuadQuadratic.h"
 #include "InterpolationTetrahedronLinear.h"
+#include "InterpolationTetrahedronQuadratic.h"
 #include "InterpolationBrickLinear.h"
 #include "InterpolationPrismLinear.h"
+#include "InterpolationPrismQuadratic.h"
 #include "InterpolationPyramidLinear.h"
 
 #include "InterpolationTrussLobatto.h"
@@ -67,6 +69,8 @@ std::unique_ptr<InterpolationSimple> LagrangeTetrahedron(int order)
     {
     case 1:
         return std::make_unique<InterpolationTetrahedronLinear>();
+    case 2:
+        return std::make_unique<InterpolationTetrahedronQuadratic>();
     default:
         throw Exception(__PRETTY_FUNCTION__,
                         "Tet interpolation of order " + std::to_string(order) + " is not defined.");
@@ -93,6 +97,8 @@ std::unique_ptr<InterpolationSimple> LagrangePrism(int order)
     {
     case 1:
         return std::make_unique<InterpolationPrismLinear>();
+    case 2:
+        return std::make_unique<InterpolationPrismQuadratic>();
     default:
         throw Exception(__PRETTY_FUNCTION__,
                         "Prism interpolation of order " + std::to_string(order) + " is not defined.");

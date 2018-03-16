@@ -1,7 +1,7 @@
 #pragma once
-#include <eigen3/Eigen/Core>
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "math/shapes/Tetrahedron.h"
 
 namespace NuTo
 {
@@ -32,5 +32,13 @@ public:
     {
         return 10;
     }
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    Tetrahedron mShape;
 };
 } /* NuTo */

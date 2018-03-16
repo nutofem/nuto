@@ -1,6 +1,7 @@
 #pragma once
 #include "mechanics/interpolation/InterpolationSimple.h"
 #include "mechanics/elements/ElementShapeFunctions.h"
+#include "math/shapes/Prism.h"
 
 namespace NuTo
 {
@@ -31,5 +32,13 @@ public:
     {
         return 18;
     }
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    Prism mShape;
 };
 } /* NuTo */

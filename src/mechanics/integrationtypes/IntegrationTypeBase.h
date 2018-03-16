@@ -41,6 +41,8 @@ public:
     //! @return weight of integration points
     virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
 
+    //! Determines the shape of the integration type
+    //! @return shape of the integration type
     virtual const Shape& GetShape() const = 0;
 };
 } // namespace NuTo
