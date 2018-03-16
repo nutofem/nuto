@@ -3,8 +3,9 @@ set(MathSources
     EigenIO.cpp
     EigenSparseSolve.cpp
     Interpolation.cpp
-    LinearInterpolation.cpp
     Legendre.cpp
+    LinearInterpolation.cpp
+    PolynomialLeastSquaresFitting.cpp
     Quadrature.cpp
 )
 
