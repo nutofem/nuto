@@ -1,5 +1,7 @@
 add_unit_test(InterpolationTetrahedronLinear
     mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(InterpolationTetrahedronQuadratic
+    mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationTrussLinear
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationTriangleLinear
@@ -11,6 +13,8 @@ add_unit_test(InterpolationQuadLinear
 add_unit_test(InterpolationBrickLinear
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationPrismLinear
+    mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(InterpolationPrismQuadratic
     mechanics/elements/ElementShapeFunctions.cpp)
 add_unit_test(InterpolationPyramidLinear
     mechanics/elements/ElementShapeFunctions.cpp)
