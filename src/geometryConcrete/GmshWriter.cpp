@@ -158,7 +158,7 @@ Return
 )";
 
 const std::string sCylinder = R"(
-Function Cylinder
+Function Cylinder3D
     // base cirle
     p0 = newp; Point(p0) = {0, 0, 0, meshSpecimen};
     p1 = newp; Point(p1) = {0, radius, 0, meshSpecimen};
@@ -366,7 +366,7 @@ void NuTo::GmshWriter::Write(std::ostream& out, Cylinder cylinder, const Eigen::
 
     out << "radius=" << cylinder.mRadius << ";\n";
     out << "height=" << cylinder.mHeight << ";\n";
-    out << "Call Cylinder;\n";
+    out << "Call Cylinder3D;\n";
 
     Footer3D(out, opt);
 }
