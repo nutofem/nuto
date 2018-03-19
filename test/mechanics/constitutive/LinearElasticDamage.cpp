@@ -11,7 +11,7 @@ constexpr double nu = 0.36;
 template <int TDim>
 void CheckIsotropic()
 {
-    NuTo::Laws::LinearElasticDamage<3> linearElasticDamage(E, nu, false);
+    NuTo::Laws::LinearElasticDamage<3> linearElasticDamage(E, nu);
     NuTo::Laws::LinearElastic<3> linearElastic(E, nu);
     NuTo::EngineeringStrain<3> strain = NuTo::EngineeringStrain<3>::Random();
     double omega = 0.4;

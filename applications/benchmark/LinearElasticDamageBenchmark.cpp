@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 
-#include "mechanics/constitutive/LinearElastic.h"
-#include "mechanics/constitutive/LinearElasticDamage.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
 
 const double E = 20000;
 const double nu = 0.2;

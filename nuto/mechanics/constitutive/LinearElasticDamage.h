@@ -10,18 +10,29 @@ namespace NuTo
 {
 namespace Laws
 {
+enum eDamageApplication
+{
+    FULL,
+    UNILATERAL
+};
 
+//! Applies an isotropic damage variable to the linear elastic hookes law. A hydrostatic/deviatoric split is performed
+//! that allows applying damage selectivly:
+//! `eDamageApplication::FULL` for the full application
+//! `eDamageApplication::UNILATERAL` for excluding the compressive hydrostatic part
+//!
+//! So it corresponds to `NuTo::Laws::LinearElastic` when you pass `omega = 0`.
 template <int TDim>
 class LinearElasticDamage
 {
     using EigenVDim = Eigen::Matrix<double, Voigt::Dim(TDim), 1>;
 
 public:
-    LinearElasticDamage(double E, double nu, bool isUnilateral = false,
+    LinearElasticDamage(double E, double nu, eDamageApplication damageApplication = FULL,
                         ePlaneState planeState = ePlaneState::PLANE_STRAIN)
         : m3K(3 * E / (3 - 6 * nu))
         , m2G(2 * E / (2 + 2 * nu))
-        , mIsUnilateral(isUnilateral)
+        , mDamageApplication(damageApplication)
         , mPlaneState(planeState)
     {
         if (mPlaneState == ePlaneState::PLANE_STRESS)
@@ -78,7 +89,7 @@ public:
 
     double H(double eV) const
     {
-        if (mIsUnilateral)
+        if (mDamageApplication == UNILATERAL)
             return eV < 0 ? 0 : 1;
         else
             return 1;
@@ -87,7 +98,7 @@ public:
 public:
     double m3K;
     double m2G;
-    bool mIsUnilateral;
+    eDamageApplication mDamageApplication;
     ePlaneState mPlaneState;
 
     const EngineeringTangent<TDim> mIv = 1. / 3. * D() * D().transpose();

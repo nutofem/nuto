@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     double E = 30000;
     double nu = 0.2;
-    Laws::LinearElasticDamage<2> unilateralLaw(E, nu, true);
+    Laws::LinearElasticDamage<2> unilateralLaw(E, nu, Laws::UNILATERAL);
 
     double ft = 4;
     double gf = 0.021 * 10;

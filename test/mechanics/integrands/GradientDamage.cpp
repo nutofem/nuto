@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
     double beta = 360;
     double alpha = 0.96;
     double c = 0.5;
-    Laws::LinearElasticDamage<1> unilateralLaw(E, nu, true);
+    Laws::LinearElasticDamage<1> unilateralLaw(E, nu, Laws::UNILATERAL);
     Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, 1);
     Constitutive::DamageLawExponential damageLaw(k0, beta, alpha);
 
