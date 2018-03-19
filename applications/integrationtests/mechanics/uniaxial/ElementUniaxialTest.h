@@ -11,20 +11,20 @@
 #include <iomanip>
 #include <boost/filesystem.hpp>
 
-#include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
-#include "math/SparseMatrixCSRVector2.h"
-#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/interpolationtypes/InterpolationBase.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/mesh/MeshGenerator.h"
+#include "nuto/math/SparseMatrixCSRVector2.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
 
 /*
  *    Interface for displacement controlled uni-axial tensile test

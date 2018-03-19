@@ -1,11 +1,11 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
-#include "mechanics/cell/Cell.h"
-#include "mechanics/elements/ElementCollection.h"
-#include "mechanics/interpolation/InterpolationQuadLinear.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/integrands/MomentumBalance.h"
-#include "mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/integrands/MomentumBalance.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
 
 double VolumeF(const NuTo::CellIpData&)
 {

@@ -4,12 +4,11 @@ function(create_nuto_module ModuleName ModuleSources)
         OUTPUT_NAME NuTo${ModuleName}
         )
     target_include_directories(${ModuleName} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-        $<INSTALL_INTERFACE:include/nuto>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/>
         )
 
     install(TARGETS ${ModuleName} EXPORT NuToTargets
         LIBRARY DESTINATION lib
-        INCLUDES DESTINATION include/nuto
         )
 endfunction()

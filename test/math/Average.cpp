@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "math/Average.h"
+#include "nuto/math/Average.h"
 #include <random>
 
 constexpr long double e = 1.e-12;

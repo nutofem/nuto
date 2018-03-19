@@ -1,17 +1,17 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/dofs/DofNumbering.h"
-#include "mechanics/cell/SimpleAssembler.h"
+#include "nuto/mechanics/dofs/DofNumbering.h"
+#include "nuto/mechanics/cell/SimpleAssembler.h"
 
-#include "mechanics/integrands/DynamicMomentumBalance.h"
-#include "mechanics/interpolation/InterpolationTrussLobatto.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/constraints/Constraints.h"
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/tools/CellStorage.h"
+#include "nuto/mechanics/integrands/DynamicMomentumBalance.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/constraints/Constraints.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/tools/CellStorage.h"
 
-#include "mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
 
 #include <Eigen/Eigenvalues>
 

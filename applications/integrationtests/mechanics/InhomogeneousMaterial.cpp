@@ -1,14 +1,14 @@
 #include <iostream>
 
-#include "mechanics/constitutive/laws/LinearElasticInhomogeneous.h"
+#include "nuto/mechanics/constitutive/laws/LinearElasticInhomogeneous.h"
 
-#include "mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 
 #include "BoostUnitTest.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
 
 /*
  * 1D Unixaxial tension test, prescribed displacement at boundaries

@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "base/UniqueId.h"
+#include "nuto/base/UniqueId.h"
 
 BOOST_AUTO_TEST_CASE(IdsCreate)
 {

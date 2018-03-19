@@ -1,17 +1,17 @@
 #include <boost/filesystem.hpp>
 
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
-#include "math/EigenCompanion.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/math/EigenCompanion.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
 
-#include "visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 // Example: linear elastic 2D plane stress example solved with PGD (extra coordinates: E-factor (E_0=10000), load factor
 // (F_0=500))

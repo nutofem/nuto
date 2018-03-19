@@ -1,12 +1,12 @@
 #include <benchmark/benchmark.h>
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/mesh/MeshFemDofConvert.h"
-#include "mechanics/cell/Cell.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/cell/Cell.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
-#include "visualize/Visualizer.h"
-#include "visualize/VoronoiHandler.h"
-#include "visualize/VoronoiGeometries.h"
+#include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/VoronoiHandler.h"
+#include "nuto/visualize/VoronoiGeometries.h"
 
 /*
  * Find potential bottlenecks in visualization

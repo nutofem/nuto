@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include "math/NewtonRaphson.h"
-#include "math/EigenSparseSolve.h"
+#include "nuto/math/NewtonRaphson.h"
+#include "nuto/math/EigenSparseSolve.h"
 #include <cmath>
 #include <iostream>
 #include <complex>

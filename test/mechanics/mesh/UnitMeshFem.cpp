@@ -1,5 +1,5 @@
-#include "mechanics/mesh/UnitMeshFem.h"
-#include "mechanics/cell/Jacobian.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/cell/Jacobian.h"
 #include "BoostUnitTest.h"
 
 void Check2DMesh(NuTo::MeshFem& mesh)

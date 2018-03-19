@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include "mechanics/cell/Jacobian.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/cell/Jacobian.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
 BOOST_AUTO_TEST_CASE(Jacobian1DDet)
 {

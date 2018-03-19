@@ -1,12 +1,12 @@
 #include "BoostUnitTest.h"
-#include "math/shapes/Line.h"
-#include "math/shapes/Triangle.h"
-#include "math/shapes/Quadrilateral.h"
-#include "math/shapes/Tetrahedron.h"
-#include "math/shapes/Hexahedron.h"
-#include "math/shapes/Prism.h"
-#include "math/shapes/Pyramid.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/math/shapes/Line.h"
+#include "nuto/math/shapes/Triangle.h"
+#include "nuto/math/shapes/Quadrilateral.h"
+#include "nuto/math/shapes/Tetrahedron.h"
+#include "nuto/math/shapes/Hexahedron.h"
+#include "nuto/math/shapes/Prism.h"
+#include "nuto/math/shapes/Pyramid.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
 
 BOOST_AUTO_TEST_CASE(LineIsInside)

@@ -1,17 +1,17 @@
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/elements/IpDataEnum.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/nodes/NodeBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/groups/GroupEnum.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "base/Exception.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/base/Exception.h"
 
 
-#include "visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 #define PRINTRESULT false

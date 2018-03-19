@@ -8,11 +8,11 @@ function(add_unit_test ClassName)
 
     if(ARGN)
         foreach(filename ${ARGN})
-            set(AdditionalSources "${AdditionalSources};${CMAKE_SOURCE_DIR}/src/${filename}")
+            set(AdditionalSources "${AdditionalSources};${CMAKE_SOURCE_DIR}/nuto/${filename}")
         endforeach()
     endif()
 
-    set(CorrespondingCpp "${CMAKE_SOURCE_DIR}/src/${relpath}/${ClassName}.cpp")
+    set(CorrespondingCpp "${CMAKE_SOURCE_DIR}/nuto/${relpath}/${ClassName}.cpp")
     if(EXISTS ${CorrespondingCpp})
         add_executable(${ClassName} ${ClassName}.cpp ${CorrespondingCpp} ${AdditionalSources})
     else()
@@ -20,7 +20,7 @@ function(add_unit_test ClassName)
     endif()
     # link the unit test framework to the unit test
     target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-    target_include_directories(${ClassName} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_include_directories(${ClassName} PRIVATE ${CMAKE_SOURCE_DIR})
     target_include_directories(${ClassName}
         PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     target_link_libraries(${ClassName} Fakeit Eigen3::Eigen)

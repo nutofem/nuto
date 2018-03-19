@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "InterpolationTests.h"
-#include "mechanics/interpolation/InterpolationPyramidLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationPyramidLinear.h"
 
 // Test points should be inside the pyramid element
 // The base is a quad in xy plane (z=0) [-1,1] * [-1,1]

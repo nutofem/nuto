@@ -4,8 +4,8 @@
 #pragma once
 #include <iostream>
 
-#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
-#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 namespace NuTo
 {

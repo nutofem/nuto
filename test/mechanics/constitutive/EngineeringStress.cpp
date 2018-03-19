@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
 #include "TypeTraits.h"
-#include "mechanics/constitutive/EngineeringStress.h"
+#include "nuto/mechanics/constitutive/EngineeringStress.h"
 
 BOOST_AUTO_TEST_CASE(EngineeringStrainCopyMove)
 {

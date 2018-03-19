@@ -1,8 +1,8 @@
 #include "BoostUnitTest.h"
 #include <type_traits>
 
-#include "mechanics/elements/ElementFem.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/elements/ElementFem.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 
 
 BOOST_AUTO_TEST_CASE(ElementCopyMove)

@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
-#include "math/EigenCompanion.h"
-#include "mechanics/constitutive/LinearElasticDamage.h"
-#include "mechanics/constitutive/LinearElastic.h"
+#include "nuto/math/EigenCompanion.h"
+#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
+#include "nuto/mechanics/constitutive/LinearElastic.h"
 
 constexpr double E = 6174;
 constexpr double nu = 0.36;

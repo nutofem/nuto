@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include "BoostUnitTest.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/MechanicsEnums.h"
 
 void CheckElementsBelongingToNode(int node, std::vector<int> expected)
 {

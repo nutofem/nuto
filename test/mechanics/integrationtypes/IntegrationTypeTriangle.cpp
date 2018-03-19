@@ -1,5 +1,5 @@
 #include "BoostUnitTest.h"
-#include "mechanics/integrationtypes/IntegrationTypeTriangle.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTriangle.h"
 #include <vector>
 
 //!@brief Integrates function f by quadrature

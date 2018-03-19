@@ -1,4 +1,4 @@
-#include "math/Legendre.h"
+#include "nuto/math/Legendre.h"
 #include "BoostUnitTest.h"
 
 BOOST_AUTO_TEST_CASE(LegendreRoots)

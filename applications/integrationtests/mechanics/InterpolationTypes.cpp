@@ -1,23 +1,23 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "mechanics/elements/ElementBase.h"
-#include "mechanics/nodes/NodeEnum.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/structures/StructureOutputBlockVector.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/interpolationtypes/InterpolationType.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
-#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
-#include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 //! @brief checks if the shape functions sum up to 1 (at all integration points)
 void CheckPartitionOfUnity(const NuTo::InterpolationType& rIT, const NuTo::IntegrationTypeBase& integrationType)

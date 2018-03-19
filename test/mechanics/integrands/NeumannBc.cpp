@@ -1,14 +1,14 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrands/NeumannBc.h"
+#include "nuto/mechanics/integrands/NeumannBc.h"
 
-#include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/elements/ElementCollection.h"
-#include "mechanics/interpolation/InterpolationTrussLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleLinear.h"
-#include "mechanics/interpolation/InterpolationTriangleQuadratic.h"
-#include "mechanics/cell/Matrix.h"
-#include "mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
+#include "nuto/mechanics/cell/Matrix.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
 using namespace NuTo;
 

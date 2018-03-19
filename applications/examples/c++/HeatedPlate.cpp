@@ -8,20 +8,20 @@
 //!     \f[q|_{y=0, y = 20\mathrm{mm}} = 0\f]
 //!
 #include <cmath>
-#include "math/SparseMatrixCSRGeneral.h"
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/LinearInterpolation.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "mechanics/constitutive/laws/AdditiveOutput.h"
-#include "mechanics/constitutive/laws/ThermalStrains.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/groups/Group.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
-#include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/LinearInterpolation.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 using namespace NuTo;
 

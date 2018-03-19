@@ -1,13 +1,13 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/structures/StructureOutputBlockMatrix.h"
-#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "mechanics/constitutive/laws/AdditiveOutput.h"
-#include "mechanics/mesh/MeshGenerator.h"
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
 using namespace NuTo;
 

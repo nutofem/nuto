@@ -1,8 +1,8 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/mesh/MeshCompanion.h"
-#include "mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/mesh/MeshCompanion.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 
 
 BOOST_AUTO_TEST_CASE(ImportFromGmshBinary)

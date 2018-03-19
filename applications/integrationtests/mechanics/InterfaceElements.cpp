@@ -14,15 +14,15 @@
 #include <fstream>
 #include <string>
 
-#include "mechanics/MechanicsEnums.h"
-#include "mechanics/constraints/ConstraintCompanion.h"
-#include "mechanics/sections/SectionPlane.h"
-#include "mechanics/sections/SectionTruss.h"
-#include "mechanics/sections/SectionFibreMatrixBond.h"
-#include "mechanics/structures/unstructured/Structure.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/timeIntegration/postProcessing/PostProcessor.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/sections/SectionFibreMatrixBond.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/timeIntegration/postProcessing/PostProcessor.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 constexpr unsigned int dimension = 2;
 

@@ -1,9 +1,9 @@
-#include "base/Timer.h"
-#include "base/Exception.h"
-#include "mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "mechanics/timeIntegration/NewmarkDirect.h"
-#include "mechanics/mesh/MeshGenerator.h"
+#include "nuto/base/Timer.h"
+#include "nuto/base/Exception.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/mesh/MeshGenerator.h"
 
 #include <array>
 

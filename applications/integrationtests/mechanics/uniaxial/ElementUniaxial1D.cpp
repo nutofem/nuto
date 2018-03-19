@@ -5,7 +5,7 @@
  *      Author: Thomas Titscher
  */
 #include "ElementUniaxialTest.h"
-#include "mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
 
 using namespace NuTo::Interpolation;
 

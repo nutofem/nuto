@@ -3,25 +3,25 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-#include "mechanics/structures/StructureBase.h"
-#include "mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 
-#include "math/SparseMatrixCSRGeneral.h"
-#include "math/SparseMatrixCSRSymmetric.h"
-#include "math/SparseDirectSolverMUMPS.h"
-#include "math/SparseDirectSolverPardiso.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/SparseDirectSolverPardiso.h"
 
-#include "mechanics/MechanicsEnums.h"
-#include "visualize/VisualizeEnum.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
-#include "mechanics/iga/BSplineCurve.h"
-#include "mechanics/iga/BSplineSurface.h"
+#include "nuto/mechanics/iga/BSplineCurve.h"
+#include "nuto/mechanics/iga/BSplineSurface.h"
 
-#include "mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
 
-#include "mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
-#include "mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/Group.h"
 
 
 /*  ||>*----*----*----*----*

@@ -1,10 +1,12 @@
 #include "BoostUnitTest.h"
-#include "math/EigenCompanion.h"
-#include "mechanics/constitutive/LocalIsotropicDamage.h"
-#include "mechanics/constitutive/ModifiedMisesStrainNorm.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
-#include "math/NewtonRaphson.h"
+#include "nuto/math/EigenCompanion.h"
+#include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
+#include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
+#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+
+#include "nuto/math/NewtonRaphson.h"
 
 using namespace NuTo;
 

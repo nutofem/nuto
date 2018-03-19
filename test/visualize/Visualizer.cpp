@@ -1,6 +1,6 @@
 #include "BoostUnitTest.h"
-#include "visualize/AverageHandler.h"
-#include "visualize/Visualizer.h"
+#include "nuto/visualize/AverageHandler.h"
+#include "nuto/visualize/Visualizer.h"
 #include "TestStructure.h"
 
 using namespace NuTo;

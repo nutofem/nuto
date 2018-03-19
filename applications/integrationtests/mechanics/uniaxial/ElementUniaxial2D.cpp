@@ -6,7 +6,7 @@
  */
 
 #include "ElementUniaxialTest.h"
-#include "mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionPlane.h"
 
 using namespace NuTo::Interpolation;
 

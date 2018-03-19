@@ -1,7 +1,7 @@
 #pragma once
 #include "BoostUnitTest.h"
 #include <vector>
-#include "mechanics/interpolation/InterpolationSimple.h"
+#include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "TypeTraits.h"
 
 namespace NuTo

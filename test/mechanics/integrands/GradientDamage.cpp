@@ -1,11 +1,11 @@
 #include "BoostUnitTest.h"
 
-#include "mechanics/integrands/GradientDamage.h"
+#include "nuto/mechanics/integrands/GradientDamage.h"
 
-#include "mechanics/nodes/NodeSimple.h"
-#include "mechanics/elements/ElementCollection.h"
-#include "mechanics/constitutive/damageLaws/DamageLawExponential.h"
-#include "mechanics/interpolation/InterpolationTrussLobatto.h"
+#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 
 using namespace NuTo;
 

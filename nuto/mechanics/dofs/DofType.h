@@ -1,0 +1,51 @@
+#pragma once
+#include <string>
+#include "nuto/base/Exception.h"
+#include "nuto/base/UniqueId.h"
+
+namespace NuTo
+{
+class DofType : public NuTo::UniqueId<DofType>
+{
+public:
+    DofType(std::string name, int num)
+        : mName(name)
+        , mNum(num)
+    {
+        if (mName.empty())
+            throw Exception(__PRETTY_FUNCTION__, "Provide a name!");
+        if (mNum <= 0)
+            throw Exception(__PRETTY_FUNCTION__, "Number of dofs must be greater than zero.");
+    }
+
+    const std::string& GetName() const
+    {
+        return mName;
+    }
+
+    int GetNum() const
+    {
+        return mNum;
+    }
+
+private:
+    std::string mName;
+    int mNum;
+};
+
+struct CompareDofType
+{
+    bool operator()(const DofType& a, const DofType& b) const
+    {
+        return a.Id() < b.Id();
+    }
+};
+
+struct ScalarDofType : DofType
+{
+    ScalarDofType(std::string name)
+        : DofType(name, 1)
+    {
+    }
+};
+} /* NuTo */
