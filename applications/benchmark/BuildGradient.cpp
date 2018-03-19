@@ -3,7 +3,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/elements/ElementFem.h"
 #include "nuto/mechanics/cell/Cell.h"
-#include "nuto/mechanics/interpolation/InterpolationQuadSerendipity.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadQuadratic.h"
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/constitutive/LinearElastic.h"
 
@@ -168,7 +168,7 @@ static void NuToPde(benchmark::State& state)
     NuTo::NodeSimple n6(Eigen::Vector2d({0.5, 1}));
     NuTo::NodeSimple n7(Eigen::Vector2d({0, 0.5}));
     std::vector<NuTo::NodeSimple*> coordNodes({&n0, &n1, &n2, &n3, &n4, &n5, &n6, &n7});
-    NuTo::InterpolationQuadSerendipity coordInterpolation;
+    NuTo::InterpolationQuadQuadratic coordInterpolation;
     NuTo::ElementFem coordElement(coordNodes, coordInterpolation);
 
     NuTo::NodeSimple nd0(Eigen::Vector2d({0, 0}));
@@ -180,7 +180,7 @@ static void NuToPde(benchmark::State& state)
     NuTo::NodeSimple nd6(Eigen::Vector2d({0, 0}));
     NuTo::NodeSimple nd7(Eigen::Vector2d({0, 0}));
     std::vector<NuTo::NodeSimple*> displNodes({&nd0, &nd1, &nd2, &nd3, &nd4, &nd5, &nd6, &nd7});
-    NuTo::InterpolationQuadSerendipity displInterpolation;
+    NuTo::InterpolationQuadQuadratic displInterpolation;
     NuTo::ElementFem displElement(displNodes, displInterpolation);
 
     NuTo::DofType displDof("Displacements", 2);

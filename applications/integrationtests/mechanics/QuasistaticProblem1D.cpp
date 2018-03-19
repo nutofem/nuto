@@ -15,7 +15,6 @@
 #include "nuto/mechanics/tools/QuasistaticSolver.h"
 #include "nuto/mechanics/tools/AdaptiveSolve.h"
 
-#include "nuto/mechanics/constitutive/LinearElastic.h"
 #include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
@@ -93,11 +92,11 @@ public:
     }
 
 private:
-    using ElasticLaw = Laws::LinearElastic<1>;
+    using ElasticDamage = Laws::LinearElasticDamage<1>;
     using DamageLaw = Constitutive::DamageLawExponential;
     using StrainNorm = Constitutive::ModifiedMisesStrainNorm<1>;
-    using Evolution = Laws::EvolutionImplicit<1, StrainNorm>;
-    using Law = Laws::LocalIsotropicDamage<1, DamageLaw, Evolution, ElasticLaw>;
+    using Evolution = Laws::EvolutionImplicit<1>;
+    using Law = Laws::LocalIsotropicDamage<1, DamageLaw, Evolution>;
 
     MeshFem mMesh;
 
@@ -123,12 +122,12 @@ private:
         double alpha = 0.99;
         double beta = 350;
 
-        ElasticLaw elasticLaw(E, nu);
+        ElasticDamage elasticDamage(E, nu);
         DamageLaw damageLaw(k0, beta, alpha);
         StrainNorm strainNorm(nu, fc / ft);
         Evolution evolution(strainNorm);
 
-        return Law(damageLaw, evolution, elasticLaw);
+        return Law(elasticDamage, damageLaw, evolution);
     }
 
     Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)

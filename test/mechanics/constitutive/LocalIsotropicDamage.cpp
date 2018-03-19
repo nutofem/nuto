@@ -1,8 +1,9 @@
 #include "BoostUnitTest.h"
+
 #include "nuto/math/EigenCompanion.h"
 #include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
 #include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
-#include "nuto/mechanics/constitutive/LinearElastic.h"
+#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
 #include "nuto/math/NewtonRaphson.h"
@@ -12,7 +13,6 @@ using namespace NuTo;
 // Material parameters
 const double E = 20000;
 const double nu = 0.2;
-NuTo::Laws::LinearElastic<1> elasticLaw(E, nu);
 
 const double ft = 4;
 const double fc = 10 * ft;
@@ -27,16 +27,15 @@ auto TestLaw()
     // Define the law using policy based design principles, hopefully applied correctly
     using Damage = Constitutive::DamageLawExponential;
     using StrainNorm = Constitutive::ModifiedMisesStrainNorm<TDim>;
-    using Evolution = Laws::EvolutionImplicit<TDim, StrainNorm>;
-    using ElasticLaw = Laws::LinearElastic<TDim>;
-    using Law = Laws::LocalIsotropicDamage<TDim, Damage, Evolution, ElasticLaw>;
+    using Evolution = Laws::EvolutionImplicit<TDim>;
+    using Law = Laws::LocalIsotropicDamage<TDim, Damage, Evolution>;
 
     Damage dmg(kappa0, beta, alpha);
     StrainNorm strainNorm(nu, fc / ft);
     Evolution evolutionEq(StrainNorm(nu, fc / ft), /*numCells=*/1, /*numIps=*/1);
-    ElasticLaw linearElastic(E, nu);
+    Laws::LinearElasticDamage<TDim> elasticDamage(E, nu);
 
-    return Law(dmg, evolutionEq, linearElastic);
+    return Law(elasticDamage, dmg, evolutionEq);
 }
 
 BOOST_AUTO_TEST_CASE(OneDimensional)

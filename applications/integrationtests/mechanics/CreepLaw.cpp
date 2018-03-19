@@ -102,9 +102,6 @@ class CreepLaw : public Laws::MechanicsInterface<1>, public HistoryDataContiguou
 
 
 public:
-    using typename Laws::MechanicsInterface<1>::MechanicsTangent;
-
-
     //! @brief Ctor
     //! @param E Youngs modulus
     //! @param E_KC Kelvin chain stiffness
@@ -142,7 +139,7 @@ public:
     //! @brief Calculates the mechanical tangent(stiffness) at an integration point
     //! @param delta_t Time increment
     //! @return Mechanical tangent(stiffness) at an integration point
-    MechanicsTangent Tangent(EngineeringStrain<1>, double delta_t, CellIds) const override
+    EngineeringTangent<1> Tangent(EngineeringStrain<1>, double delta_t, CellIds) const override
     {
         // Calc Kelvin Chain compliance
         double chainCompliance = 1. / mE;
@@ -150,7 +147,7 @@ public:
             chainCompliance += (1. - Lambda(delta_t, i)) / mE_KC[i];
 
         // Calc Kelvin Chain stiffness
-        return MechanicsTangent::Constant(1. / chainCompliance);
+        return EngineeringTangent<1>::Constant(1. / chainCompliance);
     }
 
     //! @brief Updates the history data
@@ -167,7 +164,7 @@ public:
         EngineeringStrain<1> deltaCreep{DeltaCreep(hisData, delta_t)};
         NuTo::EngineeringStrain<1> strain = cellIpData.Apply(dofType, Nabla::Strain());
         NuTo::EngineeringStress<1> stress = Stress(strain, delta_t, cellIpData.Ids());
-        MechanicsTangent E = Tangent(strain, delta_t, cellIpData.Ids());
+        EngineeringTangent<1> E = Tangent(strain, delta_t, cellIpData.Ids());
         NuTo::EngineeringStrain<1> deltaStrain = strain - hisData.prevStrain;
 
         // The actual update

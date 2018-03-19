@@ -24,6 +24,8 @@ AverageGeometry GetGeometry(const Shape& shape)
         return AverageGeometryTriangle();
     case eShape::Tetrahedron:
         return AverageGeometryTetrahedron();
+    case eShape::Prism:
+        return AverageGeometryPrism();
     default:
         throw Exception(__PRETTY_FUNCTION__, "No AverageGeometry defined for this shape.");
     }

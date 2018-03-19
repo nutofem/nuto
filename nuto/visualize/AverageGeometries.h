@@ -34,8 +34,8 @@ inline AverageGeometry AverageGeometryQuad()
 //! @return triangle geometry (0,0 -- 1,0 -- 0,1)
 inline AverageGeometry AverageGeometryTriangle()
 {
-    std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0),
-                                                      Eigen::Vector3d(1, 0, 0)};
+    std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(1, 0, 0),
+                                                      Eigen::Vector3d(0, 1, 0)};
     return {cornerCoordinates, eCellTypes::TRIANGLE};
 }
 
@@ -45,6 +45,15 @@ inline AverageGeometry AverageGeometryTetrahedron()
     std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(1, 0, 0),
                                                       Eigen::Vector3d(0, 1, 0), Eigen::Vector3d(0, 0, 1)};
     return {cornerCoordinates, eCellTypes::TETRAEDER};
+}
+
+//! @return prism geometry (product of Triangle() in x,y, Line() in z)
+inline AverageGeometry AverageGeometryPrism()
+{
+    std::vector<Eigen::VectorXd> cornerCoordinates = {Eigen::Vector3d(0, 0, -1), Eigen::Vector3d(1, 0, -1),
+                                                      Eigen::Vector3d(0, 1, -1), Eigen::Vector3d(0, 0, 1),
+                                                      Eigen::Vector3d(1, 0, 1),  Eigen::Vector3d(0, 1, 1)};
+    return {cornerCoordinates, eCellTypes::WEDGE};
 }
 } // namespace Visualize
 } // namespace NuTo
