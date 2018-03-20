@@ -30,7 +30,7 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
     const auto& interpolation = element.Interpolation();
     BOOST_CHECK_EQUAL(interpolation.GetNumNodes(), numNodesExpected);
 
-    // check for constistent (same sign for all IP) Det(Jacobian)
+    // check for consistent (same sign for all IP) Det(Jacobian)
     bool isPositive = true;
     for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
     {
@@ -103,4 +103,14 @@ BOOST_AUTO_TEST_CASE(PrismLinear)
 BOOST_AUTO_TEST_CASE(PyramidLinear)
 {
     CheckMesh("pyramid1.msh", 5);
+}
+
+BOOST_AUTO_TEST_CASE(QuadLobatto2)
+{
+    CheckMesh("quadL2.msh", 9);
+}
+
+BOOST_AUTO_TEST_CASE(BrickLobatto2)
+{
+    CheckMesh("brickL2.msh", 27);
 }
