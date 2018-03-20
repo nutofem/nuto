@@ -105,7 +105,7 @@ public:
         return mJacobian;
     }
 
-    Dynamic3by1 Normal()
+    const Dynamic3by1& Normal() const
     {
         if (mJacobian.cols() != (mJacobian.rows() - 1)) {
             throw Exception(__PRETTY_FUNCTION__,
