@@ -121,3 +121,9 @@ Group<ElementCollectionFem> MeshFem::ElementsTotal()
         elements.Add(element);
     return elements;
 }
+
+void MeshFem::AllocateDofInstances(DofType dofType, int numInstances)
+{
+    for (auto& node : NodesTotal(dofType))
+        node.AllocateInstances(numInstances);
+}

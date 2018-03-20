@@ -35,6 +35,17 @@ NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
     return mesh;
 }
 
+BOOST_AUTO_TEST_CASE(AllocateInstances)
+{
+    NuTo::DofType d("Dof", 1);
+    NuTo::MeshFem mesh = DummyMesh(d);
+    mesh.AllocateDofInstances(d, 10);
+    for (auto node : mesh.NodesTotal(d))
+    {
+        BOOST_CHECK_EQUAL(node.GetNumInstances(), 10);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(MeshAddStuff)
 {
     NuTo::DofType d("Dof", 1);
