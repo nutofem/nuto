@@ -32,9 +32,9 @@ public:
 
     //! @brief extracts all node values of this element
     //! @remark virtual to make it testable
-    virtual NodeValues ExtractNodeValues() const override
+    virtual NodeValues ExtractNodeValues(int instance = 0) const override
     {
-        return NurbsGeometry().GetControlPointsElement(mKnotIDs);
+        return NurbsGeometry().GetControlPointsElement(mKnotIDs, instance);
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
@@ -68,7 +68,6 @@ public:
     }
 
 private:
-
     const Nurbs<TDimParameter>& NurbsGeometry() const
     {
         return mNurbsGeometry;

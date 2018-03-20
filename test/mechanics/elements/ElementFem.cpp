@@ -35,3 +35,18 @@ BOOST_AUTO_TEST_CASE(Interpolation)
     Eigen::Vector2d interpolatedValues = N * nodeValues;
     BoostUnitTest::CheckVector(interpolatedValues, std::vector<double>{3, 4}, 2);
 }
+
+BOOST_AUTO_TEST_CASE(ExtractNodeValueInstances)
+{
+    NuTo::NodeSimple node0(1, 2);
+    NuTo::NodeSimple node1(1, 2);
+    NuTo::NodeSimple node2(1, 2);
+
+    node0.SetValue(0, 42., 1);
+    node1.SetValue(0, 43., 1);
+    node2.SetValue(0, 44., 1);
+
+    NuTo::ElementFem e({node0, node1, node2}, interpolation);
+    BoostUnitTest::CheckEigenMatrix(e.ExtractNodeValues(), Eigen::Vector3d::Zero());
+    BoostUnitTest::CheckEigenMatrix(e.ExtractNodeValues(1), Eigen::Vector3d(42, 43, 44));
+}
