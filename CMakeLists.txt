@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
-option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
-option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts/cmake ${CMAKE_MODULE_PATH})
