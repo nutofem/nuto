@@ -22,10 +22,9 @@ endif()
 
 if(GMSH_PATH)
     add_integrationtest(GeometryConcreteAPI)
-    target_link_libraries(GeometryConcreteAPI GeometryConcrete)
 
     add_integrationtest(GmshWriter -- ${GMSH_PATH})
-    target_link_libraries(GmshWriter GeometryConcrete Boost::filesystem)
+    target_link_libraries(GmshWriter Boost::filesystem)
 else()
     message(STATUS
         "Gmsh not found. Skipping integration test GeometryConcreteAPI and GmshWriter.")

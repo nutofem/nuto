@@ -1,1 +1,8 @@
+add_integrationtest(AverageHandler)
+add_integrationtest(MeshFunction)
 add_integrationtest(MixedVisualization)
+add_integrationtest(PointHandler)
+add_integrationtest(PostProcess)
+target_link_libraries(PostProcess Boost::filesystem)
+add_integrationtest(Visualizer)
+add_integrationtest(VoronoiHandler)

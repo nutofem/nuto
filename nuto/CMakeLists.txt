@@ -17,11 +17,10 @@ if(MUMPS_FOUND)
     target_link_libraries(NuTo PRIVATE EigenMumpsSupport)
 endif()
 target_include_directories(NuTo PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:include/nuto>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/>
+    $<INSTALL_INTERFACE:include/>
     )
 
 install(TARGETS NuTo EXPORT NuToTargets
         LIBRARY DESTINATION lib
-        INCLUDES DESTINATION include/nuto
 )
