@@ -6,7 +6,6 @@ find_library(ARPACK_LIBRARIES NAMES arpack)
 
 add_library(Arpack::Arpack SHARED IMPORTED)
 set_target_properties(Arpack::Arpack PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS "HAVE_ARPACK"
     IMPORTED_LOCATION "${ARPACK_LIBRARIES}")
 
 include(FindPackageHandleStandardArgs)
