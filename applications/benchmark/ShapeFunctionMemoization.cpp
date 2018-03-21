@@ -53,9 +53,9 @@ struct NaturalCoordianteToId
 
 //! @brief provides a memoization of the a std::function<TResult(TNaturalCoords)>, mainly used for
 //!        element shape functions and their derivatives
-//! @param TResult ... return type of the function
-//! @param TNaturalCoords ... vector type of natural coordinates
-//! @param TIdHash ... function object that transforms TNaturalCoords into a vector id
+//! @tparam TResult ... return type of the function
+//! @tparam TNaturalCoords ... vector type of natural coordinates
+//! @tparam TIdHash ... function object that transforms TNaturalCoords into a vector id
 template <typename TResult, typename TNaturalCoords, typename TIdHash = NaturalCoordianteToId<32>>
 class NaturalCoordinateMemoizer
 {

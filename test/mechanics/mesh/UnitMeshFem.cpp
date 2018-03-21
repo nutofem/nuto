@@ -2,6 +2,19 @@
 #include "nuto/mechanics/cell/Jacobian.h"
 #include "BoostUnitTest.h"
 
+void CheckJacobians(NuTo::MeshFem& mesh)
+{
+    int dim = mesh.Elements[0].CoordinateElement().GetNode(0).GetValues().rows();
+    Eigen::VectorXd ip = Eigen::VectorXd::Zero(dim);
+    for (auto& element : mesh.Elements)
+    {
+        auto d_dxi = element.CoordinateElement().GetDerivativeShapeFunctions(ip);
+        auto x = element.CoordinateElement().ExtractNodeValues();
+        auto J = NuTo::Jacobian(x, d_dxi, dim);
+        BOOST_CHECK_GT(J.Det(), 0.);
+    }
+}
+
 void Check2DMesh(NuTo::MeshFem& mesh)
 {
     BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8);
@@ -12,15 +25,7 @@ void Check2DMesh(NuTo::MeshFem& mesh)
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1. / 2., 1. / 7.)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1. / 2., 5. / 7.)));
 
-    for (auto& element : mesh.Elements)
-    {
-        Eigen::Vector2d ip = Eigen::Vector2d(0, 0);
-        auto d_dxi = element.CoordinateElement().GetDerivativeShapeFunctions(ip);
-        auto x = element.CoordinateElement().ExtractNodeValues();
-        auto J = NuTo::Jacobian(x, d_dxi, 2);
-        BOOST_CHECK_GT(J.Det(), 0.);
-    }
-
+    CheckJacobians(mesh);
 
     auto f = [](Eigen::VectorXd coords) // transforms mesh to (42,4) -- (44, 11)
     {
@@ -74,6 +79,16 @@ BOOST_AUTO_TEST_CASE(MeshTriangle)
     auto mesh = NuTo::UnitMeshFem::CreateTriangles(2, 7);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 2);
     Check2DMesh(mesh);
+}
+
+BOOST_AUTO_TEST_CASE(MeshBrick)
+{
+    auto mesh = NuTo::UnitMeshFem::CreateBricks(2, 7, 3);
+    BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 3);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8 * 4);
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(0, 0, 0)));
+    BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(1, 1, 1)));
+    CheckJacobians(mesh);
 }
 
 BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
