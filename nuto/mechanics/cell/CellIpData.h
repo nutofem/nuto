@@ -43,10 +43,11 @@ public:
 
     //! Calculates the value of a dof at the integration point
     //! @param dofType dof type that is interpolated
+    //! @param instance id of the dof instance
     //! @return interpolated dof value
-    Eigen::VectorXd Value(DofType dofType) const
+    Eigen::VectorXd Value(DofType dofType, int instance = 0) const
     {
-        return N(dofType) * NodeValueVector(dofType);
+        return N(dofType) * NodeValueVector(dofType, instance);
     }
 
     const NuTo::Jacobian& GetJacobian() const
@@ -54,20 +55,21 @@ public:
         return mJacobian;
     }
 
-    double Value(ScalarDofType dofType) const
+    double Value(ScalarDofType dofType, int instance = 0) const
     {
-        return Value(DofType(dofType))[0];
+        return Value(DofType(dofType), instance)[0];
     }
 
     //! Calculates the gradient (derivative of the value with respect to x) for a given dof type at the integration
     //! point
     //! @param dofType dof type that is evaluated
     //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
+    //! @param instance id of the dof instance
     //! B::Strain() for engineering strains)
     //! @return gradient of the dof
-    Eigen::VectorXd Apply(DofType dofType, const Nabla::Interface& b) const
+    Eigen::VectorXd Apply(DofType dofType, const Nabla::Interface& b, int instance = 0) const
     {
-        return B(dofType, b) * NodeValueVector(dofType);
+        return B(dofType, b) * NodeValueVector(dofType, instance);
     }
 
     //! Returns a memoized copy of the N matrix for a given dof type
@@ -94,9 +96,10 @@ public:
 
     //! Returns memoized nodal values
     //! @return nodal values for dofType
-    const NodeValues& NodeValueVector(DofType dofType) const
+    //! @param instance id of the dof instance
+    const NodeValues& NodeValueVector(DofType dofType, int instance = 0) const
     {
-        return mCellData.GetNodeValues(dofType);
+        return mCellData.GetNodeValues(dofType, instance);
     }
 
 private:

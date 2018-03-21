@@ -30,11 +30,14 @@ public:
         return mElements.CoordinateElement().ExtractNodeValues();
     }
 
-    const NodeValues& GetNodeValues(DofType dofType) const
+    const NodeValues& GetNodeValues(DofType dofType, int instance = 0) const
     {
-        NodeValues& nodeValues = mNodeValues[dofType];
+        if (instance >= static_cast<int>(mNodeValues[dofType].size()))
+            mNodeValues[dofType].resize(instance + 1);
+
+        NodeValues& nodeValues = mNodeValues[dofType][instance];
         if (nodeValues.size() == 0)
-            nodeValues = mElements.DofElement(dofType).ExtractNodeValues();
+            nodeValues = mElements.DofElement(dofType).ExtractNodeValues(instance);
 
         return nodeValues;
     }
@@ -45,7 +48,7 @@ public:
     }
 
 private:
-    mutable DofContainer<NodeValues> mNodeValues;
+    mutable DofContainer<std::vector<NodeValues>> mNodeValues;
     const ElementCollection& mElements;
     int mCellId;
 };
