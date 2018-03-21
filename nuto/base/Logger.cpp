@@ -7,7 +7,6 @@ NuTo::Logger::Logger()
 {
 }
 
-//! @brief ..opens the file stored in the string mLogFileName
 void NuTo::Logger::OpenFile()
 {
     mLogFile.close();
@@ -20,8 +19,6 @@ void NuTo::Logger::OpenFile()
     }
 }
 
-//! @brief ..open file
-//! @param rFileString file string to open
 void NuTo::Logger::OpenFile(std::string rFileString)
 {
     mLogFileName = rFileString;
@@ -32,15 +29,11 @@ void NuTo::Logger::OpenFile(std::string rFileString)
         throw Exception("[NuTo::Logger::OpenFile] File " + std::string(rFileString.c_str()) + " could not be opened.");
 }
 
-//! @brief ..reset file and open it again
-//! @param rFileString file string to open
 void NuTo::Logger::CloseFile()
 {
     mLogFile.close();
 }
 
-//! @brief ..sets the output to be forwarded to the console (false) or only to the file (true)
-//! @param rQuiet see explanation above
 void NuTo::Logger::SetQuiet(bool rQuiet)
 {
     mQuiet = rQuiet;
