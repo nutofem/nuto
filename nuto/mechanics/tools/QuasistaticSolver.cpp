@@ -3,6 +3,7 @@
 #include <ostream>
 #include <boost/range/numeric.hpp>
 
+#include "nuto/base/Timer.h"
 #include "nuto/math/EigenSparseSolve.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
@@ -63,7 +64,97 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
     auto hKJ = ToEigen(hessian0.KJ, mDofs);
     auto hKK = ToEigen(hessian0.KK, mDofs);
     auto cMat = ToEigen(mCmat, mDofs);
+
+    NuTo::Timer myTimerStandard("standard procedure with jk components");
     Eigen::SparseMatrix<double> hessianMod = hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
+    myTimerStandard.GetTimeDifference();
+    {
+        //************* check timing for computation of hessian by using H_mod = C^t H C *************
+
+        //        //assemble hessian0Full without JK components, this if JK is completely removed, this conversion is not required, since it is
+        //        //directly returned from mProblem.Hessian0
+        Eigen::SparseMatrix<double> hessian0WithoutJK(hJJ.rows() + hKJ.rows(), hJJ.cols() + hJK.cols());
+        hessian0WithoutJK.reserve(hJJ.nonZeros() + hJK.nonZeros() + hKJ.nonZeros() + hKK.nonZeros());
+        hessian0WithoutJK.setZero();
+
+        // Fill hessian0WithoutJK with triples from the other matrices
+        std::vector<Eigen::Triplet<double> > tripletList;
+        for (int k = 0; k < hJJ.outerSize(); ++k)
+        {
+            for (Eigen::SparseMatrix<double>::InnerIterator it(hJJ, k); it; ++it)
+            {
+                tripletList.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
+            }
+        }
+        for (int k = 0; k < hJK.outerSize(); ++k)
+        {
+            for (Eigen::SparseMatrix<double>::InnerIterator it(hJK, k); it; ++it)
+            {
+                tripletList.push_back(Eigen::Triplet<double>(it.row(), it.col()+hJJ.cols(), it.value()));
+            }
+        }
+        for (int k = 0; k < hKJ.outerSize(); ++k)
+        {
+            for (Eigen::SparseMatrix<double>::InnerIterator it(hKJ, k); it; ++it)
+            {
+                tripletList.push_back(Eigen::Triplet<double>(it.row()+hJJ.rows(), it.col(), it.value()));
+            }
+        }
+        for (int k = 0; k < hKK.outerSize(); ++k)
+        {
+            for (Eigen::SparseMatrix<double>::InnerIterator it(hKK, k); it; ++it)
+            {
+                tripletList.push_back(Eigen::Triplet<double>(it.row()+hJJ.rows(), it.col()+hJJ.cols(), it.value()));
+            }
+        }
+
+        hessian0WithoutJK.setFromTriplets(tripletList.begin(), tripletList.end());
+
+//        Eigen::MatrixXd hessian0WithoutJKFull(hessian0WithoutJK);
+//        std::cout << "hessian0WithoutJKFull\n" << hessian0WithoutJKFull << std::endl;
+//        Eigen::MatrixXd hJJFull(hJJ);
+//        std::cout << "hJJFull\n" << hJJFull << std::endl;
+//        Eigen::MatrixXd hJKFull(hJK);
+//        std::cout << "hJKFull\n" << hJKFull << std::endl;
+//        Eigen::MatrixXd hKJFull(hKJ);
+//        std::cout << "hKJFull\n" << hKJFull << std::endl;
+//        Eigen::MatrixXd hKKFull(hKK);
+//        std::cout << "hKKFull\n" << hKKFull << std::endl;
+
+        // compute the Cmat with the leading unit diagonal elements
+        //add unit entrys, should also be done when building Cmat
+        Eigen::SparseMatrix<double> cMatPlusUnit(cMat.rows()+cMat.cols(),cMat.cols());
+        cMatPlusUnit.reserve(cMat.cols() + cMat.nonZeros());
+        cMatPlusUnit.setZero();
+        std::vector<Eigen::Triplet<double> > tripletListC;
+        for (auto i=0; i<cMat.cols(); i++)
+        {
+            tripletListC.push_back(Eigen::Triplet<double>(i, i, 1.));
+        }
+
+        //this cMatPlusUnit = [ I]
+        //                    [-C]
+        for(Eigen::Index c; c<cMat.outerSize(); ++c)
+        {
+            for(Eigen::SparseMatrix<double>::InnerIterator itCmat(cMat, c); itCmat; ++itCmat)
+                 tripletListC.push_back(Eigen::Triplet<double>(itCmat.row()+cMat.cols(), itCmat.col(), -itCmat.value()));
+        }
+//        cMatPlusUnit.setFromTriplets(tripletListC.begin(), tripletListC.end());
+
+//        Eigen::MatrixXd cMatPlusUnitFull(cMatPlusUnit);
+//        std::cout << "cMatPlusUnitFull\n" << cMatPlusUnitFull << std::endl;
+        NuTo::Timer myTimerNew("C^T H C without jk components");
+        Eigen::SparseMatrix<double> hessianModWithoutJK = cMatPlusUnit.transpose() * hessian0WithoutJK * cMatPlusUnit;
+        myTimerNew.GetTimeDifference();
+//        Eigen::MatrixXd hessianModWithoutJKFull(hessianModWithoutJK);
+//        std::cout << "hessianModWithoutJKFull\n" << hessianModWithoutJKFull << std::endl;
+
+//        Eigen::MatrixXd hessianModFull(hessianMod);
+//        std::cout << "hessianMod\n" << hessianModFull << std::endl;
+
+    }
+
+
 
     DofVector<double> deltaBrhs;
     for (auto dof : mDofs)
