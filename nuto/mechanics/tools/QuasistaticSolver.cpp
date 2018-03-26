@@ -6,6 +6,8 @@
 #include "nuto/base/Timer.h"
 #include "nuto/math/EigenSparseSolve.h"
 #include "nuto/math/NewtonRaphson.h"
+#include "nuto/mechanics/dofs/DofMatrix.h"
+#include "nuto/mechanics/dofs/DofVector.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
 #include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 
@@ -29,14 +31,14 @@ void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
     if (mX[mDofs.front()].rows() == 0)
         mX = mProblem.RenumberDofs(constraints, mDofs, DofVector<double>());
     else
-        mX = mProblem.RenumberDofs(constraints, mDofs, ToDofVector<double>(ToEigen(mX, mDofs)));
+        mX = mProblem.RenumberDofs(constraints, mDofs, ToDofVector(ToEigen(mX, mDofs)));
 
     for (auto dofI : mDofs)
         for (auto dofJ : mDofs)
             if (dofI.Id() == dofJ.Id())
-                mCmat(dofI, dofI) = constraints.BuildConstraintMatrix(dofI, mX[dofI].rows());
+                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, mX[dofI].rows());
             else
-                mCmat(dofI, dofJ).setZero();
+                mCmatUnit(dofI, dofJ).setZero();
 }
 
 void QuasistaticSolver::SetGlobalTime(double globalTime)
@@ -61,51 +63,14 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
     }
 
     auto hessian0 = mProblem.Hessian0(v, mDofs, globalTime, timeStep);
-    auto h = ToEigen(hessian0, mDofs);
-    auto cMat = ToEigen(mCmat, mDofs);
+    auto hessian0Eigen= ToEigen(hessian0, mDofs);
+    auto cMatUnit = ToEigen(mCmatUnit, mDofs);
 
-    NuTo::Timer myTimerStandard("standard procedure with jk components");
-    Eigen::SparseMatrix<double> hessianMod = hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
-    myTimerStandard.GetTimeDifference();
-    {
-        // compute the Cmat with the leading unit diagonal elements
-        //add unit entrys, should also be done when building Cmat
-        Eigen::SparseMatrix<double> cMatPlusUnit(cMat.rows()+cMat.cols(),cMat.cols());
-        cMatPlusUnit.reserve(cMat.cols() + cMat.nonZeros());
-        cMatPlusUnit.setZero();
-        std::vector<Eigen::Triplet<double> > tripletListC;
-        for (auto i=0; i<cMat.cols(); i++)
-        {
-            tripletListC.push_back(Eigen::Triplet<double>(i, i, 1.));
-        }
-
-        //this cMatPlusUnit = [ I]
-        //                    [-C]
-        for(Eigen::Index c; c<cMat.outerSize(); ++c)
-        {
-            for(Eigen::SparseMatrix<double>::InnerIterator itCmat(cMat, c); itCmat; ++itCmat)
-                 tripletListC.push_back(Eigen::Triplet<double>(itCmat.row()+cMat.cols(), itCmat.col(), -itCmat.value()));
-        }
-//        cMatPlusUnit.setFromTriplets(tripletListC.begin(), tripletListC.end());
-
-//        Eigen::MatrixXd cMatPlusUnitFull(cMatPlusUnit);
-//        std::cout << "cMatPlusUnitFull\n" << cMatPlusUnitFull << std::endl;
-        NuTo::Timer myTimerNew("C^T H C without jk components");
-        Eigen::SparseMatrix<double> hessianModWithoutJK = cMatPlusUnit.transpose() * hessian0WithoutJK * cMatPlusUnit;
-        myTimerNew.GetTimeDifference();
-//        Eigen::MatrixXd hessianModWithoutJKFull(hessianModWithoutJK);
-//        std::cout << "hessianModWithoutJKFull\n" << hessianModWithoutJKFull << std::endl;
-
-//        Eigen::MatrixXd hessianModFull(hessianMod);
-//        std::cout << "hessianMod\n" << hessianModFull << std::endl;
-
-    }
-
-
+    Eigen::SparseMatrix<double> hessianMod = cMatUnit.transpose() * hessian0Eigen * cMatUnit;
 
     DofVector<double> deltaBrhs;
     for (auto dof : mDofs)
-        deltaBrhs[dof] = mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime);
+        deltaBrhs[dof] = Eigen::VectorXd(); mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime);
 
     Eigen::VectorXd residualConstrained = -(hJK - cMat.transpose() * hKK) * ToEigen(deltaBrhs, mDofs);
 

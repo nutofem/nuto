@@ -88,7 +88,7 @@ private:
     Constraint::Constraints mConstraints;
 
     std::vector<DofType> mDofs;
-    DofMatrixSparse<double> mCmat;
+    DofMatrixSparse<double> mCmatUnit;
 
     double mGlobalTime = 0;
     double mTimeStep = 0;
