@@ -70,9 +70,13 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
 
     DofVector<double> deltaBrhs;
     for (auto dof : mDofs)
-        deltaBrhs[dof] = Eigen::VectorXd(); mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime);
+    {
+        deltaBrhs[dof] = Eigen::VectorXd(xDof[dof].rows());
+        Eigen::VectorXd rhs(mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime));
+        deltaBrhs[dof].tail(rhs.rows()) = rhs;
+    }
 
-    Eigen::VectorXd residualConstrained = -(hJK - cMat.transpose() * hKK) * ToEigen(deltaBrhs, mDofs);
+    Eigen::VectorXd residualConstrained = cMatUnit.transpose() * hessian0Eigen * ToEigen(deltaBrhs, mDofs);
 
     return std::make_pair(hessianMod, residualConstrained);
 }
