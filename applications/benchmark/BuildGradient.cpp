@@ -52,7 +52,7 @@ class HardCodeElement8N
 {
 
 public:
-    HardCodeElement8N(const std::vector<FixNode<2>*>& rNodes)
+    HardCodeElement8N(const std::array<FixNode<2>*, 8>& rNodes)
         : mNodes(rNodes)
     {
         constexpr IntegrationTypeQuad it;
@@ -124,15 +124,13 @@ public:
     }
 
 private:
-    std::vector<FixNode<2>*> mNodes;
+    std::array<FixNode<2>*, 8> mNodes;
     std::array<Eigen::Matrix<double, 8, 2>, 4> mDerivativeShapeCache;
     const NuTo::Laws::LinearElastic<2> mLaw = NuTo::Laws::LinearElastic<2>(20000, 0.3, NuTo::ePlaneState::PLANE_STRAIN);
 };
 
 static void Hardcode(benchmark::State& state)
 {
-    std::vector<FixNode<2>*> nodes;
-
     FixNode<2> n0(Eigen::Vector2d({0, 0}));
     FixNode<2> n1(Eigen::Vector2d({1, 0}));
     FixNode<2> n2(Eigen::Vector2d({1, 1}));
@@ -141,16 +139,7 @@ static void Hardcode(benchmark::State& state)
     FixNode<2> n5(Eigen::Vector2d({1, 0.5}));
     FixNode<2> n6(Eigen::Vector2d({0.5, 1}));
     FixNode<2> n7(Eigen::Vector2d({0, 0.5}));
-    nodes.push_back(&n0);
-    nodes.push_back(&n1);
-    nodes.push_back(&n2);
-    nodes.push_back(&n3);
-    nodes.push_back(&n4);
-    nodes.push_back(&n5);
-    nodes.push_back(&n6);
-    nodes.push_back(&n7);
-
-    HardCodeElement8N e(nodes);
+    HardCodeElement8N e({&n0, &n1, &n2, &n3, &n4, &n5, &n6, &n7});
 
     for (auto _ : state)
         e.BuildInternalGradient();

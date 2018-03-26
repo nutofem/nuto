@@ -19,7 +19,7 @@ function(add_unit_test ClassName)
         add_executable(${ClassName} ${ClassName}.cpp ${AdditionalSources})
     endif()
     # link the unit test framework to the unit test
-    target_link_libraries(${ClassName} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    target_link_libraries(${ClassName} Boost::unit_test_framework)
     target_include_directories(${ClassName} PRIVATE ${CMAKE_SOURCE_DIR})
     target_include_directories(${ClassName}
         PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)

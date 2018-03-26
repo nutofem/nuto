@@ -36,8 +36,7 @@ foreach(test
     )
 
     add_executable(${test} EXCLUDE_FROM_ALL ${test}.cpp)
-    target_link_libraries(${test} Mechanics Math Base Visualize
-        Boost::unit_test_framework ${LAPACK_LIBRARIES})
+    target_link_libraries(${test} Mechanics Math Base Visualize ${LAPACK_LIBRARIES})
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     target_include_directories(${test} PRIVATE ${CMAKE_SOURCE_DIR}/test/tools)
     append_to_examples(${test})

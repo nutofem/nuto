@@ -2,6 +2,7 @@
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationBrickLinear.h"
 
 using namespace NuTo;
 
@@ -78,6 +79,40 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
         }
     return mesh;
 }
+
+MeshFem UnitMeshFem::CreateBricks(int numX, int numY, int numZ)
+{
+    MeshFem mesh;
+    int numXe = numX + 1;
+    int numYe = numY + 1;
+    int numZe = numZ + 1;
+    for (int iZ = 0; iZ < numZe; ++iZ)
+        for (int iY = 0; iY < numYe; ++iY)
+            for (int iX = 0; iX < numXe; ++iX)
+            {
+                const double x = static_cast<double>(iX) / numX;
+                const double y = static_cast<double>(iY) / numY;
+                const double z = static_cast<double>(iZ) / numZ;
+                mesh.Nodes.Add(Eigen::Vector3d(x, y, z));
+            }
+    const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationBrickLinear());
+    for (int iZ = 0; iZ < numZ; ++iZ)
+        for (int iY = 0; iY < numY; ++iY)
+            for (int iX = 0; iX < numX; ++iX)
+            {
+                auto& node0 = mesh.Nodes[iX + iY * numXe + iZ * numXe * numYe];
+                auto& node1 = mesh.Nodes[iX + 1 + iY * numXe + iZ * numXe * numYe];
+                auto& node2 = mesh.Nodes[iX + 1 + (iY + 1) * numXe + iZ * numXe * numYe];
+                auto& node3 = mesh.Nodes[iX + (iY + 1) * numXe + iZ * numXe * numYe];
+                auto& node4 = mesh.Nodes[iX + iY * numXe + (iZ + 1) * numXe * numYe];
+                auto& node5 = mesh.Nodes[iX + 1 + iY * numXe + (iZ + 1) * numXe * numYe];
+                auto& node6 = mesh.Nodes[iX + 1 + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
+                auto& node7 = mesh.Nodes[iX + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
+                mesh.Elements.Add({{{node0, node1, node2, node3, node4, node5, node6, node7}, interpolation}});
+            }
+    return mesh;
+}
+
 
 MeshFem UnitMeshFem::Transform(MeshFem&& oldMesh, std::function<Eigen::VectorXd(Eigen::VectorXd)> f)
 {
