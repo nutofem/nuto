@@ -7,9 +7,11 @@
 #include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadQuadratic.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLobatto.h"
 #include "nuto/mechanics/interpolation/InterpolationTetrahedronLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTetrahedronQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationBrickLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationBrickLobatto.h"
 #include "nuto/mechanics/interpolation/InterpolationPrismLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationPrismQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationPyramidLinear.h"
@@ -98,7 +100,7 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
     if (header.version < 2.)
     {
         throw NuTo::Exception(__PRETTY_FUNCTION__,
-                              "Gmsh version 2.0 or higher requiered. - File version is " +
+                              "Gmsh version 2.0 or higher required. - File version is " +
                                       std::to_string(header.version));
     }
 
@@ -360,8 +362,12 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
         return rMesh.CreateInterpolation(InterpolationTrussLobatto(2));
     case 9:
         return rMesh.CreateInterpolation(InterpolationTriangleQuadratic());
+    case 10:
+        return rMesh.CreateInterpolation(InterpolationQuadLobatto(2));
     case 11:
         return rMesh.CreateInterpolation(InterpolationTetrahedronQuadratic());
+    case 12:
+        return rMesh.CreateInterpolation(InterpolationBrickLobatto(2));
     case 13:
         return rMesh.CreateInterpolation(InterpolationPrismQuadratic());
     case 16:
@@ -383,6 +389,27 @@ std::vector<NuTo::NodeSimple*> GetElementNodes(const std::unordered_map<int, NuT
     case 8: /* TrussQuadratic */
         std::swap(elementNodes[1], elementNodes[2]);
         break;
+    case 10: /* QuadLobatto2 */
+    {
+        auto old = elementNodes;
+        std::vector<int> reordering{0, 4, 1, 7, 8, 5, 3, 6, 2};
+        for (size_t i = 0; i < elementNodes.size(); i++)
+        {
+            elementNodes[i] = old[reordering[i]];
+        }
+        break;
+    }
+    case 12: /* BrickLobatto2 */
+    {
+        auto old = elementNodes;
+        std::vector<int> reordering{0,  8,  1,  9,  20, 11, 3, 13, 2,  10, 21, 12, 22, 26,
+                                    23, 15, 24, 14, 4,  16, 5, 17, 25, 18, 7,  19, 6};
+        for (size_t i = 0; i < elementNodes.size(); i++)
+        {
+            elementNodes[i] = old[reordering[i]];
+        }
+        break;
+    }
     default:
         break;
     }

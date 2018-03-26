@@ -8,7 +8,9 @@ add_unit_test(UnitMeshFem
 
 foreach(inputFile
     binary.msh
+    brickL2.msh
     quad.msh
+    quadL2.msh
     quadNoncontiguous.msh
     quad1.msh
     quadSerendipity2.msh
