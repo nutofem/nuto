@@ -99,8 +99,9 @@ GmshHeader ReadGmshHeader(std::ifstream& rFile)
     std::getline(rFile, line); // endl
     if (header.version < 2.)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Gmsh version 2.0 or higher requiered. - File version is " +
-                                                           std::to_string(header.version));
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Gmsh version 2.0 or higher required. - File version is " +
+                                      std::to_string(header.version));
     }
 
     if (binary)
