@@ -4,20 +4,22 @@
 namespace NuTo
 {
 
-GlobalDofVector Solve(GlobalDofMatrixSparse K, GlobalDofVector f, Constraint::Constraints bcs, DofType dof,
+DofVector<double> Solve(DofMatrixSparse<double> K, DofVector<double> f, Constraint::Constraints bcs, DofType dof,
                       int numIndependentDofs, double time, std::string solver)
 {
-    auto cmat = bcs.BuildConstraintMatrix(dof, numIndependentDofs);
-    Eigen::SparseMatrix<double> Kmod = K.JJ(dof, dof) - cmat.transpose() * K.KJ(dof, dof) - K.JK(dof, dof) * cmat +
-                                       cmat.transpose() * K.KK(dof, dof) * cmat;
-    Eigen::VectorXd fmod = f.J[dof] - cmat.transpose() * f.K[dof];
-    Eigen::VectorXd fmod_constrained = (K.JK(dof, dof) - cmat.transpose() * K.KK(dof, dof)) * (-bcs.GetRhs(dof, time));
+    // TODO, why do we need this method at all
+    throw;
 
-    GlobalDofVector u;
-    u.J[dof] = EigenSparseSolve(Kmod, fmod + fmod_constrained, solver);
-    u.K[dof] = -cmat * u.J[dof] + bcs.GetRhs(dof, time);
+//    auto cmatUnit = bcs.BuildUnitConstraintMatrix(dof, numIndependentDofs);
+//    Eigen::SparseMatrix<double> Kmod = cmatUnit.transpose() * K(dof, dof) * cmatUnit
+//    Eigen::VectorXd fmod = cmatUnit.transpose() * f[dof];
+//    Eigen::VectorXd fmod_constrained = (K.JK(dof, dof) - cmat.transpose() * K.KK(dof, dof)) * (-bcs.GetRhs(dof, time));
 
-    return u;
+//    DofVector u;
+//    u[dof] = EigenSparseSolve(Kmod, fmod + fmod_constrained, solver);
+//    u.K[dof] = -cmat * u.J[dof] + bcs.GetRhs(dof, time);
+
+//    return u;
 }
 
 } // namespace NuTo

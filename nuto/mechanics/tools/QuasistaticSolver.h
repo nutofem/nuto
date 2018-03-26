@@ -80,7 +80,7 @@ public:
     void WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers);
 
 private:
-    GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x) const;
+    DofVector<double> ToDofVector(const Eigen::VectorXd& x) const;
 
     DofVector<double> mX;
 

@@ -27,9 +27,9 @@ void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
 {
     mConstraints = constraints;
     if (mX[mDofs.front()].rows() == 0)
-        mX = mProblem.RenumberDofs(constraints, mDofs, GlobalDofVector()).J;
+        mX = mProblem.RenumberDofs(constraints, mDofs, DofVector<double>());
     else
-        mX = mProblem.RenumberDofs(constraints, mDofs, ToGlobalDofVector(ToEigen(mX, mDofs))).J;
+        mX = mProblem.RenumberDofs(constraints, mDofs, ToDofVector<double>(ToEigen(mX, mDofs)));
 
     for (auto dofI : mDofs)
         for (auto dofJ : mDofs)
@@ -51,76 +51,23 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
     DofVector<double> xDof = mX; // for correct size
     FromEigen(x, mDofs, &xDof);
 
-    GlobalDofVector v;
+    DofVector<double> v;
     for (auto dof : mDofs)
     {
-        v.J[dof] = xDof[dof];
-        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime);
+        v[dof] = xDof[dof];
+        //here loop over the constraints to get the new values
+        throw;
+//        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime);
     }
 
     auto hessian0 = mProblem.Hessian0(v, mDofs, globalTime, timeStep);
-    auto hJJ = ToEigen(hessian0.JJ, mDofs);
-    auto hJK = ToEigen(hessian0.JK, mDofs);
-    auto hKJ = ToEigen(hessian0.KJ, mDofs);
-    auto hKK = ToEigen(hessian0.KK, mDofs);
+    auto h = ToEigen(hessian0, mDofs);
     auto cMat = ToEigen(mCmat, mDofs);
 
     NuTo::Timer myTimerStandard("standard procedure with jk components");
     Eigen::SparseMatrix<double> hessianMod = hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
     myTimerStandard.GetTimeDifference();
     {
-        //************* check timing for computation of hessian by using H_mod = C^t H C *************
-
-        //        //assemble hessian0Full without JK components, this if JK is completely removed, this conversion is not required, since it is
-        //        //directly returned from mProblem.Hessian0
-        Eigen::SparseMatrix<double> hessian0WithoutJK(hJJ.rows() + hKJ.rows(), hJJ.cols() + hJK.cols());
-        hessian0WithoutJK.reserve(hJJ.nonZeros() + hJK.nonZeros() + hKJ.nonZeros() + hKK.nonZeros());
-        hessian0WithoutJK.setZero();
-
-        // Fill hessian0WithoutJK with triples from the other matrices
-        std::vector<Eigen::Triplet<double> > tripletList;
-        for (int k = 0; k < hJJ.outerSize(); ++k)
-        {
-            for (Eigen::SparseMatrix<double>::InnerIterator it(hJJ, k); it; ++it)
-            {
-                tripletList.push_back(Eigen::Triplet<double>(it.row(), it.col(), it.value()));
-            }
-        }
-        for (int k = 0; k < hJK.outerSize(); ++k)
-        {
-            for (Eigen::SparseMatrix<double>::InnerIterator it(hJK, k); it; ++it)
-            {
-                tripletList.push_back(Eigen::Triplet<double>(it.row(), it.col()+hJJ.cols(), it.value()));
-            }
-        }
-        for (int k = 0; k < hKJ.outerSize(); ++k)
-        {
-            for (Eigen::SparseMatrix<double>::InnerIterator it(hKJ, k); it; ++it)
-            {
-                tripletList.push_back(Eigen::Triplet<double>(it.row()+hJJ.rows(), it.col(), it.value()));
-            }
-        }
-        for (int k = 0; k < hKK.outerSize(); ++k)
-        {
-            for (Eigen::SparseMatrix<double>::InnerIterator it(hKK, k); it; ++it)
-            {
-                tripletList.push_back(Eigen::Triplet<double>(it.row()+hJJ.rows(), it.col()+hJJ.cols(), it.value()));
-            }
-        }
-
-        hessian0WithoutJK.setFromTriplets(tripletList.begin(), tripletList.end());
-
-//        Eigen::MatrixXd hessian0WithoutJKFull(hessian0WithoutJK);
-//        std::cout << "hessian0WithoutJKFull\n" << hessian0WithoutJKFull << std::endl;
-//        Eigen::MatrixXd hJJFull(hJJ);
-//        std::cout << "hJJFull\n" << hJJFull << std::endl;
-//        Eigen::MatrixXd hJKFull(hJK);
-//        std::cout << "hJKFull\n" << hJKFull << std::endl;
-//        Eigen::MatrixXd hKJFull(hKJ);
-//        std::cout << "hKJFull\n" << hKJFull << std::endl;
-//        Eigen::MatrixXd hKKFull(hKK);
-//        std::cout << "hKKFull\n" << hKKFull << std::endl;
-
         // compute the Cmat with the leading unit diagonal elements
         //add unit entrys, should also be done when building Cmat
         Eigen::SparseMatrix<double> cMatPlusUnit(cMat.rows()+cMat.cols(),cMat.cols());
@@ -167,14 +114,14 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
 
 Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
 {
-    auto gradient = mProblem.Gradient(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    auto gradient = mProblem.Gradient(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
     return ToEigen(gradient.J, mDofs) - ToEigen(mCmat, mDofs).transpose() * ToEigen(gradient.K, mDofs);
 }
 
 
 Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd& x)
 {
-    auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    auto hessian0 = mProblem.Hessian0(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
     auto hJJ = ToEigen(hessian0.JJ, mDofs);
     auto hJK = ToEigen(hessian0.JK, mDofs);
     auto hKJ = ToEigen(hessian0.KJ, mDofs);
@@ -185,7 +132,7 @@ Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd&
 
 void QuasistaticSolver::UpdateHistory(const Eigen::VectorXd& x)
 {
-    mProblem.UpdateHistory(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    mProblem.UpdateHistory(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
 double QuasistaticSolver::Norm(const Eigen::VectorXd& residual) const
@@ -200,12 +147,12 @@ void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::Vecto
     std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 
-GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) const
+DofVector<double> QuasistaticSolver::ToDofVector<double>(const Eigen::VectorXd& x) const
 {
     DofVector<double> xDof = mX; // for correct size
     FromEigen(x, mDofs, &xDof);
 
-    GlobalDofVector v;
+    DofVector<double> v;
     for (auto dof : mDofs)
     {
         v.J[dof] = xDof[dof];
@@ -220,10 +167,10 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
      * to the fact that NewtonRaphson does not care about time or time steps, but the Residual function, it tries to
      * minimize, does. So we slip that around the interface. */
     mGlobalTime -= mTimeStep;
-    auto x = ToGlobalDofVector(ToEigen(mX, mDofs));
+    auto x = ToDofVector<double>(ToEigen(mX, mDofs));
     mGlobalTime += mTimeStep;
-    /* So each call to ToGlobalDofVector assumes that we solve for the step t + dt. But we are in postprocess right now.
-     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToGlobalDofVector to apply
+    /* So each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right now.
+     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to apply
      * constraints for t + dt + dt. */
 
     auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime, mTimeStep);
