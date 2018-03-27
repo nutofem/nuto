@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <boost/math/tools/roots.hpp>
 
 #include "nuto/math/EigenIO.h"
 #include "nuto/math/EigenCompanion.h"
@@ -39,7 +40,7 @@ double k0 = ft / E;
 //!   - combination of c, gf (local fracture energy parameter) and L causes a snap-back
 //!   - ???
 template <typename TGdm>
-double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, double boundaryDisplacement = 0.1)
+double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, double boundaryDisplacement = 0.2)
 {
     DofType d = gdm.mDisp;
     ScalarDofType eeq = gdm.mEeq;
@@ -94,7 +95,9 @@ double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, doubl
     Eigen::VectorXd disps = EigenIO::ReadFromFile(loadDispFileName).col(1);
 
     Tools::GlobalFractureEnergyIntegrator gfIntegrator(loads, disps);
-    double GfTotal = gfIntegrator.IntegrateSofteningCurve(1., 0.1);
+    double crossSection = 1.;
+    double GfTotal = gfIntegrator.IntegrateSofteningCurve(crossSection, 1.e-3 * ft * crossSection);
+    // an exception is thrown if the forces in the load-displacement-curve do _not_ drop below this 1.e-5 * ft
 
     double lPreDamage = 2. * nElements / L;
     double preDamageIntegral = 0;
@@ -112,65 +115,32 @@ double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, doubl
     return GfTotal - lPreDamage * preDamageIntegral;
 }
 
-//! Finds the root of @fFunction by using the secant method (no derivatives required)
-//! @param fFunction function to find the root for
-//! @param x0 first guess
-//! @param x1 second guess
-//! @param tolerance algorithm stopts if abs(fFunction) < tolerance
-//! @param maxIterations algorithm stops after this number of steps
-double SecantMethod(std::function<double(double)> fFunction, double x0, double x1, double tolerance = 1.e-4,
-                    int maxIterations = 20)
-{
-    std::vector<double> x;
-    std::vector<double> f;
-
-    auto Info = [&](int n) {
-        std::cout << "Secant step " << n << ": x_n = " << x[n] << ", f(x_n) = " << f[n] << ".\n";
-    };
-
-    x.push_back(x0);
-    f.push_back(fFunction(x0));
-    Info(0);
-
-    x.push_back(x1);
-    f.push_back(fFunction(x1));
-    Info(1);
-
-    for (int n = 2; n < maxIterations; ++n)
-    {
-        double xn = (x[n - 2] * f[n - 1] - x[n - 1] * f[n - 2]) / (f[n - 1] - f[n - 2]);
-        x.push_back(xn);
-        f.push_back(fFunction(xn));
-        Info(n);
-
-        if (std::abs(f[n]) < tolerance)
-            return xn;
-    }
-    throw std::runtime_error("No convergence!");
-}
-
 int main()
 {
     const double GlobalFractureEnergyParameter = 0.1;
 
     auto f = [&](double gf) {
-
+        std::cout << "Calculating for gf = " << gf << " ... ";
+        std::cout << std::flush;
         DofType d("Displacements", 1);
         ScalarDofType eeq("NonlocalEquivalentStrains");
 
         Laws::LinearElasticDamage<1> elasticLaw(E, nu);
-        Constitutive::DamageLawExponential dmg(k0, ft / gf, 0.9999999);
+        Constitutive::DamageLawExponential dmg(k0, ft / gf, 0.99999);
         Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
 
         NonlocalInteraction::Decreasing interaction(0.1, 5);
         using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, NonlocalInteraction::Decreasing>;
         Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm, interaction);
-        return GlobalFractureEnergy(gdm) - GlobalFractureEnergyParameter;
+        double Gf = GlobalFractureEnergy(gdm);
+        std::cout << "gives " << Gf << ".\n";
+        return Gf - GlobalFractureEnergyParameter;
     };
 
-    double gf_guess1 = 0.015;
-    double gf_guess2 = 0.01;
+    boost::uintmax_t max_iter = 20;
+    std::pair<double, double> result = boost::math::tools::bracket_and_solve_root(
+            f, 0.04, 2.0, true, boost::math::tools::eps_tolerance<double>(10), max_iter);
 
-    double gf = SecantMethod(f, gf_guess1, gf_guess2);
-    std::cout << gf << std::endl;
+    std::cout << result.first << std::endl;
+    std::cout << result.second << std::endl;
 }
