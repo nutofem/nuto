@@ -30,13 +30,19 @@ public:
     //! @return constraint rhs vector
     Eigen::VectorXd GetRhs(DofType dof, double time) const;
 
+    //! @brief builds the rhs of the constraint equations in a sparse global vector
+    //! @param dof dof type
+    //! @param numDofs total number of dofs for a specfic dof type
+    //! @param time global time
+    //! @return sparse rhs vector of the constraint equations
+    Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
+
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the independent dofs
     //! @param dof dof type
-    //! @param numIndependentDofs number of independent dofs for the dof type dof, required for a proper resize
-    //!        of the sparse matrix
+    //! @param numDofs number dofs for the dof type, required for a proper resize of the sparse matrix
     //! @return sparse matrix containing the constraint terms where the last block with size (numDependent x
     //! numDependent is removed)
-    Eigen::SparseMatrix<double> BuildUnitConstraintMatrix(DofType dof, int numIndependentDofs) const;
+    Eigen::SparseMatrix<double> BuildUnitConstraintMatrix2(DofType dof, int numDofs) const;
 
     //! @brief calculates the number of constraint equations for a specific dof type
     //! @param dof dof type

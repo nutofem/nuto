@@ -4,7 +4,7 @@
 namespace NuTo
 {
 
-DofVector<double> Solve(DofMatrixSparse<double> K, DofVector<double> f, Constraint::Constraints bcs, DofType dof,
+/*DofVector<double> Solve(DofMatrixSparse<double> K, DofVector<double> f, Constraint::Constraints bcs, DofType dof,
                       int numIndependentDofs, double time, std::string solver)
 {
     // TODO, why do we need this method at all
@@ -21,5 +21,6 @@ DofVector<double> Solve(DofMatrixSparse<double> K, DofVector<double> f, Constrai
 
 //    return u;
 }
+*/
 
 } // namespace NuTo

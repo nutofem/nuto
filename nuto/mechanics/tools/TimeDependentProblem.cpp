@@ -64,11 +64,11 @@ DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofVal
     return gradient;
 }
 
-GlobalDofMatrixSparse TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
+DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
                                                      double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
-    GlobalDofMatrixSparse hessian0;
+    DofMatrixSparse<double> hessian0;
     for (auto& hessian0Function : mHessian0Functions)
         hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs,
                                            Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt));

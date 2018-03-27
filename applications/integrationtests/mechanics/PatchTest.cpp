@@ -4,6 +4,7 @@
 #include "boost/ptr_container/ptr_vector.hpp"
 
 #include "nuto/math/EigenCompanion.h"
+#include "nuto/math/EigenSparseSolve.h"
 
 #include "nuto/base/Group.h"
 
@@ -155,27 +156,36 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     //                  assemble and solve
     // ************************************************************************
     SimpleAssembler assembler(dofInfo);
+    DofVector<double> solution;
+    solution[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
 
-    GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+    DofVector<double> gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
-    GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+    DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
     // no hessian for the neumann bc integrand (external load)
 
-    Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
-    Eigen::VectorXd newDisplacements = hessianDense.ldlt().solve(gradient.J[displ]);
+    //build the constraint (modified) hessians and gradient
+    // this should be moved the solver routine
+    // solution = solver.solve(fullhessian, fullgradient, constraints);
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix2({displ}, dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]));
 
-    // merge dof values
-    int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
-    for (auto& node : mesh.NodesTotal(displ))
+    // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
+    auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
+    Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
+    Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
+
+    //since all rhs of the constraints are zero, no need to add this terms
+    Eigen::VectorXd deltaDisplacements = cMatUnit.transpose() * deltaDisplacementsMod;
+    solution[displ] -= deltaDisplacements;
+
+    // Merge dof values %%%%%%%%%%%%%%%%%
+    for (NodeSimple& node : mesh.NodesTotal(displ))
     {
-        int dofX = node.GetDofNumber(0);
-        int dofY = node.GetDofNumber(1);
-
-        if (dofX < numUnconstrainedDofs)
-            node.SetValue(0, newDisplacements[dofX]);
-        if (dofY < numUnconstrainedDofs)
-            node.SetValue(1, newDisplacements[dofY]);
+        int dofNumber = node.GetDofNumber(0);
+        node.SetValue(0, solution[displ][dofNumber]);
+        dofNumber = node.GetDofNumber(1);
+        node.SetValue(1, solution[displ][dofNumber]);
     }
 
     int pointsPerDirection = std::lround(std::sqrt(integrationTypeBc.GetNumIntegrationPoints()));
@@ -228,11 +238,10 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
-    const int numDepDofs = dofInfo.numDependentDofs[displ];
-    Eigen::MatrixXd CMat = constraints.BuildConstraintMatrix(displ, numDofs - numDepDofs);
+    Eigen::MatrixXd CMatUnit = constraints.BuildUnitConstraintMatrix2(displ, numDofs);
 
 
-    BOOST_TEST_MESSAGE("CMat \n" << CMat);
+    BOOST_TEST_MESSAGE("CMatUnit \n" << CMatUnit);
 
     // ************************************************************************
     //   add continuum cells - TODO function to create cells
@@ -263,8 +272,21 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
 
-    int numIndependentDofs = dofInfo.numIndependentDofs[displ];
-    GlobalDofVector u = Solve(hessian, gradient, constraints, displ, numIndependentDofs, 0.0);
+    //build the constraint (modified) hessians and gradient
+    // this should be moved the solver routine
+    // solution = solver.solve(fullhessian, fullgradient, constraints);
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix2({displ}, dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]));
+
+    // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
+    auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
+    Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
+    Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
+
+    //since all rhs of the constraints are zero, no need to add this terms
+    Eigen::VectorXd deltaDisplacements = cMatUnit.transpose() * deltaDisplacementsMod;
+
+    DofVector<double> u;
+    u[displ] -= deltaDisplacements;
 
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues

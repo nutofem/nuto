@@ -82,6 +82,7 @@ public:
 private:
     DofVector<double> ToDofVector(const Eigen::VectorXd& x) const;
 
+    //! @var mX last updated dof state (including all active/inactive and dependent/independent)
     DofVector<double> mX;
 
     TimeDependentProblem& mProblem;

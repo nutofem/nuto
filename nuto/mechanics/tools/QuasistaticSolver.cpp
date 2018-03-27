@@ -36,7 +36,7 @@ void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
     for (auto dofI : mDofs)
         for (auto dofJ : mDofs)
             if (dofI.Id() == dofJ.Id())
-                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, mX[dofI].rows());
+                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix2(dofI, mX[dofI].rows());
             else
                 mCmatUnit(dofI, dofJ).setZero();
 }
@@ -50,17 +50,8 @@ void QuasistaticSolver::SetGlobalTime(double globalTime)
 std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd>
 QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, double timeStep)
 {
-    DofVector<double> xDof = mX; // for correct size
-    FromEigen(x, mDofs, &xDof);
 
-    DofVector<double> v;
-    for (auto dof : mDofs)
-    {
-        v[dof] = xDof[dof];
-        //here loop over the constraints to get the new values
-        throw;
-//        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime);
-    }
+    DofVector<double> v(ToDofVector(x));
 
     auto hessian0 = mProblem.Hessian0(v, mDofs, globalTime, timeStep);
     auto hessian0Eigen= ToEigen(hessian0, mDofs);
@@ -71,9 +62,8 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
     DofVector<double> deltaBrhs;
     for (auto dof : mDofs)
     {
-        deltaBrhs[dof] = Eigen::VectorXd(xDof[dof].rows());
-        Eigen::VectorXd rhs(mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime));
-        deltaBrhs[dof].tail(rhs.rows()) = rhs;
+        deltaBrhs[dof] = mConstraints.GetSparseGlobalRhs(dof, v[dof].rows(),globalTime + timeStep) -
+                mConstraints.GetSparseGlobalRhs(dof, v[dof].rows(),globalTime);
     }
 
     Eigen::VectorXd residualConstrained = cMatUnit.transpose() * hessian0Eigen * ToEigen(deltaBrhs, mDofs);
@@ -83,25 +73,22 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
 
 Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
 {
-    auto gradient = mProblem.Gradient(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
-    return ToEigen(gradient.J, mDofs) - ToEigen(mCmat, mDofs).transpose() * ToEigen(gradient.K, mDofs);
+    auto gradient = mProblem.Gradient(ToDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    return ToEigen(mCmatUnit, mDofs).transpose() * ToEigen(gradient, mDofs) ;
 }
 
 
 Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd& x)
 {
-    auto hessian0 = mProblem.Hessian0(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
-    auto hJJ = ToEigen(hessian0.JJ, mDofs);
-    auto hJK = ToEigen(hessian0.JK, mDofs);
-    auto hKJ = ToEigen(hessian0.KJ, mDofs);
-    auto hKK = ToEigen(hessian0.KK, mDofs);
-    auto cMat = ToEigen(mCmat, mDofs);
-    return hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
+    auto hessian0 = mProblem.Hessian0(ToDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    auto hessian0Eigen = ToEigen(hessian0, mDofs);
+    auto cMatUnit = ToEigen(mCmatUnit, mDofs);
+    return cMatUnit.transpose() * hessian0Eigen * cMatUnit;
 }
 
 void QuasistaticSolver::UpdateHistory(const Eigen::VectorXd& x)
 {
-    mProblem.UpdateHistory(ToDofVector<double>(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    mProblem.UpdateHistory(ToDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
 double QuasistaticSolver::Norm(const Eigen::VectorXd& residual) const
@@ -116,35 +103,39 @@ void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::Vecto
     std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 
-DofVector<double> QuasistaticSolver::ToDofVector<double>(const Eigen::VectorXd& x) const
+DofVector<double> QuasistaticSolver::ToDofVector(const Eigen::VectorXd& x) const
 {
-    DofVector<double> xDof = mX; // for correct size
-    FromEigen(x, mDofs, &xDof);
+    //this result includes now all dependent and independent dofs for all active dof types
+    auto cMatUnit = ToEigen(mCmatUnit, mDofs);
+    Eigen::VectorXd fullX = cMatUnit.transpose() * x;
 
-    DofVector<double> v;
     for (auto dof : mDofs)
     {
-        v.J[dof] = xDof[dof];
-        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime + mTimeStep);
+        //add the rhs of the constraint equations
+        // [d_j,d_k]^T = CmatUnit * d_j (above) + b
+        // since b is stored for each dof_type separately, do it in the loop
+        // fullVecor.rows() is the size of the current vector including dependent and independent
+        //    components of only the active dofs
+        fullX+= mConstraints.GetSparseGlobalRhs(dof, fullX.rows(), mGlobalTime + mTimeStep);
     }
-    return v;
+
+    // for correct size, copy the inactive dofs
+    DofVector<double> xDof = mX;
+
+    // update the active dofs
+    FromEigen(fullX, mDofs, &xDof);
+
+    return xDof;
 }
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
 {
-    /* Disclaimer: The whole class is messy because of the time step handling via member variables. This itself is due
-     * to the fact that NewtonRaphson does not care about time or time steps, but the Residual function, it tries to
-     * minimize, does. So we slip that around the interface. */
-    mGlobalTime -= mTimeStep;
-    auto x = ToDofVector<double>(ToEigen(mX, mDofs));
-    mGlobalTime += mTimeStep;
-    /* So each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right now.
+    /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right now.
      * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to apply
      * constraints for t + dt + dt. */
+    auto residual = mProblem.Gradient(mX, {dofType}, mGlobalTime-mTimeStep, mTimeStep);
 
-    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime, mTimeStep);
-
-    double dofMean = boost::accumulate(x(dofType, dofNumbers), 0.) / dofNumbers.size();
+    double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
     out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';

@@ -33,7 +33,22 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
     return rhs;
 }
 
-Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, int numIndependentDofs) const
+Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int numDofs, double time) const
+{
+    if (not mEquations.Has(dof))
+        return Eigen::SparseVector<float>(0); // no equations for this dof type
+
+    const Equations& equations = mEquations[dof];
+    int numEquations = equations.size();
+    Eigen::SparseVector<float> globalVector(numDofs);
+    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
+    {
+        globalVector.coeffRef(equations[iEquation].GetDependentDofNumber()) = equations[iEquation].GetRhs(time);
+    }
+    return globalVector;
+}
+
+Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof, int numIndependentDofs) const
 {
     if (not mEquations.Has(dof))
         return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
