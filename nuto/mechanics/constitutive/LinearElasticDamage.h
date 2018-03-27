@@ -1,10 +1,11 @@
 #pragma once
 
 #include "nuto/base/Exception.h"
-#include "nuto/mechanics/constitutive/ConstitutivePlaneStateEnum.h"
-#include "nuto/mechanics/constitutive/EngineeringTangent.h"
-#include "nuto/mechanics/constitutive/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/EngineeringStress.h"
+#include "ConstitutivePlaneStateEnum.h"
+#include "EngineeringTangent.h"
+#include "EngineeringStrain.h"
+#include "EngineeringStress.h"
+#include "damageLaws/SofteningMaterial.h"
 
 namespace NuTo
 {
@@ -44,6 +45,13 @@ public:
             m2G = E;
         }
     }
+
+    LinearElasticDamage(Material::Softening m, eDamageApplication damageApplication = FULL,
+                        ePlaneState planeState = ePlaneState::PLANE_STRAIN)
+        : LinearElasticDamage::LinearElasticDamage(m.E, m.nu, damageApplication, planeState)
+    {
+    }
+
 
     EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double omega) const
     {

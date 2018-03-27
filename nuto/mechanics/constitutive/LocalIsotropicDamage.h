@@ -1,14 +1,16 @@
 #pragma once
 
-#include <vector>
-#include "nuto/mechanics/constitutive/MechanicsInterface.h"
-#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
-#include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
+#include "MechanicsInterface.h"
+#include "LinearElasticDamage.h"
+#include "ModifiedMisesStrainNorm.h"
+#include "damageLaws/DamageLawExponential.h"
 
 namespace NuTo
 {
 namespace Laws
 {
+template <int TDim>
+class EvolutionImplicit;
 
 /**
   * Local damage law with an isotropic damage variable
@@ -28,7 +30,8 @@ namespace Laws
   *
   * @tparam TDim dimension
   */
-template <int TDim, typename TDamageLaw, typename TEvolution>
+template <int TDim, typename TDamageLaw = Constitutive::DamageLawExponential,
+          typename TEvolution = EvolutionImplicit<TDim>>
 class LocalIsotropicDamage : public MechanicsInterface<TDim>
 {
 public:
@@ -39,20 +42,25 @@ public:
     {
     }
 
-    virtual ~LocalIsotropicDamage() = default;
+    LocalIsotropicDamage(Material::Softening m, eDamageApplication damageApplication = eDamageApplication::FULL)
+        : mElasticDamage(m, damageApplication)
+        , mDamageLaw(m)
+        , mEvolution(m)
+    {
+    }
 
     EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
-        auto kappa = mEvolution.Kappa(strain, deltaT, ids);
-        auto omega = mDamageLaw.Damage(kappa);
+        double kappa = mEvolution.Kappa(strain, deltaT, ids);
+        double omega = mDamageLaw.Damage(kappa);
         return mElasticDamage.Stress(strain, omega);
     }
 
     EngineeringTangent<TDim> Tangent(EngineeringStrain<TDim> strain, double deltaT, CellIds ids) const override
     {
-        auto kappa = mEvolution.Kappa(strain, deltaT, ids);
-        auto omega = mDamageLaw.Damage(kappa);
-        auto dOmegadKappa = mDamageLaw.Derivative(kappa);
+        double kappa = mEvolution.Kappa(strain, deltaT, ids);
+        double omega = mDamageLaw.Damage(kappa);
+        double dOmegadKappa = mDamageLaw.Derivative(kappa);
 
         return mElasticDamage.DstressDstrain(strain, omega) +
                mElasticDamage.DstressDomega(strain, omega) * dOmegadKappa *
@@ -89,12 +97,23 @@ public:
     //! @param strainNorm strain norm, see class documentation
     //! @param numCells number of cells for the history data allocation
     //! @param numIpsPerCell nummer of integraiton points per cell for the history data allocation
-    EvolutionImplicit(Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm, size_t numCells = 0,
-                      size_t numIpsPerCell = 0)
+    EvolutionImplicit(Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm, size_t numCells = 1,
+                      size_t numIpsPerCell = 1)
         : mStrainNorm(strainNorm)
     {
         ResizeHistoryData(numCells, numIpsPerCell);
     }
+
+    //! Constructor. As this evolution equation requires history data, they are also allocated.
+    //! @param m softening material parameters
+    //! @param numCells number of cells for the history data allocation
+    //! @param numIpsPerCell nummer of integraiton points per cell for the history data allocation
+    EvolutionImplicit(Material::Softening m, size_t numCells = 1, size_t numIpsPerCell = 1)
+        : mStrainNorm(m)
+    {
+        ResizeHistoryData(numCells, numIpsPerCell);
+    }
+
 
     double Kappa(EngineeringStrain<TDim> strain, double, CellIds ids) const
     {

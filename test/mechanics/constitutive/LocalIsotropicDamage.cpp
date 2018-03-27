@@ -2,45 +2,17 @@
 
 #include "nuto/math/EigenCompanion.h"
 #include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
-#include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
-#include "nuto/mechanics/constitutive/LinearElasticDamage.h"
-#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
-
 #include "nuto/math/NewtonRaphson.h"
 
 using namespace NuTo;
 
-// Material parameters
-const double E = 20000;
-const double nu = 0.2;
-
-const double ft = 4;
-const double fc = 10 * ft;
-const double gf = 0.01;
-const double kappa0 = ft / E;
-const double beta = ft / gf;
-const double alpha = 1;
-
-template <int TDim>
-auto TestLaw()
-{
-    // Define the law using policy based design principles, hopefully applied correctly
-    using Damage = Constitutive::DamageLawExponential;
-    using StrainNorm = Constitutive::ModifiedMisesStrainNorm<TDim>;
-    using Evolution = Laws::EvolutionImplicit<TDim>;
-    using Law = Laws::LocalIsotropicDamage<TDim, Damage, Evolution>;
-
-    Damage dmg(kappa0, beta, alpha);
-    StrainNorm strainNorm(nu, fc / ft);
-    Evolution evolutionEq(StrainNorm(nu, fc / ft), /*numCells=*/1, /*numIps=*/1);
-    Laws::LinearElasticDamage<TDim> elasticDamage(E, nu);
-
-    return Law(elasticDamage, dmg, evolutionEq);
-}
+Material::Softening concrete = Material::DefaultConcrete();
+double kappa0 = concrete.ft / concrete.E;
 
 BOOST_AUTO_TEST_CASE(OneDimensional)
 {
-    auto localDamageLaw = TestLaw<1>();
+    concrete.fMin = 0;
+    Laws::LocalIsotropicDamage<1> localDamageLaw(concrete);
 
     // Test the law by following the decreasing part of the load displacement curve after the peak load
     //
@@ -60,21 +32,21 @@ BOOST_AUTO_TEST_CASE(OneDimensional)
 
     auto analyticStress = [&](double strain) {
         if (strain < kappa0)
-            return E * strain;
+            return concrete.E * strain;
 
-        return ft * std::exp(ft / gf * (kappa0 - strain));
+        return concrete.ft * std::exp(concrete.ft / concrete.gf * (kappa0 - strain));
     };
 
-    double stress = ft * 0.99;
+    double stress = concrete.ft * 0.99;
     auto R = [&](double strain) { return localDamageLaw.Stress(EigenCompanion::ToEigen(strain), 0, {})[0] - stress; };
     auto DR = [&](double strain) { return localDamageLaw.Tangent(EigenCompanion::ToEigen(strain), 0, {})[0] - 1; };
     auto Norm = [&](double stress) { return std::abs(stress); };
     auto Info = [](int i, double x, double R) { BOOST_TEST_MESSAGE("" << i << ": x = " << x << " R = " << R); };
-    auto problem = NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, 1.e-14, Info);
+    auto problem = NuTo::NewtonRaphson::DefineProblem(R, DR, Norm, 1.e-12, Info);
 
     double strain = kappa0;
     localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, {});
-    for (; stress > 0; stress -= ft * 0.1)
+    for (; stress > 0; stress -= concrete.ft * 0.1)
     {
         strain = NuTo::NewtonRaphson::Solve(problem, strain, NuTo::NewtonRaphson::DoubleSolver());
         localDamageLaw.Update(EigenCompanion::ToEigen(strain), 0, {});
@@ -85,7 +57,7 @@ BOOST_AUTO_TEST_CASE(OneDimensional)
 void CheckTangent(std::initializer_list<double> values, double kappa)
 {
     EngineeringStrain<3> strain = NuTo::EigenCompanion::ToEigen(values);
-    auto law = TestLaw<3>();
+    Laws::LocalIsotropicDamage<3> law(concrete);
     law.mEvolution.mKappas(0, 0) = kappa;
 
     Eigen::Matrix<double, 6, 6> tangent = law.Tangent(strain, 0, {});
@@ -103,7 +75,7 @@ void CheckTangent(std::initializer_list<double> values, double kappa)
         tangent_cdf.col(i) = (s1 - s0) / delta;
     }
 
-    BOOST_CHECK_LT((tangent_cdf - tangent).cwiseAbs().maxCoeff(), 1.e-6);
+    BOOST_CHECK_LT((tangent_cdf - tangent).cwiseAbs().maxCoeff(), 1.e-5);
 }
 
 BOOST_AUTO_TEST_CASE(Tangents)
@@ -143,7 +115,7 @@ BOOST_AUTO_TEST_CASE(Tangents)
 
 BOOST_AUTO_TEST_CASE(EvolutionEdgeCase)
 {
-    auto law = TestLaw<3>();
+    Laws::LocalIsotropicDamage<3> law(concrete);
     EngineeringStrain<3> strain = EigenCompanion::ToEigen({1, 2, 3, 4, 5, 6}) * 1.e-5;
     double kappa = law.mEvolution.mStrainNorm.Value(strain);
     law.mEvolution.mKappas(0, 0) = kappa;
