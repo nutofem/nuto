@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
     //since all rhs of the constraints are zero, no need to add this terms
-    Eigen::VectorXd deltaDisplacements = cMatUnit.transpose() * deltaDisplacementsMod;
+    Eigen::VectorXd deltaDisplacements = cMatUnit * deltaDisplacementsMod;
     solution[displ] -= deltaDisplacements;
 
     // Merge dof values %%%%%%%%%%%%%%%%%
@@ -238,10 +238,10 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
-    Eigen::MatrixXd CMatUnit = constraints.BuildUnitConstraintMatrix2(displ, numDofs);
+    Eigen::SparseMatrix<double> cMatUnit = constraints.BuildUnitConstraintMatrix2(displ, numDofs);
 
-
-    BOOST_TEST_MESSAGE("CMatUnit \n" << CMatUnit);
+    Eigen::MatrixXd cMatUnitFull(cMatUnit);
+    BOOST_TEST_MESSAGE("cMatUnit \n" << cMatUnitFull);
 
     // ************************************************************************
     //   add continuum cells - TODO function to create cells
@@ -275,18 +275,16 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     //build the constraint (modified) hessians and gradient
     // this should be moved the solver routine
     // solution = solver.solve(fullhessian, fullgradient, constraints);
-    auto cMatUnit(constraints.BuildUnitConstraintMatrix2({displ}, dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]));
-
-    // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
-    auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
+    // no need to deal with modified vectors and matrices
+    Eigen::SparseMatrix<double> hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
     Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
     //since all rhs of the constraints are zero, no need to add this terms
-    Eigen::VectorXd deltaDisplacements = cMatUnit.transpose() * deltaDisplacementsMod;
+    Eigen::VectorXd deltaDisplacements = cMatUnit * deltaDisplacementsMod;
 
     DofVector<double> u;
-    u[displ] -= deltaDisplacements;
+    u[displ] = -deltaDisplacements;
 
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues

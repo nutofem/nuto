@@ -48,15 +48,20 @@ Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int num
     return globalVector;
 }
 
-Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof, int numIndependentDofs) const
+Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof, int numDofs) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
+    {
+        Eigen::SparseMatrix<double> unitMatrix(numDofs,numDofs);
+        unitMatrix.setIdentity();
+        return unitMatrix; // no equations for this dof type
+    }
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
+    int numIndependentDofs = numDofs - numEquations;
 
-    Eigen::SparseMatrix<double> matrix(numEquations + numIndependentDofs, numIndependentDofs);
+    Eigen::SparseMatrix<double> matrix(numDofs, numIndependentDofs);
     matrix.setZero();
     std::vector<Eigen::Triplet<double> > tripletList;
     for (auto i=0; i<numIndependentDofs; i++)
@@ -87,7 +92,7 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof,
             }
 
             if (std::abs(coefficient) > 1.e-18)
-                tripletList.push_back(Eigen::Triplet<double>(iEquation, globalDofNumber, -coefficient));
+                tripletList.push_back(Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
         }
     }
     matrix.setFromTriplets(tripletList.begin(), tripletList.end());
