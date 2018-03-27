@@ -19,20 +19,15 @@
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
-#include "nuto/visualize/Visualizer.h"
-#include "nuto/visualize/AverageHandler.h"
-#include "nuto/visualize/AverageGeometries.h"
-
 using namespace NuTo;
-
 
 class LocalDamageTruss
 {
 public:
-    LocalDamageTruss(int numElements)
+    LocalDamageTruss(int numElements, Material::Softening m)
         : mMesh(UnitMeshFem::CreateLines(numElements))
         , mDof("Dispacement", 1)
-        , mLaw(ConstitutiveLaw())
+        , mLaw(m)
         , mMomentumBalance(mDof, mLaw)
         , mEquations(&mMesh)
         , mProblem(mEquations, mDof)
@@ -92,16 +87,10 @@ public:
     }
 
 private:
-    using ElasticDamage = Laws::LinearElasticDamage<1>;
-    using DamageLaw = Constitutive::DamageLawExponential;
-    using StrainNorm = Constitutive::ModifiedMisesStrainNorm<1>;
-    using Evolution = Laws::EvolutionImplicit<1>;
-    using Law = Laws::LocalIsotropicDamage<1, DamageLaw, Evolution>;
-
     MeshFem mMesh;
 
     DofType mDof;
-    Law mLaw;
+    Laws::LocalIsotropicDamage<1> mLaw;
     Integrands::MomentumBalance<1> mMomentumBalance;
 
     TimeDependentProblem mEquations;
@@ -110,25 +99,6 @@ private:
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;
     Group<CellInterface> mCellGroup;
-
-    static Law ConstitutiveLaw()
-    {
-        double E = 20000.;
-        double nu = 0.2;
-        double ft = 4;
-        double fc = 10 * ft;
-
-        double k0 = ft / E;
-        double alpha = 0.99;
-        double beta = 350;
-
-        ElasticDamage elasticDamage(E, nu);
-        DamageLaw damageLaw(k0, beta, alpha);
-        StrainNorm strainNorm(nu, fc / ft);
-        Evolution evolution(strainNorm);
-
-        return Law(elasticDamage, damageLaw, evolution);
-    }
 
     Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
     {
@@ -139,9 +109,7 @@ private:
         auto& nodeMiddle = mesh.NodeAtCoordinate(ToEigen(0.4), disp);
 
         Constraint::Constraints c;
-
-
-        Constraint::Equation periodic(nodeRight, 0, Constraint::RhsRamp(1., 0.01));
+        Constraint::Equation periodic(nodeRight, 0, Constraint::RhsRamp(1., 0.02));
         periodic.AddTerm({nodeLeft, 0, -1});
 
         c.Add(disp, Constraint::Component(nodeMiddle, {eDirection::X}));
@@ -152,7 +120,9 @@ private:
 
 BOOST_AUTO_TEST_CASE(LocalDamage1DWithoutImperfection)
 {
-    LocalDamageTruss problem(5);
+    auto material = Material::DefaultConcrete();
+    material.fMin = 0.;
+    LocalDamageTruss problem(5, material);
     problem.Solve(1);
     auto damageField = problem.DamageField();
     // without an imperfection, we expect a uniform damage distribution.
@@ -165,7 +135,9 @@ BOOST_AUTO_TEST_CASE(LocalDamage1DWithoutImperfection)
 
 BOOST_AUTO_TEST_CASE(LocalDamage1DWithImperfection)
 {
-    LocalDamageTruss problem(5);
+    auto material = Material::DefaultConcrete();
+    material.fMin = 0.;
+    LocalDamageTruss problem(5, material);
     problem.SetImperfection(0.001);
     problem.Solve(1);
     auto damageField = problem.DamageField();

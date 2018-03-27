@@ -59,15 +59,12 @@ void CheckFractureEnergy2D(int angleDegree, double interfaceThickness)
     NuTo::DofType d("Displ", 2);
     element.AddDofElement(d, {{nd0, nd1, nd2, nd3}, interpolation});
 
-    NuTo::Laws::LinearElasticDamage<2> elasticDamage(20000., 0.);
-    double k0 = 4. / 20000;
+    auto material = NuTo::Material::DefaultConcrete();
     double Gf = 0.1;
-    double gf = 4. * interfaceThickness / Gf;
-    NuTo::Constitutive::DamageLawExponential damageLaw(k0, gf, 1.);
-    using Law = NuTo::Laws::LocalIsotropicDamage<2, NuTo::Constitutive::DamageLawExponential,
-                                                 NuTo::Laws::EvolutionImplicit<2>>;
-    Law law(elasticDamage, damageLaw, {{0., 10}});
-
+    material.nu = 0.;
+    material.gf = Gf / interfaceThickness;
+    material.fMin = 0;
+    NuTo::Laws::LocalIsotropicDamage<2> law(material);
     NuTo::Integrands::MomentumBalance<2> momentum(d, law);
 
     NuTo::DofNumbering::Build({nd0, nd1, nd2, nd3}, d, {}); // numbering without constraints

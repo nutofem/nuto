@@ -7,7 +7,6 @@
 
 #include "nuto/mechanics/integrands/GradientDamage.h"
 #include "nuto/mechanics/integrands/NeumannBc.h"
-#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/mesh/MeshGmsh.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
@@ -29,22 +28,14 @@ BOOST_AUTO_TEST_CASE(Integrand)
     DofType d("Displacements", 1);
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
-    /* MATERIAL */
-    double E = 30000;
-    double nu = 0.2;
-    double ft = 4;
-    double fc = 40;
-    double gf = 0.021 * 10; // we have to adjust the material parameters due to nonlocal decreasing interaction
     double L = 40;
-    double c = 0.25;
+    auto material = Material::DefaultConcrete();
+    material.gf = 0.021 * 10;
+    material.c = 0.25;
+    double k0 = material.ft / material.E;
 
-    double k0 = ft / E;
-    Laws::LinearElasticDamage<1> elasticLaw(E, nu);
-    Constitutive::DamageLawExponential dmg(k0, ft / gf, 1.);
-    Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, fc / ft);
-
-    using Gdm = Integrands::GradientDamage<1, Constitutive::DamageLawExponential, NonlocalInteraction::Decreasing>;
-    Gdm gdm(d, eeq, c, elasticLaw, dmg, strainNorm);
+    using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Decreasing>;
+    Gdm gdm(d, eeq, material);
 
     /* mesh, interpolations, constraints */
     MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(80),
@@ -161,26 +152,17 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     binaryPath.remove_filename();
     std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
 
-    double E = 30000;
-    double nu = 0.2;
-    Laws::LinearElasticDamage<2> unilateralLaw(E, nu, Laws::UNILATERAL);
-
-    double ft = 4;
-    double gf = 0.021 * 10;
-    Constitutive::DamageLawExponential dmg(ft / E, ft / gf, 0.99);
-
-    double fc = 40;
-    Constitutive::ModifiedMisesStrainNorm<2> strainNorm(nu, fc / ft);
-
+    auto material = Material::DefaultConcrete();
+    material.gf = 0.21;
+    material.c = 2;
 
     DofType d("Displacements", 2);
     ScalarDofType eeq("NonlocalEquivalentStrains");
 
-    double c = 2.0;
-    using Gdm = Integrands::GradientDamage<2, Constitutive::DamageLawExponential>;
+    using Gdm = Integrands::GradientDamage<2>;
     using Neumann = Integrands::NeumannBc<2>;
 
-    Gdm gdm(d, eeq, c, unilateralLaw, dmg, strainNorm);
+    Gdm gdm(d, eeq, material);
     Neumann neumann(d, Eigen::Vector2d(.42, .12));
 
     MeshGmsh gmsh(meshFile);
