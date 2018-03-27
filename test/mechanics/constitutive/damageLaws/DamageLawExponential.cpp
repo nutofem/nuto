@@ -21,3 +21,11 @@ BOOST_AUTO_TEST_CASE(ExponentialResLoad)
         BOOST_CHECK_CLOSE(pseudoStress, sigma_infty, 1.e-3);
     }
 }
+
+BOOST_AUTO_TEST_CASE(ExponentialMaterial)
+{
+    NuTo::Material::Softening m = NuTo::Material::DefaultConcrete();
+    m.fMin = 0;
+    NuTo::Constitutive::DamageLawExponential law(m);
+    DamageLawHelper::CheckFractureEnergy(law, m);
+}

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
-#include "nuto/mechanics/constitutive/damageLaws/DamageLaw.h"
+#include "DamageLaw.h"
+#include "SofteningMaterial.h"
 
 namespace NuTo
 {
@@ -23,6 +23,10 @@ class DamageLawNoSoftening : public DamageLaw
 public:
     DamageLawNoSoftening(double kappa0)
         : mKappa0(kappa0)
+    {
+    }
+    DamageLawNoSoftening(Material::Softening m)
+        : mKappa0(m.ft / m.E)
     {
     }
 

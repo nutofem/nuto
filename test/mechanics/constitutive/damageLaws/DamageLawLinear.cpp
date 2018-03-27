@@ -26,3 +26,11 @@ BOOST_AUTO_TEST_CASE(LinearDamageMax)
             BOOST_CHECK_LE(law.Damage(kappa), damageMax);
     }
 }
+
+BOOST_AUTO_TEST_CASE(LinearDamageMaterial)
+{
+    NuTo::Material::Softening m = NuTo::Material::DefaultConcrete();
+    m.fMin = 0;
+    NuTo::Constitutive::DamageLawLinear law(m);
+    DamageLawHelper::CheckFractureEnergy(law, m);
+}
