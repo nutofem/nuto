@@ -1,8 +1,9 @@
 #pragma once
 #include "nuto/base/Exception.h"
-#include "nuto/mechanics/constitutive/ConstitutivePlaneStateEnum.h"
-#include "nuto/mechanics/constitutive/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/EngineeringStrainInvariants.h"
+#include "ConstitutivePlaneStateEnum.h"
+#include "EngineeringStrain.h"
+#include "EngineeringStrainInvariants.h"
+#include "damageLaws/SofteningMaterial.h"
 
 namespace NuTo
 {
@@ -35,6 +36,12 @@ public:
     //! @param k ratio of compressive strength to tensile strength, ~10 for concrete
     //! @param planeState PLANE_STRAIN or PLANE_STRESS
     ModifiedMisesStrainNorm(double nu, double k, ePlaneState planeState = ePlaneState::PLANE_STRAIN);
+
+    //! Constructor.
+    //! @param m softening material parameters
+    //! @param planeState PLANE_STRAIN or PLANE_STRESS
+    ModifiedMisesStrainNorm(Material::Softening m, ePlaneState planeState = ePlaneState::PLANE_STRAIN);
+
 
     //! @param strain strain to evaluate
     //! @return the value of the modified Mises strain norm
@@ -70,6 +77,11 @@ inline ModifiedMisesStrainNorm<TDim>::ModifiedMisesStrainNorm(double nu, double 
 {
 }
 
+template <int TDim>
+inline ModifiedMisesStrainNorm<TDim>::ModifiedMisesStrainNorm(Material::Softening m, ePlaneState planeState)
+    : ModifiedMisesStrainNorm<TDim>::ModifiedMisesStrainNorm(m.nu, m.fc / m.ft, planeState)
+{
+}
 
 template <>
 inline EngineeringStrain<3> ModifiedMisesStrainNorm<1>::Strain3D(const EngineeringStrain<1>& strain, double nu,

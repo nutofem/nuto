@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cmath>
-#include "nuto/mechanics/constitutive/damageLaws/DamageLaw.h"
+#include "DamageLaw.h"
+#include "SofteningMaterial.h"
 
 namespace NuTo
 {
@@ -26,6 +27,12 @@ public:
         : mKappa0(kappa0)
         , mBeta(beta)
         , mAlpha(alpha)
+    {
+    }
+    DamageLawExponential(Material::Softening m)
+        : mKappa0(m.ft / m.E)
+        , mBeta(m.ft / m.gf)
+        , mAlpha(1 - m.fMin / m.ft)
     {
     }
 

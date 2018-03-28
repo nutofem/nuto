@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/constitutive/LinearElasticDamage.h"
+#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
 namespace NuTo
@@ -17,8 +18,10 @@ namespace Integrands
 //! Peerlings RHJ et al.
 //! https://dx.doi.org/10.1002/(SICI)1097-0207(19961015)39:19<3391::AID-NME7>3.0.CO;2-D
 //! @tparam TDim global dimension
+//! @tparam TInteraction interaction law that provides a damage dependent nonlocal parameter factor
 //! @tparam TDamageLaw damage law that provides .Damage(double) and .Derivative(double)
-template <int TDim, typename TDamageLaw, typename TInteraction = NonlocalInteraction::Constant>
+template <int TDim, typename TInteraction = NonlocalInteraction::Constant,
+          typename TDamageLaw = Constitutive::DamageLawExponential>
 class GradientDamage
 {
 public:
@@ -29,6 +32,7 @@ public:
     //! @param linearElasticDamage damage law that avoids adding damage to the negative volumetric part
     //! @param damageLaw damage law that provides .Damage(double) and .Derivative(double)
     //! @param strainNorm modified mises strain norm
+    //! @param interaction damage dependent nonlocal parameter factor
     GradientDamage(DofType disp, ScalarDofType eeq, double c, Laws::LinearElasticDamage<TDim> linearElasticDamage,
                    TDamageLaw damageLaw, Constitutive::ModifiedMisesStrainNorm<TDim> strainNorm,
                    TInteraction interaction = TInteraction())
@@ -38,6 +42,25 @@ public:
         , mLinearElasticDamage(linearElasticDamage)
         , mDamageLaw(damageLaw)
         , mNorm(strainNorm)
+        , mInteraction(interaction)
+    {
+    }
+
+    //! ctor
+    //! @param disp dof type associated with displacements
+    //! @param eeq scalar dof type associated with nonlocal equivalent strains
+    //! @param m softening material parameter
+    //! @param damageApplication option to skip damaging the hydrostatic compressive part
+    //! @param interaction damage dependent nonlocal parameter factor
+    GradientDamage(DofType disp, ScalarDofType eeq, Material::Softening m,
+                   Laws::eDamageApplication damageApplication = Laws::eDamageApplication::FULL,
+                   TInteraction interaction = TInteraction())
+        : mDisp(disp)
+        , mEeq(eeq)
+        , mC(m.c)
+        , mLinearElasticDamage(m, damageApplication)
+        , mDamageLaw(m)
+        , mNorm(m)
         , mInteraction(interaction)
     {
     }

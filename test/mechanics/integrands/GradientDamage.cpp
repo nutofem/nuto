@@ -4,13 +4,11 @@
 
 #include "nuto/mechanics/nodes/NodeSimple.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
-#include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 
 using namespace NuTo;
 
-void CheckHessian0(ElementCollectionFem& element,
-                   Integrands::GradientDamage<1, Constitutive::DamageLawExponential>& gdm, Eigen::VectorXd d,
+void CheckHessian0(ElementCollectionFem& element, Integrands::GradientDamage<1>& gdm, Eigen::VectorXd d,
                    Eigen::VectorXd eeq, double kappa, double delta = 1.e-7, double tolerance = 1.e-4)
 {
     BOOST_TEST_MESSAGE("Checking for d = " << d.transpose() << " eeq = " << eeq.transpose() << " kappa = " << kappa);
@@ -101,20 +99,19 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
     ScalarDofType eeq("eeq");
     element.AddDofElement(eeq, {{ne0, ne1, ne2}, interpolation});
 
-    double E = 20000;
-    double nu = 0.0;
-    double k0 = 4. / E;
-    double beta = 360;
-    double alpha = 0.96;
-    double c = 0.5;
-    Laws::LinearElasticDamage<1> unilateralLaw(E, nu, Laws::UNILATERAL);
-    Constitutive::ModifiedMisesStrainNorm<1> strainNorm(nu, 1);
-    Constitutive::DamageLawExponential damageLaw(k0, beta, alpha);
+    Material::Softening m;
+    m.E = 20000;
+    m.nu = 0.;
+    m.ft = 4;
+    m.fc = 40;
+    m.gf = m.ft / 360;
+    m.fMin = 0.04 * m.ft;
+    m.c = 0.5;
 
-    Integrands::GradientDamage<1, Constitutive::DamageLawExponential> gdm(disp, eeq, c, unilateralLaw, damageLaw,
-                                                                          strainNorm);
+    Integrands::GradientDamage<1> gdm(disp, eeq, m, Laws::eDamageApplication::UNILATERAL);
     gdm.mKappas.setZero(1, 1);
 
+    double k0 = m.ft / m.E;
     double delta = k0 / 10000;
     double tol = 1.e-4;
 
