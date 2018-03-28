@@ -1,6 +1,5 @@
 #include "BoostUnitTest.h"
 
-#include <eigen3/Eigen/Dense> // for solve
 #include "boost/ptr_container/ptr_vector.hpp"
 
 #include "nuto/math/EigenCompanion.h"
@@ -13,26 +12,26 @@
 #include "nuto/mechanics/mesh/MeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 
+#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 
-#include "nuto/mechanics/constraints/Constraints.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constraints/Constraints.h"
 
 #include "nuto/mechanics/constitutive/LinearElastic.h"
 
+#include "nuto/mechanics/integrands/Bind.h"
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/integrands/NeumannBc.h"
-#include "nuto/mechanics/integrands/Bind.h"
 
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/cell/SimpleAssembler.h"
 
 #include "nuto/visualize/AverageHandler.h"
-#include "nuto/visualize/VoronoiGeometries.h"
 #include "nuto/visualize/PointHandler.h"
 #include "nuto/visualize/Visualizer.h"
+#include "nuto/visualize/VoronoiGeometries.h"
 
 #include "nuto/mechanics/solver/Solve.h"
 
@@ -102,7 +101,6 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
 
-
     // ************************************************************************
     //                 add continuum cells
     // ************************************************************************
@@ -166,18 +164,20 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
     // no hessian for the neumann bc integrand (external load)
 
-    //build the constraint (modified) hessians and gradient
+    // build the constraint (modified) hessians and gradient
     // this should be moved the solver routine
     // solution = solver.solve(fullhessian, fullgradient, constraints);
-    auto cMatUnit(constraints.BuildUnitConstraintMatrix2({displ}, dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]));
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix2(
+            {displ}, dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]));
 
-    // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
+    // the following line should all go to the solve routine, no need to deal with
+    // modified vectors and matrices
     auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
 
     Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
-    //since all rhs of the constraints are zero, no need to add this terms
+    // since all rhs of the constraints are zero, no need to add this terms
     Eigen::VectorXd deltaDisplacements = cMatUnit * (-deltaDisplacementsMod);
     solution[displ] = deltaDisplacements;
 
@@ -267,7 +267,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     }
 
     // *************************************************************************************
-    //   compute initial state (for nonlinear problems, do a trial state computation first)
+    //   compute initial state (for nonlinear problems, do a trial state
+    //   computation first)
     // *************************************************************************************
     DofVector<double> u;
     double t(0);
@@ -286,7 +287,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     auto gradient = assembler.BuildVector(cellGroup, {displ}, GradientF);
     auto hessian = assembler.BuildMatrix(cellGroup, {displ}, Hessian0F);
 
-    //build the constraint (modified) hessians and gradient
+    // build the constraint (modified) hessians and gradient
     // this should be moved the solver routine
     // solution = solver.solve(fullhessian, fullgradient, constraints);
     // no need to deal with modified vectors and matrices
@@ -294,7 +295,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
-    Eigen::VectorXd deltaDisplacements = cMatUnit * (-deltaDisplacementsMod) + constraints.GetSparseGlobalRhs(displ, numDofs, t);
+    Eigen::VectorXd deltaDisplacements =
+            cMatUnit * (-deltaDisplacementsMod) + constraints.GetSparseGlobalRhs(displ, numDofs, t);
     u[displ] = deltaDisplacements;
 
     // ************************************************************************
