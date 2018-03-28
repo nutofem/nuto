@@ -160,7 +160,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     solution[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
 
     DofVector<double> gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-    gradient += assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
+    // the sign should change here and in the integrand Neumann
+    gradient -= assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
     DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
     // no hessian for the neumann bc integrand (external load)
@@ -172,12 +173,13 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
     auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
+
     Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
     //since all rhs of the constraints are zero, no need to add this terms
-    Eigen::VectorXd deltaDisplacements = cMatUnit * deltaDisplacementsMod;
-    solution[displ] -= deltaDisplacements;
+    Eigen::VectorXd deltaDisplacements = cMatUnit * (-deltaDisplacementsMod);
+    solution[displ] = deltaDisplacements;
 
     // Merge dof values %%%%%%%%%%%%%%%%%
     for (NodeSimple& node : mesh.NodesTotal(displ))
@@ -264,6 +266,18 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
         cellGroup.Add(cellContainer.back());
     }
 
+    // *************************************************************************************
+    //   compute initial state (for nonlinear problems, do a trial state computation first)
+    // *************************************************************************************
+    DofVector<double> u;
+    double t(0);
+    u[displ] = constraints.GetSparseGlobalRhs(displ, numDofs, t);
+    for (auto& node : mesh.NodesTotal(displ))
+    {
+        node.SetValue(0, u(displ, node.GetDofNumber(0)));
+        node.SetValue(1, u(displ, node.GetDofNumber(1)));
+    }
+
     // ************************************************************************
     //      assemble and solve - TODO something like SolveStatic
     // ************************************************************************
@@ -280,11 +294,8 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
     Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
-    //since all rhs of the constraints are zero, no need to add this terms
-    Eigen::VectorXd deltaDisplacements = cMatUnit * deltaDisplacementsMod;
-
-    DofVector<double> u;
-    u[displ] = -deltaDisplacements;
+    Eigen::VectorXd deltaDisplacements = cMatUnit * (-deltaDisplacementsMod) + constraints.GetSparseGlobalRhs(displ, numDofs, t);
+    u[displ] = deltaDisplacements;
 
     // ************************************************************************
     //      merge dof values - TODO function MergeDofValues
