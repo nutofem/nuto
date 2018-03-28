@@ -21,6 +21,8 @@ public:
     //! @param tEnd end time
     void Solve(double tEnd);
 
+    void SetQuiet();
+
     double dt = 0.1;
     double dtMax = 0.1;
     double dtMin = 1.e-6;
@@ -31,5 +33,6 @@ public:
 private:
     std::function<int(double)> mDoStepFunction;
     std::function<void(double)> mPostProcess;
+    bool mPrintOutput = true;
 };
 } /* NuTo */

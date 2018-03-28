@@ -13,11 +13,10 @@ BOOST_AUTO_TEST_CASE(PointVisualizer)
     NuTo::Test::VisualizeTestStructure s;
     auto cells = s.Cells();
 
-    IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
-
+    Eigen::Vector2d a(0.5, 0.5);
     std::string filename = "PointHandlerOutput.vtu";
 
-    Visualizer visualize(cells, PointHandler(integrationType));
+    Visualizer visualize(cells, PointHandler({a, a, a, a}));
     visualize.WriteVtuFile(filename, false);
     UnstructuredGridCheck::CheckNum(filename, 8, 0);
 }
