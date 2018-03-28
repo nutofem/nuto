@@ -16,7 +16,7 @@ AdaptiveSolve::AdaptiveSolve(std::function<int(double)> doStepFunction, std::fun
 
 void AdaptiveSolve::Solve(double tEnd)
 {
-    Timer timer(__PRETTY_FUNCTION__, true);
+    Timer timer(__PRETTY_FUNCTION__, mPrintOutput);
     double t = 0;
     int iStep = 0;
 
@@ -24,13 +24,15 @@ void AdaptiveSolve::Solve(double tEnd)
 
     while (true)
     {
-        std::cout << "Step " << iStep << " at t = " << t << " with dt = " << dt << ".\n";
+        if (mPrintOutput)
+            std::cout << "Step " << iStep << " at t = " << t << " with dt = " << dt << ".\n";
 
         try
         {
             int numIterations = mDoStepFunction(t + dt);
 
-            std::cout << "Converence after " << numIterations << " iterations.\n";
+            if (mPrintOutput)
+                std::cout << "Converence after " << numIterations << " iterations.\n";
             t += dt;
             iStep++;
             mPostProcess(t);
@@ -42,8 +44,9 @@ void AdaptiveSolve::Solve(double tEnd)
             {
                 dt *= increaseFactor;
                 dt = std::min(dt, dtMax);
-                std::cout << rang::fg::green << rang::style::bold << "Increasing time step to " << dt
-                          << rang::style::reset << '\n';
+                if (mPrintOutput)
+                    std::cout << rang::fg::green << rang::style::bold << "Increasing time step to " << dt
+                              << rang::style::reset << '\n';
             }
 
             if (t + dt > tEnd)
@@ -52,8 +55,9 @@ void AdaptiveSolve::Solve(double tEnd)
         catch (NewtonRaphson::NoConvergence& e)
         {
             dt *= decreaseFactor;
-            std::cout << rang::fg::red << rang::style::bold << "Decreasing time step to " << dt << rang::style::reset
-                      << '\n';
+            if (mPrintOutput)
+                std::cout << rang::fg::red << rang::style::bold << "Decreasing time step to " << dt
+                          << rang::style::reset << '\n';
 
             if (dt < dtMin)
                 throw Exception(__PRETTY_FUNCTION__,
@@ -61,5 +65,11 @@ void AdaptiveSolve::Solve(double tEnd)
             continue; // without updating the global time
         }
     }
-    std::cout << "Sucessfully reached time t = " << tEnd << "!\n";
+    if (mPrintOutput)
+        std::cout << "Sucessfully reached time t = " << tEnd << "!\n";
+}
+
+void AdaptiveSolve::SetQuiet()
+{
+    mPrintOutput = false;
 }
