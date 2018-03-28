@@ -69,6 +69,9 @@ public:
     //! @return group containing all element collections
     Group<ElementCollectionFem> ElementsTotal();
 
+    //! Adds `numInstances` instances of zeros to all nodes of type `dofType`
+    //! @param dofType dof type
+    void AllocateDofInstances(DofType dofType, int numInstances);
 
 public:
     ValueVector<NodeSimple> Nodes;

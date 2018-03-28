@@ -1,12 +1,13 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <vector>
 #include <cassert>
 
 namespace NuTo
 {
 //! @brief Store node values and its dof
-//! @todo time derivatives? fix sized nodes?
+//! @todo fix sized nodes?
 class NodeSimple
 {
 public:
@@ -15,7 +16,7 @@ public:
     //! @remark this magic number `-1` indicates an uninitialized state. I was not able to declare a static variable
     //! NOT_SET=-1. Maybe someone else can help.
     NodeSimple(Eigen::VectorXd values)
-        : mValues(values)
+        : mValues({values})
         , mDofNumbers(Eigen::VectorXi::Constant(values.rows(), -1))
     {
     }
@@ -23,15 +24,33 @@ public:
     //! @brief initializes a 1D node with `value` and a dof number 0
     //! @param value initial node value
     NodeSimple(double value)
-        : mValues(Eigen::VectorXd::Constant(1, value))
+        : mValues({Eigen::VectorXd::Constant(1, value)})
         , mDofNumbers(Eigen::VectorXi::Zero(1))
     {
     }
 
-
-    const Eigen::VectorXd& GetValues() const
+    NodeSimple(int dimension, int numInstances)
+        : mValues(numInstances, Eigen::VectorXd::Zero(dimension))
+        , mDofNumbers(Eigen::VectorXi::Constant(dimension, -1))
     {
-        return mValues;
+    }
+
+    //! Allocates `numInstances` full of zeros
+    void AllocateInstances(int numInstances)
+    {
+        assert(numInstances > 0);
+        mValues.resize(numInstances, Eigen::VectorXd::Zero(mValues[0].size()));
+    }
+
+    int GetNumInstances() const
+    {
+        return mValues.size();
+    }
+
+    const Eigen::VectorXd& GetValues(int instance = 0) const
+    {
+        assert(instance < static_cast<int>(mValues.size()));
+        return mValues[instance];
     }
 
     int GetDofNumber(int component) const
@@ -40,16 +59,18 @@ public:
         return mDofNumbers[component];
     }
 
-    void SetValues(Eigen::VectorXd values)
+    void SetValues(Eigen::VectorXd values, int instance = 0)
     {
-        assert(values.size() == mValues.size());
-        mValues = values;
+        assert(instance < static_cast<int>(mValues.size()));
+        assert(values.size() == mValues[instance].size());
+        mValues[instance] = values;
     }
 
-    void SetValue(int component, double value)
+    void SetValue(int component, double value, int instance = 0)
     {
+        assert(instance < static_cast<int>(mValues.size()));
         assert(component < mDofNumbers.rows());
-        mValues[component] = value;
+        mValues[instance][component] = value;
     }
 
     void SetDofNumber(int component, int dofNumber)
@@ -60,11 +81,11 @@ public:
 
     int GetNumValues() const
     {
-        return mValues.rows();
+        return mValues[0].rows();
     }
 
 private:
-    Eigen::VectorXd mValues;
+    std::vector<Eigen::VectorXd> mValues;
     Eigen::VectorXi mDofNumbers;
 };
 } /* NuTo */

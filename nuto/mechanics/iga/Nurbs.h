@@ -83,7 +83,7 @@ public:
         return knots;
     }
 
-    Eigen::VectorXd GetControlPointsElement(const std::array<int, TDimParameter>& knotID) const;
+    Eigen::VectorXd GetControlPointsElement(const std::array<int, TDimParameter>& knotID, int instance = 0) const;
     /** Evaluation **/
 
     Eigen::VectorXd Evaluate(const Eigen::Matrix<double, TDimParameter, 1>& parameter, int derivativeOrder = 0) const
@@ -337,7 +337,7 @@ private:
 };
 
 template <>
-inline Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID) const
+inline Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID, int instance) const
 {
     assert(knotID[0] >= mDegree[0]);
     int dim = GetDimension();
@@ -347,13 +347,13 @@ inline Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1
     Eigen::VectorXd nodeValues(numCPs * dim);
 
     for (int i = 0; i < numCPs; i++)
-        nodeValues.segment(dim * i, dim) = mControlPoints[0][knotID[0] - mDegree[0] + i]->GetValues();
+        nodeValues.segment(dim * i, dim) = mControlPoints[0][knotID[0] - mDegree[0] + i]->GetValues(instance);
 
     return nodeValues;
 }
 
 template <>
-inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID) const
+inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID, int instance) const
 {
     assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
     int dim = GetDimension();
@@ -368,7 +368,7 @@ inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2
         for (int j = 0; j <= mDegree[0]; j++)
         {
             nodeValues.segment(count, dim) =
-                    mControlPoints[knotID[1] - mDegree[1] + i][knotID[0] - mDegree[0] + j]->GetValues();
+                    mControlPoints[knotID[1] - mDegree[1] + i][knotID[0] - mDegree[0] + j]->GetValues(instance);
             count += dim;
         }
     }

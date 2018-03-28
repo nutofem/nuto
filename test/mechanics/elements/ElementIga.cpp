@@ -58,3 +58,22 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
     param << 0.375;
     BoostUnitTest::CheckVector(result, curve.Evaluate(param), 2);
 }
+
+BOOST_AUTO_TEST_CASE(ExtractNodeValuesInstance)
+{
+    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
+    NuTo::NodeSimple n1 = NuTo::NodeSimple(2, 2);
+    NuTo::NodeSimple n2 = NuTo::NodeSimple(2, 2);
+
+    n1.SetValues(Eigen::Vector2d(11, 12), 1);
+    n2.SetValues(Eigen::Vector2d(13, 14), 1);
+    controlPoints.push_back({&n1, &n2});
+
+    std::vector<double> knots1D = {0, 0, 1, 1};
+    std::vector<double> weights1D = {1, std::sqrt(2) / 2};
+
+    NuTo::Nurbs<1> curve({knots1D}, controlPoints, {weights1D}, {1});
+
+    NuTo::ElementIga<1> iga({1}, curve);
+    BoostUnitTest::CheckEigenMatrix(iga.ExtractNodeValues(1), Eigen::Vector4d(11, 12, 13, 14));
+}

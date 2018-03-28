@@ -11,7 +11,7 @@ public:
     virtual ~ElementInterface() noexcept = default;
 
     //! @brief extracts all node values of this element
-    virtual NodeValues ExtractNodeValues() const = 0;
+    virtual NodeValues ExtractNodeValues(int instance = 0) const = 0;
 
     virtual int GetDofDimension() const = 0;
 
