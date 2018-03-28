@@ -30,11 +30,17 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     double L = 40;
     auto material = Material::DefaultConcrete();
-    material.gf = 0.021 * 10;
+    using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Decreasing>;
+    // The global fracture energy Gf is influenced by the nonlocal parameter. A smaller nonlocal parameter (due to
+    // decreasing interaction) results in a smaller Gf. Not adapting the material parameter gf will result in
+    //  1) an unexpected (wrong) global Gf (not crucial for this test)
+    //  2) a snap-back that causes the direct displacement controlled test to not converge. Problem.
+    // The factor 10 is by no means accurate. It just avoids the snap back.
+    double gfNonlocalDecreasingInteractionFactor = 10;
+    material.gf *= gfNonlocalDecreasingInteractionFactor;
     material.c = 0.25;
     double k0 = material.ft / material.E;
 
-    using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Decreasing>;
     Gdm gdm(d, eeq, material);
 
     /* mesh, interpolations, constraints */
@@ -153,7 +159,6 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
 
     auto material = Material::DefaultConcrete();
-    material.gf = 0.21;
     material.c = 2;
 
     DofType d("Displacements", 2);
@@ -202,7 +207,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
 
     using namespace NuTo::Visualize;
-    PostProcess visu("./GradientDamageOutDecreasing2D");
+    PostProcess visu("./GradientDamageOut2D");
     visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
