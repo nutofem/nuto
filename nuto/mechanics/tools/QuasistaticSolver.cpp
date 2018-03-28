@@ -47,14 +47,11 @@ void QuasistaticSolver::SetGlobalTime(double globalTime)
     mGlobalTime = globalTime;
 }
 
-std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd>
-QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, double timeStep)
+std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd> QuasistaticSolver::TrialSystem(double globalTime,
+                                                                                       double timeStep)
 {
-
-    DofVector<double> v(ToDofVector(x));
-
-    auto hessian0 = mProblem.Hessian0(v, mDofs, globalTime, timeStep);
-    auto hessian0Eigen= ToEigen(hessian0, mDofs);
+    auto hessian0 = mProblem.Hessian0(mX, mDofs, globalTime, timeStep);
+    auto hessian0Eigen = ToEigen(hessian0, mDofs);
     auto cMatUnit = ToEigen(mCmatUnit, mDofs);
 
     Eigen::SparseMatrix<double> hessianMod = cMatUnit.transpose() * hessian0Eigen * cMatUnit;
@@ -62,8 +59,8 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
     DofVector<double> deltaBrhs;
     for (auto dof : mDofs)
     {
-        deltaBrhs[dof] = mConstraints.GetSparseGlobalRhs(dof, v[dof].rows(),globalTime + timeStep) -
-                mConstraints.GetSparseGlobalRhs(dof, v[dof].rows(),globalTime);
+        deltaBrhs[dof] = mConstraints.GetSparseGlobalRhs(dof, mX[dof].rows(), globalTime + timeStep) -
+                         mConstraints.GetSparseGlobalRhs(dof, mX[dof].rows(), globalTime);
     }
 
     Eigen::VectorXd residualConstrained = cMatUnit.transpose() * hessian0Eigen * ToEigen(deltaBrhs, mDofs);
@@ -74,7 +71,7 @@ QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, doub
 Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
 {
     auto gradient = mProblem.Gradient(ToDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
-    return ToEigen(mCmatUnit, mDofs).transpose() * ToEigen(gradient, mDofs) ;
+    return ToEigen(mCmatUnit, mDofs).transpose() * ToEigen(gradient, mDofs);
 }
 
 
@@ -105,18 +102,18 @@ void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::Vecto
 
 DofVector<double> QuasistaticSolver::ToDofVector(const Eigen::VectorXd& x) const
 {
-    //this result includes now all dependent and independent dofs for all active dof types
+    // this result includes now all dependent and independent dofs for all active dof types
     auto cMatUnit = ToEigen(mCmatUnit, mDofs);
-    Eigen::VectorXd fullX = cMatUnit.transpose() * x;
+    Eigen::VectorXd fullX = cMatUnit * x;
 
     for (auto dof : mDofs)
     {
-        //add the rhs of the constraint equations
+        // add the rhs of the constraint equations
         // [d_j,d_k]^T = CmatUnit * d_j (above) + b
         // since b is stored for each dof_type separately, do it in the loop
         // fullVecor.rows() is the size of the current vector including dependent and independent
         //    components of only the active dofs
-        fullX+= mConstraints.GetSparseGlobalRhs(dof, fullX.rows(), mGlobalTime + mTimeStep);
+        fullX += mConstraints.GetSparseGlobalRhs(dof, fullX.rows(), mGlobalTime + mTimeStep);
     }
 
     // for correct size, copy the inactive dofs
@@ -133,7 +130,7 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
     /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right now.
      * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to apply
      * constraints for t + dt + dt. */
-    auto residual = mProblem.Gradient(mX, {dofType}, mGlobalTime-mTimeStep, mTimeStep);
+    auto residual = mProblem.Gradient(mX, {dofType}, mGlobalTime - mTimeStep, mTimeStep);
 
     double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
@@ -148,8 +145,11 @@ int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
     EigenSparseSolver solver(solverType);
 
     mTimeStep = newGlobalTime - mGlobalTime;
-    auto trialSystem = TrialSystem(ToEigen(mX, mDofs), mGlobalTime, mTimeStep);
+    auto trialSystem = TrialSystem(mGlobalTime, mTimeStep);
 
+    // here is still a problem, since ToEigen(mX, mDofs) returns all dofs, whereas the solver just returns the
+    // independent part
+    throw;
     Eigen::VectorXd trialX = ToEigen(mX, mDofs) + solver.Solve(trialSystem.first, trialSystem.second);
 
     int numIterations = 0;

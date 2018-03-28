@@ -28,11 +28,9 @@ public:
 
     //! builds the trial system where its residual contains forces equivialent to the applied constraints from time step
     //! t_n to t_n+1
-    //! @param x independent dof values corresponding to globalTime
     //! @param globalTime t_n
     //! @param timeStep t_n+1 - t_n
-    std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd> TrialSystem(const Eigen::VectorXd& x, double globalTime,
-                                                                        double timeStep);
+    std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd> TrialSystem(double globalTime, double timeStep);
 
     //! calculates and stores the history variables for the state x
     //! @param x independent dof values

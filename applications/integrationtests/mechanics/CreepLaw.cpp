@@ -235,6 +235,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
     // DOF numbering %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
 
 
     // Create law %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -280,7 +281,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
     constexpr double rhsForce = 2000.;
     DofVector<double> extF;
-    extF[displ].setZero(dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]);
+    extF[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
     NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
     extF[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
@@ -293,7 +294,8 @@ BOOST_AUTO_TEST_CASE(History_Data)
     double time = 0.;
     delta_t = 0.01;
 
-    auto cMatUnit(constraints.BuildUnitConstraintMatrix2({displ}, dofInfo.numIndependentDofs[displ]+dofInfo.numDependentDofs[displ]));
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix2(
+            {displ}, dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]));
 
     while (time < timeFinal)
     {
@@ -302,7 +304,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
         // Calculate residual %%%%%%%%%%%%%%%%%%%
         DofVector<double> gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-        Eigen::VectorXd residualMod = cMatUnit.transpose() * ((gradient-extF)[displ]);
+        Eigen::VectorXd residualMod = cMatUnit.transpose() * ((gradient - extF)[displ]);
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
         while (numIter < maxIter && residualMod.lpNorm<Infinity>() > 1e-9)
@@ -312,14 +314,15 @@ BOOST_AUTO_TEST_CASE(History_Data)
             DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
 
             // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
-            auto hessianMod = cMatUnit.transpose() * hessian(displ, displ)* cMatUnit;
+            auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
             Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
 
-            //since all rhs of the constraints are zero, no need to add this terms
-            Eigen::VectorXd deltaDisplacements = cMatUnit.transpose() * deltaDisplacementsMod;
+            // compute full solution vector (dependent and independent dofs)
+            Eigen::VectorXd deltaDisplacements =
+                    cMatUnit * -deltaDisplacementsMod + constraints.GetSparseGlobalRhs(displ, numDofs, time);
 
             // for correct size, copy the inactive dofs
-            solution[displ] -= deltaDisplacements;
+            solution[displ] += deltaDisplacements;
 
             // Merge dof values %%%%%%%%%%%%%%%%%
             for (NodeSimple& node : mesh.NodesTotal(displ))
@@ -330,7 +333,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
             // Calculate new residual %%%%%%%%%%%
             gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-            residualMod = cMatUnit.transpose() * ((gradient-extF)[displ]);
+            residualMod = cMatUnit.transpose() * ((gradient - extF)[displ]);
         }
         if (numIter >= maxIter)
         {
@@ -344,7 +347,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
         // Store rhs displacement %%%%%%%%%%%%%%%
         if (std::abs(time - std::round(time)) < delta_t / 2.) // <--- store only if time is an integer
-            rhsDispNumerical.push_back(solution[displ].tail<1>()[0]);
+            rhsDispNumerical.push_back(solution[displ][nodeRight.GetDofNumber(0)]);
     }
 
     // Theoretical solution %%%%%%%%%%%%%%%%%%%%%
