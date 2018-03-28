@@ -24,6 +24,8 @@
 
 - @ref UploadDockerImage
 
+- @ref CustomRepoGuide
+
 ### NuTo related documentation
 
 - @ref ConstitutiveStaticData
