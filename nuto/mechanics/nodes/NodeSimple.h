@@ -7,7 +7,7 @@
 namespace NuTo
 {
 //! @brief Store node values and its dof
-//! @todo time derivatives? fix sized nodes?
+//! @todo fix sized nodes?
 class NodeSimple
 {
 public:
