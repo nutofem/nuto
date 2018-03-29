@@ -65,6 +65,7 @@ private:
     DofVector<double> mVector;
 };
 
+
 class MatrixAssembler
 {
 public:
@@ -100,6 +101,33 @@ public:
                         const int globalCol = numberingCol[localCol];
                         const double value = matrixDof(localRow, localCol);
                         tripletListDof.push_back({globalRow, globalCol, value});
+                    }
+                }
+            }
+        }
+    }
+
+    static void Add(DofMatrixSparse<double>& rSparseMatrix, const DofMatrix<double>& m, const DofVector<int>& numbering,
+                    std::vector<DofType> dofTypes = {})
+    {
+        auto availableDofTypes = AvailableDofTypes(numbering, dofTypes);
+        for (const auto& dofTypeRow : availableDofTypes)
+        {
+            for (const auto& dofTypeCol : availableDofTypes)
+            {
+                auto& sparseMatrixDof = rSparseMatrix(dofTypeRow, dofTypeCol);
+                const auto& matrixDof = m(dofTypeRow, dofTypeCol);
+                const auto& numberingRow = numbering[dofTypeRow];
+                const auto& numberingCol = numbering[dofTypeCol];
+
+                for (unsigned localRow = 0; localRow < numberingRow.size(); ++localRow)
+                {
+                    for (unsigned localCol = 0; localCol < numberingCol.size(); ++localCol)
+                    {
+                        const int globalRow = numberingRow[localRow];
+                        const int globalCol = numberingCol[localCol];
+                        const double value = matrixDof(localRow, localCol);
+                        sparseMatrixDof.coeffRef(globalRow, globalCol) += value;
                     }
                 }
             }
