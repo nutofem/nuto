@@ -1,5 +1,4 @@
 #pragma once
-#include "nuto/mechanics/dofs/DofInfo.h"
 #include "nuto/mechanics/dofs/DofContainer.h"
 #include "nuto/mechanics/dofs/DofVector.h"
 #include "nuto/mechanics/dofs/DofMatrix.h"
@@ -8,180 +7,79 @@
 namespace NuTo
 {
 
-std::vector<DofType> AvailableDofTypes(const DofVector<int> n, std::vector<DofType> dofTypes)
-{
-    if (dofTypes.empty())
-        return n.DofTypes();
-
-    std::vector<DofType> intersection;
-    for (const auto& dofTypeRow : n.DofTypes())
-        for (const auto& dofTypeCol : dofTypes)
-            if (dofTypeRow.Id() == dofTypeCol.Id())
-            {
-                intersection.push_back(dofTypeRow);
-                continue;
-            }
-    return intersection;
-}
-
+//! Assembles an internal NuTo::DofVector<double> from arbitrary contributions and provides access to it
 class VectorAssembler
 {
 public:
-    VectorAssembler(DofContainer<int> sizes = {})
-    {
-        Resize(sizes);
-    }
+    //! ctor
+    //! @param sizes number of global dofs for each dof type
+    VectorAssembler(DofContainer<int> sizes = {});
 
-    void Resize(DofContainer<int> sizes)
-    {
-        for (auto dofSize : sizes)
-            mVector[dofSize.first].setZero(dofSize.second);
-    }
+    //! resizes the internal DofVector
+    //! @param sizes number of global dofs for each dof type
+    void Resize(DofContainer<int> sizes);
 
-    void Add(const DofVector<double>& v, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {})
-    {
-        for (const auto& dofType : AvailableDofTypes(numbering, dofTypes))
-        {
-            for (unsigned localDofNumber = 0; localDofNumber < numbering[dofType].size(); ++localDofNumber)
-            {
-                const int globalDofNumber = numbering[dofType][localDofNumber];
-                mVector[dofType][globalDofNumber] += v[dofType][localDofNumber];
-            }
-        }
-    }
+    //! adds an arbitrary contribution `v` to the internal DofVector
+    //! @param v contribution, e.g. a local element/cell vector
+    //! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+    //! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+    //! numbering
+    void Add(const DofVector<double>& v, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {});
 
-    void Reset()
-    {
-        for (const auto& dofType : mVector.DofTypes())
-            mVector[dofType].setZero();
-    }
+    //! sets the entries of the internal DofVector to zero
+    void SetZero();
 
-    const DofVector<double>& Get() const
-    {
-        return mVector;
-    }
+    //! getter
+    //! @return current state of the internal DofVector
+    const DofVector<double>& Get() const;
 
 private:
     DofVector<double> mVector;
 };
 
 
+//! Assembles an internal NuTo::DofMatrixSparse<double> from arbitrary contributions and provides access to it
+//! @remark an interal flag distinguishes from the first assembly (into triplet lists) and any other assemblies
+//! (directly into the existsing nonzero entries)
 class MatrixAssembler
 {
 public:
-    MatrixAssembler(DofContainer<int> sizes = {})
-    {
-        Resize(sizes);
-    }
+    //! ctor
+    //! @param sizes number of global dofs for each dof type
+    MatrixAssembler(DofContainer<int> sizes = {});
 
-    void Resize(DofContainer<int> sizes)
-    {
-        if (mFinished)
-            throw Exception(__PRETTY_FUNCTION__,
-                            "You are not allowed to resize the assembler matrix once ::Finished() is called.");
+    //! resizes the internal DofMatrixSparse
+    //! @param sizes number of global dofs for each dof type
+    void Resize(DofContainer<int> sizes);
 
-        for (auto dofTypeRow : sizes)
-            for (auto dofTypeCol : sizes)
-                mMatrix(dofTypeRow.first, dofTypeCol.first).resize(dofTypeRow.second, dofTypeCol.second);
-    }
+    //! adds an arbitrary contribution `m` to the internal DofMatrixSparse
+    //! @param m contribution, e.g. a local element/cell matrix
+    //! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+    //! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+    //! numbering
+    void Add(const DofMatrix<double>& m, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {});
 
-    void Add(const DofMatrix<double>& m, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {})
-    {
-        if (mFinished)
-        {
-            // We can now assemble in the exising nonzeros of this->mMatrix
-            MatrixAssembler::Add(mMatrix, m, numbering, dofTypes);
-            return;
-        }
-
-        auto availableDofTypes = AvailableDofTypes(numbering, dofTypes);
-        for (const auto& dofTypeRow : availableDofTypes)
-        {
-            for (const auto& dofTypeCol : availableDofTypes)
-            {
-                auto& tripletListDof = mTriplets(dofTypeRow, dofTypeCol);
-                const auto& matrixDof = m(dofTypeRow, dofTypeCol);
-                const auto& numberingRow = numbering[dofTypeRow];
-                const auto& numberingCol = numbering[dofTypeCol];
-
-                for (unsigned localRow = 0; localRow < numberingRow.size(); ++localRow)
-                {
-                    for (unsigned localCol = 0; localCol < numberingCol.size(); ++localCol)
-                    {
-                        const int globalRow = numberingRow[localRow];
-                        const int globalCol = numberingCol[localCol];
-                        const double value = matrixDof(localRow, localCol);
-                        tripletListDof.push_back({globalRow, globalCol, value});
-                    }
-                }
-            }
-        }
-    }
-
+    //! adds an arbitrary contribution `m` to `rSparseMatrix`
+    //! @param m contribution, e.g. a local element/cell matrix
+    //! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+    //! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+    //! numbering
     static void Add(DofMatrixSparse<double>& rSparseMatrix, const DofMatrix<double>& m, const DofVector<int>& numbering,
-                    std::vector<DofType> dofTypes = {})
-    {
-        auto availableDofTypes = AvailableDofTypes(numbering, dofTypes);
-        for (const auto& dofTypeRow : availableDofTypes)
-        {
-            for (const auto& dofTypeCol : availableDofTypes)
-            {
-                auto& sparseMatrixDof = rSparseMatrix(dofTypeRow, dofTypeCol);
-                const auto& matrixDof = m(dofTypeRow, dofTypeCol);
-                const auto& numberingRow = numbering[dofTypeRow];
-                const auto& numberingCol = numbering[dofTypeCol];
+                    std::vector<DofType> dofTypes = {});
 
-                for (unsigned localRow = 0; localRow < numberingRow.size(); ++localRow)
-                {
-                    for (unsigned localCol = 0; localCol < numberingCol.size(); ++localCol)
-                    {
-                        const int globalRow = numberingRow[localRow];
-                        const int globalCol = numberingCol[localCol];
-                        const double value = matrixDof(localRow, localCol);
-                        sparseMatrixDof.coeffRef(globalRow, globalCol) += value;
-                    }
-                }
-            }
-        }
-    }
+    //! sets the entries of the internal DofMatrixSparse to zero but keeps the nonzeros
+    void SetZero();
 
-    void Reset()
-    {
-        for (auto dofTypeRow : mMatrix.DofTypes())
-            for (auto dofTypeCol : mMatrix.DofTypes())
-                mMatrix(dofTypeRow, dofTypeCol).setZero();
-    }
+    //! transforms the internal triplet lists into an DofMatrixSparse and drops the triplet lists
+    //! @remark calling this method indicates that the position of the nonzeros are now fixed
+    void Finish();
 
-    void Finish()
-    {
-        for (auto dofTypeRow : mMatrix.DofTypes())
-        {
-            for (auto dofTypeCol : mMatrix.DofTypes())
-            {
-                auto& tripletListDof = mTriplets(dofTypeRow, dofTypeCol);
-                auto& matrix = mMatrix(dofTypeRow, dofTypeCol);
-                matrix.setFromTriplets(tripletListDof.begin(), tripletListDof.end());
-                matrix.makeCompressed();
-                tripletListDof.clear();
-                tripletListDof.shrink_to_fit();
-            }
-        }
-        mFinished = true;
-    }
-
-    const DofMatrixSparse<double>& Get() const
-    {
-        if (not mFinished)
-            throw Exception(__PRETTY_FUNCTION__, "You have to call ::Finish() first to complete the assembly!");
-        return mMatrix;
-    }
+    //! @return current state of the internal DofMatrixSparse
+    const DofMatrixSparse<double>& Get() const;
 
 private:
-    using TripletList = std::vector<Eigen::Triplet<double>>;
-    DofMatrixContainer<TripletList> mTriplets;
-
+    DofMatrixContainer<std::vector<Eigen::Triplet<double>>> mTriplets;
     DofMatrixSparse<double> mMatrix;
-
     bool mFinished = false;
 };
 

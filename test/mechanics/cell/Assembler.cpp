@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(VectorAssembly)
 
     BoostUnitTest::CheckVector(vectorAssembler.Get()[d], std::vector<double>{1, 2, 3 + 1, 2, 3}, 5);
 
-    vectorAssembler.Reset();
+    vectorAssembler.SetZero();
     BoostUnitTest::CheckVector(vectorAssembler.Get()[d], std::vector<double>{0, 0, 0, 0, 0}, 5);
 }
 
@@ -59,8 +59,10 @@ BOOST_AUTO_TEST_CASE(MatrixAssembly)
     matrixAssembler.Add(m, numbering0);
     matrixAssembler.Add(m, numbering1);
     BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(matrixAssembler.Get()(d, d)), 2 * expected);
+    matrixAssembler.Finish(); // should not change anything
+    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(matrixAssembler.Get()(d, d)), 2 * expected);
 
-    matrixAssembler.Reset();
+    matrixAssembler.SetZero();
     BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(matrixAssembler.Get()(d, d)), Eigen::MatrixXd::Zero(5, 5));
 
 
