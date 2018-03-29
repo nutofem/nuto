@@ -145,7 +145,7 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
 
     for (auto& elementCollection : rMesh->Elements)
     {
-        const NuTo::ElementFem& coordinateElement = elementCollection.CoordinateElement();
+        const NuTo::ElementFem<NuTo::NodeSimple>& coordinateElement = elementCollection.CoordinateElement();
 
         if (!elementCollection.Has(dofType))
             continue;
@@ -205,7 +205,7 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
                 nodesForTheNewlyCreatedElement.push_back(&node);
             }
         }
-        elementCollection.AddDofElement(dofType, ElementFem(nodesForTheNewlyCreatedElement, interpolation));
+        elementCollection.AddDofElement(dofType, ElementFem<NodeSimple>(nodesForTheNewlyCreatedElement, interpolation));
     }
 }
 

@@ -104,7 +104,7 @@ private:
     const Shape& mShape;
 };
 
-using ElementCollectionFem = ElementCollectionImpl<NuTo::ElementFem>;
+using ElementCollectionFem = ElementCollectionImpl<NuTo::ElementFem<NodeSimple>>;
 
 template <int TDimParameter>
 using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParameter>>;

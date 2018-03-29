@@ -10,20 +10,20 @@
 namespace NuTo
 {
 
+template <typename TNode>
 class ElementFem : public ElementInterface
 {
 public:
-    ElementFem(std::vector<NodeSimple*> nodes, const InterpolationSimple& interpolation)
+    ElementFem(std::vector<TNode*> nodes, const InterpolationSimple& interpolation)
         : mInterpolation(interpolation)
         , mShape(interpolation.GetShape())
     {
-        for (NodeSimple* node : nodes)
+        for (TNode* node : nodes)
             mNodes.push_back(*node);
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
-               const InterpolationSimple& interpolation)
+    ElementFem(std::initializer_list<std::reference_wrapper<TNode>> nodes, const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
         , mShape(interpolation.GetShape())
@@ -85,14 +85,14 @@ public:
         return mInterpolation;
     }
 
-    NodeSimple& GetNode(int i)
+    TNode& GetNode(int i)
     {
         assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
 
-    const NodeSimple& GetNode(int i) const
+    const TNode& GetNode(int i) const
     {
         assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
@@ -104,7 +104,7 @@ public:
     }
 
 private:
-    std::vector<std::reference_wrapper<NodeSimple>> mNodes;
+    std::vector<std::reference_wrapper<TNode>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
     const Shape& mShape;
 };
