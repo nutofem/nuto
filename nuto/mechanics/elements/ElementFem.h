@@ -9,6 +9,12 @@
 
 namespace NuTo
 {
+template <typename TNode>
+class ElementFem;
+
+typedef ElementFem<NodeCoordinates> CoordinateElementFem;
+typedef ElementFem<NodeSimple> DofElementFem;
+
 
 template <typename TNode>
 class ElementFem : public ElementInterface
