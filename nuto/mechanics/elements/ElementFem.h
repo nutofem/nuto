@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
 #include "nuto/mechanics/nodes/NodeSimple.h"
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
