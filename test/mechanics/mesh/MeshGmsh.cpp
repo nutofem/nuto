@@ -26,7 +26,7 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
     MeshGmsh m(meshFile);
     auto& meshFem = m.GetMeshFEM();
     BOOST_CHECK_EQUAL(meshFem.Nodes.Size(), numNodesExpected);
-    const ElementFem& element = meshFem.Elements.begin()->CoordinateElement();
+    const DofElementFem& element = meshFem.Elements.begin()->CoordinateElement();
     const auto& interpolation = element.Interpolation();
     BOOST_CHECK_EQUAL(interpolation.GetNumNodes(), numNodesExpected);
 
