@@ -48,6 +48,18 @@ Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int num
     return globalVector;
 }
 
+void Constraints::AddRhs(DofType dof, double time, Eigen::VectorXd* destination) const
+{
+    if (not mEquations.Has(dof))
+        return;
+
+    const Equations& equations = mEquations[dof];
+    for (auto& eq : equations)
+    {
+        (*destination)[eq.GetDependentDofNumber()] = eq.GetRhs(time);
+    }
+}
+
 Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof, int numDofs) const
 {
     if (not mEquations.Has(dof))
@@ -152,3 +164,4 @@ void Constraints::TermChecker::CheckEquation(Equation e)
     for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
         mOtherTerms.insert(e.GetTerms()[iNewTerm]);
 }
+

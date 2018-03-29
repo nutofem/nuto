@@ -82,9 +82,23 @@ public:
         return lhs;
     }
 
+    friend DofVector operator*(double scalar, DofVector rhs)
+    {
+        rhs *= scalar;
+        return rhs;
+    }
+
     double operator()(DofType dof, int globalDofNumber) const
     {
         return (*this)[dof][globalDofNumber];
+    }
+
+    void SetZero()
+    {
+        for (auto& entry : mData)
+        {
+            entry.second.setZero();
+        }
     }
 
     std::vector<double> operator()(DofType dof, std::vector<int> globalDofNumbers) const

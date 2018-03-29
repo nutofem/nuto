@@ -37,6 +37,8 @@ public:
     //! @return sparse rhs vector of the constraint equations
     Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
 
+    void AddRhs(DofType dof, double time, Eigen::VectorXd* destination) const;
+
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the independent dofs
     //! @param dof dof type
     //! @param numDofs number dofs for the dof type, required for a proper resize of the sparse matrix

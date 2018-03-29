@@ -30,29 +30,29 @@ public:
     //! t_n to t_n+1
     //! @param globalTime t_n
     //! @param timeStep t_n+1 - t_n
-    std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd> TrialSystem(double globalTime, double timeStep);
+    std::pair<DofMatrixSparse<double>, DofVector<double>> TrialSystem(double globalTime, double timeStep);
 
     //! calculates and stores the history variables for the state x
     //! @param x independent dof values
-    void UpdateHistory(const Eigen::VectorXd& x);
+    void UpdateHistory(const DofVector<double>& x);
 
-    //! evaluates the residual R(x), part of NuTo::NewtonRaphson::Problem
-    //! @param x independent dof values
-    Eigen::VectorXd Residual(const Eigen::VectorXd& x);
+    //! evaluates the residual R(u), part of NuTo::NewtonRaphson::Problem
+    //! @param u independent dof values
+    DofVector<double> Residual(const DofVector<double>& u);
 
     //! evaluates the derivative dR/dx, part of NuTo::NewtonRaphson::Problem
-    //! @param x independent dof values
-    Eigen::SparseMatrix<double> Derivative(const Eigen::VectorXd& x);
+    //! @param u independent dof values
+    DofMatrixSparse<double> Derivative(const DofVector<double>& u);
 
 
     //! evaluates the norm of R, part of NuTo::NewtonRaphson::Problem
     //! @param residual residual vector
-    double Norm(const Eigen::VectorXd& residual) const;
+    double Norm(const DofVector<double>& residual) const;
 
 
     //! prints values during the newton iterations, part of NuTo::NewtonRaphson::Problem
     //! @param r residual residual vector
-    void Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const;
+    void Info(int i, const DofVector<double>& x, const DofVector<double>& r) const;
 
 
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
@@ -78,9 +78,7 @@ public:
     void WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers);
 
 private:
-    DofVector<double> ToDofVector(const Eigen::VectorXd& x) const;
-
-    //! @var mX last updated dof state (including all active/inactive and dependent/independent)
+    //! @var mX last updated dof state
     DofVector<double> mX;
 
     TimeDependentProblem& mProblem;

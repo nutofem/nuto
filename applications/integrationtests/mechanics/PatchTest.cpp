@@ -154,32 +154,13 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     //                  assemble and solve
     // ************************************************************************
     SimpleAssembler assembler(dofInfo);
-    DofVector<double> solution;
-    solution[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
 
     DofVector<double> gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
     // the sign should change here and in the integrand Neumann
     gradient -= assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
     DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
-    // no hessian for the neumann bc integrand (external load)
-
-    // build the constraint (modified) hessians and gradient
-    // this should be moved the solver routine
-    // solution = solver.solve(fullhessian, fullgradient, constraints);
-    auto cMatUnit(constraints.BuildUnitConstraintMatrix2(
-            {displ}, dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]));
-
-    // the following line should all go to the solve routine, no need to deal with
-    // modified vectors and matrices
-    auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
-
-    Eigen::VectorXd residualMod = cMatUnit.transpose() * gradient[displ];
-    Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
-
-    // since all rhs of the constraints are zero, no need to add this terms
-    Eigen::VectorXd deltaDisplacements = cMatUnit * (-deltaDisplacementsMod);
-    solution[displ] = deltaDisplacements;
+    DofVector<double> solution = Solve(hessian, -1.0*gradient, constraints, {displ});
 
     // Merge dof values %%%%%%%%%%%%%%%%%
     for (NodeSimple& node : mesh.NodesTotal(displ))

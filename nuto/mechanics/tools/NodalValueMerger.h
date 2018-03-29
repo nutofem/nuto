@@ -11,12 +11,12 @@ public:
     NodalValueMerger(MeshFem* rMesh);
 
     //! Performs "NodeMerge", writes values from the solution vector to the nodes
-    //! @param new dof values
+    //! @param newValues new dof values
     //! @param dofs dof types to merge
     void Merge(const DofVector<double>& newValues, std::vector<DofType> dofs);
 
     //! Performs "NodeExtract", writes values from the solution vector to the nodes
-    //! @param rNewValues
+    //! @param rNewValues vector to fill the new values with
     //! @param dofs dof types to extract
     void Extract(DofVector<double>* rNewValues, std::vector<DofType> dofs);
 

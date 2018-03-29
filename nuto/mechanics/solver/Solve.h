@@ -7,12 +7,20 @@
 namespace NuTo
 {
 
-Eigen::VectorXd Solve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b);
+DofVector<double> Solve(const DofMatrixSparse<double>& K, const DofVector<double>& f, Constraint::Constraints& bcs,
+                        std::vector<DofType> dofs, std::string solver = "EigenSparseLU");
 
+class ConstrainedSystemSolver
+{
+public:
+    ConstrainedSystemSolver(Constraint::Constraints& bcs, std::vector<DofType> dofs, std::string solver);
+    DofVector<double> Solve(const DofMatrixSparse<double>& A, const DofVector<double>& b);
 
-// TODO: DofType, numIndependentDofs and time need to go eventually
-// DofVector<double> Solve(DofMatrixSparse<double> K, DofVector<double> f, Constraint::Constraints bcs, DofType dof,
-//                      int numIndependentDofs, double time, std::string solver="EigenSparseLU");
+private:
+    Constraint::Constraints& mBcs;
+    std::vector<DofType> mDofs;
+    std::string mSolver;
+};
 
 
 } // namespace NuTo
