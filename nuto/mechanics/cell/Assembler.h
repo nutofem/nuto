@@ -76,6 +76,10 @@ public:
 
     void Resize(DofContainer<int> sizes)
     {
+        if (mFinished)
+            throw Exception(__PRETTY_FUNCTION__,
+                            "You are not allowed to resize the assembler matrix once ::Finished() is called.");
+
         for (auto dofTypeRow : sizes)
             for (auto dofTypeCol : sizes)
                 mMatrix(dofTypeRow.first, dofTypeCol.first).resize(dofTypeRow.second, dofTypeCol.second);
@@ -83,6 +87,13 @@ public:
 
     void Add(const DofMatrix<double>& m, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {})
     {
+        if (mFinished)
+        {
+            // We can now assemble in the exising nonzeros of this->mMatrix
+            MatrixAssembler::Add(mMatrix, m, numbering, dofTypes);
+            return;
+        }
+
         auto availableDofTypes = AvailableDofTypes(numbering, dofTypes);
         for (const auto& dofTypeRow : availableDofTypes)
         {
@@ -147,16 +158,21 @@ public:
         {
             for (auto dofTypeCol : mMatrix.DofTypes())
             {
-                const auto& tripletListDof = mTriplets(dofTypeRow, dofTypeCol);
+                auto& tripletListDof = mTriplets(dofTypeRow, dofTypeCol);
                 auto& matrix = mMatrix(dofTypeRow, dofTypeCol);
                 matrix.setFromTriplets(tripletListDof.begin(), tripletListDof.end());
                 matrix.makeCompressed();
+                tripletListDof.clear();
+                tripletListDof.shrink_to_fit();
             }
         }
+        mFinished = true;
     }
 
     const DofMatrixSparse<double>& Get() const
     {
+        if (not mFinished)
+            throw Exception(__PRETTY_FUNCTION__, "You have to call ::Finish() first to complete the assembly!");
         return mMatrix;
     }
 
@@ -165,6 +181,8 @@ private:
     DofMatrixContainer<TripletList> mTriplets;
 
     DofMatrixSparse<double> mMatrix;
+
+    bool mFinished = false;
 };
 
 
