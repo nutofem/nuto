@@ -1,12 +1,12 @@
 macro(check_for_dependencies)
     include(CheckBoost)
 
-    find_package(MUMPS QUIET)
-    if(MUMPS_FOUND)
-        message(STATUS "MUMPS solver found.")
-    else()
-        warning("MUMPS solver not found - will not be available.")
-    endif()
+    #find_package(MUMPS QUIET)
+    #if(MUMPS_FOUND)
+    #    message(STATUS "MUMPS solver found.")
+    #else()
+    #    warning("MUMPS solver not found - will not be available.")
+    #endif()
 
     find_package(PARDISO QUIET)
     if(PARDISO_FOUND)
@@ -40,4 +40,12 @@ macro(check_for_dependencies)
     else()
         warning("SuiteSparse NOT found - certain solvers won't be available")
     endif()
+
+
+    find_package(MKL)
+    if(MKL_FOUND)
+        message(STATUS "Found Intel MKL")
+        
+    endif()
+
 endmacro()

@@ -11,6 +11,10 @@ endif()
 if(MUMPS_FOUND)
     target_link_libraries(EigenSparseSolve EigenMumpsSupport)
 endif()
+if(MKL_FOUND)
+    target_link_libraries(EigenSparseSolve ${mkl_link_libs})
+endif()
+
 
 add_unit_test(Legendre)
 add_unit_test(NaturalCoordinateMemoizer)

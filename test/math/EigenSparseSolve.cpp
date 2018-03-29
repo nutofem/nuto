@@ -1,3 +1,4 @@
+//#define EIGEN_USE_MKL_ALL
 #include "BoostUnitTest.h"
 #include "nuto/math/EigenSparseSolve.h"
 #include "nuto/base/Exception.h"
@@ -10,6 +11,8 @@ using namespace NuTo;
 struct LinearSystem
 {
     LinearSystem()
+        : b(3, -3, -2)
+        , expected_x(1, -2, -2)
     {
         A.resize(3, 3);
 
@@ -22,9 +25,6 @@ struct LinearSystem
         A.insert(2, 1) = -1.0;
         A.insert(2, 2) = 2.0;
         A.makeCompressed();
-
-        b << 3.0, -3.0, -2.0;
-        expected_x << 1.0, -2.0, -2.0;
     }
 
     Eigen::SparseMatrix<double> A;
@@ -62,6 +62,19 @@ BOOST_DATA_TEST_CASE(mumps, bdata::make(mumpsSolverNames), solver)
 {
     LinearSystem sys;
 #ifdef HAVE_MUMPS
+    auto x = EigenSparseSolve(sys.A, sys.b, solver);
+    BoostUnitTest::CheckVector(x, sys.expected_x, 3);
+#else
+    BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, solver), Exception);
+#endif
+}
+
+auto pardisoSolverNames = {"PardisoLU", "PardisoLLT", "PardisoLDLT"};
+
+BOOST_DATA_TEST_CASE(pardisotest, bdata::make(pardisoSolverNames), solver)
+{
+    LinearSystem sys;
+#ifdef HAVE_MKL
     auto x = EigenSparseSolve(sys.A, sys.b, solver);
     BoostUnitTest::CheckVector(x, sys.expected_x, 3);
 #else

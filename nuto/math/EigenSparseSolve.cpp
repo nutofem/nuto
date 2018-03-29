@@ -10,6 +10,10 @@
 #include <Eigen/CholmodSupport>
 #endif
 
+#ifdef HAVE_MKL
+#include <Eigen/PardisoSupport>
+#endif
+
 #ifdef HAVE_MUMPS
 #include "MUMPSSupport"
 #endif
@@ -66,6 +70,19 @@ Eigen::VectorXd EigenSparseSolve(const Eigen::SparseMatrix<double>& A, const Eig
     if (solver == "MumpsLU" or solver == "MUMPSLDLT")
         throw Exception("NuTo has not been compiled with MUMPS.");
 #endif
+
+#ifdef HAVE_MKL
+    if (solver == "PardisoLU")
+        return SolveWithSolver<Eigen::PardisoLU<Eigen::SparseMatrix<double>>>(A, b);
+    if (solver == "PardisoLLT")
+        return SolveWithSolver<Eigen::PardisoLLT<Eigen::SparseMatrix<double>, Eigen::Upper>>(A, b);
+    if (solver == "PardisoLDLT")
+        return SolveWithSolver<Eigen::PardisoLDLT<Eigen::SparseMatrix<double>, Eigen::Upper>>(A, b);
+#else
+    if (solver == "PardisoLU" or solver == "PardisoLLT" or solver == "PardisoLDLT")
+        throw Exception("NuTo has not been compiled with MKL.");
+#endif
+
     throw Exception("Unknown solver. Are you sure you spelled it correctly?");
 }
 

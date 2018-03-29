@@ -32,6 +32,11 @@ namespace NuTo
 //! ### [MUMPS](http://mumps.enseeiht.fr/) solvers:
 //! - `MumpsLU`
 //! - `MumpsLDLT`
+//!
+//! ### [Intel MKL Pardiso](https://software.intel.com/en-us/mkl) solvers:
+//! - `PardisoLDLT`
+//! - `PardisoLLT`
+//! - `PardisoLU`
 Eigen::VectorXd EigenSparseSolve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, std::string solver);
 
 //! Solver usable by NewtonRaphson::Solve(...)
