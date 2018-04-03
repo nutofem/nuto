@@ -104,9 +104,94 @@ private:
     const Shape& mShape;
 };
 
-using ElementCollectionFem = ElementCollectionImpl<NuTo::DofElementFem>;
+// using ElementCollectionFem = ElementCollectionImpl<NuTo::DofElementFem>;
 
 template <int TDimParameter>
 using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParameter>>;
+
+
+//! @brief implementation of the interface ElementCollection for ElementFem (uses different element types for dofs and
+//! coordinates)
+//! @remark This class stores elements by value. This is nice since it allows the copy/move operations, value
+//! semantics. Additionally, the compiler is free to eliminate all the copies (whenever that is the right thing to do).
+//! The access to the underlying elements is provided via const-reference. This reference is implicitly casted to the
+//! base class ElementInterface.
+class ElementCollectionFem : public ElementCollection
+{
+public:
+    static_assert(std::is_base_of<ElementInterface, CoordinateElementFem>::value,
+                  "TElement must be a descendant of ElementInterface");
+    static_assert(std::is_base_of<ElementInterface, DofElementFem>::value,
+                  "TElement must be a descendant of ElementInterface");
+
+    ElementCollectionFem(CoordinateElementFem coordinateElement)
+        : mCoordinateElement(coordinateElement)
+        , mShape(coordinateElement.GetShape())
+    {
+    }
+
+    //! @brief adds a dof element to the collection
+    //! @param dofType dof type
+    //! @param dofElement element to add
+    void AddDofElement(DofType dofType, DofElementFem dofElement)
+    {
+        mDofElements.Insert(dofType, dofElement);
+        // The alternative implementation with
+        //        mDofElements[dofType] = dofElement
+        // will fail. The operator[] must be able default construct a new TElement, if it does not exist. It would then
+        // return a reference to it and dofElement can be copied/moved into it. Our elements are not default
+        // constructable (may require nodes, interpolations, ...). Thus, use Insert here, that copies/moves the entity
+        // into the DofContainer without a temporary, default constructed TElement.
+    }
+
+    //! @brief Getter for CoordinateElement
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    const CoordinateElementFem& CoordinateElement() const override
+    {
+        return mCoordinateElement;
+    }
+
+    //! @brief nonconst Getter for CoordinateElement
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    CoordinateElementFem& CoordinateElement()
+    {
+        return mCoordinateElement;
+    }
+
+    //! @brief Getter for DofElements
+    //! @param dofType dof type
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    const DofElementFem& DofElement(DofType dofType) const override
+    {
+        return mDofElements[dofType];
+    }
+
+    //! @brief nonconst Getter for DofElements
+    //! @param dofType dof type
+    //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
+    //! ElementCollection
+    DofElementFem& DofElement(DofType dofType)
+    {
+        return mDofElements.At(dofType);
+    }
+
+    bool Has(DofType dof) const
+    {
+        return mDofElements.Has(dof);
+    }
+
+    const Shape& GetShape() const override
+    {
+        return mShape;
+    }
+
+private:
+    CoordinateElementFem mCoordinateElement;
+    DofContainer<DofElementFem> mDofElements;
+    const Shape& mShape;
+};
 
 } /* NuTo */

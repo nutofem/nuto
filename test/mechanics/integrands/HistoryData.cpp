@@ -50,9 +50,9 @@ public:
 BOOST_AUTO_TEST_CASE(Pass_Data_To_Integrand)
 {
     InterpolationTrussLinear interpolation;
-    NodeSimple n0(0);
-    NodeSimple n1(42);
-    DofElementFem coordinateElement({n0, n1}, interpolation);
+    NodeCoordinates n0(0);
+    NodeCoordinates n1(42);
+    CoordinateElementFem coordinateElement({n0, n1}, interpolation);
     ElementCollectionFem element(coordinateElement);
 
     CustomIntegrand integrand;

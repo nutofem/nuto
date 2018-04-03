@@ -13,7 +13,7 @@ MeshFem CreateNodes1D(int numX)
     for (int iX = 0; iX < numX + 1; ++iX)
     {
         const double x = static_cast<double>(iX) / numX;
-        mesh.Nodes.Add({x});
+        mesh.CoordinateNodes.Add({x});
     }
     return mesh;
 }
@@ -27,7 +27,7 @@ MeshFem CreateNodes2D(int numX, int numY)
         {
             const double x = static_cast<double>(iX) / numX;
             const double y = static_cast<double>(iY) / numY;
-            mesh.Nodes.Add(Eigen::Vector2d(x, y));
+            mesh.CoordinateNodes.Add(Eigen::Vector2d(x, y));
         }
     return mesh;
 }
@@ -39,8 +39,8 @@ MeshFem UnitMeshFem::CreateLines(int numX)
     const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
     for (int i = 0; i < numX; ++i)
     {
-        auto& nl = mesh.Nodes[i];
-        auto& nr = mesh.Nodes[i + 1];
+        auto& nl = mesh.CoordinateNodes[i];
+        auto& nr = mesh.CoordinateNodes[i + 1];
         mesh.Elements.Add({{{nl, nr}, interpolation}});
     }
     return mesh;
@@ -54,10 +54,10 @@ MeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
     for (int iY = 0; iY < numY; ++iY)
         for (int iX = 0; iX < numX; ++iX)
         {
-            auto& node0 = mesh.Nodes[iX + iY * (numX + 1)];
-            auto& node1 = mesh.Nodes[iX + 1 + iY * (numX + 1)];
-            auto& node2 = mesh.Nodes[iX + 1 + (iY + 1) * (numX + 1)];
-            auto& node3 = mesh.Nodes[iX + (iY + 1) * (numX + 1)];
+            auto& node0 = mesh.CoordinateNodes[iX + iY * (numX + 1)];
+            auto& node1 = mesh.CoordinateNodes[iX + 1 + iY * (numX + 1)];
+            auto& node2 = mesh.CoordinateNodes[iX + 1 + (iY + 1) * (numX + 1)];
+            auto& node3 = mesh.CoordinateNodes[iX + (iY + 1) * (numX + 1)];
             mesh.Elements.Add({{{node0, node1, node2}, interpolation}});
             mesh.Elements.Add({{{node0, node2, node3}, interpolation}});
         }
@@ -71,10 +71,10 @@ MeshFem UnitMeshFem::CreateQuads(int numX, int numY)
     for (int iY = 0; iY < numY; ++iY)
         for (int iX = 0; iX < numX; ++iX)
         {
-            auto& node0 = mesh.Nodes[iX + iY * (numX + 1)];
-            auto& node1 = mesh.Nodes[iX + 1 + iY * (numX + 1)];
-            auto& node2 = mesh.Nodes[iX + 1 + (iY + 1) * (numX + 1)];
-            auto& node3 = mesh.Nodes[iX + (iY + 1) * (numX + 1)];
+            auto& node0 = mesh.CoordinateNodes[iX + iY * (numX + 1)];
+            auto& node1 = mesh.CoordinateNodes[iX + 1 + iY * (numX + 1)];
+            auto& node2 = mesh.CoordinateNodes[iX + 1 + (iY + 1) * (numX + 1)];
+            auto& node3 = mesh.CoordinateNodes[iX + (iY + 1) * (numX + 1)];
             mesh.Elements.Add({{{node0, node1, node2, node3}, interpolation}});
         }
     return mesh;
@@ -93,21 +93,21 @@ MeshFem UnitMeshFem::CreateBricks(int numX, int numY, int numZ)
                 const double x = static_cast<double>(iX) / numX;
                 const double y = static_cast<double>(iY) / numY;
                 const double z = static_cast<double>(iZ) / numZ;
-                mesh.Nodes.Add(Eigen::Vector3d(x, y, z));
+                mesh.CoordinateNodes.Add(Eigen::Vector3d(x, y, z));
             }
     const auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationBrickLinear());
     for (int iZ = 0; iZ < numZ; ++iZ)
         for (int iY = 0; iY < numY; ++iY)
             for (int iX = 0; iX < numX; ++iX)
             {
-                auto& node0 = mesh.Nodes[iX + iY * numXe + iZ * numXe * numYe];
-                auto& node1 = mesh.Nodes[iX + 1 + iY * numXe + iZ * numXe * numYe];
-                auto& node2 = mesh.Nodes[iX + 1 + (iY + 1) * numXe + iZ * numXe * numYe];
-                auto& node3 = mesh.Nodes[iX + (iY + 1) * numXe + iZ * numXe * numYe];
-                auto& node4 = mesh.Nodes[iX + iY * numXe + (iZ + 1) * numXe * numYe];
-                auto& node5 = mesh.Nodes[iX + 1 + iY * numXe + (iZ + 1) * numXe * numYe];
-                auto& node6 = mesh.Nodes[iX + 1 + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
-                auto& node7 = mesh.Nodes[iX + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
+                auto& node0 = mesh.CoordinateNodes[iX + iY * numXe + iZ * numXe * numYe];
+                auto& node1 = mesh.CoordinateNodes[iX + 1 + iY * numXe + iZ * numXe * numYe];
+                auto& node2 = mesh.CoordinateNodes[iX + 1 + (iY + 1) * numXe + iZ * numXe * numYe];
+                auto& node3 = mesh.CoordinateNodes[iX + (iY + 1) * numXe + iZ * numXe * numYe];
+                auto& node4 = mesh.CoordinateNodes[iX + iY * numXe + (iZ + 1) * numXe * numYe];
+                auto& node5 = mesh.CoordinateNodes[iX + 1 + iY * numXe + (iZ + 1) * numXe * numYe];
+                auto& node6 = mesh.CoordinateNodes[iX + 1 + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
+                auto& node7 = mesh.CoordinateNodes[iX + (iY + 1) * numXe + (iZ + 1) * numXe * numYe];
                 mesh.Elements.Add({{{node0, node1, node2, node3, node4, node5, node6, node7}, interpolation}});
             }
     return mesh;

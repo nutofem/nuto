@@ -17,8 +17,8 @@ constexpr int ipNum = 0;
 BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 {
     // coordinate element
-    NodeSimple nc0(Eigen::Vector2d(0, 0));
-    NodeSimple nc1(Eigen::Vector2d(2, 2));
+    NodeCoordinates nc0(Eigen::Vector2d(0, 0));
+    NodeCoordinates nc1(Eigen::Vector2d(2, 2));
     InterpolationTrussLinear coordinateInterpolation;
     ElementCollectionFem element({{nc0, nc1}, coordinateInterpolation});
 
@@ -82,12 +82,12 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
     for (int i = 0; i < 3; i++)
         nodesDisp.push_back(NodeSimple(Eigen::Vector3d(0, 0, 0)));
 
-    std::vector<NodeSimple> nodes;
-    nodes.push_back(NodeSimple(Eigen::Vector3d(1, 0, 0)));
-    nodes.push_back(NodeSimple(Eigen::Vector3d(0, 1, 0)));
-    nodes.push_back(NodeSimple(Eigen::Vector3d(0, 0, 1)));
+    std::vector<NodeCoordinates> nodes;
+    nodes.push_back(NodeCoordinates(Eigen::Vector3d(1, 0, 0)));
+    nodes.push_back(NodeCoordinates(Eigen::Vector3d(0, 1, 0)));
+    nodes.push_back(NodeCoordinates(Eigen::Vector3d(0, 0, 1)));
 
-    std::vector<NodeSimple*> nodePtrs;
+    std::vector<NodeCoordinates*> nodePtrs;
     std::vector<NodeSimple*> nodesDispPtrs;
 
     nodePtrs.push_back(&nodes[0]);

@@ -387,10 +387,10 @@ const NuTo::InterpolationSimple& CreateElementInterpolation(NuTo::MeshFem& rMesh
     }
 }
 
-std::vector<NuTo::NodeSimple*> GetElementNodes(const std::unordered_map<int, NuTo::NodeSimple*>& nodePtrs,
-                                               const GmshElement& gmshElement)
+std::vector<NuTo::NodeCoordinates*> GetElementNodes(const std::unordered_map<int, NuTo::NodeCoordinates*>& nodePtrs,
+                                                    const GmshElement& gmshElement)
 {
-    std::vector<NuTo::NodeSimple*> elementNodes(gmshElement.nodes.size());
+    std::vector<NuTo::NodeCoordinates*> elementNodes(gmshElement.nodes.size());
     for (unsigned int i = 0; i < elementNodes.size(); ++i)
         elementNodes[i] = nodePtrs.at(gmshElement.nodes[i]);
 
@@ -460,23 +460,23 @@ const NuTo::Group<NuTo::ElementCollectionFem>& NuTo::MeshGmsh::GetPhysicalGroup(
     return physGroupIt->second;
 }
 
-std::unordered_map<int, NuTo::NodeSimple*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
+std::unordered_map<int, NuTo::NodeCoordinates*> NuTo::MeshGmsh::CreateNodes(const GmshFileContent& fileContent)
 {
-    std::unordered_map<int, NodeSimple*> nodePtrs;
+    std::unordered_map<int, NodeCoordinates*> nodePtrs;
     Eigen::VectorXd coords(fileContent.dimension);
 
     for (const GmshNode& gmshNode : fileContent.nodes)
     {
         for (int i = 0; i < fileContent.dimension; ++i)
             coords[i] = gmshNode.coordinates[i];
-        nodePtrs[gmshNode.id] = &(mMesh.Nodes.Add(coords));
+        nodePtrs[gmshNode.id] = &(mMesh.CoordinateNodes.Add(coords));
     }
     return nodePtrs;
 }
 
 
 void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
-                                    const std::unordered_map<int, NuTo::NodeSimple*>& nodePtrs)
+                                    const std::unordered_map<int, NuTo::NodeCoordinates*>& nodePtrs)
 {
     std::map<int, const InterpolationSimple*> interpolationPtrMap;
 

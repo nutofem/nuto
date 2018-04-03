@@ -16,9 +16,9 @@ NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
     NuTo::MeshFem mesh;
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d({1, 0}));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d({2, 0}));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d({0, 3}));
+    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d({1, 0}));
+    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d({2, 0}));
+    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d({0, 3}));
 
     auto& nd0 = mesh.Nodes.Add(42);
     auto& nd1 = mesh.Nodes.Add(4);
@@ -54,11 +54,11 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     auto& e0 = mesh.Elements[0];
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
-    mesh.Nodes[0].SetValue(0, 4);
+    mesh.CoordinateNodes[0].SetValue(0, 4);
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
 
     NuTo::MeshFem meshMoved = std::move(mesh);
-    meshMoved.Nodes[0].SetValue(0, 42);
+    meshMoved.CoordinateNodes[0].SetValue(0, 42);
     auto& e0FromMove = meshMoved.Elements[0];
     BoostUnitTest::CheckVector(e0FromMove.CoordinateElement().ExtractNodeValues(),
                                std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
@@ -132,17 +132,17 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
      * 0-----1
      */
     NuTo::MeshFem mesh;
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
-    auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(1, 1));
+    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
+    auto& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 1));
 
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     mesh.Elements.Add({{{n0, n1, n2}, interpolation}});
     mesh.Elements.Add({{{n1, n3, n2}, interpolation}});
 
     int expectedNumCoordinateNodes = 4;
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -152,7 +152,8 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 
 
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes + expectedNumDof1Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes + expectedNumDof1Nodes);
 }
 
 BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
@@ -190,12 +191,12 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
      * 0-----1-----4
      */
     NuTo::MeshFem mesh;
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
-    auto& n3 = mesh.Nodes.Add(Eigen::Vector2d(1, 1));
-    auto& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 0));
-    auto& n5 = mesh.Nodes.Add(Eigen::Vector2d(2, 1));
+    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
+    auto& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 1));
+    auto& n4 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 0));
+    auto& n5 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationQuad = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
@@ -203,7 +204,7 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
     mesh.Elements.Add({{{n1, n4, n5, n3}, interpolationQuad}});
 
     int expectedNumCoordinateNodes = 6;
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -213,16 +214,16 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumCoordinateNodes + expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 }
 
 BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 {
     NuTo::MeshFem mesh;
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
@@ -247,9 +248,9 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
 {
     NuTo::MeshFem mesh;
-    auto& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = mesh.Nodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = mesh.Nodes.Add(Eigen::Vector2d(0, 1));
+    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
+    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
