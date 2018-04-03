@@ -56,15 +56,15 @@ MeshFem QuadPatchTestMesh()
      *              (c) ttitsche :)
      */
     MeshFem mesh;
-    NodeSimple& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    NodeSimple& n1 = mesh.Nodes.Add(Eigen::Vector2d(10, 0));
-    NodeSimple& n2 = mesh.Nodes.Add(Eigen::Vector2d(10, 10));
-    NodeSimple& n3 = mesh.Nodes.Add(Eigen::Vector2d(0, 10));
+    NodeCoordinates& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    NodeCoordinates& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
+    NodeCoordinates& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
+    NodeCoordinates& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
 
-    NodeSimple& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 2));
-    NodeSimple& n5 = mesh.Nodes.Add(Eigen::Vector2d(8, 3));
-    NodeSimple& n6 = mesh.Nodes.Add(Eigen::Vector2d(8, 7));
-    NodeSimple& n7 = mesh.Nodes.Add(Eigen::Vector2d(4, 7));
+    NodeCoordinates& n4 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
+    NodeCoordinates& n5 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
+    NodeCoordinates& n6 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
+    NodeCoordinates& n7 = mesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
@@ -131,9 +131,9 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
 
     // extract existing nodes
-    Group<NodeSimple> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
-    NodeSimple& nc1 = *boundaryCoordNodes.begin();
-    NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
+    Group<NodeCoordinates> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
+    NodeCoordinates& nc1 = *boundaryCoordNodes.begin();
+    NodeCoordinates& nc2 = *(boundaryCoordNodes.begin() + 1);
 
     Group<NodeSimple> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
     NodeSimple& nd1 = *boundaryDisplNodes.begin();
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (NodeSimple& node : mesh.NodesTotal())
+    for (NodeCoordinates& node : mesh.NodesTotal())
     {
         Eigen::VectorXd coord = node.GetValues();
         NodeSimple& displNode = mesh.NodeAtCoordinate(coord, displ);
