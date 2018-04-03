@@ -43,11 +43,11 @@ void CheckFractureEnergy2D(int angleDegree, double interfaceThickness)
     std::cout << "interfaceLength " << interfaceLength << '\n';
 
     // lower nodes
-    NuTo::NodeSimple n0(Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
-    NuTo::NodeSimple n1(Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
+    NuTo::NodeCoordinates n0(Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
+    NuTo::NodeCoordinates n1(Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
     // upper nodes
-    NuTo::NodeSimple n2(Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
-    NuTo::NodeSimple n3(Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
+    NuTo::NodeCoordinates n2(Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
+    NuTo::NodeCoordinates n3(Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
 
     NuTo::NodeSimple nd0(Eigen::Vector2d::Zero());
     NuTo::NodeSimple nd1(Eigen::Vector2d::Zero());
