@@ -33,7 +33,7 @@ public:
     //! @param coords global coordinates
     //! @param tol selection tolerance
     //! @return reference to the selected node, throws, if no node is found
-    NodeSimple& NodeAtCoordinate(Eigen::VectorXd coords, double tol = 1.e-10);
+    NodeCoordinates& NodeAtCoordinate(Eigen::VectorXd coords, double tol = 1.e-10);
 
     //! @brief selects a node of type `dofType` at given `coords`
     //! @param coords global coordinates
@@ -55,7 +55,7 @@ public:
     //! @param axisOffset distance of the node to the axis
     //! @param tol selection tolerance
     //! @return group with selected nodes, the group may be empty if no nodes were found
-    Group<NodeSimple> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
+    Group<NodeCoordinates> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
 
     //! @brief selects all nodes of `dofType`
     //! @return group containing all selected nodes
@@ -63,7 +63,7 @@ public:
 
     //! @brief selects all coordinate nodes
     //! @return group containing all selected nodes
-    Group<NodeSimple> NodesTotal();
+    Group<NodeCoordinates> NodesTotal();
 
     //! @brief selects all element collections
     //! @return group containing all element collections
@@ -74,6 +74,7 @@ public:
     void AllocateDofInstances(DofType dofType, int numInstances);
 
 public:
+    ValueVector<NodeCoordinates> CoordinateNodes;
     ValueVector<NodeSimple> Nodes;
     ValueVector<ElementCollectionFem> Elements;
 

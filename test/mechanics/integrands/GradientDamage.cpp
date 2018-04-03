@@ -79,9 +79,9 @@ void CheckHessian0(ElementCollectionFem& element, Integrands::GradientDamage<1>&
 BOOST_AUTO_TEST_CASE(GradientDamage1D)
 {
     // coordinate element
-    NodeSimple n0(0);
-    NodeSimple n1(1);
-    NodeSimple n2(2);
+    NodeCoordinates n0(0);
+    NodeCoordinates n1(1);
+    NodeCoordinates n2(2);
 
     InterpolationTrussLobatto interpolation(2);
     ElementCollectionFem element({{n0, n1, n2}, interpolation});

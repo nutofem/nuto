@@ -30,36 +30,37 @@ public:
     }
 
 
-    const Eigen::VectorXd& GetCoordinates() const
+    const Eigen::VectorXd& GetValues(int instance = 0) const
     {
+        (void)instance; // silence unused parameter warning
         return mCoordinates;
     }
 
-    int GetCoordinateNumber(int component) const
+    int GetDofNumber(int component) const
     {
         assert(component < mCoordinateNumbers.rows());
         return mCoordinateNumbers[component];
     }
 
-    void SetCoordinates(Eigen::VectorXd coordinates)
+    void SetValues(Eigen::VectorXd coordinates)
     {
         assert(coordinates.size() == mCoordinates.size());
         mCoordinates = coordinates;
     }
 
-    void SetCoordinate(int component, double value)
+    void SetValue(int component, double value)
     {
         assert(component < mCoordinateNumbers.rows());
         mCoordinates[component] = value;
     }
 
-    void SetCoordinateNumber(int component, int coordinateNumber)
+    void SetValueNumber(int component, int coordinateNumber)
     {
         assert(component < mCoordinateNumbers.rows());
         mCoordinateNumbers[component] = coordinateNumber;
     }
 
-    int GetNumCoordinates() const
+    int GetNumValues() const
     {
         return mCoordinates.rows();
     }

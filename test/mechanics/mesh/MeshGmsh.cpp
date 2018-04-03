@@ -25,8 +25,8 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
     BOOST_CHECK_NO_THROW(MeshGmsh{meshFile});
     MeshGmsh m(meshFile);
     auto& meshFem = m.GetMeshFEM();
-    BOOST_CHECK_EQUAL(meshFem.Nodes.Size(), numNodesExpected);
-    const DofElementFem& element = meshFem.Elements.begin()->CoordinateElement();
+    BOOST_CHECK_EQUAL(meshFem.CoordinateNodes.Size(), numNodesExpected);
+    const CoordinateElementFem& element = meshFem.Elements.begin()->CoordinateElement();
     const auto& interpolation = element.Interpolation();
     BOOST_CHECK_EQUAL(interpolation.GetNumNodes(), numNodesExpected);
 
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(BinaryImport)
 {
     MeshGmsh m("binary.msh");
     auto& meshFem = m.GetMeshFEM();
-    BOOST_CHECK_EQUAL(meshFem.Nodes.Size(), 8);
+    BOOST_CHECK_EQUAL(meshFem.CoordinateNodes.Size(), 8);
     BOOST_CHECK_EQUAL(meshFem.Elements.Size(), 7);
     BOOST_CHECK_EQUAL(meshFem.Elements.begin()->CoordinateElement().Interpolation().GetNumNodes(), 3);
 }

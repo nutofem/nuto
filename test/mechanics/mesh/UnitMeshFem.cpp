@@ -17,7 +17,7 @@ void CheckJacobians(NuTo::MeshFem& mesh)
 
 void Check2DMesh(NuTo::MeshFem& mesh)
 {
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), 3 * 8);
 
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0., 0.)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1., 1.)));
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(MeshTrusses)
     constexpr int numElements = 15;
     auto mesh = NuTo::UnitMeshFem::CreateLines(numElements);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), numElements);
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), numElements + 1);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), numElements + 1);
 
     auto IsWholeNumber = [](double d, double eps = 1.e-12) { return std::abs(d - std::floor(d)) < eps; };
 
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(MeshBrick)
 {
     auto mesh = NuTo::UnitMeshFem::CreateBricks(2, 7, 3);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 3);
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8 * 4);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), 3 * 8 * 4);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(0, 0, 0)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(1, 1, 1)));
     CheckJacobians(mesh);
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
 
-    transformedMesh.Nodes[0].SetValue(0, 6174);
+    transformedMesh.CoordinateNodes[0].SetValue(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
 }
