@@ -33,6 +33,24 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
     return rhs;
 }
 
+
+Eigen::SparseVector<double> Constraints::GetSparseGlobalDeltaRhs(DofType dof, int numDofs, double oldTime,
+                                                                 double newTime) const
+{
+    if (not mEquations.Has(dof))
+        return Eigen::SparseVector<float>(0); // no equations for this dof type
+
+    const Equations& equations = mEquations[dof];
+    int numEquations = equations.size();
+    Eigen::SparseVector<float> globalVector(numDofs);
+    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
+    {
+        globalVector.coeffRef(equations[iEquation].GetDependentDofNumber()) =
+                equations[iEquation].GetRhs(newTime) - equations[iEquation].GetRhs(oldTime);
+    }
+    return globalVector;
+}
+
 Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int numDofs, double time) const
 {
     if (not mEquations.Has(dof))
@@ -64,7 +82,7 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof,
 {
     if (not mEquations.Has(dof))
     {
-        Eigen::SparseMatrix<double> unitMatrix(numDofs,numDofs);
+        Eigen::SparseMatrix<double> unitMatrix(numDofs, numDofs);
         unitMatrix.setIdentity();
         return unitMatrix; // no equations for this dof type
     }
@@ -75,8 +93,8 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof,
 
     Eigen::SparseMatrix<double> matrix(numDofs, numIndependentDofs);
     matrix.setZero();
-    std::vector<Eigen::Triplet<double> > tripletList;
-    for (auto i=0; i<numIndependentDofs; i++)
+    std::vector<Eigen::Triplet<double>> tripletList;
+    for (auto i = 0; i < numIndependentDofs; i++)
     {
         tripletList.push_back(Eigen::Triplet<double>(i, i, 1.));
     }
@@ -104,7 +122,8 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix2(DofType dof,
             }
 
             if (std::abs(coefficient) > 1.e-18)
-                tripletList.push_back(Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
+                tripletList.push_back(
+                        Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
         }
     }
     matrix.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -164,4 +183,3 @@ void Constraints::TermChecker::CheckEquation(Equation e)
     for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
         mOtherTerms.insert(e.GetTerms()[iNewTerm]);
 }
-

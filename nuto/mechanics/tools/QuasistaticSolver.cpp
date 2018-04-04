@@ -67,9 +67,9 @@ std::pair<DofMatrixSparse<double>, DofVector<double>> QuasistaticSolver::TrialSy
 
     auto deltaBrhs = bNext - b;
     Eigen::VectorXd deltaB = ToEigen(deltaBrhs, mDofs);
-    //Eigen::VectorXd residualConstrained = C.transpose() * hessian0Eigen * deltaB;
+    // Eigen::VectorXd residualConstrained = C.transpose() * hessian0Eigen * deltaB;
     Eigen::VectorXd residualConstrained = hessian0Eigen * deltaB;
-    //residualConstrained = C * residualConstrained;
+    // residualConstrained = C * residualConstrained;
 
     // for correct size
     DofVector<double> residual = mX;
@@ -105,8 +105,8 @@ void QuasistaticSolver::Info(int i, const DofVector<double>& x, const DofVector<
     if (mQuiet)
         return;
     std::cout << std::right << std::setfill(' ');
-    std::cout << "Iteration " << i << ": |R| = " << std::setw(11) << Norm(r) << " |x| = " << std::setw(11)
-              << Norm(x) << '\n';
+    std::cout << "Iteration " << i << ": |R| = " << std::setw(11) << Norm(r) << " |x| = " << std::setw(11) << Norm(x)
+              << '\n';
 }
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
@@ -126,12 +126,19 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
 
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
+    // compute hessian for last converged time step
+    auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
+
+    // allocate constraint system solver
     ConstrainedSystemSolver solver(mConstraints, mDofs, solverType);
 
+    // update time step
     mTimeStep = newGlobalTime - mGlobalTime;
-    auto trialSystem = TrialSystem(mGlobalTime, mTimeStep);
 
-    DofVector<double> trialU = solver.Solve(trialSystem.first, trialSystem.second);
+    // compute residual for new time step (in particular, these are changing external forces)
+    auto gradient = mProblem.Gradient(mX, mDofs, newGlobalTime, mTimeStep);
+
+    DofVector<double> trialU = mX + solver.SolveTrialState(hessian0, gradient, mGlobalTime, newGlobalTime);
 
     int numIterations = 0;
 

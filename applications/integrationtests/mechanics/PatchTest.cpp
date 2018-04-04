@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     gradient -= assembler.BuildVector({neumannCell}, {displ}, NeumannLoad);
 
     DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
-    DofVector<double> solution = Solve(hessian, -1.0*gradient, constraints, {displ});
+    DofVector<double> solution = Solve(hessian, -1.0 * gradient, constraints, {displ});
 
     // Merge dof values %%%%%%%%%%%%%%%%%
     for (NodeSimple& node : mesh.NodesTotal(displ))
