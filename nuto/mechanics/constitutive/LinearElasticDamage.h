@@ -36,14 +36,24 @@ public:
         , mDamageApplication(damageApplication)
         , mPlaneState(planeState)
     {
-        if (mPlaneState == ePlaneState::PLANE_STRESS)
-            throw Exception(__PRETTY_FUNCTION__, "Plane stress is not implemented. ");
-
         if (TDim == 1)
         {
             m3K = E;
             m2G = E;
         }
+
+        mD.setZero();
+        mD.head(TDim) = Eigen::VectorXd::Ones(TDim);
+
+        mD2 = mD;
+        if (TDim == 2 && mPlaneState == ePlaneState::PLANE_STRESS)
+            mD2 *= (1 + nu / (nu - 1));
+
+        mPinvDiag = EigenVDim::Constant(0.5);
+        mPinvDiag.head(TDim) = Eigen::VectorXd::Ones(TDim);
+
+        mIv = 1. / 3. * mD * mD2.transpose();
+        mPinvId = mPinvDiag.asDiagonal() * (EngineeringTangent<TDim>::Identity() - mIv);
     }
 
     LinearElasticDamage(Material::Softening m, eDamageApplication damageApplication = FULL,
@@ -55,16 +65,16 @@ public:
 
     EngineeringStress<TDim> Stress(EngineeringStrain<TDim> strain, double omega) const
     {
-        const double eV = 1. / 3. * D().transpose() * strain;
-        const EngineeringStrain<TDim> e = strain - D() * eV;
+        const double eV = 1. / 3. * mD2.transpose() * strain;
+        const EngineeringStrain<TDim> e = strain - mD * eV;
 
         const double sV = (1. - omega * H(eV)) * m3K * eV;
-        return D() * sV + (1. - omega) * m2G * PinvDiag().asDiagonal() * e;
+        return mD * sV + (1. - omega) * m2G * mPinvDiag.asDiagonal() * e;
     }
 
     EngineeringTangent<TDim> DstressDstrain(EngineeringStrain<TDim> strain, double omega) const
     {
-        const double eV = 1. / 3. * D().transpose() * strain;
+        const double eV = 1. / 3. * mD2.transpose() * strain;
 
         const EngineeringTangent<TDim> dSigma_deV = m3K * (1. - omega * H(eV)) * mIv;
         const EngineeringTangent<TDim> dSigma_de = (1. - omega) * m2G * mPinvId;
@@ -74,25 +84,11 @@ public:
 
     EngineeringStress<TDim> DstressDomega(EngineeringStrain<TDim> strain, double) const
     {
-        const double eV = 1. / 3. * D().transpose() * strain;
-        const EngineeringStrain<TDim> e = strain - D() * eV;
+        const double eV = 1. / 3. * mD2.transpose() * strain;
+        const EngineeringStrain<TDim> e = strain - mD * eV;
         const double dsigmaV_dOmega = -m3K * eV * H(eV);
 
-        return D() * dsigmaV_dOmega - m2G * PinvDiag().asDiagonal() * e;
-    }
-
-    static EigenVDim PinvDiag()
-    {
-        EigenVDim p = EigenVDim::Constant(0.5);
-        p.template head<TDim>() = Eigen::Matrix<double, TDim, 1>::Ones();
-        return p;
-    }
-
-    static EigenVDim D()
-    {
-        EigenVDim d = EigenVDim::Zero();
-        d.template head<TDim>() = Eigen::Matrix<double, TDim, 1>::Ones();
-        return d;
+        return mD * dsigmaV_dOmega - m2G * mPinvDiag.asDiagonal() * e;
     }
 
     double H(double eV) const
@@ -104,13 +100,30 @@ public:
     }
 
 public:
+    //! three times the bulk modulus K
     double m3K;
+
+    //! two times the shear modulus G
     double m2G;
+
     eDamageApplication mDamageApplication;
     ePlaneState mPlaneState;
 
-    const EngineeringTangent<TDim> mIv = 1. / 3. * D() * D().transpose();
-    const EngineeringTangent<TDim> mPinvId = PinvDiag().asDiagonal() * (EngineeringTangent<TDim>::Identity() - mIv);
+    //! Kronecker delta in engineering (voigt) notation
+    EigenVDim mD;
+
+    //! modified Kronecker delta that gives the volumetric strain
+    //! @remark this differs from `mD` for 2D PLANE_STRESS conditions
+    EigenVDim mD2;
+
+    //! diagonal scaling matrix to account for (voigt) gamma_xy == (tensor) 2 * epsilon_xy
+    EigenVDim mPinvDiag;
+
+    //! volumetric projection tensor I_v in engineering (voigt) notation
+    EngineeringTangent<TDim> mIv;
+
+    //! product of mPinv and the deviatoric projection tensor I_d in engineering (voigt) notation
+    EngineeringTangent<TDim> mPinvId;
 };
 
 } /* Laws */
