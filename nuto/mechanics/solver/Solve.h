@@ -18,9 +18,9 @@ class ConstrainedSystemSolver
 {
 public:
     ConstrainedSystemSolver(Constraint::Constraints& bcs, std::vector<DofType> dofs, std::string solver);
-    DofVector<double> Solve(const DofMatrixSparse<double>& A, const DofVector<double>& b);
+    DofVector<double> Solve(const DofMatrixSparse<double>& A, const DofVector<double>& b) const;
     DofVector<double> SolveTrialState(const DofMatrixSparse<double>& A, const DofVector<double>& b, double oldTime,
-                                      double newTime);
+                                      double newTime) const;
 
 private:
     Constraint::Constraints& mBcs;

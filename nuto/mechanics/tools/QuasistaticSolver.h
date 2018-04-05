@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nuto/mechanics/solver/Solve.h"
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
 #include "nuto/mechanics/constraints/Constraints.h"
 #include <iosfwd>
@@ -26,11 +27,10 @@ public:
     //! @param globalTime global time
     void SetGlobalTime(double globalTime);
 
-    //! builds the trial system where its residual contains forces equivialent to the applied constraints from time step
-    //! t_n to t_n+1
-    //! @param globalTime t_n
-    //! @param timeStep t_n+1 - t_n
-    std::pair<DofMatrixSparse<double>, DofVector<double>> TrialSystem(double globalTime, double timeStep);
+    //! computes the trial state of the system
+    //! @param newGlobalTime
+    //! @param solver that allows to extract the constraint displacements from previous steps
+    DofVector<double> TrialState(double newGlobalTime, const NuTo::ConstrainedSystemSolver& solver);
 
     //! calculates and stores the history variables for the state x
     //! @param x independent dof values

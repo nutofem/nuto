@@ -5,7 +5,6 @@
 #include <boost/range/numeric.hpp>
 
 #include "nuto/base/Timer.h"
-#include "nuto/mechanics/solver/Solve.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/mechanics/dofs/DofMatrix.h"
 #include "nuto/mechanics/dofs/DofVector.h"
@@ -49,33 +48,21 @@ void QuasistaticSolver::SetGlobalTime(double globalTime)
     mGlobalTime = globalTime;
 }
 
-std::pair<DofMatrixSparse<double>, DofVector<double>> QuasistaticSolver::TrialSystem(double globalTime, double timeStep)
+DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, const ConstrainedSystemSolver& solver)
 {
-    auto hessian0 = mProblem.Hessian0(mX, mDofs, globalTime, timeStep);
-    auto hessian0Eigen = ToEigen(hessian0, mDofs);
-    auto C = ToEigen(mCmatUnit, mDofs);
+    // compute hessian for last converged time step
+    auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
+    Eigen::MatrixXd hessian0Eigen(ToEigen(hessian0, mDofs));
 
-    DofVector<double> bNext = mX;
-    DofVector<double> b = mX;
-    bNext.SetZero();
-    b.SetZero();
-    for (auto dof : mDofs)
-    {
-        mConstraints.AddRhs(dof, globalTime + timeStep, &bNext[dof]);
-        mConstraints.AddRhs(dof, globalTime, &b[dof]);
-    }
+    // update time step
+    double newTimeStep = newGlobalTime - mGlobalTime;
 
-    auto deltaBrhs = bNext - b;
-    Eigen::VectorXd deltaB = ToEigen(deltaBrhs, mDofs);
-    // Eigen::VectorXd residualConstrained = C.transpose() * hessian0Eigen * deltaB;
-    Eigen::VectorXd residualConstrained = hessian0Eigen * deltaB;
-    // residualConstrained = C * residualConstrained;
+    // compute residual for new time step (in particular, these are changing external forces)
+    auto gradient = mProblem.Gradient(mX, mDofs, newGlobalTime, newTimeStep);
 
-    // for correct size
-    DofVector<double> residual = mX;
-    FromEigen(residualConstrained, mDofs, &residual);
+    DofVector<double> trialU = mX - solver.SolveTrialState(hessian0, gradient, mGlobalTime, newGlobalTime);
 
-    return std::make_pair(hessian0, residual);
+    return trialU;
 }
 
 DofVector<double> QuasistaticSolver::Residual(const DofVector<double>& u)
@@ -96,8 +83,10 @@ void QuasistaticSolver::UpdateHistory(const DofVector<double>& x)
 
 double QuasistaticSolver::Norm(const DofVector<double>& residual) const
 {
+    // all these conversions should be removed at some point, workaround to remove JK
     Eigen::VectorXd tmp = ToEigen(residual, mDofs);
-    return tmp.norm();
+    auto C = ToEigen(mCmatUnit, mDofs);
+    return (C.transpose() * tmp).norm();
 }
 
 void QuasistaticSolver::Info(int i, const DofVector<double>& x, const DofVector<double>& r) const
@@ -111,36 +100,35 @@ void QuasistaticSolver::Info(int i, const DofVector<double>& x, const DofVector<
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
 {
-    /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right now.
-     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to apply
-     * constraints for t + dt + dt. */
+    /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right
+     * now.
+     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to
+     * apply
+     * constraints for t + dt + dt.
+     * keep in mind that the gradient is not the residual, since constraint dofs do not have a non-vanishing gradient
+*/
     auto residual = mProblem.Gradient(mX, {dofType}, mGlobalTime - mTimeStep, mTimeStep);
 
     double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
     out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
-    out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or something.
+    out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or
+    // something.
 }
-
 
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
-    // compute hessian for last converged time step
-    auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
-
     // allocate constraint system solver
     ConstrainedSystemSolver solver(mConstraints, mDofs, solverType);
 
-    // update time step
-    mTimeStep = newGlobalTime - mGlobalTime;
-
-    // compute residual for new time step (in particular, these are changing external forces)
-    auto gradient = mProblem.Gradient(mX, mDofs, newGlobalTime, mTimeStep);
-
-    DofVector<double> trialU = mX + solver.SolveTrialState(hessian0, gradient, mGlobalTime, newGlobalTime);
+    // compute trial solution (includes update of the constraint dofs, no line search)
+    DofVector<double> trialU = TrialState(newGlobalTime, solver);
 
     int numIterations = 0;
+
+    // update time step
+    mTimeStep = newGlobalTime - mGlobalTime;
 
     DofVector<double> tmpX;
     try

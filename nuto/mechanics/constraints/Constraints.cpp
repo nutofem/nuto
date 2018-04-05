@@ -38,7 +38,7 @@ Eigen::SparseVector<double> Constraints::GetSparseGlobalDeltaRhs(DofType dof, in
                                                                  double newTime) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseVector<float>(0); // no equations for this dof type
+        return Eigen::SparseVector<float>(numDofs); // no equations for this dof type
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
