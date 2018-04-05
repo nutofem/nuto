@@ -30,12 +30,12 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    virtual NodeValues ExtractNodeValues() const override
+    virtual NodeValues ExtractNodeValues(int instance = 0) const override
     {
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
         for (int i = 0; i < GetNumNodes(); ++i)
-            nodeValues.segment(dim * i, dim) = GetNode(i).GetValues();
+            nodeValues.segment(dim * i, dim) = GetNode(i).GetValues(instance);
         return nodeValues;
     }
 

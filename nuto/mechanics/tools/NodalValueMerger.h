@@ -13,12 +13,14 @@ public:
     //! Performs "NodeMerge", writes values from the solution vector to the nodes
     //! @param newValues new dof values
     //! @param dofs dof types to merge
-    void Merge(const DofVector<double>& newValues, std::vector<DofType> dofs);
+    //! @param instance id of the dof instance
+    void Merge(const DofVector<double>& newValues, std::vector<DofType> dofs, int instance = 0);
 
     //! Performs "NodeExtract", writes values from the solution vector to the nodes
     //! @param rNewValues vector to fill the new values with
     //! @param dofs dof types to extract
-    void Extract(DofVector<double>* rNewValues, std::vector<DofType> dofs);
+    //! @param instance id of the dof instance
+    void Extract(DofVector<double>* rNewValues, std::vector<DofType> dofs, int instance = 0);
 
     //! node group memoizer
     //! @param dof dof type

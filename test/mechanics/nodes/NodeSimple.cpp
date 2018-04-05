@@ -29,3 +29,20 @@ BOOST_AUTO_TEST_CASE(NodeSimpleDofNumbers)
     node.SetDofNumber(1, 42);
     BOOST_CHECK_EQUAL(node.GetDofNumber(1), 42);
 }
+
+BOOST_AUTO_TEST_CASE(NodeSimpleInstances)
+{
+    NuTo::NodeSimple node(3, 2);
+    BOOST_CHECK_EQUAL(node.GetNumInstances(), 2);
+
+    node.AllocateInstances(1);
+    BOOST_CHECK_EQUAL(node.GetNumInstances(), 1);
+    node.AllocateInstances(5);
+    BOOST_CHECK_EQUAL(node.GetNumInstances(), 5);
+
+    node.SetValue(0, 42, 1);
+    BoostUnitTest::CheckEigenMatrix(node.GetValues(1), Eigen::Vector3d(42, 0, 0));
+
+    node.SetValues(Eigen::Vector3d(6174, 0, 0), 2);
+    BoostUnitTest::CheckEigenMatrix(node.GetValues(2), Eigen::Vector3d(6174, 0, 0));
+}

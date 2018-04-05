@@ -1,7 +1,8 @@
 #pragma once
 
 #include <algorithm> // std::min
-#include "nuto/mechanics/constitutive/damageLaws/DamageLaw.h"
+#include "DamageLaw.h"
+#include "SofteningMaterial.h"
 
 namespace NuTo
 {
@@ -25,6 +26,13 @@ public:
         : mKappa0(kappa0)
         , mKappaC(kappaC)
         , mOmegaMax(omegaMax)
+    {
+    }
+
+    DamageLawLinear(Material::Softening m)
+        : mKappa0(m.ft / m.E)
+        , mKappaC(mKappa0 + 2. * m.gf / m.ft)
+        , mOmegaMax(1. - m.fMin / m.ft) // this is not totally right...
     {
     }
 
