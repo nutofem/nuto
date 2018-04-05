@@ -56,9 +56,8 @@ public:
         mPinvId = mPinvDiag.asDiagonal() * (EngineeringTangent<TDim>::Identity() - mIv);
     }
 
-    LinearElasticDamage(Material::Softening m, eDamageApplication damageApplication = FULL,
-                        ePlaneState planeState = ePlaneState::PLANE_STRAIN)
-        : LinearElasticDamage::LinearElasticDamage(m.E, m.nu, damageApplication, planeState)
+    LinearElasticDamage(Material::Softening m, eDamageApplication damageApplication = FULL)
+        : LinearElasticDamage::LinearElasticDamage(m.E, m.nu, damageApplication, m.planeState)
     {
     }
 
