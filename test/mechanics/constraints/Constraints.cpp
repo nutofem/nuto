@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(ConstraintUnnumbered)
     Constraints c;
     c.Add(dof, Equation(node, 0, rhs));
     // the dofs are not numbered.
-    BOOST_CHECK_THROW(c.BuildUnitConstraintMatrix2(dof, 2), Exception);
+    BOOST_CHECK_THROW(c.BuildUnitConstraintMatrix(dof, 2), Exception);
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
     node0.SetDofNumber(0, 2);
     node3.SetDofNumber(0, 3);
 
-    BOOST_CHECK_NO_THROW(c.BuildUnitConstraintMatrix2(dof, 4));
+    BOOST_CHECK_NO_THROW(c.BuildUnitConstraintMatrix(dof, 4));
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     c.Add(dof, noninteractingEquation);
     c.Add(dof, interactingEquation);
 
-    Eigen::MatrixXd cmatUnit = c.BuildUnitConstraintMatrix2(dof, 5);
+    Eigen::MatrixXd cmatUnit = c.BuildUnitConstraintMatrix(dof, 5);
 
     std::cout << "cmatUnitExpected\n" << cmatUnitExpected << std::endl;
     std::cout << "cmatUnit\n" << cmatUnit << std::endl;

@@ -37,7 +37,7 @@ void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
     for (auto dofI : mDofs)
         for (auto dofJ : mDofs)
             if (dofI.Id() == dofJ.Id())
-                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix2(dofI, mX[dofI].rows());
+                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, mX[dofI].rows());
             else
                 mCmatUnit(dofI, dofJ).setZero();
 }

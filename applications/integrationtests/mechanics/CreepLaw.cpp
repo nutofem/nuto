@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     double time = 0.;
     delta_t = 0.01;
 
-    auto cMatUnit(constraints.BuildUnitConstraintMatrix2(
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix(
             {displ}, dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]));
 
     while (time < timeFinal)

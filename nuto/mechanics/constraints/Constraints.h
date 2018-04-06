@@ -51,9 +51,8 @@ public:
     //! independent dofs
     //! @param dof dof type
     //! @param numDofs number dofs for the dof type, required for a proper resize of the sparse matrix
-    //! @return sparse matrix containing the constraint terms where the last block with size (numDependent x
-    //! numDependent is removed)
-    Eigen::SparseMatrix<double> BuildUnitConstraintMatrix2(DofType dof, int numDofs) const;
+    //! @return sparse matrix containing the constraint terms
+    Eigen::SparseMatrix<double> BuildUnitConstraintMatrix(DofType dof, int numDofs) const;
 
     //! @brief calculates the number of constraint equations for a specific dof type
     //! @param dof dof type

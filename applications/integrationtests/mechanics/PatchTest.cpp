@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
     const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
-    Eigen::SparseMatrix<double> cMatUnit = constraints.BuildUnitConstraintMatrix2(displ, numDofs);
+    Eigen::SparseMatrix<double> cMatUnit = constraints.BuildUnitConstraintMatrix(displ, numDofs);
 
     Eigen::MatrixXd cMatUnitFull(cMatUnit);
     BOOST_TEST_MESSAGE("cMatUnit \n" << cMatUnitFull);

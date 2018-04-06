@@ -13,7 +13,7 @@ DofVector<double> NuTo::Solve(const DofMatrixSparse<double>& K, const DofVector<
 
     DofMatrixSparse<double> C_dof;
     for (auto rdof : dofs)
-        C_dof(rdof, rdof) = bcs.BuildUnitConstraintMatrix2(rdof, f[rdof].rows());
+        C_dof(rdof, rdof) = bcs.BuildUnitConstraintMatrix(rdof, f[rdof].rows());
 
     for (auto rdof : dofs)
         for (auto cdof : dofs)
@@ -42,7 +42,7 @@ DofVector<double> NuTo::SolveTrialState(const DofMatrixSparse<double>& K, const 
 
     DofMatrixSparse<double> C_dof;
     for (auto rdof : dofs)
-        C_dof(rdof, rdof) = bcs.BuildUnitConstraintMatrix2(rdof, f[rdof].rows());
+        C_dof(rdof, rdof) = bcs.BuildUnitConstraintMatrix(rdof, f[rdof].rows());
 
     for (auto rdof : dofs)
         for (auto cdof : dofs)
