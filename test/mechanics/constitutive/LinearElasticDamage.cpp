@@ -14,7 +14,7 @@ void CheckIsotropic(NuTo::ePlaneState planeState = NuTo::ePlaneState::PLANE_STRA
     BOOST_TEST_MESSAGE("TDim = " << TDim);
     NuTo::Laws::LinearElasticDamage<TDim> linearElasticDamage(E, nu, NuTo::Laws::FULL, planeState);
     NuTo::Laws::LinearElastic<TDim> linearElastic(E, nu, planeState);
-    NuTo::EngineeringStrain<TDim> strain = NuTo::EngineeringStrain<TDim>::Random();
+    NuTo::EngineeringStrain<TDim> strain = NuTo::EngineeringStrain<TDim>::Constant(0.1);
     double omega = 0.4;
     BoostUnitTest::CheckEigenMatrix((1. - omega) * linearElastic.Stress(strain),
                                     linearElasticDamage.Stress(strain, omega));
