@@ -18,8 +18,6 @@ public:
         , mId(id)
         , mShape(elements.GetShape())
     {
-        auto iShape = integrationType.GetShape().Enum();
-        auto eShape = elements.GetShape().Enum();
         if (elements.GetShape().Enum() != integrationType.GetShape().Enum())
             throw Exception(__PRETTY_FUNCTION__, "Integration type shape and element shape mismatch!");
     }
