@@ -181,9 +181,10 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     AddDofInterpolation(&mesh, eeq, leftElements);
 
     IntegrationTypeTriangle integration(4);
+    IntegrationTypeTensorProduct<1> integrationLeft{4, eIntegrationMethod::GAUSS};
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(matrixElements, integration);
-    auto cellsLeft = cellStorage.AddCells(leftElements, integration);
+    auto cellsLeft = cellStorage.AddCells(leftElements, integrationLeft);
     gdm.mKappas.setZero(cells.Size(), integration.GetNumIntegrationPoints());
 
     TimeDependentProblem equations(&mesh);
