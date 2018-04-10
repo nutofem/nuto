@@ -51,6 +51,7 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     auto quad = NuTo::Quadrilateral();
     fakeit::When(Method(intType, GetShape)).AlwaysReturn(quad);
 
+
     NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
     using namespace NuTo::Integrands;
     MomentumBalance<2> integrand({dofDispl}, law);
@@ -66,6 +67,12 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
 
     NuTo::Cell cell(elements, intType.get(), 1337);
     BOOST_CHECK(cell.Id() == 1337);
+
+    // Test incompatible shape type
+    fakeit::Mock<NuTo::IntegrationTypeBase> intTypeWrong;
+    NuTo::Line line;
+    Method(intTypeWrong, GetShape) = line;
+    BOOST_CHECK_THROW(NuTo::Cell(elements, intTypeWrong.get(), 1337), NuTo::Exception);
 
     BoostUnitTest::CheckVector(cell.Integrate(GradientF)[dofDispl], Eigen::VectorXd::Zero(8), 8);
 
