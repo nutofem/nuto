@@ -1,5 +1,6 @@
 #pragma once
 #include "nuto/mechanics/iga/Nurbs.h"
+#include "nuto/mechanics/mesh/MeshIga.h"
 #include "math/EigenCompanion.h"
 
 namespace NuTo
@@ -10,7 +11,7 @@ namespace UnitMeshIga
 //! @brief creates a 1 dimensional mesh from (0) -- (1) with numX divisions (elements)
 //! @param numX number of divisions (elements) in x direction
 //! @return created mesh = Nurbs geometry
-Nurbs<1> CreateLines(int numX)
+MeshIga<1> CreateLines(int numX)
 {
     throw Exception(__PRETTY_FUNCTION__, "Iga - Not implemented yet!");
 }
@@ -19,7 +20,7 @@ Nurbs<1> CreateLines(int numX)
 //! @param numX number of divisions in x direction
 //! @param numY number of divisions in y direction
 //! @return created mesh
-Nurbs<2> CreateQuads(int numX, int numY)
+MeshIga<2> CreateQuads(int numX, int numY)
 {
     throw Exception(__PRETTY_FUNCTION__, "Iga - Not implemented yet!");
 }

@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValuesInstance)
     std::vector<NuTo::NodeSimple*> controlPoints = {&n1, &n2};
 
     std::vector<double> knots1D = {0, 0, 1, 1};
-    std::array<std::vector<double>, 1> knots = {knots1D};
+    std::array<std::vector<double>, 1> knots = {{knots1D}};
 
     std::vector<double> weights = {1, std::sqrt(2) / 2};
 
@@ -76,6 +76,6 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValuesInstance)
 
     NuTo::Nurbs<1> curve(knots, controlPoints, weights, degree);
 
-    NuTo::ElementIga<1> iga({1}, curve);
+    NuTo::ElementIga<1> iga({{1}}, curve);
     BoostUnitTest::CheckEigenMatrix(iga.ExtractNodeValues(1), Eigen::Vector4d(11, 12, 13, 14));
 }

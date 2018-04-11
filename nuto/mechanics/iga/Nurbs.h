@@ -139,7 +139,8 @@ public:
         return indexBegin;
     }
 
-    Eigen::VectorXd GetControlPointCoordinatesElement(const std::array<int, TDimParameter>& knotID) const;
+    Eigen::VectorXd GetControlPointCoordinatesElement(const std::array<int, TDimParameter>& knotID,
+                                                      int instance = 0) const;
 
     const NodeSimple* GetControlPointElement(const std::array<int, TDimParameter>& knotID, int i) const;
 
@@ -372,7 +373,7 @@ private:
 };
 
 template <>
-inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::array<int, 1>& knotID) const
+inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::array<int, 1>& knotID, int instance) const
 {
     Eigen::VectorXi indexBegin = GetControlPointCoordinatesElementHelper(knotID);
 
@@ -384,7 +385,7 @@ inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::ar
     int count = 0;
     for (int i = indexBegin[0]; i <= indexBegin[0] + mDegree[0]; i++)
     {
-        nodeValues.segment(count, dim) = mControlPoints[i]->GetValues();
+        nodeValues.segment(count, dim) = mControlPoints[i]->GetValues(instance);
         count += dim;
     }
 
@@ -392,7 +393,7 @@ inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::ar
 }
 
 template <>
-inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::array<int, 2>& knotID) const
+inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::array<int, 2>& knotID, int instance) const
 {
     int dim = GetDimension();
     int numCPs = GetNumControlPointsElement();
@@ -406,7 +407,7 @@ inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::ar
         for (int i = indexBegin[0]; i <= indexBegin[0] + mDegree[0]; i++)
         {
             int index = i + j * mNumControlPointsInDirection[0];
-            nodeValues.segment(count, dim) = mControlPoints[index]->GetValues();
+            nodeValues.segment(count, dim) = mControlPoints[index]->GetValues(instance);
             count += dim;
         }
 

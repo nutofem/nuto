@@ -35,8 +35,7 @@ public:
     //! @remark virtual to make it testable
     virtual NodeValues ExtractNodeValues(int instance = 0) const override
     {
-        (void)instance;
-        return NurbsGeometry().GetControlPointCoordinatesElement(mKnotIDs);
+        return NurbsGeometry().GetControlPointCoordinatesElement(mKnotIDs, instance);
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
