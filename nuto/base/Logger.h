@@ -14,56 +14,67 @@ class Logger
 
 public:
     //! @brief ...constructor
-    Logger();
+    Logger(std::string prefix = "");
 
     //! @brief ..opens the file stored in the string mLogFileName
     void OpenFile();
 
     //! @brief ..open file
-    //! @param rFileString file string to open
-    void OpenFile(std::string rFileString);
+    //! @param filename file string to open
+    void OpenFile(std::string filename);
 
     //! @brief ..Close file
     void CloseFile();
 
     //! @brief ..sets the output to be forwarded to the console (false) or only to the file (true)
-    //! @param rQuiet see explanation above
-    void SetQuiet(bool rQuiet);
+    //! @param isQuiet see explanation above
+    void SetQuiet(bool isQuiet);
 
     //! @brief ..Writes a message to the log and to console
     template <typename T>
-    void Out(const T& rObject, bool rEof)
+    void Out(const T& rObject, bool withNewline = false)
     {
-        if (!mQuiet)
+        std::string optionalPrefix = OptionalPrefix();
+        if (!mIsQuiet)
         {
-            std::cout << rObject << (rEof ? "\n" : "");
+            std::cout << optionalPrefix << rObject;
             std::cout.flush();
         }
         if (mLogFile.is_open())
         {
-            mLogFile << rObject << (rEof ? "\n" : "");
+            mLogFile << optionalPrefix << rObject;
             mLogFile.flush();
         }
+        mPrintPrefix = withNewline;
     }
+
+    std::string OptionalPrefix();
 
     //! @brief Info routine that prints general information about the object (detail according to verbose level)
     void Info() const
     {
-        std::cout << "LogFileName " << mLogFileName << " is quiet " << mQuiet << std::endl;
+        std::cout << "LogFileName " << mLogFileName << " is quiet " << mIsQuiet << std::endl;
     }
 
 
 protected:
     std::ofstream mLogFile; //!< Logfile for output.
-    std::string mLogFileName ; //!< LogfileName for output.
-    bool mQuiet = false; //!< If true, no writing to console.;
+    std::string mLogFileName; //!< LogfileName for output.
+    bool mIsQuiet = false; //!< If true, no writing to console.;
+
+    std::string mPrefix; //!< prefix written on the beginning of the log line
+    bool mPrintPrefix = true;
 };
 
 //! Generic output command.
 template <typename T>
-Logger& operator<<(Logger& rLogger, const T& rObject)
+inline Logger& operator<<(Logger& rLogger, const T& t)
 {
-    rLogger.Out(rObject, false);
+    rLogger.Out(t);
     return rLogger;
 }
+
+Logger& operator<<(Logger& rLogger, const char& t);
+Logger& operator<<(Logger& rLogger, const std::string& t);
+Logger& operator<<(Logger& rLogger, const char* t);
 } // namespace NuTo
